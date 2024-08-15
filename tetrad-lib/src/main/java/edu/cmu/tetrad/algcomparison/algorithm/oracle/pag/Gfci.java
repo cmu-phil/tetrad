@@ -22,7 +22,6 @@ import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,21 +95,18 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         }
 
         GFci search = new GFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
-        search.setPossibleMsepSearchDone(parameters.getBoolean((Params.POSSIBLE_MSEP_DONE)));
+        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-
-        Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream printStream) {
-            search.setOut(printStream);
-        }
+        search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
+        search.setOut(System.out);
 
         return search.search();
     }
@@ -159,13 +155,15 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.DEPTH);
+        parameters.add(Params.SEPSET_FINDER_METHOD);
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
-        parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
-        parameters.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.REMOVE_ALMOST_CYCLES);
         parameters.add(Params.NUM_THREADS);
 
         parameters.add(Params.VERBOSE);

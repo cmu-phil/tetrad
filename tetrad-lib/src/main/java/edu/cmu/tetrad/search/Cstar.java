@@ -204,7 +204,7 @@ public class Cstar {
 
         if (path == null || path.isEmpty()) {
             path = "cstar-out";
-            TetradLogger.getInstance().forceLogMessage("Using path = 'cstar-out'.");
+            TetradLogger.getInstance().log("Using path = 'cstar-out'.");
         }
 
         File origDir = null;
@@ -235,10 +235,10 @@ public class Cstar {
             throw new IllegalStateException("Could not make a new directory; perhaps file permissions need to be adjusted.");
         }
 
-        TetradLogger.getInstance().forceLogMessage("Creating directories for " + newDir.getAbsolutePath());
+        TetradLogger.getInstance().log("Creating directories for " + newDir.getAbsolutePath());
 
         newDir = new File(path);
-        TetradLogger.getInstance().forceLogMessage("Using files in directory " + origDir.getAbsolutePath());
+        TetradLogger.getInstance().log("Using files in directory " + origDir.getAbsolutePath());
 
         this.newDir = newDir;
 
@@ -247,10 +247,10 @@ public class Cstar {
 
         LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
 
-        TetradLogger.getInstance().forceLogMessage("Results directory = " + newDir.getAbsolutePath());
+        TetradLogger.getInstance().log("Results directory = " + newDir.getAbsolutePath());
 
         if (new File(origDir, "possible.causes.txt").exists() && new File(newDir, "possible.causes.txt").exists()) {
-            TetradLogger.getInstance().forceLogMessage("Loading data, possible causes, and possible effects from " + origDir.getAbsolutePath());
+            TetradLogger.getInstance().log("Loading data, possible causes, and possible effects from " + origDir.getAbsolutePath());
             possibleCauses = readVars(dataSet, origDir, "possible.causes.txt");
             possibleEffects = readVars(dataSet, origDir, "possible.effects.txt");
         }
@@ -299,7 +299,7 @@ public class Cstar {
             }
 
             public double[][] call() {
-                TetradLogger.getInstance().forceLogMessage("\nRunning subsample " + (this.subsample + 1) + " of " + Cstar.this.numSubsamples + ".");
+                TetradLogger.getInstance().log("\nRunning subsample " + (this.subsample + 1) + " of " + Cstar.this.numSubsamples + ".");
 
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
@@ -308,11 +308,11 @@ public class Cstar {
                     double[][] effects;
 
                     if (new File(origDir, "cpdag." + (this.subsample + 1) + ".txt").exists() && new File(origDir, "effects." + (this.subsample + 1) + ".txt").exists()) {
-                        TetradLogger.getInstance().forceLogMessage("Loading CPDAG and effects from " + origDir.getAbsolutePath() + " for index " + (this.subsample + 1));
+                        TetradLogger.getInstance().log("Loading CPDAG and effects from " + origDir.getAbsolutePath() + " for index " + (this.subsample + 1));
                         cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(origDir, "cpdag." + (this.subsample + 1) + ".txt"));
                         effects = loadMatrix(new File(origDir, "effects." + (this.subsample + 1) + ".txt"));
                     } else {
-                        TetradLogger.getInstance().forceLogMessage("Sampling data for index " + (this.subsample + 1));
+                        TetradLogger.getInstance().log("Sampling data for index " + (this.subsample + 1));
 
                         if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
                             sampler.setWithoutReplacements(false);
@@ -325,16 +325,16 @@ public class Cstar {
                         }
 
                         if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.PC_STABLE) {
-                            TetradLogger.getInstance().forceLogMessage("Running PC-Stable for index " + (this.subsample + 1));
+                            TetradLogger.getInstance().log("Running PC-Stable for index " + (this.subsample + 1));
                             cpdag = getPatternPcStable(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.FGES) {
-                            TetradLogger.getInstance().forceLogMessage("Running FGES for index " + (this.subsample + 1));
+                            TetradLogger.getInstance().log("Running FGES for index " + (this.subsample + 1));
                             cpdag = getPatternFges(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.BOSS) {
-                            TetradLogger.getInstance().forceLogMessage("Running BOSS for index " + (this.subsample + 1));
+                            TetradLogger.getInstance().log("Running BOSS for index " + (this.subsample + 1));
                             cpdag = getPatternBoss(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.RESTRICTED_BOSS) {
-                            TetradLogger.getInstance().forceLogMessage("Running Restricted BOSS for index " + (this.subsample + 1));
+                            TetradLogger.getInstance().log("Running Restricted BOSS for index " + (this.subsample + 1));
                             cpdag = getPatternRestrictedBoss(sample, this._dataSet);
                         } else {
                             throw new IllegalArgumentException("That type of of cpdag algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
@@ -344,7 +344,7 @@ public class Cstar {
 
                         effects = new double[this.possibleCauses.size()][this.possibleEffects.size()];
 
-                        TetradLogger.getInstance().forceLogMessage("Running IDA for index " + (this.subsample + 1));
+                        TetradLogger.getInstance().log("Running IDA for index " + (this.subsample + 1));
                         for (int e = 0; e < this.possibleEffects.size(); e++) {
                             Map<Node, Double> minEffects = ida.calculateMinimumTotalEffectsOnY(this.possibleEffects.get(e));
 
@@ -355,7 +355,7 @@ public class Cstar {
                         }
                     }
 
-                    TetradLogger.getInstance().forceLogMessage("Saving CPDAG and effects for index " + (this.subsample + 1));
+                    TetradLogger.getInstance().log("Saving CPDAG and effects for index " + (this.subsample + 1));
                     saveMatrix(effects, new File(newDir, "effects." + (this.subsample + 1) + ".txt"));
 
                     try {
@@ -402,7 +402,7 @@ public class Cstar {
 
         try {
             if (Cstar.this.verbose) {
-                TetradLogger.getInstance().forceLogMessage("Examining top bracket = " + this.topBracket + ".");
+                TetradLogger.getInstance().log("Examining top bracket = " + this.topBracket + ".");
             }
 
             List<Tuple> tuples = new ArrayList<>();
@@ -801,7 +801,7 @@ public class Cstar {
             try {
                 results.add(future.get());
             } catch (InterruptedException | ExecutionException e) {
-                TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                TetradLogger.getInstance().log(e.getMessage());
             }
         }
 
@@ -1035,6 +1035,42 @@ public class Cstar {
          */
         public double getMinBeta() {
             return this.minBeta;
+        }
+    }
+
+    /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
+     * to restore the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
         }
     }
 }

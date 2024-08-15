@@ -1904,7 +1904,7 @@ public final class SemEstimatorEditor extends JPanel {
         private GraphWorkbench workbench() {
             if (this.getWorkbench() == null) {
                 this.workbench = new GraphWorkbench(graph());
-                this.workbench.enableEditing(false);
+                this.workbench.setEnableEditing(false);
                 this.getWorkbench().setAllowDoubleClickActions(false);
                 this.getWorkbench().addPropertyChangeListener((evt) -> {
                     if ("BackgroundClicked".equals(

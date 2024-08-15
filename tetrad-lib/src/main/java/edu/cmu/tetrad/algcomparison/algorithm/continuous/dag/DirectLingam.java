@@ -80,7 +80,7 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
 
         edu.cmu.tetrad.search.DirectLingam search = new edu.cmu.tetrad.search.DirectLingam(data, score);
         Graph graph = search.search();
-        TetradLogger.getInstance().forceLogMessage(graph.toString());
+        TetradLogger.getInstance().log(graph.toString());
         LogUtilsSearch.stampWithBic(graph, dataModel);
         return graph;
     }

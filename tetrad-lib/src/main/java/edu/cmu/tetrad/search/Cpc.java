@@ -111,7 +111,7 @@ public final class Cpc implements IGraphSearch {
     /**
      * This variable determines whether edges will not be added if they would create cycles.
      */
-    private boolean meekPreventCycles = true;
+    private boolean guaranteeCpdag = true;
     /**
      * The `conflictRule` variable represents the conflict rule used for resolving collider orientation conflicts during
      * the search. It is an enum value defined in the `PcCommon` class.
@@ -154,8 +154,8 @@ public final class Cpc implements IGraphSearch {
     public Graph search() {
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting CPC algorithm");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting CPC algorithm");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         this.ambiguousTriples = new HashSet<>();
@@ -179,7 +179,7 @@ public final class Cpc implements IGraphSearch {
         search.setDepth(depth);
         search.setConflictRule(conflictRule);
         search.setPcHeuristicType(pcHeuristicType);
-        search.setMeekPreventCycles(meekPreventCycles);
+        search.setGuaranteeCpdag(guaranteeCpdag);
         search.setKnowledge(this.knowledge);
 
         if (stable) {
@@ -199,8 +199,8 @@ public final class Cpc implements IGraphSearch {
         this.elapsedTime = endTime - startTime;
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-            TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
+            TetradLogger.getInstance().log("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().log("Finishing CPC algorithm.");
         }
 
         this.colliderTriples = search.getColliderTriples();
@@ -214,12 +214,13 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * Sets to true just in case edges will not be added if they would create cycles.
+     * Sets to true just in case the algorithm should guarantee that the output is consistent
+     * with a CPDAG, i.e., no bidirected edges and no actual or implied cycles.
      *
-     * @param meekPreventCycles True, if so.
+     * @param guaranteeCpdag True, if so.
      */
-    public void meekPreventCycles(boolean meekPreventCycles) {
-        this.meekPreventCycles = meekPreventCycles;
+    public void setGuaranteeCpdag(boolean guaranteeCpdag) {
+        this.guaranteeCpdag = guaranteeCpdag;
     }
 
     /**
@@ -371,23 +372,23 @@ public final class Cpc implements IGraphSearch {
      */
     private void logTriples() {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("\nCollider triples:");
+            TetradLogger.getInstance().log("\nCollider triples:");
 
             for (Triple triple : this.colliderTriples) {
-                TetradLogger.getInstance().forceLogMessage("Collider: " + triple);
+                TetradLogger.getInstance().log("Collider: " + triple);
             }
 
-            TetradLogger.getInstance().forceLogMessage("\nNoncollider triples:");
+            TetradLogger.getInstance().log("\nNoncollider triples:");
 
             for (Triple triple : this.noncolliderTriples) {
-                TetradLogger.getInstance().forceLogMessage("Noncollider: " + triple);
+                TetradLogger.getInstance().log("Noncollider: " + triple);
             }
 
-            TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
-                                                       "\nthere is ambiguous data about whether they are colliders or not):");
+            TetradLogger.getInstance().log("\nAmbiguous triples (i.e. list of triples for which " +
+                                           "\nthere is ambiguous data about whether they are colliders or not):");
 
             for (Triple triple : getAmbiguousTriples()) {
-                TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);
+                TetradLogger.getInstance().log("Ambiguous: " + triple);
             }
         }
     }

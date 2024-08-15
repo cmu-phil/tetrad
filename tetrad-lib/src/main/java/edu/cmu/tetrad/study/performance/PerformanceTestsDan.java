@@ -74,7 +74,7 @@ public class PerformanceTestsDan {
             final double alphaPc = 0.01;
             final int penaltyDiscount = 1;
             final int depth = 3;
-            final int maxPathLength = 3;
+            final int maxPathLength = -1;
 
             final int numVars = 15;
             final double edgesPerNode = 1.0;

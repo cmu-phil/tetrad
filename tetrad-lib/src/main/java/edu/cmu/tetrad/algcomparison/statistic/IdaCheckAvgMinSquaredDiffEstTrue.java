@@ -58,6 +58,9 @@ public class IdaCheckAvgMinSquaredDiffEstTrue implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        if (!estGraph.paths().isLegalMpdag()) {
+            return Double.NaN;
+        }
 
         if (dataModel == null) {
             throw new IllegalArgumentException("Data model is null.");

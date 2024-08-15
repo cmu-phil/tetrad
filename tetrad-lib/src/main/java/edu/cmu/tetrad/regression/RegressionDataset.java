@@ -246,13 +246,6 @@ public class RegressionDataset implements Regression {
 
         for (int i = 0; i < regressors.size(); i++) {
             _regressors[i] = this.variables.indexOf(regressors.get(i));
-            if (_regressors[i] == -1) {
-                System.out.println();
-            }
-        }
-
-        if (_target == -1) {
-            System.out.println();
         }
 
         Matrix y = this.data.getSelection(getRows(), new int[]{_target}).copy();

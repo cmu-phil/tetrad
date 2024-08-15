@@ -114,7 +114,6 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // GRaSP
         search.setSeed(parameters.getLong(Params.SEED));
-        search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
         search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
         search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
@@ -125,13 +124,15 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
+        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
         search.setKnowledge(this.knowledge);
 
         return search.search();
@@ -189,18 +190,18 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.NUM_STARTS);
 
         // FCI
+        params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.DEPTH);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         params.add(Params.POSSIBLE_MSEP_DONE);
-        params.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
 
         // General
         params.add(Params.TIME_LAG);
-
         params.add(Params.SEED);
-
+        params.add(Params.REMOVE_ALMOST_CYCLES);
         params.add(Params.VERBOSE);
 
         return params;

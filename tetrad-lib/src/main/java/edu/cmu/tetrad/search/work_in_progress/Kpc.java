@@ -85,7 +85,7 @@ public class Kpc implements IGraphSearch {
     /**
      * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large graphs).
      */
-    private boolean meekPreventCycles;
+    private boolean guaranteeCpdag;
     /**
      * In an enumeration of triple types, these are the collider triples.
      */
@@ -128,21 +128,21 @@ public class Kpc implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * <p>isMeekPreventCycles.</p>
+     * Checks if guaranteeCpdag is set to true.
      *
-     * @return true iff edges will not be added if they would create cycles.
+     * @return true if guaranteeCpdag is set to true, otherwise false
      */
-    public boolean isMeekPreventCycles() {
-        return this.meekPreventCycles;
+    public boolean isGuaranteeCpdag() {
+        return this.guaranteeCpdag;
     }
 
     /**
-     * <p>Setter for the field <code>meekPreventCycles</code>.</p>
+     * Sets the flag to determine whether to guarantee a CPDAG (Consensus Partially Directed Acyclic Graph) result in the search.
      *
-     * @param meekPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
+     * @param guaranteeCpdag true if guarantee CPDAG result should be ensured, false otherwise
      */
-    public void setMeekPreventCycles(boolean meekPreventCycles) {
-        this.meekPreventCycles = meekPreventCycles;
+    public void setGuaranteeCpdag(boolean guaranteeCpdag) {
+        this.guaranteeCpdag = guaranteeCpdag;
     }
 
     /**
@@ -244,9 +244,9 @@ public class Kpc implements IGraphSearch {
         nodes = new ArrayList<>(nodes);
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting kPC algorithm");
+            TetradLogger.getInstance().log("Starting kPC algorithm");
             String message = "Independence test = " + getIndependenceTest() + ".";
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         long startTime = MillisecondTimes.timeMillis();
@@ -275,15 +275,15 @@ public class Kpc implements IGraphSearch {
         GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes, verbose);
         GraphSearchUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
         MeekRules rules = new MeekRules();
-        rules.setMeekPreventCycles(this.meekPreventCycles);
+        rules.setMeekPreventCycles(this.guaranteeCpdag);
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-            TetradLogger.getInstance().forceLogMessage("Finishing PC Algorithm.");
+            TetradLogger.getInstance().log("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().log("Finishing PC Algorithm.");
         }
 
         return this.graph;

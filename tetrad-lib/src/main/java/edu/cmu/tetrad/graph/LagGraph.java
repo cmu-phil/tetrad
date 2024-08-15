@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.search.IndependenceTest;
+
 import java.beans.PropertyChangeListener;
 import java.io.Serial;
 import java.util.*;
@@ -255,7 +257,7 @@ public class LagGraph implements Graph {
     /**
      * {@inheritDoc}
      */
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
@@ -543,7 +545,7 @@ public class LagGraph implements Graph {
      * {@inheritDoc}
      */
     @Override
-    public Set<Node> getSepset(Node n1, Node n2) {
+    public Set<Node> getSepset(Node n1, Node n2, IndependenceTest test) {
         throw new UnsupportedOperationException();
     }
 

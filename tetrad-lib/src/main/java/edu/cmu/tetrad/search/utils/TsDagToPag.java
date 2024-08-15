@@ -61,7 +61,8 @@ public final class TsDagToPag {
     private boolean verbose;
     private int maxPathLength = -1;
     private Graph truePag;
-    private boolean doDiscriminatingPathRule = false;
+    private boolean doDiscriminatingPathTailRule = true;
+    private boolean doDiscriminatingPathColliderRule = true;
 
 
     /**
@@ -185,7 +186,7 @@ public final class TsDagToPag {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph convert() {
-        TetradLogger.getInstance().forceLogMessage("Starting DAG to PAG_of_the_true_DAG.");
+        TetradLogger.getInstance().log("Starting DAG to PAG_of_the_true_DAG.");
         //        System.out.println("Knowledge is = " + knowledge);
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
@@ -203,16 +204,11 @@ public final class TsDagToPag {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
-        FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
-        System.out.println("Complete rule set is used? " + this.completeRuleSetUsed);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-        fciOrient.setChangeFlag(false);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setKnowledge(this.knowledge);
-        fciOrient.ruleR0(graph);
-        fciOrient.doFinalOrientation(graph);
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(dag, new Knowledge()));
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.finalOrientation(graph);
 
         if (this.verbose) {
             System.out.println("Finishing final orientation");
@@ -291,11 +287,15 @@ public final class TsDagToPag {
     }
 
     /**
-     * <p>Setter for the field <code>maxPathLength</code>.</p>
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength a int
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
         this.maxPathLength = maxPathLength;
     }
 
@@ -318,14 +318,22 @@ public final class TsDagToPag {
     }
 
     /**
-     * <p>Setter for the field <code>doDiscriminatingPathRule</code>.</p>
+     * /** Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule a boolean
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
 
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = this.dag.getNodes();

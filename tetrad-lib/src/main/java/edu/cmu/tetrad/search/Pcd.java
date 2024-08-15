@@ -81,7 +81,7 @@ public class Pcd implements IGraphSearch {
     /**
      * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
      */
-    private boolean meekPreventCycles;
+    private boolean guaranteeCpdag;
     /**
      * In an enumeration of triple types, these are the collider triples.
      */
@@ -123,17 +123,17 @@ public class Pcd implements IGraphSearch {
      *
      * @return true if cycles should be prevented, false otherwise.
      */
-    public boolean isMeekPreventCycles() {
-        return this.meekPreventCycles;
+    public boolean isGuaranteeCpdag() {
+        return this.guaranteeCpdag;
     }
 
     /**
      * Sets whether the algorithm should prevent cycles during the search.
      *
-     * @param meekPreventCycles true if cycles should be prevented, false otherwise
+     * @param guaranteeCpdag true if cycles should be prevented, false otherwise
      */
-    public void setMeekPreventCycles(boolean meekPreventCycles) {
-        this.meekPreventCycles = meekPreventCycles;
+    public void setGuaranteeCpdag(boolean guaranteeCpdag) {
+        this.guaranteeCpdag = guaranteeCpdag;
     }
 
     /**
@@ -254,9 +254,9 @@ public class Pcd implements IGraphSearch {
     public Graph search(IFas fas, List<Node> nodes) {
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting PC algorithm");
+            TetradLogger.getInstance().log("Starting PC algorithm");
             String message = "Independence test = " + getIndependenceTest() + ".";
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         long startTime = MillisecondTimes.timeMillis();
@@ -287,15 +287,15 @@ public class Pcd implements IGraphSearch {
         GraphSearchUtils.pcdOrientC(getIndependenceTest(), this.knowledge, this.graph);
 
         MeekRules rules = new MeekRules();
-        rules.setMeekPreventCycles(this.meekPreventCycles);
+        rules.setMeekPreventCycles(this.guaranteeCpdag);
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-            TetradLogger.getInstance().forceLogMessage("Finishing PC Algorithm.");
+            TetradLogger.getInstance().log("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().log("Finishing PC Algorithm.");
         }
 
         return this.graph;

@@ -1,24 +1,31 @@
 package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetradapp.model.AlgcomparisonModel;
+import edu.cmu.tetradapp.model.GridSearchModel;
 
 import java.util.List;
 
+/**
+ * Test the algorithm model.
+ */
 public class TestAlgorithmModel {
 
-
+    /**
+     * Main method.
+     *
+     * @param args the arguments.
+     */
     public static void main(String[] args) {
         new TestAlgorithmModel().test1();
     }
 
     private void test1() {
 
-        AlgcomparisonModel algcomparisonModel = new AlgcomparisonModel(new Parameters());
+        GridSearchModel gridSearchModel = new GridSearchModel(new Parameters());
 
-        List<String> simulations = algcomparisonModel.getSimulationName();
-        List<String> algorithms =  algcomparisonModel.getAlgorithmsName();
-        List<String> statistics = algcomparisonModel.getStatisticsNames();
+        List<String> simulations = gridSearchModel.getSimulationName();
+        List<String> algorithms =  gridSearchModel.getAlgorithmsName();
+        List<String> statistics = gridSearchModel.getStatisticsNames();
 
         System.out.println("Simulations: ");
 

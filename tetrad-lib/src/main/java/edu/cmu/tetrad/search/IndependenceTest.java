@@ -209,7 +209,7 @@ public interface IndependenceTest {
      * Returns the datasets for this test
      *
      * @return these datasets.
-     * @throws javax.help.UnsupportedOperationException If this method is not supported for a particular test.
+     * @throws UnsupportedOperationException If this method is not supported for a particular test.
      */
     default List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("The getDataSets() method is not implemented for this test.");

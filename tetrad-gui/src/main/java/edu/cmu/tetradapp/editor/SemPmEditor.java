@@ -304,7 +304,7 @@ class SemPmGraphicalEditor extends JPanel {
                     wrapper.setModelIndex((Integer) selectedItem - 1);
                     SemPmGraphicalEditor.this.workbench = new GraphWorkbench(graph());
                     SemPmGraphicalEditor.this.workbench.setAllowDoubleClickActions(false);
-                    SemPmGraphicalEditor.this.workbench.enableEditing(false);
+                    SemPmGraphicalEditor.this.workbench.setEnableEditing(false);
                     resetLabels();
                     setSemPm();
                 }
@@ -418,7 +418,7 @@ class SemPmGraphicalEditor extends JPanel {
         if (this.workbench == null) {
             this.workbench = new GraphWorkbench(graph());
             this.getWorkbench().setAllowDoubleClickActions(false);
-            this.workbench.enableEditing(false);
+            this.workbench.setEnableEditing(false);
             resetLabels();
             addMouseListenerToGraphNodesMeasured();
         }

@@ -40,6 +40,7 @@ import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.*;
 
 import static java.util.Collections.sort;
 import static org.apache.commons.math3.util.FastMath.max;
@@ -69,7 +70,7 @@ public final class GraphSearchUtils {
      */
     public static void pcOrientbk(Knowledge bk, Graph graph, List<Node> nodes, boolean verbose) {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
+            TetradLogger.getInstance().log("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -112,11 +113,11 @@ public final class GraphSearchUtils {
             graph.addDirectedEdge(from, to);
 
             String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
+            TetradLogger.getInstance().log("Finishing BK Orientation.");
         }
     }
 
@@ -130,7 +131,7 @@ public final class GraphSearchUtils {
      * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) {
-        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
+        TetradLogger.getInstance().log("Starting Collider Orientation:");
 
         List<Node> nodes = graph.getNodes();
 
@@ -193,11 +194,11 @@ public final class GraphSearchUtils {
 
                 System.out.println(LogUtilsSearch.colliderOrientedMsg(x, y, z) + " sepset = " + sepset);
                 String message = LogUtilsSearch.colliderOrientedMsg(x, y, z);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
 
-        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
+        TetradLogger.getInstance().log("Finishing Collider Orientation.");
     }
 
     private static Set<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, IndependenceTest independenceTest) {
@@ -242,7 +243,7 @@ public final class GraphSearchUtils {
      */
     public static void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
                                                    boolean enforceCpdag) {
-        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
+        TetradLogger.getInstance().log("Starting Collider Orientation:");
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
@@ -292,13 +293,13 @@ public final class GraphSearchUtils {
                         graph.addDirectedEdge(c, b);
 
                         String message = LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset);
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
                     }
                 }
             }
         }
 
-        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
+        TetradLogger.getInstance().log("Finishing Collider Orientation.");
 
     }
 
@@ -506,13 +507,13 @@ public final class GraphSearchUtils {
                     return new LegalMagRet(false,
                             "Bidirected edge semantics is violated: there is a directed path for " + e + " from " + x + " to " + y
                             + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-                            + "An example path is " + GraphUtils.pathString(mag, path));
+                            + "An example path is " + GraphUtils.pathString(mag, path, false));
                 } else if (mag.paths().existsDirectedPath(y, x)) {
                     List<Node> path = mag.paths().directedPaths(y, x, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics is violated: There is an a directed path for " + e + " from " + y + " to " + x +
                             ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-                            + "An example path is " + GraphUtils.pathString(mag, path));
+                            + "An example path is " + GraphUtils.pathString(mag, path, false));
                 }
             }
         }
@@ -805,7 +806,7 @@ public final class GraphSearchUtils {
 
         List<Node> _nodes = new ArrayList<>(graph.getAdjacentNodes(x));
         _nodes.remove(z);
-        TetradLogger.getInstance().forceLogMessage("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
+        TetradLogger.getInstance().log("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         int _depth = depth;
         if (_depth == -1) {
@@ -836,7 +837,7 @@ public final class GraphSearchUtils {
 
         _nodes = new ArrayList<>(graph.getAdjacentNodes(z));
         _nodes.remove(x);
-        TetradLogger.getInstance().forceLogMessage("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
+        TetradLogger.getInstance().log("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         _depth = FastMath.min(_depth, _nodes.size());
 
@@ -888,11 +889,11 @@ public final class GraphSearchUtils {
 
             // Will check mixedness later.
             if (trueGraph.paths().existsDirectedCycle()) {
-                TetradLogger.getInstance().forceLogMessage("SHD failed: True graph couldn't be converted to a CPDAG");
+                TetradLogger.getInstance().log("SHD failed: True graph couldn't be converted to a CPDAG");
             }
 
             if (estGraph.paths().existsDirectedCycle()) {
-                TetradLogger.getInstance().forceLogMessage("SHD failed: Estimated graph couldn't be converted to a CPDAG");
+                TetradLogger.getInstance().log("SHD failed: Estimated graph couldn't be converted to a CPDAG");
                 return -99;
             }
 
@@ -907,12 +908,12 @@ public final class GraphSearchUtils {
                     Edge e2 = estGraph.getEdge(n1, n2);
 
                     if (e1 != null && !(Edges.isDirectedEdge(e1) || Edges.isUndirectedEdge(e1))) {
-                        TetradLogger.getInstance().forceLogMessage("SHD failed: True graph couldn't be converted to a CPDAG");
+                        TetradLogger.getInstance().log("SHD failed: True graph couldn't be converted to a CPDAG");
                         return -99;
                     }
 
                     if (e2 != null && !(Edges.isDirectedEdge(e2) || Edges.isUndirectedEdge(e2))) {
-                        TetradLogger.getInstance().forceLogMessage("SHD failed: Estimated graph couldn't be converted to a CPDAG");
+                        TetradLogger.getInstance().log("SHD failed: Estimated graph couldn't be converted to a CPDAG");
                         return -99;
                     }
 
@@ -1201,6 +1202,31 @@ public final class GraphSearchUtils {
         }
 
         return false;
+    }
+
+    /**
+     * Runs the given task with the given timeout.
+     *
+     * @param task    The task to run.
+     * @param timeout The timeout.
+     * @param unit    The time unit of the timeout.
+     * @param <T>     The type of the result.
+     * @return The result of the task, or null if the task times out.
+     */
+    public static <T> T runWithTimeout(Callable<T> task, long timeout, TimeUnit unit) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<T> future = executor.submit(task);
+
+        try {
+            return future.get(timeout, unit);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            return null;
+        } catch (InterruptedException | ExecutionException e) {
+            return null; // Or handle exceptions differently
+        } finally {
+            executor.shutdown();
+        }
     }
 
     /**

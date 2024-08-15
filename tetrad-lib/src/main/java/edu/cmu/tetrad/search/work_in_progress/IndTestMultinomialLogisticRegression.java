@@ -263,7 +263,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
         }
@@ -326,10 +326,10 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         if (this.verbose) {
             if (indep) {
                 String message = LogUtilsSearch.independenceFactMsg(x, y, z, p);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             } else {
                 String message = LogUtilsSearch.dependenceFactMsg(x, y, z, p);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
 

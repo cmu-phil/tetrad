@@ -89,9 +89,6 @@ public class TestKunMeasurementError {
         algorithms.add(new Pcd());
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);

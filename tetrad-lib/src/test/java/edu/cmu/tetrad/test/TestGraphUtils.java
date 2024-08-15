@@ -24,8 +24,8 @@
     import edu.cmu.tetrad.data.ContinuousVariable;
     import edu.cmu.tetrad.data.Knowledge;
     import edu.cmu.tetrad.graph.*;
-    import edu.cmu.tetrad.search.utils.DagSepsets;
     import edu.cmu.tetrad.search.utils.FciOrient;
+    import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
     import edu.cmu.tetrad.util.RandomUtil;
     import org.jetbrains.annotations.Nullable;
     import org.junit.Test;
@@ -335,9 +335,10 @@
             Knowledge knowledge = new Knowledge();
             knowledge.setRequired(x.getName(), y.getName());
 
-            FciOrient fciOrientation = new FciOrient(new DagSepsets(graph));
-            fciOrientation.setKnowledge(knowledge);
-            fciOrientation.orient(_graph);
+            Set<Triple> unshieldedTriples = new HashSet<>();
+
+            FciOrient fciOrientation = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(graph, knowledge));
+            fciOrientation.orient(_graph, unshieldedTriples);
 
             _graph.removeEdge(x, y);
             return _graph;

@@ -261,7 +261,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         Graph graph = graphWrapper.getGraph();
 
         this.workbench = new GraphWorkbench(graph);
-        this.workbench.enableEditing(this.enableEditing);
+        this.workbench.setEnableEditing(this.enableEditing);
 
         this.workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
             String propertyName = evt.getPropertyName();
@@ -272,7 +272,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                     // Update the graphWrapper
                     graphWrapper.setGraph(targetGraph);
                     // Also need to update the UI
-//                    updateBootstrapTable(targetGraph);
+                    updateBootstrapTable(targetGraph);
                 }
             } else if ("modelChanged".equals(propertyName)) {
                 firePropertyChange("modelChanged", null, null);
@@ -290,12 +290,12 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graphToolbar.setMaximumSize(new Dimension(140, 450));
 
         // topBox right side graph editor
-        this.graphEditorScroll.setPreferredSize(new Dimension(760, 450));
+        this.graphEditorScroll.setPreferredSize(new Dimension(500, 500));
         this.graphEditorScroll.setViewportView(this.workbench);
 
         // topBox contains the topGraphBox and the instructionBox underneath
         Box topBox = Box.createVerticalBox();
-        topBox.setPreferredSize(new Dimension(820, 400));
+        topBox.setPreferredSize(new Dimension(450, 400));
 
         // topGraphBox contains the vertical graph toolbar and graph editor
         Box topGraphBox = Box.createHorizontalBox();
@@ -304,7 +304,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         // Instruction with info button
         Box instructionBox = Box.createHorizontalBox();
-        instructionBox.setMaximumSize(new Dimension(820, 40));
+        instructionBox.setMaximumSize(new Dimension(450, 40));
 
         JLabel label = new JLabel("Double click variable/node rectangle to change name.");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -344,7 +344,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         topBox.add(topGraphBox);
         topBox.add(instructionBox);
 
-        this.edgeTypeTable.setPreferredSize(new Dimension(820, 150));
+        this.edgeTypeTable.setPreferredSize(new Dimension(500, 150));
 
 //        //Use JSplitPane to allow resize the bottom box - Zhou
 //        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
@@ -371,8 +371,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
      * Updates the graph in workbench when changing graph model
      */
     private void updateGraphWorkbench(Graph graph) {
-        this.workbench = new GraphWorkbench(graph);
-        this.workbench.enableEditing(this.enableEditing);
+        this.workbench.setGraph(graph);// = new GraphWorkbench(graph);
+        this.workbench.setEnableEditing(this.enableEditing);
         this.graphEditorScroll.setViewportView(this.workbench);
 
         validate();
@@ -411,7 +411,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                 updateGraphWorkbench(graphWrapper.getGraph());
 
                 // Update the bootstrap table
-//                updateBootstrapTable(graphWrapper.getGraph());
+                updateBootstrapTable(graphWrapper.getGraph());
             });
 
             // Put together
@@ -442,10 +442,10 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
      *
      * @param enableEditing a boolean
      */
-    public void enableEditing(boolean enableEditing) {
+    public void setEnableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {
-            this.workbench.enableEditing(enableEditing);
+            this.workbench.setEnableEditing(enableEditing);
         }
     }
 
@@ -511,10 +511,20 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         JMenuItem randomGraph = new JMenuItem("Random Graph");
         graph.add(randomGraph);
 
+        randomGraph.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
+
         graph.addSeparator();
 
-        graph.add(new GraphPropertiesAction(getWorkbench()));
-        graph.add(new PathsAction(getWorkbench()));
+        JMenuItem graphProperties = new JMenuItem(new GraphPropertiesAction(getWorkbench()));
+        JMenuItem pathsAction = new JMenuItem(new PathsAction(getWorkbench(), parameters));
+        graphProperties.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_DOWN_MASK));
+        pathsAction.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_DOWN_MASK));
+
+        graph.add(graphProperties);
+        graph.add(pathsAction);
         graph.add(new UnderliningsAction(getWorkbench()));
         graph.addSeparator();
 

@@ -96,6 +96,7 @@ public final class SvarFci implements IGraphSearch {
      * Represents whether to resolve almost cyclic paths during the search.
      */
     private boolean resolveAlmostCyclicPaths;
+    private boolean guaranteePag;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -155,8 +156,8 @@ public final class SvarFci implements IGraphSearch {
     public Graph search(IFas fas) {
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting SVar-FCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting SVar-FCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         fas.setKnowledge(getKnowledge());
@@ -164,21 +165,24 @@ public final class SvarFci implements IGraphSearch {
         fas.setVerbose(this.verbose);
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
+        Set<Triple> unshieldedTriples = new HashSet<>();
 
         this.graph.reorientAllWith(Endpoint.CIRCLE);
 
         SepsetProducer sp = new SepsetsPossibleMsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
         sp.setVerbose(this.verbose);
 
-        SvarFciOrient svarFciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
-        svarFciOrient.setKnowledge(this.knowledge);
-        svarFciOrient.ruleR0(this.graph);
+        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(this.independenceTest));
+        fciOrient.setKnowledge(this.knowledge);
+        fciOrient.setEndpointStrategy(new SvarSetEndpointStrategy(this.independenceTest, this.knowledge));
+
+        fciOrient.ruleR0(this.graph, unshieldedTriples);
 
         for (Edge edge : new ArrayList<>(this.graph.getEdges())) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            Set<Node> sepset = sp.getSepset(x, y);
+            Set<Node> sepset = sp.getSepset(x, y, depth);
 
             if (sepset != null) {
                 this.graph.removeEdge(x, y);
@@ -200,15 +204,17 @@ public final class SvarFci implements IGraphSearch {
         //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
 
         long time6 = MillisecondTimes.timeMillis();
-        TetradLogger.getInstance().forceLogMessage("Step CI C: " + (time6 - time5) / 1000. + "s");
-
-        SvarFciOrient fciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
+        TetradLogger.getInstance().log("Step CI C: " + (time6 - time5) / 1000. + "s");
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(this.knowledge);
-        fciOrient.ruleR0(this.graph);
-        fciOrient.doFinalOrientation(this.graph);
+        fciOrient.ruleR0(this.graph, unshieldedTriples);
+        fciOrient.finalOrientation(this.graph);
+
+        if (guaranteePag) {
+            this.graph = GraphUtils.guaranteePag(this.graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        }
 
         if (resolveAlmostCyclicPaths) {
             for (Edge edge : graph.getEdges()) {
@@ -289,9 +295,9 @@ public final class SvarFci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This length.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -506,6 +512,17 @@ public final class SvarFci implements IGraphSearch {
      */
     public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
         this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
+    }
+
+    /**
+     * Sets whether a guaranteed partial ancestral graph (PAG) should be built during the search. When set to true, the
+     * search algorithm will construct a PAG even if it cannot guarantee its correctness. When set to false, the search
+     * algorithm may return a PAG that is not fully connected or has other inconsistencies.
+     *
+     * @param guaranteePag true to guarantee the construction of a PAG, false otherwise
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 }
 

@@ -215,7 +215,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
         ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
-        TetradLogger.getInstance().forceLogMessage("Latent covs = \n" + latentsCov);
+        TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
         Graph fullGraph = mimbuild.getFullGraph();
         LayoutUtil.defaultLayout(fullGraph);
@@ -235,9 +235,9 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
         double p = mimbuild.getpValue();
 
-        TetradLogger.getInstance().forceLogMessage("\nStructure graph = " + structureGraph);
-        TetradLogger.getInstance().forceLogMessage(getLatentClustersString(fullGraph).toString());
-        TetradLogger.getInstance().forceLogMessage("P = " + p);
+        TetradLogger.getInstance().log("\nStructure graph = " + structureGraph);
+        TetradLogger.getInstance().log(getLatentClustersString(fullGraph).toString());
+        TetradLogger.getInstance().log("P = " + p);
 
         if (getParams().getBoolean("showMaxP", false)) {
             if (p > getParams().getDouble("maxP", 1.0)) {
@@ -256,10 +256,10 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
             setResultGraph((Graph) getParams().get("maxFullGraph", null));
 
             String message1 = "\nMAX Graph = " + getParams().get("maxStructureGraph", null);
-            TetradLogger.getInstance().forceLogMessage(message1);
-            TetradLogger.getInstance().forceLogMessage(getLatentClustersString((Graph) getParams().get("maxFullGraph", null)).toString());
+            TetradLogger.getInstance().log(message1);
+            TetradLogger.getInstance().log(getLatentClustersString((Graph) getParams().get("maxFullGraph", null)).toString());
             String message = "MAX P = " + getParams().getDouble("maxP", 1.0);
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
     }
 

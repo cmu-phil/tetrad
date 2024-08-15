@@ -20,7 +20,7 @@ public interface Statistic extends Serializable {
     /**
      * The abbreviation for the statistic. This will be printed at the top of each column.
      *
-     * @return Thsi abbreviation.
+     * @return This abbreviation.
      */
     String getAbbreviation();
 

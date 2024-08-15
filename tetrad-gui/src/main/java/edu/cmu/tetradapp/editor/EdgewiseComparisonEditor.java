@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.EdgewiseComparisonModel;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -78,6 +79,13 @@ public class EdgewiseComparisonEditor extends JPanel {
 
         area.setFont(font);
 
+        int position = area.getText().indexOf("True graph");
+
+        // If the word is found, scroll to it
+        if (position >= 0) {
+            area.setCaretPosition(position);
+        }
+
         JScrollPane scrollTextPane = new JScrollPane(area);
         scrollTextPane.setPreferredSize(new Dimension(500, 600));
 
@@ -130,12 +138,32 @@ public class EdgewiseComparisonEditor extends JPanel {
             menu.setText("Compare to DAG...");
             menu.setBackground(Color.WHITE);
 
-            this.area.setText(comparison.getComparisonString());
-            this.area.moveCaretPosition(0);
-            this.area.setSelectionStart(0);
-            this.area.setSelectionEnd(0);
+            new WatchedProcess() {
+                @Override
+                public void watch() {
+                    SwingUtilities.invokeLater(() -> {
+                        area.setText(comparison.getComparisonString());
+                        area.moveCaretPosition(0);
+                        area.setSelectionStart(0);
+                        area.setSelectionEnd(0);
+                        area.repaint();
+                    });
+                }
+            };
 
-            this.area.repaint();
+//            SwingUtilities.invokeLater(() -> {
+//                this.area.setText(comparison.getComparisonString());
+//                this.area.moveCaretPosition(0);
+//                this.area.setSelectionStart(0);
+//                this.area.setSelectionEnd(0);
+//                this.area.repaint();
+//            });
+//            this.area.setText(comparison.getComparisonString());
+//            this.area.moveCaretPosition(0);
+//            this.area.setSelectionStart(0);
+//            this.area.setSelectionEnd(0);
+//
+//            this.area.repaint();
 
         });
 
@@ -144,12 +172,32 @@ public class EdgewiseComparisonEditor extends JPanel {
             menu.setText("Compare to CPDAG...");
             menu.setBackground(Color.YELLOW);
 
-            this.area.setText(comparison.getComparisonString());
-            this.area.moveCaretPosition(0);
-            this.area.setSelectionStart(0);
-            this.area.setSelectionEnd(0);
+            new WatchedProcess() {
+                @Override
+                public void watch() {
+                    SwingUtilities.invokeLater(() -> {
+                        area.setText(comparison.getComparisonString());
+                        area.moveCaretPosition(0);
+                        area.setSelectionStart(0);
+                        area.setSelectionEnd(0);
+                        area.repaint();
+                    });
+                }
+            };
 
-            this.area.repaint();
+//            SwingUtilities.invokeLater(() -> {
+//                this.area.setText(comparison.getComparisonString());
+//                this.area.moveCaretPosition(0);
+//                this.area.setSelectionStart(0);
+//                this.area.setSelectionEnd(0);
+//                this.area.repaint();
+//            });
+//            this.area.setText(comparison.getComparisonString());
+//            this.area.moveCaretPosition(0);
+//            this.area.setSelectionStart(0);
+//            this.area.setSelectionEnd(0);
+//
+//            this.area.repaint();
 
         });
 
@@ -158,11 +206,32 @@ public class EdgewiseComparisonEditor extends JPanel {
             menu.setText("Compare to PAG...");
             menu.setBackground(Color.GREEN.brighter().brighter());
 
-            this.area.setText(comparison.getComparisonString());
-            this.area.moveCaretPosition(0);
-            this.area.setSelectionStart(0);
-            this.area.setSelectionEnd(0);
-            this.area.repaint();
+            new WatchedProcess() {
+                @Override
+                public void watch() {
+                    SwingUtilities.invokeLater(() -> {
+                        area.setText(comparison.getComparisonString());
+                        area.moveCaretPosition(0);
+                        area.setSelectionStart(0);
+                        area.setSelectionEnd(0);
+                        area.repaint();
+                    });
+                }
+            };
+
+//            SwingUtilities.invokeLater(() -> {
+//                this.area.setText(comparison.getComparisonString());
+//                this.area.moveCaretPosition(0);
+//                this.area.setSelectionStart(0);
+//                this.area.setSelectionEnd(0);
+//                this.area.repaint();
+//            });
+//            this.area.setText(comparison.getComparisonString());
+//            this.area.moveCaretPosition(0);
+//            this.area.setSelectionStart(0);
+//            this.area.setSelectionEnd(0);
+//
+//            this.area.repaint();
         });
 
         return menubar;

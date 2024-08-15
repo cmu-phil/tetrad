@@ -118,6 +118,7 @@ public class TestPc {
 
         Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.05));
         pc.setKnowledge(knowledge);
+        pc.setGuaranteeCpdag(true);
 
         Graph CPDAG = pc.search();
 
@@ -135,11 +136,8 @@ public class TestPc {
                                   "8. QFJ --> PUBS\n" +
                                   "9. SEX --> PUBS";
 
-        Graph trueGraph = null;
-
-
         try {
-            trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
+            Graph trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
@@ -192,6 +190,7 @@ public class TestPc {
 
         // Set up search.
         pc.setKnowledge(knowledge);
+        pc.setGuaranteeCpdag(false);
 //        pc.setVerbose(false);
 
         // Run search
@@ -667,10 +666,12 @@ public class TestPc {
             switch (t) {
                 case 0:
                     search = new Pc(test);
+                    ((Pc) search).setGuaranteeCpdag(false);
                     out = search.search();
                     break;
                 case 1:
                     search = new Cpc(test);
+                    ((Cpc) search).setGuaranteeCpdag(false);
                     out = search.search();
                     break;
                 case 2:

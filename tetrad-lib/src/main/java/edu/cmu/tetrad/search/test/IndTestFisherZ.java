@@ -87,13 +87,13 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      */
     private DataSet dataSet;
     /**
-     * Matrix from of the data.
+     * Matrix from of the data.a
      */
     private Matrix data;
     /**
      * True if verbose output should be printed.
      */
-    private boolean verbose = true;
+    private boolean verbose = false;
     /**
      * The correlation coefficient for the last test.
      */
@@ -244,8 +244,10 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        if (facts.containsKey(new IndependenceFact(x, y, z))) {
-            return facts.get(new IndependenceFact(x, y, z));
+        IndependenceResult _result = facts.get(new IndependenceFact(x, y, z));
+
+        if (_result != null) {
+            return _result;
         }
 
         if (usePseudoinverse) {
@@ -266,7 +268,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
             if (this.verbose) {
                 if (independent) {
-                    TetradLogger.getInstance().forceLogMessage(
+                    TetradLogger.getInstance().log(
                             LogUtilsSearch.independenceFactMsg(x, y, z, p));
                 }
             }
@@ -365,7 +367,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
         if (this.verbose) {
             if (p > alpha) {
-                TetradLogger.getInstance().forceLogMessage(LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, p));
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, p));
             }
         }
 
@@ -642,8 +644,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
             sb.append(" SSE = ").append(NumberFormatUtil.getInstance().getNumberFormat().format(SSE));
 
-            TetradLogger.getInstance().forceLogMessage(sb.toString());
-            System.out.println(sb);
+            if (verbose) {
+                TetradLogger.getInstance().log(sb.toString());
+            }
         }
 
         return determined;
@@ -830,15 +833,17 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         if (dataSet == null) {
             return;
         }
-
-        for (Integer row : rows) {
-            if (row < 0 || row >= sampleSize()) {
-                throw new IllegalArgumentException("Row index out of bounds.");
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
             }
-        }
 
-        this.rows = rows;
-        cor = null;
+            this.rows = rows;
+            cor = null;
+        }
     }
 
     /**

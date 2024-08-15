@@ -236,7 +236,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
         if (verbose) {
             if (result.isIndep()) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
@@ -316,7 +316,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
             sb.append("}");
 
-            TetradLogger.getInstance().forceLogMessage(sb.toString());
+            TetradLogger.getInstance().log(sb.toString());
         }
 
         return countDetermined;

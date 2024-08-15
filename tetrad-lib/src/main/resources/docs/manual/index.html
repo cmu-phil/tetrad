@@ -2584,6 +2584,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             Causation, Prediction, and Search for more details for these
             heuristics.</p>
 
+        <p>Note that it is possible for PC with some choices of parameters to output
+            bidirected edges or cycles, or to imply cycles by the Meek rules, against
+            assumption. Bidirected edges can be prevented by choosing an appropriate collider
+            conflict rule. Cycles can be prevented by setting the guaranteeCpdag
+            parameter to 'true' ('Yes). This parameter has two effects. First, it prevents
+            the orientation of any collider that would create a cycle in the graph.
+            Second, whenever the final Meek rules attempt to directed an undirected edge
+            as a directed edge, if this orientation would create a cycle, the edge
+            is oriented in reverse, adding one or more new (arbitrary) unshielded triples
+            to the graph. When this happens, the behavior is logged.</p>
+
         <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
@@ -3119,24 +3130,70 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         GRaSP.</p>
 
 
+    <h3>The LV-Lite Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="lv-lite">
+        <p> LV-Lite starts with BOSS or GRaSP and get a valid order and a DAG/CPDAG. It sets the initial state of the
+            estimted PAG to this CPDAG and orients as o-o and then copy all of the unshielded colliders from the CPDAG
+            to the PAG. It then performs a testing modified from the step in GFCI that is more efficient. In GFCI, an
+            edge x *-* y is removed from the graph is there is a subset S of adj(x) \ {y} or adj(y) \ {x} such that x
+            _||_ y | S. For LV-Lite we instead search outward from x for a set S using a novel procedure that blocks all
+            existing paths in the estimated PAG either unconditionally or conditionally. Bounds may be placed on the
+            lengths of the blocked paths to consider and the depth (maximum |S|). We also allow bounds on the time
+            spent on any testing step. As edges are removed in this way, any additional colliders are oriented given
+            these sepsets S. We then run the final FCI orientation rules, where for the discriminating path rule we use
+            the same "out of x" sepset finding idea. We optionally allow the user to request that a legal PAG be
+            returned using a novel procedure; this guarantee has been extended to all latent variable algorithms in
+            Tetrad that return partial ancestral graphs (PAGs).
+        </p>
+
+        <p>LV-Lite, along with BFCI, can produce highly accurate models in simulation. LV-Lite, in particular, is highly
+            scalable. A paper describing BFCI and LV-Lite in more detail is planned. We make both BFCI and LV-Lite
+            non-experimental for this version since requests have been made to use them.</p>
+        </p>
+
+        <p>Note: If one wants to analyze time series data using this algorithm, one may set the time lag parameter to a
+            value greater than 0, which will automatically apply the time lag transform. The same goes for any algorithm
+            that has this parameter available in the interface.</p>
+    </div>
+
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
+        GRaSP.</p>
+
     <h3>The BFCI Algorithm</h3>
 
     <h4>Description</h4>
 
     <div id="bfci">
         <p>Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG
-            than GFCI
-            as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is
-            here:</p>
+            than GFCI as a result, for the latent variables case. This is a simple substitution; the reference for GFCI
+            is here:</p>
         <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models,"
-            JMLR 2016.
-            Here, BOSS has been substituted for FGES.</p>
+            JMLR 2016. Here, BOSS has been substituted for FGES.</p>
         <p>For BOSS only a score is needed, but there are steps in GFCI that require a test, so for this method, both a
-            test and
-            a score need to be given.</p>
+            test and a score need to be given. The reference for BOSS is:</p>
+        <p>Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., & Kummerfeld, E. (2023). Fast scalable and
+            accurate discovery of dags using the best order score search and grow shrink trees. Advances in Neural
+            Information Processing Systems, 36, 63945-63956.</p>
         <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of
-            temporal
-            tiers.</p>
+            temporal tiers.</p>
+        <p>LV-Lite, along with BFCI, can produce highly accurate models in simulation. LV-Lite, in particular, is highly
+            scalable. A paper describing BFCI and LV-Lite in more detail is planned. We make both BFCI and LV-Lite
+            non-experimental for this version since requests have been made to use them.</p>
+        </p>
 
         <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
@@ -4272,7 +4329,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         may also be specified, though this is by default for these scores equal
         to 1 (since the lambda choice is essentially picking a penalty discount
         for you).
-    </p>
+        L </p>
     </div>
 
     <h3>MAG SEM BIC Test</h3>
@@ -4707,6 +4764,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="minSampleSizePerCell">minSampleSizePerCell</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="minSampleSizePerCell_short_desc">For conditional Gaussian, the minimum sample size per cell/span>
+            </li>
+            <li>Long Description: <span
+                    id="minSampleSizePerCell_long_desc">For conditional Gaussian, the minimum sample size per cell</span>
+            </li>
+            <li>Default Value: <span
+                    id="minSampleSizePerCell_default_value">4</span></li>
+            <li>Lower
+                Bound: <span id="minSampleSizePerCell_lower_bound">2</span></li>
+            <li>Upper Bound: <span
+                    id="minSampleSizePerCell_upper_bound">100000000</span></li>
+            <li>Value Type:
+                <span id="minSampleSizePerCell_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="removeEffectNodes">removeEffectNodes</h3>
         <ul
                 class="parameter_description_list">
@@ -4717,7 +4794,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="removeEffectNodes_long_desc">True if effect nodes should be removed from possible causes </span>
             </li>
             <li>Default Value: <span
-                    id="removeEffectNodes_default_value">True</span></li>
+                    id="removeEffectNodes_default_value">true</span></li>
             <li>Lower
                 Bound: <span id="removeEffectNodes_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -4862,25 +4939,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="wThreshold_upper_bound">Infinity</span></li>
             <li>Value Type:
                 <span id="wThreshold_value_type">Double</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="thresholdLvLite">thresholdLvLite</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="thresholdLvLite_short_desc">Score threshold for judging model score equality</span></li>
-            <li>Long Description: <span
-                    id="thresholdLvLite_long_desc">Score threshold for judging model score equality</span>
-            </li>
-            <li>Default Value: <span
-                    id="thresholdLvLite_default_value">0.01</span></li>
-            <li>Lower
-                Bound: <span id="thresholdLvLite_lower_bound">0</span></li>
-            <li>Upper Bound: <span
-                    id="thresholdLvLite_upper_bound">Infinity</span></li>
-            <li>Value Type:
-                <span id="thresholdLvLite_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -5162,28 +5220,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="doDiscriminatingPathRule">doDiscriminatingPathRule</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="doDiscriminatingPathRule_short_desc">Yes if the discriminating path rule
-                should be done, No if not</span></li>
-            <li>Long Description: <span
-                    id="doDiscriminatingPathRule_long_desc">Yes if the discriminating path
-                    FCI rule (part of the final orientation, requiring an additional test)
-                    should be done, No if not </span>
-            </li>
-            <li>Default Value: <span
-                    id="doDiscriminatingPathRule_default_value">true</span></li>
-            <li>Lower
-                Bound: <span id="doDiscriminatingPathRule_lower_bound"></span></li>
-            <li>Upper Bound: <span
-                    id="doDiscriminatingPathRule_upper_bound"></span></li>
-            <li>Value Type:
-                <span id="doDiscriminatingPathRule_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
             id="resolveAlmostCyclicPaths">resolveAlmostCyclicPaths</h3>
         <ul
                 class="parameter_description_list">
@@ -5198,7 +5234,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     </span>
             </li>
             <li>Default Value: <span
-                    id="resolveAlmostCyclicPaths_default_value">true</span></li>
+                    id="resolveAlmostCyclicPaths_default_value">false</span></li>
             <li>Lower
                 Bound: <span id="resolveAlmostCyclicPaths_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -5220,7 +5256,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     should be done, No if not </span>
             </li>
             <li>Default Value: <span
-                    id="doDiscriminatingPathColliderRule_default_value">false</span></li>
+                    id="doDiscriminatingPathColliderRule_default_value">true</span></li>
             <li>Lower
                 Bound: <span id="doDiscriminatingPathColliderRule_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -5295,23 +5331,23 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="meekPreventCycles">meekPreventCycles</h3>
+            id="guaranteeCpdag">guaranteeCpdag</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="meekPreventCycles_short_desc">
-                    Yes if cycles should be prevented in the application of the Meek rules</span></li>
-            <li>Long Description: <span id="meekPreventCycles_long_desc">
-            	It is possible due to unfaithfulness for the Meek rules to orient
-            	cycles; this does a cycle check before each orientation to
-            	prevent this.</span></li>
+                    id="guaranteeCpdag_short_desc">
+                    Guarantee that the output is a legal CPDAG</span></li>
+            <li>Long Description: <span id="guaranteeCpdag_long_desc">
+            	It is possible due to unfaithfulness for the Meek rules to output a
+            	non-CPDAG; this parameter guarantees a CPDAG if set to 'Yes'.
+            	</span></li>
             <li>Default Value: <span
-                    id="meekPreventCycles_default_value">true</span></li>
+                    id="guaranteeCpdag_default_value">false</span></li>
             <li>Lower Bound: <span
-                    id="meekPreventCycles_lower_bound"></span></li>
+                    id="guaranteeCpdag_lower_bound"></span></li>
             <li>Upper Bound: <span
-                    id="meekPreventCycles_upper_bound"></span></li>
+                    id="guaranteeCpdag_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="meekPreventCycles_value_type">Boolean</span></li>
+                    id="guaranteeCpdag_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="connected">connected</h3>
@@ -5851,10 +5887,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="faskDelta">faskDelta</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="faskDelta_short_desc"> For FASK v1 and v2, the bias for orienting
+                    id="faskDelta_short_desc"> For FASK v1, the bias for orienting
         with negative coefficients ('0' means no bias.)</span></li>
-            <li>Long
-                Description: <span id="faskDelta_long_desc">The bias procedure for v1
+            <li>Long Description: <span id="faskDelta_long_desc">The bias procedure for v1
         is given in the published description.</span></li>
             <li>Default
                 Value: <span id="faskDelta_default_value">0.0</span></li>
@@ -6431,6 +6466,304 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 Type: <span
                         id="usePseudoinverse_value_type">Boolean</span></li>
         </ul>
+
+        <h3 class="parameter_description"
+            id="ablationLeaveOutTuckingStep">ablationLeaveOutTuckingStep</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="ablationLeaveOutTuckingStep_short_desc">
+                    ABLATION: Yes, if the tucking step should be left out for the LV-Lite procedure
+        </span></li>
+            <li>Long Description: <span
+                    id="ablationLeaveOutTuckingStep_long_desc">
+                    Allowing tucks can sometimes lead to lower arrowhead accuracies,
+                    even they are theoretically correct.
+        </span></li>
+            <li>Default Value: <span
+                    id="ablationLeaveOutTuckingStep_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="ablationLeaveOutTuckingStep_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="ablationLeaveOutTuckingStep_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="ablationLeaveOutTuckingStep_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="ablationLeaveOutScoringStep">ablationLeaveOutScoringStep</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="ablationLeaveOutScoringStep_short_desc">
+                    ABLATION: Yes, if the scoring step should be left out for the LV-Lite procedure
+        </span></li>
+            <li>Long Description: <span
+                    id="ablationLeaveOutScoringStep_long_desc">
+                    If true, this leaves out the scoring steps and being the algorithm with
+                    a complete nondirected graph (which is Markov).
+        </span></li>
+            <li>Default Value: <span
+                    id="ablationLeaveOutScoringStep_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="ablationLeaveOutScoringStep_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="ablationLeaveOutScoringStep_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="ablationLeaveOutScoringStep_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="ablationLeaveOutTestingSteps">ablationLeaveOutTestingSteps</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="ablationLeaveOutTestingSteps_short_desc">
+                    ABLATION: Yes, if the testing steps should be left out for the LV-Lite procedure
+        </span></li>
+            <li>Long Description: <span
+                    id="ablationLeaveOutTestingSteps_long_desc">
+                    If true, this leaves out all testing steps from the algorithm and bases
+                    the result on just the scoring steps.
+        </span></li>
+            <li>Default Value: <span
+                    id="ablationLeaveOutTestingSteps_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="ablationLeaveOutTestingSteps_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="ablationLeaveOutTestingSteps_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="ablationLeaveOutTestingSteps_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="sepsetFinderMethod">sepsetFinderMethod</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="sepsetFinderMethod_short_desc">
+					The method to use for finding sepsets, 1 = Greedy, 2 = Min-p, 3 = Max-p (default).        </span>
+            </li>
+            <li>Long Description: <span
+                    id="sepsetFinderMethod_long_desc">
+					The method to use for finding sepsets, 1 = Greedy, 2 = Min-p, 3 = Max-p (default).        </span>
+            </li>
+            <li>Default Value: <span
+                    id="sepsetFinderMethod_default_value">3</span></li>
+            <li>Lower Bound: <span
+                    id="sepsetFinderMethod_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="sepsetFinderMethod_upper_bound">3</span></li>
+            <li>Value
+                Type: <span
+                        id="sepsetFinderMethod_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="lvLiteStartsWith">lvLiteStartsWith</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="lvLiteStartsWith_short_desc">
+                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP
+        </span></li>
+            <li>Long Description: <span
+                    id="lvLiteStartsWith_long_desc">
+                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP
+        </span></li>
+            <li>Default Value: <span
+                    id="lvLiteStartsWith_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="lvLiteStartsWith_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="lvLiteStartsWith_upper_bound">2</span></li>
+            <li>Value
+                Type: <span
+                        id="lvLiteStartsWith_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="extraEdgeRemovalStep">extraEdgeRemovalStep</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="extraEdgeRemovalStep_short_desc">
+                    The extra edge removal step to use: 1 = LV_LITE, 2 = Greedy, 3 = Max P, 4 = Min P
+        </span></li>
+            <li>Long Description: <span
+                    id="extraEdgeRemovalStep_long_desc">
+                    The extra edge removal step to use: 1 = LV_LITE, 2 = Greedy, 3 = Max P, 4 = Min P
+        </span></li>
+            <li>Default Value: <span
+                    id="extraEdgeRemovalStep_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="extraEdgeRemovalStep_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="extraEdgeRemovalStep_upper_bound">4</span></li>
+            <li>Value
+                Type: <span
+                        id="extraEdgeRemovalStep_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="maxBlockingPathLength">maxBlockingPathLength</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="maxBlockingPathLength_short_desc">Maximum path length to block in
+                    extra-edge removal step, >= 3</span></li>
+            <li>Long Description: <span
+                    id="maxBlockingPathLength_long_desc">
+                    In the extra edge removal step, we build conditioning sets based on the
+                    current PAG to attempt to remove adjacencies from the graph, by
+                    blocking paths from x to y of up to this length.
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="maxBlockingPathLength_default_value">5</span></li>
+            <li>Lower Bound: <span
+                    id="maxBlockingPathLength_lower_bound">3</span></li>
+            <li>Upper
+                Bound: <span
+                        id="maxBlockingPathLength_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="maxBlockingPathLength_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="maxSepsetSize">maxSepsetSize</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="maxSepsetSize_short_desc">For testing steps in LV-Lite, the
+                    maximum conditioning set size</span></li>
+            <li>Long Description: <span
+                    id="maxSepsetSize_long_desc">
+                    In the extra edge removal step, we build conditioning sets based on the
+                    current PAG to attempt to remove adjacencies from the graph, by
+                    blocking paths from x to y of up to this length. This is the maximum
+                    size these sets are allowed to grow to.
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="maxSepsetSize_default_value">8</span></li>
+            <li>Lower Bound: <span
+                    id="maxSepsetSize_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="maxSepsetSize_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="maxSepsetSize_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="maxScoreDrop">maxScoreDrop</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="maxScoreDrop_short_desc">
+                    Maximum score drop for the process triples step
+        </span></li>
+            <li>Long Description: <span
+                    id="maxScoreDrop_long_desc">
+                    In orienting unshielded colliders by examining triples of nodes,
+                    the score is permitted to drop by this much.
+        </span></li>
+            <li>Default Value: <span
+                    id="maxScoreDrop_default_value">5</span></li>
+            <li>Lower Bound: <span
+                    id="maxScoreDrop_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="maxScoreDrop_upper_bound">Infinity</span></li>
+            <li>Value
+                Type: <span
+                        id="maxScoreDrop_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="guaranteePag">guaranteePag</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="guaranteePag_short_desc">
+                    Guarantee that the output is a legal PAG
+        </span></li>
+            <li>Long Description: <span
+                    id="guaranteePag_long_desc">
+                    Repairs errors in PAGs due to almost cyclic paths or non-maximalities.
+                    This comes with a certain risk; errors in PAGs indicate that the PAG
+                    assumptions were not met; the user may wish to consider why before
+                    selecting this option.
+        </span></li>
+            <li>Default Value: <span
+                    id="guaranteePag_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="guaranteePag_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="guaranteePag_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="guaranteePag_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="removeAlmostCycles">removeAlmostCycles</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="removeAlmostCycles_short_desc">
+                    Yes if almost-cycles should be removed from the PAG.
+        </span></li>
+            <li>Long Description: <span
+                    id="removeAlmostCycles_long_desc">
+                    When x <-> y, x ~~> y, removes any unshielded triples into x and
+                    rebuilds the PAG.
+        </span></li>
+            <li>Default Value: <span
+                    id="removeAlmostCycles_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="removeAlmostCycles_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="removeAlmostCycles_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="removeAlmostCycles_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="ablationLeaveOutFinalOrientation">ablationLeaveOutFinalOrientation</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="ablationLeaveOutFinalOrientation_short_desc">
+                    ABLATION: Leave out final orientation step.
+        </span></li>
+            <li>Long Description: <span
+                    id="ablationLeaveOutFinalOrientation_long_desc">
+                    If true, the final orientation step of the algorithm is not performed.
+        </span></li>
+            <li>Default Value: <span
+                    id="ablationLeaveOutFinalOrientation_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="ablationLeaveOutFinalOrientation_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="ablationLeaveOutFinalOrientation_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="ablationLeaveOutFinalOrientation_value_type">Boolean</span></li>
+        </ul>
+
 
         <h3 class="parameter_description"
             id="intervalBetweenRecordings">intervalBetweenRecordings</h3>
@@ -7506,7 +7839,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="useBes_long_desc">This algorithm can use the backward equivalence search
                     from the GES algorithm as one of its steps.</span></li>
             <li>Default Value: <span
-                    id="useBes_default_value">False</span></li>
+                    id="useBes_default_value">false</span></li>
             <li>Lower Bound: <span
                     id="useBes_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -7770,7 +8103,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="graspDepth">graspDepth</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="graspDepth_short_desc">Recursion depth</span></li>
+                    id="graspDepth_short_desc">Recursion depth (for GRaSP)</span></li>
             <li>Long
                 Description: <span id="graspDepth_long_desc"> This is the depth of
         recursion for the depth first search. </span></li>
@@ -7864,6 +8197,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="timeout_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="timeout_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="testTimeout">testTimeout</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="testTimeout_short_desc">
+                    Timeout for tests in milliseconds, or -1 if no timeout.
+        </span></li>
+            <li>Long Description: <span id="testTimeout_long_desc">
+                    Timeout for tests in milliseconds, or -1 if no timeout.
+                </span></li>
+            <li>Default Value: <span
+                    id="testTimeout_default_value">-1</span></li>
+            <li>Lower Bound: <span
+                    id="testTimeout_lower_bound">-1</span></li>
+            <li>Upper Bound: <span
+                    id="testTimeout_upper_bound">9223372036854775807</span></li>
+            <li>Value Type: <span
+                    id="testTimeout_value_type">Long</span></li>
         </ul>
 
         <ul class="parameter_description_list">
@@ -8211,10 +8564,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="possibleMsepDone_short_desc">Yes if the possible msep search
+                    id="possibleMsepDone_short_desc">Yes if the possible d-sep search
         should be done</span></li>
             <li>Long Description: <span
-                    id="possibleMsepDone_long_desc"> This algorithm has a possible m-sep
+                    id="possibleMsepDone_long_desc"> This algorithm has a possible d-sep
         path search, which can be time-consuming. See Spirtes, Glymour, and
         Scheines (2000) for details.</span></li>
             <li>Default Value: <span
@@ -9408,6 +9761,119 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 <span id="include_structure_model_value_type">Boolean</span></li>
         </ul>
 
+        <h3 class="parameter_description"
+            id="pathsMaxNumSets">pathsMaxNumSets</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsMaxNumSets_short_desc">
+                The maximum number of adjustment sets to output
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsMaxNumSets_long_desc">
+                There may be too many legal adjustments to sets to output; this places
+                a bound on how many to output. These will be listed in order of
+                increasing size.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsMaxNumSets_default_value">4</span></li>
+            <li>Lower
+                Bound: <span id="pathsMaxNumSets_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="pathsMaxNumSets_upper_bound">100000</span></li>
+            <li>Value Type:
+                <span id="pathsMaxNumSets_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pathsMaxDistanceFromEndpoint">pathsMaxDistanceFromEndpoint</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsMaxDistanceFromEndpoint_short_desc">
+                The maximum distance of an allowable node from the endpoint of a path
+                for adjustment
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsMaxDistanceFromEndpoint_long_desc">
+                In order to give guidance to which adjustment sets to report, this
+                parameter lets one give a maximum distance from the endpoint of a
+                path for a node to be included in an adjustment set.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsMaxDistanceFromEndpoint_default_value">3</span></li>
+            <li>Lower
+                Bound: <span id="pathsMaxDistanceFromEndpoint_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="pathsMaxDistanceFromEndpoint_upper_bound">100000</span></li>
+            <li>Value Type:
+                <span id="pathsMaxDistanceFromEndpoint_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pathsNearWhichEndpoint">pathsNearWhichEndpoint</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsNearWhichEndpoint_short_desc">
+                1 = near source, 2 = near target, 3 = near either
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsNearWhichEndpoint_long_desc">
+                Adjustment sets may be found near the source, near the target, or
+                near either.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsNearWhichEndpoint_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="pathsNearWhichEndpoint_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="pathsNearWhichEndpoint_upper_bound">3</span></li>
+            <li>Value Type:
+                <span id="pathsNearWhichEndpoint_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pathsMaxLengthAdjustment">pathsMaxLengthAdjustment</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsMaxLengthAdjustment_short_desc">
+                The maximum length of a backdoor path to consider for adjustment.
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsMaxLengthAdjustment_long_desc">
+                The maximum length of a backdoor path to consider for finding an
+                adjustment set. Amenable paths of any length are considered.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsMaxLengthAdjustment_default_value">8</span></li>
+            <li>Lower
+                Bound: <span id="pathsMaxLengthAdjustment_lower_bound">2</span></li>
+            <li>Upper Bound: <span
+                    id="pathsMaxLengthAdjustment_upper_bound">100000</span></li>
+            <li>Value Type:
+                <span id="pathsMaxLengthAdjustment_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pathsMaxLength">pathsMaxLength</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span id="pathsMaxLength_short_desc">
+                The maximum length of a path to report
+        	</span></li>
+            <li>Long
+                Description: <span id="pathsMaxLength_long_desc">
+                Since paths may be long, especially for large graphs, this parameter
+                allows one to limit the length of a path to report. It must be at least
+                2.
+        </span></li>
+            <li>Default Value:
+                <span id="pathsMaxLength_default_value">8</span></li>
+            <li>Lower
+                Bound: <span id="pathsMaxLength_lower_bound">2</span></li>
+            <li>Upper Bound: <span
+                    id="pathsMaxLength_upper_bound">100000</span></li>
+            <li>Value Type:
+                <span id="pathsMaxLength_value_type">Integer</span></li>
+        </ul>
     </div> <!-- End of search parameters -->
 
 
@@ -9615,17 +10081,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h2>Arc Specializations in PAGs</h2>
 
-    <p>This section describes two types of arc specializations that
+    <p>This section describes two types of edge specializations that
         provide additional information about the nature of an arc in a PAG.</p>
 
-    <p>One arc specialization is colored <span
+    <p>One edge specialization is colored <span
             style="color:green">green</span> and is called <span style="font-style:
     italic; ">definitely visible</span>. In a PAG P without selection bias, a
         green (definitely visible) arc from A to B denotes that A and B do not
         have a latent confounder. If an arc is not definitely visible
         (represented as black) then A and B may have a latent confounder.</p>
 
-    <p>Another arc specialization is shown as <span style="font-weight:
+    <p>Another edge specialization is shown as <span style="font-weight:
     bold; ">bold</span> and is called <span style="font-style: italic;
     ">definitely direct</span>. In a PAG P without selection bias, a bold
         (definitely direct) arc from A to B denotes that A is a direct cause of

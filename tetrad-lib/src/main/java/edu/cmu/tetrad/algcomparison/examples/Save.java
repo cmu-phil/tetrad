@@ -63,7 +63,6 @@ public class Save {
 
         Simulation simulation = new LeeHastieSimulation(new RandomForward());
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.setSaveData(true);
         comparison.setSaveGraphs(true);
         comparison.saveToFiles("comparison", simulation, parameters);

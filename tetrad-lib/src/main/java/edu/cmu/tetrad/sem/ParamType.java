@@ -21,88 +21,52 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.util.TetradSerializable;
-
-import java.io.ObjectStreamException;
-import java.io.Serial;
-
 /**
- * A typesafe enum of the types of the types of freeParameters for SEM models (COEF, MEAN, VAR, COVAR). COEF
- * freeParameters are edge coefficients in the linear SEM model; VAR parmaeters are variances among the error terms;
- * COVAR freeParameters are (non-variance) covariances among the error terms.
+ * An enum of the free parameter types for SEM models (COEF, MEAN, VAR, COVAR). COEF freeParameters are edge
+ * coefficients in the linear SEM model; VAR parmaeters are variances among the error terms; COVAR freeParameters are
+ * (non-variance) covariances among the error terms.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public class ParamType implements TetradSerializable {
+public enum ParamType {
     /**
-     * A coefficient parameter.
+     * Enum representing the free parameter type for structural equation modeling (SEM) models.
+     * COEF free parameters are edge coefficients in the linear SEM model.
      */
-    public static final ParamType COEF = new ParamType("Linear Coefficient");
+    COEF("Linear Coefficient"),
     /**
-     * A mean parameter.
+     * Variable Mean parameter type for SEM models.
      */
-    public static final ParamType MEAN = new ParamType("Variable Mean");
+    MEAN("Variable Mean"),
     /**
-     * A variance parameter.
+     * Represents the error variance parameter in a structural equation modeling (SEM) model.
      */
-    public static final ParamType VAR = new ParamType("Error Variance");
+    VAR("Error Variance"),
     /**
-     * A covariance parameter. (Does not include variance freeParameters; these are indicated using VAR.)
+     * Represents a free parameter type for structural equation modeling (SEM) models. Specifically, the COVAR free parameter type is used to represent non-variance covariances among
+     *  the error terms in the SEM model.
+     *
+     * This enum type is a part of the ParamType enum, which is used to categorize different types of free parameters for SEM models.
+     *
+     * The COVAR free parameter type is associated with the description "Error Covariance".
      */
-    public static final ParamType COVAR = new ParamType("Error Covariance");
-    private static final long serialVersionUID = 23L;
+    COVAR("Error Covariance"),
     /**
-     * A parameter of a distribution.
+     * Represents a free parameter type for structural equation modeling (SEM) models.
+     * Specifically, the DIST free parameter type is used to represent distribution parameters in the SEM model.
+     * It is associated with the description "Distribution Parameter".
      */
-    private static final ParamType DIST = new ParamType("Distribution Parameter");
-    private static final ParamType[] TYPES = {ParamType.COEF, ParamType.MEAN, ParamType.VAR, ParamType.COVAR, ParamType.DIST};
-    // Declarations required for serialization.
-    private static int NEXT_ORDINAL;
-    /**
-     * The name of this type.
-     */
-    private final transient String name;
+    DIST("Distribution Parameter");
 
-    /**
-     * The ordinal of this type.
-     */
-    private final int ordinal = ParamType.NEXT_ORDINAL++;
+    private final String name;
 
-    /**
-     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
-     */
-    private ParamType(String name) {
+    ParamType(String name) {
         this.name = name;
     }
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @return a {@link edu.cmu.tetrad.sem.ParamType} object
-     */
-    public static ParamType serializableInstance() {
-        return ParamType.COEF;
-    }
-
-    /**
-     * Prints out the name of the type.
-     *
-     * @return a {@link java.lang.String} object
-     */
     public String toString() {
         return this.name;
-    }
-
-    /**
-     * Returns the type of the parameter.
-     *
-     * @return a {@link edu.cmu.tetrad.sem.ParamType} object
-     * @throws java.io.ObjectStreamException if any.
-     */
-    @Serial
-    Object readResolve() throws ObjectStreamException {
-        return ParamType.TYPES[this.ordinal]; // Canonicalize.
     }
 }
 

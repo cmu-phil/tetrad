@@ -122,7 +122,8 @@ final class LoadSessionAction extends AbstractAction {
 
                             throw e1;
                         } catch (Exception e2) {
-                            TetradLogger.getInstance().forceLogMessage("Exception: " + e2.getMessage());
+                            e2.printStackTrace();
+                            TetradLogger.getInstance().log("Exception: " + e2.getMessage());
                         }
                     } else if (o instanceof SessionWrapper) {
                         sessionWrapper = (SessionWrapper) o;
@@ -158,8 +159,10 @@ final class LoadSessionAction extends AbstractAction {
                     DesktopController.getInstance().closeEmptySessions();
                     DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
                 } catch (FileNotFoundException ex) {
+                    ex.printStackTrace();
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }

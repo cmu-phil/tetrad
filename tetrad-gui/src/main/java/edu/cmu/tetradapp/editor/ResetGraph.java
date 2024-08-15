@@ -45,6 +45,8 @@ public class ResetGraph extends AbstractAction implements ClipboardOwner {
      * This class represents an action to reset a graph to its original state in a GraphWorkbench. It implements the
      * ActionListener interface to respond to events triggered by clicking a button or selecting a menu option. It also
      * implements the ClipboardOwner interface to handle clipboard ownership changes.
+     *
+     * @param workbench The workbench containing the graph.
      */
     public ResetGraph(GraphWorkbench workbench) {
         super("Reset Graph");

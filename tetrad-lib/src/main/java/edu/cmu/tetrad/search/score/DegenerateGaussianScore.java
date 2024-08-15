@@ -55,6 +55,8 @@ public class DegenerateGaussianScore implements Score {
     private final Map<Integer, List<Integer>> embedding;
     // The SEM BIC score.
     private final SemBicScore bic;
+    // The use pseudo inverse flag.
+    private boolean usePseudoInverse = false;
 
     /**
      * Constructs the score using a dataset.
@@ -101,11 +103,13 @@ public class DegenerateGaussianScore implements Score {
                     B.get(keys.get(key))[j] = 1;
                 }
 
-                // Remove a degenerate dimension.
-                i--;
-                keys.remove(keysReverse.get(i));
-                A.remove(i);
-                B.remove(i);
+                if (!usePseudoInverse) {
+                    // Remove a degenerate dimension.
+                    i--;
+                    keys.remove(keysReverse.get(i));
+                    A.remove(i);
+                    B.remove(i);
+                }
 
                 this.embedding.put(i_, new ArrayList<>(keys.values()));
 
@@ -135,6 +139,7 @@ public class DegenerateGaussianScore implements Score {
 
         RealMatrix D = new BlockRealMatrix(B_);
         this.bic = new SemBicScore(new BoxDataSet(new DoubleDataBox(D.getData()), A), precomputeCovariances);
+        this.bic.setUsePseudoInverse(usePseudoInverse);
         this.bic.setStructurePrior(0);
     }
 
@@ -154,13 +159,14 @@ public class DegenerateGaussianScore implements Score {
             B.addAll(this.embedding.get(i_));
         }
 
-        int[] parents_ = new int[B.size()];
-        for (int i_ = 0; i_ < B.size(); i_++) {
-            parents_[i_] = B.get(i_);
-        }
 
         for (Integer i_ : A) {
+            int[] parents_ = new int[B.size()];
+            for (int i__ = 0; i__ < B.size(); i__++) {
+                parents_[i__] = B.get(i__);
+            }
             score += this.bic.localScore(i_, parents_);
+            B.add(i_);
         }
 
         return score;
@@ -245,5 +251,14 @@ public class DegenerateGaussianScore implements Score {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
+    }
+
+    /**
+     * Sets the flag to indicate whether to use pseudo inverse in the score calculations.
+     *
+     * @param usePseudoInverse True if pseudo inverse should be used, false otherwise.
+     */
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
     }
 }

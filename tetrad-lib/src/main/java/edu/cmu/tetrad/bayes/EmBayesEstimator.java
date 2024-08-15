@@ -413,7 +413,6 @@ public final class EmBayesEstimator {
                     outputBayesIm.setProbability(varIndex, 0, m,
                             this.condProbs[j][0][m]);
                 }
-                //System.out.println();
             } else {
 
                 for (int row = 0; row < numRows; row++) {

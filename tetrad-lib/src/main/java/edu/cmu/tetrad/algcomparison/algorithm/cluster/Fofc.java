@@ -132,7 +132,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
             ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
-            TetradLogger.getInstance().forceLogMessage("Latent covs = \n" + latentsCov);
+            TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
             Graph fullGraph = mimbuild.getFullGraph();
             LayoutUtil.defaultLayout(fullGraph);

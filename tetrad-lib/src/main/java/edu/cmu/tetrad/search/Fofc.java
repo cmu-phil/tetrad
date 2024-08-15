@@ -1189,7 +1189,7 @@ public class Fofc {
      */
     private void log(String s) {
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage(s);
+            TetradLogger.getInstance().log(s);
         }
     }
 

@@ -28,6 +28,12 @@ public enum ConditioningSetType {
     LOCAL_MARKOV,
 
     /**
+     * Conditioning on the parents and neighbors of each variable in the graph. Some independence facts obtained in this
+     * way may be for implied dependencies.
+     */
+    PARENTS_AND_NEIGHBORS,
+
+    /**
      * Conditioning on the Markov blanket of each variable in the graph. These are all conditional independence facts,
      * so no conditional dependence facts will be listed if this option is selected.
      */

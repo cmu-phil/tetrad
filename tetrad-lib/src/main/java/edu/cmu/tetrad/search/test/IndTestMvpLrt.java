@@ -158,12 +158,12 @@ public class IndTestMvpLrt implements IndependenceTest {
         try {
             p_0 = 1.0 - new ChiSquaredDistribution(dof_0).cumulativeProbability(2.0 * lik_0);
         } catch (Exception e) {
-            TetradLogger.getInstance().forceLogMessage(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
         }
         try {
             p_1 = 1.0 - new ChiSquaredDistribution(dof_1).cumulativeProbability(2.0 * lik_1);
         } catch (Exception e) {
-            TetradLogger.getInstance().forceLogMessage(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
         }
 
         double pValue = FastMath.min(p_0, p_1);
@@ -177,7 +177,7 @@ public class IndTestMvpLrt implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }

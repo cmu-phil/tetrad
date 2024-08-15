@@ -23,7 +23,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -89,11 +91,9 @@ public final class Rfci implements IGraphSearch {
      */
     private boolean verbose;
     /**
-     * Flag to indicate whether to resolve almost cyclic paths during the search.
-     * If true, the search algorithm will attempt to resolve paths that are almost cyclic, meaning that they have a single
-     * bidirected edge that is causing the cycle. If false, these paths will not be resolved.
+     * True iff the final orientation step should be skipped.
      */
-    private boolean resolveAlmostCyclicPaths;
+    private boolean ablationLeaveOutFinalOrientation;
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
@@ -172,8 +172,8 @@ public final class Rfci implements IGraphSearch {
         independenceTest.setVerbose(verbose);
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting RFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting RFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         setMaxPathLength(this.maxPathLength);
@@ -192,8 +192,8 @@ public final class Rfci implements IGraphSearch {
         long stop1 = MillisecondTimes.timeMillis();
         long start2 = MillisecondTimes.timeMillis();
 
-//        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
-        FciOrient orient = new FciOrient(new SepsetsMaxP(graph, this.independenceTest, null, this.maxPathLength));
+        FciOrient orient = new FciOrient(
+                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
         // For RFCI always executes R5-10
         orient.setCompleteRuleSetUsed(true);
@@ -201,31 +201,20 @@ public final class Rfci implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         orient.fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
-        orient.doFinalOrientation(this.graph);
 
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
+        if (!ablationLeaveOutFinalOrientation) {
+            orient.finalOrientation(this.graph);
         }
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
 
-        TetradLogger.getInstance().forceLogMessage("Returning graph: " + this.graph);
         long stop2 = MillisecondTimes.timeMillis();
 
-        TetradLogger.getInstance().forceLogMessage("Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
-        TetradLogger.getInstance().forceLogMessage("Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
+        if (verbose) {
+            TetradLogger.getInstance().log("Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
+            TetradLogger.getInstance().log("Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
+        }
 
         return this.graph;
     }
@@ -290,7 +279,7 @@ public final class Rfci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum path length for discriminating paths.
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -299,8 +288,7 @@ public final class Rfci implements IGraphSearch {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
         }
 
-        this.maxPathLength = maxPathLength == -1
-                ? Integer.MAX_VALUE : maxPathLength;
+        this.maxPathLength = maxPathLength;
     }
 
     /**
@@ -556,12 +544,12 @@ public final class Rfci implements IGraphSearch {
     }
 
     /**
-     * Sets the flag to resolve almost cyclic paths in the RFCI search.
+     * Sets the flag to leave out final orientation during the search.
      *
-     * @param resolveAlmostCyclicPaths the flag to resolve almost cyclic paths
+     * @param ablationLeaveOutFinalOrientation True to leave out final orientation, false otherwise.
      */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

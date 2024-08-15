@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
@@ -34,6 +35,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.List;
 import java.util.*;
@@ -90,7 +94,16 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Handler for PropertyChangeEvents.
      */
     private final PropertyChangeHandler propChangeHandler = new PropertyChangeHandler(this);
+    /**
+     * This variable represents a stack of Graph objects.
+     */
     private final LinkedList<Graph> graphStack = new LinkedList<>();
+    /**
+     * A stack that holds Graph objects used for redo operations.
+     * This stack is implemented using a LinkedList data structure.
+     * Graph objects can be pushed onto and popped from this stack.
+     * This stack is thread-safe.
+     */
     private final LinkedList<Graph> redoStack = new LinkedList<>();
     /**
      * The workbench which this workbench displays.
@@ -304,7 +317,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        repaint();
+//        repaint();
         firePropertyChange("BackgroundClicked", null, null);
     }
 
@@ -871,8 +884,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param g the Graphics context in which to paint
      */
     public final void paint(Graphics g) {
-        g.setColor(getBackground());
-        g.fillRect(0, 0, getWidth(), getHeight());
+//        g.setColor(getBackground());
+//        g.fillRect(0, 0, getWidth(), getHeight());
         super.paint(g);
     }
 
@@ -912,7 +925,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     public void setBackground(Color color) {
         super.setBackground(color);
-        repaint();
+//        repaint();
     }
 
     /**
@@ -1156,7 +1169,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
 
         revalidate();
-        repaint();
+//        repaint();
     }
 
     private void addLast(Graph graph) {
@@ -1401,19 +1414,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         if (pagEdgeSpecializationMarked) {
 
-            // visible edges.
-            boolean solid = modelEdge.getProperties().contains(Edge.Property.nl);
+            // Mark the edge as a specialization if it is one. For directed edges only; the method setting these
+            // properties only sets them for directed edges.
+            if (modelEdge.getProperties().contains(Edge.Property.pl)) {
+                displayEdge.setSolid(false);
+            } else if (modelEdge.getProperties().contains(Edge.Property.nl)) {
+                displayEdge.setSolid(true);
+            }
 
-            // definitely direct edges.
-            boolean thick = modelEdge.getProperties().contains(Edge.Property.dd);
-
-            // definitely direct edges.
-//            Color green = Color.green.darker();
-//            Color lineColor = modelEdge.getProperties().contains(Edge.Property.nl) ? green
-//                    : this.graph.isHighlighted(modelEdge) ? displayEdge.getHighlightedColor() : modelEdge.getLineColor();
-//            displayEdge.setLineColor(lineColor);
-            displayEdge.setSolid(solid);
-            displayEdge.setThick(thick);
+            if (modelEdge.getProperties().contains(Edge.Property.pd)) {
+                displayEdge.setThick(false);
+            } else if (modelEdge.getProperties().contains(Edge.Property.dd)) {
+                displayEdge.setThick(true);
+            }
         }
 
         // Link the display edge to the model edge.
@@ -2117,7 +2130,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     private void handleMouseDragged(MouseEvent e) {
-        setMouseDragging();
+//        setMouseDragging();
 
         Object source = e.getSource();
         Point newPoint = e.getPoint();
@@ -2504,20 +2517,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         repaint();
     }
 
-    private void setMouseDragging() {
-        /**
-         * TEMPORARY bug fix added 4/15/2005. The bug is that in JDK 1.5.0_02
-         * (without this bug fix) groups of nodes cannot be selected, because if
-         * you click and drag, an extra mouseClicked event is fired when you
-         * release the mouse. This is a known bug, #5039416 in Sun's bug
-         * database. To get around the problem, we set this flag to true when a
-         * mouseDragged event is fired and ignore the first click (and reset
-         * this flag to false) on the first mouseClicked event after any
-         * mouseDragged event. When this bug is fixed in JDK 1.5, this temporary
-         * bug fix shold be removed. jdramsey 4/15/2005
-         */
-        boolean mouseDragging = true;
-    }
+//    private void setMouseDragging() {
+//        /**
+//         * TEMPORARY bug fix added 4/15/2005. The bug is that in JDK 1.5.0_02
+//         * (without this bug fix) groups of nodes cannot be selected, because if
+//         * you click and drag, an extra mouseClicked event is fired when you
+//         * release the mouse. This is a known bug, #5039416 in Sun's bug
+//         * database. To get around the problem, we set this flag to true when a
+//         * mouseDragged event is fired and ignore the first click (and reset
+//         * this flag to false) on the first mouseClicked event after any
+//         * mouseDragged event. When this bug is fixed in JDK 1.5, this temporary
+//         * bug fix shold be removed. jdramsey 4/15/2005
+//         */
+//        boolean mouseDragging = true;
+//    }
 
     /**
      * Checks whether adding measured variables is allowed.
@@ -2560,7 +2573,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      *
      * @param enableEditing true to enable editing, false to disable editing
      */
-    public void enableEditing(boolean enableEditing) {
+    public void setEnableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         setEnabled(enableEditing);
     }
@@ -2981,4 +2994,39 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
+    /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
+     * to restore the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
+    }
 }

@@ -152,7 +152,7 @@ public class IcaLingam {
             } else if (!existsDirectedCycle()) {
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("Effective threshold = " + coef.coef);
+                    TetradLogger.getInstance().log("Effective threshold = " + coef.coef);
                 }
 
                 trimmed = scaledBHat;

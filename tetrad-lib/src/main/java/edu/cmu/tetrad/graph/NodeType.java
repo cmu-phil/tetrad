@@ -21,98 +21,41 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.TetradSerializable;
-
-import java.io.ObjectStreamException;
-import java.io.Serial;
-
 /**
- * A typesafe enum of the types of the types of nodes in a graph (MEASURED, LATENT, ERROR).
+ * An enum of the node types in a graph (MEASURED, LATENT, ERROR).
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public final class NodeType implements TetradSerializable {
+public enum NodeType {
     /**
      * Constant <code>MEASURED</code>
      */
-    public static final NodeType MEASURED = new NodeType("Measured");
+    MEASURED,
     /**
      * Constant <code>LATENT</code>
      */
-    public static final NodeType LATENT = new NodeType("Latent");
+    LATENT,
     /**
      * Constant <code>ERROR</code>
      */
-    public static final NodeType ERROR = new NodeType("Error");
+    ERROR,
     /**
      * Constant <code>SESSION</code>
      */
-    public static final NodeType SESSION = new NodeType("Session");
+    SESSION,
     /**
      * Constant <code>RANDOMIZE</code>
      */
-    public static final NodeType RANDOMIZE = new NodeType("Randomize");
+    RANDOMIZE,
     /**
      * Constant <code>LOCK</code>
      */
-    public static final NodeType LOCK = new NodeType("Lock");
+    LOCK,
     /**
      * Constant <code>NO_TYPE</code>
      */
-    public static final NodeType NO_TYPE = new NodeType("No type");
-    /**
-     * Constant <code>TYPES</code>
-     */
-    public static final NodeType[] TYPES = {NodeType.MEASURED, NodeType.LATENT, NodeType.ERROR, NodeType.NO_TYPE, NodeType.RANDOMIZE, NodeType.LOCK};
-    private static final long serialVersionUID = 23L;
-    // Declarations required for serialization.
-    private static int nextOrdinal;
-    /**
-     * The name of this type.
-     */
-    private final transient String name;
-
-    /**
-     * The ordinal of this type.
-     */
-    private final int ordinal = NodeType.nextOrdinal++;
-
-    /**
-     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
-     */
-    private NodeType(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @return a {@link edu.cmu.tetrad.graph.NodeType} object
-     */
-    public static NodeType serializableInstance() {
-        return NodeType.MEASURED;
-    }
-
-    /**
-     * Prints out the name of the type.
-     *
-     * @return a {@link java.lang.String} object
-     */
-    public String toString() {
-        return this.name;
-    }
-
-    /**
-     * Returns the ordinal of this type.
-     *
-     * @return a int
-     * @throws java.io.ObjectStreamException if any.
-     */
-    @Serial
-    Object readResolve() throws ObjectStreamException {
-        return NodeType.TYPES[this.ordinal]; // Canonicalize.
-    }
+    NO_TYPE
 }
 
 

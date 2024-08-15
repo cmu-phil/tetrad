@@ -187,7 +187,7 @@ public class Ida {
 
                 totalEffects.add(beta);
             } catch (Exception e) {
-                TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                TetradLogger.getInstance().log(e.getMessage());
             }
         }
 

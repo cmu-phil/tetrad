@@ -141,22 +141,22 @@ public class IcaLingD extends AbstractBootstrapAlgorithm implements Algorithm, R
 
         if (parameters.getBoolean(Params.VERBOSE)) {
             for (Graph graph : unstableGraphs) {
-                TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count) + " Stable = False");
-                TetradLogger.getInstance().forceLogMessage(_bHats.get(graph).toString());
-                TetradLogger.getInstance().forceLogMessage(graph.toString());
+                TetradLogger.getInstance().log("LiNG-D Model #" + (++count) + " Stable = False");
+                TetradLogger.getInstance().log(_bHats.get(graph).toString());
+                TetradLogger.getInstance().log(graph.toString());
             }
         } else if (!unstableGraphs.isEmpty()) {
-            TetradLogger.getInstance().forceLogMessage("To see unstable models and and their B matrices, set the verbose flag to true");
+            TetradLogger.getInstance().log("To see unstable models and and their B matrices, set the verbose flag to true");
         }
 
         for (Graph graph : stableGraphs) {
-            TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count) + " Stable = True");
-            TetradLogger.getInstance().forceLogMessage(_bHats.get(graph).toString());
-            TetradLogger.getInstance().forceLogMessage(graph.toString());
+            TetradLogger.getInstance().log("LiNG-D Model #" + (++count) + " Stable = True");
+            TetradLogger.getInstance().log(_bHats.get(graph).toString());
+            TetradLogger.getInstance().log(graph.toString());
         }
 
         if (stableGraphs.isEmpty()) {
-            TetradLogger.getInstance().forceLogMessage("## There were no stable models. ##");
+            TetradLogger.getInstance().log("## There were no stable models. ##");
         }
 
         return stableGraphs.isEmpty() ? new EdgeListGraph() : stableGraphs.get(0);

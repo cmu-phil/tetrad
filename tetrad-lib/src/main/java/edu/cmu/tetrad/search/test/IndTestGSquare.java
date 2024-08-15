@@ -204,7 +204,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
         if (this.verbose) {
             if (result.isIndep()) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
             }
         }
@@ -311,7 +311,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
             sb.append("}");
 
-            TetradLogger.getInstance().forceLogMessage(sb.toString());
+            TetradLogger.getInstance().log(sb.toString());
         }
 
         return determined;

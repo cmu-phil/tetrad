@@ -159,7 +159,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     /**
      * Where printed output is sent.
      */
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
     /**
      * The graph being constructed.
      */
@@ -269,10 +269,10 @@ public final class Fges implements IGraphSearch, DagScorer {
         this.elapsedTime = endTime - start;
 
         if (verbose) {
-            this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
+            this.logger.log("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null), true);
+        this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null, true, verbose), true);
 
         return graph;
     }
@@ -595,7 +595,7 @@ public final class Fges implements IGraphSearch, DagScorer {
             @Override
             public Boolean call() {
                 for (int _y = from; _y < to; _y++) {
-                    if (Thread.interrupted()) break;
+                    if (Thread.currentThread().isInterrupted()) break;
 
                     Node y = nodes.get(_y);
 
@@ -725,7 +725,7 @@ public final class Fges implements IGraphSearch, DagScorer {
             @Override
             public EvalPair call() {
                 for (int k = from; k < to; k++) {
-                    if (Thread.interrupted()) break;
+                    if (Thread.currentThread().isInterrupted()) break;
                     double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
 
                     if (_bump > maxBump) {
@@ -767,7 +767,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 Thread.currentThread().interrupt();
-                TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                TetradLogger.getInstance().log(e.getMessage());
                 return;
             }
         }
@@ -814,7 +814,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @return a list of T-neighbors of the two nodes
      */
     private List<Node> getTNeighbors(Node x, Node y) {
-        List<Edge> yEdges = graph.getEdges(y);
+        Set<Edge> yEdges = graph.getEdges(y);
         List<Node> tNeighbors = new ArrayList<>();
 
         for (Edge edge : yEdges) {
@@ -875,7 +875,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
             if (verbose) {
                 final String message = graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) + " " + T + " " + bump + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " cond = " + cond;
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
 
@@ -885,7 +885,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
             if (verbose) {
                 String message = "--- Directing " + graph.getEdge(_t, y);
-                TetradLogger.getInstance().forceLogMessage(message);
+                TetradLogger.getInstance().log(message);
             }
         }
     }
@@ -947,7 +947,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                 graph.addDirectedEdge(nodeA, nodeB);
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
+                    TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
                 }
             }
         }
@@ -970,7 +970,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -981,7 +981,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -995,7 +995,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -1005,7 +1005,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                         graph.addDirectedEdge(nodeB, nodeA);
 
                         if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                            TetradLogger.getInstance().log("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                         }
                     }
                 }
@@ -1582,7 +1582,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         @Override
         public Boolean call() {
             for (int i = from; i < to; i++) {
-                if (Thread.interrupted()) break;
+                if (Thread.currentThread().isInterrupted()) break;
                 if ((i + 1) % 1000 == 0) {
                     count[0] += 1000;
                     out.println("Initializing effect edges: " + (count[0]));
@@ -1591,7 +1591,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                 Node y = nodes.get(i);
 
                 for (int j = i + 1; j < nodes.size(); j++) {
-                    if (Thread.interrupted()) {
+                    if (Thread.currentThread().isInterrupted()) {
                         pool.shutdownNow();
                         throw new RuntimeException("Interrupted");
                     }

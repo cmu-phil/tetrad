@@ -90,10 +90,9 @@ public class FaskPw extends AbstractBootstrapAlgorithm implements Algorithm, Tak
                     + "will orient the edges in the input graph using the data");
         }
 
-        Fask fask = new Fask(dataSet, new SemBicScore(dataSet, precomputeCovariances), new IndTestFisherZ(dataSet, 0.01));
-        fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
+        Fask fask = new Fask(dataSet, new SemBicScore(dataSet, precomputeCovariances));
         fask.setExternalGraph(this.externalGraph);
-        fask.setSkewEdgeThreshold(Double.POSITIVE_INFINITY);
+        fask.setExtraEdgeThreshold(Double.POSITIVE_INFINITY);
 
         return fask.search();
     }

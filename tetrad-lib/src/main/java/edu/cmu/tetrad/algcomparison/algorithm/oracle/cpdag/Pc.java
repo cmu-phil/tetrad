@@ -105,7 +105,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setUseMaxPHeuristic(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMeekPreventCycles(parameters.getBoolean(Params.MEEK_PREVENT_CYCLES));
+        search.setGuaranteeCpdag(parameters.getBoolean(Params.GUARANTEE_CPDAG));
         search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
@@ -151,7 +151,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.CONFLICT_RULE);
-        parameters.add(Params.MEEK_PREVENT_CYCLES);
+        parameters.add(Params.GUARANTEE_CPDAG);
         parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);

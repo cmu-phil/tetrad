@@ -262,7 +262,7 @@ public final class Ccd implements IGraphSearch {
      * @param sepsets The sepsets used for conditional independence tests.
      */
     private void stepC(Graph psi, SepsetProducer sepsets) {
-        TetradLogger.getInstance().forceLogMessage("\nStep C");
+        TetradLogger.getInstance().log("\nStep C");
 
         EDGE:
         for (Edge edge : psi.getEdges()) {
@@ -297,7 +297,7 @@ public final class Ccd implements IGraphSearch {
                 }
 
                 //...X is not in sepset<A, Y>...
-                Set<Node> sepset = sepsets.getSepset(a, y);
+                Set<Node> sepset = sepsets.getSepset(a, y, -1);
 
                 if (sepset == null) {
                     continue;
@@ -361,7 +361,7 @@ public final class Ccd implements IGraphSearch {
 
             if (!psi.isDefCollider(a, b, c)) continue;
 
-            Set<Node> S = sepsets.getSepset(a, c);
+            Set<Node> S = sepsets.getSepset(a, c, -1);
             if (S == null) continue;
             ArrayList<Node> TT = new ArrayList<>(local.get(a));
             TT.removeAll(S);
@@ -393,7 +393,7 @@ public final class Ccd implements IGraphSearch {
      * @param psi       The graph on which step E is performed.
      */
     private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) {
-        TetradLogger.getInstance().forceLogMessage("\nStep E");
+        TetradLogger.getInstance().log("\nStep E");
 
         for (Triple triple : psi.getDottedUnderlines()) {
             Node a = triple.getX();

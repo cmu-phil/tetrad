@@ -156,7 +156,7 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
 
     private String pathFor(Triple triple, Graph graph) {
         List<Node> path = asList(triple);
-        return GraphUtils.pathString(graph, path);
+        return GraphUtils.pathString(graph, path, false);
     }
 
 

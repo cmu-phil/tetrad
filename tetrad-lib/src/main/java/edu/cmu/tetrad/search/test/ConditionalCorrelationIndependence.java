@@ -149,7 +149,7 @@ public final class ConditionalCorrelationIndependence {
 
             return score;
         } catch (Exception e) {
-            TetradLogger.getInstance().forceLogMessage(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
             return 0;
         }
     }

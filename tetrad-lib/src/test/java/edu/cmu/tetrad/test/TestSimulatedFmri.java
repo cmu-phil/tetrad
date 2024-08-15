@@ -180,9 +180,6 @@ public class TestSimulatedFmri {
         algorithms.add(new FaskConcatenated(new SemBicScore(), new FisherZ()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);
@@ -246,9 +243,6 @@ public class TestSimulatedFmri {
                 }));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);
@@ -311,9 +305,6 @@ public class TestSimulatedFmri {
                 new FisherZ()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);
@@ -365,8 +356,7 @@ public class TestSimulatedFmri {
 
 
                 Fask fask = new Fask(data,
-                        new edu.cmu.tetrad.search.score.SemBicScore(data, precomputeCovariances),
-                        new IndTestFisherZ(data, 0.001));
+                        new edu.cmu.tetrad.search.score.SemBicScore(data, precomputeCovariances));
                 Graph out = fask.search();
 
                 System.out.println(out);
@@ -405,8 +395,7 @@ public class TestSimulatedFmri {
                 DataSet data = im.simulateData(N, false);
 
                 Fask fask = new Fask(data,
-                        new edu.cmu.tetrad.search.score.SemBicScore(data, precomputeCovariances),
-                        new IndTestFisherZ(data, 0.001));
+                        new edu.cmu.tetrad.search.score.SemBicScore(data, precomputeCovariances));
                 Graph out = fask.search();
 
                 System.out.println(out);
@@ -451,8 +440,7 @@ public class TestSimulatedFmri {
         DataSet data = im.simulateData(1000, false);
 
         Fask fask = new Fask(data,
-                new edu.cmu.tetrad.search.score.SemBicScore(data, precomputeCovariances),
-                new IndTestFisherZ(data, 0.001));
+                new edu.cmu.tetrad.search.score.SemBicScore(data, precomputeCovariances));
         Graph out = fask.search();
 
         System.out.println(out);

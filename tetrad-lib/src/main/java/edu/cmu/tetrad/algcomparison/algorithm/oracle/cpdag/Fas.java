@@ -19,7 +19,6 @@ import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,12 +86,7 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        Object obj = parameters.get(Params.PRINT_STREAM);
-
-        if (obj instanceof PrintStream ps) {
-            search.setOut(ps);
-        }
+        search.setOut(System.out);
 
         return search.search();
     }

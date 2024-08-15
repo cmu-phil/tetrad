@@ -31,6 +31,7 @@ import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.*;
 
@@ -117,7 +118,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
         this(graphs, params);
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     /**
@@ -456,7 +457,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
+                    Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
@@ -494,21 +495,21 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                     Node y = selectedVariables.get(j);
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
+                        Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, -1);
+                        Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
+                        Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
@@ -962,7 +963,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     private void log() {
-        TetradLogger.getInstance().forceLogMessage("General Graph");
+        TetradLogger.getInstance().log("General Graph");
     }
 
     private Set<Edge> getEdgesFromPath(List<Node> path, Graph graph) {
@@ -981,20 +982,39 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
-     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
-     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * Writes the object to the specified ObjectOutputStream.
      *
-     * @param s The object input stream.
-     * @throws IOException            If any.
-     * @throws ClassNotFoundException If any.
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
      */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
+     * to restore the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
     }
 
     /**

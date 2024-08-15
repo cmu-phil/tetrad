@@ -120,12 +120,9 @@ public class TestSimulatedFmri2 {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fask(new FisherZ(), new SemBicScore()));
+        algorithms.add(new Fask(new SemBicScore()));
 //
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(false);

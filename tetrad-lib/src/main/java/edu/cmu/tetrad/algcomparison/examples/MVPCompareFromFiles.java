@@ -87,8 +87,6 @@ public class MVPCompareFromFiles {
         algorithms.add(new Fges(new MVPBicScore()));
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);

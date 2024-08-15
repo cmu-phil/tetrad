@@ -73,7 +73,7 @@ public class TimeoutComparison {
     /**
      * The out.
      */
-    private PrintStream out;
+    private transient PrintStream out;
     /**
      * Whether to output the tables in tab-delimited format.
      */
@@ -86,14 +86,6 @@ public class TimeoutComparison {
      * Whether to copy the data (or using the original).
      */
     private boolean copyData;
-    /**
-     * Whether to show the simulation indices.
-     */
-    private boolean showSimulationIndices;
-    /**
-     * Whether to show the algorithm indices.
-     */
-    private boolean showAlgorithmIndices;
     /**
      * Whether to show the utilities.
      */
@@ -942,42 +934,6 @@ public class TimeoutComparison {
     }
 
     /**
-     * <p>isShowSimulationIndices.</p>
-     *
-     * @return a boolean
-     */
-    public boolean isShowSimulationIndices() {
-        return this.showSimulationIndices;
-    }
-
-    /**
-     * <p>Setter for the field <code>showSimulationIndices</code>.</p>
-     *
-     * @param showSimulationIndices a boolean
-     */
-    public void setShowSimulationIndices(boolean showSimulationIndices) {
-        this.showSimulationIndices = showSimulationIndices;
-    }
-
-    /**
-     * <p>isShowAlgorithmIndices.</p>
-     *
-     * @return a boolean
-     */
-    public boolean isShowAlgorithmIndices() {
-        return this.showAlgorithmIndices;
-    }
-
-    /**
-     * <p>Setter for the field <code>showAlgorithmIndices</code>.</p>
-     *
-     * @param showAlgorithmIndices a boolean
-     */
-    public void setShowAlgorithmIndices(boolean showAlgorithmIndices) {
-        this.showAlgorithmIndices = showAlgorithmIndices;
-    }
-
-    /**
      * <p>isShowUtilities.</p>
      *
      * @return True iff a column of utilities marked "W" should be shown in the output.
@@ -1493,7 +1449,7 @@ public class TimeoutComparison {
             }
 
             int rows = algorithmSimulationWrappers.size() + 1;
-            int cols = (isShowSimulationIndices() ? 1 : 0) + (isShowAlgorithmIndices() ? 1 : 0) + numStats
+            int cols = (1) + (1) + numStats
                        + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
@@ -1501,28 +1457,24 @@ public class TimeoutComparison {
 
             int initialColumn = 0;
 
-            if (isShowSimulationIndices()) {
-                table.setToken(0, initialColumn, "Sim");
+            table.setToken(0, initialColumn, "Sim");
 
-                for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
-                    Simulation simulation = algorithmSimulationWrappers.get(newOrder[t]).
-                            getSimulationWrapper();
-                    table.setToken(t + 1, initialColumn, "" + (simulationWrappers.indexOf(simulation) + 1));
-                }
-
-                initialColumn++;
+            for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+                Simulation simulation = algorithmSimulationWrappers.get(newOrder[t]).
+                        getSimulationWrapper();
+                table.setToken(t + 1, initialColumn, "" + (simulationWrappers.indexOf(simulation) + 1));
             }
 
-            if (isShowAlgorithmIndices()) {
-                table.setToken(0, initialColumn, "Alg");
+            initialColumn++;
 
-                for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
-                    AlgorithmWrapper algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
-                    table.setToken(t + 1, initialColumn, "" + (algorithmWrappers.indexOf(algorithm) + 1));
-                }
+            table.setToken(0, initialColumn, "Alg");
 
-                initialColumn++;
+            for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+                AlgorithmWrapper algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
+                table.setToken(t + 1, initialColumn, "" + (algorithmWrappers.indexOf(algorithm) + 1));
             }
+
+            initialColumn++;
 
             for (int statIndex = 0; statIndex < numStats; statIndex++) {
                 String statLabel = statistics.getStatistics().get(statIndex).getAbbreviation();

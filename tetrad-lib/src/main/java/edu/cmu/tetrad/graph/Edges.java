@@ -119,7 +119,7 @@ public final class Edges {
      * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      * @return true iff the given edge is a directed edge (--&gt;).
      */
-    public static boolean isDirectedEdge(Edge edge) {
+    public synchronized static boolean isDirectedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.TAIL) {
             return edge.getEndpoint2() == Endpoint.ARROW;
         } else if (edge.getEndpoint2() == Endpoint.TAIL) {
@@ -178,6 +178,32 @@ public final class Edges {
         if (node == null) {
             return null;
         }
+        // changed == to equals.
+        if (node.equals(edge.getNode1())) {
+            return edge.getNode2();
+        } else if (node.equals(edge.getNode2())) {
+            return edge.getNode1();
+        }
+
+        return null;
+    }
+
+    /**
+     * For A o-o B, given A, returns B; otherwise returns null.
+     *
+     * @param node The one endpoint.
+     * @param edge The edge
+     * @return The other endpoint.
+     */
+    public static Node traverseNondirected(Node node, Edge edge) {
+        if (node == null) {
+            return null;
+        }
+
+        if (!Edges.isNondirectedEdge(edge)) {
+            return null;
+        }
+
         // changed == to equals.
         if (node.equals(edge.getNode1())) {
             return edge.getNode2();

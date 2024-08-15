@@ -20,7 +20,6 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,12 +85,7 @@ public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, Has
         search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream ps) {
-            search.setOut(ps);
-        }
-
+        search.setOut(System.out);
         String string = parameters.getString(Params.TARGETS);
         String[] _targets;
 

@@ -52,7 +52,7 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class PerformanceTests {
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
 
     /**
      * This class represents a set of performance tests for a certain application. It contains various methods to test
@@ -1415,7 +1415,7 @@ public class PerformanceTests {
         final double alpha = 0.01;
         final double penaltyDiscount = 3.0;
         final int depth = 3;
-        final int maxPathLength = 3;
+        final int maxPathLength = -1;
         final boolean possibleMsepDone = true;
         final boolean completeRuleSetUsed = false;
         final boolean faithfulnessAssumed = true;

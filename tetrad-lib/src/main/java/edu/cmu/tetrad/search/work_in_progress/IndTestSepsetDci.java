@@ -140,7 +140,7 @@ public class IndTestSepsetDci implements IndependenceTest {
 
                     if (this.verbose) {
                         String message = LogUtilsSearch.independenceFactMsg(x, y, z, pValue);
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
                     }
                     independent = true;
                     break;
@@ -151,7 +151,7 @@ public class IndTestSepsetDci implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFact(x, y, z) + " score = " + LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
             }
         }

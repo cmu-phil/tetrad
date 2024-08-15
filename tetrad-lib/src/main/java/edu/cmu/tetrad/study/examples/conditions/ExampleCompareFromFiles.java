@@ -96,8 +96,6 @@ public class ExampleCompareFromFiles {
 //        algorithms.add(new Gfci(new ChiSquare(), new DiscreteBicScore())));
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
         comparison.setSaveGraphs(true);

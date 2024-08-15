@@ -88,10 +88,9 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
         dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
 
         Fask search = new Fask(dataSet,
-                this.score.getScore(dataSet, parameters),
-                this.test.getTest(dataSet, parameters));
+                this.score.getScore(dataSet, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setSkewEdgeThreshold(parameters.getDouble(Params.SKEW_EDGE_THRESHOLD));
+        search.setExtraEdgeThreshold(parameters.getDouble(Params.SKEW_EDGE_THRESHOLD));
         search.setKnowledge(this.knowledge);
 
         return search.search();

@@ -1,7 +1,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -12,17 +11,26 @@ import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.simulation.ParameterTab;
-import edu.cmu.tetradapp.model.AlgcomparisonModel;
+import edu.cmu.tetradapp.model.GridSearchModel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.*;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
@@ -31,10 +39,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -46,11 +51,11 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParameters;
+import static edu.cmu.tetradapp.model.GridSearchModel.getAllSimulationParameters;
 
 /**
  * The AlgcomparisonEditor class represents a JPanel that contains different tabs for simulation, algorithm, table
- * columns, comparison, and help. It is used for editing an AlgcomparisonModel.
+ * columns, comparison, and help. It is used for editing an GridSearchModel.
  * <p>
  * The reference is here:
  * <p>
@@ -59,7 +64,7 @@ import static edu.cmu.tetradapp.model.AlgcomparisonModel.getAllSimulationParamet
  *
  * @author josephramsey
  */
-public class AlgcomparisonEditor extends JPanel {
+public class GridSearchEditor extends JPanel {
     /**
      * JLabel representing a message indicating that there are no parameters to edit.
      */
@@ -73,101 +78,69 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private static JComboBox<ScoreModel> scoreModelComboBox;
     /**
-     * The AlgcomparisonModel class represents a model used in an algorithm comparison application. It contains methods
-     * and properties related to the comparison of algorithms.
+     * The GridSearchModel class represents a model used in an algorithm comparison application. It contains methods and
+     * properties related to the comparison of algorithms.
      */
-    private final AlgcomparisonModel model;
+    private final GridSearchModel model;
     /**
      * JTextArea used for displaying verbose output.
      */
-    private JTextArea verboseOutputTextArea;
+    private transient JTextArea verboseOutputTextArea;
     /**
      * JTextArea used for displaying simulation choice information.
      */
-    private JTextArea simulationChoiceTextArea;
+    private transient JTextArea simulationChoiceTextArea;
     /**
      * The TextArea component used for displaying algorithm choices.
      */
-    private JTextArea algorithmChoiceTextArea;
+    private transient JTextArea algorithmChoiceTextArea;
     /**
      * JTextArea used for displaying table column choices.
      */
-    private JTextArea tableColumnsChoiceTextArea;
+    private transient JTextArea tableColumnsChoiceTextArea;
     /**
      * JTextArea used for displaying comparison results.
      */
-    private JTextArea comparisonTextArea;
+    private transient JTextArea comparisonTextArea;
     /**
      * JTextArea used for displaying help choice information.
      */
-    private JTextArea helpChoiceTextArea;
+    private transient JTextArea helpChoiceTextArea;
     /**
      * Button used to add a simulation.
      */
-    private JButton addSimulation;
+    private transient JButton addSimulation;
     /**
      * Button used to add an algorithm.
      */
-    private JButton addAlgorithm;
+    private transient JButton addAlgorithm;
     /**
      * Button used to add table columns.
      */
-    private JButton addTableColumns;
+    private transient JButton addTableColumns;
     /**
      * Represents a drop-down menu for selecting an algorithm.
      */
-    private JComboBox<Object> algorithmDropdown;
+    private transient JComboBox<Object> algorithmDropdown;
     /**
      * Private variable representing a JScrollPane used for comparing variables.
      */
-    private JScrollPane comparisonScroll;
+    private transient JScrollPane comparisonScroll;
     /**
      * The comparisonTabbedPane represents a tabbed pane component in the user interface for displaying comparison
      * related data and functionality.
      * <p>
      * It is a private instance variable of type JTabbedPane.
      */
-    private JTabbedPane comparisonTabbedPane;
-    /**
-     * A boolean variable indicating whether or not data should be saved.
-     */
-    private boolean saveData = true;
-    /**
-     * A boolean variable indicating whether graphs should be saved or not.
-     */
-    private boolean saveGraphs = true;
-    /**
-     * A boolean variable indicating whether or not CPDAGs should be saved.
-     */
-    private boolean saveCpdags = false;
-    /**
-     * A boolean variable indicating whether or not PAGs should be saved.
-     */
-    private boolean savePags = false;
-    /**
-     * This is a private boolean variable named showAlgorithmIndices.
-     */
-    private boolean showAlgorithmIndices = true;
-    /**
-     * Determines whether to show simulation indices.
-     */
-    private boolean showSimulationIndices = true;
-    /**
-     * The parallelism variable represents the number of concurrent tasks or threads that can be executed in parallel.
-     */
-    private int parallelism = Runtime.getRuntime().availableProcessors();
-    /**
-     * The type of graph to compare results to.
-     */
-    private ComparisonGraphType comparisonGraphType = ComparisonGraphType.DAG;
+    private transient JTabbedPane comparisonTabbedPane;
 
     /**
      * Initializes an instance of AlgcomparisonEditor which is a JPanel containing a JTabbedPane that displays different
      * tabs for simulation, algorithm, table columns, comparison and help.
      *
-     * @param model the AlgcomparisonModel to use for the editor
+     * @param model the GridSearchModel to use for the editor
      */
-    public AlgcomparisonEditor(AlgcomparisonModel model) {
+    public GridSearchEditor(GridSearchModel model) {
         this.model = model;
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -184,14 +157,26 @@ public class AlgcomparisonEditor extends JPanel {
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
 
-        model.getParameters().set("algcomparisonSaveData", saveData);
-        model.getParameters().set("algcomparisonSaveGraphs", saveGraphs);
-        model.getParameters().set("algcomparisonSaveCPDAGs", saveCpdags);
-        model.getParameters().set("algcomparisonSavePAGs", savePags);
-        model.getParameters().set("algcomparisonShowAlgorithmIndices", showAlgorithmIndices);
-        model.getParameters().set("algcomparisonShowSimulationIndices", showSimulationIndices);
-        model.getParameters().set("algcomparisonParallelism", parallelism);
-        model.getParameters().set("algcomparisonGraphType", comparisonGraphType);
+        model.getParameters().set("algcomparisonSaveData", model.getParameters().getBoolean("algcomparisonSaveData", true));
+        model.getParameters().set("algcomparisonSaveGraphs", model.getParameters().getBoolean("algcomparisonSaveGraphs", true));
+        model.getParameters().set("algcomparisonSaveCPDAGs", model.getParameters().getBoolean("algcomparisonSaveCPDAGs", false));
+        model.getParameters().set("algcomparisonSavePAGs", model.getParameters().getBoolean("algcomparisonSavePAGs", false));
+        model.getParameters().set("algcomparisonSortByUtility", model.getParameters().getBoolean("algcomparisonSortByUtility", false));
+        model.getParameters().set("algcomparisonShowUtilities", model.getParameters().getBoolean("algcomparisonShowUtilities", false));
+        model.getParameters().set("algcomparisonSetAlgorithmKnowledge", model.getParameters().getBoolean("algcomparisonSetAlgorithmKnowledge", true));
+        model.getParameters().set("algcomparisonParallelism", model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()));
+        model.getParameters().set("algcomparisonGraphType", model.getParameters().getString("algcomparisonGraphType", "DAG"));
+
+        comparisonTextArea.setText(model.getLastComparisonText());
+        verboseOutputTextArea.setText(model.getLastVerboseOutputText());
+
+        SwingUtilities.invokeLater(() -> {
+            try {
+                scrollToWord(comparisonTextArea, comparisonScroll, "AVERAGE VALUE");
+            } catch (BadLocationException ex) {
+                System.out.println("Scrolling operation failed.");
+            }
+        });
     }
 
     /**
@@ -257,7 +242,11 @@ public class AlgcomparisonEditor extends JPanel {
             double upperBoundDouble = paramDesc.getUpperBoundDouble();
             Double[] defValues = new Double[defaultValues.length];
             for (int i = 0; i < defaultValues.length; i++) {
-                defValues[i] = (Double) defaultValues[i];
+                if (defaultValues[i] instanceof Number) {
+                    defValues[i] = ((Number) defaultValues[i]).doubleValue();
+                } else {
+                    throw new IllegalArgumentException("Unexpected type: " + defaultValues[i].getClass());
+                }
             }
 
             if (listOptionAllowed) {
@@ -270,7 +259,11 @@ public class AlgcomparisonEditor extends JPanel {
             int upperBoundInt = paramDesc.getUpperBoundInt();
             Integer[] defValues = new Integer[defaultValues.length];
             for (int i = 0; i < defaultValues.length; i++) {
-                defValues[i] = (Integer) defaultValues[i];
+                try {
+                    defValues[i] = (int) defaultValues[i];
+                } catch (Exception e) {
+                    throw new RuntimeException("Parameter " + parameter + " has a default value that is not an integer: " + defaultValues[i]);
+                }
             }
 
             if (listOptionAllowed) {
@@ -283,7 +276,11 @@ public class AlgcomparisonEditor extends JPanel {
             long upperBoundLong = paramDesc.getUpperBoundLong();
             Long[] defValues = new Long[defaultValues.length];
             for (int i = 0; i < defaultValues.length; i++) {
-                defValues[i] = (Long) defaultValues[i];
+                try {
+                    defValues[i] = (Long) defaultValues[i];
+                } catch (Exception e) {
+                    throw new RuntimeException("Parameter " + parameter + " has a default value that is not a long: " + defaultValues[i]);
+                }
             }
             if (listOptionAllowed) {
                 component = getListLongTextField(parameter, parameters, defValues, lowerBoundLong, upperBoundLong);
@@ -604,7 +601,11 @@ public class AlgcomparisonEditor extends JPanel {
 
         try {
             for (int i = 0; i < values.length; i++) {
-                booleans[i] = (Boolean) values[i];
+                try {
+                    booleans[i] = (Boolean) values[i];
+                } catch (Exception e) {
+                    throw new RuntimeException("Parameter " + parameter + " has a value that is not a boolean: " + values[i]);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -746,34 +747,6 @@ public class AlgcomparisonEditor extends JPanel {
     }
 
     /**
-     * Retrieves a simulation object based on the provided graph and simulation classes.
-     *
-     * @param graphClazz      The class of the random graph object.
-     * @param simulationClazz The class of the simulation object.
-     * @return The simulation object.
-     * @throws NoSuchMethodException     If the constructor for the graph or simulation class cannot be found.
-     * @throws InvocationTargetException If an error occurs while invoking the graph or simulation constructor.
-     * @throws InstantiationException    If the graph or simulation class cannot be instantiated.
-     * @throws IllegalAccessException    If the graph or simulation constructor or class is inaccessible.
-     */
-    @NotNull
-    private edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        RandomGraph randomGraph;
-
-        if (graphClazz == SingleGraph.class) {
-            if (model.getSuppliedGraph() == null) {
-                throw new IllegalArgumentException("No graph supplied.");
-            }
-
-            randomGraph = new SingleGraph(model.getSuppliedGraph());
-        } else {
-            randomGraph = graphClazz.getConstructor().newInstance();
-        }
-
-        return simulationClazz.getConstructor(RandomGraph.class).newInstance(randomGraph);
-    }
-
-    /**
      * Retrieves the parameter text for the given set of parameter names and parameters.
      *
      * @param paramNamesSet the set of parameter names
@@ -829,6 +802,206 @@ public class AlgcomparisonEditor extends JPanel {
                 textArea.scrollRectToVisible(viewRect);
             }
         }
+    }
+
+    /**
+     * Updates the indices in the graph index combo box based on the selected simulation and algorithm.
+     *
+     * @param simulationComboBox The combo box that contains the available simulation options.
+     * @param algorithmComboBox  The combo box that contains the available algorithm options.
+     * @param graphIndexComboBox The combo box to update with the graph indices.
+     * @param resultsDir         The directory where the graph results are stored.
+     */
+    private void updateAlgorithmBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
+                                           JComboBox<Integer> graphIndexComboBox, File resultsDir) {
+        int savedAlgorithm = model.getSelectedAlgorithm();
+        Object selectedSimulation = simulationComboBox.getSelectedItem();
+
+        if (selectedSimulation == null) {
+            algorithmComboBox.removeAllItems();
+            graphIndexComboBox.removeAllItems();
+            return;
+        }
+
+        List<Integer> algorithmIndices = new ArrayList<>();
+
+        if (resultsDir.exists()) {
+            File[] dirs = resultsDir.listFiles();
+
+            if (dirs != null) {
+
+                // The dirs array should contain directories for each simulation/algorithm combination. These
+                // are formatted as, e.g., "5.2" for simulation5 and algorithm 2. We need to iterate through
+                // all of these directories and find the highest simulation number and the highest
+                // algorithm number. The number of graphs will be determined once we have the simulation and
+                // algorithm numbers. These are listed as "graph1.txt", "graph2.txt", etc., in each of these
+                // directories.
+                for (File dir : dirs) {
+                    String name = dir.getName();
+
+                    String[] parts = name.split("\\.");
+
+                    try {
+                        int simulation = Integer.parseInt(parts[0]);
+                        int algorithm = Integer.parseInt(parts[1]);
+
+                        if (simulation == (int) selectedSimulation) {
+                            if (!algorithmIndices.contains(algorithm)) {
+                                algorithmIndices.add(algorithm);
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        // These aren't directories/files written out by the tool.
+                    }
+                }
+            }
+        }
+
+        algorithmComboBox.removeAllItems();
+        Collections.sort(algorithmIndices);
+
+        for (int i : algorithmIndices) {
+            algorithmComboBox.addItem(i);
+        }
+
+        if (savedAlgorithm > 0) {
+            algorithmComboBox.setSelectedItem(savedAlgorithm);
+        }
+
+        updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+    }
+
+    /**
+     * Updates the indices in the graph index combo box based on the selected simulation and algorithm.
+     *
+     * @param simulationComboBox The combo box that contains the available simulation options.
+     * @param algorithmComboBox  The combo box that contains the available algorithm options.
+     * @param graphIndexComboBox The combo box to update with the graph indices.
+     * @param resultsDir         The directory where the graph results are stored.
+     */
+    private void updateGraphBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
+                                       JComboBox<Integer> graphIndexComboBox, File resultsDir) {
+        int savedGraphIndex = model.getSelectedGraphIndex();
+
+        Object selectedSimulation = simulationComboBox.getSelectedItem();
+        Object selectedAlgorithm = algorithmComboBox.getSelectedItem();
+
+        if (selectedSimulation == null || selectedAlgorithm == null) {
+            graphIndexComboBox.removeAllItems();
+            return;
+        }
+
+        int simulation = (int) selectedSimulation;
+        int algorithm = (int) selectedAlgorithm;
+        File dir = new File(resultsDir, simulation + "." + algorithm);
+
+        List<Integer> indices = new ArrayList<>();
+
+        if (dir.exists()) {
+            File[] graphs = dir.listFiles();
+
+            if (graphs != null) {
+                for (File graph : graphs) {
+                    String name = graph.getName();
+
+                    if (!name.startsWith("graph.")) {
+                        continue;
+                    }
+
+                    String[] parts = name.split("\\.");
+
+                    int graphIndex;
+
+                    try {
+                        graphIndex = Integer.parseInt(parts[1]);
+
+                        if (!indices.contains(graphIndex)) {
+                            indices.add(graphIndex);
+                        }
+                    } catch (NumberFormatException e) {
+                        // These aren't directories/files written out by the tool.
+                    }
+                }
+            }
+        }
+
+        graphIndexComboBox.removeAllItems();
+        Collections.sort(indices);
+
+        for (int i : indices) {
+            graphIndexComboBox.addItem(i);
+        }
+
+        if (savedGraphIndex > 0) {
+            graphIndexComboBox.setSelectedItem(savedGraphIndex);
+        }
+    }
+
+    private void updateSelectedGraph(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
+                                     JComboBox<Integer> graphIndexComboBox, File resultsDir,
+                                     GraphWorkbench workbench) {
+        Object selectedSimulation = simulationComboBox.getSelectedItem();
+        Object selectedAlgorithm = algorithmComboBox.getSelectedItem();
+        Object selectedGraphIndex = graphIndexComboBox.getSelectedItem();
+
+        if (selectedSimulation == null || selectedAlgorithm == null || selectedGraphIndex == null) {
+            return;
+        }
+
+        File dir = new File(resultsDir, (int) selectedSimulation + "." + (int) selectedAlgorithm);
+        File graphFile = new File(dir, "graph." + selectedGraphIndex + ".txt");
+
+        if (graphFile.exists()) {
+            Graph graph = GraphSaveLoadUtils.loadGraphTxt(graphFile);
+            LayoutUtil.defaultLayout(graph);
+            workbench.setGraph(graph);
+            model.setSelectedGraph(graph);
+
+            model.setSelectedSimulation((int) selectedSimulation);
+            model.setSelectedAlgorithm((int) selectedAlgorithm);
+            model.setSelectedGraphIndex((int) selectedGraphIndex);
+
+            firePropertyChange("modelChanged", null, null);
+        }
+    }
+
+    private void refreshGraphSelectionContent(JTabbedPane tabbedPane) {
+        Box tab = (Box) tabbedPane.getComponentAt(4);
+        tab.removeAll();
+        tab.add(getGraphSelectorBox());
+        tab.revalidate();
+        tab.repaint();
+    }
+
+    /**
+     * Retrieves a simulation object based on the provided graph and simulation classes.
+     *
+     * @param graphClazz      The class of the random graph object.
+     * @param simulationClazz The class of the simulation object.
+     * @return The simulation object.
+     * @throws NoSuchMethodException     If the constructor for the graph or simulation class cannot be found.
+     * @throws InvocationTargetException If an error occurs while invoking the graph or simulation constructor.
+     * @throws InstantiationException    If the graph or simulation class cannot be instantiated.
+     * @throws IllegalAccessException    If the graph or simulation constructor or class is inaccessible.
+     */
+    @NotNull
+    private edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(
+            Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz,
+            Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        RandomGraph randomGraph;
+
+        if (graphClazz == SingleGraph.class) {
+            if (model.getSuppliedGraph() == null) {
+                throw new IllegalArgumentException("No graph supplied.");
+            }
+
+            randomGraph = new SingleGraph(model.getSuppliedGraph());
+        } else {
+            randomGraph = graphClazz.getConstructor().newInstance();
+        }
+
+        return simulationClazz.getConstructor(RandomGraph.class).newInstance(randomGraph);
     }
 
     @NotNull
@@ -1001,6 +1174,49 @@ public class AlgcomparisonEditor extends JPanel {
         return buttonPanel;
     }
 
+//    /**
+//     * Adds an XML tab to the provided JTabbedPane.
+//     *
+//     * @param tabbedPane the JTabbedPane to which the XML tab is added
+//     */
+//    private void addXmlTab(JTabbedPane tabbedPane) {
+//        JPanel xmlPanel = new JPanel();
+//        xmlPanel.setLayout(new BorderLayout());
+//        JTextArea xmlTextArea = new JTextArea();
+//        xmlTextArea.setLineWrap(false);
+//        xmlTextArea.setWrapStyleWord(false);
+//        xmlTextArea.setEditable(false);
+//        xmlTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+//        xmlTextArea.setText(getXmlText());
+//        xmlPanel.add(new JScrollPane(xmlTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+//
+//        JButton loadXml = new JButton("Load XML");
+//        JButton saveXml = new JButton("Save XML");
+//
+//        loadXml.addActionListener(e -> {
+//            JOptionPane.showMessageDialog(this, "This will load and XML file and parse it to set the" + " configuration of this tool.");
+//            setSimulationText();
+//            setAlgorithmText();
+//            setTableColumnsText();
+//        });
+//
+//        saveXml.addActionListener(e -> {
+//            JOptionPane.showMessageDialog(this, "This will save the XML file shown in this panel.");
+//            setSimulationText();
+//            setAlgorithmText();
+//            setTableColumnsText();
+//        });
+//
+//        Box xmlSelectionBox = Box.createHorizontalBox();
+//        xmlSelectionBox.add(Box.createHorizontalGlue());
+//        xmlSelectionBox.add(loadXml);
+//        xmlSelectionBox.add(saveXml);
+//        xmlSelectionBox.add(Box.createHorizontalGlue());
+//
+//        xmlPanel.add(xmlSelectionBox, BorderLayout.SOUTH);
+//        tabbedPane.addTab("XML", xmlPanel);
+//    }
+
     /**
      * Adds an algorithm tab to the given JTabbedPane.
      *
@@ -1029,18 +1245,18 @@ public class AlgcomparisonEditor extends JPanel {
         JButton editAlgorithmParameters = new JButton("Edit Parameters");
 
         editAlgorithmParameters.addActionListener(e -> {
-            List<Algorithm> algorithms = model.getSelectedAlgorithms().getAlgorithms();
+            List<GridSearchModel.AlgorithmSpec> algorithms = model.getSelectedAlgorithms();
 
             JTabbedPane tabbedPane1 = new JTabbedPane();
             tabbedPane1.setTabPlacement(JTabbedPane.TOP);
 
-            Set<String> allAlgorithmParameters = AlgcomparisonModel.getAllAlgorithmParameters(algorithms);
-            Set<String> allTestParameters = AlgcomparisonModel.getAllTestParameters(algorithms);
-            Set<String> allBootstrapParameters = AlgcomparisonModel.getAllBootstrapParameters(algorithms);
-            Set<String> allScoreParameters = AlgcomparisonModel.getAllScoreParameters(algorithms);
+            Set<String> allAlgorithmParameters = GridSearchModel.getAllAlgorithmParameters(algorithms);
+            Set<String> allTestParameters = GridSearchModel.getAllTestParameters(algorithms);
+            Set<String> allBootstrapParameters = GridSearchModel.getAllBootstrapParameters(algorithms);
+            Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithms);
 
             if (allAlgorithmParameters.isEmpty() && allTestParameters.isEmpty() && allBootstrapParameters.isEmpty()
-                    && allScoreParameters.isEmpty()) {
+                && allScoreParameters.isEmpty()) {
                 JLabel noParamLbl = NO_PARAM_LBL;
                 noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
                 tabbedPane1.addTab("No Parameters", new PaddingPanel(noParamLbl));
@@ -1155,6 +1371,7 @@ public class AlgcomparisonEditor extends JPanel {
 
         tableColumnsSelectionBox.add(addTableColumns);
         tableColumnsSelectionBox.add(removeLastTableColumn);
+//        tableColumnsSelectionBox.add(createEditutilitiesButton());
         tableColumnsSelectionBox.add(Box.createHorizontalGlue());
 
         JPanel tableColumnsChoice = new JPanel();
@@ -1166,48 +1383,50 @@ public class AlgcomparisonEditor extends JPanel {
         tabbedPane.addTab("Table Columns", tableColumnsChoice);
     }
 
-//    /**
-//     * Adds an XML tab to the provided JTabbedPane.
-//     *
-//     * @param tabbedPane the JTabbedPane to which the XML tab is added
-//     */
-//    private void addXmlTab(JTabbedPane tabbedPane) {
-//        JPanel xmlPanel = new JPanel();
-//        xmlPanel.setLayout(new BorderLayout());
-//        JTextArea xmlTextArea = new JTextArea();
-//        xmlTextArea.setLineWrap(false);
-//        xmlTextArea.setWrapStyleWord(false);
-//        xmlTextArea.setEditable(false);
-//        xmlTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-//        xmlTextArea.setText(getXmlText());
-//        xmlPanel.add(new JScrollPane(xmlTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
-//
-//        JButton loadXml = new JButton("Load XML");
-//        JButton saveXml = new JButton("Save XML");
-//
-//        loadXml.addActionListener(e -> {
-//            JOptionPane.showMessageDialog(this, "This will load and XML file and parse it to set the" + " configuration of this tool.");
-//            setSimulationText();
-//            setAlgorithmText();
-//            setTableColumnsText();
-//        });
-//
-//        saveXml.addActionListener(e -> {
-//            JOptionPane.showMessageDialog(this, "This will save the XML file shown in this panel.");
-//            setSimulationText();
-//            setAlgorithmText();
-//            setTableColumnsText();
-//        });
-//
-//        Box xmlSelectionBox = Box.createHorizontalBox();
-//        xmlSelectionBox.add(Box.createHorizontalGlue());
-//        xmlSelectionBox.add(loadXml);
-//        xmlSelectionBox.add(saveXml);
-//        xmlSelectionBox.add(Box.createHorizontalGlue());
-//
-//        xmlPanel.add(xmlSelectionBox, BorderLayout.SOUTH);
-//        tabbedPane.addTab("XML", xmlPanel);
-//    }
+    private @NotNull JButton createEditutilitiesButton() {
+        JButton editUtilities = new JButton("Edit Utilities");
+        editUtilities.addActionListener(e -> {
+            List<GridSearchModel.MyTableColumn> columns = model.getSelectedTableColumns();
+            Set<String> params = new HashSet<>();
+            for (GridSearchModel.MyTableColumn column : columns) {
+                params.add("algcomparison." + column.getColumnName());
+                Double weight = model.getParameters().getDouble("algcomparison." + column.getColumnName());
+
+                Parameters.serializableInstance().remove("algcomparison." + column.getColumnName());
+
+                ParamDescriptions.getInstance().put("algcomparison." + column.getColumnName(),
+                        new ParamDescription("algcomparison." + column.getColumnName(),
+                                "Utility for " + column.getColumnName() + " in [0, 1]",
+                                "Utility for " + column.getColumnName(),
+                                weight, 0.0, 1.0));
+            }
+
+            Box parameterBox = getParameterBox(params, false, false);
+            new PaddingPanel(parameterBox);
+
+            JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(GridSearchEditor.this), "Edit Utilities", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setLayout(new BorderLayout());
+
+            JLabel label = new JLabel("To sort comparison tables by utility please adjust parameters in Comparison.");
+            label.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+            dialog.add(label, BorderLayout.NORTH);
+
+            // Add your panel to the center of the dialog
+            dialog.add(parameterBox, BorderLayout.CENTER);
+
+            // Create a panel for the buttons
+            JPanel buttonPanel = betButtonPanel(dialog);
+
+            // Add the button panel to the bottom of the dialog
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.pack(); // Adjust dialog size to fit its contents
+            dialog.setLocationRelativeTo(GridSearchEditor.this); // Center dialog relative to the parent component
+            dialog.setVisible(true);
+        });
+        return editUtilities;
+    }
 
     /**
      * Adds a comparison tab to the given JTabbedPane.
@@ -1231,19 +1450,9 @@ public class AlgcomparisonEditor extends JPanel {
 
         JButton runComparison = runComparisonButton();
 
-        // todo work on this later.
         JButton setComparisonParameters = new JButton("Edit Parameters");
-//
-        setComparisonParameters.addActionListener(e -> {
-            model.getParameters().set("algcomparisonSaveData", saveData);
-            model.getParameters().set("algcomparisonSaveGraphs", saveGraphs);
-            model.getParameters().set("algcomparisonSaveCPDAGs", saveCpdags);
-            model.getParameters().set("algcomparisonSavePAGs", savePags);
-            model.getParameters().set("algcomparisonShowAlgorithmIndices", showAlgorithmIndices);
-            model.getParameters().set("algcomparisonShowSimulationIndices", showSimulationIndices);
-            model.getParameters().set("algcomparisonParallelism", parallelism);
-            model.getParameters().set("algcomparisonGraphType", comparisonGraphType);
 
+        setComparisonParameters.addActionListener(e -> {
             Box parameterBox = Box.createVerticalBox();
 
             Box horiz1 = Box.createHorizontalBox();
@@ -1266,36 +1475,43 @@ public class AlgcomparisonEditor extends JPanel {
             horiz2c.add(Box.createHorizontalGlue());
             horiz2c.add(getBooleanSelectionBox("algcomparisonSavePAGs", model.getParameters(), false));
 
-            Box horiz3 = Box.createHorizontalBox();
-            horiz3.add(new JLabel("Show Algorithm Indices:"));
-            horiz3.add(Box.createHorizontalGlue());
-            horiz3.add(getBooleanSelectionBox("algcomparisonShowAlgorithmIndices", model.getParameters(), false));
+            Box horiz4a = Box.createHorizontalBox();
+            horiz4a.add(new JLabel("Sort by Utility:"));
+            horiz4a.add(Box.createHorizontalGlue());
+            horiz4a.add(getBooleanSelectionBox("algcomparisonSortByUtility", model.getParameters(), false));
 
-            Box horiz4 = Box.createHorizontalBox();
-            horiz4.add(new JLabel("Show Simulation Indices:"));
-            horiz4.add(Box.createHorizontalGlue());
-            horiz4.add(getBooleanSelectionBox("algcomparisonShowSimulationIndices", model.getParameters(), false));
+            Box horiz4b = Box.createHorizontalBox();
+            horiz4b.add(new JLabel("Show Utilities:"));
+            horiz4b.add(Box.createHorizontalGlue());
+            horiz4b.add(getBooleanSelectionBox("algcomparisonShowUtilities", model.getParameters(), false));
+
+            Box horiz4c = Box.createHorizontalBox();
+            horiz4c.add(new JLabel("Set Knowledge on Algorithm If Available:"));
+            horiz4c.add(Box.createHorizontalGlue());
+            horiz4c.add(getBooleanSelectionBox("algcomparisonSetAlgorithmKnowledge", model.getParameters(), false));
 
             Box horiz5 = Box.createHorizontalBox();
             horiz5.add(new JLabel("Parallelism:"));
             horiz5.add(Box.createHorizontalGlue());
-            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(), model.getParameters().getInt("algcomparisonParallelism"), 1, 1000));
+            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(),
+                    model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()),
+                    1, 1000));
 
             Box horiz6 = Box.createHorizontalBox();
             horiz6.add(new JLabel("Comparison Graph Type:"));
             horiz6.add(Box.createHorizontalGlue());
             JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
 
-            for (ComparisonGraphType comparisonGraphType : ComparisonGraphType.values()) {
+            for (GridSearchModel.ComparisonGraphType comparisonGraphType : GridSearchModel.ComparisonGraphType.values()) {
                 comparisonGraphTypeComboBox.addItem(comparisonGraphType.toString());
             }
 
-            comparisonGraphTypeComboBox.setSelectedItem(comparisonGraphType.toString());
+            comparisonGraphTypeComboBox.setSelectedItem(model.getParameters().getString("algcomparisonGraphType"));
 
             comparisonGraphTypeComboBox.addActionListener(e1 -> {
                 String selectedItem = (String) comparisonGraphTypeComboBox.getSelectedItem();
-                ComparisonGraphType comparisonGraphType1 = ComparisonGraphType.valueOf(selectedItem);
-                model.getParameters().set("algcomparisonGraphType", comparisonGraphType1);
+//                ComparisonGraphType comparisonGraphType1 = ComparisonGraphType.valueOf(selectedItem);
+                model.getParameters().set("algcomparisonGraphType", selectedItem);
             });
 
             horiz6.add(comparisonGraphTypeComboBox);
@@ -1304,8 +1520,9 @@ public class AlgcomparisonEditor extends JPanel {
             parameterBox.add(horiz2);
             parameterBox.add(horiz2b);
             parameterBox.add(horiz2c);
-            parameterBox.add(horiz3);
-            parameterBox.add(horiz4);
+            parameterBox.add(horiz4a);
+            parameterBox.add(horiz4b);
+            parameterBox.add(horiz4c);
             parameterBox.add(horiz5);
             parameterBox.add(horiz6);
 
@@ -1324,14 +1541,6 @@ public class AlgcomparisonEditor extends JPanel {
 
             doneButton.addActionListener(e1 -> {
                 SwingUtilities.invokeLater(dialog::dispose);
-                saveData = model.getParameters().getBoolean("algcomparisonSaveData");
-                saveGraphs = model.getParameters().getBoolean("algcomparisonSaveGraphs");
-                saveCpdags = model.getParameters().getBoolean("algcomparisonSaveCPDAGs");
-                savePags = model.getParameters().getBoolean("algcomparisonSavePAGs");
-                showAlgorithmIndices = model.getParameters().getBoolean("algcomparisonShowAlgorithmIndices");
-                showSimulationIndices = model.getParameters().getBoolean("algcomparisonShowSimulationIndices");
-                parallelism = model.getParameters().getInt("algcomparisonParallelism");
-                comparisonGraphType = (AlgcomparisonEditor.ComparisonGraphType) model.getParameters().get("algcomparisonGraphType");
                 setComparisonText();
             });
 
@@ -1348,6 +1557,7 @@ public class AlgcomparisonEditor extends JPanel {
         Box comparisonSelectionBox = Box.createHorizontalBox();
         comparisonSelectionBox.add(Box.createHorizontalGlue());
         comparisonSelectionBox.add(runComparison);
+        comparisonSelectionBox.add(createEditutilitiesButton());
         comparisonSelectionBox.add(setComparisonParameters);
         comparisonSelectionBox.add(Box.createHorizontalGlue());
 
@@ -1355,13 +1565,146 @@ public class AlgcomparisonEditor extends JPanel {
         comparisonScroll = new JScrollPane(comparisonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         comparisonTabbedPane.addTab("Comparison", comparisonScroll);
         comparisonTabbedPane.addTab("Verbose Output", new JScrollPane(verboseOutputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+//        comparisonTabbedPane.addTab("Graphs", getGraphSelectorBox());
+//
+//        comparisonTabbedPane.addChangeListener(new ChangeListener() {
+//            public void stateChanged(ChangeEvent e) {
+//                JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();
+//                refreshGraphSelectionContent(sourceTabbedPane);
+//            }
+//        });
+
+
 
         JPanel comparisonPanel = new JPanel();
         comparisonPanel.setLayout(new BorderLayout());
+
         comparisonPanel.add(comparisonTabbedPane, BorderLayout.CENTER);
         comparisonPanel.add(comparisonSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Comparison", comparisonPanel);
+
+
+        tabbedPane.addTab("View Graphs", getGraphSelectorBox());
+
+        tabbedPane.addChangeListener(e -> {
+            JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();
+            refreshGraphSelectionContent(sourceTabbedPane);
+        });
+    }
+
+    /**
+     * Returns a Box component with selectors for simulation, algorithm, and graph index.
+     *
+     * @return a Box component with selectors for simulation, algorithm, and graph index
+     */
+    private @NotNull Box getGraphSelectorBox() {
+        String resultsPath = model.getResultsPath();
+
+        File resultsDir = new File(resultsPath, "results");
+
+        List<Integer> simulationIndices = new ArrayList<>();
+
+        if (resultsDir.exists()) {
+            File[] dirs = resultsDir.listFiles();
+
+            if (dirs != null) {
+
+                // The dirs array should contain directories for each simulation/algorithm combination. These
+                // are formatted as, e.g., "5.2" for simulation5 and algorithm 2. We need to iterate through
+                // all of these directories and find the highest simulation number and the highest
+                // algorithm number. The number of graphs will be determined once we have the simulation and
+                // algorithm numbers. These are listed as "graph1.txt", "graph2.txt", etc., in each of these
+                // directories.
+                for (File dir : dirs) {
+                    String name = dir.getName();
+                    String[] parts = name.split("\\.");
+
+                    int simulation;
+                    int algorithm;
+
+                    try {
+                        simulation = Integer.parseInt(parts[0]);
+                        algorithm = Integer.parseInt(parts[1]);
+
+                        if (!simulationIndices.contains(simulation)) {
+                            simulationIndices.add(simulation);
+                        }
+                    } catch (NumberFormatException e) {
+                        // These aren't directories/files written out by the tool.
+                    }
+                }
+            }
+        }
+
+        Collections.sort(simulationIndices);
+
+        Box graphSelectorBox = Box.createVerticalBox();
+        Box instructions = Box.createHorizontalBox();
+        instructions.add(new JLabel("Select the simulation, algorithm, and graph index to view, from the comparison table:"));
+        instructions.add(Box.createHorizontalGlue());
+        graphSelectorBox.add(Box.createVerticalStrut(4));
+        graphSelectorBox.add(instructions);
+        graphSelectorBox.add(Box.createVerticalStrut(4));
+        Box selectors = Box.createHorizontalBox();
+        JComboBox<Integer> simulationComboBox = new JComboBox<>();
+        JComboBox<Integer> algorithmComboBox = new JComboBox<>();
+        JComboBox<Integer> graphIndexComboBox = new JComboBox<>();
+
+        for (int i : simulationIndices) {
+            simulationComboBox.addItem(i);
+        }
+
+        if (model.getSelectedSimulation() > 0) {
+            simulationComboBox.setSelectedItem(model.getSelectedSimulation());
+        }
+
+        updateAlgorithmBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+        updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+
+        if (model.getSelectedGraphIndex() > 0) {
+            graphIndexComboBox.setSelectedItem(model.getSelectedGraphIndex());
+        }
+
+        selectors.add(new JLabel("Simulation:"));
+        selectors.add(simulationComboBox);
+
+        selectors.add(new JLabel("Algorithm:"));
+        selectors.add(algorithmComboBox);
+
+        selectors.add(new JLabel("Graph Index:"));
+        selectors.add(graphIndexComboBox);
+
+        graphSelectorBox.add(selectors);
+        graphSelectorBox.add(Box.createVerticalStrut(4));
+
+        GraphWorkbench workbench = new GraphWorkbench();
+        workbench.setGraph(new EdgeListGraph());
+
+        graphSelectorBox.add(new JScrollPane(workbench));
+
+        // Add listeners to the algorithm and simulation combo boxes to update the graph index combo box
+        // when the algorithm or simulation is changed.
+        simulationComboBox.addActionListener(e -> {
+            updateAlgorithmBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+            updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+        });
+
+        algorithmComboBox.addActionListener(e -> {
+            updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+        });
+
+        graphIndexComboBox.addActionListener(e -> {
+            updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+        });
+
+        updateAlgorithmBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+        updateGraphBoxIndices(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir);
+        updateSelectedGraph(simulationComboBox, algorithmComboBox, graphIndexComboBox, resultsDir, workbench);
+
+        return graphSelectorBox;
     }
 
     @NotNull
@@ -1376,19 +1719,56 @@ public class AlgcomparisonEditor extends JPanel {
                     SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(1));
 
                     ByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
-                    java.io.PrintStream ps = new java.io.PrintStream(baos);
+                    java.io.PrintStream ps1 = new java.io.PrintStream(baos);
 
                     verboseOutputTextArea.setText("");
 
                     TextAreaOutputStream baos2 = new TextAreaOutputStream(verboseOutputTextArea);
-                    PrintStream printStream = new PrintStream(baos2);
-
-                    model.getParameters().set("printStream", printStream);
+                    PrintStream ps2 = new PrintStream(baos2);
 
                     TetradLogger.getInstance().addOutputStream(baos2);
 
-                    model.runComparison(ps);
-                    ps.flush();
+                    try {
+                        model.runComparison(ps1, ps2);
+
+                        String resultsPath = model.getResultsPath();
+
+                        if (resultsPath != null && simulationChoiceTextArea != null) {
+                            // Write contents of simulation text area to a file at resultsPath + "/simulation.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/simulation.txt")) {
+                                writer.println(simulationChoiceTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+                            // Write contents of algorithm text area to a file at resultsPath + "/algorithm.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/algorithm.txt")) {
+                                writer.println(algorithmChoiceTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+                            // Write contents of table columns text area to a file at resultsPath + "/tableColumns.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/tableColumns.txt")) {
+                                writer.println(tableColumnsChoiceTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+                            // Write contents of verbose output text area to a file at resultsPath + "/verboseOutput.txt"
+                            try (PrintWriter writer = new PrintWriter(resultsPath + "/verboseOutput.txt")) {
+                                writer.println(verboseOutputTextArea.getText());
+                            } catch (FileNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+
+
+                        }
+
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    ps1.flush();
                     comparisonTextArea.setText(baos.toString());
 
                     TetradLogger.getInstance().removeOutputStream(baos2);
@@ -1401,10 +1781,15 @@ public class AlgcomparisonEditor extends JPanel {
                         }
                     });
 
-                    // Remove the printStream parameter from the parameters object to avoid serialization issues.
-                    model.getParameters().remove("printStream");
-
                     SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(0));
+
+                    if (comparisonTextArea != null) {
+                        model.setLastComparisonText(comparisonTextArea.getText());
+                    }
+
+                    if (verboseOutputTextArea != null) {
+                        model.setLastVerboseOutputText(verboseOutputTextArea.getText());
+                    }
                 }
             }
 
@@ -1567,14 +1952,10 @@ public class AlgcomparisonEditor extends JPanel {
                     throw new IllegalArgumentException("Unexpected value: " + simulationString);
             };
 
-            try {
-                model.addSimulation(getSimulation(graphClazz, simulationClass));
-                setComparisonText();
-                setSimulationText();
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                     IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            GridSearchModel.SimulationSpec spec = new GridSearchModel.SimulationSpec("name", graphClazz, simulationClass);
+            model.addSimulationSpec(spec);
+            setComparisonText();
+            setSimulationText();
 
             dialog.dispose(); // Close the dialog
         });
@@ -1719,7 +2100,7 @@ public class AlgcomparisonEditor extends JPanel {
                     ((UsesScoreWrapper) algorithmImpl).setScoreWrapper(scoreWrapper);
                 }
 
-                model.addAlgorithm(algorithmImpl, algorithmModel);
+                model.addAlgorithm(new GridSearchModel.AlgorithmSpec("name", algorithmModel, test, score));
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException ex) {
                 throw new RuntimeException(ex);
@@ -1747,8 +2128,8 @@ public class AlgcomparisonEditor extends JPanel {
      */
     private void addAddTableColumnsListener(JTabbedPane tabbedPane) {
         addTableColumns.addActionListener(e -> {
-            java.util.Set<AlgcomparisonModel.MyTableColumn> selectedColumns = new HashSet<>();
-            List<AlgcomparisonModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
+            java.util.Set<GridSearchModel.MyTableColumn> selectedColumns = new HashSet<>();
+            List<GridSearchModel.MyTableColumn> allTableColumns = model.getAllTableColumns();
 
             // Create a table idaCheckEst for the results of the IDA check
             TableColumnSelectionModel columnSelectionTableModel = new TableColumnSelectionModel(allTableColumns, selectedColumns);
@@ -1778,7 +2159,7 @@ public class AlgcomparisonEditor extends JPanel {
 //            sorter.addRowSorterListener(e2 -> {
 //
 //                if (e2.getType() == RowSorterEvent.Type.SORTED) {
-//                    List<AlgcomparisonModel.MyTableColumn> visiblePairs = new ArrayList<>();
+//                    List<GridSearchModel.MyTableColumn> visiblePairs = new ArrayList<>();
 //                    int rowCount = table.getRowCount();
 //
 //                    for (int i = 0; i < rowCount; i++) {
@@ -1882,9 +2263,9 @@ public class AlgcomparisonEditor extends JPanel {
 
             selectUsedParameters.addActionListener(e1 -> {
                 for (int i = 0; i < table.getRowCount(); i++) {
-                    AlgcomparisonModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
+                    GridSearchModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
 
-                    if (myTableColumn.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.PARAMETER
+                    if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.PARAMETER
                         && myTableColumn.isSetByUser()) {
                         columnSelectionTableModel.selectRow(i);
                     }
@@ -1893,10 +2274,10 @@ public class AlgcomparisonEditor extends JPanel {
 
             selectLastStatisticsUsed.addActionListener(e1 -> {
                 for (int i = 0; i < table.getRowCount(); i++) {
-                    AlgcomparisonModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
+                    GridSearchModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
                     List<String> lastStatisticsUsed = model.getLastStatisticsUsed();
 
-                    if (myTableColumn.getType() == AlgcomparisonModel.MyTableColumn.ColumnType.STATISTIC
+                    if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.STATISTIC
                         && lastStatisticsUsed.contains(myTableColumn.getColumnName())) {
                         columnSelectionTableModel.selectRow(i);
                     }
@@ -1936,10 +2317,10 @@ public class AlgcomparisonEditor extends JPanel {
             columnSelectionTableModel.setTableRef(null);
             SwingUtilities.invokeLater(dialog::dispose);
 
-            List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = new ArrayList<>(
+            List<GridSearchModel.MyTableColumn> selectedTableColumns = new ArrayList<>(
                     columnSelectionTableModel.getSelectedTableColumns());
 
-            for (AlgcomparisonModel.MyTableColumn column : selectedTableColumns) {
+            for (GridSearchModel.MyTableColumn column : selectedTableColumns) {
                 model.addTableColumn(column);
             }
 
@@ -1978,13 +2359,34 @@ public class AlgcomparisonEditor extends JPanel {
         Simulations selectedSimulations = model.getSelectedSimulations();
         List<Simulation> simulations = selectedSimulations.getSimulations();
 
+        DataSet dataSet = model.getSuppliedData();
+
+        if (dataSet != null) {
+            simulationChoiceTextArea.append("A data set has been supplied with " + dataSet.getNumColumns() + " variables and " + dataSet.getNumRows() + " rows.");
+            simulationChoiceTextArea.append("\n\nThe variables for the data are as follow: " + dataSet.getVariableNames() + "\n\n");
+        }
+
+        Graph graph = model.getSuppliedGraph();
+
+        if (graph != null) {
+            simulationChoiceTextArea.append("A graph has been supplied with " + graph.getNumNodes() + " nodes and " + graph.getNumEdges() + " edges.");
+            simulationChoiceTextArea.append("\n\nThe nodes for the graph are as follow: " + graph.getNodeNames() + "\n\n");
+        }
+
+        Knowledge knowledge = model.getKnowledge();
+
+        if (knowledge != null) {
+            simulationChoiceTextArea.append("Knowledge has been set, as follows:");
+            simulationChoiceTextArea.append("\n\n" + knowledge + "\n\n");
+        }
+
         if (simulations.isEmpty()) {
             simulationChoiceTextArea.append("""
                      ** No simulations have been selected. Please select at least one simulation using the Add Simulation button below. **
                     """);
             return;
         } else if (simulations.size() == 1) {
-            simulationChoiceTextArea.setText("""
+            simulationChoiceTextArea.append("""
                     The following simulation has been selected. This simulations will be run with the selected algorithms.
                                         
                     """);
@@ -1995,7 +2397,7 @@ public class AlgcomparisonEditor extends JPanel {
             simulationChoiceTextArea.append("Selected graph type = " + (randomGraphClass == null ? "None" : randomGraphClass.getSimpleName() + "\n"));
             simulationChoiceTextArea.append("Selected simulation type = " + simulationClass.getSimpleName() + "\n");
         } else {
-            simulationChoiceTextArea.setText("""
+            simulationChoiceTextArea.append("""
                     The following simulations have been selected. These simulations will be run with the selected algorithms.
                     """);
             for (int i = 0; i < simulations.size(); i++) {
@@ -2013,22 +2415,21 @@ public class AlgcomparisonEditor extends JPanel {
     private void setAlgorithmText() {
         algorithmChoiceTextArea.setText("");
 
-        Algorithms selectedAlgorithms = model.getSelectedAlgorithms();
-        List<Algorithm> algorithms = selectedAlgorithms.getAlgorithms();
+        List<GridSearchModel.AlgorithmSpec> selectedAlgorithms = model.getSelectedAlgorithms();
 
-        if (algorithms.isEmpty()) {
+        if (selectedAlgorithms.isEmpty()) {
             algorithmChoiceTextArea.append("""
                      ** No algorithm have been selected. Please select at least one algorithm using the Add Algorithm button below. **
                     """);
             return;
-        } else if (algorithms.size() == 1) {
-            algorithmChoiceTextArea.setText("""
+        } else if (selectedAlgorithms.size() == 1) {
+            algorithmChoiceTextArea.append("""
                     The following algorithm has been selected. This algorithm will be run with the selected simulations.
                                         
                     """);
 
-            Algorithm algorithm = algorithms.get(0);
-            algorithmChoiceTextArea.append("Selected algorithm: " + algorithm.getDescription() + "\n");
+            GridSearchModel.AlgorithmSpec algorithm = selectedAlgorithms.get(0);
+            algorithmChoiceTextArea.append("Selected algorithm: " + algorithm.getAlgorithmImpl().getDescription() + "\n");
 
             if (algorithm instanceof TakesIndependenceWrapper) {
                 algorithmChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
@@ -2039,12 +2440,12 @@ public class AlgcomparisonEditor extends JPanel {
             }
 
         } else {
-            algorithmChoiceTextArea.setText("""
+            algorithmChoiceTextArea.append("""
                     The following algorithms have been selected. These algorithms will be run with the selected simulations.
                     """);
-            for (int i = 0; i < algorithms.size(); i++) {
-                Algorithm algorithm = algorithms.get(i);
-                algorithmChoiceTextArea.append("\nAlgorithm #" + (i + 1) + ". " + algorithm.getDescription() + "\n");
+            for (int i = 0; i < selectedAlgorithms.size(); i++) {
+                GridSearchModel.AlgorithmSpec algorithm = selectedAlgorithms.get(i);
+                algorithmChoiceTextArea.append("\nAlgorithm #" + (i + 1) + ". " + algorithm.getAlgorithmImpl().getDescription() + "\n");
 
                 if (algorithm instanceof TakesIndependenceWrapper) {
                     algorithmChoiceTextArea.append("Selected independence test = " + ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper().getDescription() + "\n");
@@ -2057,25 +2458,25 @@ public class AlgcomparisonEditor extends JPanel {
         }
 
         algorithmChoiceTextArea.append(getAlgorithmParameterText());
-        List<AlgorithmModel> selectedAlgorithmModels = model.getSelectedAlgorithmModels();
+        List<GridSearchModel.AlgorithmSpec> selectedAlgorithmModels = model.getSelectedAlgorithms();
         Set<String> algorithmDescriptions = new HashSet<>();
 
         if (!selectedAlgorithmModels.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nAlgorithm Descriptions:");
         }
 
-        for (AlgorithmModel algorithmModel1 : selectedAlgorithmModels) {
-            if (algorithmDescriptions.contains(algorithmModel1.getName())) {
+        for (GridSearchModel.AlgorithmSpec algorithmSpec : selectedAlgorithmModels) {
+            if (algorithmDescriptions.contains(algorithmSpec.getName())) {
                 continue;
             }
-            algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getName());
-            algorithmChoiceTextArea.append("\n\n" + algorithmModel1.getDescription().replace("\n", "\n\n"));
-            algorithmDescriptions.add(algorithmModel1.getName());
+            algorithmChoiceTextArea.append("\n\n" + algorithmSpec.getName());
+            algorithmChoiceTextArea.append("\n\n" + algorithmSpec.getAlgorithm().getDescription().replace("\n", "\n\n"));
+            algorithmDescriptions.add(algorithmSpec.getName());
         }
 
         Set<IndependenceWrapper> independenceWrappers = new HashSet<>();
 
-        for (Algorithm algorithm : algorithms) {
+        for (GridSearchModel.AlgorithmSpec algorithm : selectedAlgorithms) {
             if (algorithm instanceof TakesIndependenceWrapper) {
                 independenceWrappers.add(((TakesIndependenceWrapper) algorithm).getIndependenceWrapper());
             }
@@ -2084,13 +2485,13 @@ public class AlgcomparisonEditor extends JPanel {
         Set<ScoreWrapper> scoreWrappers = new HashSet<>();
         Set<String> scoreDescriptions = new HashSet<>();
 
-        for (Algorithm algorithm : algorithms) {
+        for (GridSearchModel.AlgorithmSpec algorithm : selectedAlgorithms) {
             if (algorithm instanceof UsesScoreWrapper) {
-                if (scoreDescriptions.contains(algorithm.getDescription())) {
+                if (scoreDescriptions.contains(algorithm.getAlgorithmImpl().getDescription())) {
                     continue;
                 }
                 scoreWrappers.add(((UsesScoreWrapper) algorithm).getScoreWrapper());
-                scoreDescriptions.add(algorithm.getDescription());
+                scoreDescriptions.add(algorithm.getAlgorithmImpl().getDescription());
             }
         }
 
@@ -2145,7 +2546,7 @@ public class AlgcomparisonEditor extends JPanel {
     private void setTableColumnsText() {
         tableColumnsChoiceTextArea.setText("");
 
-        List<AlgcomparisonModel.MyTableColumn> selectedTableColumns = model.getSelectedTableColumns();
+        List<GridSearchModel.MyTableColumn> selectedTableColumns = model.getSelectedTableColumns();
 
         if (selectedTableColumns.isEmpty()) {
             tableColumnsChoiceTextArea.append("""
@@ -2161,7 +2562,7 @@ public class AlgcomparisonEditor extends JPanel {
         }
 
         for (int i = 0; i < selectedTableColumns.size(); i++) {
-            AlgcomparisonModel.MyTableColumn tableColumn = selectedTableColumns.get(i);
+            GridSearchModel.MyTableColumn tableColumn = selectedTableColumns.get(i);
             tableColumnsChoiceTextArea.append("\n\n" + (i + 1) + ". " + tableColumn.getColumnName() + " (" + tableColumn.getDescription() + ")");
         }
 
@@ -2174,7 +2575,7 @@ public class AlgcomparisonEditor extends JPanel {
      * empty. Otherwise, it sets a message indicating that a comparison has not been run for the selection.
      */
     private void setComparisonText() {
-        if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().getAlgorithms().isEmpty()
+        if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().isEmpty()
             || model.getSelectedTableColumns().isEmpty()) {
             comparisonTextArea.setText(
                     """
@@ -2195,7 +2596,7 @@ public class AlgcomparisonEditor extends JPanel {
         helpChoiceTextArea.setText("""
                 This tool may be used to do a comparison of multiple algorithms (in Tetrad for now) for a range of simulations types, algorithms, table columns, and parameter settings.
 
-                To run a comparison, select one or more simulations, one or more algorithms, and one or more table columns (statistics or parameter columns). Then in the Comparison tab, click the "Run Comparison" button.
+                To run a Grid Search comparison, select one or more simulations, one or more algorithms, and one or more table columns (statistics or parameter columns). Then in the Comparison tab, click the "Run Comparison" button.
 
                 The comparison will be displayed in the "comparison" tab.
 
@@ -2222,9 +2623,9 @@ public class AlgcomparisonEditor extends JPanel {
                 In the Comparison tab, there is a button to run the comparison and display the results.
                                 
                 Full results are saved to the user's hard drive. The location of these files is displayed in the comparison tab, at the top of the page. This includes all the output from the comparison, including the true dataset and graphs for all simulations, the estimated graph, elapsed times for all algorithm runs, and the results displayed in the Comparison tab for the comparison. These datasets and graphs may be used for analayis by other tools, such as in R or Python.
-                
+                                
                 The reference is here:
-                
+                                
                 Ramsey, J. D., Malinsky, D., &amp; Bui, K. V. (2020). Algcomparison: Comparing the performance of graphical structure learning algorithms with tetrad. Journal of Machine Learning Research, 21(238), 1-6.
                 """);
     }
@@ -2256,11 +2657,11 @@ public class AlgcomparisonEditor extends JPanel {
      * @return The algorithm parameter choices as text.
      */
     private String getAlgorithmParameterText() {
-        List<Algorithm> algorithm = model.getSelectedAlgorithms().getAlgorithms();
-        Set<String> allAlgorithmParameters = AlgcomparisonModel.getAllAlgorithmParameters(algorithm);
-        Set<String> allTestParameters = AlgcomparisonModel.getAllTestParameters(algorithm);
-        Set<String> allScoreParameters = AlgcomparisonModel.getAllScoreParameters(algorithm);
-        Set<String> allBootstrappingParameters = AlgcomparisonModel.getAllBootstrapParameters(algorithm);
+        List<GridSearchModel.AlgorithmSpec> algorithm = model.getSelectedAlgorithms();
+        Set<String> allAlgorithmParameters = GridSearchModel.getAllAlgorithmParameters(algorithm);
+        Set<String> allTestParameters = GridSearchModel.getAllTestParameters(algorithm);
+        Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithm);
+        Set<String> allBootstrappingParameters = GridSearchModel.getAllBootstrapParameters(algorithm);
         StringBuilder paramText = new StringBuilder();
 
         if (algorithm.size() == 1) {
@@ -2306,29 +2707,6 @@ public class AlgcomparisonEditor extends JPanel {
         }
 
         return paramText.toString();
-    }
-
-    /**
-     * This class represents the comparison graph type for graph-based comparison algorithms. ComparisonGraphType is an
-     * enumeration type that represents different types of comparison graphs. The available types are DAG (Directed
-     * Acyclic Graph), CPDAG (Completed Partially Directed Acyclic Graph), and PAG (Partially Directed Acyclic Graph).
-     */
-    public enum ComparisonGraphType {
-
-        /**
-         * Directed Acyclic Graph (DAG).
-         */
-        DAG,
-
-        /**
-         * Completed Partially Directed Acyclic Graph (CPDAG).
-         */
-        CPDAG,
-
-        /**
-         * Partially Directed Acyclic Graph (PAG).
-         */
-        PAG
     }
 
     /**
@@ -2383,14 +2761,14 @@ public class AlgcomparisonEditor extends JPanel {
          * The data for the table.
          */
         private final Object[][] data;
-        private final List<AlgcomparisonModel.MyTableColumn> allTableColumns;
-        private final Set<AlgcomparisonModel.MyTableColumn> selectedTableColumns;
+        private final List<GridSearchModel.MyTableColumn> allTableColumns;
+        private final Set<GridSearchModel.MyTableColumn> selectedTableColumns;
         private JTable tableRef;
 
         /**
          * Constructs a new table estModel for the results of the IDA check.
          */
-        public TableColumnSelectionModel(List<AlgcomparisonModel.MyTableColumn> allTableColumns, Set<AlgcomparisonModel.MyTableColumn> selectedTableColumns) {
+        public TableColumnSelectionModel(List<GridSearchModel.MyTableColumn> allTableColumns, Set<GridSearchModel.MyTableColumn> selectedTableColumns) {
             if (allTableColumns == null) {
                 throw new IllegalArgumentException("allTableColumns is null");
             }
@@ -2409,7 +2787,7 @@ public class AlgcomparisonEditor extends JPanel {
             this.selectedTableColumns = new HashSet<>(selectedTableColumns);
 
             for (int i = 0; i < allTableColumns.size(); i++) {
-                AlgcomparisonModel.MyTableColumn tableColumn = allTableColumns.get(i);
+                GridSearchModel.MyTableColumn tableColumn = allTableColumns.get(i);
                 this.data[i][0] = i + 1; // 1-based index (not 0-based index)
                 this.data[i][1] = tableColumn.getColumnName();
                 this.data[i][2] = tableColumn.getDescription();
@@ -2492,7 +2870,7 @@ public class AlgcomparisonEditor extends JPanel {
             return getValueAt(0, c).getClass();
         }
 
-        public Set<AlgcomparisonModel.MyTableColumn> getSelectedTableColumns() {
+        public Set<GridSearchModel.MyTableColumn> getSelectedTableColumns() {
             return selectedTableColumns;
         }
 
@@ -2500,7 +2878,7 @@ public class AlgcomparisonEditor extends JPanel {
             this.tableRef = tableRef;
         }
 
-        public AlgcomparisonModel.MyTableColumn getMyTableColumn(int row) {
+        public GridSearchModel.MyTableColumn getMyTableColumn(int row) {
             return allTableColumns.get(row);
         }
 

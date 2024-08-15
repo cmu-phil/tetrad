@@ -375,7 +375,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
             }
         }
@@ -470,7 +470,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
             }
         }

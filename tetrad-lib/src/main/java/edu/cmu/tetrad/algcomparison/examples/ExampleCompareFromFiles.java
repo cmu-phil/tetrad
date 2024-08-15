@@ -91,8 +91,6 @@ public class ExampleCompareFromFiles {
         algorithms.add(new Pc(new FisherZ()));
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(false);
-        comparison.setShowSimulationIndices(false);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
 

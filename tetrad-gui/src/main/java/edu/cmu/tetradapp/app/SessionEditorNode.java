@@ -260,14 +260,19 @@ public final class SessionEditorNode extends DisplayNode {
     public void doDoubleClickAction(Graph sessionWrapper) {
         this.sessionWrapper = (SessionWrapper) sessionWrapper;
 
-        class MyWatchedProcess extends WatchedProcess {
-            public void watch() {
-                TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
-                launchEditorVisit();
-            }
-        }
+        SwingUtilities.invokeLater(() -> {
+            TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
+            launchEditorVisit();
+        });
 
-        new MyWatchedProcess();
+//        class MyWatchedProcess extends WatchedProcess {
+//            public void watch() {
+//                TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
+//                launchEditorVisit();
+//            }
+//        }
+//
+//        new MyWatchedProcess();
     }
 
     private void launchEditorVisit() {
@@ -816,7 +821,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void executeSessionNode(SessionNode sessionNode) {
-        class MyWatchedProcess extends WatchedProcess {
+        new WatchedProcess() {
             @Override
             public void watch() {
                 final Class c = SessionEditorWorkbench.class;
@@ -829,13 +834,11 @@ public final class SessionEditorNode extends DisplayNode {
 
                 workbench.getSimulationStudy().execute(sessionNode, true);
             }
-        }
-
-        new MyWatchedProcess();
+        };
     }
 
     private void createDescendantModels() {
-        class MyWatchedProcess extends WatchedProcess {
+        new WatchedProcess() {
             @Override
             public void watch() {
                 final Class clazz = SessionEditorWorkbench.class;
@@ -849,9 +852,7 @@ public final class SessionEditorNode extends DisplayNode {
                             getSessionNode(), true);
                 }
             }
-        }
-
-        new MyWatchedProcess();
+        };
     }
 
     /**

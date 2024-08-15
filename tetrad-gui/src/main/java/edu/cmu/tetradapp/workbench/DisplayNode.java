@@ -230,6 +230,10 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
      * {@inheritDoc}
      */
     public void setNodeType(NodeType nodeType) {
+        if (nodeType == null) {
+            throw new NullPointerException("Node type must not be null.");
+        }
+
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

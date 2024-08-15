@@ -85,9 +85,9 @@ public final class Params {
      */
     public static final String COMPLETE_RULE_SET_USED = "completeRuleSetUsed";
     /**
-     * Constant <code>DO_DISCRIMINATING_PATH_RULE="doDiscriminatingPathRule"</code>
+     * Constant <code>SEPSET_FINDER_METHOD="sepsetFinderMethod"</code>
      */
-    public static final String DO_DISCRIMINATING_PATH_RULE = "doDiscriminatingPathRule";
+    public static final String SEPSET_FINDER_METHOD = "sepsetFinderMethod";
     /**
      * Constant <code>DO_DISCRIMINATING_PATH_COLLIDER_RULE="doDiscriminatingPathColliderRule"</code>
      */
@@ -105,9 +105,9 @@ public final class Params {
      */
     public static final String CONFLICT_RULE = "conflictRule";
     /**
-     * Constant <code>MEEK_PREVENT_CYCLES="meekPreventCycles"</code>
+     * Constant <code>GUARANTEE_CPDAG="guaranteeCpdag"</code>
      */
-    public static final String MEEK_PREVENT_CYCLES = "meekPreventCycles";
+    public static final String GUARANTEE_CPDAG = "guaranteeCpdag";
     /**
      * Constant <code>CONNECTED="connected"</code>
      */
@@ -660,12 +660,6 @@ public final class Params {
      * Constant <code>MEEK_VERBOSE="meekVerbose"</code>
      */
     public static final String MEEK_VERBOSE = "meekVerbose";
-
-    // System prameters that are not supposed to put in the HTML manual documentation
-    /**
-     * Constant <code>PRINT_STREAM="printStream"</code>
-     */
-    public static final String PRINT_STREAM = "printStream";
     /**
      * Constant <code>SEM_BIC_RULE="semBicRule"</code>
      */
@@ -767,7 +761,10 @@ public final class Params {
     /**
      * Constant <code>TIMEOUT="timeout"</code>
      */
-    public static final String TIMEOUT = "timeout";
+    public static final String TIMEOUT = "timeout";    /**
+     * Constant <code>TEST_TIMEOUT="testTimeout"</code>
+     */
+    public static final String TEST_TIMEOUT = "testTimeout";
     /**
      * Constant <code>GRASP_USE_VP_SCORING="graspUseVpScoring"</code>
      */
@@ -886,11 +883,63 @@ public final class Params {
      * Constant <code>USE_PSEUDOINVERSE_FOR_LATENT="usePseudoinverseForLatent"</code>
      */
     public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
-
     /**
-     * Constant <code>THRESHOLD_LV_LITE = "thresholdLvLite"</code>
+     * Constant <code>COMPARE_GRAPH_ALGCOMP="compareGraphAlgcomp"</code>
      */
-    public static final String THRESHOLD_LV_LITE = "thresholdLvLite";
+    public static final String MIN_SAMPLE_SIZE_PER_CELL = "minSampleSizePerCell";
+    /**
+     * Constant <code>ABLATION_LEAVE_OUT_TUCKING_STEP="ablationLeaveOutTuckingStep"</code>
+     */
+    public static final String ABLATION_LEAVE_OUT_TUCKING_STEP = "ablationLeaveOutTuckingStep";
+    /**
+     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep""</code>
+     */
+    public static final String ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep";
+    /**
+     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps""</code>
+     */
+    public static final String ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps";
+    /**
+     * Constant <code>MAX_SCORE_DROP="maxScoreDrop"</code>
+     */
+    public static final String MAX_SCORE_DROP = "maxScoreDrop";
+    /**
+     * Constant <code>GUARANTEE_PAG="guaranteePag"</code>
+     */
+    public static final String GUARANTEE_PAG = "guaranteePag";
+    /**
+     * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
+     */
+    public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
+    /**
+     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
+     */
+    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
+    /**
+     * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
+     */
+    public static String PC_HEURISTIC = "pcHeuristic";
+    /**
+     * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
+     */
+    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
+    /**
+     * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
+     */
+    public static String EXTRA_EDGE_REMOVAL_STEP = "extraEdgeRemovalStep";
+    /**
+     * Constant <code>LV_LITE_MAX_PATH_LENGTH="lvLiteMaxPathLength"</code>
+     */
+    public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
+    /**
+     * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
+     */
+    public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
+
+
+    private Params() {
+    }
+
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -939,21 +988,6 @@ public final class Params {
             Params.SAVE_BOOTSTRAP_GRAPHS,
             Params.SEED
     ));
-    /**
-     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
-     */
-    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
-    /**
-     * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
-     */
-    public static String PC_HEURISTIC = "pcHeuristic";
-    /**
-     * Constant <code>RESOLVE_ALMOST_CYCLIC_PATHS="resolveAlmostCyclicPaths"</code>
-     */
-    public static String RESOLVE_ALMOST_CYCLIC_PATHS = "resolveAlmostCyclicPaths";
-
-    private Params() {
-    }
 
     /**
      * <p>getAlgorithmParameters.</p>

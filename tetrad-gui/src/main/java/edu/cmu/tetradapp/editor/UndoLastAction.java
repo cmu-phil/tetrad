@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -42,8 +41,10 @@ public class UndoLastAction extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;
 
     /**
-     * Represents an action to undo the last graph change in a GraphWorkbench.
-     * Extends AbstractAction and implements ClipboardOwner.
+     * Represents an action to undo the last graph change in a GraphWorkbench. Extends AbstractAction and implements
+     * ClipboardOwner.
+     *
+     * @param workbench the given workbench.
      */
     public UndoLastAction(GraphWorkbench workbench) {
         super("Undo Last Graph Change");

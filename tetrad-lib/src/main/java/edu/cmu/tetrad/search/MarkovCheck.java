@@ -1,15 +1,9 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.statistic.AdjacencyPrecision;
-import edu.cmu.tetrad.algcomparison.statistic.AdjacencyRecall;
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadPrecision;
-import edu.cmu.tetrad.algcomparison.statistic.ArrowheadRecall;
+import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -20,6 +14,9 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -27,6 +24,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * Checks whether a graph is Markov given a data set. First, a list of m-separation predictions are made for each pair
@@ -63,6 +61,10 @@ public class MarkovCheck {
      * True, just in case the given graph is a CPDAG (completed partially directed acyclic graph).
      */
     private final boolean isCpdag;
+    /**
+     * List of observers to be notified when changes are made to the model.
+     */
+    private final List<ModelObserver> observers = new ArrayList<>();
     /**
      * The independence test.
      */
@@ -147,6 +149,14 @@ public class MarkovCheck {
      * For X _||_ Y | Z, the nodes in Z must come from this set if knowledge is used.
      */
     private List<Node> conditioningNodes;
+    /**
+     * Indicates whether extraneous variables should be removed when d-separation holds.
+     * <p>
+     * Extraneous variables are irrelevant or redundant variables that are not necessary for finding d-separation.
+     * <p>
+     * Default value is false, meaning that extraneous variables are not removed by default.
+     */
+    private boolean removeExtraneousVariables = false;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -221,7 +231,7 @@ public class MarkovCheck {
      * @param x The node for which to retrieve the local independence facts.
      * @return The list of local independence facts for the given node.
      */
-    public List<IndependenceFact> getLocalIndependenceFacts(Node x) {
+    public List<IndependenceFact> checkIndependenceForTargetNode(Node x) {
         Set<Node> parents = new HashSet<>(graph.getParents(x));
 
         // Remove all parent nodes and x node itself from the graph
@@ -234,7 +244,7 @@ public class MarkovCheck {
             // Make a new MsepTest based on the true graph.
             MsepTest msepTest = new MsepTest(graph);
             IndependenceResult testRes = msepTest.checkIndependence(x, y, parents);
-            if (testRes.isValid()) factList.add(testRes.getFact());
+            if (testRes.isIndependent()) factList.add(testRes.getFact());
         }
         return factList;
     }
@@ -264,6 +274,40 @@ public class MarkovCheck {
     }
 
     /**
+     * Get Local P values with shuffle threshold provided.
+     *
+     * @param independenceTest The independence test used for calculating the p-values.
+     * @param facts            The list of independence facts.
+     * @param shuffleThreshold The threshold value for shuffling the data.
+     * @return The list of local p-values.
+     */
+    public List<List<Double>> getLocalPValues(IndependenceTest independenceTest, List<IndependenceFact> facts, Double shuffleThreshold) {
+        // Shuffle to generate more data from the same graph.
+        int shuffleTimes = (int) Math.ceil(1 / shuffleThreshold);
+        // pVals is a list of lists of the p values for each shuffled results.
+        List<List<Double>> pVals_list = new ArrayList<>();
+        for (int i = 0; i < shuffleTimes; i++) {
+            List<Integer> rows = getSubsampleRows(shuffleThreshold); // Default as 0.5
+            ((RowsSettable) independenceTest).setRows(rows); // the test will only calc pvalues to those rows
+            // call pvalue function on each item, only include the non-null ones
+            List<Double> pVals = new ArrayList<>();
+            for (IndependenceFact f : facts) {
+                Double pV;
+                // For now, check if the test is FisherZ test.
+                if (independenceTest instanceof IndTestFisherZ) {
+                    pV = ((IndTestFisherZ) independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                    pVals.add(pV);
+                } else if (independenceTest instanceof IndTestChiSquare) {
+                    pV = ((IndTestChiSquare) independenceTest).getPValue(f.getX(), f.getY(), f.getZ());
+                    if (pV != null) pVals.add(pV);
+                }
+            }
+            pVals_list.add(pVals);
+        }
+        return pVals_list;
+    }
+
+    /**
      * Tests a list of p-values against the Anderson-Darling Test.
      *
      * @param pValues the list of p-values to be tested
@@ -280,20 +324,26 @@ public class MarkovCheck {
      * @param independenceTest The independence test to be used for calculating p-values.
      * @param graph            The graph containing the nodes for testing.
      * @param threshold        The threshold value for classifying nodes.
+     * @param shuffleThreshold The threshold value for shuffling the data.
      * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
      * rejected nodes.
      */
-    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(IndependenceTest independenceTest, Graph graph, Double threshold) {
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodes(IndependenceTest independenceTest, Graph graph, Double threshold, Double shuffleThreshold) {
         // When calling, default reject null as <=0.05
         List<List<Node>> accepts_rejects = new ArrayList<>();
         List<Node> accepts = new ArrayList<>();
         List<Node> rejects = new ArrayList<>();
         List<Node> allNodes = graph.getNodes();
         for (Node x : allNodes) {
-            List<IndependenceFact> localIndependenceFacts = getLocalIndependenceFacts(x);
-            List<Double> localPValues = getLocalPValues(independenceTest, localIndependenceFacts);
-            Double ADTest = checkAgainstAndersonDarlingTest(localPValues);
-            if (ADTest <= threshold) {
+            List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
+            // All local nodes' p-values for node x
+            List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold);
+            // TODO VBC: what should we do for cases when ADTest is NaN and ∞ ?
+            List<Double> flatList = shuffledlocalPValues.stream()
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+            Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
+            if (ADTestPValue <= threshold) {
                 rejects.add(x);
             } else {
                 accepts.add(x);
@@ -302,6 +352,313 @@ public class MarkovCheck {
         accepts_rejects.add(accepts);
         accepts_rejects.add(rejects);
         return accepts_rejects;
+    }
+
+    /**
+     * Get accepts and rejects nodes for all nodes from Anderson-Darling test and generate the plot data for confusion
+     * statistics.
+     * <p>
+     * Confusion statistics were calculated using Adjacency (AdjacencyPrecision, AdjacencyRecall) and Arrowhead
+     * (ArrowheadPrecision, ArrowheadRecall)
+     *
+     * @param independenceTest The independence test to be used for calculating p-values.
+     * @param estimatedCpdag   The estimated CPDAG.
+     * @param trueGraph        The true graph.
+     * @param threshold        The threshold value for classifying nodes.
+     * @param shuffleThreshold The threshold value for shuffling the data.
+     * @param lowRecallBound   The bound value for recording low recall.
+     * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
+     */
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
+        // When calling, default reject null as <=0.05
+        List<List<Node>> accepts_rejects_lowRecalls = new ArrayList<>();
+        List<Node> accepts = new ArrayList<>();
+        List<Node> rejects = new ArrayList<>();
+        List<Node> allNodes = graph.getNodes();
+        List<Node> lowAdjRecallNodes = new ArrayList<>();
+        List<Node> lowAHRecallNodes = new ArrayList<>();
+
+        // Confusion stats lists for data processing.
+        Map<String, String> fileContentMap = new HashMap<>();
+
+        List<List<Double>> accepts_AdjP_ADTestP = new ArrayList<>();
+        List<List<Double>> accepts_AdjR_ADTestP = new ArrayList<>();
+        List<List<Double>> accepts_AHP_ADTestP = new ArrayList<>();
+        List<List<Double>> accepts_AHR_ADTestP = new ArrayList<>();
+        fileContentMap.put("accepts_AdjP_ADTestP_data.csv", "");
+        fileContentMap.put("accepts_AdjR_ADTestP_data.csv", "");
+        fileContentMap.put("accepts_AHP_ADTestP_data.csv", "");
+        fileContentMap.put("accepts_AHR_ADTestP_data.csv", "");
+
+        List<List<Double>> rejects_AdjP_ADTestP = new ArrayList<>();
+        List<List<Double>> rejects_AdjR_ADTestP = new ArrayList<>();
+        List<List<Double>> rejects_AHP_ADTestP = new ArrayList<>();
+        List<List<Double>> rejects_AHR_ADTestP = new ArrayList<>();
+        fileContentMap.put("rejects_AdjP_ADTestP_data.csv", "");
+        fileContentMap.put("rejects_AdjR_ADTestP_data.csv", "");
+        fileContentMap.put("rejects_AHP_ADTestP_data.csv", "");
+        fileContentMap.put("rejects_AHR_ADTestP_data.csv", "");
+
+        fileContentMap.put("lowAdjRecallNodes.csv", "");
+        fileContentMap.put("lowAHRecallNodes.csv", "");
+
+        NumberFormat nf = new DecimalFormat("0.00");
+        // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
+        for (Node x : allNodes) {
+            System.out.println("Target Node: " + x);
+            List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
+            List<Double> ap_ar_ahp_ahr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData(x, estimatedCpdag, trueGraph);
+            Double ap = ap_ar_ahp_ahr.get(0);
+            Double ar = ap_ar_ahp_ahr.get(1);
+            Double ahp = ap_ar_ahp_ahr.get(2);
+            Double ahr = ap_ar_ahp_ahr.get(3);
+            if (ar < lowRecallBound) {
+                lowAdjRecallNodes.add(x);
+            }
+            if (ahr < lowRecallBound) {
+                lowAHRecallNodes.add(x);
+            }
+            if (!localIndependenceFacts.isEmpty()) {
+                // All local nodes' p-values for node x.
+                List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold); // shuffleThreshold default to be 0.5
+                List<Double> flatList = shuffledlocalPValues.stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+                Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
+                if (ADTestPValue <= threshold) {
+                    rejects.add(x);
+                    if (!Double.isNaN(ap)) {
+                        rejects_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ar)) {
+                        rejects_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahp)) {
+                        rejects_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahr)) {
+                        rejects_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
+                    }
+                } else {
+                    accepts.add(x);
+                    if (!Double.isNaN(ap)) {
+                        accepts_AdjP_ADTestP.add(Arrays.asList(ap, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ar)) {
+                        accepts_AdjR_ADTestP.add(Arrays.asList(ar, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahp)) {
+                        accepts_AHP_ADTestP.add(Arrays.asList(ahp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(ahr)) {
+                        accepts_AHR_ADTestP.add(Arrays.asList(ahr, ADTestPValue));
+                    }
+                }
+            }
+            System.out.println("-----------------------------");
+        }
+        accepts_rejects_lowRecalls.add(accepts);
+        accepts_rejects_lowRecalls.add(rejects);
+        accepts_rejects_lowRecalls.add(lowAdjRecallNodes);
+        accepts_rejects_lowRecalls.add(lowAHRecallNodes);
+        // Write into data files.
+        for (Map.Entry<String, String> entry : fileContentMap.entrySet()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(entry.getKey()))) {
+                writer.write(entry.getValue());
+                switch (entry.getKey()) {
+                    case "accepts_AdjP_ADTestP_data.csv":
+                        for (List<Double> AdjP_ADTestP_pair : accepts_AdjP_ADTestP) {
+                            writer.write(nf.format(AdjP_ADTestP_pair.get(0)) + "," + nf.format(AdjP_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "accepts_AdjR_ADTestP_data.csv":
+                        for (List<Double> AdjR_ADTestP_pair : accepts_AdjR_ADTestP) {
+                            writer.write(nf.format(AdjR_ADTestP_pair.get(0)) + "," + nf.format(AdjR_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "accepts_AHP_ADTestP_data.csv":
+                        for (List<Double> AHP_ADTestP_pair : accepts_AHP_ADTestP) {
+                            writer.write(nf.format(AHP_ADTestP_pair.get(0)) + "," + nf.format(AHP_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "accepts_AHR_ADTestP_data.csv":
+                        for (List<Double> AHR_ADTestP_pair : accepts_AHR_ADTestP) {
+                            writer.write(nf.format(AHR_ADTestP_pair.get(0)) + "," + nf.format(AHR_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "rejects_AdjP_ADTestP_data.csv":
+                        for (List<Double> AdjP_ADTestP_pair : rejects_AdjP_ADTestP) {
+                            writer.write(nf.format(AdjP_ADTestP_pair.get(0)) + "," + nf.format(AdjP_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "rejects_AdjR_ADTestP_data.csv":
+                        for (List<Double> AdjR_ADTestP_pair : rejects_AdjR_ADTestP) {
+                            writer.write(nf.format(AdjR_ADTestP_pair.get(0)) + "," + nf.format(AdjR_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "rejects_AHP_ADTestP_data.csv":
+                        for (List<Double> AHP_ADTestP_pair : rejects_AHP_ADTestP) {
+                            writer.write(nf.format(AHP_ADTestP_pair.get(0)) + "," + nf.format(AHP_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "rejects_AHR_ADTestP_data.csv":
+                        for (List<Double> AHR_ADTestP_pair : rejects_AHR_ADTestP) {
+                            writer.write(nf.format(AHR_ADTestP_pair.get(0)) + "," + nf.format(AHR_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+                    case "lowAdjRecallNodes.csv":
+                        for (Node n : lowAdjRecallNodes) {
+                            writer.write(n.toString() + "\n");
+                        }
+                        break;
+                    case "lowAHRecallNodes.csv":
+                        for (Node n : lowAHRecallNodes) {
+                            writer.write(n.toString() + "\n");
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+                System.out.println("Successfully written to " + entry.getKey());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return accepts_rejects_lowRecalls;
+    }
+
+    /**
+     * Get accepts and rejects nodes for all nodes from Anderson-Darling test and generate the plot data for confusion
+     * statistics.
+     * <p>
+     * Confusion statistics were calculated using Local Graph Precision and Recall (LocalGraphPrecision,
+     * LocalGraphRecall).
+     *
+     * @param independenceTest The independence test to be used for calculating p-values.
+     * @param estimatedCpdag   The estimated CPDAG.
+     * @param trueGraph        The true graph.
+     * @param threshold        The threshold value for classifying nodes.
+     * @param shuffleThreshold The threshold value for shuffling the data. shuffleThreshold default can set to be 0.5
+     * @param lowRecallBound   The bound value for recording low recall.
+     * @return A list containing two lists: the first list contains the accepted nodes and the second list contains the
+     */
+    public List<List<Node>> getAndersonDarlingTestAcceptsRejectsNodesForAllNodesPlotData2(IndependenceTest independenceTest, Graph estimatedCpdag, Graph trueGraph, Double threshold, Double shuffleThreshold, Double lowRecallBound) {
+        // When calling, default reject null as <=0.05
+        List<List<Node>> accepts_rejects_lowRecall = new ArrayList<>();
+        List<Node> accepts = new ArrayList<>();
+        List<Node> rejects = new ArrayList<>();
+        List<Node> allNodes = graph.getNodes();
+        List<Node> lowLGRecallNodes = new ArrayList<>();
+
+        // Confusion stats lists for data processing.
+        Map<String, String> fileContentMap = new HashMap<>();
+
+        // Using Local Graph Precision and Recall to calculate Confusion statistics.
+        List<List<Double>> accepts_LGP_ADTestP = new ArrayList<>();
+        List<List<Double>> accepts_LGR_ADTestP = new ArrayList<>();
+        fileContentMap.put("accepts_LGP_ADTestP_data.csv", "");
+        fileContentMap.put("accepts_LGR_ADTestP_data.csv", "");
+
+        List<List<Double>> rejects_LGP_ADTestP = new ArrayList<>();
+        List<List<Double>> rejects_LGR_ADTestP = new ArrayList<>();
+        fileContentMap.put("rejects_LGP_ADTestP_data.csv", "");
+        fileContentMap.put("rejects_LGR_ADTestP_data.csv", "");
+
+        fileContentMap.put("lowLGRecallNodes.csv", "");
+
+        NumberFormat nf = new DecimalFormat("0.00");
+        // Classify nodes into accepts and rejects base on ADTest result, and  update confusion stats lists accordingly.
+        for (Node x : allNodes) {
+            System.out.println("Target Node: " + x);
+            List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
+            List<Double> lgp_lgr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(x, estimatedCpdag, trueGraph);
+            Double lgp = lgp_lgr.get(0);
+            Double lgr = lgp_lgr.get(1);
+            if (lgr < lowRecallBound) {
+                lowLGRecallNodes.add(x);
+            }
+            if (!localIndependenceFacts.isEmpty()) {
+                // All local nodes' p-values for node x.
+                List<List<Double>> shuffledlocalPValues = getLocalPValues(independenceTest, localIndependenceFacts, shuffleThreshold);
+                List<Double> flatList = shuffledlocalPValues.stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+                System.out.println("# p values feed into ADTest: " + flatList.size());
+                Double ADTestPValue = checkAgainstAndersonDarlingTest(flatList);
+                if (ADTestPValue <= threshold) {
+                    rejects.add(x);
+                    if (!Double.isNaN(lgp)) {
+                        rejects_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(lgr)) {
+                        rejects_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
+                    }
+                } else {
+                    accepts.add(x);
+                    if (!Double.isNaN(lgp)) {
+                        accepts_LGP_ADTestP.add(Arrays.asList(lgp, ADTestPValue));
+                    }
+                    if (!Double.isNaN(lgr)) {
+                        accepts_LGR_ADTestP.add(Arrays.asList(lgr, ADTestPValue));
+                    }
+                }
+            }
+            System.out.println("-----------------------------");
+        }
+        accepts_rejects_lowRecall.add(accepts);
+        accepts_rejects_lowRecall.add(rejects);
+        accepts_rejects_lowRecall.add(lowLGRecallNodes);
+        // Write into data files.
+        for (Map.Entry<String, String> entry : fileContentMap.entrySet()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(entry.getKey()))) {
+                writer.write(entry.getValue());
+                switch (entry.getKey()) {
+                    case "accepts_LGP_ADTestP_data.csv":
+                        for (List<Double> LGP_ADTestP_pair : accepts_LGP_ADTestP) {
+                            writer.write(nf.format(LGP_ADTestP_pair.get(0)) + "," + nf.format(LGP_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "accepts_LGR_ADTestP_data.csv":
+                        for (List<Double> LGR_ADTestP_pair : accepts_LGR_ADTestP) {
+                            writer.write(nf.format(LGR_ADTestP_pair.get(0)) + "," + nf.format(LGR_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "rejects_LGP_ADTestP_data.csv":
+                        for (List<Double> LGP_ADTestP_pair : rejects_LGP_ADTestP) {
+                            writer.write(nf.format(LGP_ADTestP_pair.get(0)) + "," + nf.format(LGP_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+
+                    case "rejects_LGR_ADTestP_data.csv":
+                        for (List<Double> LGR_ADTestP_pair : rejects_LGR_ADTestP) {
+                            writer.write(nf.format(LGR_ADTestP_pair.get(0)) + "," + nf.format(LGR_ADTestP_pair.get(1)) + "\n");
+                        }
+                        break;
+                    case "lowLGRecallNodes.csv":
+                        for (Node n : lowLGRecallNodes) {
+                            writer.write(n.toString() + "\n");
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+                System.out.println("Successfully written to " + entry.getKey());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return accepts_rejects_lowRecall;
     }
 
     /**
@@ -333,6 +690,75 @@ public class MarkovCheck {
     }
 
     /**
+     * Calculates the precision and recall on the markov blanket graph plot data.
+     *
+     * @param x              the target node
+     * @param estimatedGraph the estimated graph
+     * @param trueGraph      the true graph
+     * @return a list of doubles representing the precision and recall values: [adjacency precision, adjacency recall,
+     * arrowhead precision, arrowhead recall]
+     */
+    public List<Double> getPrecisionAndRecallOnMarkovBlanketGraphPlotData(Node x, Graph estimatedGraph, Graph trueGraph) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
+        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+
+        double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ahp = new ArrowheadPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        return Arrays.asList(ap, ar, ahp, ahr);
+    }
+
+    /**
+     * Calculates the precision and recall using LocalGraphConfusion (which calculates the combination of Adjacency and
+     * ArrowHead) on the Markov Blanket graph for a given node. Prints the statistics to the console.
+     *
+     * @param x              The target node.
+     * @param estimatedGraph The estimated graph.
+     * @param trueGraph      The true graph.
+     */
+    public void getPrecisionAndRecallOnMarkovBlanketGraph2(Node x, Graph estimatedGraph, Graph trueGraph) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
+        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+
+        double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+
+        NumberFormat nf = new DecimalFormat("0.00");
+        System.out.println("Node " + x + "'s statistics: " + " \n" +
+                           " LocalGraphPrecision = " + nf.format(lgp) + " LocalGraphRecall = " + nf.format(lgr) + " \n");
+    }
+
+    /**
+     * This method calculates the precision and recall of a target node's Markov Blanket in the given estimated graph.
+     *
+     * @param x              the target node for which the precision and recall are calculated
+     * @param estimatedGraph the estimated graph
+     * @param trueGraph      the true graph
+     * @return a list of two doubles representing the precision and recall, respectively
+     */
+    public List<Double> getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(Node x, Graph estimatedGraph, Graph trueGraph) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+        System.out.println("xMBLookupGraph:" + xMBLookupGraph);
+        Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
+        System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
+
+        double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        return Arrays.asList(lgp, lgr);
+    }
+
+    /**
      * Returns the variables of the independence test.
      *
      * @param graphNodes        a {@link java.util.List} object
@@ -349,6 +775,16 @@ public class MarkovCheck {
     }
 
     /**
+     * Clears the results stored in the `resultsIndep` and `resultsDep` lists.
+     *
+     * @see List#clear()
+     */
+    public void clear() {
+        resultsIndep.clear();
+        resultsDep.clear();
+    }
+
+    /**
      * Generates all results, for both the Markov and dependency checks, for each node in the graph given the parents of
      * that node. These results are stored in the resultsIndep and resultsDep lists. This should be called before any of
      * the result methods. Note that only results for X _||_ Y | Z1,...,Zn are generated, where X and Y are in the
@@ -360,8 +796,7 @@ public class MarkovCheck {
      */
     public void generateResults(boolean clear) {
         if (clear) {
-            resultsIndep.clear();
-            resultsDep.clear();
+            clear();
         }
 
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
@@ -394,7 +829,28 @@ public class MarkovCheck {
 
                     switch (setType) {
                         case LOCAL_MARKOV:
-                            z = new HashSet<>(graph.getParents(x));
+                            z = new HashSet<>();
+
+                            for (Node w : graph.getAdjacentNodes(x)) {
+                                if (graph.isParentOf(w, x)) {
+                                    z.add(w);
+                                }
+                            }
+
+                            break;
+                        case PARENTS_AND_NEIGHBORS:
+                            z = new HashSet<>();
+
+                            for (Node w : graph.getAdjacentNodes(x)) {
+                                if (Edges.isUndirectedEdge(graph.getEdge(w, x))) {
+                                    z.add(w);
+                                }
+
+                                if (graph.isParentOf(w, x)) {
+                                    z.add(w);
+                                }
+                            }
+
                             break;
                         case ORDERED_LOCAL_MARKOV:
                             if (order == null) throw new IllegalArgumentException("No valid order found.");
@@ -420,6 +876,10 @@ public class MarkovCheck {
 
                     if (x == y || z.contains(x) || z.contains(y)) continue;
 
+                    if (removeExtraneousVariables && graph.paths().isMSeparatedFrom(x, y, z, false)) {
+                        z = removeExtraneousVariables(z, x, y);
+                    }
+
                     if (!checkNodeIndependenceAndConditioning(x, y, z)) {
                         continue;
                     }
@@ -439,6 +899,22 @@ public class MarkovCheck {
 
         calcStats(true);
         calcStats(false);
+    }
+
+    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y) {
+        Set<Node> _z = new HashSet<>(z);
+
+        do {
+            for (Node w : new HashSet<>(_z)) {
+                _z.remove(w);
+                if (!graph.paths().isMSeparatedFrom(x, y, _z, false)) {
+                    _z.add(w);
+                }
+            }
+
+            z = new HashSet<>(_z);
+        } while (!_z.equals(z));
+        return z;
     }
 
     /**
@@ -844,6 +1320,8 @@ public class MarkovCheck {
 
         if (parallelized) {
             int parallelism = Runtime.getRuntime().availableProcessors();
+            TetradLogger.getInstance().log("Parallelism: " + parallelism);
+
             ForkJoinPool pool = new ForkJoinPool(parallelism);
 
             List<Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> theseResults;
@@ -855,7 +1333,7 @@ public class MarkovCheck {
                     msep.addAll(setPair.getFirst());
                     mconn.addAll(setPair.getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                    TetradLogger.getInstance().log(e.getMessage());
                 }
             }
 
@@ -897,6 +1375,7 @@ public class MarkovCheck {
                     List<Integer> rows = getSubsampleRows(percentResample); // Default as 0.5
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
                 }
+
                 addResults(resultsIndep, resultsDep, fact, x, y, z);
 
                 return new Pair<>(resultsIndep, resultsDep);
@@ -914,9 +1393,15 @@ public class MarkovCheck {
                 }
                 boolean indep = result.isIndependent();
                 double pValue = result.getPValue();
-                independenceTest.setVerbose(verbose);
 
-                if (!Double.isNaN(pValue)) {
+                double min = 0.0;
+
+                // Optionally, remove the p-values less than alpha.
+                if (false) {
+                    min = independenceTest.getAlpha();
+                }
+
+                if (pValue >= min) {
                     if (msep) {
                         resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                     } else {
@@ -955,7 +1440,7 @@ public class MarkovCheck {
                     resultsIndep.addAll(future.get().getFirst());
                     resultsDep.addAll(future.get().getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                    TetradLogger.getInstance().log(e.getMessage());
                 }
             }
 
@@ -978,12 +1463,23 @@ public class MarkovCheck {
         }
 
         List<Double> pValues = getPValues(results);
-        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
-        double aSquared = generalAndersonDarlingTest.getASquared();
-        double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
+
+        double min = 0.0;
+
+        // Optionally let the minimum of the uniform range be the minimum p-value. This is useful if we ignore
+        // p-values less than alpha. This is hard-coded for now.
+        if (false) {
+            min = Double.POSITIVE_INFINITY;
+            for (double pValue : pValues) {
+                if (pValue < min) {
+                    min = pValue;
+                }
+            }
+        }
 
         if (indep) {
             fractionDependentIndep = dependent / (double) results.size();
+
             if (pValues.size() < 2) {
                 ksPValueIndep = Double.NaN;
                 binomialPIndep = Double.NaN;
@@ -991,14 +1487,19 @@ public class MarkovCheck {
                 aSquaredStarIndep = Double.NaN;
                 andersonDarlingPIndep = Double.NaN;
             } else {
-                ksPValueIndep = UniformityTest.getKsPValue(pValues, 0.0, 1.0);
+                GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(min, 1));
+                double _aSquared = _generalAndersonDarlingTest.getASquared();
+                double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
+
+                ksPValueIndep = UniformityTest.getKsPValue(pValues, min, 1.0);
                 binomialPIndep = getBinomialPValue(pValues, independenceTest.getAlpha());
-                aSquaredIndep = aSquared;
-                aSquaredStarIndep = aSquaredStar;
-                andersonDarlingPIndep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
+                aSquaredIndep = _aSquared;
+                aSquaredStarIndep = _aSquaredStar;
+                andersonDarlingPIndep = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
             }
         } else {
             fractionDependentDep = dependent / (double) results.size();
+
             if (pValues.size() < 2) {
                 ksPValueDep = Double.NaN;
                 binomialPDep = Double.NaN;
@@ -1007,11 +1508,15 @@ public class MarkovCheck {
                 andersonDarlingPDep = Double.NaN;
 
             } else {
+                GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(min, 1));
+                double _aSquared = _generalAndersonDarlingTest.getASquared();
+                double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
+
                 ksPValueDep = UniformityTest.getKsPValue(pValues, 0.0, 1.0);
                 binomialPDep = getBinomialPValue(pValues, independenceTest.getAlpha());
-                aSquaredDep = aSquared;
-                aSquaredStarDep = aSquaredStar;
-                andersonDarlingPDep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
+                aSquaredDep = _aSquared;
+                aSquaredStarDep = _aSquaredStar;
+                andersonDarlingPDep = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
             }
         }
     }
@@ -1077,9 +1582,9 @@ public class MarkovCheck {
      */
     private List<IndependenceResult> getResultsLocal(boolean indep) {
         if (indep) {
-            return this.resultsIndep;
+            return new ArrayList<>(this.resultsIndep);
         } else {
-            return this.resultsDep;
+            return new ArrayList<>(this.resultsDep);
         }
     }
 
@@ -1154,6 +1659,43 @@ public class MarkovCheck {
 //        double aSquared = generalAndersonDarlingTest.getASquared();
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
+    }
+
+    /**
+     * Adds a ModelObserver to the list of observers.
+     *
+     * @param observer the ModelObserver to be added
+     */
+    public void addObserver(ModelObserver observer) {
+        observers.add(observer);
+    }
+
+    /**
+     * Removes the specified observer from the list of observers.
+     *
+     * @param observer the observer to be removed
+     */
+    public void removeObserver(ModelObserver observer) {
+        observers.remove(observer);
+    }
+
+    /**
+     * Notifies all registered ModelObservers by invoking their update() method.
+     */
+    public void notifyObservers() {
+        for (ModelObserver observer : observers) {
+            observer.update();
+        }
+    }
+
+    /**
+     * Sets the flag indicating whether to remove extraneous variables when d-separation holds, to form smaller
+     * conditioning sets.
+     *
+     * @param removeExtraneousVariables {@code true} if extraneous variables should be removed, {@code false} otherwise
+     */
+    public void setRemoveExtraneousVariables(boolean removeExtraneousVariables) {
+        this.removeExtraneousVariables = removeExtraneousVariables;
     }
 
     /**

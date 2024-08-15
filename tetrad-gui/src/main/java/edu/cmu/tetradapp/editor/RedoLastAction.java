@@ -43,6 +43,8 @@ public class RedoLastAction extends AbstractAction implements ClipboardOwner {
     /**
      * Represents an action to undo the last graph change in a GraphWorkbench. Extends AbstractAction and implements
      * ClipboardOwner.
+     *
+     * @param workbench The workbench containing the graph.
      */
     public RedoLastAction(GraphWorkbench workbench) {
         super("Redo Last Graph Change");

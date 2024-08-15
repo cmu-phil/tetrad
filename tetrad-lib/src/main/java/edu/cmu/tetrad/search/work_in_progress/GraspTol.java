@@ -117,7 +117,7 @@ public class GraspTol {
         this.scorer.score(order);
 
         for (int r = 0; r < this.numStarts; r++) {
-            if (Thread.interrupted()) break;
+            if (Thread.currentThread().isInterrupted()) break;
 
             if ((r == 0 && !this.useDataOrder) || r > 0) {
                 shuffle(order);
@@ -147,8 +147,8 @@ public class GraspTol {
         long stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
+            TetradLogger.getInstance().log("Final order = " + this.scorer.getPi());
+            TetradLogger.getInstance().log("Elapsed time = " + (stop - start) / 1000.0 + " s");
         }
 
         return bestPerm;
@@ -310,10 +310,10 @@ public class GraspTol {
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
-                                                       + " Score = " + scorer.score()
-                                                       + " (GRaSP)"
-                                                       + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
+            TetradLogger.getInstance().log("# Edges = " + scorer.getNumEdges()
+                                           + " Score = " + scorer.score()
+                                           + " (GRaSP)"
+                                           + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();
@@ -332,7 +332,7 @@ public class GraspTol {
         }
 
         for (Node y : variables) {
-            if (Thread.interrupted()) break;
+            if (Thread.currentThread().isInterrupted()) break;
 
             Set<Node> ancestors = scorer.getAncestors(y);
             List<Node> parents = new ArrayList<>(scorer.getParents(y));
@@ -342,7 +342,7 @@ public class GraspTol {
             }
 
             for (Node x : parents) {
-                if (Thread.interrupted()) break;
+                if (Thread.currentThread().isInterrupted()) break;
 
                 boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;
@@ -393,7 +393,7 @@ public class GraspTol {
                     if (this.verbose) {
                         String s = String.format("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s",
                                 scorer.getNumEdges(), sNew - sOld, tucks, tuck);
-                        TetradLogger.getInstance().forceLogMessage(s);
+                        TetradLogger.getInstance().log(s);
 
 //                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
 //                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);

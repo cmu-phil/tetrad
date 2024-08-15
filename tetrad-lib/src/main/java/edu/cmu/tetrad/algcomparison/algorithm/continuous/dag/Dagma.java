@@ -68,7 +68,7 @@ public class Dagma extends AbstractBootstrapAlgorithm implements Algorithm, Retu
         search.setWThreshold(parameters.getDouble(Params.W_THRESHOLD));
         search.setCpdag(parameters.getBoolean(Params.CPDAG));
         Graph graph = search.search();
-        TetradLogger.getInstance().forceLogMessage(graph.toString());
+        TetradLogger.getInstance().log(graph.toString());
         LogUtilsSearch.stampWithBic(graph, dataModel);
         return graph;
     }

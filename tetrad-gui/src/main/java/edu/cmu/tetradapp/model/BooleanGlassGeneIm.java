@@ -28,11 +28,13 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.history.*;
 import edu.cmu.tetrad.study.gene.tetradapp.model.MeasurementSimulatorParams;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -398,40 +400,38 @@ public class BooleanGlassGeneIm implements SessionModel {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
-     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
-     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * Writes the object to the specified ObjectOutputStream.
      *
-     * @param s The input stream from which this object is being deserialized.
-     * @throws IOException            If any.
-     * @throws ClassNotFoundException If any.
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
      */
     @Serial
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-
-        if (this.genePm == null) {
-            throw new NullPointerException();
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
         }
+    }
 
-        if (this.glassFunction == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.initializer == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.history == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.simulator == null) {
-            throw new NullPointerException();
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
+     * to restore the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
         }
     }
 

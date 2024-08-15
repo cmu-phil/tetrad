@@ -1404,7 +1404,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private GraphWorkbench workbench() {
             if (this.getWorkbench() == null) {
                 this.workbench = new GraphWorkbench(graph());
-                this.workbench.enableEditing(false);
+                this.workbench.setEnableEditing(false);
                 this.getWorkbench().setAllowDoubleClickActions(false);
                 this.getWorkbench().addPropertyChangeListener((evt) -> {
                     if ("BackgroundClicked".equals(

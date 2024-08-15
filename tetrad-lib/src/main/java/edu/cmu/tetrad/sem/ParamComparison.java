@@ -22,57 +22,48 @@
 package edu.cmu.tetrad.sem;
 
 /**
- * A typesafe enum of the types of the various comparisons parameter may have with respect to one another for SEM
- * estimation.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * An enum of the types of the various comparisons a parameter may have with respect to one another for SEM estimation.
  */
-public class ParamComparison {
+public enum ParamComparison {
+    /**
+     * Represents the "Non-comparable" comparison type for a parameter in SEM estimation.
+     *
+     * This type of comparison indicates that the parameter is not comparable to any other parameter
+     * in the structural equation model.
+     */
+    NC("NC"),
+    /**
+     * An enum representing the "EQ" comparison type for a parameter in SEM estimation.
+     *
+     * This type of comparison indicates that the parameter is equal to another parameter
+     * in the structural equation model.
+     */
+    EQ("EQ"),
+    /**
+     * Represents the "LT" comparison type for a parameter in SEM estimation.
+     *
+     * This type of comparison indicates that the parameter is less than another parameter
+     * in the structural equation model.
+     */
+    LT("LT"),
+    /**
+     * An enum value representing the "LE" comparison type for a parameter in SEM estimation.
+     *
+     * This type of comparison indicates that the parameter is less than or equal to another parameter
+     * in the structural equation model.
+     */
+    LE("LE");
 
-    /**
-     * Indicates that the two freeParameters are not compared.
-     */
-    public static final ParamComparison NC = new ParamComparison("NC");
-    /**
-     * Indicates that the first parameter is equal to the second.
-     */
-    public static final ParamComparison EQ = new ParamComparison("EQ");
-    /**
-     * Indicates that the first parameter is less than the second.
-     */
-    private static final ParamComparison LT = new ParamComparison("LT");
-    /**
-     * Indicates that the first parameter is less than or equal to the second.
-     */
-    private static final ParamComparison LE = new ParamComparison("LE");
-    private static final ParamComparison[] TYPES = {ParamComparison.NC, ParamComparison.LT, ParamComparison.EQ, ParamComparison.LE};
-    // Declarations required for serialization.
-    private static int nextOrdinal;
-    /**
-     * The name of this type.
-     */
-    private final transient String name;
-    private final int ordinal = ParamComparison.nextOrdinal++;
+    private final String name;
 
-    /**
-     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
-     */
-    private ParamComparison(String name) {
+    ParamComparison(String name) {
         this.name = name;
     }
 
-    /**
-     * Prints out the name of the type.
-     *
-     * @return a {@link java.lang.String} object
-     */
     public String toString() {
         return this.name;
     }
-
 }
-
 
 
 

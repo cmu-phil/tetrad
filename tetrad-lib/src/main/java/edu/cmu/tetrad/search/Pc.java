@@ -111,7 +111,7 @@ public class Pc implements IGraphSearch {
     /**
      * Whether cycles should be checked in the Meek rules.
      */
-    private boolean meekPreventCycles = true;
+    private boolean guaranteeCpdag = true;
     /**
      * Whether the max-p heuristic should be used for collider discovery.
      */
@@ -183,8 +183,8 @@ public class Pc implements IGraphSearch {
      */
     public Graph search(IFas fas, Set<Node> nodes) {
         if (verbose) {
-            this.logger.forceLogMessage("Starting PC algorithm");
-            this.logger.forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            this.logger.log("Starting PC algorithm");
+            this.logger.log("Independence test = " + getIndependenceTest() + ".");
         }
 
         long startTime = MillisecondTimes.timeMillis();
@@ -209,8 +209,8 @@ public class Pc implements IGraphSearch {
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
         if (verbose) {
-            this.logger.forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-            this.logger.forceLogMessage("Finishing PC Algorithm.");
+            this.logger.log("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            this.logger.log("Finishing PC Algorithm.");
             this.logger.flush();
         }
 
@@ -226,7 +226,7 @@ public class Pc implements IGraphSearch {
     private PcCommon getPcCommon() {
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
-        search.setMeekPreventCycles(meekPreventCycles);
+        search.setGuaranteeCpdag(guaranteeCpdag);
         search.setPcHeuristicType(pcHeuristicType);
         search.setKnowledge(this.knowledge);
 
@@ -251,10 +251,10 @@ public class Pc implements IGraphSearch {
     /**
      * Sets whether cycles should be checked.
      *
-     * @param meekPreventCycles Set to true just in case edges will not be added if they create cycles.
+     * @param guaranteeCpdag Set to true just in case edges will not be added if they create cycles.
      */
-    public void setMeekPreventCycles(boolean meekPreventCycles) {
-        this.meekPreventCycles = meekPreventCycles;
+    public void setGuaranteeCpdag(boolean guaranteeCpdag) {
+        this.guaranteeCpdag = guaranteeCpdag;
     }
 
     /**

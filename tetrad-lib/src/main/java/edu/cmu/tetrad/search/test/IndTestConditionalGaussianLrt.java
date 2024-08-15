@@ -37,6 +37,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.lang.Double.NaN;
+
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
  * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
@@ -46,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class IndTestConditionalGaussianLrt implements IndependenceTest {
+public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSettable {
     /**
      * The data set.
      */
@@ -75,6 +77,15 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      * The number of categories to discretize continuous variables into.
      */
     private int numCategoriesToDiscretize = 3;
+    /**
+     * The minimum sample size per cell for discretization.
+     */
+    private int minSampleSizePerCell = 4;
+    /**
+     * The rows used in the test.
+     */
+    private List<Integer> rows = null;
+    private double pValue;
 
     /**
      * Constructor.
@@ -125,10 +136,10 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         }
 
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
+        this.likelihood.setMinSampleSizePerCell(this.minSampleSizePerCell);
 
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
-
 
         List<Node> allVars = new ArrayList<>(z);
         allVars.add(x);
@@ -139,44 +150,47 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         int _x = this.nodesHash.get(x);
         int _y = this.nodesHash.get(y);
 
-        int[] list0 = new int[z.size() + 1];
-        int[] list2 = new int[z.size()];
+        int[] list0 = new int[z.size()];
+        int[] list1 = new int[z.size() + 1];
 
-        list0[0] = _x;
+        list1[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
             int __z = this.nodesHash.get(z.get(i));
-            list0[i + 1] = __z;
-            list2[i] = __z;
+            list0[i] = __z;
+            list1[i + 1] = __z;
         }
 
-        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list0);
-        ConditionalGaussianLikelihood.Ret ret2 = this.likelihood.getLikelihood(_y, list2);
+        ConditionalGaussianLikelihood.Ret ret0 = likelihood.getLikelihood(_y, list0);
+        ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list1);
 
-        double lik0 = ret1.getLik() - ret2.getLik();
-        double dof0 = ret1.getDof() - ret2.getDof();
+        double lik_diff = ret0.getLik() - ret1.getLik();
+        double dof_diff = ret1.getDof() - ret0.getDof();
 
-        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
-        if (this.alpha == 0)
-            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
-        if (this.alpha == 1)
-            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
-        if (lik0 == Double.POSITIVE_INFINITY)
-            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (dof_diff <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
+                false, NaN, NaN);
+        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
+                false, NaN, NaN);
+        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z),
+                false, NaN, NaN);
+        if (lik_diff == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
+                false, NaN, NaN);
 
         double pValue;
 
-        if (Double.isNaN(lik0)) {
+        if (Double.isNaN(lik_diff)) {
             throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
         } else {
-            pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
+            pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(-2 * lik_diff);
         }
 
-        boolean independent = pValue > this.alpha;
+        this.pValue = pValue;
+
+        boolean independent = pValue > alpha;
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
@@ -185,6 +199,16 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
                 pValue, getAlpha() - pValue);
         facts.put(new IndependenceFact(x, y, _z), result);
         return result;
+    }
+
+    /**
+     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
+     * not meaningful for this test.
+     *
+     * @return This p-value.
+     */
+    public double getPValue() {
+        return this.pValue;
     }
 
     /**
@@ -277,6 +301,10 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      * @return A list of row indices.
      */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodeHash) {
+        if (this.rows != null) {
+            return this.rows;
+        }
+
         List<Integer> rows = new ArrayList<>();
 
         K:
@@ -292,5 +320,50 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
             rows.add(k);
         }
         return rows;
+    }
+
+    /**
+     * Returns the rows used in the test.
+     *
+     * @return The rows used in the test.
+     */
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    /**
+     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
+     * values.
+     */
+    public void setRows(List<Integer> rows) {
+        if (data == null) {
+            return;
+        }
+
+        List<Integer> all = new ArrayList<>();
+        for (int i = 0; i < data.getNumRows(); i++) all.add(i);
+        Collections.shuffle(all);
+
+        List<Integer> _rows = new ArrayList<>();
+        for (int i = 0; i < data.getNumRows() / 2; i++) {
+            _rows.add(all.get(i));
+        }
+
+        for (Integer row : _rows) {
+            if (row < 0 || row >= data.getNumRows()) {
+                throw new IllegalArgumentException("Row index out of bounds.");
+            }
+        }
+
+        this.rows = _rows;
+    }
+
+    /**
+     * Sets the minimum sample size per cell for the independence test.
+     *
+     * @param minSampleSizePerCell The minimum sample size per cell.
+     */
+    public void setMinSampleSizePerCell(int minSampleSizePerCell) {
+        this.minSampleSizePerCell = minSampleSizePerCell;
     }
 }

@@ -10,7 +10,7 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import java.io.Serial;
 
 /**
- * Estimates whether the p-values under the null are Uniform usign the Markov Checker. This estimates whether the
+ * Estimates whether the p-values under the null are Uniform using the Markov Checker. This estimates whether the
  * p-value of the Kolmogorov-Smirnov test for distribution of p-values under the null using the Fisher Z test for the
  * local Markov check is uniform, so is only applicable to continuous data and really strictly only for Gaussian data.
  *

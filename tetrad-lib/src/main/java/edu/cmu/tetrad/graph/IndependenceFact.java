@@ -21,11 +21,13 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.util.*;
 
@@ -166,7 +168,15 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
         String yN1 = this.y.getName();
         String yN2 = fact.y.getName();
 
-        return zString1.equals(zString2) && ((xN1.equals(xN2) && yN1.equals(yN2)) || xN1.equals(yN2) && yN1.equals(xN2));
+        Set<String> a1 = new HashSet<>();
+        a1.add(xN1);
+        a1.add(yN1);
+
+        Set<String> a2 = new HashSet<>();
+        a2.add(xN2);
+        a2.add(yN2);
+
+        return a1.equals(a2) && zString1.equals(zString2);
 
 //        return _z.equals(fact._z) && ((x.equals(fact.x) && (y.equals(fact.y))) || (x.equals(fact.y) && (y.equals(fact.x))));
     }
@@ -244,21 +254,39 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
-     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
-     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * Writes the object to the specified ObjectOutputStream.
      *
-     * @param s a {@link java.io.ObjectInputStream} object
-     * @throws IOException            If any.
-     * @throws ClassNotFoundException If any.
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
      */
     @Serial
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
+     * to restore the state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
     }
 }
 

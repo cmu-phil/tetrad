@@ -198,7 +198,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         this.algorithmRunner.getGraphs().clear();
         this.algorithmRunner.getGraphs().add(graph);
 
-        TetradLogger.getInstance().forceLogMessage("Remote graph result assigned to algorithmRunner!");
+        TetradLogger.getInstance().log("Remote graph result assigned to algorithmRunner!");
         firePropertyChange("modelChanged", null, null);
 
         this.graphCard.refresh();

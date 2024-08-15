@@ -13,6 +13,7 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Jul 23, 2018 4:05:07 PM
@@ -54,7 +55,7 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
         for (Component comp : this.workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
                 Node node = ((DisplayNode) comp).getModelNode();
-                List<Edge> edges = graph.getEdges(node);
+                Set<Edge> edges = graph.getEdges(node);
                 if (edges == null || edges.isEmpty()) {
                     comp.setVisible(!comp.isVisible());
                 }

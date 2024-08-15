@@ -92,16 +92,6 @@ public class Comparison implements TetradSerializable {
     private boolean saveGraphs;
 
     /**
-     * Whether to show the simulation indices.
-     */
-    private boolean showSimulationIndices;
-
-    /**
-     * Whether to show the algorithm indices.
-     */
-    private boolean showAlgorithmIndices;
-
-    /**
      * Whether to show the utility calculations.
      */
     private boolean showUtilities;
@@ -148,19 +138,29 @@ public class Comparison implements TetradSerializable {
      * The output stream for local output. Could be null.
      */
     private transient PrintStream localOut = null;
+    /**
+     * The second output stream for local output. Could be null.
+     */
+    private transient PrintStream localOut2 = null;
+    /**
+     * Represents a variable for storing knowledge.
+     */
+    private Knowledge knowledge = null;
+    /**
+     * True if knowledge should be set on the algorithms (if supplied).
+     */
+    private boolean setAlgorithmKnowledge = false;
 
     /**
      * Initializes a new instance of the Comparison class.
      * <p>
-     * By default, the saveGraphs property is set to true. The showSimulationIndices, showAlgorithmIndices,
-     * showUtilities, and sortByUtility properties are all set to false.
+     * By default, the saveGraphs property is set to true. The showUtilities and sortByUtility properties are set to
+     * false.
      * <p>
      * Usage: Comparison comparison = new Comparison();
      */
     public Comparison() {
         this.saveGraphs = true;
-        this.showSimulationIndices = false;
-        this.showAlgorithmIndices = false;
         this.showUtilities = false;
         this.sortByUtility = false;
     }
@@ -314,17 +314,34 @@ public class Comparison implements TetradSerializable {
     }
 
     /**
+     * Compares the results of simulations and generates an output file.
+     *
+     * @param resultsPath    The path to the directory containing the simulation results.
+     * @param simulations    The simulations to compare.
+     * @param outputFileName The name of the file to generate.
+     * @param localOut       The print stream to write the output to.
+     * @param algorithms     The algorithms to use for comparison.
+     * @param statistics     The statistics to calculate for comparison.
+     * @param parameters     The parameters for comparison.
+     */
+    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
+                                       Algorithms algorithms, Statistics statistics, Parameters parameters) {
+        compareFromSimulations(resultsPath, simulations, outputFileName, localOut, null, algorithms, statistics, parameters);
+    }
+
+    /**
      * Compares the results of different simulations and algorithms.
      *
      * @param resultsPath    the path to the results directory
-     * @param simulations    the simulations object containing the simulation data
+     * @param simulations    the simulation object containing the simulation data
      * @param outputFileName the name of the output file
-     * @param localOut       the local output stream
+     * @param localOut       the local output stream; may be null.
+     * @param localOut2      the second local output stream; may be null.
      * @param algorithms     the algorithms object containing the algorithm data
      * @param statistics     the statistics object containing the statistics data
-     * @param parameters     the parameters object containing the parameter data
+     * @param parameters     the parameter object containing the parameter data
      */
-    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut,
+    public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, PrintStream localOut, PrintStream localOut2,
                                        Algorithms algorithms, Statistics statistics, Parameters parameters) {
         this.resultsPath = resultsPath;
 
@@ -332,9 +349,13 @@ public class Comparison implements TetradSerializable {
             this.localOut = localOut;
         }
 
+        if (localOut2 != null) {
+            this.localOut2 = localOut2;
+        }
+
         setParallelism(parallelism);
 
-        PrintStream stdout = (PrintStream) parameters.get("printStream", System.out);
+        PrintStream stdout = localOut2 != null ? localOut2 : System.out;
 
         // Create output file.
         try {
@@ -435,14 +456,19 @@ public class Comparison implements TetradSerializable {
         double[][][][] allStats;
 
         try {
-            allStats = calcStats(algorithmSimulationWrappers, simulationWrappers, statistics, numRuns, stdout);
+            allStats = calcStats(algorithmSimulationWrappers, simulationWrappers, algorithmWrappers, statistics, numRuns, stdout);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         {
             int numTables = allStats.length;
-            int numStats = allStats[0][0].length - 1;
+            int numStats = 0;
+            try {
+                numStats = allStats[0][0].length - 1;
+            } catch (Exception e) {
+                throw new RuntimeException("It seems that no results were recorded. Please double-check the comparison setup.");
+            }
 
             double[][][] statTables = calcStatTables(allStats, Mode.Average, numTables, algorithmSimulationWrappers, numStats, statistics);
             double[] utilities = calcUtilities(statistics, algorithmSimulationWrappers, statTables[0]);
@@ -721,7 +747,7 @@ public class Comparison implements TetradSerializable {
                 out.close();
             }
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("IO Exception: " + e.getMessage());
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
         }
     }
 
@@ -815,7 +841,7 @@ public class Comparison implements TetradSerializable {
                 }
             }
         } catch (IOException e) {
-            TetradLogger.getInstance().forceLogMessage("IO Exception: " + e.getMessage());
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
         }
     }
 
@@ -828,7 +854,7 @@ public class Comparison implements TetradSerializable {
     public void configuration(String path) {
         try {
             if (!new File(path).mkdirs())
-                TetradLogger.getInstance().forceLogMessage("Path already exists: " + new File(path));
+                TetradLogger.getInstance().log("Path already exists: " + new File(path));
 
             PrintStream out = new PrintStream(Files.newOutputStream(new File(path, "Configuration.txt").toPath()));
 
@@ -1000,7 +1026,7 @@ public class Comparison implements TetradSerializable {
 
             out.close();
         } catch (Exception e) {
-            TetradLogger.getInstance().forceLogMessage("Exception: " + e.getMessage());
+            TetradLogger.getInstance().log("Exception: " + e.getMessage());
         }
     }
 
@@ -1068,7 +1094,8 @@ public class Comparison implements TetradSerializable {
      * dimension: statistics size + one (additional slot for storing total statistics) - fourth dimension: numRuns
      */
     private double[][][][] calcStats(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
-                                     List<SimulationWrapper> simulationWrappers, Statistics statistics,
+                                     List<SimulationWrapper> simulationWrappers, List<AlgorithmWrapper> algorithmWrappers,
+                                     Statistics statistics,
                                      int numRuns, PrintStream stdout) throws ExecutionException, InterruptedException {
         final int numGraphTypes = 4;
 
@@ -1081,7 +1108,7 @@ public class Comparison implements TetradSerializable {
         for (int algSimIndex = 0; algSimIndex < algorithmSimulationWrappers.size(); algSimIndex++) {
             for (int runIndex = 0; runIndex < numRuns; runIndex++) {
                 Run run = new Run(algSimIndex, runIndex);
-                Callable<Boolean> task = new AlgorithmTask(algorithmSimulationWrappers, simulationWrappers, statistics, numGraphTypes, allStats, run, stdout);
+                Callable<Boolean> task = new AlgorithmTask(algorithmSimulationWrappers, simulationWrappers, algorithmWrappers, statistics, numGraphTypes, allStats, run, stdout);
                 tasks.add(task);
             }
         }
@@ -1104,42 +1131,6 @@ public class Comparison implements TetradSerializable {
         }
 
         return allStats;
-    }
-
-    /**
-     * Checks if the simulation indices are currently being shown.
-     *
-     * @return true if the simulation indices are being shown, false otherwise
-     */
-    public boolean isShowSimulationIndices() {
-        return this.showSimulationIndices;
-    }
-
-    /**
-     * Sets whether to show simulation indices or not.
-     *
-     * @param showSimulationIndices true to show simulation indices, false otherwise
-     */
-    public void setShowSimulationIndices(boolean showSimulationIndices) {
-        this.showSimulationIndices = showSimulationIndices;
-    }
-
-    /**
-     * Indicates whether the algorithm indices should be shown.
-     *
-     * @return {@code true} if the algorithm indices should be shown, {@code false} otherwise.
-     */
-    public boolean isShowAlgorithmIndices() {
-        return this.showAlgorithmIndices;
-    }
-
-    /**
-     * Sets whether to show algorithm indices.
-     *
-     * @param showAlgorithmIndices true to show algorithm indices, false otherwise
-     */
-    public void setShowAlgorithmIndices(boolean showAlgorithmIndices) {
-        this.showAlgorithmIndices = showAlgorithmIndices;
     }
 
     /**
@@ -1304,14 +1295,15 @@ public class Comparison implements TetradSerializable {
                 deleteFilesThenDirectory(currentFile);
             } else {
                 if (!currentFile.delete())
-                    TetradLogger.getInstance().forceLogMessage("File could not be deleted: " + currentFile);
+                    TetradLogger.getInstance().log("File could not be deleted: " + currentFile);
             }
         }
 
-        if (!dir.delete()) TetradLogger.getInstance().forceLogMessage("Directory could not be deleted: " + dir);
+        if (!dir.delete()) TetradLogger.getInstance().log("Directory could not be deleted: " + dir);
     }
 
-    private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, List<SimulationWrapper> simulationWrappers, Statistics statistics,
+    private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, List<SimulationWrapper> simulationWrappers,
+                       List<AlgorithmWrapper> algorithmWrappers, Statistics statistics,
                        int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
         stdout.println();
         stdout.println("Run " + (run.runIndex() + 1));
@@ -1335,10 +1327,9 @@ public class Comparison implements TetradSerializable {
 
         try {
             Algorithm algorithm = algorithmWrapper.getAlgorithm();
-            Simulation simulation = simulationWrapper.getSimulation();
 
-            if (algorithm instanceof HasKnowledge && simulation instanceof HasKnowledge) {
-                ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
+            if (setAlgorithmKnowledge && algorithm instanceof HasKnowledge && knowledge != null) {
+                ((HasKnowledge) algorithm).setKnowledge(knowledge);
             }
 
             if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
@@ -1376,17 +1367,20 @@ public class Comparison implements TetradSerializable {
                 graphOut = algorithm.search(data, _params);
             }
         } catch (Exception e) {
-            TetradLogger.getInstance().forceLogMessage("Could not run " + algorithmWrapper.getDescription());
+            e.printStackTrace();
+            TetradLogger.getInstance().log("\nCould not run " + algorithmWrapper.getDescription()
+                                           + " on " + simulationWrapper.getDescription() + " because of " + e.getMessage());
             return;
         }
 
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
+        int algIndex = algorithmWrappers.indexOf(algorithmSimulationWrapper.getAlgorithmWrapper()) + 1;
 
         long endTime = threadMXBean.getCurrentThreadCpuTime();
 
         long taskCpuTime = (endTime - startTime) / 1000;
 
-        saveGraph(this.resultsPath, graphOut, run.runIndex(), simIndex, algorithmWrapper, taskCpuTime, stdout);
+        saveGraph(this.resultsPath, graphOut, run.runIndex(), simIndex, algIndex, taskCpuTime, stdout);
 
         if (trueGraph != null) {
             graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
@@ -1422,7 +1416,7 @@ public class Comparison implements TetradSerializable {
 
             truth[0] = new EdgeListGraph(comparisonGraph);
 
-            if (data.isMixed()) {
+                if (data.isMixed()) {
                 truth[1] = getSubgraph(comparisonGraph, true, true, simulationWrapper.getDataModel(run.runIndex()));
                 truth[2] = getSubgraph(comparisonGraph, true, false, simulationWrapper.getDataModel(run.runIndex()));
                 truth[3] = getSubgraph(comparisonGraph, false, false, simulationWrapper.getDataModel(run.runIndex()));
@@ -1442,6 +1436,10 @@ public class Comparison implements TetradSerializable {
                         continue;
                     }
 
+                    if (_stat instanceof HasKnowledge) {
+                        ((HasKnowledge) _stat).setKnowledge(knowledge);
+                    }
+
                     double stat;
 
                     if (_stat instanceof ElapsedCpuTime) {
@@ -1455,7 +1453,41 @@ public class Comparison implements TetradSerializable {
                     }
                 }
             }
+        } else {
+            int statIndex = -1;
+            this.graphTypeUsed[0] = true;
 
+//            graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
+
+            Graph[] est = new Graph[numGraphTypes];
+
+            for (Statistic _stat : statistics.getStatistics()) {
+                statIndex++;
+
+                if (_stat instanceof ParameterColumn) {
+                    continue;
+                }
+
+                if (_stat instanceof HasKnowledge) {
+                    ((HasKnowledge) _stat).setKnowledge(knowledge);
+                }
+
+                double stat;
+
+                if (_stat instanceof ElapsedCpuTime) {
+                    stat = taskCpuTime / 1000.0;
+                } else {
+                    try {
+                        stat = _stat.getValue(null, graphOut, data);
+                    } catch (Exception e) {
+                        stat = Double.NaN;
+                    }
+                }
+
+                synchronized (this) {
+                    allStats[0][run.algSimIndex()][statIndex][run.runIndex()] = stat;
+                }
+            }
         }
 
         if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm extAlg) {
@@ -1465,23 +1497,25 @@ public class Comparison implements TetradSerializable {
         }
     }
 
-    private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, AlgorithmWrapper algorithmWrapper, long elapsed, PrintStream stdout) {
+    private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex, long elapsed, PrintStream stdout) {
         if (!this.saveGraphs) {
             return;
         }
 
         try {
-            String description = algorithmWrapper.getDescription().replace(" ", "_");
+            String description = simIndex + "." + algIndex;
+
+//            String description = algorithmWrapper.getDescription().replace(" ", "_");
 
             File file;
             File fileElapsed;
 
-            File dir = new File(resultsPath, "results/" + description + "/" + simIndex);
+            File dir = new File(resultsPath, "results/" + description);// + "/" + simIndex);
             if (!dir.mkdirs()) {
 //                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dir);
             }
 
-            File dirElapsed = new File(resultsPath, "elapsed/" + description + "/" + simIndex);
+            File dirElapsed = new File(resultsPath, "elapsed/" + description);// + "/" + simIndex);
             if (!dirElapsed.mkdirs()) {
 //                TetradLogger.getInstance().forceLogMessage("Directory already exists: " + dirElapsed);
             }
@@ -1502,7 +1536,7 @@ public class Comparison implements TetradSerializable {
             outElapsed.println(elapsed);
             outElapsed.close();
         } catch (FileNotFoundException e) {
-            TetradLogger.getInstance().forceLogMessage("File not found exception: " + e.getMessage());
+            TetradLogger.getInstance().log("File not found exception: " + e.getMessage());
         }
     }
 
@@ -1617,34 +1651,30 @@ public class Comparison implements TetradSerializable {
             }
 
             int rows = algorithmSimulationWrappers.size() + 1;
-            int cols = (isShowSimulationIndices() ? 1 : 0) + (isShowAlgorithmIndices() ? 1 : 0) + numStats + (isShowUtilities() ? 1 : 0);
+            int cols = (1) + (1) + numStats + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
             table.setDelimiter(tabDelimitedTables ? TextTable.Delimiter.TAB : TextTable.Delimiter.JUSTIFIED);
 
             int initialColumn = 0;
 
-            if (isShowSimulationIndices()) {
-                table.setToken(0, initialColumn, "Sim");
+            table.setToken(0, initialColumn, "Sim");
 
-                for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
-                    Simulation simulation = algorithmSimulationWrappers.get(newOrder[t]).getSimulationWrapper();
-                    table.setToken(t + 1, initialColumn, "" + (simulationWrappers.indexOf(simulation) + 1));
-                }
-
-                initialColumn++;
+            for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+                Simulation simulation = algorithmSimulationWrappers.get(newOrder[t]).getSimulationWrapper();
+                table.setToken(t + 1, initialColumn, "" + (simulationWrappers.indexOf(simulation) + 1));
             }
 
-            if (isShowAlgorithmIndices()) {
-                table.setToken(0, initialColumn, "Alg");
+            initialColumn++;
 
-                for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
-                    AlgorithmWrapper algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
-                    table.setToken(t + 1, initialColumn, "" + (algorithmWrappers.indexOf(algorithm) + 1));
-                }
+            table.setToken(0, initialColumn, "Alg");
 
-                initialColumn++;
+            for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+                AlgorithmWrapper algorithm = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
+                table.setToken(t + 1, initialColumn, "" + (algorithmWrappers.indexOf(algorithm) + 1));
             }
+
+            initialColumn++;
 
             for (int statIndex = 0; statIndex < numStats; statIndex++) {
                 String statLabel = statistics.getStatistics().get(statIndex).getAbbreviation();
@@ -1835,6 +1865,33 @@ public class Comparison implements TetradSerializable {
      */
     public void setParallelism(int parallelism) {
         this.parallelism = parallelism;
+    }
+
+    /**
+     * Retrieves the knowledge.
+     *
+     * @return The knowledge object.
+     */
+    public Knowledge getKnowledge() {
+        return knowledge;
+    }
+
+    /**
+     * Sets the knowledge for the current instance.
+     *
+     * @param knowledge the knowledge to be set
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * Sets the algorithm knowledge flag.
+     *
+     * @param setAlgorithmKnowledge the flag value to set
+     */
+    public void setSetAlgorithmKnowledge(boolean setAlgorithmKnowledge) {
+        this.setAlgorithmKnowledge = setAlgorithmKnowledge;
     }
 
     /**
@@ -2290,6 +2347,11 @@ public class Comparison implements TetradSerializable {
         private final List<SimulationWrapper> simulationWrappers;
 
         /**
+         * The algorithm wrappers.
+         */
+        private final List<AlgorithmWrapper> algorithmWrappers;
+
+        /**
          * The statistics.
          */
         private final Statistics statistics;
@@ -2326,11 +2388,12 @@ public class Comparison implements TetradSerializable {
          * @param run                         the run
          * @param stdout                      the standard output
          */
-        public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
-                             List<SimulationWrapper> simulationWrappers, Statistics statistics,
+        public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, List<SimulationWrapper> simulationWrappers,
+                             List<AlgorithmWrapper> algorithmWrappers, Statistics statistics,
                              int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
             this.algorithmSimulationWrappers = algorithmSimulationWrappers;
             this.simulationWrappers = simulationWrappers;
+            this.algorithmWrappers = algorithmWrappers;
             this.statistics = statistics;
             this.numGraphTypes = numGraphTypes;
             this.allStats = allStats;
@@ -2349,7 +2412,7 @@ public class Comparison implements TetradSerializable {
                 return false;
             }
 
-            doRun(this.algorithmSimulationWrappers, this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
+            doRun(this.algorithmSimulationWrappers, this.simulationWrappers, this.algorithmWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
 
             return true;
         }

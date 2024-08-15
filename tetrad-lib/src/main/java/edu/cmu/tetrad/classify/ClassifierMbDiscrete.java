@@ -126,7 +126,7 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
                        priorString + " " +
                        maxMissingString + " ";
 
-            TetradLogger.getInstance().forceLogMessage(s);
+            TetradLogger.getInstance().log(s);
 
             DataSet train = SimpleDataLoader.loadContinuousData(new File(trainPath), "//", '\"',
                     "*", true, Delimiter.TAB, false);
@@ -218,9 +218,9 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
         Pc cpdagSearch = new Pc(new IndTestChiSquare(subset, 0.05));
         Graph mbCPDAG = cpdagSearch.search();
 
-        TetradLogger.getInstance().forceLogMessage("CPDAG = " + mbCPDAG);
+        TetradLogger.getInstance().log("CPDAG = " + mbCPDAG);
         MbUtils.trimToMbNodes(mbCPDAG, this.target, true);
-        TetradLogger.getInstance().forceLogMessage("Trimmed CPDAG = " + mbCPDAG);
+        TetradLogger.getInstance().log("Trimmed CPDAG = " + mbCPDAG);
 
         // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4
         for (Edge edge : mbCPDAG.getEdges()) {
@@ -231,10 +231,10 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
 
         Graph selectedDag = MbUtils.getOneMbDag(mbCPDAG);
 
-        TetradLogger.getInstance().forceLogMessage("Selected DAG = " + selectedDag);
+        TetradLogger.getInstance().log("Selected DAG = " + selectedDag);
         String message1 = "Vars = " + selectedDag.getNodes();
-        TetradLogger.getInstance().forceLogMessage(message1);
-        TetradLogger.getInstance().forceLogMessage("\nClassification using selected MB DAG:");
+        TetradLogger.getInstance().log(message1);
+        TetradLogger.getInstance().log("\nClassification using selected MB DAG:");
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         List<Node> mbNodes = selectedDag.getNodes();
@@ -256,7 +256,7 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
         }
 
         //Create an updater for the instantiated Bayes net.
-        TetradLogger.getInstance().forceLogMessage("Estimating Bayes net; please wait...");
+        TetradLogger.getInstance().log("Estimating Bayes net; please wait...");
         DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(bayesPm,
                 this.prior);
         BayesIm bayesIm = DirichletEstimator.estimate(prior, trainDataSubset);
@@ -314,9 +314,9 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
             }
 
             if (numMissing > this.maxMissing) {
-                TetradLogger.getInstance().forceLogMessage("classification(" + k + ") = " +
-                                                           "not done since number of missing values too high " +
-                                                           "(" + numMissing + ").");
+                TetradLogger.getInstance().log("classification(" + k + ") = " +
+                                               "not done since number of missing values too high " +
+                                               "(" + numMissing + ").");
                 continue;
             }
 
@@ -353,7 +353,7 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
             }
 
             String estimatedCategory = this.targetVariable.getCategories().get(_category);
-            TetradLogger.getInstance().forceLogMessage("classification(" + k + ") = " + estimatedCategory);
+            TetradLogger.getInstance().log("classification(" + k + ") = " + estimatedCategory);
 
             estimatedCategories[k] = _category;
         }
@@ -389,9 +389,9 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
                 100.0 * ((double) numberCorrect) / ((double) numberCounted);
 
         // Print the cross classification.
-        TetradLogger.getInstance().forceLogMessage("");
-        TetradLogger.getInstance().forceLogMessage("\t\t\tEstimated\t");
-        TetradLogger.getInstance().forceLogMessage("Observed\t");
+        TetradLogger.getInstance().log("");
+        TetradLogger.getInstance().log("\t\t\tEstimated\t");
+        TetradLogger.getInstance().log("Observed\t");
 
         StringBuilder buf0 = new StringBuilder();
         buf0.append("\t");
@@ -400,7 +400,7 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
             buf0.append(this.targetVariable.getCategory(m)).append("\t");
         }
 
-        TetradLogger.getInstance().forceLogMessage(buf0.toString());
+        TetradLogger.getInstance().log(buf0.toString());
 
         for (int k = 0; k < numCategories; k++) {
             StringBuilder buf = new StringBuilder();
@@ -410,14 +410,14 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
             for (int m = 0; m < numCategories; m++)
                 buf.append(crossTabs[k][m]).append("\t");
 
-            TetradLogger.getInstance().forceLogMessage(buf.toString());
+            TetradLogger.getInstance().log(buf.toString());
         }
 
-        TetradLogger.getInstance().forceLogMessage("");
-        TetradLogger.getInstance().forceLogMessage("Number correct = " + numberCorrect);
-        TetradLogger.getInstance().forceLogMessage("Number counted = " + numberCounted);
+        TetradLogger.getInstance().log("");
+        TetradLogger.getInstance().log("Number correct = " + numberCorrect);
+        TetradLogger.getInstance().log("Number counted = " + numberCounted);
         String message = "Percent correct = " + nf.format(percentCorrect1) + "%";
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
 
         this.crossTabulation = crossTabs;
         this.percentCorrect = percentCorrect1;

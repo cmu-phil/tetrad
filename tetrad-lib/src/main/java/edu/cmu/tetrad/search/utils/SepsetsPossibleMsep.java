@@ -73,11 +73,12 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     /**
      * Retrieves the separation set (sepset) between two nodes.
      *
-     * @param i The first node
-     * @param k The second node
+     * @param i     The first node
+     * @param k     The second node
+     * @param depth The depth of the search
      * @return The set of nodes that form the sepset between node i and node k, or null if no sepset exists
      */
-    public Set<Node> getSepset(Node i, Node k) {
+    public Set<Node> getSepset(Node i, Node k, int depth) {
         Set<Node> condSet = getCondSetContaining(i, k, null, this.maxPathLength);
 
         if (condSet == null) {
@@ -88,17 +89,18 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     }
 
     /**
-     * Retrieves the separation set (sepset) between two nodes i and k that contains a given set of nodes s. If there
-     * is no required set of nodes, pass null for the set.
+     * Retrieves the separation set (sepset) between two nodes i and k that contains a given set of nodes s. If there is
+     * no required set of nodes, pass null for the set.
      *
-     * @param i The first node
-     * @param k The second node
-     * @param s The set of nodes to be contained in the sepset
-     * @return The set of nodes that form the sepset between node i and node k and contains all nodes from set s,
-     *         or null if no sepset exists
+     * @param i     The first node
+     * @param k     The second node
+     * @param s     The set of nodes to be contained in the sepset
+     * @param depth The depth of the search
+     * @return The set of nodes that form the sepset between node i and node k and contains all nodes from set s, or
+     * null if no sepset exists
      */
     @Override
-    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s) {
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
         Set<Node> condSet = getCondSetContaining(i, k, s, this.maxPathLength);
 
         if (condSet == null) {
@@ -111,8 +113,8 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     /**
      * {@inheritDoc}
      */
-    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        Set<Node> sepset = getSepset(i, k);
+    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
+        Set<Node> sepset = getSepset(i, k, this.depth);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -169,6 +171,11 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     public double getPValue(Node a, Node b, Set<Node> sepset) {
         IndependenceResult result = this.test.checkIndependence(a, b, sepset);
         return result.getPValue();
+    }
+
+    @Override
+    public void setGraph(Graph graph) {
+        // Ignored.
     }
 
     private Set<Node> getCondSetContaining(Node node1, Node node2, Set<Node> s, int maxPathLength) {

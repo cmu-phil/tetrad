@@ -129,7 +129,7 @@ public class ScoreIndTest implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFact(x, y, z) + " score = " + nf.format(v));
             }
         }

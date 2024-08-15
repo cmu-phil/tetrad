@@ -28,7 +28,10 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
@@ -71,10 +74,6 @@ public final class GFci implements IGraphSearch {
      */
     private final IndependenceTest independenceTest;
     /**
-     * The logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-    /**
      * The score used in search.
      */
     private final Score score;
@@ -95,23 +94,15 @@ public final class GFci implements IGraphSearch {
      */
     private int maxDegree = -1;
     /**
-     * Whether verbose output should be printed.
-     */
-    private boolean verbose;
-    /**
      * The print stream used for output.
      */
-    private PrintStream out = System.out;
+    private transient PrintStream out = System.out;
     /**
      * Whether one-edge faithfulness is assumed.
      */
     private boolean faithfulnessAssumed = true;
     /**
-     * Whether the discriminating path rule should be used.
-     */
-    private boolean doDiscriminatingPathRule = true;
-    /**
-     * The depth of the search for the possible m-sep search.
+     * The depth for independence testing.
      */
     private int depth = -1;
     /**
@@ -119,13 +110,29 @@ public final class GFci implements IGraphSearch {
      */
     private int numThreads = 1;
     /**
-     * Determines whether almost cyclic paths should be resolved.
-     * If true, the algorithm will attempt to break almost cyclic paths by removing one edge.
-     * If false, almost cyclic paths will be treated as genuine causal relationships.
-     * The default value is false.
+     * Whether verbose output should be printed.
      */
-    private boolean resolveAlmostCyclicPaths;
-
+    private boolean verbose = false;
+    /**
+     * Whether the discriminating path tail rule should be used.
+     */
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * Whether the discriminating path collider rule should be used.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
+    /**
+     * Whether to guarantee the output is a PAG by repairing a faulty PAG.
+     */
+    private boolean guaranteePag = false;
+    /**
+     * Whether to leave out the final orientation step in the ablation study.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod = 2;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -141,7 +148,6 @@ public final class GFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-
     /**
      * Runs the graph and returns the search PAG.
      *
@@ -149,14 +155,16 @@ public final class GFci implements IGraphSearch {
      */
     public Graph search() {
         this.independenceTest.setVerbose(verbose);
-        List<Node> nodes = getIndependenceTest().getVariables();
+        List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting GFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting GFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
-        Graph graph;
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting FGES algorithm.");
+        }
 
         Fges fges = new Fges(this.score);
         fges.setKnowledge(getKnowledge());
@@ -165,45 +173,53 @@ public final class GFci implements IGraphSearch {
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         fges.setNumThreads(numThreads);
-        graph = fges.search();
+        Graph graph = fges.search();
 
-        Graph referenceDag = new EdgeListGraph(graph);
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished FGES algorithm.");
+        }
 
-        // GFCI extra edge removal step...
+        if (verbose) {
+            TetradLogger.getInstance().log("Making a copy of the FGES CPDAG for reference.");
+        }
+
+        Graph cpdag = new EdgeListGraph(graph);
+
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
+            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-//        SepsetProducer sepsets = new SepsetsConservative(graph, this.independenceTest, null, this.depth);
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        Set<Triple> unshieldedTriples = new HashSet<>();
 
-        FciOrient fciOrient = new FciOrient(sepsets);
+        gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(graph, cpdag, sepsets, knowledge, verbose, unshieldedTriples);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
+        }
+
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        fciOrient.setMaxPathLength(maxPathLength);
 
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
 
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
+        if (guaranteePag) {
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         return graph;
@@ -256,7 +272,7 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum path length for the discriminating path rule.
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -306,23 +322,6 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path rule should be used.
-     *
-     * @param doDiscriminatingPathRule True, if so.
-     */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    /**
-     * Sets whether the possible m-sep search should be done.
-     *
-     * @param possibleMsepSearchDone True, if so.
-     */
-    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
-    }
-
-    /**
      * Sets the depth of the search for the possible m-sep search.
      *
      * @param depth This depth.
@@ -343,12 +342,54 @@ public final class GFci implements IGraphSearch {
         this.numThreads = numThreads;
     }
 
+
+
     /**
-     * Sets the flag to resolve almost cyclic paths.
+     * Sets the flag indicating whether to guarantee the output is a legal PAG.
      *
-     * @param resolveAlmostCyclicPaths true if almost cyclic paths should be resolved, false otherwise
+     * @param guaranteePag A boolean value indicating whether to guarantee the output is a legal PAG.
      */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
+    }
+
+    /**
+     * Sets the flag indicating whether to leave out the final orientation during ablation.
+     *
+     * @param ablationLeaveOutFinalOrientation A boolean value indicating whether to leave out the final orientation during ablation.
+     */
+    public void setAblationLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    /**
+     * Sets the method used to find the sepset in the GFci algorithm.
+     *
+     * @param sepsetFinderMethod The method used to find the sepset.
+     *                           - 0: Default method
+     *                           - 1: Custom method 1
+     *                           - 2: Custom method 2
+     *                           - ...
+     */
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
+    }
+
+    /**
+     * Sets whether the discriminating path tail rule should be used.
+     *
+     * @param doDiscriminatingPathTailRule True, if so.
+     */
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

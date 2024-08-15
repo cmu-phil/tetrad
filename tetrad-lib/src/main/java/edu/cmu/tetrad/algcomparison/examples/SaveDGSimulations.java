@@ -62,7 +62,6 @@ public class SaveDGSimulations {
         Simulation simulation = new ConditionalGaussianSimulation(new RandomForward());
 
         Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
         comparison.saveToFiles("comparison-CG-measures", simulation, parameters);
     }
 }

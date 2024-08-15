@@ -110,7 +110,7 @@ public class BayesPmEditor extends JPanel
 
         Graph graph = this.wrapper.getBayesPm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
-        workbench.enableEditing(false);
+        workbench.setEnableEditing(false);
         BayesPmEditorWizard wizard = new BayesPmEditorWizard(this.wrapper.getBayesPm(), workbench);
 
         JScrollPane workbenchScroll = new JScrollPane(workbench);

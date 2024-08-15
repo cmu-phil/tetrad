@@ -81,9 +81,6 @@ public class BryanSensitivityStudy {
 //        algorithms.add(new Fci(new FisherZ()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);

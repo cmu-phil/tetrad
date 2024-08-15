@@ -81,7 +81,7 @@ public class RandomUtil {
      *
      * @param list The list to be shuffled.
      */
-    public static void shuffle(List<?> list) {
+    public static synchronized void shuffle(List<?> list) {
         int size = list.size();
         if (size < SHUFFLE_THRESHOLD || list instanceof RandomAccess) {
             for (int i = size; i > 1; i--)

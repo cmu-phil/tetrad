@@ -28,6 +28,8 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
+import java.io.Serial;
+
 /**
  * Picks a DAG from the given graph.
  *
@@ -35,6 +37,7 @@ import edu.cmu.tetradapp.session.DoNotAddOldModel;
  * @version $Id: $Id
  */
 public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
 
@@ -55,9 +58,9 @@ public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddO
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public AllEdgesUndirectedWrapper(Graph graph) {
-        super(GraphUtils.undirectedGraph(graph), "Make Bidirected Edges Undirected");
+        super(GraphUtils.undirectedGraph(graph), "Make all Edges Undirected");
         String message = getGraph() + "";
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
 

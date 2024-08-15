@@ -23,12 +23,10 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -249,8 +247,10 @@ public class MsepTest implements IndependenceTest {
             }
         }
 
-        if (facts.containsKey(new IndependenceFact(x, y, z))) {
-            return facts.get(new IndependenceFact(x, y, z));
+        IndependenceResult storedResult = facts.get(new IndependenceFact(x, y, z));
+
+        if (storedResult != null) {
+            return storedResult;
         }
 
         boolean mSeparated;
@@ -263,7 +263,7 @@ public class MsepTest implements IndependenceTest {
 
         if (this.verbose) {
             if (mSeparated) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, z, 1.0));
             }
         }

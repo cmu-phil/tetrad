@@ -56,7 +56,7 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
     public MagInPagWrapper(Graph graph) {
         super(MagInPagWrapper.getGraph(graph), "Choose Zhang MAG in PAG.");
         String message = getGraph() + "";
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
     }
 
     private static Graph getGraph(Graph graph) {

@@ -10,7 +10,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static org.apache.commons.math3.util.FastMath.min;
@@ -162,7 +165,7 @@ public class BesPermutation {
             int cond = diff.size() + graph.getParents(y).size();
 
             String message = (graph.getNumEdges()) + ". DELETE " + x + " --> " + y + " H = " + H + " NaYX = " + naYX + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " diff = " + diff + " (" + bump + ") " + " cond = " + cond;
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
 
         for (Node h : H) {
@@ -177,7 +180,7 @@ public class BesPermutation {
             graph.addEdge(directedEdge(y, h));
 
             if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
+                TetradLogger.getInstance().log("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
             }
 
             Edge oldxh = graph.getEdge(x, h);
@@ -188,7 +191,7 @@ public class BesPermutation {
                 graph.addEdge(directedEdge(x, h));
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
+                    TetradLogger.getInstance().log("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
                 }
             }
         }
@@ -246,7 +249,7 @@ public class BesPermutation {
     private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
-        rules.setMeekPreventCycles(true);
+        rules.setMeekPreventCycles(false);
         boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
@@ -415,21 +418,25 @@ public class BesPermutation {
 
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            int parallelism = Runtime.getRuntime().availableProcessors();
-            ForkJoinPool pool = new ForkJoinPool(parallelism);
+//            int parallelism = Runtime.getRuntime().availableProcessors();
+//            ForkJoinPool pool = new ForkJoinPool(parallelism);
 
-            try {
-                pool.invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
-                        adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
-                throw e;
-            }
+            // Too many threads are being created, so we will so these all in the current thread.
+            // jdramsey 2024-6-67
+//            try {
+            new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+                    adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward).compute();
+//                pool.invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+//                        adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
+//            } catch (Exception e) {
+//                Thread.currentThread().interrupt();
+//                throw e;
+//            }
 
-            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
-                Thread.currentThread().interrupt();
-                return;
-            }
+//            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+//                Thread.currentThread().interrupt();
+//                return;
+//            }
         }
     }
 

@@ -45,7 +45,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-@Experimental
+//@Experimental
 public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix {
@@ -113,11 +113,13 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setSeed(parameters.getLong(Params.SEED));
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
-        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setKnowledge(knowledge);
@@ -172,14 +174,16 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
 
         params.add(Params.USE_BES);
         params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
         params.add(Params.NUM_THREADS);
+        params.add(Params.GUARANTEE_PAG);
         params.add(Params.VERBOSE);
-        params.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
 
         // Parameters
         params.add(Params.NUM_STARTS);

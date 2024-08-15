@@ -60,7 +60,7 @@ public final class IndependenceTestDescriptions {
                 }
             });
         } catch (IOException ex) {
-            TetradLogger.getInstance().forceLogMessage("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
+            TetradLogger.getInstance().log("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
 //            IndependenceTestDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
     }

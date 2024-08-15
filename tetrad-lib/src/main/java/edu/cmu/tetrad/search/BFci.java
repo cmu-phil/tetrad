@@ -24,14 +24,13 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagSepsets;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsMinP;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
@@ -75,10 +74,6 @@ public final class BFci implements IGraphSearch {
      */
     private final Score score;
     /**
-     * The sample size.
-     */
-    int sampleSize;
-    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -90,10 +85,6 @@ public final class BFci implements IGraphSearch {
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
     private int maxPathLength = -1;
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
     /**
      * The number of times to restart the search.
      * <p>
@@ -108,25 +99,16 @@ public final class BFci implements IGraphSearch {
     private int numStarts = 1;
     /**
      * Represents the depth of the search for the constraint-based step.
-     *
-     * <p>
-     * The depth determines how deep the search will go in exploring the possible graph structures during the
-     * constraint-based step. A depth of -1 indicates unlimited depth, meaning that the search will explore all possible
-     * structures.
-     * </p>
-     *
-     * <p>
-     * The default value for depth is -1.
-     * </p>
-     *
-     * @see BFci
-     * @see BFci#setDepth(int)
      */
     private int depth = -1;
     /**
-     * Whether to apply the discriminating path rule during the search.
+     * Whether to apply the discriminating path tail rule during the search.
      */
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * Whether to apply the discriminating path collider rule during the search.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * Determines whether the Boss search algorithm should use the BES (Backward elimination of shadows) method as a
      * final step.
@@ -147,13 +129,21 @@ public final class BFci implements IGraphSearch {
      */
     private int numThreads = 1;
     /**
-     * Determines whether or not almost cyclic paths should be resolved during the graph search.
-     *
-     * Almost cyclic paths are paths that are almost cycles but have a single additional edge
-     * that prevents them from being cycles. Resolving these paths involves determining if the
-     * additional edge should be included or not.
+     * True iff verbose output should be printed.
      */
-    private boolean resolveAlmostCyclicPaths;
+    private boolean verbose;
+    /**
+     * Whether to guarantee the output is a PAG by repairing a faulty PAG.
+     */
+    private boolean guaranteePag;
+    /**
+     * Whether to leave out the final orientation step.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod = 2;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -167,11 +157,9 @@ public final class BFci implements IGraphSearch {
         if (score == null) {
             throw new NullPointerException();
         }
-        this.sampleSize = score.getSampleSize();
         this.score = score;
         this.independenceTest = test;
     }
-
 
     /**
      * Does the search and returns a PAG.
@@ -188,61 +176,55 @@ public final class BFci implements IGraphSearch {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting BFCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting BFCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
-        // BOSS CPDAG learning step
         Boss subAlg = new Boss(this.score);
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
         subAlg.setNumThreads(numThreads);
+        subAlg.setVerbose(verbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
 
         Graph graph = alg.search();
 
         Graph referenceDag = new EdgeListGraph(graph);
-
-        // GFCI extra edge removal step...
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
+            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
         } else {
-            sepsets = new SepsetsMinP(graph, this.independenceTest, null, this.depth);
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        Set<Triple> unshieldedTriples = new HashSet<>();
 
-        FciOrient fciOrient = new FciOrient(sepsets);
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose, unshieldedTriples);
+
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        fciOrient.setMaxPathLength(maxPathLength);
 
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
         }
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
-//        graph = GraphTransforms.dagToPag(graph);
+        if (guaranteePag) {
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        }
 
         return graph;
     }
@@ -267,9 +249,9 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Returns the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This maximum.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -316,12 +298,21 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path rule should be used.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule True if the discriminating path rule should be used, false otherwise.
+     * @param doDiscriminatingPathTailRule True if the discriminating path tail rule should be used, false otherwise.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True if the discriminating path collider rule should be used, false.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**
@@ -355,11 +346,30 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether almost cyclic paths should be resolved during the search.
+     * Sets whether to guarantee the output is a PAG by repairing a faulty PAG.
      *
-     * @param resolveAlmostCyclicPaths True to resolve almost cyclic paths, false otherwise.
+     * @param guaranteePag True if a faulty PAG should be repaired, false otherwise.
      */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
+    }
+
+    /**
+     * Sets whether the final orientation should be left out during the search process.
+     *
+     * @param ablationLeaveOutFinalOrientation True to leave out the final orientation, false otherwise.
+     */
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    /**
+     * Sets the method to be used for finding the sepset.
+     *
+     * @param sepsetFinderMethod The method to be used for finding the sepset.
+     */
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 }
+

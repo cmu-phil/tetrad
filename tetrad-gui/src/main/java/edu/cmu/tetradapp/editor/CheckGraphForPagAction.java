@@ -57,6 +57,9 @@ public class CheckGraphForPagAction extends AbstractAction {
         this.workbench = workbench;
     }
 
+    /**
+     * The legal PAG result.
+     */
     private volatile GraphSearchUtils.LegalPagRet legalPag = null;
 
     /**

@@ -35,7 +35,9 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Puts up a panel showing some graph properties, e.g., number of nodes and edges in the graph, etc.
@@ -102,7 +104,8 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     private void addTreks(Node node1, Node node2, Graph graph, JTextArea textArea) {
-        List<List<Node>> treks = graph.paths().allPaths(node1, node2, 8);
+        Set<List<Node>> _treks = graph.paths().allPaths(node1, node2, 8);
+        List<List<Node>> treks = new ArrayList<>(_treks);
 
         if (treks.isEmpty()) {
             return;

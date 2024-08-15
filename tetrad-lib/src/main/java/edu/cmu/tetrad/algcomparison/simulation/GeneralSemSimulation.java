@@ -344,7 +344,7 @@ public class GeneralSemSimulation implements Simulation {
             pm.setParametersTemplate(parameters.getString(Params.GENERAL_SEM_PARAMETER_TEMPLATE));
 
         } catch (ParseException e) {
-            TetradLogger.getInstance().forceLogMessage("Exception: " + e.getMessage());
+            TetradLogger.getInstance().log("Exception: " + e.getMessage());
         }
 
         return pm;

@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import static edu.cmu.tetrad.data.Discretizer.discretize;
 import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
+import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
@@ -91,6 +92,10 @@ public class ConditionalGaussianLikelihood {
      * Discretize the parents
      */
     private boolean discretize;
+    /**
+     * Minimum sample size per cell.
+     */
+    private int minSampleSizePerCell = 4;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -135,12 +140,22 @@ public class ConditionalGaussianLikelihood {
     }
 
     /**
-     * Sets the rows to use for the likelihood calculation. If not set, all rows will be used.
+     * Sets the rows to be used in the table. If the rows are null, the table will use all the rows in the data set.
+     * Otherwise, the table will use only the rows specified.
      *
-     * @param rows The rows to use.
+     * @param rows the rows to be used in the table.
      */
     public void setRows(List<Integer> rows) {
-        this.rows = rows;
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            }
+
+            this.rows = rows;
+        }
     }
 
     /**
@@ -154,32 +169,32 @@ public class ConditionalGaussianLikelihood {
     public Ret getLikelihood(int i, int[] parents) {
         Node target = this.mixedVariables.get(i);
 
-        List<ContinuousVariable> X = new ArrayList<>();
-        List<DiscreteVariable> A = new ArrayList<>();
+        List<ContinuousVariable> X0 = new ArrayList<>();
+        List<DiscreteVariable> A0 = new ArrayList<>();
 
         for (int p : parents) {
             Node parent = this.mixedVariables.get(p);
 
             if (parent instanceof ContinuousVariable) {
-                X.add((ContinuousVariable) parent);
+                X0.add((ContinuousVariable) parent);
             } else {
-                A.add((DiscreteVariable) parent);
+                A0.add((DiscreteVariable) parent);
             }
         }
 
-        List<ContinuousVariable> XPlus = new ArrayList<>(X);
-        List<DiscreteVariable> APlus = new ArrayList<>(A);
+        List<ContinuousVariable> X1 = new ArrayList<>(X0);
+        List<DiscreteVariable> A1 = new ArrayList<>(A0);
 
         if (target instanceof ContinuousVariable) {
-            XPlus.add((ContinuousVariable) target);
+            X1.add((ContinuousVariable) target);
         } else if (target instanceof DiscreteVariable) {
-            APlus.add((DiscreteVariable) target);
+            A1.add((DiscreteVariable) target);
         }
 
-        Ret ret1 = likelihoodJoint(XPlus, APlus, target, this.rows);
-        Ret ret2 = likelihoodJoint(X, A, target, this.rows);
+        Ret ret0 = likelihoodJoint(X0, A0, target, this.rows);
+        Ret ret1 = likelihoodJoint(X1, A1, target, this.rows);
 
-        return new Ret(ret1.getLik() - ret2.getLik(), ret1.getDof() - ret2.getDof());
+        return new Ret(ret1.getLik() - ret0.getLik(), ret1.getDof() - ret0.getDof());
     }
 
     /**
@@ -275,24 +290,34 @@ public class ConditionalGaussianLikelihood {
         for (List<Integer> cell : cells) {
             int a = cell.size();
 
-            if (a == 0) continue;
+            if (a < minSampleSizePerCell) continue;
 
             if (!A.isEmpty()) {
                 c1 += a * multinomialLikelihood(a, rows.size());
             }
 
             if (!X.isEmpty()) {
-                try {
+                // Determinant will be zero if data are linearly dependent.
+                Matrix subsample = getSubsample(continuousCols, cell);
 
-                    // Determinant will be zero if data are linearly dependent.
-                    double gl = gaussianLikelihood(k, cov(getSubsample(continuousCols, cell)));
+                int nRows = subsample.getNumRows();
+                int nCols = subsample.getNumColumns();
 
-                    if (!Double.isNaN(gl)) {
-                        c2 += a * gl;
-                    }
-                } catch (Exception e) {
-                    // No contribution.
+                if (nRows < minSampleSizePerCell || nCols < 1) {
+                    continue;
                 }
+
+                if (nRows < nCols) {
+                    continue;
+                }
+
+                double gl = gaussianLikelihood(k, cov(subsample));
+
+                if (Double.isNaN(gl)) {
+                    continue;
+                }
+
+                c2 += a * gl;
             }
         }
 
@@ -309,7 +334,13 @@ public class ConditionalGaussianLikelihood {
 
     // One record.
     private double gaussianLikelihood(int k, Matrix sigma) {
-        return -0.5 * log(sigma.det()) - 0.5 * k * (1 + ConditionalGaussianLikelihood.LOG2PI);
+        double det = sigma.det();
+
+        if (det == 0) {
+            return Double.NaN;
+        }
+
+        return -0.5 * log(abs(det)) - 0.5 * k * (1 + ConditionalGaussianLikelihood.LOG2PI);
     }
 
     private Matrix cov(Matrix x) {
@@ -368,6 +399,15 @@ public class ConditionalGaussianLikelihood {
         }
 
         return cells;
+    }
+
+    /**
+     * Sets the minimum sample size per cell.
+     *
+     * @param minSampleSizePerCell The minimum sample size per cell.
+     */
+    public void setMinSampleSizePerCell(int minSampleSizePerCell) {
+        this.minSampleSizePerCell = minSampleSizePerCell;
     }
 
     /**

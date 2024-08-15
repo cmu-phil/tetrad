@@ -64,6 +64,10 @@ public class IdaMinimumSquaredDifference implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        if (!estGraph.paths().isLegalMpdag()) {
+            return Double.NaN;
+        }
+
         IdaCheck idaCheck = new IdaCheck(trueGraph, (DataSet) dataModel, semIm);
         return idaCheck.getAvgMinSquaredDiffEstTrue(idaCheck.getOrderedPairs());
     }

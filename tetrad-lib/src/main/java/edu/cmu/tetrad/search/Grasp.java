@@ -128,7 +128,7 @@ public class Grasp {
      */
     public Grasp(@NotNull Score score) {
         this.score = score;
-        this.variables = new ArrayList<>(score.getVariables());
+        this.variables = getVariables(null, score);
         this.useScore = true;
     }
 
@@ -139,7 +139,7 @@ public class Grasp {
      */
     public Grasp(@NotNull IndependenceTest test) {
         this.test = test;
-        this.variables = new ArrayList<>(test.getVariables());
+        variables = getVariables(test, null);
         this.useScore = false;
         this.useRaskuttiUhler = true;
     }
@@ -150,10 +150,19 @@ public class Grasp {
      * @param test  The test to use.
      * @param score The score to use.
      */
-    public Grasp(@NotNull IndependenceTest test, Score score) {
+    public Grasp(IndependenceTest test, Score score) {
+        if (test == null && score == null) throw new IllegalArgumentException("Test and score cannot both be null.");
         this.test = test;
         this.score = score;
-        this.variables = new ArrayList<>(score.getVariables());
+        this.variables = getVariables(test, score);
+    }
+
+    private List<Node> getVariables(IndependenceTest test, Score score) {
+        if (test != null) {
+            return new ArrayList<>(test.getVariables());
+        } else {
+            return new ArrayList<>(score.getVariables());
+        }
     }
 
     /**
@@ -190,7 +199,7 @@ public class Grasp {
         this.scorer.score(order);
 
         for (int r = 0; r < this.numStarts; r++) {
-            if (Thread.interrupted()) break;
+            if (Thread.currentThread().isInterrupted()) break;
 
             if ((r == 0 && !this.useDataOrder) || r > 0) {
                 RandomUtil.shuffle(order);
@@ -219,11 +228,11 @@ public class Grasp {
         long stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
+            TetradLogger.getInstance().log("Final order = " + this.scorer.getPi());
+            TetradLogger.getInstance().log("Elapsed time = " + (stop - start) / 1000.0 + " s");
         }
 
-        return bestPerm;
+        return new ArrayList<>(bestPerm);
     }
 
     /**
@@ -437,10 +446,10 @@ public class Grasp {
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
-                                                       + " Score = " + scorer.score()
-                                                       + " (GRaSP)"
-                                                       + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
+            TetradLogger.getInstance().log("# Edges = " + scorer.getNumEdges()
+                                           + " Score = " + scorer.score()
+                                           + " (GRaSP)"
+                                           + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();

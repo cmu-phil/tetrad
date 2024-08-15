@@ -13,8 +13,8 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import java.io.Serial;
 
 /**
- * Represents a markov check statistic that calculates the Kolmogorov-Smirnoff P value
- * for whether the p-values for the estimated graph are distributed as U(0, 1).
+ * Represents a markov check statistic that calculates the Kolmogorov-Smirnoff P value for whether the p-values for the
+ * estimated graph are distributed as U(0, 1).
  *
  * @author josephramsey
  */
@@ -23,8 +23,8 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Calculates the Kolmogorov-Smirnoff P value for the Markov check
-     * of whether the p-values for the estimated graph are distributed as U(0, 1).
+     * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
+     * are distributed as U(0, 1).
      */
     public MarkovCheckKolmogorovSmirnoffP() {
 

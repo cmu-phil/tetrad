@@ -21,26 +21,22 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * Uses SP in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than GFCI
+ * Uses SP in place of FGES for the initial step in the GFCI algorithm. This tends to produce an accurate PAG than GFCI
  * as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here:
  * <p>
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
@@ -84,15 +80,11 @@ public final class SpFci implements IGraphSearch {
      */
     int sampleSize;
     /**
-     * The PAG being constructed.
-     */
-    private Graph graph;
-    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * Flag for complete rule set, true if you should use complete rule set, false otherwise.
+     * Flag for complete rule set, true if you should use the complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
     /**
@@ -104,26 +96,24 @@ public final class SpFci implements IGraphSearch {
      */
     private int maxDegree = -1;
     /**
+     * Indicates the maximum number of variables that can be conditioned on during the search. A negative depth value
+     * (-1 in this case) indicates unlimited depth.
+     */
+    private int depth = -1;
+    /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
     /**
-     * Represents the depth of the search. The depth indicates the maximum number of variables that can be conditioned
-     * on during the search. A negative depth value (-1 in this case) indicates unlimited depth.
+     * True iff the search should guarantee a PAG output.
      */
-    private int depth = -1;
+    private boolean guaranteePag = false;
     /**
-     * Represents whether the discriminating path rule is applied during the search.
-     * <p>
-     * By default, the discriminating path rule is enabled.
-     * <p>
-     * Setting this variable to false disables the application of the discriminating path rule.
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
-    private boolean doDiscriminatingPathRule = true;
-    /**
-     * Whether to resolve almost cyclic paths.
-     */
-    private boolean resolveAlmostCyclicPaths;
+    private int sepsetFinderMethod;
+    private boolean doDiscriminatingPathTailRule = true;
+    private boolean doDiscriminatingPathColliderRule = true;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -149,70 +139,54 @@ public final class SpFci implements IGraphSearch {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting SP-FCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting SP-FCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
-        this.graph = new EdgeListGraph(nodes);
-
-        // SP CPDAG learning step
         Sp subAlg = new Sp(this.score);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
 
-        this.graph = alg.search();
+        Graph graph = alg.search();
 
         if (score instanceof MagSemBicScore) {
             ((MagSemBicScore) score).setMag(graph);
         }
 
-        Knowledge knowledge2 = new Knowledge(knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(GraphTransforms.dagToCpdag(graph), knowledge2);
+        Graph referenceDag = new EdgeListGraph(graph);
 
-        // Keep a copy of this CPDAG.
-        Graph referenceDag = new EdgeListGraph(this.graph);
-
-        // GFCI extra edge removal step...
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
+            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        Set<Triple> unshieldedTriples = new HashSet<>();
 
-        FciOrient fciOrient = new FciOrient(sepsets);
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose, unshieldedTriples);
+
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        fciOrient.setMaxPathLength(maxPathLength);
 
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
+        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
+        if (guaranteePag) {
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
-        GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
-
-//        graph = GraphTransforms.dagToPag(graph);
-
-        return this.graph;
+        return graph;
     }
 
     /**
@@ -285,7 +259,7 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Sets the max path length for discriminating paths.
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -334,81 +308,38 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path search is done.
+     * Sets whether the search should guarantee the output is a legal PAG.
      *
-     * @param doDiscriminatingPathRule True, if so.
+     * @param guaranteePag True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**
-     * Orients edges in the graph based on the knowledge.
+     * Sets the method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      *
-     * @param knowledge The knowledge containing forbidden and required edges.
-     * @param graph     The graph to orient edges in.
-     * @param variables The list of variables in the graph.
+     * @param sepsetFinderMethod the method to use for finding sepsets
      */
-    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
-        if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
-        }
-
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-            TetradLogger.getInstance().forceLogMessage(message);
-        }
-
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
-            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
-            TetradLogger.getInstance().forceLogMessage(message);
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
-        }
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 
     /**
-     * Sets whether almost cyclic paths should be resolved during the search.
-     * If resolveAlmostCyclicPaths is set to true, the search algorithm will perform additional steps
-     * to resolve almost cyclic paths in the graph.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param resolveAlmostCyclicPaths True, if almost cyclic paths should be resolved. False, otherwise.
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether the discriminating path collider rule should be used.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

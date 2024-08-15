@@ -119,12 +119,19 @@ public final class Fci implements IGraphSearch {
     /**
      * Whether the discriminating path rule should be used.
      */
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
     /**
-     * Flag indicating whether almost cyclic paths should be resolved during the search.
-     * Default value is false.
+     * Whether the discriminating path rule should be used.
      */
-    private boolean resolveAlmostCyclicPaths;
+    private boolean doDiscriminatingPathColliderRule = true;
+    /**
+     * Whether the output should be guaranteed to be a PAG.
+     */
+    private boolean guaranteePag;
+    /**
+     * Whether the final orientation step should be left out.
+     */
+    private boolean ablationLeaveOutFinalOrientation = false;
 
     /**
      * Constructor.
@@ -185,8 +192,8 @@ public final class Fci implements IGraphSearch {
         Fas fas = new Fas(getIndependenceTest());
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting FCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         fas.setKnowledge(getKnowledge());
@@ -196,19 +203,50 @@ public final class Fci implements IGraphSearch {
         fas.setStable(this.stable);
 
         //The PAG being constructed.
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting FAS search.");
+        }
+
         Graph graph = fas.search();
         this.sepsets = fas.getSepsets();
+        Set<Triple> unshieldedTriples = new HashSet<>();
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Reorienting with o-o.");
+        }
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-//        SepsetProducer sepsets1 = new SepsetsSet(this.sepsets, this.independenceTest);
-        SepsetProducer sepsets1 = new SepsetsGreedy(graph, this.independenceTest, null, depth, knowledge);
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setVerbose(verbose);
 
         if (this.possibleMsepSearchDone) {
-            new FciOrient(sepsets1).ruleR0(graph);
+            if (verbose) {
+                TetradLogger.getInstance().log("Starting possible msep search.");
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Doing R0.");
+            }
+
+            fciOrient.ruleR0(graph, unshieldedTriples);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Removing by possible d-sep.");
+            }
+
             graph.paths().removeByPossibleMsep(independenceTest, sepsets);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Reorienting all edges as o-o.");
+            }
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -216,40 +254,26 @@ public final class Fci implements IGraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        FciOrient fciOrient = new FciOrient(sepsets1);
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing R0.");
+        }
 
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
+        fciOrient.ruleR0(graph, unshieldedTriples);
 
-        fciOrient.ruleR0(graph);
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing Final Orientation.");
+        }
 
-        fciOrient.doFinalOrientation(graph);
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(graph);
+        }
 
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
+        if (guaranteePag) {
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         long stop = MillisecondTimes.timeMillis();
-
-//        graph = GraphTransforms.dagToPag(graph);
-
         this.elapsedTime = stop - start;
-
         return graph;
     }
 
@@ -328,9 +352,9 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength This maximum.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -379,21 +403,39 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path rule should be used.
+     * Sets whether the discriminating path tail rule should be used.
      *
-     * @param doDiscriminatingPathRule True, if so.
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
     /**
-     * Sets whether to resolve almost cyclic paths during the search.
+     * Sets whether the discriminating path collider rule should be used.
      *
-     * @param resolveAlmostCyclicPaths True to resolve almost cyclic paths, false otherwise.
+     * @param doDiscriminatingPathColliderRule True, if so.
      */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
+
+    /**
+     * Sets whether to guarantee the output is a PAG by repairing a faulty PAG.
+     *
+     * @param guaranteePag True, if so.
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
+    }
+
+    /**
+     * Sets whether to leave out the final orientation in the search.
+     *
+     * @param ablationLeaveOutFinalOrientation True to leave out the final orientation, false otherwise.
+     */
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

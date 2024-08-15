@@ -111,7 +111,7 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
         edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.meekPreventCycles(parameters.getBoolean(Params.MEEK_PREVENT_CYCLES));
+        search.setGuaranteeCpdag(parameters.getBoolean(Params.GUARANTEE_CPDAG));
         search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(knowledge);
@@ -164,7 +164,7 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.CONFLICT_RULE);
-        parameters.add(Params.MEEK_PREVENT_CYCLES);
+        parameters.add(Params.GUARANTEE_CPDAG);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
 

@@ -128,15 +128,15 @@ public class IcaLingD {
         double[][] _data = data.getDoubleData().transpose().toArray();
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Anderson Darling P-values Per Variables (p < alpha means Non-Gaussian)");
-            TetradLogger.getInstance().forceLogMessage("");
+            TetradLogger.getInstance().log("Anderson Darling P-values Per Variables (p < alpha means Non-Gaussian)");
+            TetradLogger.getInstance().log("");
 
             for (int i = 0; i < _data.length; i++) {
                 Node node = data.getVariable(i);
                 AndersonDarlingTest test = new AndersonDarlingTest(_data[i]);
                 double p = test.getP();
                 NumberFormat nf = new DecimalFormat("0.000");
-                TetradLogger.getInstance().forceLogMessage(node.getName() + ": p = " + nf.format(p));
+                TetradLogger.getInstance().log(node.getName() + ": p = " + nf.format(p));
             }
         }
 

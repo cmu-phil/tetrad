@@ -89,7 +89,7 @@ public final class SampleVcpcFast implements IGraphSearch {
      */
     private Set<Triple> ambiguousTriples;
     private Set<Edge> definitelyNonadjacencies;
-    private boolean meekPreventCycles;
+    private boolean guaranteeCpdag;
     /**
      * The sepsets.
      */
@@ -218,17 +218,18 @@ public final class SampleVcpcFast implements IGraphSearch {
      *
      * @return true just in case edges will not be added if they would create cycles.
      */
-    public boolean isMeekPreventCycles() {
-        return this.meekPreventCycles;
+    public boolean isGuaranteeCpdag() {
+        return this.guaranteeCpdag;
     }
 
     /**
-     * Sets to true just in case edges will not be added if they would create cycles.
+     * Sets to true just in case the output is guaranteed to be compatible with a CPDAG--i.e.,
+     * no bidirected edges and no actual or implied cycles due to the Meek rules.
      *
-     * @param meekPreventCycles a boolean
+     * @param setGuaranteeCpdag a boolean
      */
-    public void setMeekPreventCycles(boolean meekPreventCycles) {
-        this.meekPreventCycles = meekPreventCycles;
+    public void setMeekPreventCycles(boolean setGuaranteeCpdag) {
+        this.guaranteeCpdag = setGuaranteeCpdag;
     }
 
     /**
@@ -369,8 +370,8 @@ public final class SampleVcpcFast implements IGraphSearch {
     public Graph search() {
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("Starting VCCPC algorithm");
+            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
         this.ambiguousTriples = new HashSet<>();
@@ -402,7 +403,7 @@ public final class SampleVcpcFast implements IGraphSearch {
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
 
-            meekRules.setMeekPreventCycles(this.meekPreventCycles);
+            meekRules.setMeekPreventCycles(this.guaranteeCpdag);
             meekRules.setKnowledge(this.knowledge);
 
             meekRules.orientImplied(this.graph);
@@ -685,11 +686,11 @@ public final class SampleVcpcFast implements IGraphSearch {
         System.out.println("# of Definite Nonadj: " + this.definitelyNonadjacencies.size());
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
-            TetradLogger.getInstance().forceLogMessage("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
-            TetradLogger.getInstance().forceLogMessage("Disambiguated CPDAGs: " + CPDAGs);
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-            TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
+            TetradLogger.getInstance().log("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
+            TetradLogger.getInstance().log("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
+            TetradLogger.getInstance().log("Disambiguated CPDAGs: " + CPDAGs);
+            TetradLogger.getInstance().log("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().log("Finishing CPC algorithm.");
             logTriples();
         }
 
@@ -750,30 +751,30 @@ public final class SampleVcpcFast implements IGraphSearch {
 
     private void logTriples() {
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("\nCollider triples:");
+            TetradLogger.getInstance().log("\nCollider triples:");
 
             for (Triple triple : this.colliderTriples) {
-                TetradLogger.getInstance().forceLogMessage("Collider: " + triple);
+                TetradLogger.getInstance().log("Collider: " + triple);
             }
 
-            TetradLogger.getInstance().forceLogMessage("\nNoncollider triples:");
+            TetradLogger.getInstance().log("\nNoncollider triples:");
 
             for (Triple triple : this.noncolliderTriples) {
-                TetradLogger.getInstance().forceLogMessage("Noncollider: " + triple);
+                TetradLogger.getInstance().log("Noncollider: " + triple);
             }
 
-            TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
-                                                       "\nthere is ambiguous data about whether they are colliders or not):");
+            TetradLogger.getInstance().log("\nAmbiguous triples (i.e. list of triples for which " +
+                                           "\nthere is ambiguous data about whether they are colliders or not):");
 
             for (Triple triple : getAmbiguousTriples()) {
-                TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);
+                TetradLogger.getInstance().log("Ambiguous: " + triple);
             }
         }
     }
 
     private void orientUnshieldedTriples(Knowledge knowledge,
                                          IndependenceTest test, int depth) {
-        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
+        TetradLogger.getInstance().log("Starting Collider Orientation:");
 
 //        System.out.println("orientUnshieldedTriples 1");
 
@@ -808,7 +809,7 @@ public final class SampleVcpcFast implements IGraphSearch {
                         graph.setEndpoint(z, y, Endpoint.ARROW);
 
                         String message = LogUtilsSearch.colliderOrientedMsg(x, y, z);
-                        TetradLogger.getInstance().forceLogMessage(message);
+                        TetradLogger.getInstance().log(message);
                     }
 
                     colliderTriples.add(new Triple(x, y, z));
@@ -824,7 +825,7 @@ public final class SampleVcpcFast implements IGraphSearch {
             }
         }
 
-        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
+        TetradLogger.getInstance().log("Finishing Collider Orientation.");
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {

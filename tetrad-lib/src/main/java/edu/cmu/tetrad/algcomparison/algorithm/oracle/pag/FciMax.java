@@ -104,10 +104,11 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         search.setKnowledge(this.knowledge);
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-        search.setResolveAlmostCyclicPaths(parameters.getBoolean(Params.RESOLVE_ALMOST_CYCLIC_PATHS));
+        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
+        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
         search.setPcHeuristicType(pcHeuristicType);
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return search.search();
@@ -156,13 +157,15 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
-        parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        parameters.add(Params.RESOLVE_ALMOST_CYCLIC_PATHS);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
+        parameters.add(Params.GUARANTEE_PAG);
 //        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
+
         return parameters;
     }
 

@@ -27,7 +27,9 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
@@ -63,10 +65,6 @@ public final class GraspFci implements IGraphSearch {
      */
     private final IndependenceTest independenceTest;
     /**
-     * The logger to use.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-    /**
      * The score.
      */
     private final Score score;
@@ -82,10 +80,6 @@ public final class GraspFci implements IGraphSearch {
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
     private int maxPathLength = -1;
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
     /**
      * The number of starts for GRaSP.
      */
@@ -103,17 +97,17 @@ public final class GraspFci implements IGraphSearch {
      */
     private boolean useScore = true;
     /**
-     * Whether to use the discriminating path rule.
+     * Whether to use the discriminating path tail rule.
      */
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
+    /**
+     * Whether to use the discriminating path collider rule.
+     */
+    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * Whether to use the ordered version of GRaSP.
      */
     private boolean ordered = false;
-    /**
-     * The depth for GRaSP.
-     */
-    private int depth = -1;
     /**
      * The depth for singular variables.
      */
@@ -123,6 +117,10 @@ public final class GraspFci implements IGraphSearch {
      */
     private int nonSingularDepth = 1;
     /**
+     * The depth for sepsets.
+     */
+    private int depth = -1;
+    /**
      * The seed used for random number generation. If the seed is not set explicitly, it will be initialized with a
      * value of -1. The seed is used for producing the same sequence of random numbers every time the program runs.
      *
@@ -130,9 +128,21 @@ public final class GraspFci implements IGraphSearch {
      */
     private long seed = -1;
     /**
-     * Indicates whether almost cyclic paths should be resolved during the search.
+     * True iff verbose output should be printed.
      */
-    private boolean resolveAlmostCyclicPaths;
+    private boolean verbose = false;
+    /**
+     * The flag for whether to guarantee the output is a legal PAG.
+     */
+    private boolean guaranteePag = false;
+    /**
+     * Whether to leave out the final orientation step.
+     */
+    private boolean ablationLeaveOutFinalOrientation;
+    /**
+     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
+     */
+    private int sepsetFinderMethod = 2;
 
     /**
      * Constructs a new GraspFci object.
@@ -162,11 +172,10 @@ public final class GraspFci implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting Grasp-FCI algorithm.");
-            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
+            TetradLogger.getInstance().log("Starting Grasp-FCI algorithm.");
+            TetradLogger.getInstance().log("Independence test = " + this.independenceTest + ".");
         }
 
-        // The PAG being constructed.
         // Run GRaSP to get a CPDAG (like GFCI with FGES)...
         Grasp alg = new Grasp(independenceTest, score);
         alg.setSeed(seed);
@@ -174,62 +183,56 @@ public final class GraspFci implements IGraphSearch {
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
-        int graspDepth = 3;
-        alg.setDepth(graspDepth);
+        alg.setDepth(depth);
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
-        alg.setVerbose(verbose);
+        alg.setVerbose(false);
+        alg.setKnowledge(knowledge);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
         alg.bestOrder(variables);
-        Graph graph = alg.getGraph(true); // Get the DAG
+        Graph pag = alg.getGraph(true);
 
-        Graph referenceDag = new EdgeListGraph(graph);
+        Graph referenceCpdag = new EdgeListGraph(pag);
 
-        // GFCI extra edge removal step...
-//        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
+        } else if (sepsetFinderMethod == 1) {
+            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 2) {
+            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
+        } else if (sepsetFinderMethod == 3) {
+            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
         } else {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose);
+        Set<Triple> unshieldedTriples = new HashSet<>();
 
-        FciOrient fciOrient = new FciOrient(sepsets);
+        gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose, unshieldedTriples);
+
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathRule);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.doFinalOrientation(graph);
+        fciOrient.setMaxPathLength(maxPathLength);
 
-        if (resolveAlmostCyclicPaths) {
-            for (Edge edge : graph.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    if (graph.paths().existsDirectedPath(x, y)) {
-                        graph.setEndpoint(y, x, Endpoint.TAIL);
-                    } else if (graph.paths().existsDirectedPath(y, x)) {
-                        graph.setEndpoint(x, y, Endpoint.TAIL);
-                    }
-                }
-            }
+        if (!ablationLeaveOutFinalOrientation) {
+            fciOrient.finalOrientation(pag);
         }
 
-        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+        if (guaranteePag) {
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        }
 
-//        graph = GraphTransforms.dagToPag(graph);
-
-        return graph;
+        GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
+        return pag;
     }
 
     /**
@@ -252,7 +255,7 @@ public final class GraspFci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum length of any discriminating path searched.
+     * Sets the maximum length of any discriminating path.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -283,15 +286,6 @@ public final class GraspFci implements IGraphSearch {
     }
 
     /**
-     * Sets the depth for GRaSP.
-     *
-     * @param depth The depth.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
      * Sets whether to use Raskutti and Uhler's modification of GRaSP.
      *
      * @param useRaskuttiUhler True, if so.
@@ -319,12 +313,21 @@ public final class GraspFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether to use the discriminating path rule for GRaSP.
+     * Sets whether to use the discriminating path tail rule for GRaSP.
      *
-     * @param doDiscriminatingPathRule True, if so.
+     * @param doDiscriminatingPathTailRule True, if so.
      */
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
+    }
+
+    /**
+     * Sets whether to use the discriminating path collider rule for GRaSP.
+     *
+     * @param doDiscriminatingPathColliderRule True, if so.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**
@@ -366,11 +369,38 @@ public final class GraspFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether to resolve almost cyclic paths in the search.
+     * Sets the depth for the search algorithm.
      *
-     * @param resolveAlmostCyclicPaths True, if almost cyclic paths should be resolved. False, otherwise.
+     * @param depth The depth value to set for the search algorithm.
      */
-    public void setResolveAlmostCyclicPaths(boolean resolveAlmostCyclicPaths) {
-        this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    /**
+     * Sets the flag for whether to guarantee the output is a legal PAG.
+     *
+     * @param guaranteePag True, if so.
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
+    }
+
+    /**
+     * Sets whether to leave out the final orientation in the search algorithm.
+     *
+     * @param ablationLeaveOutFinalOrientation true if the final orientation should be left out, false otherwise.
+     */
+    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
+        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
+    }
+
+    /**
+     * Sets the method for finding sepsets in the GraspFci class.
+     *
+     * @param sepsetFinderMethod the method for finding sepsets
+     */
+    public void setSepsetFinderMethod(int sepsetFinderMethod) {
+        this.sepsetFinderMethod = sepsetFinderMethod;
     }
 }

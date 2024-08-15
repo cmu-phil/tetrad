@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -36,7 +37,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 import static java.lang.Double.NaN;
 import static org.apache.commons.math3.util.FastMath.*;
@@ -50,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author Bryan Andrews
  * @version $Id: $Id
  */
-public class IndTestDegenerateGaussianLrt implements IndependenceTest {
+public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSettable {
 
     /**
      * A constant.
@@ -96,6 +96,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * True if verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * The rows used in the test.
+     */
+    private List<Integer> rows = null;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -111,12 +115,12 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         this.variables = dataSet.getVariables();
         // The number of instances.
         int n = dataSet.getNumRows();
-        this.embedding = new ConcurrentSkipListMap<>();
+        this.embedding = new HashMap<>();
 
         List<Node> A = new ArrayList<>();
         List<double[]> B = new ArrayList<>();
 
-        Map<Node, Integer> nodesHash = new ConcurrentSkipListMap<>();
+        Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int j = 0; j < this.variables.size(); j++) {
             nodesHash.put(this.variables.get(j), j);
@@ -134,8 +138,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
             if (v instanceof DiscreteVariable) {
 
-                Map<List<Integer>, Integer> keys = new ConcurrentHashMap<>();
-                Map<Integer, List<Integer>> keysReverse = new ConcurrentSkipListMap<>();
+                Map<List<Integer>, Integer> keys = new HashMap<>();
+                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
                 for (int j = 0; j < n; j++) {
                     List<Integer> key = new ArrayList<>();
                     key.add(this.dataSet.getInt(j, i_));
@@ -226,43 +230,43 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         List<Integer> rows = getRows(allNodes, this.nodeHash);
 
         if (rows.isEmpty()) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                true, NaN, pValue);
+                true, NaN, NaN);
 
         int _x = this.nodeHash.get(x);
         int _y = this.nodeHash.get(y);
 
-        int[] list0 = new int[z.size() + 1];
-        int[] list2 = new int[z.size()];
+        int[] list0 = new int[z.size()];
+        int[] list1 = new int[z.size() + 1];
 
-        list0[0] = _x;
+        list1[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
             int __z = this.nodeHash.get(z.get(i));
-            list0[i + 1] = __z;
-            list2[i] = __z;
+            list0[i] = __z;
+            list1[i + 1] = __z;
         }
 
-        Ret ret1 = getlldof(rows, _y, list0);
-        Ret ret2 = getlldof(rows, _y, list2);
+        Ret ret0 = getlldof(rows, _y, list0);
+        Ret ret1 = getlldof(rows, _y, list1);
 
-        double lik0 = ret1.getLik() - ret2.getLik();
-        double dof0 = ret1.getDof() - ret2.getDof();
+        double lik_diff = ret0.getLik() - ret1.getLik();
+        double dof_diff = ret1.getDof() - ret0.getDof();
 
-        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
+        if (dof_diff <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 false, NaN, NaN);
         if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 false, NaN, NaN);
         if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 false, NaN, NaN);
-        if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
+        if (lik_diff == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 false, NaN, NaN);
 
         double pValue;
 
-        if (Double.isNaN(lik0)) {
+        if (Double.isNaN(lik_diff)) {
             throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
         } else {
-            pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
+            pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(-2 * lik_diff);
         }
 
         this.pValue = pValue;
@@ -271,7 +275,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
+                TetradLogger.getInstance().log(
                         LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
@@ -387,8 +391,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         }
 
         double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
-        double ldetA = log(getCov(rows, A_).det());
-        double ldetB = log(getCov(rows, B_).det());
+        double ldetA = log(abs(getCov(rows, A_).det()));
+        double ldetB = log(abs(getCov(rows, B_).det()));
 
         double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLrt.L2PE * (B_.length - A_.length);
 
@@ -403,6 +407,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * @return A list of integers representing the row indices that satisfy the conditions.
      */
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+        if (this.rows != null) {
+            return this.rows;
+        }
+
         List<Integer> rows = new ArrayList<>();
 
         K:
@@ -457,6 +465,32 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         }
 
         return cov;
+    }
+
+    /**
+     * Returns the rows used in the test.
+     *
+     * @return The rows used in the test.
+     */
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    /**
+     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
+     * values.
+     */
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            }
+
+            this.rows = rows;
+        }
     }
 
     /**

@@ -77,9 +77,6 @@ public class ExampleCompareSimulation2 {
         simulations.add(new BayesNetSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
-
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(true);
         comparison.setShowUtilities(true);
         comparison.setSaveGraphs(true);

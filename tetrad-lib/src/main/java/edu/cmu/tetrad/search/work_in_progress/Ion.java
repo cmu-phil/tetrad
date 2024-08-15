@@ -208,9 +208,9 @@ public class Ion {
     public List<Graph> search() {
 
         long start = MillisecondTimes.timeMillis();
-        TetradLogger.getInstance().forceLogMessage("Starting ION Search.");
+        TetradLogger.getInstance().log("Starting ION Search.");
         logGraphs("\nInitial Pags: ", this.input);
-        TetradLogger.getInstance().forceLogMessage("Transfering local information.");
+        TetradLogger.getInstance().log("Transfering local information.");
         long steps = MillisecondTimes.timeMillis();
 
         /*
@@ -233,7 +233,7 @@ public class Ion {
             graph.addEdge(new Edge(pair.getFirst(), pair.getSecond(), Endpoint.CIRCLE, Endpoint.CIRCLE));
         }
         String message3 = "Steps 1-2: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
-        TetradLogger.getInstance().forceLogMessage(message3);
+        TetradLogger.getInstance().log(message3);
         System.out.println("step2");
         System.out.println(graph);
 
@@ -270,14 +270,14 @@ public class Ion {
         // iterates over path length, then adjacencies
         for (int l = pl; l < numNodes; l++) {
             if (this.pathLengthSearch) {
-                TetradLogger.getInstance().forceLogMessage("Braching over path lengths: " + l + " of " + (numNodes - 1));
+                TetradLogger.getInstance().log("Braching over path lengths: " + l + " of " + (numNodes - 1));
             }
             int seps = this.separations.size();
             final int currentSep = 1;
             int numAdjacencies = this.separations.size();
             for (IonIndependenceFacts fact : this.separations) {
                 if (this.doAdjacencySearch) {
-                    TetradLogger.getInstance().forceLogMessage("Braching over path nonadjacencies: " + currentSep + " of " + numAdjacencies);
+                    TetradLogger.getInstance().log("Braching over path nonadjacencies: " + currentSep + " of " + numAdjacencies);
                 }
                 seps--;
                 // uses two queues to keep up with which PAGs are being iterated and which have been
@@ -474,7 +474,7 @@ public class Ion {
             }
         }
         String message2 = "Step 3: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
-        TetradLogger.getInstance().forceLogMessage(message2);
+        TetradLogger.getInstance().log(message2);
         Queue<Graph> step3Pags = new LinkedList<>(step3PagsSet);
 
         /*
@@ -552,7 +552,7 @@ public class Ion {
 //        outputPags = applyKnowledge(outputPags);
 
         String message1 = "Step 4: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
-        TetradLogger.getInstance().forceLogMessage(message1);
+        TetradLogger.getInstance().log(message1);
 
         /*
          * Step 5
@@ -596,7 +596,7 @@ public class Ion {
 
         this.output.addAll(outputSet);
         String message = "Step 5: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
-        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().log(message);
         this.runtime = ((MillisecondTimes.timeMillis() - start) / 1000.);
         logGraphs("\nReturning output (" + this.output.size() + " Graphs):", this.output);
         double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -708,11 +708,11 @@ public class Ion {
      */
     private void logGraphs(String message, List<? extends Graph> graphs) {
         if (message != null) {
-            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().log(message);
         }
         for (Graph graph : graphs) {
             String message1 = graph.toString();
-            TetradLogger.getInstance().forceLogMessage(message1);
+            TetradLogger.getInstance().log(message1);
         }
     }
 
@@ -1363,15 +1363,7 @@ public class Ion {
     }
 
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * L....A --> C
-     * </pre>
+     * Finds discriminating paths.
      */
     private boolean discrimPaths(Graph graph) {
         List<Node> nodes = graph.getNodes();

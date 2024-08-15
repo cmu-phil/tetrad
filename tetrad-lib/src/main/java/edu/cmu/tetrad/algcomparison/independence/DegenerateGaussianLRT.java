@@ -38,7 +38,7 @@ public class DegenerateGaussianLRT implements IndependenceWrapper {
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritDoc}x
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
