@@ -483,34 +483,32 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     /**
-     * <p>getTestType.</p>
-     *
-     * @return a {@link edu.cmu.tetradapp.util.IndTestType} object
-     */
     public IndTestType getTestType() {
         return (IndTestType) getAlgorithmRunner().getParams().get("indTestType", IndTestType.FISHER_Z);
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the test type for the search algorithm.
+     *
+     * @param testType The test type to be set.
      */
     public void setTestType(IndTestType testType) {
         getAlgorithmRunner().getParams().set("indTestType", testType);
     }
 
     /**
-     * <p>getDataModel.</p>
+     * Retrieves the data model used to execute the algorithm.
      *
-     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     * @return the data model used to execute the algorithm, which might possibly be a graph.
      */
     public DataModel getDataModel() {
         return getAlgorithmRunner().getDataModel();
     }
 
     /**
-     * <p>getSourceGraph.</p>
+     * Retrieves the source graph used for the search algorithm.
      *
-     * @return a {@link java.lang.Object} object
+     * @return the source graph used for the search algorithm, or null if not set.
      */
     public Object getSourceGraph() {
         return getAlgorithmRunner().getParams().get("sourceGraph", null);

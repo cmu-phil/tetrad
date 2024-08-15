@@ -132,7 +132,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setRepairFaultyPag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
+        search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
         search.setKnowledge(this.knowledge);
 
         return search.search();

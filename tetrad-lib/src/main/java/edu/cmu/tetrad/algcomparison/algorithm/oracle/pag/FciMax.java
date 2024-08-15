@@ -108,7 +108,7 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
         search.setPcHeuristicType(pcHeuristicType);
-        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return search.search();
@@ -160,7 +160,7 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         parameters.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
-        parameters.add(Params.REPAIR_FAULTY_PAG);
+        parameters.add(Params.GUARANTEE_PAG);
 //        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.TIME_LAG);
 

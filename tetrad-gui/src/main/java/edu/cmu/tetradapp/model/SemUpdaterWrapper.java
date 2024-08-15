@@ -42,12 +42,12 @@ public class SemUpdaterWrapper implements SessionModel {
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * The wrapped Bayes Updater.
      */
     private final SemUpdater semUpdater;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 

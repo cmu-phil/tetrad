@@ -335,6 +335,8 @@
             Knowledge knowledge = new Knowledge();
             knowledge.setRequired(x.getName(), y.getName());
 
+            Set<Triple> unshieldedTriples = new HashSet<>();
+
             FciOrient fciOrientation = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(graph, knowledge));
             fciOrientation.orient(_graph, unshieldedTriples);
 

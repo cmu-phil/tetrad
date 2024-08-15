@@ -246,7 +246,7 @@ public class FciOrient {
      * Orients unshielded colliders in the graph. (FCI Step C, Zhang's step F3, rule R0.)
      *
      * @param graph             The graph to orient.
-     * @param unshieldedTriples
+     * @param unshieldedTriples The set of unshielded triples oriented by R0. This set is updated with new triples.
      */
     public void ruleR0(Graph graph, Set<Triple> unshieldedTriples) {
         graph.reorientAllWith(Endpoint.CIRCLE);

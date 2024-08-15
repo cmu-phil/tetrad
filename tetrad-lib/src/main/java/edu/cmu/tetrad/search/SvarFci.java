@@ -96,7 +96,7 @@ public final class SvarFci implements IGraphSearch {
      * Represents whether to resolve almost cyclic paths during the search.
      */
     private boolean resolveAlmostCyclicPaths;
-    private boolean repairFaultyPag;
+    private boolean guaranteePag;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -212,8 +212,8 @@ public final class SvarFci implements IGraphSearch {
         fciOrient.ruleR0(this.graph, unshieldedTriples);
         fciOrient.finalOrientation(this.graph);
 
-        if (repairFaultyPag) {
-            this.graph = GraphUtils.repairFaultyPag(this.graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        if (guaranteePag) {
+            this.graph = GraphUtils.guaranteePag(this.graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         if (resolveAlmostCyclicPaths) {
@@ -514,8 +514,15 @@ public final class SvarFci implements IGraphSearch {
         this.resolveAlmostCyclicPaths = resolveAlmostCyclicPaths;
     }
 
-    public void setRepairFaultyPag(boolean repairFaultyPag) {
-        this.repairFaultyPag = repairFaultyPag;
+    /**
+     * Sets whether a guaranteed partial ancestral graph (PAG) should be built during the search. When set to true, the
+     * search algorithm will construct a PAG even if it cannot guarantee its correctness. When set to false, the search
+     * algorithm may return a PAG that is not fully connected or has other inconsistencies.
+     *
+     * @param guaranteePag true to guarantee the construction of a PAG, false otherwise
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 }
 

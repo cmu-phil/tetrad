@@ -43,11 +43,6 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /**
-     * @serial Cannot be null.
-     */
-    private final DataSet outputDataSet;
-
     //============================CONSTRUCTORS=============================//
 
     /**
@@ -59,8 +54,8 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 
-        this.outputDataSet = DataTransforms.replaceMissingWithRandom(dataSet);
-        setDataModel(this.outputDataSet);
+        DataSet outputDataSet = DataTransforms.replaceMissingWithRandom(dataSet);
+        setDataModel(outputDataSet);
         setSourceGraph(wrapper.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data with missing values injected randomly.", getDataModelList());

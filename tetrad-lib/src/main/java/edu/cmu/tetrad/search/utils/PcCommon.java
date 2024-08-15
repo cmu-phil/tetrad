@@ -352,8 +352,14 @@ public final class PcCommon implements IGraphSearch {
         this.graph = GraphUtils.replaceNodes(this.graph, nodes);
 
         if (guaranteeCpdag) {
-            GraphTransforms.dagFromCpdag(this.graph, true);
-            graph = GraphTransforms.dagToCpdag(this.graph);
+            MeekRules meekRules = new MeekRules();
+            meekRules.setKnowledge(this.knowledge);
+            meekRules.setVerbose(verbose);
+            meekRules.setMeekPreventCycles(true);
+            meekRules.orientImplied(this.graph);
+
+//            GraphTransforms.dagFromCpdag(this.graph, true);
+//            graph = GraphTransforms.dagToCpdag(this.graph);
         } else {
             MeekRules meekRules = new MeekRules();
             meekRules.setKnowledge(this.knowledge);
