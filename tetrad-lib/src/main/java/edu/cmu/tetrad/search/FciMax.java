@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -128,7 +128,7 @@ public final class FciMax implements IGraphSearch {
      * Whether the final orientation step should be left out.
      */
     private boolean ablationLeaveOutFinalOrientation = false;
-    private boolean repairFaultyPag;
+    private boolean guaranteePag;
 
     /**
      * Constructor.
@@ -197,8 +197,8 @@ public final class FciMax implements IGraphSearch {
             fciOrient.finalOrientation(graph);
         }
 
-        if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedColldiders, false, verbose);
+        if (guaranteePag) {
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedColldiders, false, verbose);
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -344,7 +344,7 @@ public final class FciMax implements IGraphSearch {
     /**
      * Adds colliders to the given graph.
      *
-     * @param graph             The graph to which colliders should be added.
+     * @param graph               The graph to which colliders should be added.
      * @param unshieldedColliders
      */
     private void addColliders(Graph graph, Set<Triple> unshieldedColliders) {
@@ -497,8 +497,13 @@ public final class FciMax implements IGraphSearch {
         this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
-    public void setRepairFaultyPag(boolean repairFaultyPag) {
-        this.repairFaultyPag = repairFaultyPag;
+    /**
+     * Sets whether to guarantee a PAG.
+     *
+     * @param guaranteePag true to guarantee a PAG, false otherwise.
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 }
 

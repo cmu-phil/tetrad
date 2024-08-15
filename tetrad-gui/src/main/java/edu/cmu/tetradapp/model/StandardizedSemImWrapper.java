@@ -44,11 +44,11 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
 
     private static final long serialVersionUID = 23L;
     /**
-     * @serial Cannot be null.
+     * The wrapped standardized SEM IM.
      */
     private final StandardizedSemIm standardizedSemIm;
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
     /**

@@ -133,9 +133,9 @@ public final class BFci implements IGraphSearch {
      */
     private boolean verbose;
     /**
-     * Whether to repair a faulty PAG.
+     * Whether to guarantee the output is a PAG by repairing a faulty PAG.
      */
-    private boolean repairFaultyPag;
+    private boolean guaranteePag;
     /**
      * Whether to leave out the final orientation step.
      */
@@ -222,8 +222,8 @@ public final class BFci implements IGraphSearch {
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
-        if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        if (guaranteePag) {
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         return graph;
@@ -346,12 +346,12 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether to repair a faulty PAG.
+     * Sets whether to guarantee the output is a PAG by repairing a faulty PAG.
      *
-     * @param repairFaultyPag True if a faulty PAG should be repaired, false otherwise.
+     * @param guaranteePag True if a faulty PAG should be repaired, false otherwise.
      */
-    public void setRepairFaultyPag(boolean repairFaultyPag) {
-        this.repairFaultyPag = repairFaultyPag;
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**

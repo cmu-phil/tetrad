@@ -2523,7 +2523,7 @@ public final class GraphUtils {
      * @param sepsets           The sepsets used to determine the orientation of edges.
      * @param knowledge         The knowledge used to determine the orientation of edges.
      * @param verbose           Whether to print verbose output.
-     * @param unshieldedTriples
+     * @param unshieldedTriples A set to store unshielded triples.
      */
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
                               boolean verbose, Set<Triple> unshieldedTriples) {
@@ -2891,7 +2891,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Repairs a faulty PAG (Partially Directed Acyclic Graph).
+     * Guarantees a legal PAG by repairing deviations of a graph from a legal PAG (partial ancestral graph).
      * <p>
      * Two types of repairs are attempted. First, if there is an edge x &lt;-&gt; y with a path x ~~&gt; y, then the
      * unshielded colldiers into x are removed and the graph is rebuilt.
@@ -2909,10 +2909,11 @@ public final class GraphUtils {
      * @param unshieldedColliders the set of unshielded colliders to be updated
      * @param checkCyclicity      indicates whether or not to check for cyclicity
      * @param verbose             indicates whether or not to print verbose output
+     * @return the repaired PAG
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
-    public static Graph repairFaultyPag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                        Set<Triple> unshieldedColliders, boolean checkCyclicity, boolean verbose) {
+    public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                     Set<Triple> unshieldedColliders, boolean checkCyclicity, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -3397,6 +3398,16 @@ public final class GraphUtils {
         path.remove(a);
     }
 
+    /**
+     * Removes almost cycles from a graph.
+     *
+     * @param unshieldedColliders a set of unshielded colliders
+     * @param fciOrient           the FciOrient object
+     * @param pag                 the graph
+     * @param knowledge           the knowledge base
+     * @param verbose             a flag indicating whether to log verbose output
+     * @return true if any change was made to the graph, false otherwise
+     */
     public static boolean removeAlmostCycles2(Set<Triple> unshieldedColliders, FciOrient fciOrient,
                                               Graph pag, Knowledge knowledge, boolean verbose) {
         if (verbose) {
@@ -3516,6 +3527,16 @@ public final class GraphUtils {
         return anyChange;
     }
 
+    /**
+     * Removes cycles from the given graph using the Fast Causal Inference (FCI) algorithm.
+     *
+     * @param unshieldedColliders the set of unshielded colliders.
+     * @param fciOrient           the FciOrient object used for orientation
+     * @param pag                 the graph to remove cycles from
+     * @param knowledge           the knowledge base used by the FCI algorithm
+     * @param verbose             a flag indicating whether to log verbose information
+     * @return true if any cycles were removed, false otherwise
+     */
     public static boolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
                                        Graph pag, Knowledge knowledge, boolean verbose) {
         if (verbose) {
@@ -3678,10 +3699,11 @@ public final class GraphUtils {
     /**
      * Determines if the collider is allowed.
      *
-     * @param pag The Graph representing the PAG.
-     * @param x   The Node object representing the first node.
-     * @param b   The Node object representing the second node.
-     * @param y   The Node object representing the third node.
+     * @param pag       The Graph representing the PAG.
+     * @param x         The Node object representing the first node.
+     * @param b         The Node object representing the second node.
+     * @param y         The Node object representing the third node.
+     * @param knowledge The Knowledge object.
      * @return true if the collider is allowed, false otherwise.
      */
     public static boolean colliderAllowed(Graph pag, Node x, Node b, Node y, Knowledge knowledge) {
@@ -3694,6 +3716,8 @@ public final class GraphUtils {
      * @param fciOrient The FciOrient object used for orienting the edges.
      * @param pag       The Graph representing the PAG.
      * @param best      The list of Node objects representing the best nodes.
+     * @param knowledge The Knowledge object.
+     * @param verbose   A boolean value indicating whether verbose output should be printed.
      */
     public static void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge, boolean verbose) {
         if (verbose) {

@@ -43,7 +43,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-@Experimental
+//@Experimental
 public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
@@ -153,7 +153,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
-        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
         // Ablation
         search.setAblationLeaveOutScoringStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_SCORING_STEP));
@@ -233,7 +233,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.ABLATION_LEAVE_OUT_SCORING_STEP);
         params.add(Params.ABLATION_LEAVE_OUT_TESTING_STEPS);
         params.add(Params.MAX_PATH_LENGTH);
-        params.add(Params.REPAIR_FAULTY_PAG);
+        params.add(Params.GUARANTEE_PAG);
 
         // General
         params.add(Params.TIME_LAG);

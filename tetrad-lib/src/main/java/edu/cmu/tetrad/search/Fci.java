@@ -125,9 +125,9 @@ public final class Fci implements IGraphSearch {
      */
     private boolean doDiscriminatingPathColliderRule = true;
     /**
-     * Whether the PAG should be repaired.
+     * Whether the output should be guaranteed to be a PAG.
      */
-    private boolean repairFaultyPag;
+    private boolean guaranteePag;
     /**
      * Whether the final orientation step should be left out.
      */
@@ -268,8 +268,8 @@ public final class Fci implements IGraphSearch {
             fciOrient.finalOrientation(graph);
         }
 
-        if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        if (guaranteePag) {
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -421,12 +421,12 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the PAG should be repaired if faulty.
+     * Sets whether to guarantee the output is a PAG by repairing a faulty PAG.
      *
-     * @param repairFaultyPag True, if so.
+     * @param guaranteePag True, if so.
      */
-    public void setRepairFaultyPag(boolean repairFaultyPag) {
-        this.repairFaultyPag = repairFaultyPag;
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**

@@ -62,9 +62,9 @@ public final class LvLite implements IGraphSearch {
      */
     private START_WITH startWith = START_WITH.BOSS;
     /**
-     * Flag indicating whether to repair a faulty PAG.
+     * Flag indicating the output should be guaranteed to be a PAG.
      */
-    private boolean repairFaultyPag = false;
+    private boolean guaranteePag = false;
     /**
      * The number of starts for GRaSP.
      */
@@ -368,8 +368,8 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Finished implied orientation.");
         }
 
-        if (repairFaultyPag) {
-            pag =  GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose);
+        if (guaranteePag) {
+            pag =  GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose);
         }
 
         if (verbose) {
@@ -461,12 +461,12 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets whether to repair a faulty PAG.
+     * Sets whether to guarantee a PAG output by repairing a faulty PAG.
      *
-     * @param repairFaultyPag true if a faulty PAGs should be repaired, false otherwise
+     * @param guaranteePag true if a faulty PAGs should be repaired, false otherwise
      */
-    public void setRepairFaultyPag(boolean repairFaultyPag) {
-        this.repairFaultyPag = repairFaultyPag;
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**

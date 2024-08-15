@@ -122,9 +122,9 @@ public final class GFci implements IGraphSearch {
      */
     private boolean doDiscriminatingPathColliderRule = true;
     /**
-     * Whether to repair faulty PAGs.
+     * Whether to guarantee the output is a PAG by repairing a faulty PAG.
      */
-    private boolean repairFaultyPag = false;
+    private boolean guaranteePag = false;
     /**
      * Whether to leave out the final orientation step in the ablation study.
      */
@@ -218,8 +218,8 @@ public final class GFci implements IGraphSearch {
             fciOrient.finalOrientation(graph);
         }
 
-        if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        if (guaranteePag) {
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         return graph;
@@ -345,12 +345,12 @@ public final class GFci implements IGraphSearch {
 
 
     /**
-     * Sets the flag indicating whether to repair faulty PAG.
+     * Sets the flag indicating whether to guarantee the output is a legal PAG.
      *
-     * @param repairFaultyPag A boolean value indicating whether to repair faulty PAG.
+     * @param guaranteePag A boolean value indicating whether to guarantee the output is a legal PAG.
      */
-    public void setRepairFaultyPag(boolean repairFaultyPag) {
-        this.repairFaultyPag = repairFaultyPag;
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**

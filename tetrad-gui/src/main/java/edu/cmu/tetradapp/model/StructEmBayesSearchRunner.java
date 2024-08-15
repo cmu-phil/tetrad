@@ -52,17 +52,17 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The Bayes PM.
      */
     private BayesPm bayesPm;
 
     /**
-     * @serial Cannot be null.
+     * The data set.
      */
     private DataSet dataSet;
 
     /**
-     * @serial Cannot be null.
+     * The estimated Bayes IM.
      */
     private BayesIm estimatedBayesIm;
 

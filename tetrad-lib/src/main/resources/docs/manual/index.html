@@ -3130,24 +3130,70 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         GRaSP.</p>
 
 
+    <h3>The LV-Lite Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="lv-lite">
+        <p> LV-Lite starts with BOSS or GRaSP and get a valid order and a DAG/CPDAG. It sets the initial state of the
+            estimted PAG to this CPDAG and orients as o-o and then copy all of the unshielded colliders from the CPDAG
+            to the PAG. It then performs a testing modified from the step in GFCI that is more efficient. In GFCI, an
+            edge x *-* y is removed from the graph is there is a subset S of adj(x) \ {y} or adj(y) \ {x} such that x
+            _||_ y | S. For LV-Lite we instead search outward from x for a set S using a novel procedure that blocks all
+            existing paths in the estimated PAG either unconditionally or conditionally. Bounds may be placed on the
+            lengths of the blocked paths to consider and the depth (maximum |S|). We also allow bounds on the time
+            spent on any testing step. As edges are removed in this way, any additional colliders are oriented given
+            these sepsets S. We then run the final FCI orientation rules, where for the discriminating path rule we use
+            the same "out of x" sepset finding idea. We optionally allow the user to request that a legal PAG be
+            returned using a novel procedure; this guarantee has been extended to all latent variable algorithms in
+            Tetrad that return partial ancestral graphs (PAGs).
+        </p>
+
+        <p>LV-Lite, along with BFCI, can produce highly accurate models in simulation. LV-Lite, in particular, is highly
+            scalable. A paper describing BFCI and LV-Lite in more detail is planned. We make both BFCI and LV-Lite
+            non-experimental for this version since requests have been made to use them.</p>
+        </p>
+
+        <p>Note: If one wants to analyze time series data using this algorithm, one may set the time lag parameter to a
+            value greater than 0, which will automatically apply the time lag transform. The same goes for any algorithm
+            that has this parameter available in the interface.</p>
+    </div>
+
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
+        GRaSP.</p>
+
     <h3>The BFCI Algorithm</h3>
 
     <h4>Description</h4>
 
     <div id="bfci">
         <p>Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG
-            than GFCI
-            as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is
-            here:</p>
+            than GFCI as a result, for the latent variables case. This is a simple substitution; the reference for GFCI
+            is here:</p>
         <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models,"
-            JMLR 2016.
-            Here, BOSS has been substituted for FGES.</p>
+            JMLR 2016. Here, BOSS has been substituted for FGES.</p>
         <p>For BOSS only a score is needed, but there are steps in GFCI that require a test, so for this method, both a
-            test and
-            a score need to be given.</p>
+            test and a score need to be given. The reference for BOSS is:</p>
+        <p>Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., & Kummerfeld, E. (2023). Fast scalable and
+            accurate discovery of dags using the best order score search and grow shrink trees. Advances in Neural
+            Information Processing Systems, 36, 63945-63956.</p>
         <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of
-            temporal
-            tiers.</p>
+            temporal tiers.</p>
+        <p>LV-Lite, along with BFCI, can produce highly accurate models in simulation. LV-Lite, in particular, is highly
+            scalable. A paper describing BFCI and LV-Lite in more detail is planned. We make both BFCI and LV-Lite
+            non-experimental for this version since requests have been made to use them.</p>
+        </p>
 
         <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
@@ -4748,7 +4794,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="removeEffectNodes_long_desc">True if effect nodes should be removed from possible causes </span>
             </li>
             <li>Default Value: <span
-                    id="removeEffectNodes_default_value">True</span></li>
+                    id="removeEffectNodes_default_value">true</span></li>
             <li>Lower
                 Bound: <span id="removeEffectNodes_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -5289,13 +5335,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="guaranteeCpdag_short_desc">
-                    Yes if the output should guarantee a CPDAG</span></li>
+                    Guarantee that the output is a legal CPDAG</span></li>
             <li>Long Description: <span id="guaranteeCpdag_long_desc">
             	It is possible due to unfaithfulness for the Meek rules to output a
             	non-CPDAG; this parameter guarantees a CPDAG if set to 'Yes'.
             	</span></li>
             <li>Default Value: <span
-                    id="guaranteeCpdag_default_value">true</span></li>
+                    id="guaranteeCpdag_default_value">false</span></li>
             <li>Lower Bound: <span
                     id="guaranteeCpdag_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -6502,10 +6548,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 class="parameter_description_list">
             <li>Short Description: <span
                     id="sepsetFinderMethod_short_desc">
-					The method to use for finding sepsets, 1 = Greedy, 2 = Min-p, 3 = Max-p (default).        </span></li>
+					The method to use for finding sepsets, 1 = Greedy, 2 = Min-p, 3 = Max-p (default).        </span>
+            </li>
             <li>Long Description: <span
                     id="sepsetFinderMethod_long_desc">
-					The method to use for finding sepsets, 1 = Greedy, 2 = Min-p, 3 = Max-p (default).        </span></li>
+					The method to use for finding sepsets, 1 = Greedy, 2 = Min-p, 3 = Max-p (default).        </span>
+            </li>
             <li>Default Value: <span
                     id="sepsetFinderMethod_default_value">3</span></li>
             <li>Lower Bound: <span
@@ -6641,27 +6689,30 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="repairFaultyPag">repairFaultyPag</h3>
+            id="guaranteePag">guaranteePag</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="repairFaultyPag_short_desc">
-                    Yes if repairs should be made to a faulty PAG
+                    id="guaranteePag_short_desc">
+                    Guarantee that the output is a legal PAG
         </span></li>
             <li>Long Description: <span
-                    id="repairFaultyPag_long_desc">
+                    id="guaranteePag_long_desc">
                     Repairs errors in PAGs due to almost cyclic paths or non-maximalities.
+                    This comes with a certain risk; errors in PAGs indicate that the PAG
+                    assumptions were not met; the user may wish to consider why before
+                    selecting this option.
         </span></li>
             <li>Default Value: <span
-                    id="repairFaultyPag_default_value">False</span></li>
+                    id="guaranteePag_default_value">false</span></li>
             <li>Lower Bound: <span
-                    id="repairFaultyPag_lower_bound"></span></li>
+                    id="guaranteePag_lower_bound"></span></li>
             <li>Upper
                 Bound: <span
-                        id="repairFaultyPag_upper_bound"></span></li>
+                        id="guaranteePag_upper_bound"></span></li>
             <li>Value
                 Type: <span
-                        id="repairFaultyPag_value_type">Boolean</span></li>
+                        id="guaranteePag_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6678,7 +6729,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     rebuilds the PAG.
         </span></li>
             <li>Default Value: <span
-                    id="removeAlmostCycles_default_value">False</span></li>
+                    id="removeAlmostCycles_default_value">false</span></li>
             <li>Lower Bound: <span
                     id="removeAlmostCycles_lower_bound"></span></li>
             <li>Upper
@@ -6702,7 +6753,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     If true, the final orientation step of the algorithm is not performed.
         </span></li>
             <li>Default Value: <span
-                    id="ablationLeaveOutFinalOrientation_default_value">False</span></li>
+                    id="ablationLeaveOutFinalOrientation_default_value">false</span></li>
             <li>Lower Bound: <span
                     id="ablationLeaveOutFinalOrientation_lower_bound"></span></li>
             <li>Upper
@@ -7788,7 +7839,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="useBes_long_desc">This algorithm can use the backward equivalence search
                     from the GES algorithm as one of its steps.</span></li>
             <li>Default Value: <span
-                    id="useBes_default_value">False</span></li>
+                    id="useBes_default_value">false</span></li>
             <li>Lower Bound: <span
                     id="useBes_lower_bound"></span></li>
             <li>Upper Bound: <span

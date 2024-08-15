@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetradapp.model.FactorAnalysisRunner;
+import edu.cmu.tetradapp.util.IndTestType;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -130,6 +131,16 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
      */
     protected void addSpecialMenus(JMenuBar menuBar) {
 
+    }
+
+    /**
+     * This method is called when the user selects "Save As..." from the File menu.
+     *
+     * @throws UnsupportedOperationException since this method is not supported by this class.
+     */
+    @Override
+    public IndTestType getTestType() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**

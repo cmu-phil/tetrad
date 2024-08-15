@@ -132,9 +132,9 @@ public final class GraspFci implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * The flag for whether to repair a faulty PAG.
+     * The flag for whether to guarantee the output is a legal PAG.
      */
-    private boolean repairFaultyPag = false;
+    private boolean guaranteePag = false;
     /**
      * Whether to leave out the final orientation step.
      */
@@ -227,8 +227,8 @@ public final class GraspFci implements IGraphSearch {
             fciOrient.finalOrientation(pag);
         }
 
-        if (repairFaultyPag) {
-            pag = GraphUtils.repairFaultyPag(pag, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        if (guaranteePag) {
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
@@ -378,12 +378,12 @@ public final class GraspFci implements IGraphSearch {
     }
 
     /**
-     * Sets the flag for whether to repair a faulty PAG.
+     * Sets the flag for whether to guarantee the output is a legal PAG.
      *
-     * @param repairFaultyPag True, if so.
+     * @param guaranteePag True, if so.
      */
-    public void setRepairFaultyPag(boolean repairFaultyPag) {
-        this.repairFaultyPag = repairFaultyPag;
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**

@@ -105,9 +105,9 @@ public final class SpFci implements IGraphSearch {
      */
     private boolean verbose;
     /**
-     * True iff the search should repair a faulty PAG.
+     * True iff the search should guarantee a PAG output.
      */
-    private boolean repairFaultyPag = false;
+    private boolean guaranteePag = false;
     /**
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
@@ -182,8 +182,8 @@ public final class SpFci implements IGraphSearch {
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
-        if (repairFaultyPag) {
-            graph = GraphUtils.repairFaultyPag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        if (guaranteePag) {
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
         }
 
         return graph;
@@ -308,12 +308,12 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the search should repair a faulty PAG.
+     * Sets whether the search should guarantee the output is a legal PAG.
      *
-     * @param repairFaultyPag True, if so.
+     * @param guaranteePag True, if so.
      */
-    public void setRepairFaultyPag(boolean repairFaultyPag) {
-        this.repairFaultyPag = repairFaultyPag;
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**

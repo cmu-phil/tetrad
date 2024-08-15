@@ -42,6 +42,7 @@ import java.util.Arrays;
  * @version $Id: $Id
  */
 public class MissingDataInjectorWrapper extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

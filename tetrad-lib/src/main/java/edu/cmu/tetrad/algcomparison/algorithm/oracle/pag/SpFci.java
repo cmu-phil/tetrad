@@ -21,7 +21,6 @@ import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
-import java.io.PrintStream;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,7 +113,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setRepairFaultyPag(parameters.getBoolean(Params.REPAIR_FAULTY_PAG));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
 
@@ -170,7 +169,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
-        params.add(Params.REPAIR_FAULTY_PAG);
+        params.add(Params.GUARANTEE_PAG);
         params.add(Params.VERBOSE);
 
         // Flags

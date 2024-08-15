@@ -55,7 +55,7 @@ public class SemImWrapper implements SessionModel {
     private List<SemIm> semIms;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 

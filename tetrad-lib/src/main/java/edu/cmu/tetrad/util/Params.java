@@ -904,9 +904,9 @@ public final class Params {
      */
     public static final String MAX_SCORE_DROP = "maxScoreDrop";
     /**
-     * Constant <code>REPAIR_FAULTY_PAG="repairFaultyPag"</code>
+     * Constant <code>GUARANTEE_PAG="guaranteePag"</code>
      */
-    public static final String REPAIR_FAULTY_PAG = "repairFaultyPag";
+    public static final String GUARANTEE_PAG = "guaranteePag";
     /**
      * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */
