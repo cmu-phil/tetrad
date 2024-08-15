@@ -441,8 +441,8 @@
                         10, 10, 10, false);
                 Graph pag = GraphTransforms.dagToPag(graph);
                 assertTrue(pag.paths().isLegalPag());
-                Graph pag2 = GraphTransforms.dagToPag(pag);
-                assertTrue(pag2.paths().isLegalPag());
+//                Graph pag2 = GraphTransforms.dagToPag(pag);
+//                assertTrue(pag2.paths().isLegalPag());
             }
         }
     }

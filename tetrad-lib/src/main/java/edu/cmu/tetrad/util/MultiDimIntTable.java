@@ -67,16 +67,21 @@ public class MultiDimIntTable {
     /**
      * <p>getCellIndex.</p>
      *
+     * @param dims
      * @param coords The coordinates of the cell. Each value must be less than the number of possible value for the
      *               corresponding dimension in the table. (Enforced.)
      * @return the row in the table for the given node and combination of parent values.
      */
-    public synchronized int getCellIndex(int[] coords) {
+    public synchronized int getCellIndex(int[] dims, int[] coords) {
         int cellIndex = 0;
 
-        for (int i = 0; i < this.dims.length; i++) {
-            cellIndex *= this.dims[i];
-            cellIndex += coords[i];
+//        int[] dims = getDimensions();
+
+        for (int i = 0; i < coords.length; i++) {
+            if (i < dims.length) {
+                cellIndex *= dims[i];
+                cellIndex += coords[i];
+            }
         }
 
         return cellIndex;
@@ -103,12 +108,13 @@ public class MultiDimIntTable {
     /**
      * Increments the value at the given coordinates by the specified amount, returning the new value.
      *
+     * @param dims
      * @param coords The coordinates of the table cell to update.
      * @param value  The amount by which the table cell at these coordinates should be incremented (an integer).
      * @return the new value at that table cell.
      */
-    public synchronized long increment(int[] coords, int value) {
-        int cellIndex = getCellIndex(coords);
+    public synchronized long increment(int[] dims, int[] coords, int value) {
+        int cellIndex = getCellIndex(dims, coords);
 
         if (!this.cells.containsKey(cellIndex)) {
             this.cells.put(cellIndex, 0L);
@@ -127,7 +133,7 @@ public class MultiDimIntTable {
      */
     @SuppressWarnings("UnusedDeclaration")
     public long setValue(int[] coords, int value) {
-        int cellIndex = getCellIndex(coords);
+        int cellIndex = getCellIndex(dims, coords);
         this.cells.put(cellIndex, (long) value);
         return this.cells.get(cellIndex);
     }
@@ -139,7 +145,7 @@ public class MultiDimIntTable {
      * @return the new value at that table cell.
      */
     public long getValue(int[] coords) {
-        int cellIndex = getCellIndex(coords);
+        int cellIndex = getCellIndex(dims, coords);
         Long l = this.cells.get(cellIndex);
 
         if (this.cells == null || l == null) {

@@ -98,7 +98,7 @@ public final class CellTable {
                 }
             }
 
-            this.table.increment(coords, 1);
+            this.table.increment(dims, coords, 1);
         }
     }
 
