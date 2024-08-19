@@ -89,6 +89,7 @@ public class RevertToCpdag extends AbstractAction implements ClipboardOwner {
         MeekRules meekRules = new MeekRules();
         meekRules.setRevertToUnshieldedColliders(true);
         meekRules.orientImplied(graph);
+        meekRules.setVerbose(false);
         workbench.setGraph(graph);
     }
 

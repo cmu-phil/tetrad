@@ -281,6 +281,7 @@ public class Paths implements TetradSerializable {
                 Graph __g = new EdgeListGraph(g);
                 MeekRules meekRules = new MeekRules();
                 meekRules.setRevertToUnshieldedColliders(false);
+                meekRules.setVerbose(false);
                 meekRules.orientImplied(__g);
                 return g.equals(__g);
             }

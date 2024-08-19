@@ -364,6 +364,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         MeekRules meekRules = new MeekRules();
         meekRules.setMeekPreventCycles(this.isMeekPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
+        meekRules.setVerbose(false);
         return meekRules;
     }
 

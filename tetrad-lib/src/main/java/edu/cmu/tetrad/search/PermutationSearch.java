@@ -129,6 +129,7 @@ public class PermutationSearch {
         if (cpDag) {
             MeekRules rules = new MeekRules();
             if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
             rules.orientImplied(graph);
         }
 

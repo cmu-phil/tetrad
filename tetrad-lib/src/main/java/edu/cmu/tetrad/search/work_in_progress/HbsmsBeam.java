@@ -167,6 +167,7 @@ public final class HbsmsBeam implements Hbsms {
         System.out.println("Initial Score = " + this.nf.format(bestScore));
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(getKnowledge());
+        meekRules.setVerbose(false);
 
         {
             bestGraph = increaseScoreLoop(bestGraph, getAlpha());

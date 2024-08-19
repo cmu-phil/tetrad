@@ -194,6 +194,7 @@ public class FasRunner extends AbstractAlgorithmRunner
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(this.isMeekPreventCycles());
         rules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
+        rules.setVerbose(false);
         return rules;
     }
 

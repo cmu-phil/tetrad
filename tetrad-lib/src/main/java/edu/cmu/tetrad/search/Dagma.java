@@ -544,6 +544,7 @@ public class Dagma {
 
         if (this.cpdag) {
             MeekRules rules = new MeekRules();
+            rules.setVerbose(false);
             rules.orientImplied(graph);
         }
 

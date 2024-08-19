@@ -298,6 +298,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         MeekRules meekRules = new MeekRules();
         meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.setKnowledge(this.knowledge);
+        meekRules.setVerbose(verbose);
         meekRules.orientImplied(graph);
 
         TetradLogger.getInstance().log("After step 4 (PC Orient)" + graph);
@@ -393,6 +394,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         MeekRules meekRules = new MeekRules();
         meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.setKnowledge(this.knowledge);
+        meekRules.setVerbose(verbose);
         meekRules.orientImplied(graph);
 
         return graph;

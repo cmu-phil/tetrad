@@ -305,6 +305,7 @@ public class MbUtils {
                                                    int depth, Node target) {
         MeekRules meekRules = new MeekRules();
         meekRules.setRevertToUnshieldedColliders(false);
+        meekRules.setVerbose(false);
         meekRules.orientImplied(graph);
         MbUtils.trimToMbNodes(graph, target, false);
         MbUtils.trimEdgesAmongParents(graph, target);

@@ -390,6 +390,7 @@ public final class SampleVcpc implements IGraphSearch {
 
             meekRules.setMeekPreventCycles(this.meekPreventCycles);
             meekRules.setKnowledge(this.knowledge);
+            meekRules.setVerbose(verbose);
 
             meekRules.orientImplied(this.graph);
         }
@@ -496,6 +497,7 @@ public final class SampleVcpc implements IGraphSearch {
             }
 
             MeekRules rules = new MeekRules();
+            rules.setVerbose(verbose);
             rules.orientImplied(graph);
             if (graph.paths().existsDirectedCycle()) {
                 CPDAGs.remove(graph);
