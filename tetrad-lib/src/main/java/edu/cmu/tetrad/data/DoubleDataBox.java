@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.graph.Node;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serial;
 
 /**
  * Stores a 2D array of double data. Note that the missing value marker for this box is -99.
@@ -33,6 +30,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class DoubleDataBox implements DataBox {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -96,9 +94,7 @@ public class DoubleDataBox implements DataBox {
      * @return a {@link edu.cmu.tetrad.data.BoxDataSet} object
      */
     public static BoxDataSet serializableInstance() {
-        List<Node> vars = new ArrayList<>();
-        for (int i = 0; i < 4; i++) vars.add(new ContinuousVariable("X" + i));
-        return new BoxDataSet(new ShortDataBox(4, 4), vars);
+        return BoxDataSet.serializableInstance();
     }
 
     /**

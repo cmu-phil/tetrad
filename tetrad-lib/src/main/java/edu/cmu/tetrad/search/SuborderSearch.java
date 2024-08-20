@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+    package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;

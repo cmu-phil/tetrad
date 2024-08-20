@@ -48,19 +48,19 @@ public class ChiSquareTest {
     /**
      * The data set this test uses.
      */
-    private final DataSet dataSet;
+    private DataSet dataSet;
     /**
      * The number of values for each variable in the data.
      */
-    private final int[] dims;
+    private int[] dims;
     /**
      * Stores the data in the form of a cell table.
      */
-    private final CellTable cellTable;
+    private CellTable cellTable;
     /**
      * The type of test to perform.
      */
-    private final TestType testType;
+    private TestType testType;
     /**
      * The significance level of the test.
      */
@@ -79,8 +79,13 @@ public class ChiSquareTest {
      * @param dataSet  A data set consisting entirely of discrete variables.
      * @param alpha    The significance level, usually 0.05.
      * @param testType The type of test to perform, either CHI_SQUARE or G_SQUARE.
+     * @param rows     The rows to use in the data.
      */
-    public ChiSquareTest(DataSet dataSet, double alpha, TestType testType) {
+    public ChiSquareTest(DataSet dataSet, double alpha, TestType testType, List<Integer> rows) {
+        setup(dataSet, alpha, testType, rows);
+    }
+
+    private void setup(DataSet dataSet, double alpha, TestType testType, List<Integer> rows) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance level must be in " + "[0, 1]: " + alpha);
         }
@@ -95,8 +100,7 @@ public class ChiSquareTest {
         this.testType = testType;
         this.dataSet = dataSet;
         this.alpha = alpha;
-        this.cellTable = new CellTable(null);
-        this.getCellTable().setMissingValue(DiscreteVariable.MISSING_VALUE);
+        this.cellTable = new CellTable(dims, DiscreteVariable.MISSING_VALUE, rows);
     }
 
     /**
@@ -115,7 +119,7 @@ public class ChiSquareTest {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
-        this.getCellTable().addToTable(getDataSet(), testIndices);
+        this.getCellTable().countTable(getDataSet(), testIndices);
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to
@@ -132,8 +136,8 @@ public class ChiSquareTest {
         System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0, condDims.length);
 
         int[] coords = new int[testIndices.length];
-        int numRows = this.getCellTable().getNumValues(0);
-        int numCols = this.getCellTable().getNumValues(1);
+        int numRows = this.getCellTable().getDimension(0);
+        int numCols = this.getCellTable().getDimension(1);
 
         CombinationIterator combinationIterator = new CombinationIterator(condDims);
 
@@ -246,7 +250,7 @@ public class ChiSquareTest {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
-        this.getCellTable().addToTable(getDataSet(), testIndices);
+        this.getCellTable().countTable(getDataSet(), testIndices);
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to
@@ -258,7 +262,7 @@ public class ChiSquareTest {
         System.arraycopy(selectFromArray(getDims(), testIndices), 1, condDims, 0, condDims.length);
 
         int[] coords = new int[testIndices.length];
-        int numValues = this.getCellTable().getNumValues(0);
+        int numValues = this.getCellTable().getDimension(0);
 
         CombinationIterator combinationIterator = new CombinationIterator(condDims);
 
@@ -312,15 +316,6 @@ public class ChiSquareTest {
         }
 
         this.alpha = alpha;
-    }
-
-    /**
-     * Sets the rows to use in the data.
-     *
-     * @param rows The rows to use.
-     */
-    public void setRows(List<Integer> rows) {
-        this.cellTable.setRows(rows);
     }
 
     private int[] selectFromArray(int[] arr, int[] indices) {

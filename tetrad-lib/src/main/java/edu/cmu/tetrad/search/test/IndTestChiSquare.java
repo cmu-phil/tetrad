@@ -48,7 +48,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     /**
      * The Chi Square tester.
      */
-    private final ChiSquareTest chiSquareTest;
+    private ChiSquareTest chiSquareTest;
 
     /**
      * The variables in the discrete data sets for which conditional independence judgments are desired.
@@ -59,7 +59,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      * The dataset of discrete variables.
      */
     private final DataSet dataSet;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, ChiSquareTest.Result> facts = new ConcurrentHashMap<>();
     /**
      * The G Square value associated with a particular call of isIndependent. Set in that method and not in the
@@ -123,7 +125,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
         this.dataSet = dataSet;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE);
+        this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE, null);
         this.chiSquareTest.setMinCountPerCell(minCountPerCell);
     }
 
@@ -427,7 +429,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     public void setRows(List<Integer> rows) {
         if (rows == null) {
             this.rows = null;
-            chiSquareTest.setRows(null);
+            chiSquareTest = new ChiSquareTest(dataSet, chiSquareTest.getAlpha(), ChiSquareTest.TestType.CHI_SQUARE, this.rows);
         } else {
             for (int i : rows) {
                 if (i < 0 || i >= dataSet.getNumRows()) {
@@ -436,7 +438,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
             }
 
             this.rows = new ArrayList<>(rows);
-            chiSquareTest.setRows(this.rows);
+            chiSquareTest = new ChiSquareTest(dataSet, chiSquareTest.getAlpha(), ChiSquareTest.TestType.CHI_SQUARE, this.rows);
         }
     }
 }

@@ -38,20 +38,36 @@ import java.util.List;
  */
 public final class CellTable {
 
-    // The table of cell counts.
-    private final MultiDimIntTable table;
-    // The value used in the data for missing values.
+    /**
+     * The table of cell counts.
+     */
+    private MultiDimIntTable table;
+    /**
+     * The value used in the data for missing values.
+     */
     private int missingValue = -99;
-    // The rows to be used in the table.
+    /**
+     * The rows to be used in the table.
+     */
     private List<Integer> rows = null;
+
+    public CellTable(int[] dims) {
+        this(dims, -99, null);
+    }
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
      *
      * @param dims an <code>int[]</code> value
      */
-    public CellTable(int[] dims) {
+    public CellTable(int[] dims, int missingValue, List<Integer> rows) {
+        if (dims == null) {
+            throw new NullPointerException("The dimensions array is null.");
+        }
+
         this.table = new MultiDimIntTable(dims);
+        setMissingValue(missingValue);
+        setRows(rows);
     }
 
     /**
@@ -60,15 +76,15 @@ public final class CellTable {
      * @param dataSet the data set to be used in the table.
      * @param indices the indices of the variables to be used in the table.
      */
-    public synchronized void addToTable(DataSet dataSet, int[] indices) {
+    public void countTable(DataSet dataSet, int[] indices) {
         if (rows == null) {
-            rows = new ArrayList<>();
+            this.rows = new ArrayList<>();
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                rows.add(i);
+                this.rows.add(i);
             }
         } else {
             for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) >= dataSet.getNumRows())
+                if (this.rows.get(i) >= dataSet.getNumRows())
                     throw new IllegalArgumentException("Row " + i + " is too large.");
             }
         }
@@ -80,7 +96,7 @@ public final class CellTable {
             dims[i] = variable.getNumCategories();
         }
 
-        this.table.reset(dims);
+        this.table = new MultiDimIntTable(dims);
 
         int[] coords = new int[indices.length];
 
@@ -98,18 +114,18 @@ public final class CellTable {
                 }
             }
 
-            this.table.increment(dims, coords, 1);
+            this.table.increment(coords, 1);
         }
     }
 
     /**
-     * <p>getNumValues.</p>
+     * Returns the dimensions of the given variable.
      *
      * @param varIndex the index of the variable in question.
-     * @return the number of dimensions of the variable.
+     * @return the dimension of the variable.
      */
-    public int getNumValues(int varIndex) {
-        return this.table.getDims(varIndex);
+    public int getDimension(int varIndex) {
+        return this.table.getDim(varIndex);
     }
 
     /**
@@ -183,7 +199,7 @@ public final class CellTable {
      *
      * @param missingValue the missing value marker.
      */
-    public void setMissingValue(int missingValue) {
+    private void setMissingValue(int missingValue) {
         this.missingValue = missingValue;
     }
 
@@ -203,7 +219,7 @@ public final class CellTable {
      *
      * @param rows the rows to be used in the table.
      */
-    public void setRows(List<Integer> rows) {
+    private void setRows(List<Integer> rows) {
         if (rows == null) {
             this.rows = null;
         } else {

@@ -37,6 +37,7 @@ import java.io.Serial;
  * @version $Id: $Id
  */
 public class ChiSquare implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

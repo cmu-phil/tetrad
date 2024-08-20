@@ -52,7 +52,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     /**
      * The G Square tester.
      */
-    private final ChiSquareTest gSquareTest;
+    private ChiSquareTest gSquareTest;
     /**
      * The variables in the discrete data sets or which conditional independence judgements are desired.
      */
@@ -117,7 +117,11 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
         this.alpha = alpha;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE);
+        setup(dataSet, alpha, null);
+    }
+
+    private void setup(DataSet dataSet, double alpha, List<Integer> rows) {
+        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE, rows);
         this.gSquareTest.setMinCountPerCell(minCountPerCell);
     }
 
@@ -387,7 +391,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     public void setRows(List<Integer> rows) {
         if (rows == null) {
             this.rows = null;
-            gSquareTest.setRows(null);
+            setup(dataSet, alpha, this.rows);
         } else {
             for (int i : rows) {
                 if (i < 0 || i >= dataSet.getNumRows()) {
@@ -396,7 +400,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
             }
 
             this.rows = new ArrayList<>(rows);
-            gSquareTest.setRows(this.rows);
+            setup(dataSet, alpha, this.rows);
         }
     }
 }

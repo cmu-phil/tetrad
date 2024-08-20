@@ -318,7 +318,7 @@ public final class TestCellTable {
 
         int[] indices = {0, 1, 2, 3};
 
-        this.table.addToTable(dataSet, indices);
+        this.table.countTable(dataSet, indices);
     }
 
     @Test
