@@ -391,7 +391,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     public void setRows(List<Integer> rows) {
         if (rows == null) {
             this.rows = null;
-            setup(dataSet, alpha, this.rows);
+            setup(dataSet, alpha, rows);
         } else {
             for (int i : rows) {
                 if (i < 0 || i >= dataSet.getNumRows()) {
@@ -400,7 +400,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
             }
 
             this.rows = new ArrayList<>(rows);
-            setup(dataSet, alpha, this.rows);
+            setup(dataSet, alpha, rows);
         }
     }
 }

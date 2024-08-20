@@ -31,6 +31,8 @@ import java.util.List;
 /**
  * Stores a cell count table of arbitrary dimension. Provides methods for incrementing particular cells and for
  * calculating marginals.
+ * <p>
+ * Immutable.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -51,16 +53,23 @@ public final class CellTable {
      */
     private List<Integer> rows = null;
 
-    public CellTable(int[] dims) {
-        this(dims, -99, null);
+    /**
+     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
+     *
+     * @param dims The dimensions of the table.
+     */
+    public CellTable(int[] dims, DataSet dataSet, int[] testIndices) {
+        this(dims, -99, null, dataSet, testIndices);
     }
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
      *
-     * @param dims an <code>int[]</code> value
+     * @param dims         the dimensions of the table.
+     * @param missingValue the value used in the data for missing values.
+     * @param rows         the rows to be used in the table.
      */
-    public CellTable(int[] dims, int missingValue, List<Integer> rows) {
+    public CellTable(int[] dims, int missingValue, List<Integer> rows, DataSet dataSet, int[] testIndices) {
         if (dims == null) {
             throw new NullPointerException("The dimensions array is null.");
         }
@@ -68,6 +77,7 @@ public final class CellTable {
         this.table = new MultiDimIntTable(dims);
         setMissingValue(missingValue);
         setRows(rows);
+        countTable(dataSet, testIndices);
     }
 
     /**
@@ -76,7 +86,7 @@ public final class CellTable {
      * @param dataSet the data set to be used in the table.
      * @param indices the indices of the variables to be used in the table.
      */
-    public void countTable(DataSet dataSet, int[] indices) {
+    private void countTable(DataSet dataSet, int[] indices) {
         if (rows == null) {
             this.rows = new ArrayList<>();
             for (int i = 0; i < dataSet.getNumRows(); i++) {
@@ -100,7 +110,7 @@ public final class CellTable {
 
         int[] coords = new int[indices.length];
 
-        points:
+        Points:
         for (int i : rows) {
             for (int j = 0; j < indices.length; j++) {
                 try {
@@ -110,7 +120,7 @@ public final class CellTable {
                 }
 
                 if (coords[j] == getMissingValue()) {
-                    continue points;
+                    continue Points;
                 }
             }
 
@@ -179,31 +189,6 @@ public final class CellTable {
     }
 
     /**
-     * Makes a copy of the coordinate array so that the original is not messed up.
-     */
-    private int[] internalCoordCopy(int[] coords) {
-        return Arrays.copyOf(coords, coords.length);
-    }
-
-    /**
-     * Returns the missing value marker.
-     *
-     * @return the missing value marker.
-     */
-    private int getMissingValue() {
-        return this.missingValue;
-    }
-
-    /**
-     * Sets the missing value marker.
-     *
-     * @param missingValue the missing value marker.
-     */
-    private void setMissingValue(int missingValue) {
-        this.missingValue = missingValue;
-    }
-
-    /**
      * Returns the value of the cell specified by the given coordinates.
      *
      * @param testCell the coordinates of the cell.
@@ -230,6 +215,32 @@ public final class CellTable {
 
             this.rows = rows;
         }
+    }
+
+
+    /**
+     * Makes a copy of the coordinate array so that the original is not messed up.
+     */
+    private int[] internalCoordCopy(int[] coords) {
+        return Arrays.copyOf(coords, coords.length);
+    }
+
+    /**
+     * Returns the missing value marker.
+     *
+     * @return the missing value marker.
+     */
+    private int getMissingValue() {
+        return this.missingValue;
+    }
+
+    /**
+     * Sets the missing value marker.
+     *
+     * @param missingValue the missing value marker.
+     */
+    private void setMissingValue(int missingValue) {
+        this.missingValue = missingValue;
     }
 }
 

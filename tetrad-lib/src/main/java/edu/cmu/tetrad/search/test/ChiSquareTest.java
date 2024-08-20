@@ -48,24 +48,23 @@ public class ChiSquareTest {
     /**
      * The data set this test uses.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
     /**
      * The number of values for each variable in the data.
      */
-    private int[] dims;
-    /**
-     * Stores the data in the form of a cell table.
-     */
-    private CellTable cellTable;
+    private final int[] dims;
     /**
      * The type of test to perform.
      */
-    private TestType testType;
+    private final TestType testType;
+    /**
+     * The rows to use in the data.
+     */
+    private final List<Integer> rows;
     /**
      * The significance level of the test.
      */
     private double alpha;
-
     /**
      * The minimum sum of a row or column for a conditional table to be included in the overall chi-square and degrees
      * of freedom. Note that this should not be too small, or the chi-square distribution will not be a good
@@ -82,15 +81,12 @@ public class ChiSquareTest {
      * @param rows     The rows to use in the data.
      */
     public ChiSquareTest(DataSet dataSet, double alpha, TestType testType, List<Integer> rows) {
-        setup(dataSet, alpha, testType, rows);
-    }
-
-    private void setup(DataSet dataSet, double alpha, TestType testType, List<Integer> rows) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance level must be in " + "[0, 1]: " + alpha);
         }
 
         this.dims = new int[dataSet.getNumColumns()];
+        this.rows = rows;
 
         for (int i = 0; i < getDims().length; i++) {
             DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(i);
@@ -100,16 +96,14 @@ public class ChiSquareTest {
         this.testType = testType;
         this.dataSet = dataSet;
         this.alpha = alpha;
-        this.cellTable = new CellTable(dims, DiscreteVariable.MISSING_VALUE, rows);
     }
 
     /**
      * Calculates chi square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max
-     * by summing up chi square and degrees of freedom for each conditional table in turn, where rows or columns that
-     * with fewer than minSumRowOrCol counts have been removed. The adjusted conditional tables are required to have
-     * more than 0 total counts and at least 2 rows and 2 columns; otherwise, the test is judged to be invalid.
-     * Otherwise, a p-value is returned based on the Chi-Square distribution with the total degrees of freedom and total
-     * chi-square.
+     * by summing up chi square and degrees of freedom for each conditional table in turn. Rows or columns that with
+     * fewer than minSumRowOrCol counts have been removed. The adjusted conditional tables are required to have more
+     * than 0 total counts and at least 2 rows and 2 columns; otherwise, the test is judged to be invalid. Otherwise, a
+     * p-value is returned based on the Chi-Square distribution with the total degrees of freedom and total chi-square.
      *
      * @param testIndices These indices, in order.
      * @return a Chi square test result.
@@ -119,7 +113,7 @@ public class ChiSquareTest {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
-        this.getCellTable().countTable(getDataSet(), testIndices);
+        CellTable cellTable = new CellTable(dims, DiscreteVariable.MISSING_VALUE, rows, getDataSet(), testIndices);
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to
@@ -136,8 +130,8 @@ public class ChiSquareTest {
         System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0, condDims.length);
 
         int[] coords = new int[testIndices.length];
-        int numRows = this.getCellTable().getDimension(0);
-        int numCols = this.getCellTable().getDimension(1);
+        int numRows = cellTable.getDimension(0);
+        int numCols = cellTable.getDimension(1);
 
         CombinationIterator combinationIterator = new CombinationIterator(condDims);
 
@@ -156,7 +150,7 @@ public class ChiSquareTest {
 
             for (int i = 0; i < numRows; i++) {
                 coords[0] = i;
-                sumRows[i] = getCellTable().calcMargin(coords, secondVar);
+                sumRows[i] = cellTable.calcMargin(coords, secondVar);
 
                 if (sumRows[i] == 0 || sumRows[i] < minCountPerCell * numCols) {
                     zeroRows[i] = true;
@@ -167,7 +161,7 @@ public class ChiSquareTest {
 
             for (int j = 0; j < numCols; j++) {
                 coords[1] = j;
-                sumCols[j] = getCellTable().calcMargin(coords, firstVar);
+                sumCols[j] = cellTable.calcMargin(coords, firstVar);
 
                 if (sumCols[j] == 0 || sumCols[j] < minCountPerCell * numRows) {
                     zeroCols[j] = true;
@@ -176,7 +170,7 @@ public class ChiSquareTest {
                 }
             }
 
-            double total = getCellTable().calcMargin(coords, bothVars);
+            double total = cellTable.calcMargin(coords, bothVars);
 
             if (total < minCountPerCell * numRows * numCols) {
                 continue;
@@ -194,7 +188,7 @@ public class ChiSquareTest {
                             continue;
                         }
 
-                        double observed = getCellTable().getValue(coords);
+                        double observed = cellTable.getValue(coords);
 
                         // Under the above conditions, expected > 0.
                         double expected = (sumRows[i] * sumCols[j]) / total;
@@ -250,7 +244,7 @@ public class ChiSquareTest {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
-        this.getCellTable().countTable(getDataSet(), testIndices);
+        CellTable cellTable = new CellTable(dims, DiscreteVariable.MISSING_VALUE, rows, getDataSet(), testIndices);
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to
@@ -262,7 +256,7 @@ public class ChiSquareTest {
         System.arraycopy(selectFromArray(getDims(), testIndices), 1, condDims, 0, condDims.length);
 
         int[] coords = new int[testIndices.length];
-        int numValues = this.getCellTable().getDimension(0);
+        int numValues = cellTable.getDimension(0);
 
         CombinationIterator combinationIterator = new CombinationIterator(condDims);
 
@@ -270,7 +264,7 @@ public class ChiSquareTest {
             int[] combination = combinationIterator.next();
             System.arraycopy(combination, 0, coords, 1, combination.length);
 
-            long total = this.getCellTable().calcMargin(coords, firstVar);
+            long total = cellTable.calcMargin(coords, firstVar);
 
             if (total == 0) {
                 continue;
@@ -281,7 +275,7 @@ public class ChiSquareTest {
             for (int i = 0; i < numValues; i++) {
                 coords[0] = i;
 
-                long value = this.getCellTable().getValue(coords);
+                long value = cellTable.getValue(coords);
 
                 if ((double) value / total >= p) {
                     dominates = true;
@@ -318,6 +312,17 @@ public class ChiSquareTest {
         this.alpha = alpha;
     }
 
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
+     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
+     *
+     * @param minCountPerCell The minimum number of counts per conditional table. The default is 1; this must be >= 0.
+     */
+    public void setMinCountPerCell(double minCountPerCell) {
+        this.minCountPerCell = minCountPerCell;
+    }
+
     private int[] selectFromArray(int[] arr, int[] indices) {
         int[] retArr = new int[indices.length];
 
@@ -334,21 +339,6 @@ public class ChiSquareTest {
 
     private int[] getDims() {
         return this.dims;
-    }
-
-    private CellTable getCellTable() {
-        return this.cellTable;
-    }
-
-    /**
-     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
-     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
-     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
-     *
-     * @param minCountPerCell The minimum number of counts per conditional table. The default is 1; this must be >= 0.
-     */
-    public void setMinCountPerCell(double minCountPerCell) {
-        this.minCountPerCell = minCountPerCell;
     }
 
     /**
