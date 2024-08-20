@@ -63,12 +63,16 @@ public class ChiSquareTest {
     private final List<Integer> rows;
     /**
      * The significance level of the test.
+     * <p>
+     * This should not be changed during execution, as it is not immutable.
      */
     private double alpha;
     /**
      * The minimum sum of a row or column for a conditional table to be included in the overall chi-square and degrees
      * of freedom. Note that this should not be too small, or the chi-square distribution will not be a good
      * approximation to the distribution of the test statistic.
+     * <p>
+     * This should not be changed during execution, as it is not immutable.
      */
     private double minCountPerCell = 1.0;
 
