@@ -96,20 +96,34 @@ public class DiscriminatingPath {
             return false;
         }
 
+        // Relabeling as in Zhang's article:
+        //  *         B
+        // *         *o           * is either an arrowhead or a circle
+        // *        /  \
+        // *       v    v
+        // * E....A --> C
+
+        //  *         V
+        // *         *o           * is either an arrowhead or a circle
+        // *        /  \
+        // *       v    v
+        // * X....W --> Y
+
         // Make sure there should be a sepset of E and C in the path (Zhang's X and Y). This is the case
         // if E is not adjacent to C.
         if (graph.isAdjacentTo(e, c)) {
             return false;
         }
 
-        // Check features of the path.
-        if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-            return false;
-        }
+        // We don't need this check by Definition 7, since c already needs to be collider on the path from b to a.
+//        if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
+//            return false;
+//        }
 
-        if (graph.getEndpoint(b, a) != Endpoint.ARROW) {
-            return false;
-        }
+        // Also, this check is not required by Definition 7. (It was in the original version of the code.)
+//        if (graph.getEndpoint(b, a) != Endpoint.ARROW) {
+//            return false;
+//        }
 
         if (!colliderPath.contains(a)) {
             return false;
