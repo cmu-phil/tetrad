@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
  * Note: This class is a modified version of the original FciOrient class, in that we allow the R0 and R4 rules to be be
  * overridden by subclasses. This is useful for the TeyssierScorer class, which needs to override these rules in order
  * to calculate the score of the graph. It is also useful for DAG to PAG, which needs to override these rules in order
- * using D-SEP. The R0 and R4 rules are the only ones that cannot be carried out by an examination of the graph but
+ * to use D-SEP. The R0 and R4 rules are the only ones that cannot be carried out by an examination of the graph but
  * which require additional analysis of the underlying distribution or graph. In addition, several methods have been
  * optimized.
  *
