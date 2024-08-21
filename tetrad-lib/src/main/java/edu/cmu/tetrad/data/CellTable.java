@@ -57,6 +57,8 @@ public final class CellTable {
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
      *
      * @param dims The dimensions of the table.
+     * @param dataSet The data set to be used in the table.
+     * @param testIndices The indices of the variables to be used in the table.
      */
     public CellTable(int[] dims, DataSet dataSet, int[] testIndices) {
         this(dims, -99, null, dataSet, testIndices);
@@ -68,6 +70,8 @@ public final class CellTable {
      * @param dims         the dimensions of the table.
      * @param missingValue the value used in the data for missing values.
      * @param rows         the rows to be used in the table.
+     * @param dataSet      the data set to be used in the table.
+     * @param testIndices  the indices of the variables to be used in the table.
      */
     public CellTable(int[] dims, int missingValue, List<Integer> rows, DataSet dataSet, int[] testIndices) {
         if (dims == null) {

@@ -2938,7 +2938,7 @@ public final class GraphUtils {
         // Use the final R0R4 strategy from DAG to PAG, which does final orientation using DSEP for both R0 and
         // R4. This is the DAG to PAG strategy, which we repeat here for clarity. jdramsey 2024-8-13.
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
-        FciOrient _fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, pag, knowledge, verbose));
+        FciOrient _fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
         _fciOrient.setVerbose(verbose);
 
         // This is R0 using DSEP

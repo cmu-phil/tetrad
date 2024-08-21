@@ -124,7 +124,7 @@ public final class DagToPag {
 
         pag.reorientAllWith(Endpoint.CIRCLE);
 
-        FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, pag, knowledge, verbose));
+        FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
         fciOrient.setVerbose(verbose);
 
         fciOrient.ruleR0(pag, new HashSet<>());
@@ -135,7 +135,15 @@ public final class DagToPag {
         return pag;
     }
 
-    public static R0R4StrategyTestBased getFinalStrategyUsingDsep(Graph mag, Graph pag, Knowledge knowledge, boolean verbose) {
+    /**
+     * Returns the final strategy for finding a PAG using D-SEP.
+     *
+     * @param mag       the MAG (Maximum Ancestral Graph) representation of the graph
+     * @param knowledge the background knowledge used for the orientation
+     * @param verbose   a boolean indicating whether verbose output should be printed
+     * @return the final strategy for finding a PAG using D-SEP
+     */
+    public static R0R4StrategyTestBased getFinalStrategyUsingDsep(Graph mag, Knowledge knowledge, boolean verbose) {
 
         // Note that we will re-use FCIOrient but override the R0 and discriminating path rules to use D-SEP(A,B) or D-SEP(B,A)
         // to find the d-separating set between A and B.
