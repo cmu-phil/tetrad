@@ -2928,7 +2928,6 @@ public final class GraphUtils {
             anyChange = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose) || anyChange;
         }
 
-        // This is not necessary if I'm going to follow with the DSEP R0 step.
         anyChange = repairMaximality(pag, verbose, anyChange) || anyChange;
 
         if (verbose) {
