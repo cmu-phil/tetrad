@@ -64,7 +64,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
- * @author josephramsey
+ * @author josephramsey 2024-8-21
  * @author Choh-Man Teng
  * @version $Id: $Id
  * @see Fci
