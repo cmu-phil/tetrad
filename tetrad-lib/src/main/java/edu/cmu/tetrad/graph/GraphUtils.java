@@ -2929,7 +2929,7 @@ public final class GraphUtils {
         }
 
         // This is not necessary if I'm going to follow with the DSEP R0 step.
-//        anyChange = repairMaximality(pag, verbose, anyChange) || anyChange;
+        anyChange = repairMaximality(pag, verbose, anyChange) || anyChange;
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing final orientation...");
