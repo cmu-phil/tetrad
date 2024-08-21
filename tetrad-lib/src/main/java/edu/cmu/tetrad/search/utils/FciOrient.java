@@ -124,10 +124,6 @@ public class FciOrient {
      */
     private Set<Triple> allowedColliders;
     /**
-     * The graph used for R5 and R9 for the modified Dijkstra shortest path algorithm.
-     */
-    private R5R9Dijkstra.Graph fullDijkstraGraph = null;
-    /**
      * Indicates whether the discriminating path step should be run in parallel.
      */
     private boolean parallel = true;
@@ -795,31 +791,36 @@ public class FciOrient {
      * s.t. α,θ are not adjacent and β,γ are not adjacent, then orient α o−−o β and every edge on p as undirected edges
      * (--).
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph the graph to orient.
      */
     public void ruleR5(Graph graph) {
 
-        // We do this by finding a shortest path using Dijkstra's shortest path algorithm. We constrain the algorithm
+        // We do this by finding a shortest o-o path using Dijkstra's shortest path algorithm. We constrain the algorithm
         // so that the path must be a circle path, there can be no length 1 or length 2 paths, and all nodes on the path
         // are uncovered. We add further constraints so that the path taken together with the x o-o y edge forms an
         // uncovered cyclic circle path.
-        if (fullDijkstraGraph == null) {
-            fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
-        }
+        R5R9Dijkstra.Graph fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, R5R9Dijkstra.Rule.R5);
 
         for (Edge edge : graph.getEdges()) {
             if (Edges.isNondirectedEdge(edge)) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
+                // Returns a map from each node to its predecessor in the shortest path. This is needed to reconstruct
+                // the path, since the Dijkstra algorithm proper does not pay attention to the path, only to the
+                // shortest distances. So we need to record this information.
                 Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+
+                // This reconstructs the path given the predecessor map.
                 List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
 
+                // If the result is null, there was no path.
                 if (path == null) {
                     continue;
                 }
 
-                // We know u is as required: R5 applies!
+                // At this point, we know the uncovered circle path is as required, so R5 applies! We now need to
+                // orient all the circles on the path as tails.
                 setEndpoint(graph, x, y, Endpoint.TAIL);
                 setEndpoint(graph, y, x, Endpoint.TAIL);
 
@@ -1034,8 +1035,8 @@ public class FciOrient {
      *
      * @param a     The node A.
      * @param c     The node C.
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return Whether R9 was succesfully applied.
+     * @param graph The graph being oriented.
+     * @return Whether R9 was successfully applied.
      */
     public boolean ruleR9(Node a, Node c, Graph graph) {
 
@@ -1054,22 +1055,27 @@ public class FciOrient {
         // We do this by finding a shortest path using Dijkstra's shortest path algorithm. We constrain the algorithm
         // so that the path must be potentially directed (i.e., semidirected), there can be no length 1 or length 2
         // paths, and all nodes on the path are uncovered. We add further constraints so that the path taken together
-        // with the x o-o y edge forms an uncovered cyclic path.
+        // with the x o-o y edge forms an uncovered cyclic path, and that the path is a potential directed path.
 
-        if (fullDijkstraGraph == null) {
-            fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
-        }
+        R5R9Dijkstra.Graph fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, R5R9Dijkstra.Rule.R9);
 
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
+        // This returns a map from each node to its predecessor on the path, so that we can reconstruct the path.
+        // (Dijkstra's algorithm proper doesn't specify that the paths be recorded, only that the shortest distances
+        // be recorded, but we can keep track of the paths as well.
         Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+
+        // This gets the path from the predecessor map.
         List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
 
+        // If the result is null, there was no path.
         if (path == null) {
             return false;
         }
 
+        // This is the whole point of the rule, to orient the cicle in α o→ γ as a tail.
         setEndpoint(graph, c, a, Endpoint.TAIL);
 
         if (verbose) {
