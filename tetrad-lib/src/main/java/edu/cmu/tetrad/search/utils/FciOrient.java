@@ -314,8 +314,6 @@ public class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void finalOrientation(Graph graph) {
-        fullDijkstraGraph = null;
-
         if (this.completeRuleSetUsed) {
             zhangFinalOrientation(graph);
         } else {
@@ -697,7 +695,7 @@ public class FciOrient {
                             continue;
                         }
 
-                        // Some discriminating path orientation may already have been made.
+                        // We ignore any discriminating paths that do not require orientation.
                         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
                             continue;
                         }
@@ -1091,71 +1089,72 @@ public class FciOrient {
      * an uncovered p.d. path from α to θ. Let μ be the vertex adjacent to α on p1 (μ could be β), and ω be the vertex
      * adjacent to α on p2 (ω could be θ). If μ and ω are distinct, and are not adjacent, then orient α o→ γ as α → γ.
      *
-     * @param a     α
-     * @param c     γ
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param alpha     α
+     * @param gamma     γ
+     * @param graph alpha {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void ruleR10(Node a, Node c, Graph graph) {
+    public void ruleR10(Node alpha, Node gamma, Graph graph) {
 
-        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
+        // We are aiming to orient the tails on certain partially oriented edges alpha o-> gamma, so we first
         // need to make sure we have such an edge.
-        Edge edge = graph.getEdge(a, c);
+        Edge edge = graph.getEdge(alpha, gamma);
 
         if (edge == null) {
             return;
         }
 
-        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
+        if (!edge.equals(Edges.partiallyOrientedEdge(alpha, gamma))) {
             return;
         }
 
-        List<Node> adj1 = graph.getAdjacentNodes(a);
-        List<Node> filtered1 = new ArrayList<>();
+        // Now we are sure we have an alpha o-> gamma edge. Next, we need to find directed edges beta -> gamma <- theta.
 
-        for (Node n : adj1) {
-            Node other = Edges.traverseSemiDirected(a, graph.getEdge(a, n));
-            if (other != null && other.equals(n)) {
-                filtered1.add(n);
-            }
-        }
+        List<Node> into = graph.getNodesInTo(gamma, Endpoint.ARROW);
+        into.remove(alpha);
 
-        for (Node mu : filtered1) {
-            for (Node omega : filtered1) {
-                if (mu.equals(omega)) continue;
-                if (graph.isAdjacentTo(mu, omega)) continue;
+        for (int i = 0; i < into.size(); i++) {
+            for (int j = i + 1; j < into.size(); j++) {
+                Node beta = into.get(i);
+                Node theta = into.get(j);
 
-                List<Node> adj2 = graph.getNodesInTo(c, Endpoint.ARROW);
-                List<Node> filtered2 = new ArrayList<>();
+                if (graph.getEndpoint(gamma, beta) != Endpoint.TAIL || graph.getEndpoint(gamma, theta) != Endpoint.TAIL) {
+                    continue;
+                }
 
-                for (Node n : adj2) {
-                    if (graph.getEdges(n, c).equals(Edges.directedEdge(n, c))) {
-                        Node other = Edges.traverseSemiDirected(n, graph.getEdge(n, c));
-                        if (other != null && other.equals(n)) {
-                            filtered2.add(n);
+                // At this point we have beta -> gamma <- theta, with alpha o-> gamma. Next we need to find the
+                // a novel adjacent nu to alpha and a novel adjacent omega to alpha such that nu and omega are not
+                // adjacent.
+
+                List<Node> adj1 = graph.getAdjacentNodes(alpha);
+                adj1.remove(beta);
+                adj1.remove(theta);
+                adj1.remove(beta);
+
+                for (int k = 0; k < adj1.size(); k++) {
+                    for (int l = k + 1; l < adj1.size(); l++) {
+                        Node nu = adj1.get(k);
+                        Node omega = adj1.get(l);
+
+                        if (graph.isAdjacentTo(nu, omega)) {
+                            continue;
                         }
-                    }
 
-                    for (Node beta : filtered2) {
-                        for (Node theta : filtered2) {
-                            if (beta.equals(theta)) continue;
-                            if (graph.isAdjacentTo(mu, omega)) continue;
+                        // Now we have our beta, theta, nu, and omega for R10. Next we need to try to find
+                        // alpha semidirected path p1 starting with <alpha, nu>, and ending with beta, and alpha path
+                        // p2 starting with <alpha, omega> and ending with theta.
 
-                            // Now we have our beta, theta, mu, and omega for R10. Next we need to try to find
-                            // a semidirected path p1 starting with <a, mu>, and ending with beta, and a path
-                            // p2 starting with <a, omega> and ending with theta.
+                        if (graph.paths().existsSemiDirectedPath(nu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
 
-                            if (graph.paths().existsSemiDirectedPath(mu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
+                            // Now we know we have the paths p1 and p2 as required, so R10 applies! We now need to
+                            // orient the circle of the alpha o-> gamma edge as a tail.
+                            setEndpoint(graph, gamma, alpha, Endpoint.TAIL);
 
-                                // We know we have the paths p1 and p2 as required: R10 applies!
-                                setEndpoint(graph, c, a, Endpoint.TAIL);
-
-                                if (verbose) {
-                                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
-                                }
-
-                                this.changeFlag = true;
-                                return;
+                            if (verbose) {
+                                this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(gamma, alpha)));
                             }
+
+                            this.changeFlag = true;
+                            return;
                         }
                     }
                 }
