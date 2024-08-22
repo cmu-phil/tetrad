@@ -1402,6 +1402,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     private Set<Node> meekOrientRestricted(Graph graph, Knowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
+        rules.setVerbose(verbose);
         return rules.orientImplied(graph);
     }
 

@@ -89,6 +89,7 @@ public class ApplyMeekRules extends AbstractAction implements ClipboardOwner {
         MeekRules meekRules = new MeekRules();
         meekRules.setMeekPreventCycles(true);
         meekRules.setRevertToUnshieldedColliders(false);
+        meekRules.setVerbose(false);
         meekRules.orientImplied(graph);
         workbench.setGraph(graph);
     }

@@ -40,7 +40,7 @@ public class TrueDagPrecisionTails implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Proportion of X-->Y in estimated for which there is a path X~~>Y in true graph";
+        return "Proportion of X-->Y in the estimated graph for which there is a path X~~>Y in the true graph";
     }
 
     /**

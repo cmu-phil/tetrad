@@ -299,7 +299,6 @@ public final class TestCellTable {
 
     public void setUp() {
 
-        this.table = new CellTable(this.dims);
 
 //        // Add data to table.
         List<Node> variables = new LinkedList<>();
@@ -309,6 +308,8 @@ public final class TestCellTable {
         variables.add(new DiscreteVariable("X4", 2));
 
         DataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
+        int[] indices = {0, 1, 2, 3};
+
 
         for (int i = 0; i < this.data.length; i++) {
             for (int j = 0; j < this.data[0].length; j++) {
@@ -316,9 +317,9 @@ public final class TestCellTable {
             }
         }
 
-        int[] indices = {0, 1, 2, 3};
+//        this.table.countTable(dataSet, indices);
 
-        this.table.addToTable(dataSet, indices);
+        this.table = new CellTable(this.dims, dataSet, indices);
     }
 
     @Test

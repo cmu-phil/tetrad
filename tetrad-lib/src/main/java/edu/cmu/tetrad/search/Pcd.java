@@ -289,6 +289,7 @@ public class Pcd implements IGraphSearch {
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(this.guaranteeCpdag);
         rules.setKnowledge(this.knowledge);
+        rules.setVerbose(verbose);
         rules.orientImplied(this.graph);
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;

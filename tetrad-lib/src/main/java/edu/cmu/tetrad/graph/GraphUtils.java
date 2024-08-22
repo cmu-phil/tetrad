@@ -2928,8 +2928,7 @@ public final class GraphUtils {
             anyChange = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose) || anyChange;
         }
 
-        // This is not necessary if I'm going to follow with the DSEP R0 step.
-//        anyChange = repairMaximality(pag, verbose, anyChange) || anyChange;
+        anyChange = repairMaximality(pag, verbose, anyChange) || anyChange;
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing final orientation...");
@@ -2938,7 +2937,7 @@ public final class GraphUtils {
         // Use the final R0R4 strategy from DAG to PAG, which does final orientation using DSEP for both R0 and
         // R4. This is the DAG to PAG strategy, which we repeat here for clarity. jdramsey 2024-8-13.
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
-        FciOrient _fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, pag, knowledge, verbose));
+        FciOrient _fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
         _fciOrient.setVerbose(verbose);
 
         // This is R0 using DSEP
@@ -3730,13 +3729,19 @@ public final class GraphUtils {
     /**
      * Determines whether three {@link Node} objects are distinct.
      *
-     * @param x the first Node object
-     * @param b the second Node object
-     * @param y the third Node object
+     * @param n the nodes to check for distinctness
      * @return true if x, b, and y are distinct; false otherwise
      */
-    public static boolean distinct(Node x, Node b, Node y) {
-        return x != b && y != b && x != y;
+    public static boolean distinct(Node ... n) {
+        for (int i = 0; i < n.length; i++) {
+            for (int j = i + 1; j < n.length; j++) {
+                if (n[i].equals(n[j])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**

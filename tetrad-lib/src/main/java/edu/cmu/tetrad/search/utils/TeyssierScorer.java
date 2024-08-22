@@ -396,6 +396,7 @@ public class TeyssierScorer {
         if (cpDag) {
             MeekRules rules = new MeekRules();
             rules.setKnowledge(this.knowledge);
+            rules.setVerbose(false);
             rules.orientImplied(graph);
         }
 

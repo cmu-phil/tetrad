@@ -58,13 +58,13 @@ import java.util.concurrent.TimeUnit;
  * Note: This class is a modified version of the original FciOrient class, in that we allow the R0 and R4 rules to be be
  * overridden by subclasses. This is useful for the TeyssierScorer class, which needs to override these rules in order
  * to calculate the score of the graph. It is also useful for DAG to PAG, which needs to override these rules in order
- * using D-SEP. The R0 and R4 rules are the only ones that cannot be carried out by an examination of the graph but
+ * to use D-SEP. The R0 and R4 rules are the only ones that cannot be carried out by an examination of the graph but
  * which require additional analysis of the underlying distribution or graph. In addition, several methods have been
  * optimized.
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
- * @author josephramsey
+ * @author josephramsey 2024-8-21
  * @author Choh-Man Teng
  * @version $Id: $Id
  * @see Fci
@@ -123,10 +123,6 @@ public class FciOrient {
      * The allowed colliders for the discriminating path step
      */
     private Set<Triple> allowedColliders;
-    /**
-     * The graph used for R5 and R9 for the modified Dijkstra shortest path algorithm.
-     */
-    private R5R9Dijkstra.Graph fullDijkstraGraph = null;
     /**
      * Indicates whether the discriminating path step should be run in parallel.
      */
@@ -318,8 +314,6 @@ public class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void finalOrientation(Graph graph) {
-        fullDijkstraGraph = null;
-
         if (this.completeRuleSetUsed) {
             zhangFinalOrientation(graph);
         } else {
@@ -680,10 +674,16 @@ public class FciOrient {
                     break;
                 }
 
-                // potential A and C candidate pairs are only those
-                // that look like this:   A<-*Bo-*C
-                List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
-                List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
+                //  *         B
+                // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
+                // *        /  \
+                // *       v    *
+                // * E....A --> C
+
+                // Here we simply assert that A and C are adjacent to B; we let the DiscriminatingPath class determine
+                // whether the path is valid.
+                List<Node> possA = graph.getAdjacentNodes(b);
+                List<Node> possC = graph.getAdjacentNodes(b);
 
                 for (Node a : possA) {
                     if (Thread.currentThread().isInterrupted()) {
@@ -701,7 +701,7 @@ public class FciOrient {
                             continue;
                         }
 
-                        // Some discriminating path orientation may already have been made.
+                        // We ignore any discriminating paths that do not require orientation.
                         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
                             continue;
                         }
@@ -778,7 +778,7 @@ public class FciOrient {
 
                 DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath);
 
-                if (discriminatingPath.existsAndUnorientedIn(graph)) {
+                if (discriminatingPath.existsIn(graph)) {
                     discriminatingPaths.add(discriminatingPath);
                 }
 
@@ -795,31 +795,36 @@ public class FciOrient {
      * s.t. α,θ are not adjacent and β,γ are not adjacent, then orient α o−−o β and every edge on p as undirected edges
      * (--).
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph the graph to orient.
      */
     public void ruleR5(Graph graph) {
 
-        // We do this by finding a shortest path using Dijkstra's shortest path algorithm. We constrain the algorithm
+        // We do this by finding a shortest o-o path using Dijkstra's shortest path algorithm. We constrain the algorithm
         // so that the path must be a circle path, there can be no length 1 or length 2 paths, and all nodes on the path
         // are uncovered. We add further constraints so that the path taken together with the x o-o y edge forms an
         // uncovered cyclic circle path.
-        if (fullDijkstraGraph == null) {
-            fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
-        }
+        R5R9Dijkstra.Graph fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, R5R9Dijkstra.Rule.R5);
 
         for (Edge edge : graph.getEdges()) {
             if (Edges.isNondirectedEdge(edge)) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
+                // Returns a map from each node to its predecessor in the shortest path. This is needed to reconstruct
+                // the path, since the Dijkstra algorithm proper does not pay attention to the path, only to the
+                // shortest distances. So we need to record this information.
                 Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+
+                // This reconstructs the path given the predecessor map.
                 List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
 
+                // If the result is null, there was no path.
                 if (path == null) {
                     continue;
                 }
 
-                // We know u is as required: R5 applies!
+                // At this point, we know the uncovered circle path is as required, so R5 applies! We now need to
+                // orient all the circles on the path as tails.
                 setEndpoint(graph, x, y, Endpoint.TAIL);
                 setEndpoint(graph, y, x, Endpoint.TAIL);
 
@@ -1034,8 +1039,8 @@ public class FciOrient {
      *
      * @param a     The node A.
      * @param c     The node C.
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return Whether R9 was succesfully applied.
+     * @param graph The graph being oriented.
+     * @return Whether R9 was successfully applied.
      */
     public boolean ruleR9(Node a, Node c, Graph graph) {
 
@@ -1054,22 +1059,27 @@ public class FciOrient {
         // We do this by finding a shortest path using Dijkstra's shortest path algorithm. We constrain the algorithm
         // so that the path must be potentially directed (i.e., semidirected), there can be no length 1 or length 2
         // paths, and all nodes on the path are uncovered. We add further constraints so that the path taken together
-        // with the x o-o y edge forms an uncovered cyclic path.
+        // with the x o-o y edge forms an uncovered cyclic path, and that the path is a potential directed path.
 
-        if (fullDijkstraGraph == null) {
-            fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
-        }
+        R5R9Dijkstra.Graph fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, R5R9Dijkstra.Rule.R9);
 
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
+        // This returns a map from each node to its predecessor on the path, so that we can reconstruct the path.
+        // (Dijkstra's algorithm proper doesn't specify that the paths be recorded, only that the shortest distances
+        // be recorded, but we can keep track of the paths as well.
         Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+
+        // This gets the path from the predecessor map.
         List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
 
+        // If the result is null, there was no path.
         if (path == null) {
             return false;
         }
 
+        // This is the whole point of the rule, to orient the cicle in α o→ γ as a tail.
         setEndpoint(graph, c, a, Endpoint.TAIL);
 
         if (verbose) {
@@ -1085,71 +1095,72 @@ public class FciOrient {
      * an uncovered p.d. path from α to θ. Let μ be the vertex adjacent to α on p1 (μ could be β), and ω be the vertex
      * adjacent to α on p2 (ω could be θ). If μ and ω are distinct, and are not adjacent, then orient α o→ γ as α → γ.
      *
-     * @param a     α
-     * @param c     γ
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param alpha     α
+     * @param gamma     γ
+     * @param graph alpha {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void ruleR10(Node a, Node c, Graph graph) {
+    public void ruleR10(Node alpha, Node gamma, Graph graph) {
 
-        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
+        // We are aiming to orient the tails on certain partially oriented edges alpha o-> gamma, so we first
         // need to make sure we have such an edge.
-        Edge edge = graph.getEdge(a, c);
+        Edge edge = graph.getEdge(alpha, gamma);
 
         if (edge == null) {
             return;
         }
 
-        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
+        if (!edge.equals(Edges.partiallyOrientedEdge(alpha, gamma))) {
             return;
         }
 
-        List<Node> adj1 = graph.getAdjacentNodes(a);
-        List<Node> filtered1 = new ArrayList<>();
+        // Now we are sure we have an alpha o-> gamma edge. Next, we need to find directed edges beta -> gamma <- theta.
 
-        for (Node n : adj1) {
-            Node other = Edges.traverseSemiDirected(a, graph.getEdge(a, n));
-            if (other != null && other.equals(n)) {
-                filtered1.add(n);
-            }
-        }
+        List<Node> into = graph.getNodesInTo(gamma, Endpoint.ARROW);
+        into.remove(alpha);
 
-        for (Node mu : filtered1) {
-            for (Node omega : filtered1) {
-                if (mu.equals(omega)) continue;
-                if (graph.isAdjacentTo(mu, omega)) continue;
+        for (int i = 0; i < into.size(); i++) {
+            for (int j = i + 1; j < into.size(); j++) {
+                Node beta = into.get(i);
+                Node theta = into.get(j);
 
-                List<Node> adj2 = graph.getNodesInTo(c, Endpoint.ARROW);
-                List<Node> filtered2 = new ArrayList<>();
+                if (graph.getEndpoint(gamma, beta) != Endpoint.TAIL || graph.getEndpoint(gamma, theta) != Endpoint.TAIL) {
+                    continue;
+                }
 
-                for (Node n : adj2) {
-                    if (graph.getEdges(n, c).equals(Edges.directedEdge(n, c))) {
-                        Node other = Edges.traverseSemiDirected(n, graph.getEdge(n, c));
-                        if (other != null && other.equals(n)) {
-                            filtered2.add(n);
+                // At this point we have beta -> gamma <- theta, with alpha o-> gamma. Next we need to find the
+                // a novel adjacent nu to alpha and a novel adjacent omega to alpha such that nu and omega are not
+                // adjacent.
+
+                List<Node> adj1 = graph.getAdjacentNodes(alpha);
+                adj1.remove(beta);
+                adj1.remove(theta);
+                adj1.remove(beta);
+
+                for (int k = 0; k < adj1.size(); k++) {
+                    for (int l = k + 1; l < adj1.size(); l++) {
+                        Node nu = adj1.get(k);
+                        Node omega = adj1.get(l);
+
+                        if (graph.isAdjacentTo(nu, omega)) {
+                            continue;
                         }
-                    }
 
-                    for (Node beta : filtered2) {
-                        for (Node theta : filtered2) {
-                            if (beta.equals(theta)) continue;
-                            if (graph.isAdjacentTo(mu, omega)) continue;
+                        // Now we have our beta, theta, nu, and omega for R10. Next we need to try to find
+                        // alpha semidirected path p1 starting with <alpha, nu>, and ending with beta, and alpha path
+                        // p2 starting with <alpha, omega> and ending with theta.
 
-                            // Now we have our beta, theta, mu, and omega for R10. Next we need to try to find
-                            // a semidirected path p1 starting with <a, mu>, and ending with beta, and a path
-                            // p2 starting with <a, omega> and ending with theta.
+                        if (graph.paths().existsSemiDirectedPath(nu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
 
-                            if (graph.paths().existsSemiDirectedPath(mu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
+                            // Now we know we have the paths p1 and p2 as required, so R10 applies! We now need to
+                            // orient the circle of the alpha o-> gamma edge as a tail.
+                            setEndpoint(graph, gamma, alpha, Endpoint.TAIL);
 
-                                // We know we have the paths p1 and p2 as required: R10 applies!
-                                setEndpoint(graph, c, a, Endpoint.TAIL);
-
-                                if (verbose) {
-                                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
-                                }
-
-                                this.changeFlag = true;
-                                return;
+                            if (verbose) {
+                                this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(gamma, alpha)));
                             }
+
+                            this.changeFlag = true;
+                            return;
                         }
                     }
                 }

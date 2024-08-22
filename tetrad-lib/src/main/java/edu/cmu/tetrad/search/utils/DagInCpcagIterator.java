@@ -256,6 +256,7 @@ public class DagInCpcagIterator {
 
                 MeekRules meek = new MeekRules();
                 meek.setKnowledge(getKnowledge());
+                meek.setVerbose(false);
                 meek.orientImplied(graph);
 
                 // Keep track of changed edges for highlighting
@@ -288,6 +289,7 @@ public class DagInCpcagIterator {
 
                 MeekRules meek = new MeekRules();
                 meek.setKnowledge(getKnowledge());
+                meek.setVerbose(false);
                 meek.orientImplied(graph);
 
                 this.getChangedEdges().put(graph, edges);

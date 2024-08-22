@@ -62,7 +62,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see Grasp
  * @see Knowledge
  */
-public class Boss implements SuborderSearch {
+    public class Boss implements SuborderSearch {
     /**
      * The score.
      */

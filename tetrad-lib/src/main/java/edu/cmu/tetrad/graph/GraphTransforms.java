@@ -360,6 +360,7 @@ public class GraphTransforms {
         Graph cpdag = new EdgeListGraph(dag);
         MeekRules rules = new MeekRules();
         rules.setRevertToUnshieldedColliders(true);
+        rules.setVerbose(false);
         rules.orientImplied(cpdag);
         return cpdag;
     }

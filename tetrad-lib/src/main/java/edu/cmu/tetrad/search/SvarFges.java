@@ -1836,6 +1836,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     private Set<Node> meekOrientRestricted(Knowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
+        rules.setVerbose(verbose);
         return rules.orientImplied(this.graph);
     }
 

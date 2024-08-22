@@ -31,6 +31,8 @@ import java.util.List;
 /**
  * Stores a cell count table of arbitrary dimension. Provides methods for incrementing particular cells and for
  * calculating marginals.
+ * <p>
+ * Immutable.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -38,20 +40,48 @@ import java.util.List;
  */
 public final class CellTable {
 
-    // The table of cell counts.
-    private final MultiDimIntTable table;
-    // The value used in the data for missing values.
+    /**
+     * The table of cell counts.
+     */
+    private MultiDimIntTable table;
+    /**
+     * The value used in the data for missing values.
+     */
     private int missingValue = -99;
-    // The rows to be used in the table.
+    /**
+     * The rows to be used in the table.
+     */
     private List<Integer> rows = null;
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
      *
-     * @param dims an <code>int[]</code> value
+     * @param dims The dimensions of the table.
+     * @param dataSet The data set to be used in the table.
+     * @param testIndices The indices of the variables to be used in the table.
      */
-    public CellTable(int[] dims) {
+    public CellTable(int[] dims, DataSet dataSet, int[] testIndices) {
+        this(dims, -99, null, dataSet, testIndices);
+    }
+
+    /**
+     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
+     *
+     * @param dims         the dimensions of the table.
+     * @param missingValue the value used in the data for missing values.
+     * @param rows         the rows to be used in the table.
+     * @param dataSet      the data set to be used in the table.
+     * @param testIndices  the indices of the variables to be used in the table.
+     */
+    public CellTable(int[] dims, int missingValue, List<Integer> rows, DataSet dataSet, int[] testIndices) {
+        if (dims == null) {
+            throw new NullPointerException("The dimensions array is null.");
+        }
+
         this.table = new MultiDimIntTable(dims);
+        setMissingValue(missingValue);
+        setRows(rows);
+        countTable(dataSet, testIndices);
     }
 
     /**
@@ -60,15 +90,15 @@ public final class CellTable {
      * @param dataSet the data set to be used in the table.
      * @param indices the indices of the variables to be used in the table.
      */
-    public synchronized void addToTable(DataSet dataSet, int[] indices) {
+    private void countTable(DataSet dataSet, int[] indices) {
         if (rows == null) {
-            rows = new ArrayList<>();
+            this.rows = new ArrayList<>();
             for (int i = 0; i < dataSet.getNumRows(); i++) {
-                rows.add(i);
+                this.rows.add(i);
             }
         } else {
             for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) >= dataSet.getNumRows())
+                if (this.rows.get(i) >= dataSet.getNumRows())
                     throw new IllegalArgumentException("Row " + i + " is too large.");
             }
         }
@@ -80,11 +110,11 @@ public final class CellTable {
             dims[i] = variable.getNumCategories();
         }
 
-        this.table.reset(dims);
+        this.table = new MultiDimIntTable(dims);
 
         int[] coords = new int[indices.length];
 
-        points:
+        Points:
         for (int i : rows) {
             for (int j = 0; j < indices.length; j++) {
                 try {
@@ -94,22 +124,22 @@ public final class CellTable {
                 }
 
                 if (coords[j] == getMissingValue()) {
-                    continue points;
+                    continue Points;
                 }
             }
 
-            this.table.increment(dims, coords, 1);
+            this.table.increment(coords, 1);
         }
     }
 
     /**
-     * <p>getNumValues.</p>
+     * Returns the dimensions of the given variable.
      *
      * @param varIndex the index of the variable in question.
-     * @return the number of dimensions of the variable.
+     * @return the dimension of the variable.
      */
-    public int getNumValues(int varIndex) {
-        return this.table.getDims(varIndex);
+    public int getDimension(int varIndex) {
+        return this.table.getDim(varIndex);
     }
 
     /**
@@ -163,6 +193,36 @@ public final class CellTable {
     }
 
     /**
+     * Returns the value of the cell specified by the given coordinates.
+     *
+     * @param testCell the coordinates of the cell.
+     * @return the value of the cell.
+     */
+    public long getValue(int[] testCell) {
+        return this.table.getValue(testCell);
+    }
+
+    /**
+     * Sets the rows to be used in the table. If the rows are null, the table will use all the rows in the data set.
+     * Otherwise, the table will use only the rows specified.
+     *
+     * @param rows the rows to be used in the table.
+     */
+    private void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            }
+
+            this.rows = rows;
+        }
+    }
+
+
+    /**
      * Makes a copy of the coordinate array so that the original is not messed up.
      */
     private int[] internalCoordCopy(int[] coords) {
@@ -183,37 +243,8 @@ public final class CellTable {
      *
      * @param missingValue the missing value marker.
      */
-    public void setMissingValue(int missingValue) {
+    private void setMissingValue(int missingValue) {
         this.missingValue = missingValue;
-    }
-
-    /**
-     * Returns the value of the cell specified by the given coordinates.
-     *
-     * @param testCell the coordinates of the cell.
-     * @return the value of the cell.
-     */
-    public long getValue(int[] testCell) {
-        return this.table.getValue(testCell);
-    }
-
-    /**
-     * Sets the rows to be used in the table. If the rows are null, the table will use all the rows in the data set.
-     * Otherwise, the table will use only the rows specified.
-     *
-     * @param rows the rows to be used in the table.
-     */
-    public void setRows(List<Integer> rows) {
-        if (rows == null) {
-            this.rows = null;
-        } else {
-            for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
-                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
-            }
-
-            this.rows = rows;
-        }
     }
 }
 
