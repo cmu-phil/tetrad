@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SampleSizeSettable;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Vector;
@@ -49,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Frank Wimberly
  * @version $Id: $Id
  */
-public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
+public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettable, RowsSettable {
     /**
      * A hash from variable names to indices.
      */
@@ -70,6 +71,10 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * A cache of results for independence facts.
      */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    /**
+     * The sample size to use; if not set, the sample size of the data set is used.
+     */
+    private int sampleSize;
     /**
      * The correlation matrix.
      */
@@ -117,6 +122,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      */
     public IndTestFisherZ(DataSet dataSet, double alpha) {
         this.dataSet = dataSet;
+        this.sampleSize = dataSet.getNumRows();
 
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
@@ -171,6 +177,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
+        this.sampleSize = data.getNumRows();
         setAlpha(alpha);
 
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -194,6 +201,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         this.variables = covMatrix.getVariables();
         this.indexMap = indexMap(this.variables);
         this.nameMap = nameMap(this.variables);
+        this.sampleSize = covMatrix.getSampleSize();
         setAlpha(alpha);
 
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -504,6 +512,20 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
+     * Sets the sample size to use for the independence test, which may be different from the sample size of the data
+     * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
+     *
+     * @param sampleSize The sample size to use.
+     */
+    public void setSampleSize(int sampleSize) {
+        if (sampleSize < 1) {
+            throw new IllegalArgumentException("Sample size must be positive.");
+        }
+
+        this.sampleSize = sampleSize;
+    }
+
+    /**
      * Returns true iff verbose output should be printed.
      *
      * @return True, if so.
@@ -652,7 +674,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         return determined;
     }
 
-
     /**
      * Calculates the partial correlation between two nodes, given a set of conditioning variables and a list of rows.
      * If the correlation matrix is already available, it selects the necessary subset. Otherwise, it calculates the
@@ -745,8 +766,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * @return The sample size.
      */
     private int sampleSize() {
-        if (dataSet != null) return dataSet.getNumRows();
-        else return covMatrix().getSampleSize();
+        return this.sampleSize;
     }
 
     /**

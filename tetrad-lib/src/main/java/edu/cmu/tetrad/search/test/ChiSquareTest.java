@@ -29,6 +29,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.List;
 
+import static java.lang.Math.sqrt;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
@@ -110,10 +111,16 @@ public class ChiSquareTest {
      * p-value is returned based on the Chi-Square distribution with the total degrees of freedom and total chi-square.
      *
      * @param testIndices These indices, in order.
+     * @param sampleSize
      * @return a Chi square test result.
      * @see Result
      */
-    public Result calcChiSquare(int[] testIndices) {
+    public Result calcChiSquare(int[] testIndices, double sampleSize) {
+
+        // The user may request that a different sample size be used instead of the sample size of the data; this may
+        // be useful in the case of subsampling, for instance. If they do, then expected and total counts will be
+        // multiplied by the ratio of the sample size to the data set size. jdramsey 2024-08-22
+        double fraction = sampleSize / getDataSet().getNumRows();
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
@@ -192,10 +199,10 @@ public class ChiSquareTest {
                             continue;
                         }
 
-                        double observed = cellTable.getValue(coords);
+                        double observed = fraction * cellTable.getValue(coords);
 
                         // Under the above conditions, expected > 0.
-                        double expected = (sumRows[i] * sumCols[j]) / total;
+                        double expected = fraction * (sumRows[i] * sumCols[j]) / total;
 
                         if (testType == TestType.CHI_SQUARE) {
 

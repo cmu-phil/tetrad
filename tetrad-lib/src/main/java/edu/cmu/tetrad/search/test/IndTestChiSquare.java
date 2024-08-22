@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SampleSizeSettable;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -43,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id: $Id
  * @see ChiSquareTest
  */
-public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
+public final class IndTestChiSquare implements IndependenceTest, SampleSizeSettable, RowsSettable {
 
     /**
      * The Chi Square tester.
@@ -100,6 +101,10 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      * @see RowsSettable
      */
     private List<Integer> rows = null;
+    /**
+     * The sample size to use for the test. If not set, this is the sample size of the dataset.
+     */
+    private int sampleSize;
 
 
     /**
@@ -127,6 +132,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
         this.variables = new ArrayList<>(dataSet.getVariables());
         this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE, null);
         this.chiSquareTest.setMinCountPerCell(minCountPerCell);
+        this.sampleSize = dataSet.getNumRows();
     }
 
     /**
@@ -229,7 +235,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
             }
         }
 
-        ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
+        ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices, sampleSize);
         this.facts.put(new IndependenceFact(x, y, _z), result);
 
         this.xSquare = result.getXSquare();
@@ -440,6 +446,11 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
             this.rows = new ArrayList<>(rows);
             chiSquareTest = new ChiSquareTest(dataSet, chiSquareTest.getAlpha(), ChiSquareTest.TestType.CHI_SQUARE, this.rows);
         }
+    }
+
+    @Override
+    public void setSampleSize(int sampleSize) {
+        this.sampleSize = sampleSize;
     }
 }
 

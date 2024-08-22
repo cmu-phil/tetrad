@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SampleSizeSettable;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -43,16 +44,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id: $Id
  * @see ChiSquareTest
  */
-public final class IndTestGSquare implements IndependenceTest, RowsSettable {
+public final class IndTestGSquare implements IndependenceTest, SampleSizeSettable, RowsSettable {
 
     /**
      * The standard number formatter for Tetrad.
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    /**
-     * The G Square tester.
-     */
-    private ChiSquareTest gSquareTest;
     /**
      * The variables in the discrete data sets or which conditional independence judgements are desired.
      */
@@ -69,6 +66,10 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
      * A cache of results for independence facts.
      */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    /**
+     * The G Square tester.
+     */
+    private ChiSquareTest gSquareTest;
     /**
      * The p value associated with the most recent call of isIndependent.
      */
@@ -92,6 +93,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
      * The rows to use for the test. If null, all rows are used.
      */
     private List<Integer> rows = null;
+    private int sampleSize;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -115,6 +117,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
         // variables themselves in a List.
         this.dataSet = dataSet;
         this.alpha = alpha;
+        this.sampleSize = dataSet.getNumRows();
 
         this.variables = new ArrayList<>(dataSet.getVariables());
         setup(dataSet, alpha, null);
@@ -123,6 +126,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     private void setup(DataSet dataSet, double alpha, List<Integer> rows) {
         this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE, rows);
         this.gSquareTest.setMinCountPerCell(minCountPerCell);
+        this.sampleSize = rows == null ? dataSet.getNumRows() : rows.size();
     }
 
     /**
@@ -203,7 +207,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
             }
         }
 
-        ChiSquareTest.Result result = this.gSquareTest.calcChiSquare(testIndices);
+        ChiSquareTest.Result result = this.gSquareTest.calcChiSquare(testIndices, sampleSize);
         this.pValue = result.getPValue();
 
         if (this.verbose) {
@@ -402,6 +406,21 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
             this.rows = new ArrayList<>(rows);
             setup(dataSet, alpha, rows);
         }
+    }
+
+    /**
+     * Sets the sample size if the sample size of the data or covariance matrix is not the sample size that the test
+     * should use.
+     *
+     * @param sampleSize The sample size to use.
+     */
+    @Override
+    public void setSampleSize(int sampleSize) {
+        if (sampleSize < 1) {
+            throw new IllegalArgumentException("Sample size must be at least 1.");
+        }
+
+        this.sampleSize = sampleSize;
     }
 }
 
