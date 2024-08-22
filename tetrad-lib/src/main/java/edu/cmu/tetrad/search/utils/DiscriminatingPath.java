@@ -16,16 +16,17 @@ import java.util.List;
  * method.
  * <pre>
  *          B
- *         *o           * is either an arrowhead or a circle
+ *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
  *        /  \
- *       v    v
+ *       *    v
  * E....A --> C
  * </pre>
  * This is equivalent to Zhang's rule R4. (Zhang, J. (2008). On the completeness of orientation rules for causal
  * discovery in the presence of latent confounders and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.)
- * The rule was originally given in Spirtes et al. (1993). Note that as in Zhang, the discriminating path itself is
+ * A similar rule was originally given in Spirtes et al. (1993). Note that as in Zhang, the discriminating path itself is
  * E...A, B, C. We refer to the part of this path between E to B as the 'collider path.' The collider path is included
- * in any sepset of E and C.
+ * in any sepset of E and C. Note also that in Zhang's tail-complete version of the rule, the arrow endpoint B *-> A is
+ * not a condition of the rule, as in previous code, so we do not check for it.
  * <p>
  * The idea is that if we know that E is independent of C given all the nodes on the collider path plus perhaps some
  * other nodes in the graph, then there should be a collider at B; otherwise, there should be a noncollider at B. If
@@ -98,15 +99,15 @@ public class DiscriminatingPath {
 
         // Relabeling as in Zhang's article:
         //  *         B
-        // *         *o           * is either an arrowhead or a circle
+        // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
         // *        /  \
-        // *       v    v
+        // *       *    v
         // * E....A --> C
 
         //  *         V
-        // *         *o           * is either an arrowhead or a circle
+        // *         *o           * is either an arrowhead or a circle; note V *-> W is not a conditoin in Zhang's rule
         // *        /  \
-        // *       v    v
+        // *       *    v
         // * X....W --> Y
 
         // Make sure there should be a sepset of E and C in the path (Zhang's X and Y). This is the case

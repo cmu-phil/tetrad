@@ -674,9 +674,19 @@ public class FciOrient {
                     break;
                 }
 
-                // potential A and C candidate pairs are only those
-                // that look like this:   A<-*Bo-*C
-                List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
+                //  *         B
+                // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
+                // *        /  \
+                // *       *    v
+                // * E....A --> C
+
+                // Note that the arrow endpoint checked in the previous code, B *-> A, is not a condition in Zhang's
+                // tail-complete version of the rule, so we do not check for it.
+//                List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
+                List<Node> possA = graph.getAdjacentNodes(b);
+
+                // This circle endpoint is also not a condition in Zhang; we check for it only because we are only
+                // interested in discriminating paths that require orientation.
                 List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
 
                 for (Node a : possA) {

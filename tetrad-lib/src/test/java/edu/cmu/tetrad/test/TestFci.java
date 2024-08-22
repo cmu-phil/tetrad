@@ -109,6 +109,20 @@ public class TestFci {
      */
     @Test
     public void testSearch7() {
+        // Graph Nodes:
+        //D;H;L;M;I;S;P
+        //
+        //Graph Edges:
+        //1. D <-> H
+        //2. D --> L
+        //3. D --> M
+        //4. H --> M
+        //5. I o-> S
+        //6. L <-> H
+        //7. L --> M
+        //8. P o-> S
+        //9. S --> D
+
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
                     "H-->M,L-->M,S-->D,I-->S,P-->S",
                 "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,Lo->M,Po->S,S-->D", new Knowledge());
