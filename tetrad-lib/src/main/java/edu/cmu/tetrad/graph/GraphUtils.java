@@ -3734,8 +3734,16 @@ public final class GraphUtils {
      * @param y the third Node object
      * @return true if x, b, and y are distinct; false otherwise
      */
-    public static boolean distinct(Node x, Node b, Node y) {
-        return x != b && y != b && x != y;
+    public static boolean distinct(Node ... n) {
+        for (int i = 0; i < n.length; i++) {
+            for (int j = i + 1; j < n.length; j++) {
+                if (n[i].equals(n[j])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**

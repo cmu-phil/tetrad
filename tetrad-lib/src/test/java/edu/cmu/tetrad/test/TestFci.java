@@ -125,7 +125,7 @@ public class TestFci {
 
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
                     "H-->M,L-->M,S-->D,I-->S,P-->S",
-                "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,Lo->M,Po->S,S-->D", new Knowledge());
+                "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,L-->M,Po->S,S-->D", new Knowledge());
     }
 
     /**

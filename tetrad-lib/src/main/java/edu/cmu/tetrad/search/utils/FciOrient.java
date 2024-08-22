@@ -677,17 +677,13 @@ public class FciOrient {
                 //  *         B
                 // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
                 // *        /  \
-                // *       *    v
+                // *       v    *
                 // * E....A --> C
 
-                // Note that the arrow endpoint checked in the previous code, B *-> A, is not a condition in Zhang's
-                // tail-complete version of the rule, so we do not check for it.
-//                List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
+                // Here we simply assert that A and C are adjacent to B; we let the DiscriminatingPath class determine
+                // whether the path is valid.
                 List<Node> possA = graph.getAdjacentNodes(b);
-
-                // This circle endpoint is also not a condition in Zhang; we check for it only because we are only
-                // interested in discriminating paths that require orientation.
-                List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
+                List<Node> possC = graph.getAdjacentNodes(b);
 
                 for (Node a : possA) {
                     if (Thread.currentThread().isInterrupted()) {
@@ -782,7 +778,7 @@ public class FciOrient {
 
                 DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath);
 
-                if (discriminatingPath.existsAndUnorientedIn(graph)) {
+                if (discriminatingPath.existsIn(graph)) {
                     discriminatingPaths.add(discriminatingPath);
                 }
 

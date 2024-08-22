@@ -1,11 +1,12 @@
 package edu.cmu.tetrad.search.utils;
 
-import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import static edu.cmu.tetrad.graph.GraphUtils.distinct;
 
 /**
  * Represents a discriminating path in a graph. The triangles that must be oriented this way (won't be done by another
@@ -33,7 +34,7 @@ import java.util.List;
  * there should be a collider at B, we orient A *-&gt; B &lt;-&gt; C; otherwise, we orient A *-* B -&gt; C.
  *
  * @author josephramsey
- * @see #existsAndUnorientedIn(Graph)
+ * @see #existsIn(Graph)
  */
 public class DiscriminatingPath {
     /**
@@ -90,24 +91,24 @@ public class DiscriminatingPath {
      * @return true if the discriminating path construct is valid, false otherwise.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      */
-    public boolean existsAndUnorientedIn(Graph graph) {
+    public boolean existsIn(Graph graph) {
 
-        // Check that the inducing path has not been oriented.
-        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+        // Check that the nodes are distinct.
+        if (!distinct(e, a, b, c)) {
             return false;
         }
 
         // Relabeling as in Zhang's article:
         //  *         B
-        // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
+        // *         **           * is either an arrowhead, a tail, or a circle.
         // *        /  \
-        // *       *    v
+        // *       v    *
         // * E....A --> C
 
         //  *         V
-        // *         *o           * is either an arrowhead or a circle; note V *-> W is not a conditoin in Zhang's rule
+        // *         **            * is either an arrowhead, a tail, or a circle
         // *        /  \
-        // *       *    v
+        // *       v    *
         // * X....W --> Y
 
         // Make sure there should be a sepset of E and C in the path (Zhang's X and Y). This is the case
@@ -116,20 +117,18 @@ public class DiscriminatingPath {
             return false;
         }
 
-        // We don't need this check by Definition 7, since c already needs to be collider on the path from b to a.
-//        if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-//            return false;
-//        }
+        // C is adjacent to B on the path.
+        if (!graph.isAdjacentTo(b, c)) {
+            return false;
+        }
 
-        // Also, this check is not required by Definition 7. (It was in the original version of the code.)
-//        if (graph.getEndpoint(b, a) != Endpoint.ARROW) {
-//            return false;
-//        }
-
+        // Make sure the path is at least of length 3, which means that E, A, and B need to be on the path. First,
+        // we need to make sure A is on the path:
         if (!colliderPath.contains(a)) {
             return false;
         }
 
+        // Then we need to make sure E and B are on the path, E first, B last:
         LinkedList<Node> p = new LinkedList<>(colliderPath);
         p.addFirst(e);
         p.addLast(b);

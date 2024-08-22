@@ -194,7 +194,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         Node c = discriminatingPath.getC();
         List<Node> path = discriminatingPath.getColliderPath();
 
-        if (!discriminatingPath.existsAndUnorientedIn(graph)) {
+        // Check that the discriminating path has not yet been oriented; we don't need to list the ones that have
+        // already been oriented.
+        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+            return Pair.of(discriminatingPath, false);
+        }
+
+        // Check that the discriminating path construct still exists in the graph.
+        if (!discriminatingPath.existsIn(graph)) {
             return Pair.of(discriminatingPath, false);
         }
 
