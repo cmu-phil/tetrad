@@ -2,7 +2,7 @@ package edu.cmu.tetrad.search;
 
 /**
  * Gives an interface for classes where the sample size can be set by the user. This is useful when the sample size of the
- * data or covariance matrix is not the sample size that the test should use, as for example in the case of bootstrapping
+ * data or covariance matrix is not the sample size that the class should use, as for example in the case of bootstrapping
  * or subsampling.
  *
  * @author josephramsey

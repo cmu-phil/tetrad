@@ -3729,9 +3729,7 @@ public final class GraphUtils {
     /**
      * Determines whether three {@link Node} objects are distinct.
      *
-     * @param x the first Node object
-     * @param b the second Node object
-     * @param y the third Node object
+     * @param n the nodes to check for distinctness
      * @return true if x, b, and y are distinct; false otherwise
      */
     public static boolean distinct(Node ... n) {

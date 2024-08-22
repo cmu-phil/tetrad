@@ -200,7 +200,18 @@ public class R5R9Dijkstra {
     /**
      * The rule that is being implemented, R5 or R9.
      */
-    public enum Rule {R5, R9}
+    public enum Rule {
+
+        /**
+         * The R5 rule.
+         */
+        R5,
+
+        /**
+         * The R9 rule.
+         */
+        R9
+    }
 
     /**
      * Represents a graph for Dijkstra's algorithm. This wraps a Tetrad graph and provides methods to get neighbors and

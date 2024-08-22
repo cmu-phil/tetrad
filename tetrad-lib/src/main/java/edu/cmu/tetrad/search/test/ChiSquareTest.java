@@ -111,7 +111,8 @@ public class ChiSquareTest {
      * p-value is returned based on the Chi-Square distribution with the total degrees of freedom and total chi-square.
      *
      * @param testIndices These indices, in order.
-     * @param sampleSize
+     * @param sampleSize The sample size to use for the test; expected and observed counts will be multiplied by the
+     *                   ratio of this to the sample size of the data.
      * @return a Chi square test result.
      * @see Result
      */
