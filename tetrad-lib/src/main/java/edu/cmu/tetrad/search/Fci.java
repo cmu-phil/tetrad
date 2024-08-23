@@ -23,7 +23,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -128,10 +131,6 @@ public final class Fci implements IGraphSearch {
      * Whether the output should be guaranteed to be a PAG.
      */
     private boolean guaranteePag;
-    /**
-     * Whether the final orientation step should be left out.
-     */
-    private boolean ablationLeaveOutFinalOrientation = false;
 
     /**
      * Constructor.
@@ -261,11 +260,13 @@ public final class Fci implements IGraphSearch {
         fciOrient.ruleR0(graph, unshieldedTriples);
 
         if (verbose) {
-            TetradLogger.getInstance().log("Doing Final Orientation.");
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(graph);
+        fciOrient.finalOrientation(graph);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished final FCI orientation.");
         }
 
         if (guaranteePag) {
@@ -427,15 +428,6 @@ public final class Fci implements IGraphSearch {
      */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets whether to leave out the final orientation in the search.
-     *
-     * @param ablationLeaveOutFinalOrientation True to leave out the final orientation, false otherwise.
-     */
-    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

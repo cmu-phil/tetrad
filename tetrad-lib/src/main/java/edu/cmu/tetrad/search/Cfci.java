@@ -49,39 +49,66 @@ import java.util.*;
  */
 public final class Cfci implements IGraphSearch {
 
-    // The SepsetMap being constructed.
-    private final SepsetMap sepsets = new SepsetMap();
-    // The variables to search over (optional)
-    private final List<Node> variables = new ArrayList<>();
-    // The independence test.
-    private final IndependenceTest independenceTest;
-    // The PAG being constructed.
-    private Graph graph;
-    // The background knowledge.
-    private Knowledge knowledge = new Knowledge();
-    // Flag for the complete rule set, true if you should use the complete rule set, false otherwise.
-    private boolean completeRuleSetUsed = true;
-    // True iff the possible msep search is done.
-    private boolean possibleMsepSearchDone = true;
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-    private int maxReachablePathLength = -1;
-    // Set of ambiguous unshielded triples.
-    private Set<Triple> ambiguousTriples;
-    // The depth for the fast adjacency search.
-    private int depth = -1;
-    // Elapsed time of last search.
-    private long elapsedTime;
-    // Whether verbose output (about independencies) is output.
-    private boolean verbose;
-    // Whether to do the discriminating path rule.
-    private boolean doDiscriminatingPathTailRule;
-    private boolean doDiscriminatingPathColliderRule;
-    private int maxPathLength = -1;
-
     /**
-     * Whether to leave out the final orientation step.
+     * The SepsetMap being constructed.
      */
-    private boolean ablationLeaveOutFinalOrientation = false;
+    private final SepsetMap sepsets = new SepsetMap();
+    /**
+     * The variables to search over (optional)
+     */
+    private final List<Node> variables = new ArrayList<>();
+    /**
+     * The independence test.
+     */
+    private final IndependenceTest independenceTest;
+    /**
+     * The PAG being constructed.
+     */
+    private Graph pag;
+    /**
+     * The background knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * Flag for the complete rule set, true if you should use the complete rule set, false otherwise.
+     */
+    private boolean completeRuleSetUsed = true;
+    /**
+     * True iff the possible msep search is done.
+     */
+    private boolean possibleMsepSearchDone = true;
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
+    private int maxReachablePathLength = -1;
+    /**
+     * Set of ambiguous unshielded triples.
+     */
+    private Set<Triple> ambiguousTriples;
+    /**
+     * The depth for the fast adjacency search.
+     */
+    private int depth = -1;
+    /**
+     * Elapsed time of last search.
+     */
+    private long elapsedTime;
+    /**
+     * Whether verbose output (about independencies) is output.
+     */
+    private boolean verbose;
+    /**
+     * Whether to do the discriminating path tail rule.
+     */
+    private boolean doDiscriminatingPathTailRule;
+    /**
+     * Whether to do the discriminating path collider rule.
+     */
+    private boolean doDiscriminatingPathColliderRule;
+    /**
+     * The maximum length of any discriminating path.
+     */
+    private int maxPathLength = -1;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -116,16 +143,16 @@ public final class Cfci implements IGraphSearch {
 
         List<Node> nodes = new LinkedList<>(this.variables);
 
-        this.graph = new EdgeListGraph(nodes);
-        this.graph.fullyConnect(Endpoint.TAIL);
+        this.pag = new EdgeListGraph(nodes);
+        this.pag.fullyConnect(Endpoint.TAIL);
 
 //        // Step FCI B.  (Zhang's step F2.)
         Fas adj = new Fas(this.independenceTest);
         adj.setKnowledge(this.knowledge);
         adj.setDepth(this.depth);
         adj.setVerbose(this.verbose);
-        this.graph = adj.search();
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
+        this.pag = adj.search();
+        this.pag.reorientAllWith(Endpoint.CIRCLE);
 
         // Note we don't use the sepsets from this search.
 
@@ -143,7 +170,7 @@ public final class Cfci implements IGraphSearch {
             // Step FCI D.
             long time3 = MillisecondTimes.timeMillis();
 
-            PossibleMsepFci possibleMSep = new PossibleMsepFci(this.graph, this.independenceTest);
+            PossibleMsepFci possibleMSep = new PossibleMsepFci(this.pag, this.independenceTest);
             possibleMSep.setDepth(this.depth);
             possibleMSep.setKnowledge(this.knowledge);
             possibleMSep.setMaxPathLength(getMaxReachablePathLength());
@@ -157,12 +184,12 @@ public final class Cfci implements IGraphSearch {
             }
 
             // Reorient all edges as o-o.
-            this.graph.reorientAllWith(Endpoint.CIRCLE);
+            this.pag.reorientAllWith(Endpoint.CIRCLE);
         }
 
         // Step CI C (Zhang's step F3.)
         long time5 = MillisecondTimes.timeMillis();
-        fciOrientbk(this.knowledge, this.graph, this.variables);
+        fciOrientbk(this.knowledge, this.pag, this.variables);
         ruleR0(this.independenceTest, this.depth, this.sepsets);
 
         long time6 = MillisecondTimes.timeMillis();
@@ -172,21 +199,31 @@ public final class Cfci implements IGraphSearch {
         }
 
         // Step CI D. (Zhang's step F4.)
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
+        }
 
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(this.graph);
+        FciOrient fciOrient = new FciOrient(
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setVerbose(verbose);
+
+        fciOrient.finalOrientation(pag);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished implied orientation.");
         }
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
 
         if (this.verbose) {
-            TetradLogger.getInstance().log("Returning graph: " + this.graph);
+            TetradLogger.getInstance().log("Returning graph: " + this.pag);
         }
 
-        return this.graph;
+        return this.pag;
     }
 
     /**
@@ -262,8 +299,8 @@ public final class Cfci implements IGraphSearch {
         return new HashSet<>(this.ambiguousTriples);
     }
 
-    private Graph getGraph() {
-        return this.graph;
+    private Graph getPag() {
+        return this.pag;
     }
 
     private void ruleR0(IndependenceTest test, int depth, SepsetMap sepsets) {
@@ -273,8 +310,8 @@ public final class Cfci implements IGraphSearch {
 
         this.ambiguousTriples = new HashSet<>();
 
-        for (Node y : getGraph().getNodes()) {
-            List<Node> adjacentNodes = new ArrayList<>(getGraph().getAdjacentNodes(y));
+        for (Node y : getPag().getNodes()) {
+            List<Node> adjacentNodes = new ArrayList<>(getPag().getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -287,7 +324,7 @@ public final class Cfci implements IGraphSearch {
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
-                if (this.getGraph().isAdjacentTo(x, z)) {
+                if (this.getPag().isAdjacentTo(x, z)) {
                     continue;
                 }
 
@@ -295,13 +332,13 @@ public final class Cfci implements IGraphSearch {
                 Set<Node> sepset = sepsets.get(x, z);
 
                 if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
-                    if (FciOrient.isArrowheadAllowed(x, y, graph, knowledge) &&
-                        FciOrient.isArrowheadAllowed(z, y, graph, knowledge)) {
-                        getGraph().setEndpoint(x, y, Endpoint.ARROW);
-                        getGraph().setEndpoint(z, y, Endpoint.ARROW);
+                    if (FciOrient.isArrowheadAllowed(x, y, pag, knowledge) &&
+                        FciOrient.isArrowheadAllowed(z, y, pag, knowledge)) {
+                        getPag().setEndpoint(x, y, Endpoint.ARROW);
+                        getPag().setEndpoint(z, y, Endpoint.ARROW);
 
                         if (this.verbose) {
-                            String message = "Collider: " + Triple.pathString(this.graph, x, y, z);
+                            String message = "Collider: " + Triple.pathString(this.pag, x, y, z);
                             TetradLogger.getInstance().log(message);
                         }
                     }
@@ -309,9 +346,9 @@ public final class Cfci implements IGraphSearch {
                 } else {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    getPag().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     if (this.verbose) {
-                        String message = "AmbiguousTriples: " + Triple.pathString(this.graph, x, y, z);
+                        String message = "AmbiguousTriples: " + Triple.pathString(this.pag, x, y, z);
                         TetradLogger.getInstance().log(message);
                     }
                 }
@@ -328,7 +365,7 @@ public final class Cfci implements IGraphSearch {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
-        Set<Node> __nodes = new HashSet<>(this.getGraph().getAdjacentNodes(x));
+        Set<Node> __nodes = new HashSet<>(this.getPag().getAdjacentNodes(x));
         __nodes.remove(z);
 
         List<Node> _nodes = new LinkedList<>(__nodes);
@@ -356,7 +393,7 @@ public final class Cfci implements IGraphSearch {
             }
         }
 
-        __nodes = new HashSet<>(this.getGraph().getAdjacentNodes(z));
+        __nodes = new HashSet<>(this.getPag().getAdjacentNodes(z));
         __nodes.remove(x);
 
         _nodes = new LinkedList<>(__nodes);
@@ -563,15 +600,6 @@ public final class Cfci implements IGraphSearch {
         }
 
         this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * Sets whether to leave out the final orientation in the search algorithm.
-     *
-     * @param ablationLeaveOutFinalOrientation True, if the final orientation should be left out; false otherwise.
-     */
-    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
     /**

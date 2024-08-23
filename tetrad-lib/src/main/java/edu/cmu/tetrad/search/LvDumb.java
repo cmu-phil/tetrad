@@ -96,11 +96,11 @@ public final class LvDumb implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("===Starting LV-Lite===");
+            TetradLogger.getInstance().log("===Starting LV-Dumb===");
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Running BOSS to get CPDAG and best order.");
+            TetradLogger.getInstance().log("Starting BOSS.");
         }
 
         // BOSS seems to be doing better here.
@@ -111,14 +111,36 @@ public final class LvDumb implements IGraphSearch {
         suborderSearch.setUseBes(useBes);
         suborderSearch.setUseDataOrder(useDataOrder);
         suborderSearch.setNumStarts(numStarts);
+        suborderSearch.setVerbose(verbose);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         var cpdag = permutationSearch.search();
 
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished BOSS.");
+        }
+
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
+        }
+
         DagToPag dagToPag = new DagToPag(cpdag);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        return dagToPag.convert();
+        dagToPag.setVerbose(verbose);
+
+        Graph pag = dagToPag.convert();
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("LV-Dumb finished.");
+        }
+
+        return pag;
     }
 
     /**

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -126,10 +127,6 @@ public final class GFci implements IGraphSearch {
      */
     private boolean guaranteePag = false;
     /**
-     * Whether to leave out the final orientation step in the ablation study.
-     */
-    private boolean ablationLeaveOutFinalOrientation;
-    /**
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod = 2;
@@ -158,12 +155,11 @@ public final class GFci implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI algorithm.");
-            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("===Starting GFCI===");
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting FGES algorithm.");
+            TetradLogger.getInstance().log("Starting FGES.");
         }
 
         Fges fges = new Fges(this.score);
@@ -173,36 +169,40 @@ public final class GFci implements IGraphSearch {
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         fges.setNumThreads(numThreads);
-        Graph graph = fges.search();
+        Graph pag = fges.search();
 
         if (verbose) {
-            TetradLogger.getInstance().log("Finished FGES algorithm.");
+            TetradLogger.getInstance().log("Finished FGES.");
+        }
+
+        if (score instanceof MagSemBicScore) {
+            ((MagSemBicScore) score).setMag(pag);
         }
 
         if (verbose) {
             TetradLogger.getInstance().log("Making a copy of the FGES CPDAG for reference.");
         }
 
-        Graph cpdag = new EdgeListGraph(graph);
+        Graph cpdag = new EdgeListGraph(pag);
 
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
         } else if (sepsetFinderMethod == 1) {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 2) {
-            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 3) {
-            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
         } else {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        Set<Triple> unshieldedTriples = new HashSet<>();
+        Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, depth, verbose);
-        GraphUtils.gfciR0(graph, cpdag, sepsets, knowledge, verbose, unshieldedTriples);
+        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
@@ -213,16 +213,23 @@ public final class GFci implements IGraphSearch {
                         doDiscriminatingPathColliderRule, verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setVerbose(verbose);
 
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(graph);
+        fciOrient.finalOrientation(pag);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished implied orientation.");
         }
 
         if (guaranteePag) {
-            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose);
         }
 
-        return graph;
+        if (verbose) {
+            TetradLogger.getInstance().log("GFCI finished.");
+        }
+
+        return pag;
     }
 
     /**
@@ -343,7 +350,6 @@ public final class GFci implements IGraphSearch {
     }
 
 
-
     /**
      * Sets the flag indicating whether to guarantee the output is a legal PAG.
      *
@@ -354,22 +360,10 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets the flag indicating whether to leave out the final orientation during ablation.
-     *
-     * @param ablationLeaveOutFinalOrientation A boolean value indicating whether to leave out the final orientation during ablation.
-     */
-    public void setAblationLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
-    }
-
-    /**
      * Sets the method used to find the sepset in the GFci algorithm.
      *
-     * @param sepsetFinderMethod The method used to find the sepset.
-     *                           - 0: Default method
-     *                           - 1: Custom method 1
-     *                           - 2: Custom method 2
-     *                           - ...
+     * @param sepsetFinderMethod The method used to find the sepset. - 0: Default method - 1: Custom method 1 - 2:
+     *                           Custom method 2 - ...
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;

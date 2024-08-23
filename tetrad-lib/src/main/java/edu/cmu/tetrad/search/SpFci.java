@@ -139,54 +139,74 @@ public final class SpFci implements IGraphSearch {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting SP-FCI algorithm.");
-            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("===Starting SP-FCI===");
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting SP.");
         }
 
         Sp subAlg = new Sp(this.score);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
 
-        Graph graph = alg.search();
+        Graph pag = alg.search();
 
-        if (score instanceof MagSemBicScore) {
-            ((MagSemBicScore) score).setMag(graph);
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished SP.");
         }
 
-        Graph referenceDag = new EdgeListGraph(graph);
+        if (score instanceof MagSemBicScore) {
+            ((MagSemBicScore) score).setMag(pag);
+        }
+
+        Graph cpdag = new EdgeListGraph(pag);
 
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
         } else if (sepsetFinderMethod == 1) {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 2) {
-            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 3) {
-            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
         } else {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        Set<Triple> unshieldedTriples = new HashSet<>();
+        Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, depth, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose, unshieldedTriples);
+        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
+        }
 
         FciOrient fciOrient = new FciOrient(
                 R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
                         doDiscriminatingPathColliderRule, verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setVerbose(verbose);
 
-        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+        fciOrient.finalOrientation(pag);
 
-        if (guaranteePag) {
-            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished implied orientation.");
         }
 
-        return graph;
+        if (guaranteePag) {
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose);
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("SP-FCI finished.");
+        }
+
+        return pag;
     }
 
     /**

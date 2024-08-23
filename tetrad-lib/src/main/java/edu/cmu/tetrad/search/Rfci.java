@@ -90,10 +90,6 @@ public final class Rfci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    /**
-     * True iff the final orientation step should be skipped.
-     */
-    private boolean ablationLeaveOutFinalOrientation;
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
@@ -202,9 +198,7 @@ public final class Rfci implements IGraphSearch {
         orient.fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
 
-        if (!ablationLeaveOutFinalOrientation) {
-            orient.finalOrientation(this.graph);
-        }
+        orient.finalOrientation(this.graph);
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
@@ -541,15 +535,6 @@ public final class Rfci implements IGraphSearch {
                 }
             }
         }
-    }
-
-    /**
-     * Sets the flag to leave out final orientation during the search.
-     *
-     * @param ablationLeaveOutFinalOrientation True to leave out final orientation, false otherwise.
-     */
-    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

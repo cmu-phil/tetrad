@@ -888,18 +888,6 @@ public final class Params {
      */
     public static final String MIN_SAMPLE_SIZE_PER_CELL = "minSampleSizePerCell";
     /**
-     * Constant <code>ABLATION_LEAVE_OUT_TUCKING_STEP="ablationLeaveOutTuckingStep"</code>
-     */
-    public static final String ABLATION_LEAVE_OUT_TUCKING_STEP = "ablationLeaveOutTuckingStep";
-    /**
-     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep""</code>
-     */
-    public static final String ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep";
-    /**
-     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps""</code>
-     */
-    public static final String ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps";
-    /**
      * Constant <code>MAX_SCORE_DROP="maxScoreDrop"</code>
      */
     public static final String MAX_SCORE_DROP = "maxScoreDrop";

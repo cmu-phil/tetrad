@@ -125,9 +125,8 @@ public final class FciMax implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * Whether the final orientation step should be left out.
+     * Sets whether to guarantee a partially directed acyclic graph (PAG).
      */
-    private boolean ablationLeaveOutFinalOrientation = false;
     private boolean guaranteePag;
 
     /**
@@ -154,8 +153,7 @@ public final class FciMax implements IGraphSearch {
         Fas fas = new Fas(getIndependenceTest());
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting FCI-Max algorithm.");
-            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("===Starting FCI-Max===");
         }
 
         fas.setKnowledge(getKnowledge());
@@ -166,46 +164,63 @@ public final class FciMax implements IGraphSearch {
         fas.setPcHeuristicType(this.pcHeuristicType);
 
         //The PAG being constructed.
-        Graph graph = fas.search();
+        Graph pag = fas.search();
         this.sepsets = fas.getSepsets();
 
-        graph.reorientAllWith(Endpoint.CIRCLE);
+        pag.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         if (this.possibleMsepSearchDone) {
             FciOrient fciOrient = new FciOrient(
                     R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
-            graph.paths().removeByPossibleMsep(independenceTest, sepsets);
+            pag.paths().removeByPossibleMsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
-            graph.reorientAllWith(Endpoint.CIRCLE);
+            pag.reorientAllWith(Endpoint.CIRCLE);
         }
 
         // Step CI C (Zhang's step F3.)
 
         FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
-
-        fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
+                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
+                        doDiscriminatingPathColliderRule, verbose));
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setVerbose(verbose);
+        fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes());
 
         Set<Triple> unshieldedColldiders = new HashSet<>();
 
-        addColliders(graph, unshieldedColldiders);
+        if (verbose) {
+            TetradLogger.getInstance().log("Adding colliders.");
+        }
 
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(graph);
+        addColliders(pag, unshieldedColldiders);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
+        }
+
+        fciOrient.finalOrientation(pag);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished final FCI orientation.");
         }
 
         if (guaranteePag) {
-            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedColldiders, false, verbose);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColldiders, false, verbose);
         }
 
         long stop = MillisecondTimes.timeMillis();
 
         this.elapsedTime = stop - start;
 
-        return graph;
+        if (verbose) {
+            TetradLogger.getInstance().log("FCI-Max finished.");
+        }
+
+        return pag;
     }
 
     /**
@@ -486,15 +501,6 @@ public final class FciMax implements IGraphSearch {
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
         this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    /**
-     * Sets whether to leave out the final orientation in the FCI search.
-     *
-     * @param ablationLeaveOutFinalOrientation true to leave out the final orientation, false otherwise.
-     */
-    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
     /**

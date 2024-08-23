@@ -118,23 +118,6 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * This private boolean variable determines whether the ablation leave-out scoring step is enabled or disabled. If
-     * this variable is set to true, the ablation leave-out scoring step is enabled. If this variable is set to false,
-     * the ablation leave-out-scoring step is disabled.
-     * <p>
-     * Note that if the scoring step (BOSS or GRaSP) is left out, the algorithm will start with an initial complete
-     * connected graph with all edges oriented a nondirected (o-o), since the subsequent steps require an initial graph
-     * that is Markov.
-     */
-    private boolean ablationLeaveOutScoringStep;
-    /**
-     * This variable represents whether the ablation leave out testing step is enabled or disabled. Ablation leave out
-     * testing step is a part of a software development process where certain components or features are temporarily
-     * removed or disabled for the purpose of testing or evaluating their impact on the overall system. By default, the
-     * ablation leave-out-testing step is disabled (false).
-     */
-    private boolean ablationLeaveOutTestingStep = false;
-    /**
      * The maximum length of any discriminating path.
      */
     private int maxDdpPathLength = -1;
@@ -189,71 +172,56 @@ public final class LvLite implements IGraphSearch {
         List<Node> best;
 
 
-        if (ablationLeaveOutScoringStep) {
+        if (startWith == START_WITH.BOSS) {
+
             if (verbose) {
-                TetradLogger.getInstance().log("Ablation: Leave out scoring step.");
+                TetradLogger.getInstance().log("Running BOSS...");
             }
 
-            pag = new EdgeListGraph(nodes);
-            pag.fullyConnect(Endpoint.CIRCLE);
-            best = new ArrayList<>(nodes);
-            Collections.shuffle(best);
-            TeyssierScorer scorer = new TeyssierScorer(test, score);
-            scorer.score(best);
-            dag = scorer.getGraph(false);
+            long start = MillisecondTimes.wallTimeMillis();
+
+            var permutationSearch = getBossSearch();
+            dag = permutationSearch.search(false);
+            best = permutationSearch.getOrder();
+            best = dag.paths().getValidOrder(best, true);
+
+            long stop = MillisecondTimes.wallTimeMillis();
+
+            if (verbose) {
+                TetradLogger.getInstance().log("BOSS took " + (stop - start) + " ms.");
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
+                TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
+            }
+        } else if (startWith == START_WITH.GRASP) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Running GRaSP...");
+            }
+
+            long start = MillisecondTimes.wallTimeMillis();
+
+            Grasp grasp = getGraspSearch();
+            best = grasp.bestOrder(nodes);
+            dag = grasp.getGraph(false);
+
+            long stop = MillisecondTimes.wallTimeMillis();
+
+            if (verbose) {
+                TetradLogger.getInstance().log("GRaSP took " + (stop - start) + " ms.");
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
+                TetradLogger.getInstance().log("Initializing scorer with GRaSP best order.");
+            }
         } else {
+            throw new IllegalArgumentException("Unknown startWith algorithm: " + startWith);
+        }
 
-            if (startWith == START_WITH.BOSS) {
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("Running BOSS...");
-                }
-
-                long start = MillisecondTimes.wallTimeMillis();
-
-                var permutationSearch = getBossSearch();
-                dag = permutationSearch.search(false);
-                best = permutationSearch.getOrder();
-                best = dag.paths().getValidOrder(best, true);
-
-                long stop = MillisecondTimes.wallTimeMillis();
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("BOSS took " + (stop - start) + " ms.");
-                }
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
-                    TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
-                }
-            } else if (startWith == START_WITH.GRASP) {
-                if (verbose) {
-                    TetradLogger.getInstance().log("Running GRaSP...");
-                }
-
-                long start = MillisecondTimes.wallTimeMillis();
-
-                Grasp grasp = getGraspSearch();
-                best = grasp.bestOrder(nodes);
-                dag = grasp.getGraph(false);
-
-                long stop = MillisecondTimes.wallTimeMillis();
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("GRaSP took " + (stop - start) + " ms.");
-                }
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
-                    TetradLogger.getInstance().log("Initializing scorer with GRaSP best order.");
-                }
-            } else {
-                throw new IllegalArgumentException("Unknown startWith algorithm: " + startWith);
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Best order: " + best);
-            }
+        if (verbose) {
+            TetradLogger.getInstance().log("Best order: " + best);
         }
 
         var scorer = new TeyssierScorer(test, score);
@@ -288,7 +256,7 @@ public final class LvLite implements IGraphSearch {
         scorer.score(best);
         GraphUtils.reorientWithCircles(pag, verbose);
 
-            // We're looking for unshielded colliders in these next steps that we can detect without using only
+        // We're looking for unshielded colliders in these next steps that we can detect without using only
         // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and nearby graphs
         // that can be reached by constrained tucking. The BOSS graph should be edge minimal, so should have the
         // highest number of unshielded colliders to copy to the PAG. Nearby graphs should have fewer unshielded
@@ -320,40 +288,34 @@ public final class LvLite implements IGraphSearch {
 
         Map<Edge, Set<Node>> extraSepsets;
 
-        if (ablationLeaveOutTestingStep) {
-            fciOrient.setDoDiscriminatingPathColliderRule(false);
-            fciOrient.setDoDiscriminatingPathTailRule(false);
-        } else {
+        // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
+        // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
+        // per edge.
+        extraSepsets = removeExtraEdges(pag, subsequentUnshieldedColliders);
+        unshieldedColliders.addAll(subsequentUnshieldedColliders);
 
-            // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
-            // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
-            // per edge.
-            extraSepsets = removeExtraEdges(pag, subsequentUnshieldedColliders);
-            unshieldedColliders.addAll(subsequentUnshieldedColliders);
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing implied orientation after extra sepsets found");
+        }
 
-            if (verbose) {
-                TetradLogger.getInstance().log("Doing implied orientation after extra sepsets found");
-            }
+        GraphUtils.reorientWithCircles(pag, verbose);
+        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+        GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
-            GraphUtils.reorientWithCircles(pag, verbose);
-            GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-            GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished implied orientation after extra sepsets found");
+        }
 
-            if (verbose) {
-                TetradLogger.getInstance().log("Finished implied orientation after extra sepsets found");
-            }
+        if (verbose) {
+            TetradLogger.getInstance().log("Orienting common adjacents");
+        }
 
-            if (verbose) {
-                TetradLogger.getInstance().log("Orienting common adjacents");
-            }
+        for (Edge edge : extraSepsets.keySet()) {
+            orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
+        }
 
-            for (Edge edge : extraSepsets.keySet()) {
-                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Done orienting common adjacents");
-            }
+        if (verbose) {
+            TetradLogger.getInstance().log("Done orienting common adjacents");
         }
 
         // Final FCI orientation.
@@ -369,7 +331,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag =  GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose);
         }
 
         if (verbose) {
@@ -731,40 +693,6 @@ public final class LvLite implements IGraphSearch {
      */
     public void setDepth(int depth) {
         this.depth = depth;
-    }
-
-    /**
-     * Sets whether the scoring step (BOSS or GRASP) should be left out during ablation. If this step is left out, the
-     * algorithm will start with a completely connected nondirected (o-o) graph, since the subsequent steps require an
-     * initial graph that is Markov. This will make the algorithm slow.
-     * <p>
-     * One cannot leave out both the testing and scoring steps of the algorithm; one or the other must be enabled.
-     *
-     * @param ablationLeaveOutScoringStep True iff the scoring step should be left out.
-     */
-    public void setAblationLeaveOutScoringStep(boolean ablationLeaveOutScoringStep) {
-        if (this.ablationLeaveOutTestingStep && ablationLeaveOutScoringStep) {
-            throw new IllegalArgumentException("Cannot leave out both the testing and scoring steps of the algorithm.");
-        }
-
-        this.ablationLeaveOutScoringStep = ablationLeaveOutScoringStep;
-    }
-
-    /**
-     * Sets whether to the testing steps (extra edge removal and discriminating path steps) should be left out during
-     * ablation. If these stepw are left out, the algorithm will not remove extra edges or do discriminating path
-     * steps.
-     * <p>
-     * One cannot leave out both the testing and scoring steps of the algorithm; one or the other must be enabled.
-     *
-     * @param ablationLeaveOutTestingStep the flag indicating whether to enable the ablation leave-out testing step.
-     */
-    public void setAblationLeaveOutTestingStep(boolean ablationLeaveOutTestingStep) {
-        if (this.ablationLeaveOutScoringStep && ablationLeaveOutTestingStep) {
-            throw new IllegalArgumentException("Cannot leave out both the testing and scoring steps of the algorithm.");
-        }
-
-        this.ablationLeaveOutTestingStep = ablationLeaveOutTestingStep;
     }
 
     /**
