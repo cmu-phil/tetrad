@@ -137,7 +137,7 @@ public class SemStdErrorEstimator {
         //same as in the array of free parameter values stored in paramsOriginal.
         try {
 
-            Matrix hessInv = hess.ginverse();
+            Matrix hessInv = hess.pseudoinverse();
 
             this.stdErrs = new double[n];
 

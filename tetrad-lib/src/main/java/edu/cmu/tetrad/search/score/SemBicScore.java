@@ -28,7 +28,6 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -243,7 +242,8 @@ public class SemBicScore implements Score {
         Matrix b;
 
         if (usePseudoInverse) {
-            b = new Matrix(MatrixUtils.pseudoInverse(covxx.toArray())).times(covxy);
+            b = covxx.pseudoinverse().times(covxy);
+//            b = new Matrix(MatrixUtils.pseudoInverse(covxx.toArray())).times(covxy);
         } else {
             b = covxx.inverse().times(covxy);
         }

@@ -256,41 +256,14 @@ public final class MatrixUtils {
     }
 
     /**
-     * <p>inverse.</p>
+     * Calculates the inverse of a given matrix.
      *
-     * @param m an array of {@link double} objects
-     * @return the inverse of the given square matrix if it is nonsingular, otherwise the pseudoinverse.
+     * @param m the input matrix to calculate the inverse of
+     * @return the inverse of the input matrix as a 2D array of doubles
      */
     public static double[][] inverse(double[][] m) {
         Matrix mm = new Matrix(m);
         return mm.inverse().toArray();
-    }
-
-    /**
-     * <p>pseudoInverse.</p>
-     *
-     * @param x an array of {@link double} objects
-     * @return an array of {@link double} objects
-     */
-    public static double[][] pseudoInverse(double[][] x) {
-        if (x.length == 0) {
-            return new Matrix(x).toArray();
-        }
-
-        SingularValueDecomposition svd = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(x));
-
-        RealMatrix U = svd.getU();
-        RealMatrix V = svd.getV();
-        RealMatrix S = svd.getS();
-
-        for (int i = 0; i < S.getRowDimension(); i++) {
-            for (int j = 0; j < S.getColumnDimension(); j++) {
-                double v = S.getEntry(i, j);
-                S.setEntry(i, j, v == 0 ? 0.0 : 1.0 / v);
-            }
-        }
-
-        return V.multiply(S.multiply(U.transpose())).getData();
     }
 
     /**

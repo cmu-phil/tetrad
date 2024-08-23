@@ -368,30 +368,15 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * <p>symmetricInverse.</p>
+     * Returns the Moore-Penrose pseudoinverse of the matrix.
      *
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
-    public Matrix symmetricInverse() {
-        if (!isSquare()) throw new IllegalArgumentException();
-        if (getNumRows() == 0) return new Matrix(0, 0);
-
-        return new Matrix(new CholeskyDecomposition(this.apacheData).getSolver().getInverse());
-    }
-
-    /**
-     * <p>ginverse.</p>
-     *
-     * @return a {@link edu.cmu.tetrad.util.Matrix} object
-     */
-    public Matrix ginverse() {
-        double[][] data = this.apacheData.getData();
-
-        if (data.length == 0 || data[0].length == 0) {
-            return new Matrix(data);
-        }
-
-        return new Matrix(MatrixUtils.pseudoInverse(data));
+    public Matrix pseudoinverse() {
+        if (zeroDimension()) return new Matrix(getNumColumns(), getNumRows());
+        SingularValueDecomposition svd = new SingularValueDecomposition(this.apacheData);
+        RealMatrix pseudoinverse = svd.getSolver().getInverse();
+        return new Matrix(pseudoinverse);
     }
 
     /**
