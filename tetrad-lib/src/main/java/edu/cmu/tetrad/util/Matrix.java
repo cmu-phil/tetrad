@@ -351,19 +351,20 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * <p>inverse.</p>
+     * Returns the inverse of the matrix. If the matrix is not square, an exception is thrown. If the matrix is singular,
+     * an exception is thrown.
      *
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
     public Matrix inverse() throws SingularMatrixException {
-        if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
+        if (!isSquare()) throw new IllegalArgumentException("This matrix is not square; cannot invert.");
 
         if (getNumRows() == 0) {
             return new Matrix(0, 0);
         }
 
-        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
+        return new Matrix(org.apache.commons.math3.linear.MatrixUtils.inverse(this.apacheData, 1e-10));
     }
 
     /**
