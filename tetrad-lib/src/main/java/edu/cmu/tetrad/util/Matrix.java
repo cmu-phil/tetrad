@@ -32,8 +32,8 @@ import java.io.Serial;
 
 /**
  * Wraps the Apache math3 linear algebra library for most uses in Tetrad. Specialized uses will still have to use the
- * library directly. One issue this fixes is that a BlockRealMatrix cannot represent a matrix with zero rows; this uses
- * an Array2DRowRealMatrix to represent that case.
+ * library directly. One issue is that we need to be able to represent empty matrices gracefully; this case is handled
+ * separately and incorporated into the class.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -66,7 +66,7 @@ public class Matrix implements TetradSerializable {
         if (data.length == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-            this.apacheData = new BlockRealMatrix(data);
+            this.apacheData = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(data);
         }
 
         this.m = data.length;
@@ -95,7 +95,7 @@ public class Matrix implements TetradSerializable {
         if (m == 0 || n == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-            this.apacheData = new BlockRealMatrix(m, n);
+            this.apacheData = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(m, n);
         }
 
         this.m = m;
@@ -557,7 +557,7 @@ public class Matrix implements TetradSerializable {
         RealMatrix V = svd.getV();
         double[] s = svd.getSingularValues();
         for (int i = 0; i < s.length; i++) s[i] = 1.0 / s[i];
-        RealMatrix S = new BlockRealMatrix(s.length, s.length);
+        RealMatrix S = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(s.length, s.length);
         for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
         RealMatrix sqrt = U.multiply(S).multiply(V);
         return new Matrix(sqrt);
@@ -647,8 +647,8 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.

@@ -277,7 +277,7 @@ public final class MatrixUtils {
             return new Matrix(x).toArray();
         }
 
-        SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(x));
+        SingularValueDecomposition svd = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(x));
 
         RealMatrix U = svd.getU();
         RealMatrix V = svd.getV();
@@ -787,16 +787,7 @@ public final class MatrixUtils {
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isPositiveDefinite(Matrix matrix) {
-
-//        try {
-//            new CholeskyDecomposition(new BlockRealMatrix(matrix.toArray()));
-//        } catch (NonPositiveDefiniteMatrixException e) {
-//            return false;
-//        }
-
-//        return true;
-
-        RealMatrix realMatrix = new Array2DRowRealMatrix(matrix.toArray());
+        RealMatrix realMatrix = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(matrix.toArray());
         EigenDecomposition eigenDecomposition = new EigenDecomposition(realMatrix);
         double[] eigenvalues = eigenDecomposition.getRealEigenvalues();
         for (double eigenvalue : eigenvalues) {
@@ -814,9 +805,9 @@ public final class MatrixUtils {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix cholesky(Matrix covar) {
-        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(new BlockRealMatrix(covar.toArray())).getL();
+        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(
+                org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(covar.toArray())).getL();
         return new Matrix(L.getData());
-
     }
 
     /**

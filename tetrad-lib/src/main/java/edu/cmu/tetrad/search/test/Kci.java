@@ -892,7 +892,7 @@ public class Kci implements IndependenceTest {
             List<Integer> topIndices;
 
             if (true) {
-                EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(this.k.toArray()));
+                EigenDecomposition ed = new EigenDecomposition(MatrixUtils.createRealMatrix(this.k.toArray()));
 
                 double[] arr = ed.getRealEigenvalues();
 
@@ -920,7 +920,7 @@ public class Kci implements IndependenceTest {
                     }
                 }
             } else {
-                SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
+                SingularValueDecomposition svd = new SingularValueDecomposition(MatrixUtils.createRealMatrix(k.toArray()));
 
                 double[] evxAll = svd.getSingularValues();
 

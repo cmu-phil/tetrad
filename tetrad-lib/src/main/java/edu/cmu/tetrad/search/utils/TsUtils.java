@@ -33,8 +33,8 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
@@ -676,7 +676,7 @@ public class TsUtils {
         double[] realEigenvalues = new double[0];
         double[] imagEigenvalues = new double[0];
         try {
-            EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
+            EigenDecomposition dec = new EigenDecomposition(MatrixUtils.createRealMatrix(mat.toArray()));
             realEigenvalues = dec.getRealEigenvalues();
             imagEigenvalues = dec.getImagEigenvalues();
         } catch (MaxCountExceededException e) {
