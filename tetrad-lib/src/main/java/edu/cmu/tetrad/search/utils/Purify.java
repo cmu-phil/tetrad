@@ -1812,10 +1812,8 @@ public class Purify {
             } else if (parameter.getType() == ParamType.VAR) {
                 Node exo = parameter.getNodeA();
                 if (exo.getNodeType() == NodeType.ERROR) {
-                    Iterator ci = semIm.getSemPm().getGraph().getChildren(exo)
-                            .iterator();
-                    exo =
-                            (Node) ci.next(); //Assuming error nodes have only one children in SemGraphs...
+                    Iterator<Node> ci = semIm.getSemPm().getGraph().getChildren(exo).iterator();
+                    exo = ci.next(); //Assuming error nodes have only one child in SemGraphs...
                 }
                 if (exo.getNodeType() == NodeType.LATENT) {
                     fi[((Integer) this.latentNames.get(
