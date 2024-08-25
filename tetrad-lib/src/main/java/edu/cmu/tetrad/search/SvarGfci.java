@@ -168,6 +168,7 @@ public final class SvarGfci implements IGraphSearch {
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setVerbose(this.verbose);
 
         fciOrient.finalOrientation(this.graph);
 
