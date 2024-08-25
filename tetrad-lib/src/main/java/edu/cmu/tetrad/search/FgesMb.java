@@ -177,10 +177,6 @@ public final class FgesMb implements DagScorer {
      */
     private boolean verbose = false;
     /**
-     * Whether verbose output should be produced for the Meek rules.
-     */
-    private boolean meekVerbose = false;
-    /**
      * Map from variables to their column indices in the data set.
      */
     private ConcurrentMap<Node, Integer> hashIndices;
@@ -435,19 +431,9 @@ public final class FgesMb implements DagScorer {
      * separately.
      *
      * @param verbose True iff the case.
-     * @see #setMeekVerbose(boolean)
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Sets whether verbose output should be produced for the Meek rules.
-     *
-     * @param meekVerbose True iff the case.
-     */
-    public void setMeekVerbose(boolean meekVerbose) {
-        this.meekVerbose = meekVerbose;
     }
 
     /**
@@ -1272,7 +1258,7 @@ public final class FgesMb implements DagScorer {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
         rules.setMeekPreventCycles(true);
-        rules.setVerbose(meekVerbose);
+        rules.setVerbose(verbose);
         return rules.orientImplied(graph);
     }
 

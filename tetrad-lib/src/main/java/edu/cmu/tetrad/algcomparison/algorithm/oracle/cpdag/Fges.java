@@ -91,12 +91,12 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(myScore);
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
         search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setOut(System.out);
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         graph = search.search();
 
         LogUtilsSearch.stampWithScore(graph, myScore);
@@ -140,9 +140,7 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.TIME_LAG);
-
         parameters.add(Params.VERBOSE);
-        parameters.add(Params.MEEK_VERBOSE);
 
         return parameters;
     }

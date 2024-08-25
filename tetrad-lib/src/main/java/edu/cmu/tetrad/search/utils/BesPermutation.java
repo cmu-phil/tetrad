@@ -250,8 +250,7 @@ public class BesPermutation {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
         rules.setMeekPreventCycles(false);
-        boolean meekVerbose = false;
-        rules.setVerbose(meekVerbose);
+        rules.setVerbose(verbose);
         return rules.orientImplied(graph);
     }
 

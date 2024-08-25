@@ -657,10 +657,6 @@ public final class Params {
      */
     public static final String VERBOSE = "verbose";
     /**
-     * Constant <code>MEEK_VERBOSE="meekVerbose"</code>
-     */
-    public static final String MEEK_VERBOSE = "meekVerbose";
-    /**
      * Constant <code>SEM_BIC_RULE="semBicRule"</code>
      */
     public static final String SEM_BIC_RULE = "semBicRule";
