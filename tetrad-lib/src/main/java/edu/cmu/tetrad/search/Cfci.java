@@ -98,17 +98,9 @@ public final class Cfci implements IGraphSearch {
      */
     private boolean verbose;
     /**
-     * Whether to do the discriminating path tail rule.
-     */
-    private boolean doDiscriminatingPathTailRule;
-    /**
-     * Whether to do the discriminating path collider rule.
-     */
-    private boolean doDiscriminatingPathColliderRule;
-    /**
      * The maximum length of any discriminating path.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -173,7 +165,7 @@ public final class Cfci implements IGraphSearch {
             PossibleMsepFci possibleMSep = new PossibleMsepFci(this.pag, this.independenceTest);
             possibleMSep.setDepth(this.depth);
             possibleMSep.setKnowledge(this.knowledge);
-            possibleMSep.setMaxPathLength(getMaxReachablePathLength());
+            possibleMSep.setMaxReachablePathLength(getMaxReachablePathLength());
 
             // We use these sepsets though.
             this.sepsets.addAll(possibleMSep.search());
@@ -203,11 +195,10 @@ public final class Cfci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
-                        doDiscriminatingPathColliderRule, verbose));
+        FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge,
+                        verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
         fciOrient.finalOrientation(pag);
@@ -498,24 +489,6 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    /**
      * Orients according to background knowledge
      *
      * @param bk        The background knowledge
@@ -592,14 +565,14 @@ public final class Cfci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**

@@ -80,7 +80,7 @@ public final class GraspFci implements IGraphSearch {
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The number of starts for GRaSP.
      */
@@ -97,14 +97,6 @@ public final class GraspFci implements IGraphSearch {
      * Whether to use score.
      */
     private boolean useScore = true;
-    /**
-     * Whether to use the discriminating path tail rule.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * Whether to use the discriminating path collider rule.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * Whether to use the ordered version of GRaSP.
      */
@@ -229,11 +221,10 @@ public final class GraspFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
-                        doDiscriminatingPathColliderRule, verbose));
+        FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge,
+                        verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
         fciOrient.finalOrientation(pag);
@@ -275,14 +266,14 @@ public final class GraspFci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -328,24 +319,6 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
-    }
-
-    /**
-     * Sets whether to use the discriminating path tail rule for GRaSP.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether to use the discriminating path collider rule for GRaSP.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**

@@ -143,12 +143,10 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
         // LV-Lite
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxDdpPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
@@ -215,15 +213,13 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // LV-Lite
         params.add(Params.LV_LITE_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);
-        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.GUARANTEE_PAG);
 
         // General

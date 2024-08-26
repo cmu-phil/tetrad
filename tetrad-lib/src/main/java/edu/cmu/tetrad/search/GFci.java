@@ -89,7 +89,7 @@ public final class GFci implements IGraphSearch {
     /**
      * The maximum path length for the discriminating path rule.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The maximum degree of the output graph.
      */
@@ -114,14 +114,6 @@ public final class GFci implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
-    /**
-     * Whether the discriminating path tail rule should be used.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * Whether the discriminating path collider rule should be used.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * Whether to guarantee the output is a PAG by repairing a faulty PAG.
      */
@@ -208,11 +200,10 @@ public final class GFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
-                        doDiscriminatingPathColliderRule, verbose));
+        FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge,
+                verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
         fciOrient.finalOrientation(pag);
@@ -281,14 +272,14 @@ public final class GFci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -367,23 +358,5 @@ public final class GFci implements IGraphSearch {
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

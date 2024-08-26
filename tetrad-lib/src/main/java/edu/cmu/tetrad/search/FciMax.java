@@ -99,23 +99,13 @@ public final class FciMax implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
-     * Determines whether the discriminating path tail rule should be applied during the search. If set to true, the
-     * rule will be applied. If set to false, the rule will not be applied.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * This variable specifies whether the discriminating path collider rule should be applied during the search. If set
-     * to true, the rule will be applied; if set to false, the rule will not be applied.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
      * Whether the discriminating path rule will be used in search.
      */
     private boolean possibleMsepSearchDone = true;
     /**
      * The maximum length of any discriminating path, or -1 if unlimited.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The maximum number of variables conditioned in any test.
      */
@@ -172,8 +162,7 @@ public final class FciMax implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         if (this.possibleMsepSearchDone) {
-            FciOrient fciOrient = new FciOrient(
-                    R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+            FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
             pag.paths().removeByPossibleMsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
@@ -182,11 +171,10 @@ public final class FciMax implements IGraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
-                        doDiscriminatingPathColliderRule, verbose));
+        FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge,
+                        verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
         fciOrient.fciOrientbk(this.knowledge, pag, pag.getNodes());
 
@@ -299,14 +287,14 @@ public final class FciMax implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -345,16 +333,6 @@ public final class FciMax implements IGraphSearch {
     public void setStable(boolean stable) {
         this.stable = stable;
     }
-
-    /**
-     * Sets whether the discriminating path tail rule should be applied during the search.
-     *
-     * @param doDiscriminatingPathTailRule True, if the rule should be applied. False otherwise.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
 
     /**
      * Adds colliders to the given graph.
@@ -492,15 +470,6 @@ public final class FciMax implements IGraphSearch {
                 scores.put(new Triple(a, b, c), score);
             }
         }
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be applied during the search.
-     *
-     * @param doDiscriminatingPathColliderRule True, if the rule should be applied. False otherwise.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**

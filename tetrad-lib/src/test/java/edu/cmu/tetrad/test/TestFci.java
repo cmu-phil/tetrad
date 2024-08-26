@@ -239,9 +239,7 @@ public class TestFci {
         Fci fci = new Fci(independence);
         fci.setPossibleMsepSearchDone(true);
         fci.setCompleteRuleSetUsed(true);
-        fci.setDoDiscriminatingPathTailRule(true);
-        fci.setDoDiscriminatingPathColliderRule(true);
-        fci.setMaxPathLength(-1);
+        fci.setMaxDiscriminatingPathLength(-1);
         fci.setKnowledge(knowledge);
         fci.setVerbose(true);
 

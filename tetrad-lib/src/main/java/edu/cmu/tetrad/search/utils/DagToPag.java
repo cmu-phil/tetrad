@@ -104,38 +104,6 @@ public final class DagToPag {
     }
 
     /**
-     * This method does the conversion of DAG to PAG.
-     *
-     * @return Returns the converted PAG.
-     */
-    public Graph convert() {
-
-        Graph mag;
-
-        if (dag.paths().isLegalDag()) {
-            mag = GraphTransforms.dagToMag(dag);
-        } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
-            mag = GraphTransforms.zhangMagFromPag(dag);
-        } else {
-            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no latents" + "but possibly with circle endpoints.");
-        }
-
-        Graph pag = new EdgeListGraph(mag);
-
-        pag.reorientAllWith(Endpoint.CIRCLE);
-
-        FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
-        fciOrient.setVerbose(verbose);
-
-        fciOrient.ruleR0(pag, new HashSet<>());
-        fciOrient.finalOrientation(pag);
-
-//        finalOrientation(mag, pag, knowledge, verbose);
-
-        return pag;
-    }
-
-    /**
      * Returns the final strategy for finding a PAG using D-SEP.
      *
      * @param mag       the MAG (Maximum Ancestral Graph) representation of the graph
@@ -221,37 +189,31 @@ public final class DagToPag {
                 boolean collider = !sepset.contains(b);
 
                 if (collider) {
-                    if (isDoDiscriminatingPathColliderRule()) {
-                        if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
-                            return Pair.of(discriminatingPath, false);
-                        }
-
-                        if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                            return Pair.of(discriminatingPath, false);
-                        }
-
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                        }
-
-                        return Pair.of(discriminatingPath, true);
+                    if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
+                        return Pair.of(discriminatingPath, false);
                     }
+
+                    if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                        return Pair.of(discriminatingPath, false);
+                    }
+
+                    graph.setEndpoint(a, b, Endpoint.ARROW);
+                    graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log("R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                    }
+
+                    return Pair.of(discriminatingPath, true);
                 } else {
-                    if (isDoDiscriminatingPathTailRule()) {
-                        graph.setEndpoint(c, b, Endpoint.TAIL);
+                    graph.setEndpoint(c, b, Endpoint.TAIL);
 
-                        if (verbose) {
-                            TetradLogger.getInstance().log("R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                        }
-
-                        return Pair.of(discriminatingPath, true);
+                    if (verbose) {
+                        TetradLogger.getInstance().log("R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                     }
-                }
 
-                return Pair.of(discriminatingPath, false);
+                    return Pair.of(discriminatingPath, true);
+                }
             }
 
             @Override
@@ -259,6 +221,38 @@ public final class DagToPag {
                 // Ignore.
             }
         };
+    }
+
+    /**
+     * This method does the conversion of DAG to PAG.
+     *
+     * @return Returns the converted PAG.
+     */
+    public Graph convert() {
+
+        Graph mag;
+
+        if (dag.paths().isLegalDag()) {
+            mag = GraphTransforms.dagToMag(dag);
+        } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
+            mag = GraphTransforms.zhangMagFromPag(dag);
+        } else {
+            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no latents" + "but possibly with circle endpoints.");
+        }
+
+        Graph pag = new EdgeListGraph(mag);
+
+        pag.reorientAllWith(Endpoint.CIRCLE);
+
+        FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
+        fciOrient.setVerbose(verbose);
+
+        fciOrient.ruleR0(pag, new HashSet<>());
+        fciOrient.finalOrientation(pag);
+
+//        finalOrientation(mag, pag, knowledge, verbose);
+
+        return pag;
     }
 
     /**

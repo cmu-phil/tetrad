@@ -90,7 +90,7 @@ public final class SpFci implements IGraphSearch {
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The maxDegree for the fast adjacency search.
      */
@@ -112,8 +112,6 @@ public final class SpFci implements IGraphSearch {
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod;
-    private boolean doDiscriminatingPathTailRule = true;
-    private boolean doDiscriminatingPathColliderRule = true;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -185,11 +183,10 @@ public final class SpFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
-                        doDiscriminatingPathColliderRule, verbose));
+        FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge,
+                        verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
         fciOrient.finalOrientation(pag);
@@ -274,21 +271,21 @@ public final class SpFci implements IGraphSearch {
      *
      * @return This length.
      */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
+    public int getMaxDiscriminatingPathLength() {
+        return this.maxDiscriminatingPathLength;
     }
 
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -343,23 +340,5 @@ public final class SpFci implements IGraphSearch {
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

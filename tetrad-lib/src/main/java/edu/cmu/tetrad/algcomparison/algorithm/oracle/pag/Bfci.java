@@ -11,7 +11,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -112,11 +111,9 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
 
         search.setSeed(parameters.getLong(Params.SEED));
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
-        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
@@ -173,11 +170,9 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         List<String> params = new ArrayList<>();
 
         params.add(Params.USE_BES);
-        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);

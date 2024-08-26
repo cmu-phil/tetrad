@@ -316,8 +316,7 @@ public class Paths implements TetradSerializable {
 
                 if (__g.paths().isLegalPag()) {
                     Graph _g = new EdgeListGraph(g);
-                    FciOrient fciOrient = new FciOrient(
-                            R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
+                    FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
                     fciOrient.finalOrientation(pag);
                     return g.equals(_g);
                 }
@@ -574,14 +573,14 @@ public class Paths implements TetradSerializable {
     /**
      * Finds all paths from node1 to node2 within a specified maximum length.
      *
-     * @param node1     The starting node.
-     * @param node2     The target node.
-     * @param maxLength The maximum length of the paths.
+     * @param node1         The starting node.
+     * @param node2         The target node.
+     * @param maxPathLength The maximum length of the paths.
      * @return A list of paths, where each path is a list of nodes.
      */
-    public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength) {
+    public Set<List<Node>> allPaths(Node node1, Node node2, int maxPathLength) {
         Set<List<Node>> paths = new HashSet<>();
-        allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, -1, maxLength, new HashSet<>(), null, false);
+        allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, -1, maxPathLength, new HashSet<>(), null, false);
         return paths;
     }
 
@@ -1409,14 +1408,15 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>possibleMsep.</p>
+     * Calculates the possible d-separation nodes between two given Nodes within a graph,
+     * using a maximum path length constraint.
      *
-     * @param x             a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y             a {@link edu.cmu.tetrad.graph.Node} object
-     * @param maxPathLength a int
-     * @return a {@link java.util.List} object
+     * @param x                     the starting Node for the path
+     * @param y                     the ending Node for the path
+     * @param maxPossibleDsepPathLength  the maximum length of the path, -1 for unlimited
+     * @return a List of Nodes representing the possible d-separation nodes
      */
-    public List<Node> possibleMsep(Node x, Node y, int maxPathLength) {
+    public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
         Set<Node> msep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -1450,7 +1450,7 @@ public class Paths implements TetradSerializable {
             if (e == t) {
                 e = null;
                 distance++;
-                if (distance > 0 && distance > (maxPathLength == -1 ? 1000 : maxPathLength)) {
+                if (distance > 0 && distance > (maxPossibleDsepPathLength == -1 ? 1000 : maxPossibleDsepPathLength)) {
                     break;
                 }
             }
@@ -1515,7 +1515,7 @@ public class Paths implements TetradSerializable {
             Node b = edge.getNode2();
 
             {
-                List<Node> possibleMsep = possibleMsep(a, b, -1);
+                List<Node> possibleMsep = possibleDsep(a, b, -1);
 
                 SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
                 int[] choice;
@@ -1539,7 +1539,7 @@ public class Paths implements TetradSerializable {
 
             if (graph.containsEdge(edge)) {
                 {
-                    List<Node> possibleMsep = possibleMsep(b, a, -1);
+                    List<Node> possibleMsep = possibleDsep(b, a, -1);
 
                     SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
                     int[] choice;

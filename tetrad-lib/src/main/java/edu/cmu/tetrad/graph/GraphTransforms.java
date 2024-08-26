@@ -192,8 +192,7 @@ public class GraphTransforms {
                     pag.setEndpoint(edge.getFirst(), edge.getSecond(), Endpoint.ARROW);
                 }
 
-                FciOrient fciOrient = new FciOrient(
-                        R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
+                FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
                 fciOrient.finalOrientation(pag);
             }
         }

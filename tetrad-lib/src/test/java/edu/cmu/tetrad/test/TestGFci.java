@@ -71,7 +71,7 @@ public class TestGFci {
         final double alpha = 0.01;
         final double penaltyDiscount = 2;
         final int depth = -1;
-        final int maxPathLength = -1;
+        final int maxDiscriminatingPathLength = -1;
 
         List<Node> vars = new ArrayList<>();
 
@@ -100,14 +100,14 @@ public class TestGFci {
         GFci gFci = new GFci(independenceTest, score);
         gFci.setVerbose(false);
         gFci.setMaxDegree(depth);
-        gFci.setMaxPathLength(maxPathLength);
+        gFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         gFci.setCompleteRuleSetUsed(false);
         gFci.setFaithfulnessAssumed(true);
         Graph outGraph = gFci.search();
 
 //        DagToPag dagToPag = new DagToPag(dag);
 //        dagToPag.setCompleteRuleSetUsed(false);
-//        dagToPag.setMaxPathLength(maxPathLength);
+//        dagToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
 //        Graph truePag = dagToPag.convert();
 
         Graph truePag = GraphTransforms.dagToPag(dag);
@@ -289,7 +289,7 @@ public class TestGFci {
         GFci gFci = new GFci(indTest, score);
         gFci.setFaithfulnessAssumed(true);
         gFci.setMaxDegree(-1);
-        gFci.setMaxPathLength(-1);
+        gFci.setMaxDiscriminatingPathLength(-1);
         gFci.setCompleteRuleSetUsed(false);
         gFci.setVerbose(true);
 

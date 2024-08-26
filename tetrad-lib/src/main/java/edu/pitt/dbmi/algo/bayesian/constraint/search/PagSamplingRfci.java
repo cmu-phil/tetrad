@@ -28,7 +28,7 @@ public class PagSamplingRfci implements IGraphSearch {
     private boolean verbose = false;
     // Rfci parameters
     private int depth = -1;
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     // IndTestProbabilistic parameters
     private boolean threshold = true;
     private double cutoff = 0.5;
@@ -155,14 +155,14 @@ public class PagSamplingRfci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -220,7 +220,7 @@ public class PagSamplingRfci implements IGraphSearch {
                     rfci.setKnowledge(knowledge);
                 }
                 rfci.setDepth(depth);
-                rfci.setMaxPathLength(maxPathLength);
+                rfci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
                 rfci.setVerbose(verbose);
 
                 return rfci.search();

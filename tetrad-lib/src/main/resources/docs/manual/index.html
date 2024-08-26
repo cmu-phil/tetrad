@@ -2907,12 +2907,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>All the parameters from FCI are below.</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
-
     <h3>The FCI-Max Algorithm</h3>
 
     <h4>Description</h4>
@@ -2940,12 +2934,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>All the parameters from FCI are below.</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
-
     <h3>The CFCI Algorithm</h3>
 
     <h4>Description</h4>
@@ -2971,13 +2959,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         Spirtes et al., 2000. Also, see the CPC algorithm.</p>
 
     <h4>Parameters</h4>
-
-    <p>All the parameters from FCI are available for RFCI.
-        Additionally:</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
 
     <h3>The RFCI Algorithm</h3>
 
@@ -3006,19 +2987,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Output Format</h4>
 
     <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
-
-    <h4>Parameters</h4>
-
-    <p>All the parameters from FCI are available for RFCI.
-        Additionally:</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
-
-    <h3>The PAG-Sampling RFCI Algorithm</h3>
-
-    <h4>Description</h4>
 
     <div id="pag-sampling-rfci">
 
@@ -5244,50 +5212,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="doDiscriminatingPathColliderRule">doDiscriminatingPathColliderRule</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="doDiscriminatingPathColliderRule_short_desc">Yes if the discriminating path collider rule
-                should be done, No if not</span></li>
-            <li>Long Description: <span
-                    id="doDiscriminatingPathColliderRule_long_desc">Yes if the discriminating path collider
-                    FCI rule (part of the final orientation, requiring an additional test)
-                    should be done, No if not </span>
-            </li>
-            <li>Default Value: <span
-                    id="doDiscriminatingPathColliderRule_default_value">true</span></li>
-            <li>Lower
-                Bound: <span id="doDiscriminatingPathColliderRule_lower_bound"></span></li>
-            <li>Upper Bound: <span
-                    id="doDiscriminatingPathColliderRule_upper_bound"></span></li>
-            <li>Value Type:
-                <span id="doDiscriminatingPathColliderRule_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="doDiscriminatingPathTailRule">doDiscriminatingPathTailRule</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="doDiscriminatingPathTailRule_short_desc">Yes if the discriminating path tail rule
-                should be done, No if not</span></li>
-            <li>Long Description: <span
-                    id="doDiscriminatingPathTailRule_long_desc">Yes if the discriminating path tail
-                    FCI rule (part of the final orientation, requiring an additional test)
-                    should be done, No if not </span>
-            </li>
-            <li>Default Value: <span
-                    id="doDiscriminatingPathTailRule_default_value">true</span></li>
-            <li>Lower
-                Bound: <span id="doDiscriminatingPathTailRule_lower_bound"></span></li>
-            <li>Upper Bound: <span
-                    id="doDiscriminatingPathTailRule_upper_bound"></span></li>
-            <li>Value Type:
-                <span id="doDiscriminatingPathTailRule_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
             id="concurrentFAS">concurrentFAS</h3>
         <ul
                 class="parameter_description_list">
@@ -7179,26 +7103,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="maxPathLength">maxPathLength</h3>
+            id="maxDiscriminatingPathLength">maxDiscriminatingPathLength</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="maxPathLength_short_desc">The maximum length for any
+                    id="maxDiscriminatingPathLength_short_desc">The maximum length for any
         discriminating path. -1 if unlimited (min = -1)</span></li>
             <li>Long
-                Description: <span id="maxPathLength_long_desc"> See Spirtes,
+                Description: <span id="maxDiscriminatingPathLength_long_desc"> See Spirtes,
         Glymour, and Scheines (2000) for the definition of discrimination
         path. Finding discriminating paths can be expensive. This sets the
         maximum length of such paths that the algorithm tries to find.</span>
             </li>
             <li>Default Value: <span
-                    id="maxPathLength_default_value">-1</span></li>
+                    id="maxDiscriminatingPathLength_default_value">-1</span></li>
             <li>Lower Bound:
-                <span id="maxPathLength_lower_bound">-1</span></li>
+                <span id="maxDiscriminatingPathLength_lower_bound">-1</span></li>
             <li>Upper Bound:
-                <span id="maxPathLength_upper_bound">2147483647</span></li>
+                <span id="maxDiscriminatingPathLength_upper_bound">2147483647</span></li>
             <li>Value
-                Type: <span id="maxPathLength_value_type">Integer</span></li>
+                Type: <span id="maxDiscriminatingPathLength_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="maxit">maxit</h3>

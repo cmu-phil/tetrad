@@ -89,14 +89,6 @@ public final class Params {
      */
     public static final String SEPSET_FINDER_METHOD = "sepsetFinderMethod";
     /**
-     * Constant <code>DO_DISCRIMINATING_PATH_COLLIDER_RULE="doDiscriminatingPathColliderRule"</code>
-     */
-    public static final String DO_DISCRIMINATING_PATH_COLLIDER_RULE = "doDiscriminatingPathColliderRule";
-    /**
-     * Constant <code>DO_DISCRIMINATING_PATH_TAIL_RULE="doDiscriminatingPathTailRule"</code>
-     */
-    public static final String DO_DISCRIMINATING_PATH_TAIL_RULE = "doDiscriminatingPathTailRule";
-    /**
      * Constant <code>CONCURRENT_FAS="concurrentFAS"</code>
      */
     public static final String CONCURRENT_FAS = "concurrentFAS";
@@ -363,7 +355,7 @@ public final class Params {
     /**
      * Constant <code>MAX_PATH_LENGTH="maxPathLength"</code>
      */
-    public static final String MAX_PATH_LENGTH = "maxPathLength";
+    public static final String MAX_DISCRIMINATING_PATH_LENGTH = "maxDiscriminatingPathLength";
     /**
      * Constant <code>MAXIT="maxit"</code>
      */

@@ -53,7 +53,7 @@ public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorit
 
         // Rfci parameters
         RFCI_PARAMETERS.add(Params.DEPTH);
-        RFCI_PARAMETERS.add(Params.MAX_PATH_LENGTH);
+        RFCI_PARAMETERS.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
 
         // IndTestProbabilistic parameters
         PROBABILISTIC_TEST_PARAMETERS.add(Params.NO_RANDOMLY_DETERMINED_INDEPENDENCE);
@@ -98,7 +98,7 @@ public class PagSampleRfci extends AbstractBootstrapAlgorithm implements Algorit
         // Rfic parameters
         pagSamplingRfci.setKnowledge(this.knowledge);
         pagSamplingRfci.setDepth(parameters.getInt(Params.DEPTH));
-        pagSamplingRfci.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        pagSamplingRfci.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
 
         // ProbabilisticTest parameters
         pagSamplingRfci.setThreshold(parameters.getBoolean(Params.NO_RANDOMLY_DETERMINED_INDEPENDENCE));

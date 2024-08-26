@@ -98,22 +98,6 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean useBes = false;
     /**
-     * This variable represents whether the discriminating path rule is used in the LV-Lite class.
-     * <p>
-     * The discriminating path rule is a rule used in the search algorithm. It determines whether the algorithm
-     * considers discriminating paths when searching for patterns in the data.
-     * <p>
-     * By default, the value of this variable is set to true, indicating that the discriminating path rule is used.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * Indicates whether the discriminating path collider rule is turned on or off.
-     * <p>
-     * If set to true, the discriminating path collider rule is enabled. If set to false, the discriminating path
-     * collider rule is disabled.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
      * True iff verbose output should be printed.
      */
     private boolean verbose = false;
@@ -237,10 +221,10 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        R0R4Strategy strategy = R0R4StrategyTestBased.specialConfiguration(test, knowledge, doDiscriminatingPathTailRule, doDiscriminatingPathColliderRule, false);
+        R0R4Strategy strategy = R0R4StrategyTestBased.specialConfiguration(test, knowledge, false);
 
         FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setMaxPathLength(maxDdpPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setTestTimeout(testTimeout);
         fciOrient.setVerbose(verbose);
@@ -475,24 +459,6 @@ public final class LvLite implements IGraphSearch {
      */
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**

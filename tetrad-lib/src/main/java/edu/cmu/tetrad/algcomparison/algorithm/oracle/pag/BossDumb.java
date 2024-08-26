@@ -180,8 +180,6 @@ public class BossDumb extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // General
         params.add(Params.TIME_LAG);
