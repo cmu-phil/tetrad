@@ -26,10 +26,6 @@ import static edu.cmu.tetrad.data.CellTableAdTree.getAllRows;
  */
 public class AdTree {
     /**
-     * The data set the tree is for.
-     */
-    private final DataSet dataSet;
-    /**
      * Indices of variables.
      */
     private final Map<Node, Integer> nodesHash;
@@ -77,7 +73,6 @@ public class AdTree {
      * @param dataSet A discrete dataset.
      */
     public AdTree(DataSet dataSet, List<Integer> rows) {
-        this.dataSet = dataSet;
         this.rows = rows;
 
         this.discreteData = new int[dataSet.getNumColumns()][];
