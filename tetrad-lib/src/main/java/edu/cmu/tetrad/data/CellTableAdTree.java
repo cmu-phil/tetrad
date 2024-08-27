@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.search.utils.AdTree;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.MultiDimIntTable;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,28 +39,25 @@ import java.util.List;
  *
  * @author josephramsey
  * @version $Id: $Id
- * @see MultiDimIntTable
  */
 public final class CellTableAdTree implements CellTable {
-
     /**
-     * The list of cell leaves from AD Tree. This stores all cell counts in multidimensional table. The indices
-     * into the table are calculated using the getCellIndex method from the AdTree class.
-     *
-     * @see AdTree
+     * An AD tree for the given dataset. The AD tree is used to store the cell counts and calculate marginals.
      */
     private final AdTree adTree;
     /**
      * The dimensions of the test variables.
      */
     private final int[] dims;
-    /**
-     * The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
-     */
-    private final List<Integer> rows;
 
+    /**
+     * Constructs a new CellTableAdTree using the provided data set and test indices.
+     *
+     * @param dataSet     the data set to be used in the table.
+     * @param testIndices the indices of the variables to be used in the table.
+     */
     public CellTableAdTree(DataSet dataSet, int[] testIndices) {
-        this(dataSet, testIndices,  getAllRows(dataSet.getNumRows()));
+        this(dataSet, testIndices, GraphSearchUtils.getAllRows(dataSet.getNumRows()));
     }
 
     /**
@@ -76,14 +74,13 @@ public final class CellTableAdTree implements CellTable {
         for (int i = 0; i < vars.size(); i++) {
             dims[i] = vars.get(i).getNumCategories();
         }
-        this.rows = rows;
     }
 
     /**
      * Retrieves a list of discrete variables from a given data set, based on the provided test indices.
      *
-     * @param dataSet      the data set from which the variables are retrieved
-     * @param testIndices  the indices of the variables to be retrieved
+     * @param dataSet     the data set from which the variables are retrieved
+     * @param testIndices the indices of the variables to be retrieved
      * @return a list of discrete variables from the data set, based on the provided test indices
      */
     private static @NotNull List<DiscreteVariable> getDiscreteVariables(DataSet dataSet, int[] testIndices) {
@@ -177,12 +174,6 @@ public final class CellTableAdTree implements CellTable {
      */
     private int[] internalCoordCopy(int[] coords) {
         return Arrays.copyOf(coords, coords.length);
-    }
-
-    public static List<Integer> getAllRows(int sampleSize) {
-        List<Integer> rows = new ArrayList<>();
-        for (int i = 0; i < sampleSize; i++) rows.add(i);
-        return rows;
     }
 }
 

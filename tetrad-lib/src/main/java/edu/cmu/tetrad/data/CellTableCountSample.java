@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static edu.cmu.tetrad.data.CellTableAdTree.getAllRows;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 
 
 /**

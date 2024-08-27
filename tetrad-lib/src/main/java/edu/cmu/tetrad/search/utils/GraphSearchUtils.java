@@ -1230,6 +1230,18 @@ public final class GraphSearchUtils {
     }
 
     /**
+     * Returns a list of rows 1...sampleSize.
+     *
+     * @param sampleSize the number of rows in the dataset.
+     * @return a list of rows 1...sampleSize.
+     */
+    public static List<Integer> getAllRows(int sampleSize) {
+        List<Integer> rows = new ArrayList<>();
+        for (int i = 0; i < sampleSize; i++) rows.add(i);
+        return rows;
+    }
+
+    /**
      * Gives the options for triple type for a conservative unshielded collider orientation, which may be "collider" or
      * "noncollider" or "ambiguous".
      */

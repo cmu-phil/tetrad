@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static edu.cmu.tetrad.data.CellTableAdTree.getAllRows;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 
 /**
  * Constructs and AD tree for a given data set. The AD tree is used to calculate the cells of a multidimensional
