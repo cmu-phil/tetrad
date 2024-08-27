@@ -27,10 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Stores a table of cells with int values of arbitrary dimension. The dimensionality of the table is set in the reset()
- * method; if a dimensionality is set in the constructor, it will be passed to the reset() method. Every time the
- * dimensionality is changed, the table is reset to zero throughout. If the dimensionality is set to null, the table
- * cannot be used until a non-null dimensionality is set.
+ * Stores a table of cells with int values of arbitrary dimension. The dimensionality of the table is set in the
+ * constructor. The table is initialized with all cells set to zero.
  * <p>
  * Immutable.
  *
