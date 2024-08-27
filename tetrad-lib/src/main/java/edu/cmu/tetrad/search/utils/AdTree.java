@@ -52,9 +52,10 @@ public class AdTree {
      */
     private List<Subdivision> allData;
     /**
-     * The cell leaves. This is a list of lists of integers, where each list of integers is a list of indices into the
-     * rows of the data set. The list at index i is the list of indices into the rows of the data set that are in cell i
-     * of the table; the coordinates of this cell are calculated using the getCellIndex method.
+     * The cell leaves. This is a list of cells, where each cell is a list of indices into the
+     * rows of the data set. The list at index i is the list of indices into the rows of the data
+     * set that are in cell i of the table; the coordinates of this cell are calculated using the
+     * getCellIndex method.
      */
     private Map<Integer, List<Integer>> cellLeaves;
 

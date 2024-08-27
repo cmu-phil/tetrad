@@ -887,11 +887,7 @@ public final class Params {
      * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
-    /**
-     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
-     */
-    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
-    /**
+   /**
      * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
      */
     public static String PC_HEURISTIC = "pcHeuristic";
@@ -911,6 +907,10 @@ public final class Params {
      * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
+    /**
+     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
+     */
+    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
     /**
      * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
      */
