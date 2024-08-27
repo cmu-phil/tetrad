@@ -5,16 +5,28 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.collections4.map.HashedMap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Constructs and AD leaf tree on the fly. Probably doesn't speed up the first algorithm it's used for much, but it
- * should speed up subsequent algorithms on the same data.
+ * Constructs and AD tree for a given data set. The AD tree is used to calculate the cells of a multidimensional
+ * contingency table for a given set of variables. The AD tree is constructed by specifying the variables to be used in
+ * the table and then calling the calculateTable method. Each of these cells is a list of indices into the rows of the
+ * data set; the sizes of these cells give the counts for the multidimensional contingency table over the given
+ * variables. The number of cells in the table is given by the getNumCells method. The cells of the table are accessed
+ * using the getCell methods.
  * <p>
  * Continuous variables in the data set are ignored.
  *
  * @author josephramsey
  * @version $Id: $Id
+ * @see #getNumCells()
+ * @see #getCellIndex(int[])
+ * @see #getCell(int)
+ * @see #getCell(int[])
+ * @see #calculateTable(List)
  */
 public class AdTree {
     /**
@@ -30,21 +42,23 @@ public class AdTree {
      */
     private final int[][] discreteData;
     /**
-     * Dimensions of the discrete variables (otherwise 0).
+     * Dimensions of the discrete variables in the data. These are the variables passed into the constructor.
      */
     private final int[] dims;
     /**
-     * The dimensions of the test variables, in order.
+     * The dimensions of the test variables, in order. These are the variables given to the calculateTable method.
+     *
+     * @see #calculateTable(List)
      */
     private int[] _dims;
     /**
      * Contains the root of the tree.
      */
-    private List<Vary> baseCase;
+    private List<Subdivision> baseCase;
     /**
      * The cell leaves. This is a list of lists of integers, where each list of integers is a list of indices into the
-     * rows of the data set. The list at index i is the list of indices into the rows of the data set that are in cell
-     * i of the table; the coordinates of this cell are calculated using the getCellIndex method.
+     * rows of the data set. The list at index i is the list of indices into the rows of the data set that are in cell i
+     * of the table; the coordinates of this cell are calculated using the getCellIndex method.
      */
     private List<List<Integer>> cellLeaves;
 
@@ -102,7 +116,7 @@ public class AdTree {
      * @param coords the coordinates of the cell.
      * @return the index of the cell in the table.
      */
-    public int getCellIndex(int...coords) {
+    public int getCellIndex(int... coords) {
         if (_dims.length != coords.length) {
             throw new IllegalArgumentException("Wrong number of coordinates.");
         }
@@ -147,73 +161,72 @@ public class AdTree {
     }
 
     /**
-     * Calculates the cells for each combination of the given variables. The sizes of these cells are counts for
-     * a multidimensional contingency table for the given variables.
+     * Calculates the cells for each combination of the given variables. The sizes of these cells are counts for a
+     * multidimensional contingency table for the given variables.
      *
      * @param A A list of discrete variables. variable.
      */
     public void calculateTable(List<DiscreteVariable> A) {
-//        A.sort(Comparator.comparingInt(this.nodesHash::get));
-
         this._dims = new int[A.size()];
+
         for (int i = 0; i < A.size(); i++) {
             this._dims[i] = A.get(i).getNumCategories();
         }
 
         if (this.baseCase == null) {
-            Vary vary = new Vary();
+            Subdivision subdivision = new Subdivision();
             this.baseCase = new ArrayList<>();
-            this.baseCase.add(vary);
+            this.baseCase.add(subdivision);
         }
 
-        List<Vary> varies = this.baseCase;
+        List<Subdivision> subdivisions = this.baseCase;
 
         for (DiscreteVariable v : A) {
-            varies = getVaries(varies, this.nodesHash.get(v));
+            subdivisions = getVaries(subdivisions, this.nodesHash.get(v));
         }
 
         List<List<Integer>> rows = new ArrayList<>();
 
-        for (Vary vary : varies) {
-            rows.addAll(vary.getRows());
+        for (Subdivision subdivision : subdivisions) {
+            rows.addAll(subdivision.getRows());
         }
 
         this.cellLeaves = rows;
     }
 
-    private List<Vary> getVaries(List<Vary> varies, int v) {
-        List<Vary> _varies = new ArrayList<>();
+    private List<Subdivision> getVaries(List<Subdivision> varies, int v) {
+        List<Subdivision> subdivisions = new ArrayList<>();
 
-        for (Vary vary : varies) {
-            for (int i = 0; i < vary.getNumCategories(); i++) {
-                _varies.add(vary.getSubvary(v, i));
+        for (Subdivision subdivision : varies) {
+            for (int i = 0; i < subdivision.getNumCategories(); i++) {
+                subdivisions.add(subdivision.getNextSubdivion(v, i));
             }
         }
 
-        return _varies;
+        return subdivisions;
     }
 
-    private class Vary {
+    private class Subdivision {
         int col;
         int numCategories;
         List<List<Integer>> rows = new ArrayList<>();
-        List<Map<Integer, Vary>> subVaries = new ArrayList<>();
+        List<Map<Integer, Subdivision>> subdivisions = new ArrayList<>();
 
         // Base case.
-        public Vary() {
+        public Subdivision() {
             List<Integer> _rows = new ArrayList<>();
             for (int i = 0; i < AdTree.this.dataSet.getNumRows(); i++) {
                 _rows.add(i);
             }
 
-            this.subVaries.add(new HashMap<>());
+            this.subdivisions.add(new HashMap<>());
             this.numCategories = 1;
             this.rows.add(_rows);
-            this.subVaries = new ArrayList<>();
-            this.subVaries.add(new HashMap<>());
+            this.subdivisions = new ArrayList<>();
+            this.subdivisions.add(new HashMap<>());
         }
 
-        public Vary(int col, int numCategories, List<Integer> supRows, int[][] discreteData) {
+        public Subdivision(int col, int numCategories, List<Integer> supRows, int[][] discreteData) {
             this.col = col;
             this.numCategories = numCategories;
 
@@ -222,7 +235,7 @@ public class AdTree {
             }
 
             for (int i = 0; i < numCategories; i++) {
-                this.subVaries.add(new HashedMap<>());
+                this.subdivisions.add(new HashedMap<>());
             }
 
             for (int i : supRows) {
@@ -237,15 +250,15 @@ public class AdTree {
             return this.rows;
         }
 
-        public Vary getSubvary(int w, int cat) {
-            Vary vary = this.subVaries.get(cat).get(w);
+        public Subdivision getNextSubdivion(int w, int cat) {
+            Subdivision subdivision = this.subdivisions.get(cat).get(w);
 
-            if (vary == null) {
-                vary = new Vary(w, AdTree.this.dims[w], this.rows.get(cat), AdTree.this.discreteData);
-                this.subVaries.get(cat).put(w, vary);
+            if (subdivision == null) {
+                subdivision = new Subdivision(w, AdTree.this.dims[w], this.rows.get(cat), AdTree.this.discreteData);
+                this.subdivisions.get(cat).put(w, subdivision);
             }
 
-            return vary;
+            return subdivision;
         }
 
         public int getNumCategories() {
