@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static edu.cmu.tetrad.data.CellTableAdTree.getAllRows;
+
 /**
  * Constructs and AD tree for a given data set. The AD tree is used to calculate the cells of a multidimensional
  * contingency table for a given set of variables. The AD tree is constructed by specifying the variables to be used in
@@ -40,6 +42,10 @@ public class AdTree {
      */
     private final int[] dims;
     /**
+     * The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
+     */
+    private final List<Integer> rows;
+    /**
      * The dimensions of the test variables, in order. These are the variables given to the calculateTable method.
      *
      * @see #calculateTable(List)
@@ -57,12 +63,22 @@ public class AdTree {
     private Map<Integer, List<Integer>> cellLeaves;
 
     /**
-     * Constructs an AD Leaf Tree for the given dataset.
+     * Constructs an AD Leaf Tree for the given dataset, without subsampling.
      *
      * @param dataSet A discrete dataset.
      */
     public AdTree(DataSet dataSet) {
+        this(dataSet, getAllRows(dataSet.getNumRows()));
+    }
+
+    /**
+     * Constructs an AD Leaf Tree for the given dataset.
+     *
+     * @param dataSet A discrete dataset.
+     */
+    public AdTree(DataSet dataSet, List<Integer> rows) {
         this.dataSet = dataSet;
+        this.rows = rows;
 
         this.discreteData = new int[dataSet.getNumColumns()][];
         this.dims = new int[dataSet.getNumColumns()];
@@ -194,7 +210,7 @@ public class AdTree {
         // All subdivisions of the data are subdivisions of the entire dataset. If this hasn't been calculated
         // yet, we calculate it now. This is just a list of all cells in the data.
         if (this.allData == null) {
-            Subdivision subdivision = new Subdivision();
+            Subdivision subdivision = new Subdivision(rows);
             this.allData = new ArrayList<>();
             this.allData.add(subdivision);
         }
@@ -206,12 +222,9 @@ public class AdTree {
             subdivisions = getSubdivision(subdivisions, this.nodesHash.get(v));
         }
 
-        // Now we have the subdivisions of the data by the variables in A. We need to get the cells of each of these
-        // subdivisions and put them in a list of cells. We are assuming here that the subdivisions are the leaves of
-        // the tree and that the rows of the subdivisions are the cells of the table. We are assuming the order
-        // of these subdivision is the same as the order of the variables in A, so the final subdivision the ith
-        // cell in the list is at coordinate <i1, i2, ..., in> where i1 is the index of the subdivision in the first
-        // variable, i2 is the index of the subdivision in the second variable, and so on, up to the nth variable.
+        // We now need to reassemble the map from indices to cells. The subdivisions are in the right order, since
+        // we constructed them in order. We just need to reassemble the cells in the right order for each category
+        // of the last variable. We do not need to store cells if they are null or empty.
         Map<Integer, List<Integer>> cells = new HashedMap<>();
 
         int index = 0;
@@ -231,6 +244,13 @@ public class AdTree {
         this.cellLeaves = cells;
     }
 
+    /**
+     * Retrieves a list of subdivisions based on the provided list of subdivisions and a variable index.
+     *
+     * @param varies A list of subdivisions to be used for generating new subdivisions.
+     * @param v      The variable index.
+     * @return A list of subdivisions generated based on the provided subdivisions and variable index.
+     */
     private List<Subdivision> getSubdivision(List<Subdivision> varies, int v) {
         List<Subdivision> subdivisions = new ArrayList<>();
 
@@ -267,15 +287,10 @@ public class AdTree {
          * This constructor is used to get the base case--i.e., the subdivision that consists of the entire dataset as
          * one big cell.
          */
-        public Subdivision() {
-            List<Integer> _rows = new ArrayList<>();
-            for (int i = 0; i < AdTree.this.dataSet.getNumRows(); i++) {
-                _rows.add(i);
-            }
-
+        public Subdivision(List<Integer> rows) {
             this.subdivisions.add(new HashedMap<>());
             this.numCategories = 1;
-            this.cells.put(0, _rows);
+            this.cells.put(0, rows);
             this.subdivisions = new ArrayList<>();
             this.subdivisions.add(new HashedMap<>());
         }

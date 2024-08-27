@@ -43,16 +43,24 @@ import java.util.List;
 public final class CellTableAdTree implements CellTable {
 
     /**
-     * The list of cell leaves from AD leaf tree. This stores all cell counts in multidimensional table. The indices
-     * into the table are calculated using the getCellIndex method from the AdLeafTree class.
+     * The list of cell leaves from AD Tree. This stores all cell counts in multidimensional table. The indices
+     * into the table are calculated using the getCellIndex method from the AdTree class.
      *
      * @see AdTree
      */
-    private AdTree adLeafTree;
+    private final AdTree adTree;
     /**
      * The dimensions of the test variables.
      */
     private final int[] dims;
+    /**
+     * The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
+     */
+    private final List<Integer> rows;
+
+    public CellTableAdTree(DataSet dataSet, int[] testIndices) {
+        this(dataSet, testIndices,  getAllRows(dataSet.getNumRows()));
+    }
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
@@ -60,14 +68,15 @@ public final class CellTableAdTree implements CellTable {
      * @param dataSet     the data set to be used in the table.
      * @param testIndices the indices of the variables to be used in the table.
      */
-    public CellTableAdTree(DataSet dataSet, int[] testIndices) {
+    public CellTableAdTree(DataSet dataSet, int[] testIndices, List<Integer> rows) {
         List<DiscreteVariable> vars = getDiscreteVariables(dataSet, testIndices);
-        this.adLeafTree = new AdTree(dataSet);
-        this.adLeafTree.calculateTable(vars);
+        this.adTree = new AdTree(dataSet, rows);
+        this.adTree.calculateTable(vars);
         this.dims = new int[vars.size()];
         for (int i = 0; i < vars.size(); i++) {
             dims[i] = vars.get(i).getNumCategories();
         }
+        this.rows = rows;
     }
 
     /**
@@ -160,7 +169,7 @@ public final class CellTableAdTree implements CellTable {
             }
         }
 
-        return adLeafTree.getCount(coords);
+        return adTree.getCount(coords);
     }
 
     /**
@@ -168,6 +177,12 @@ public final class CellTableAdTree implements CellTable {
      */
     private int[] internalCoordCopy(int[] coords) {
         return Arrays.copyOf(coords, coords.length);
+    }
+
+    public static List<Integer> getAllRows(int sampleSize) {
+        List<Integer> rows = new ArrayList<>();
+        for (int i = 0; i < sampleSize; i++) rows.add(i);
+        return rows;
     }
 }
 

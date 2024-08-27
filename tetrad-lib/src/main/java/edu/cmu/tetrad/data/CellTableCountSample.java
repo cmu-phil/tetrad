@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static edu.cmu.tetrad.data.CellTableAdTree.getAllRows;
+
 
 /**
  * Stores a cell count table of arbitrary dimension. Provides methods for incrementing particular cells and for
@@ -52,6 +54,7 @@ public final class CellTableCountSample implements CellTable {
      * The variable is final, indicating that its value cannot be changed after initialization.
      */
     private final int[] dims;
+    private final List<Integer> rows;
     /**
      * The table of cell counts.
      */
@@ -59,14 +62,27 @@ public final class CellTableCountSample implements CellTable {
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
+     * This constructor assumes no subsampling.
      *
      * @param dataSet     the data set to be used in the table.
      * @param testIndices the indices of the variables to be used in the table.
      */
     public CellTableCountSample(DataSet dataSet, int[] testIndices) {
+        this(dataSet, testIndices, getAllRows(dataSet.getNumRows()));
+    }
+
+    /**
+     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
+     * The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
+     *
+     * @param dataSet     the data set to be used in the table.
+     * @param testIndices the indices of the variables to be used in the table.
+     */
+    public CellTableCountSample(DataSet dataSet, int[] testIndices, List<Integer> rows) {
         dims = selectDims(getDiscreteVariables(dataSet, testIndices));
         this.table = new MultiDimIntTable(dims);
-        countTable(dataSet, testIndices);
+        this.rows = rows;
+        countTable(dataSet, testIndices, rows);
     }
 
     /**
@@ -108,7 +124,7 @@ public final class CellTableCountSample implements CellTable {
      * @param dataSet the data set to be used in the table.
      * @param indices the indices of the variables to be used in the table.
      */
-    private void countTable(DataSet dataSet, int[] indices) {
+    private void countTable(DataSet dataSet, int[] indices, List<Integer> rows) {
         int[] dims = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
@@ -121,7 +137,7 @@ public final class CellTableCountSample implements CellTable {
         int[] coords = new int[indices.length];
 
         POINTS:
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
+        for (int i : rows) {
             for (int j = 0; j < indices.length; j++) {
                 try {
                     coords[j] = dataSet.getInt(i, indices[j]);
