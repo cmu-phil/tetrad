@@ -9,7 +9,7 @@ import java.util.*;
 
 /**
  * Constructs and AD leaf tree on the fly. Probably doesn't speed up the first algorithm it's used for much, but it
- * should speed up subsequent algorithm on the same data.
+ * should speed up subsequent algorithms on the same data.
  * <p>
  * Continuous variables in the data set are ignored.
  *
@@ -18,15 +18,25 @@ import java.util.*;
  */
 public class AdLeafTree {
 
-    // The data set the tree is for.
+    /**
+     * The data set the tree is for.
+     */
     private final DataSet dataSet;
-    // Indices of variables.
+    /**
+     * Indices of variables.
+     */
     private final Map<Node, Integer> nodesHash;
-    // Discrete data only.
+    /**
+     * Discrete data only.
+     */
     private final int[][] discreteData;
-    // Dimensions of the discrete variables (otherwise 0).
+    /**
+     * Dimensions of the discrete variables (otherwise 0).
+     */
     private final int[] dims;
-    // Contains the root of the tree.
+    /**
+     * Contains the root of the tree.
+     */
     private List<Vary> baseCase;
 
     /**
@@ -141,6 +151,19 @@ public class AdLeafTree {
         }
 
         return _varies;
+    }
+
+    public int getCellIndex(int[] coords) {
+        int cellIndex = 0;
+
+        for (int i = 0; i < coords.length; i++) {
+            if (i < dims.length) {
+                cellIndex *= this.dims[i];
+                cellIndex += coords[i];
+            }
+        }
+
+        return cellIndex;
     }
 
     private class Vary {

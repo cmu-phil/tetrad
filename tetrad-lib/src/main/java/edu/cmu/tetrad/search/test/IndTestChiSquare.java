@@ -130,7 +130,7 @@ public final class IndTestChiSquare implements IndependenceTest, SampleSizeSetta
         this.dataSet = dataSet;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE, null);
+        this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE);
         this.chiSquareTest.setMinCountPerCell(minCountPerCell);
         this.sampleSize = dataSet.getNumRows();
     }
@@ -435,7 +435,7 @@ public final class IndTestChiSquare implements IndependenceTest, SampleSizeSetta
     public void setRows(List<Integer> rows) {
         if (rows == null) {
             this.rows = null;
-            chiSquareTest = new ChiSquareTest(dataSet, chiSquareTest.getAlpha(), ChiSquareTest.TestType.CHI_SQUARE, this.rows);
+            chiSquareTest = new ChiSquareTest(dataSet, chiSquareTest.getAlpha(), ChiSquareTest.TestType.CHI_SQUARE);
         } else {
             for (int i : rows) {
                 if (i < 0 || i >= dataSet.getNumRows()) {
@@ -444,7 +444,7 @@ public final class IndTestChiSquare implements IndependenceTest, SampleSizeSetta
             }
 
             this.rows = new ArrayList<>(rows);
-            chiSquareTest = new ChiSquareTest(dataSet, chiSquareTest.getAlpha(), ChiSquareTest.TestType.CHI_SQUARE, this.rows);
+            chiSquareTest = new ChiSquareTest(dataSet, chiSquareTest.getAlpha(), ChiSquareTest.TestType.CHI_SQUARE);
         }
     }
 

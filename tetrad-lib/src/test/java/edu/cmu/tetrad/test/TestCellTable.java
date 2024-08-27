@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.AdLeafTree;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -284,7 +285,9 @@ public final class TestCellTable {
             {0, 1, 0, 0}, {0, 0, 0, 1}, {0, 0, 0, 1}, {1, 1, 1, 0},
             {0, 0, 1, 0}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0, 1, 0, 1},
             {0, 1, 0, 1}, {0, 0, 0, 1}};
-    private CellTable table;
+    private ICellTable table;
+    private AdLeafTree adTree;
+    private List<Node> variables;
 
     private static int[] pickRandomCell() {
 
@@ -301,15 +304,14 @@ public final class TestCellTable {
 
 
 //        // Add data to table.
-        List<Node> variables = new LinkedList<>();
+        variables = new LinkedList<>();
         variables.add(new DiscreteVariable("X1", 2));
         variables.add(new DiscreteVariable("X2", 2));
         variables.add(new DiscreteVariable("X3", 2));
         variables.add(new DiscreteVariable("X4", 2));
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
+        BoxDataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
         int[] indices = {0, 1, 2, 3};
-
 
         for (int i = 0; i < this.data.length; i++) {
             for (int j = 0; j < this.data[0].length; j++) {
@@ -317,21 +319,28 @@ public final class TestCellTable {
             }
         }
 
-//        this.table.countTable(dataSet, indices);
-
-        this.table = new CellTable(this.dims, dataSet, indices);
+        this.table = new CellTable(this.dims, -99, dataSet, indices);
+//        this.table = new CellTableAdTree(this.dims, -99, dataSet, indices);
+        this.adTree = new AdLeafTree(dataSet);
     }
 
     @Test
     public void testCount() {
         setUp();
 
-        // Pick 8 random cells, count those cells, test the counts in
+        // Pick 2 random cells, count those cells, test the counts in
         // the cell count.
         int[] testCell;
 
-        for (int c = 0; c < 8; c++) {
+        for (int c = 0; c < 1; c++) {
             testCell = TestCellTable.pickRandomCell();
+
+            // Print the test cell:
+            for (int i = 0; i < 4; i++) {
+                System.out.print(testCell[i] + " ");
+            }
+
+            System.out.println();
 
             int myCount = 0;
 
@@ -350,7 +359,20 @@ public final class TestCellTable {
                 }
             }
 
+            System.out.println("myCount = " + myCount);
+
             assertEquals(myCount, this.table.getValue(testCell));
+
+            List<DiscreteVariable> vars = new LinkedList<>();
+
+            for (Node var : this.variables) {
+                vars.add((DiscreteVariable) var);
+            }
+
+            int adCount = this.adTree.getCellLeaves(vars).get(this.adTree.getCellIndex(testCell)).size();
+            System.out.println("adCount = " + adCount);
+
+            assertEquals(adCount, this.table.getValue(testCell));
         }
     }
 

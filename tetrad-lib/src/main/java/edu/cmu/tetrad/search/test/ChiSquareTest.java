@@ -21,15 +21,10 @@
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.CellTable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.CombinationIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
-import java.util.List;
-
-import static java.lang.Math.sqrt;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
@@ -59,10 +54,6 @@ public class ChiSquareTest {
      */
     private final TestType testType;
     /**
-     * The rows to use in the data.
-     */
-    private final List<Integer> rows;
-    /**
      * The significance level of the test.
      * <p>
      * This should not be changed during execution, as it is not immutable.
@@ -83,15 +74,13 @@ public class ChiSquareTest {
      * @param dataSet  A data set consisting entirely of discrete variables.
      * @param alpha    The significance level, usually 0.05.
      * @param testType The type of test to perform, either CHI_SQUARE or G_SQUARE.
-     * @param rows     The rows to use in the data.
      */
-    public ChiSquareTest(DataSet dataSet, double alpha, TestType testType, List<Integer> rows) {
+    public ChiSquareTest(DataSet dataSet, double alpha, TestType testType) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance level must be in " + "[0, 1]: " + alpha);
         }
 
         this.dims = new int[dataSet.getNumColumns()];
-        this.rows = rows;
 
         for (int i = 0; i < getDims().length; i++) {
             DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(i);
@@ -125,7 +114,7 @@ public class ChiSquareTest {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
-        CellTable cellTable = new CellTable(dims, DiscreteVariable.MISSING_VALUE, rows, getDataSet(), testIndices);
+        ICellTable cellTable = new CellTableAdTree(dims, DiscreteVariable.MISSING_VALUE, getDataSet(), testIndices);
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to
@@ -261,7 +250,7 @@ public class ChiSquareTest {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
-        CellTable cellTable = new CellTable(dims, DiscreteVariable.MISSING_VALUE, rows, getDataSet(), testIndices);
+        ICellTable cellTable = new CellTableAdTree(dims, DiscreteVariable.MISSING_VALUE, getDataSet(), testIndices);
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to

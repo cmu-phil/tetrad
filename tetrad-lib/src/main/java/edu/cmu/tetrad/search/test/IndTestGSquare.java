@@ -124,7 +124,7 @@ public final class IndTestGSquare implements IndependenceTest, SampleSizeSettabl
     }
 
     private void setup(DataSet dataSet, double alpha, List<Integer> rows) {
-        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE, rows);
+        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE);
         this.gSquareTest.setMinCountPerCell(minCountPerCell);
         this.sampleSize = rows == null ? dataSet.getNumRows() : rows.size();
     }
