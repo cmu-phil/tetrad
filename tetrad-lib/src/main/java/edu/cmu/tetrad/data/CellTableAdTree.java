@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.search.utils.AdLeafTree;
+import edu.cmu.tetrad.search.utils.AdTree;
 import edu.cmu.tetrad.util.MultiDimIntTable;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,9 +46,9 @@ public final class CellTableAdTree implements CellTable {
      * The list of cell leaves from AD leaf tree. This stores all cell counts in multidimensional table. The indices
      * into the table are calculated using the getCellIndex method from the AdLeafTree class.
      *
-     * @see edu.cmu.tetrad.search.utils.AdLeafTree
+     * @see AdTree
      */
-    private final List<List<Integer>> cellLeaves;
+    private AdTree adLeafTree;
     /**
      * The dimensions of the test variables.
      */
@@ -62,8 +62,12 @@ public final class CellTableAdTree implements CellTable {
      */
     public CellTableAdTree(DataSet dataSet, int[] testIndices) {
         List<DiscreteVariable> vars = getDiscreteVariables(dataSet, testIndices);
-        cellLeaves = new AdLeafTree(dataSet).getCellLeaves(vars);
-        this.dims = selectDims(vars);
+        this.adLeafTree = new AdTree(dataSet);
+        this.adLeafTree.calculateTable(vars);
+        this.dims = new int[vars.size()];
+        for (int i = 0; i < vars.size(); i++) {
+            dims[i] = vars.get(i).getNumCategories();
+        }
     }
 
     /**
@@ -81,22 +85,6 @@ public final class CellTableAdTree implements CellTable {
         }
 
         return vars;
-    }
-
-    /**
-     * Selects the dimensions of the given list of discrete variables.
-     *
-     * @param vars the list of discrete variables
-     * @return an array of integers representing the dimensions of the variables
-     */
-    private int @NotNull [] selectDims(List<DiscreteVariable> vars) {
-        int[] _dims = new int[vars.size()];
-
-        for (DiscreteVariable variable : vars) {
-            _dims[vars.indexOf(variable)] = variable.getNumCategories();
-        }
-
-        return _dims;
     }
 
     /**
@@ -172,7 +160,7 @@ public final class CellTableAdTree implements CellTable {
             }
         }
 
-        return cellLeaves.get(AdLeafTree.getCellIndex(dims, coords)).size();
+        return adLeafTree.getCell(coords).size();
     }
 
     /**

@@ -16,8 +16,7 @@ import java.util.*;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class AdLeafTree {
-
+public class AdTree {
     /**
      * The data set the tree is for.
      */
@@ -35,16 +34,26 @@ public class AdLeafTree {
      */
     private final int[] dims;
     /**
+     * The dimensions of the test variables, in order.
+     */
+    private int[] _dims;
+    /**
      * Contains the root of the tree.
      */
     private List<Vary> baseCase;
+    /**
+     * The cell leaves. This is a list of lists of integers, where each list of integers is a list of indices into the
+     * rows of the data set. The list at index i is the list of indices into the rows of the data set that are in cell
+     * i of the table; the coordinates of this cell are calculated using the getCellIndex method.
+     */
+    private List<List<Integer>> cellLeaves;
 
     /**
      * Constructs an AD Leaf Tree for the given dataset.
      *
      * @param dataSet A discrete dataset.
      */
-    public AdLeafTree(DataSet dataSet) {
+    public AdTree(DataSet dataSet) {
         this.dataSet = dataSet;
 
         this.discreteData = new int[dataSet.getNumColumns()][];
@@ -68,21 +77,88 @@ public class AdLeafTree {
         this.nodesHash = new HashMap<>();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            Node v = dataSet.getVariable(j);
-            this.nodesHash.put(v, j);
+            this.nodesHash.put(dataSet.getVariable(j), j);
         }
     }
 
     /**
-     * Finds the set of indices into the leaves of the tree for the given variables. Counts are the sizes of the index
-     * sets.
+     * Return the number of cells in the table.
      *
-     * @param A A list of discrete variables.
-     * @return The list of index sets of the first variable varied by the second variable, and so on, to the last
-     * variable.
+     * @return the number of cells in the table.
      */
-    public List<List<Integer>> getCellLeaves(List<DiscreteVariable> A) {
-        A.sort(Comparator.comparingInt(this.nodesHash::get));
+    public int getNumCells() {
+        int numCells = 1;
+
+        for (int dim : this._dims) {
+            numCells *= dim;
+        }
+
+        return numCells;
+    }
+
+    /**
+     * Returns the index of the cell in the table for the given coordinates.
+     *
+     * @param coords the coordinates of the cell.
+     * @return the index of the cell in the table.
+     */
+    public int getCellIndex(int...coords) {
+        if (_dims.length != coords.length) {
+            throw new IllegalArgumentException("Wrong number of coordinates.");
+        }
+
+        for (int i = 0; i < coords.length; i++) {
+            if (coords[i] < 0 || coords[i] >= _dims[i]) {
+                throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
+            }
+        }
+
+        int cellIndex = 0;
+
+        for (int i = 0; i < coords.length; i++) {
+            cellIndex *= _dims[i];
+            cellIndex += coords[i];
+        }
+
+        return cellIndex;
+    }
+
+    /**
+     * Returns the cell in the table for the given coordinates. This is a list of indices into the rows of the data
+     * set.
+     *
+     * @param coords the coordinates of the cell.
+     * @return the cell in the table.
+     */
+    public List<Integer> getCell(int[] coords) {
+        int cellIndex = getCellIndex(coords);
+        return getCell(cellIndex);
+    }
+
+    /**
+     * Returns the cell in the table for the given index. This is a list of indices into the rows of the data set.
+     *
+     * @param cellIndex the index of the cell.
+     * @return the cell in the table.
+     * @see #getCellIndex(int[])
+     */
+    public List<Integer> getCell(int cellIndex) {
+        return cellLeaves.get(cellIndex);
+    }
+
+    /**
+     * Calculates the cells for each combination of the given variables. The sizes of these cells are counts for
+     * a multidimensional contingency table for the given variables.
+     *
+     * @param A A list of discrete variables. variable.
+     */
+    public void calculateTable(List<DiscreteVariable> A) {
+//        A.sort(Comparator.comparingInt(this.nodesHash::get));
+
+        this._dims = new int[A.size()];
+        for (int i = 0; i < A.size(); i++) {
+            this._dims[i] = A.get(i).getNumCategories();
+        }
 
         if (this.baseCase == null) {
             Vary vary = new Vary();
@@ -102,43 +178,7 @@ public class AdLeafTree {
             rows.addAll(vary.getRows());
         }
 
-        return rows;
-    }
-
-    /**
-     * Finds the set of indices into the leaves of the tree for the given variables. Counts are the sizes of the index
-     * sets.
-     *
-     * @param A A list of discrete variables.
-     * @param B A discrete variable.
-     * @return The list of index sets of the first variable varied by the second variable, and so on, to the last
-     * variable.
-     */
-    public List<List<List<Integer>>> getCellLeaves(List<DiscreteVariable> A, DiscreteVariable B) {
-        A.sort(Comparator.comparingInt(AdLeafTree.this.nodesHash::get));
-
-        if (this.baseCase == null) {
-            Vary vary = new Vary();
-            this.baseCase = new ArrayList<>();
-            this.baseCase.add(vary);
-        }
-
-        List<Vary> varies = this.baseCase;
-
-        for (DiscreteVariable v : A) {
-            varies = getVaries(varies, this.nodesHash.get(v));
-        }
-
-        List<List<List<Integer>>> rows = new ArrayList<>();
-
-        for (Vary vary : varies) {
-            for (int i = 0; i < vary.getNumCategories(); i++) {
-                Vary subvary = vary.getSubvary(this.nodesHash.get(B), i);
-                rows.add(subvary.getRows());
-            }
-        }
-
-        return rows;
+        this.cellLeaves = rows;
     }
 
     private List<Vary> getVaries(List<Vary> varies, int v) {
@@ -153,21 +193,6 @@ public class AdLeafTree {
         return _varies;
     }
 
-    public static int getCellIndex(int[] dims, int[] coords) {
-        if (dims.length != coords.length) {
-            throw new IllegalArgumentException();
-        }
-
-        int cellIndex = 0;
-
-        for (int i = 0; i < coords.length; i++) {
-            cellIndex *= dims[i];
-            cellIndex += coords[i];
-        }
-
-        return cellIndex;
-    }
-
     private class Vary {
         int col;
         int numCategories;
@@ -177,7 +202,7 @@ public class AdLeafTree {
         // Base case.
         public Vary() {
             List<Integer> _rows = new ArrayList<>();
-            for (int i = 0; i < AdLeafTree.this.dataSet.getNumRows(); i++) {
+            for (int i = 0; i < AdTree.this.dataSet.getNumRows(); i++) {
                 _rows.add(i);
             }
 
@@ -216,7 +241,7 @@ public class AdLeafTree {
             Vary vary = this.subVaries.get(cat).get(w);
 
             if (vary == null) {
-                vary = new Vary(w, AdLeafTree.this.dims[w], this.rows.get(cat), AdLeafTree.this.discreteData);
+                vary = new Vary(w, AdTree.this.dims[w], this.rows.get(cat), AdTree.this.discreteData);
                 this.subVaries.get(cat).put(w, vary);
             }
 
