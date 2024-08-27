@@ -34,6 +34,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
+
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
  * variable not in S, by applying a conditional G Square test. A description of such a test is given in Fienberg, "The
@@ -124,10 +126,11 @@ public final class IndTestGSquare implements IndependenceTest, SampleSizeSettabl
     }
 
     private void setup(DataSet dataSet, double alpha, List<Integer> rows) {
-        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE, rows);
+        this.rows = rows == null ? getAllRows(dataSet.getNumRows()) : rows;
+        this.sampleSize = this.rows.size();
+        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE, this.rows);
         this.gSquareTest.setMinCountPerCell(minCountPerCell);
-        this.sampleSize = rows == null ? dataSet.getNumRows() : rows.size();
-    }
+       }
 
     /**
      * Performs an independence test on a subset of variables.
@@ -421,6 +424,15 @@ public final class IndTestGSquare implements IndependenceTest, SampleSizeSettabl
         }
 
         this.sampleSize = sampleSize;
+    }
+
+    /**
+     * Sets the cell table type.
+     *
+     * @param cellTableType The cell table type.
+     */
+    public void setCellTableType(ChiSquareTest.CellTableType cellTableType) {
+        this.gSquareTest.setCellTableType(cellTableType);
     }
 }
 

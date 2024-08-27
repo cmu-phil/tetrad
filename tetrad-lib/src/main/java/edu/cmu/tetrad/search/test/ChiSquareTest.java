@@ -27,6 +27,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.List;
 
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
@@ -77,7 +78,7 @@ public class ChiSquareTest {
     /**
      * The type of cell table to use.
      */
-    private CellTableTYPE cellTableType = CellTableTYPE.AD_TREE;
+    private CellTableType cellTableType = CellTableType.AD_TREE;
 
     /**
      * Constructs a test using the given data set and significance level.
@@ -126,9 +127,9 @@ public class ChiSquareTest {
 
         CellTable cellTable;
 
-        if (cellTableType == CellTableTYPE.COUNT_SAMPLE) {
+        if (cellTableType == CellTableType.COUNT_SAMPLE) {
             cellTable = new CellTableCountSample(getDataSet(), testIndices, rows);
-        } else if (cellTableType == CellTableTYPE.AD_TREE) {
+        } else if (cellTableType == CellTableType.AD_TREE) {
             cellTable = new CellTableAdTree(getDataSet(), testIndices, rows);
         } else {
             throw new IllegalArgumentException("Unknown cell table type: " + cellTableType);
@@ -268,7 +269,15 @@ public class ChiSquareTest {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
-        CellTable cellTable = new CellTableAdTree(getDataSet(), testIndices, rows);
+        CellTable cellTable;
+
+        if (cellTableType == CellTableType.COUNT_SAMPLE) {
+            cellTable = new CellTableCountSample(getDataSet(), testIndices, rows);
+        } else if (cellTableType == CellTableType.AD_TREE) {
+            cellTable = new CellTableAdTree(getDataSet(), testIndices, rows);
+        } else {
+            throw new IllegalArgumentException("Unknown cell table type: " + cellTableType);
+        }
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to
@@ -388,7 +397,7 @@ public class ChiSquareTest {
      *
      * @param cellTableType The type of cell table to use.
      */
-    public void setCellTableType(CellTableTYPE cellTableType) {
+    public void setCellTableType(CellTableType cellTableType) {
         this.cellTableType = cellTableType;
     }
 
@@ -408,7 +417,7 @@ public class ChiSquareTest {
         G_SQUARE
     }
 
-    public enum CellTableTYPE {
+    public enum CellTableType {
         COUNT_SAMPLE,
         AD_TREE
     }

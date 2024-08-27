@@ -6824,25 +6824,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="minCountPerCell">minCountPerCell</h3>
+            id="cellTableType">cellTableType</h3>
         <ul
-                class="minCountPerCell_list">
-            <li>Short Description: <span id="minCountPerCell_short_desc">
-            		Minimum expected count per cell for nonempty Chi-Square tables.
+                class="cellTableType_list">
+            <li>Short Description: <span id="cellTableType_short_desc">
+            		The type of cell table to use (optimization), 1 = AD Tree, 2 = Count Sample
             </span></li>
-            <li>Long Description: <span id="minCountPerCell_long_desc">
-                   The minimum count per cell in any nonempty conditional Chi-Square table
-                   This is real-valued and must be > 0.0; the default is 1.0. No matter
-                    what this value is, if a row is empty, it will be removed from the
-                    table.</span></li>
+            <li>Long Description: <span id="cellTableType_long_desc">
+                   This is just whether table counts are to be calculated using one method
+                   or another, for optimization. The AD tree option uses AD trees to do
+                   the calculation; the Count Samples option simply counts the samples
+                   for each independence question and builds a table that way.
+                    </span></li>
             <li>Default Value: <span
-                    id="minCountPerCell_default_value">1.0</span></li>
+                    id="cellTableType_default_value">1</span></li>
             <li>Lower
-                Bound: <span id="minCountPerCell_lower_bound">0.0</span></li>
+                Bound: <span id="cellTableType_lower_bound">1</span></li>
             <li>Upper Bound: <span
-                    id="minCountPerCell_upper_bound">Infinity</span></li>
+                    id="cellTableType_upper_bound">2</span></li>
             <li>Value Type:
-                <span id="minCountPerCell_value_type">Double</span></li>
+                <span id="cellTableType_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="kernelType">kernelType</h3>

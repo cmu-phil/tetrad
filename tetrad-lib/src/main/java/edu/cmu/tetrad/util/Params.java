@@ -911,6 +911,10 @@ public final class Params {
      * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
+    /**
+     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
+     */
+    public static String CELL_TABLE_TYPE = "cellTableType";
 
 
     private Params() {
