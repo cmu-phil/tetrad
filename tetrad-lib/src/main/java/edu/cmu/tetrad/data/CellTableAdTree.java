@@ -160,7 +160,7 @@ public final class CellTableAdTree implements CellTable {
             }
         }
 
-        return adLeafTree.getCell(coords).size();
+        return adLeafTree.getCount(coords);
     }
 
     /**

@@ -21,11 +21,6 @@ import java.util.Map;
  *
  * @author josephramsey
  * @version $Id: $Id
- * @see #getNumCells()
- * @see #getCellIndex(int[])
- * @see #getCell(int)
- * @see #getCell(int[])
- * @see #calculateTable(List)
  */
 public class AdTree {
     /**
@@ -59,7 +54,7 @@ public class AdTree {
      * rows of the data set. The list at index i is the list of indices into the rows of the data set that are in cell i
      * of the table; the coordinates of this cell are calculated using the getCellIndex method.
      */
-    private List<List<Integer>> cellLeaves;
+    private Map<Integer, List<Integer>> cellLeaves;
 
     /**
      * Constructs an AD Leaf Tree for the given dataset.
@@ -137,11 +132,12 @@ public class AdTree {
     }
 
     /**
-     * Returns the cell in the table for the given coordinates. This is a list of indices into the rows of the data
-     * set.
+     * Returns the cell in the table for the given coordinates, or null if no cell has been recorded there (which case
+     * we may assume  the cell is empty). This is a list of indices into the rows of the data set.
      *
      * @param coords the coordinates of the cell.
-     * @return the cell in the table.
+     * @return the cell in the table, or null if no cell has been recorded there.
+     * @see #getCell(int)
      */
     public List<Integer> getCell(int[] coords) {
         int cellIndex = getCellIndex(coords);
@@ -149,14 +145,37 @@ public class AdTree {
     }
 
     /**
-     * Returns the cell in the table for the given index. This is a list of indices into the rows of the data set.
+     * Returns the cell in the table for the given index, or null if no cell has been recorded there (which case we may
+     * assume  the cell is empty). This is a list of indices into the rows of the data set.
      *
      * @param cellIndex the index of the cell.
-     * @return the cell in the table.
+     * @return the cell in the table, or null if no cell has been recorded there.
      * @see #getCellIndex(int[])
      */
     public List<Integer> getCell(int cellIndex) {
         return cellLeaves.get(cellIndex);
+    }
+
+    /**
+     * Returns the count of the cell in the table for the given coordinates.
+     *
+     * @param coords the coordinates of the cell.
+     * @return the cell in the table.
+     */
+    public int getCount(int[] coords) {
+        int cellIndex = getCellIndex(coords);
+        return getCount(cellIndex);
+    }
+
+    /**
+     * Returns the count of the cell in the table for the given index.
+     *
+     * @param cellIndex the index of the cell.
+     * @return the cell in the table.
+     */
+    public int getCount(int cellIndex) {
+        List<Integer> cell = cellLeaves.get(cellIndex);
+        return cell == null ? 0 : cell.size();
     }
 
     /**
@@ -173,7 +192,7 @@ public class AdTree {
         }
 
         // All subdivisions of the data are subdivisions of the entire dataset. If this hasn't been calculated
-        // yet, we calculate it now. This is just a list of all rows in the data.
+        // yet, we calculate it now. This is just a list of all cells in the data.
         if (this.allData == null) {
             Subdivision subdivision = new Subdivision();
             this.allData = new ArrayList<>();
@@ -187,19 +206,29 @@ public class AdTree {
             subdivisions = getSubdivision(subdivisions, this.nodesHash.get(v));
         }
 
-        // Now we have the subdivisions of the data by the variables in A. We need to get the rows of each of these
+        // Now we have the subdivisions of the data by the variables in A. We need to get the cells of each of these
         // subdivisions and put them in a list of cells. We are assuming here that the subdivisions are the leaves of
         // the tree and that the rows of the subdivisions are the cells of the table. We are assuming the order
         // of these subdivision is the same as the order of the variables in A, so the final subdivision the ith
         // cell in the list is at coordinate <i1, i2, ..., in> where i1 is the index of the subdivision in the first
         // variable, i2 is the index of the subdivision in the second variable, and so on, up to the nth variable.
-        List<List<Integer>> rows = new ArrayList<>();
+        Map<Integer, List<Integer>> cells = new HashedMap<>();
+
+        int index = 0;
 
         for (Subdivision subdivision : subdivisions) {
-            rows.addAll(subdivision.getCells());
+            for (int i = 0; i < subdivision.getNumCategories(); i++) {
+                List<Integer> cell = subdivision.getCells().get(i);
+
+                if (cell != null && !cell.isEmpty()) {
+                    cells.put(index, cell);
+                }
+
+                index++;
+            }
         }
 
-        this.cellLeaves = rows;
+        this.cellLeaves = cells;
     }
 
     private List<Subdivision> getSubdivision(List<Subdivision> varies, int v) {
@@ -228,7 +257,7 @@ public class AdTree {
         /**
          * The subdivided cells, in order.
          */
-        private final List<List<Integer>> cells = new ArrayList<>();
+        private final Map<Integer, List<Integer>> cells = new HashedMap<>();
         /**
          * The subdivisions of the data by the categories of the variable we're subdividing by.
          */
@@ -246,7 +275,7 @@ public class AdTree {
 
             this.subdivisions.add(new HashedMap<>());
             this.numCategories = 1;
-            this.cells.add(_rows);
+            this.cells.put(0, _rows);
             this.subdivisions = new ArrayList<>();
             this.subdivisions.add(new HashedMap<>());
         }
@@ -263,19 +292,27 @@ public class AdTree {
         public Subdivision(int var, int numCategories, List<Integer> previousCellRows, int[][] discreteData) {
             this.numCategories = numCategories;
 
-            for (int i = 0; i < numCategories; i++) {
-                this.cells.add(new ArrayList<>());
+            for (int index = 0; index < numCategories; index++) {
+                this.cells.put(index, new ArrayList<>());
             }
 
-            for (int i = 0; i < numCategories; i++) {
+            for (int index = 0; index < numCategories; index++) {
                 this.subdivisions.add(new HashedMap<>());
             }
 
-            for (int i : previousCellRows) {
-                int index = discreteData[var][i];
+            if (previousCellRows != null) {
+                for (int i : previousCellRows) {
+                    int index = discreteData[var][i];
 
-                if (index != -99) {
-                    this.cells.get(index).add(i);
+                    if (index != -99) {
+                        this.cells.get(index).add(i);
+                    }
+                }
+
+                for (int i = 0; i < numCategories; i++) {
+                    if (this.cells.get(i).isEmpty()) {
+                        this.cells.remove(i);
+                    }
                 }
             }
         }
@@ -283,9 +320,9 @@ public class AdTree {
         /**
          * Returns the cells of the Subdivision.
          *
-         * @return a List of Lists of Integers representing the cells of the Subdivision.
+         * @return a map from indices to cells.
          */
-        public List<List<Integer>> getCells() {
+        public Map<Integer, List<Integer>> getCells() {
             return this.cells;
         }
 
