@@ -153,14 +153,16 @@ public class AdLeafTree {
         return _varies;
     }
 
-    public int getCellIndex(int[] coords) {
+    public static int getCellIndex(int[] dims, int[] coords) {
+        if (dims.length != coords.length) {
+            throw new IllegalArgumentException();
+        }
+
         int cellIndex = 0;
 
         for (int i = 0; i < coords.length; i++) {
-            if (i < dims.length) {
-                cellIndex *= this.dims[i];
-                cellIndex += coords[i];
-            }
+            cellIndex *= dims[i];
+            cellIndex += coords[i];
         }
 
         return cellIndex;

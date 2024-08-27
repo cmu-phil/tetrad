@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.data;
 
-import edu.cmu.tetrad.search.utils.AdLeafTree;
 import edu.cmu.tetrad.util.MultiDimIntTable;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,29 +37,44 @@ import java.util.List;
  *
  * @author josephramsey
  * @version $Id: $Id
- * @see MultiDimIntTable
+ * @see edu.cmu.tetrad.util.MultiDimIntTable
  */
-public final class CellTableAdTree implements CellTable {
+public final class CellTableCountSample implements CellTable {
 
+    private final int[] _dims;
     /**
-     * The list of cell leaves from AD leaf tree.
+     * The table of cell counts.
      */
-    private final List<List<Integer>> cellLeaves;
+    private MultiDimIntTable table;
     /**
-     * The dimensions of the test variables.
+     * The value used in the data for missing values.
      */
-    private final int[] dims;
+    private int missingValue = -99;
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
      *
-     * @param dataSet     the data set to be used in the table.
-     * @param testIndices the indices of the variables to be used in the table.
+     * @param dims        The dimensions of the table.
+     * @param dataSet     The data set to be used in the table.
+     * @param testIndices The indices of the variables to be used in the table.
      */
-    public CellTableAdTree(DataSet dataSet, int[] testIndices) {
-        List<DiscreteVariable> vars = getDiscreteVariables(dataSet, testIndices);
-        cellLeaves = new AdLeafTree(dataSet).getCellLeaves(vars);
-        this.dims = selectDims(vars);
+    public CellTableCountSample(int[] dims, DataSet dataSet, int[] testIndices) {
+        this(dataSet, testIndices);
+    }
+
+    /**
+     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
+     *
+     * @param dims         the dimensions of the variables in the data.
+     * @param missingValue the value used in the data for missing values.
+     * @param dataSet      the data set to be used in the table.
+     * @param testIndices  the indices of the variables to be used in the table.
+     */
+    public CellTableCountSample(DataSet dataSet, int[] testIndices) {
+        _dims = selectDims(getDiscreteVariables(dataSet, testIndices));
+        this.table = new MultiDimIntTable(_dims);
+        setMissingValue(missingValue);
+        countTable(dataSet, testIndices);
     }
 
     private static @NotNull List<DiscreteVariable> getDiscreteVariables(DataSet dataSet, int[] testIndices) {
@@ -84,13 +98,50 @@ public final class CellTableAdTree implements CellTable {
     }
 
     /**
+     * Adds the given data set to the table, using the given indices to specify the variables to be used in the table.
+     *
+     * @param dataSet the data set to be used in the table.
+     * @param indices the indices of the variables to be used in the table.
+     */
+    private void countTable(DataSet dataSet, int[] indices) {
+        int[] dims = new int[indices.length];
+
+        for (int i = 0; i < indices.length; i++) {
+            DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(indices[i]);
+            dims[i] = variable.getNumCategories();
+        }
+
+        this.table = new MultiDimIntTable(dims);
+
+        int[] coords = new int[indices.length];
+
+        POINTS:
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < indices.length; j++) {
+                try {
+                    coords[j] = dataSet.getInt(i, indices[j]);
+                } catch (Exception e) {
+                    coords[j] = dataSet.getInt(i, j);
+                }
+
+                if (coords[j] == getMissingValue()) {
+                    continue POINTS;
+                }
+            }
+
+            this.table.increment(coords, 1);
+        }
+    }
+
+    /**
      * Returns the dimensions of the given variable.
      *
      * @param varIndex the index of the variable in question.
      * @return the dimension of the variable.
      */
+    @Override
     public int getDimension(int varIndex) {
-        return dims[varIndex];
+        return _dims[varIndex];
     }
 
     /**
@@ -102,6 +153,7 @@ public final class CellTableAdTree implements CellTable {
      * @param coords an array of the sort described above.
      * @return the marginal sum specified.
      */
+    @Override
     public int calcMargin(int[] coords) {
         int[] coordCopy = internalCoordCopy(coords);
 
@@ -110,7 +162,7 @@ public final class CellTableAdTree implements CellTable {
 
         while (++i < coordCopy.length) {
             if (coordCopy[i] == -1) {
-                for (int j = 0; j < dims[i]; j++) {
+                for (int j = 0; j < this.table.getDimension(i); j++) {
                     coordCopy[i] = j;
                     sum += calcMargin(coordCopy);
                 }
@@ -120,7 +172,7 @@ public final class CellTableAdTree implements CellTable {
             }
         }
 
-        return getValue(coords);
+        return this.table.getValue(coordCopy);
     }
 
     /**
@@ -133,6 +185,7 @@ public final class CellTableAdTree implements CellTable {
      * @param marginVars an <code>int[]</code> value
      * @return an <code>int</code> value
      */
+    @Override
     public int calcMargin(int[] coords, int[] marginVars) {
         int[] coordCopy = internalCoordCopy(coords);
 
@@ -149,14 +202,9 @@ public final class CellTableAdTree implements CellTable {
      * @param coords the coordinates of the cell.
      * @return the value of the cell.
      */
+    @Override
     public int getValue(int[] coords) {
-        for (int i = 0; i < coords.length; i++) {
-            if (coords[i] < 0) {
-                throw new IllegalArgumentException("Coordinate " + i + " is negative.");
-            }
-        }
-
-        return cellLeaves.get(AdLeafTree.getCellIndex(dims, coords)).size();
+        return this.table.getValue(coords);
     }
 
     /**
@@ -164,6 +212,24 @@ public final class CellTableAdTree implements CellTable {
      */
     private int[] internalCoordCopy(int[] coords) {
         return Arrays.copyOf(coords, coords.length);
+    }
+
+    /**
+     * Returns the missing value marker.
+     *
+     * @return the missing value marker.
+     */
+    private int getMissingValue() {
+        return this.missingValue;
+    }
+
+    /**
+     * Sets the missing value marker.
+     *
+     * @param missingValue the missing value marker.
+     */
+    private void setMissingValue(int missingValue) {
+        this.missingValue = missingValue;
     }
 }
 
