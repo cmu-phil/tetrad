@@ -27,7 +27,6 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.List;
 
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**

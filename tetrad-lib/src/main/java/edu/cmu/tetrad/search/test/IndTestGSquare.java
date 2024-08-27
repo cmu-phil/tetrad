@@ -130,7 +130,7 @@ public final class IndTestGSquare implements IndependenceTest, SampleSizeSettabl
         this.sampleSize = this.rows.size();
         this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE, this.rows);
         this.gSquareTest.setMinCountPerCell(minCountPerCell);
-       }
+    }
 
     /**
      * Performs an independence test on a subset of variables.
@@ -205,8 +205,7 @@ public final class IndTestGSquare implements IndependenceTest, SampleSizeSettabl
         // the following is lame code--need a better test
         for (int i = 0; i < testIndices.length; i++) {
             if (testIndices[i] < 0) {
-                throw new IllegalArgumentException(
-                        "Variable " + i + " was not used in the constructor.");
+                throw new IllegalArgumentException("Variable " + i + " was not used in the constructor.");
             }
         }
 
@@ -215,13 +214,11 @@ public final class IndTestGSquare implements IndependenceTest, SampleSizeSettabl
 
         if (this.verbose) {
             if (result.isIndep()) {
-                TetradLogger.getInstance().log(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
             }
         }
 
-        IndependenceResult result1 = new IndependenceResult(new IndependenceFact(x, y, _z),
-                result.isIndep(), result.getPValue(), alpha - result.getPValue());
+        IndependenceResult result1 = new IndependenceResult(new IndependenceFact(x, y, _z), result.isIndep(), result.getPValue(), alpha - result.getPValue());
         facts.put(new IndependenceFact(x, y, _z), result1);
         return result1;
     }
@@ -297,20 +294,17 @@ public final class IndTestGSquare implements IndependenceTest, SampleSizeSettabl
         // the following is lame code--need a better test
         for (int i = 0; i < testIndices.length; i++) {
             if (testIndices[i] < 0) {
-                throw new IllegalArgumentException(
-                        "Variable " + i + "was not used in the constructor.");
+                throw new IllegalArgumentException("Variable " + i + "was not used in the constructor.");
             }
         }
 
         //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
-        boolean determined =
-                this.gSquareTest.isDetermined(testIndices, this.determinationP);
+        boolean determined = this.gSquareTest.isDetermined(testIndices, this.determinationP);
 
         if (determined) {
             StringBuilder sb = new StringBuilder();
-            sb.append("Determination found: ").append(x).append(
-                    " is determined by {");
+            sb.append("Determination found: ").append(x).append(" is determined by {");
 
             for (int i = 0; i < z.size(); i++) {
                 sb.append(z.get(i));
