@@ -170,31 +170,29 @@ public class MvpLikelihood {
 
         int p = continuous_parents.size();
 
-        Map<Integer, List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
+        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
 
         int[] continuousCols = new int[p];
         for (int j = 0; j < p; j++) continuousCols[j] = this.nodesHash.get(continuous_parents.get(j));
 
-        for (int i : cells.keySet()) {
-//        for (List<Integer> cell : cells) {
-            List<Integer> cell = cells.get(i);
+        for (List<Integer> cell : cells) {
             int r = cell.size();
 
             if (r > 1) {
                 double[] mean = new double[p];
                 double[] var = new double[p];
-                for (int k = 0; k < p; k++) {
+                for (int i = 0; i < p; i++) {
                     for (Integer integer : cell) {
-                        mean[k] += this.continuousData[continuousCols[k]][integer];
-                        var[k] += FastMath.pow(this.continuousData[continuousCols[k]][integer], 2);
+                        mean[i] += this.continuousData[continuousCols[i]][integer];
+                        var[i] += FastMath.pow(this.continuousData[continuousCols[i]][integer], 2);
                     }
-                    mean[k] /= r;
-                    var[k] /= r;
-                    var[k] -= FastMath.pow(mean[k], 2);
-                    var[k] = FastMath.sqrt(var[k]);
+                    mean[i] /= r;
+                    var[i] /= r;
+                    var[i] -= FastMath.pow(mean[i], 2);
+                    var[i] = FastMath.sqrt(var[i]);
 
-                    if (Double.isNaN(var[k])) {
-                        System.out.println(var[k]);
+                    if (Double.isNaN(var[i])) {
+                        System.out.println(var[i]);
                     }
                 }
 
@@ -203,26 +201,26 @@ public class MvpLikelihood {
                     degree = (int) FastMath.floor(FastMath.log(r));
                 }
                 Matrix subset = new Matrix(r, p * degree + 1);
-                for (int k = 0; k < r; k++) {
-                    subset.set(k, p * degree, 1);
+                for (int i = 0; i < r; i++) {
+                    subset.set(i, p * degree, 1);
                     for (int j = 0; j < p; j++) {
                         for (int d = 0; d < degree; d++) {
-                            subset.set(k, p * d + j, FastMath.pow((this.continuousData[continuousCols[j]][cell.get(k)] - mean[j]) / var[j], d + 1));
+                            subset.set(i, p * d + j, FastMath.pow((this.continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
                         }
                     }
                 }
 
                 if (c instanceof ContinuousVariable) {
                     Vector target = new Vector(r);
-                    for (int k = 0; k < r; k++) {
-                        target.set(k, this.continuousData[child_index][cell.get(k)]);
+                    for (int i = 0; i < r; i++) {
+                        target.set(i, this.continuousData[child_index][cell.get(i)]);
                     }
                     lik += multipleRegression(target, subset);
                 } else {
                     assert c instanceof DiscreteVariable;
                     Matrix target = new Matrix(r, ((DiscreteVariable) c).getNumCategories());
-                    for (int k = 0; k < r; k++) {
-                        target.set(k, this.discreteData[child_index][cell.get(k)], 1);
+                    for (int i = 0; i < r; i++) {
+                        target.set(i, this.discreteData[child_index][cell.get(i)], 1);
                     }
                     lik += approxMultinomialRegression(target, subset);
                 }
@@ -262,11 +260,9 @@ public class MvpLikelihood {
             }
         }
 
-        Map<Integer, List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
+        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
 
-        for (int i : cells.keySet()) {
-//        for (List<Integer> cell : cells) {
-            List<Integer> cell = cells.get(i);
+        for (List<Integer> cell : cells) {
             int r = cell.size();
             if (r > 0) {
 

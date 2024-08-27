@@ -39,7 +39,6 @@ public class AdLeafTree {
      */
     private List<Vary> baseCase;
 
-
     /**
      * Constructs an AD Leaf Tree for the given dataset.
      *
@@ -74,23 +73,6 @@ public class AdLeafTree {
         }
     }
 
-    public static int getCellIndex(int[] dims, int[] coords) {
-        if (dims.length != coords.length) {
-            throw new IllegalArgumentException();
-        }
-
-        int cellIndex = 0;
-
-        for (int i = 0; i < coords.length; i++) {
-            cellIndex *= dims[i];
-            cellIndex += coords[i];
-        }
-
-        return cellIndex;
-    }
-
-    private int index = 0;
-
     /**
      * Finds the set of indices into the leaves of the tree for the given variables. Counts are the sizes of the index
      * sets.
@@ -99,9 +81,7 @@ public class AdLeafTree {
      * @return The list of index sets of the first variable varied by the second variable, and so on, to the last
      * variable.
      */
-    public Map<Integer, List<Integer>> getCellLeaves(List<DiscreteVariable> A) {
-        index = 0;
-
+    public List<List<Integer>> getCellLeaves(List<DiscreteVariable> A) {
         A.sort(Comparator.comparingInt(this.nodesHash::get));
 
         if (this.baseCase == null) {
@@ -116,10 +96,10 @@ public class AdLeafTree {
             varies = getVaries(varies, this.nodesHash.get(v));
         }
 
-        Map<Integer, List<Integer>> rows = new HashMap<>();
+        List<List<Integer>> rows = new ArrayList<>();
 
         for (Vary vary : varies) {
-            rows.putAll(vary.getRows());
+            rows.addAll(vary.getRows());
         }
 
         return rows;
@@ -134,7 +114,7 @@ public class AdLeafTree {
      * @return The list of index sets of the first variable varied by the second variable, and so on, to the last
      * variable.
      */
-    public List<Map<Integer, List<Integer>>> getCellLeaves(List<DiscreteVariable> A, DiscreteVariable B) {
+    public List<List<List<Integer>>> getCellLeaves(List<DiscreteVariable> A, DiscreteVariable B) {
         A.sort(Comparator.comparingInt(AdLeafTree.this.nodesHash::get));
 
         if (this.baseCase == null) {
@@ -149,7 +129,7 @@ public class AdLeafTree {
             varies = getVaries(varies, this.nodesHash.get(v));
         }
 
-        List<Map<Integer, List<Integer>>> rows = new ArrayList<>();
+        List<List<List<Integer>>> rows = new ArrayList<>();
 
         for (Vary vary : varies) {
             for (int i = 0; i < vary.getNumCategories(); i++) {
@@ -173,10 +153,25 @@ public class AdLeafTree {
         return _varies;
     }
 
+    public static int getCellIndex(int[] dims, int[] coords) {
+        if (dims.length != coords.length) {
+            throw new IllegalArgumentException();
+        }
+
+        int cellIndex = 0;
+
+        for (int i = 0; i < coords.length; i++) {
+            cellIndex *= dims[i];
+            cellIndex += coords[i];
+        }
+
+        return cellIndex;
+    }
+
     private class Vary {
         int col;
         int numCategories;
-        Map<Integer, List<Integer>> rows = new HashMap<>();
+        List<List<Integer>> rows = new ArrayList<>();
         List<Map<Integer, Vary>> subVaries = new ArrayList<>();
 
         // Base case.
@@ -188,7 +183,7 @@ public class AdLeafTree {
 
             this.subVaries.add(new HashMap<>());
             this.numCategories = 1;
-            this.rows.put(index++, _rows);
+            this.rows.add(_rows);
             this.subVaries = new ArrayList<>();
             this.subVaries.add(new HashMap<>());
         }
@@ -198,7 +193,7 @@ public class AdLeafTree {
             this.numCategories = numCategories;
 
             for (int i = 0; i < numCategories; i++) {
-                this.rows.put(index++, new ArrayList<>());
+                this.rows.add(new ArrayList<>());
             }
 
             for (int i = 0; i < numCategories; i++) {
@@ -213,7 +208,7 @@ public class AdLeafTree {
             }
         }
 
-        public Map<Integer, List<Integer>> getRows() {
+        public List<List<Integer>> getRows() {
             return this.rows;
         }
 

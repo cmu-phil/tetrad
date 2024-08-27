@@ -28,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -49,7 +48,7 @@ public final class CellTableAdTree implements CellTable {
      *
      * @see edu.cmu.tetrad.search.utils.AdLeafTree
      */
-    private final Map<Integer, List<Integer>> cellLeaves;
+    private final List<List<Integer>> cellLeaves;
     /**
      * The dimensions of the test variables.
      */

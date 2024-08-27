@@ -114,8 +114,8 @@ public class ChiSquareTest {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
-//        ICellTable cellTable = new CellTableAdTree(getDataSet(), testIndices);
-        CellTable cellTable = new CellTableCountSample(getDataSet(), testIndices);
+        CellTable cellTable = new CellTableAdTree(getDataSet(), testIndices);
+//        CellTable cellTable = new CellTableCountSample(getDataSet(), testIndices);
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to
