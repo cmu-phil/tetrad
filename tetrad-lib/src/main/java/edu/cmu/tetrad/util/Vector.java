@@ -45,18 +45,28 @@ public class Vector implements TetradSerializable {
     private final RealVector data;
 
     /**
-     * <p>Constructor for Vector.</p>
+     * Constructs a new Vector object from an array of double values.
      *
-     * @param data an array of {@link double} objects
+     * @param data the array of double values used to initialize the Vector object
      */
     public Vector(double[] data) {
         this.data = new ArrayRealVector(data);
     }
 
     /**
-     * <p>Constructor for Vector.</p>
+     * Creates a new Vector object from a RealVector object.
      *
-     * @param size a int
+     * @param v the RealVector object to be used for creating the Vector object
+     */
+    public Vector(RealVector v) {
+        this.data = v;
+    }
+
+    /**
+     * Constructs a new Vector object with the specified size.
+     *
+     * @param size the size of the vector
+     * @throws IllegalArgumentException if the size is negative
      */
     public Vector(int size) {
         this.data = new ArrayRealVector(size);

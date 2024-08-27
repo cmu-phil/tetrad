@@ -99,9 +99,14 @@ public final class PcCommon implements IGraphSearch {
     private boolean verbose = false;
 
     /**
-     * The max path length for the max p collider orientation heuristic.
+     * The maximum length of a discriminating path.
+     * <p>
+     * This variable represents the maximum length of a discriminating path. It is used in the context of some algorithm
+     * or data structure where discriminating paths are relevant. The value of this variable is -1 by default and can be
+     * updated as necessary.
+     * </p>
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
 
     /**
      * The type of FAS to be used.
@@ -217,10 +222,10 @@ public final class PcCommon implements IGraphSearch {
     /**
      * <p>Setter for the field <code>maxPathLength</code>.</p>
      *
-     * @param maxPathLength The max path length for the max p collider orientation heuristic.
+     * @param maxDiscriminatingPathLength The max path length for the max p collider orientation heuristic.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        this.maxPathLength = maxPathLength;
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -336,7 +341,7 @@ public final class PcCommon implements IGraphSearch {
 
             MaxP orientCollidersMaxP = new MaxP(this.independenceTest);
             orientCollidersMaxP.setConflictRule(this.conflictRule);
-            orientCollidersMaxP.setMaxPathLength(this.maxPathLength);
+            orientCollidersMaxP.setMaxDiscriminatingPathLength(this.maxDiscriminatingPathLength);
             orientCollidersMaxP.setDepth(this.depth);
             orientCollidersMaxP.setKnowledge(this.knowledge);
             orientCollidersMaxP.orient(this.graph);
@@ -531,7 +536,7 @@ public final class PcCommon implements IGraphSearch {
             }
 
             log("""
-
+                    
                     Ambiguous triples (i.e. list of triples for which\s
                     there is ambiguous data about whether they are colliderDiscovery or not):""", verbose);
 

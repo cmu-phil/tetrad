@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.ChiSquareTest;
 import edu.cmu.tetrad.search.test.IndTestGSquare;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -45,6 +46,13 @@ public class GSquare implements IndependenceWrapper {
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestGSquare test = new IndTestGSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble("test"));
         test.setMinCountPerCell(parameters.getDouble(Params.MIN_COUNT_PER_CELL));
+
+        if (parameters.getInt(Params.CELL_TABLE_TYPE) == 1) {
+            test.setCellTableType(ChiSquareTest.CellTableType.AD_TREE);
+        } else {
+            test.setCellTableType(ChiSquareTest.CellTableType.COUNT_SAMPLE);
+        }
+
         return test;
     }
 
@@ -72,6 +80,7 @@ public class GSquare implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
         params.add(Params.MIN_COUNT_PER_CELL);
+        params.add(Params.CELL_TABLE_TYPE);
         return params;
     }
 }

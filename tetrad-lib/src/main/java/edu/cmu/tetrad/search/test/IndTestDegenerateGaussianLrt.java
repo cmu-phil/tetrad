@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -30,7 +29,7 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import java.text.DecimalFormat;
@@ -190,7 +189,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         }
 
         // The continuous variables of the post-embedding dataset.
-        RealMatrix D = new BlockRealMatrix(B_);
+        RealMatrix D = MatrixUtils.createRealMatrix(B_);
         this.ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
         this._ddata = this.ddata.getDoubleData().toArray();
     }
@@ -304,17 +303,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      */
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
-    }
-
-    /**
-     * Determines whether a given list of nodes z determines a node y.
-     *
-     * @param z The list of nodes z.
-     * @param y The node y.
-     * @return True if the list of nodes z determines y, false otherwise.
-     */
-    public boolean determines(List<Node> z, Node y) {
-        return false; //stub
     }
 
     /**

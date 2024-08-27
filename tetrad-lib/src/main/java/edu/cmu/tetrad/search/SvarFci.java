@@ -83,7 +83,7 @@ public final class SvarFci implements IGraphSearch {
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The depth for the fast adjacency search.
      */
@@ -169,7 +169,7 @@ public final class SvarFci implements IGraphSearch {
 
         this.graph.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sp = new SepsetsPossibleMsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
+        SepsetProducer sp = new SepsetsPossibleMsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxDiscriminatingPathLength);
         sp.setVerbose(this.verbose);
 
         FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(this.independenceTest));
@@ -207,7 +207,7 @@ public final class SvarFci implements IGraphSearch {
         TetradLogger.getInstance().log("Step CI C: " + (time6 - time5) / 1000. + "s");
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(this.maxDiscriminatingPathLength);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph, unshieldedTriples);
         fciOrient.finalOrientation(this.graph);
@@ -290,21 +290,21 @@ public final class SvarFci implements IGraphSearch {
      *
      * @return This length.
      */
-    public int getMaxPathLength() {
-        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
+    public int getMaxDiscriminatingPathLength() {
+        return this.maxDiscriminatingPathLength == Integer.MAX_VALUE ? -1 : this.maxDiscriminatingPathLength;
     }
 
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**

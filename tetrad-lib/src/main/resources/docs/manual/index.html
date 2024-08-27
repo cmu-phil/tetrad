@@ -2907,12 +2907,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>All the parameters from FCI are below.</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
-
     <h3>The FCI-Max Algorithm</h3>
 
     <h4>Description</h4>
@@ -2940,12 +2934,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>All the parameters from FCI are below.</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
-
     <h3>The CFCI Algorithm</h3>
 
     <h4>Description</h4>
@@ -2971,13 +2959,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         Spirtes et al., 2000. Also, see the CPC algorithm.</p>
 
     <h4>Parameters</h4>
-
-    <p>All the parameters from FCI are available for RFCI.
-        Additionally:</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
 
     <h3>The RFCI Algorithm</h3>
 
@@ -3006,19 +2987,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Output Format</h4>
 
     <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
-
-    <h4>Parameters</h4>
-
-    <p>All the parameters from FCI are available for RFCI.
-        Additionally:</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
-
-    <h3>The PAG-Sampling RFCI Algorithm</h3>
-
-    <h4>Description</h4>
 
     <div id="pag-sampling-rfci">
 
@@ -5244,50 +5212,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="doDiscriminatingPathColliderRule">doDiscriminatingPathColliderRule</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="doDiscriminatingPathColliderRule_short_desc">Yes if the discriminating path collider rule
-                should be done, No if not</span></li>
-            <li>Long Description: <span
-                    id="doDiscriminatingPathColliderRule_long_desc">Yes if the discriminating path collider
-                    FCI rule (part of the final orientation, requiring an additional test)
-                    should be done, No if not </span>
-            </li>
-            <li>Default Value: <span
-                    id="doDiscriminatingPathColliderRule_default_value">true</span></li>
-            <li>Lower
-                Bound: <span id="doDiscriminatingPathColliderRule_lower_bound"></span></li>
-            <li>Upper Bound: <span
-                    id="doDiscriminatingPathColliderRule_upper_bound"></span></li>
-            <li>Value Type:
-                <span id="doDiscriminatingPathColliderRule_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="doDiscriminatingPathTailRule">doDiscriminatingPathTailRule</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="doDiscriminatingPathTailRule_short_desc">Yes if the discriminating path tail rule
-                should be done, No if not</span></li>
-            <li>Long Description: <span
-                    id="doDiscriminatingPathTailRule_long_desc">Yes if the discriminating path tail
-                    FCI rule (part of the final orientation, requiring an additional test)
-                    should be done, No if not </span>
-            </li>
-            <li>Default Value: <span
-                    id="doDiscriminatingPathTailRule_default_value">true</span></li>
-            <li>Lower
-                Bound: <span id="doDiscriminatingPathTailRule_lower_bound"></span></li>
-            <li>Upper Bound: <span
-                    id="doDiscriminatingPathTailRule_upper_bound"></span></li>
-            <li>Value Type:
-                <span id="doDiscriminatingPathTailRule_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
             id="concurrentFAS">concurrentFAS</h3>
         <ul
                 class="parameter_description_list">
@@ -6468,81 +6392,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="ablationLeaveOutTuckingStep">ablationLeaveOutTuckingStep</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="ablationLeaveOutTuckingStep_short_desc">
-                    ABLATION: Yes, if the tucking step should be left out for the LV-Lite procedure
-        </span></li>
-            <li>Long Description: <span
-                    id="ablationLeaveOutTuckingStep_long_desc">
-                    Allowing tucks can sometimes lead to lower arrowhead accuracies,
-                    even they are theoretically correct.
-        </span></li>
-            <li>Default Value: <span
-                    id="ablationLeaveOutTuckingStep_default_value">false</span></li>
-            <li>Lower Bound: <span
-                    id="ablationLeaveOutTuckingStep_lower_bound"></span></li>
-            <li>Upper
-                Bound: <span
-                        id="ablationLeaveOutTuckingStep_upper_bound"></span></li>
-            <li>Value
-                Type: <span
-                        id="ablationLeaveOutTuckingStep_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="ablationLeaveOutScoringStep">ablationLeaveOutScoringStep</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="ablationLeaveOutScoringStep_short_desc">
-                    ABLATION: Yes, if the scoring step should be left out for the LV-Lite procedure
-        </span></li>
-            <li>Long Description: <span
-                    id="ablationLeaveOutScoringStep_long_desc">
-                    If true, this leaves out the scoring steps and being the algorithm with
-                    a complete nondirected graph (which is Markov).
-        </span></li>
-            <li>Default Value: <span
-                    id="ablationLeaveOutScoringStep_default_value">false</span></li>
-            <li>Lower Bound: <span
-                    id="ablationLeaveOutScoringStep_lower_bound"></span></li>
-            <li>Upper
-                Bound: <span
-                        id="ablationLeaveOutScoringStep_upper_bound"></span></li>
-            <li>Value
-                Type: <span
-                        id="ablationLeaveOutScoringStep_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="ablationLeaveOutTestingSteps">ablationLeaveOutTestingSteps</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="ablationLeaveOutTestingSteps_short_desc">
-                    ABLATION: Yes, if the testing steps should be left out for the LV-Lite procedure
-        </span></li>
-            <li>Long Description: <span
-                    id="ablationLeaveOutTestingSteps_long_desc">
-                    If true, this leaves out all testing steps from the algorithm and bases
-                    the result on just the scoring steps.
-        </span></li>
-            <li>Default Value: <span
-                    id="ablationLeaveOutTestingSteps_default_value">false</span></li>
-            <li>Lower Bound: <span
-                    id="ablationLeaveOutTestingSteps_lower_bound"></span></li>
-            <li>Upper
-                Bound: <span
-                        id="ablationLeaveOutTestingSteps_upper_bound"></span></li>
-            <li>Value
-                Type: <span
-                        id="ablationLeaveOutTestingSteps_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
             id="sepsetFinderMethod">sepsetFinderMethod</h3>
         <ul
                 class="parameter_description_list">
@@ -6739,31 +6588,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 Type: <span
                         id="removeAlmostCycles_value_type">Boolean</span></li>
         </ul>
-
-        <h3 class="parameter_description"
-            id="ablationLeaveOutFinalOrientation">ablationLeaveOutFinalOrientation</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="ablationLeaveOutFinalOrientation_short_desc">
-                    ABLATION: Leave out final orientation step.
-        </span></li>
-            <li>Long Description: <span
-                    id="ablationLeaveOutFinalOrientation_long_desc">
-                    If true, the final orientation step of the algorithm is not performed.
-        </span></li>
-            <li>Default Value: <span
-                    id="ablationLeaveOutFinalOrientation_default_value">false</span></li>
-            <li>Lower Bound: <span
-                    id="ablationLeaveOutFinalOrientation_lower_bound"></span></li>
-            <li>Upper
-                Bound: <span
-                        id="ablationLeaveOutFinalOrientation_upper_bound"></span></li>
-            <li>Value
-                Type: <span
-                        id="ablationLeaveOutFinalOrientation_value_type">Boolean</span></li>
-        </ul>
-
 
         <h3 class="parameter_description"
             id="intervalBetweenRecordings">intervalBetweenRecordings</h3>
@@ -7000,25 +6824,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="minCountPerCell">minCountPerCell</h3>
+            id="cellTableType">cellTableType</h3>
         <ul
-                class="minCountPerCell_list">
-            <li>Short Description: <span id="minCountPerCell_short_desc">
-            		Minimum expected count per cell for nonempty Chi-Square tables.
+                class="cellTableType_list">
+            <li>Short Description: <span id="cellTableType_short_desc">
+            		The type of cell table to use (optimization), 1 = AD Tree, 2 = Count Sample
             </span></li>
-            <li>Long Description: <span id="minCountPerCell_long_desc">
-                   The minimum count per cell in any nonempty conditional Chi-Square table
-                   This is real-valued and must be > 0.0; the default is 1.0. No matter
-                    what this value is, if a row is empty, it will be removed from the
-                    table.</span></li>
+            <li>Long Description: <span id="cellTableType_long_desc">
+                   This is just whether table counts are to be calculated using one method
+                   or another, for optimization. The AD tree option uses AD trees to do
+                   the calculation; the Count Samples option simply counts the samples
+                   for each independence question and builds a table that way.
+                    </span></li>
             <li>Default Value: <span
-                    id="minCountPerCell_default_value">1.0</span></li>
+                    id="cellTableType_default_value">1</span></li>
             <li>Lower
-                Bound: <span id="minCountPerCell_lower_bound">0.0</span></li>
+                Bound: <span id="cellTableType_lower_bound">1</span></li>
             <li>Upper Bound: <span
-                    id="minCountPerCell_upper_bound">Infinity</span></li>
+                    id="cellTableType_upper_bound">2</span></li>
             <li>Value Type:
-                <span id="minCountPerCell_value_type">Double</span></li>
+                <span id="cellTableType_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="kernelType">kernelType</h3>
@@ -7279,26 +7104,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="maxPathLength">maxPathLength</h3>
+            id="maxDiscriminatingPathLength">maxDiscriminatingPathLength</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="maxPathLength_short_desc">The maximum length for any
+                    id="maxDiscriminatingPathLength_short_desc">The maximum length for any
         discriminating path. -1 if unlimited (min = -1)</span></li>
             <li>Long
-                Description: <span id="maxPathLength_long_desc"> See Spirtes,
+                Description: <span id="maxDiscriminatingPathLength_long_desc"> See Spirtes,
         Glymour, and Scheines (2000) for the definition of discrimination
         path. Finding discriminating paths can be expensive. This sets the
         maximum length of such paths that the algorithm tries to find.</span>
             </li>
             <li>Default Value: <span
-                    id="maxPathLength_default_value">-1</span></li>
+                    id="maxDiscriminatingPathLength_default_value">-1</span></li>
             <li>Lower Bound:
-                <span id="maxPathLength_lower_bound">-1</span></li>
+                <span id="maxDiscriminatingPathLength_lower_bound">-1</span></li>
             <li>Upper Bound:
-                <span id="maxPathLength_upper_bound">2147483647</span></li>
+                <span id="maxDiscriminatingPathLength_upper_bound">2147483647</span></li>
             <li>Value
-                Type: <span id="maxPathLength_value_type">Integer</span></li>
+                Type: <span id="maxDiscriminatingPathLength_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="maxit">maxit</h3>
@@ -9656,27 +9481,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Lower Bound: <span id="verbose_lower_bound"></span></li>
             <li>Upper Bound: <span id="verbose_upper_bound"></span></li>
             <li>Value Type: <span id="verbose_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="meekVerbose">meekVerbose</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="meekVerbose_short_desc">Yes if verbose output for Meek rule
-        applications should be printed or logged</span></li>
-            <li>Long
-                Description: <span id="meekVerbose_long_desc"> If this parameter is
-        set to ‘Yes’, Meek rule applications will be printed out to the
-        log.</span></li>
-            <li>Default Value: <span
-                    id="meekVerbose_default_value">false</span></li>
-            <li>Lower Bound:
-                <span id="meekVerbose_lower_bound"></span></li>
-            <li>Upper Bound:
-                <span id="meekVerbose_upper_bound"></span></li>
-            <li>Value Type: <span
-                    id="meekVerbose_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="useScore">useScore</h3>

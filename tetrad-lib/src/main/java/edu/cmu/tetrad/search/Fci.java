@@ -23,7 +23,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -95,7 +98,7 @@ public final class Fci implements IGraphSearch {
     /**
      * The maximum length of any discriminating path.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The depth of search.
      */
@@ -117,21 +120,9 @@ public final class Fci implements IGraphSearch {
      */
     private boolean stable = true;
     /**
-     * Whether the discriminating path rule should be used.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * Whether the discriminating path rule should be used.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
      * Whether the output should be guaranteed to be a PAG.
      */
     private boolean guaranteePag;
-    /**
-     * Whether the final orientation step should be left out.
-     */
-    private boolean ablationLeaveOutFinalOrientation = false;
 
     /**
      * Constructor.
@@ -220,11 +211,9 @@ public final class Fci implements IGraphSearch {
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
-                        doDiscriminatingPathColliderRule, verbose));
+        FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
         if (this.possibleMsepSearchDone) {
@@ -261,11 +250,13 @@ public final class Fci implements IGraphSearch {
         fciOrient.ruleR0(graph, unshieldedTriples);
 
         if (verbose) {
-            TetradLogger.getInstance().log("Doing Final Orientation.");
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(graph);
+        fciOrient.finalOrientation(graph);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished final FCI orientation.");
         }
 
         if (guaranteePag) {
@@ -354,14 +345,14 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -403,39 +394,12 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    /**
      * Sets whether to guarantee the output is a PAG by repairing a faulty PAG.
      *
      * @param guaranteePag True, if so.
      */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets whether to leave out the final orientation in the search.
-     *
-     * @param ablationLeaveOutFinalOrientation True to leave out the final orientation, false otherwise.
-     */
-    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

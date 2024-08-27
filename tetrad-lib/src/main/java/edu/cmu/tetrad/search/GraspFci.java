@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
@@ -79,7 +80,7 @@ public final class GraspFci implements IGraphSearch {
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The number of starts for GRaSP.
      */
@@ -96,14 +97,6 @@ public final class GraspFci implements IGraphSearch {
      * Whether to use score.
      */
     private boolean useScore = true;
-    /**
-     * Whether to use the discriminating path tail rule.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * Whether to use the discriminating path collider rule.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * Whether to use the ordered version of GRaSP.
      */
@@ -135,10 +128,6 @@ public final class GraspFci implements IGraphSearch {
      * The flag for whether to guarantee the output is a legal PAG.
      */
     private boolean guaranteePag = false;
-    /**
-     * Whether to leave out the final orientation step.
-     */
-    private boolean ablationLeaveOutFinalOrientation;
     /**
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
@@ -172,8 +161,11 @@ public final class GraspFci implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting Grasp-FCI algorithm.");
-            TetradLogger.getInstance().log("Independence test = " + this.independenceTest + ".");
+            TetradLogger.getInstance().log("===Starting GRaSP-FCI===");
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting GRaSP.");
         }
 
         // Run GRaSP to get a CPDAG (like GFCI with FGES)...
@@ -196,7 +188,15 @@ public final class GraspFci implements IGraphSearch {
         alg.bestOrder(variables);
         Graph pag = alg.getGraph(true);
 
-        Graph referenceCpdag = new EdgeListGraph(pag);
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished GRaSP.");
+        }
+
+        if (score instanceof MagSemBicScore) {
+            ((MagSemBicScore) score).setMag(pag);
+        }
+
+        Graph cpdag = new EdgeListGraph(pag);
 
         SepsetProducer sepsets;
 
@@ -212,26 +212,35 @@ public final class GraspFci implements IGraphSearch {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        Set<Triple> unshieldedTriples = new HashSet<>();
+        Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStep(pag, referenceCpdag, nodes, sepsets, depth, verbose);
-        GraphUtils.gfciR0(pag, referenceCpdag, sepsets, knowledge, verbose, unshieldedTriples);
+        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
 
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
-                        doDiscriminatingPathColliderRule, verbose));
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
+        }
+
+        FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge,
+                        verbose));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setVerbose(verbose);
 
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(pag);
+        fciOrient.finalOrientation(pag);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished implied orientation.");
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, false, verbose);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose);
         }
 
-        GraphUtils.replaceNodes(pag, this.independenceTest.getVariables());
+        if (verbose) {
+            TetradLogger.getInstance().log("GRaSP-FCI finished.");
+        }
+
         return pag;
     }
 
@@ -257,14 +266,14 @@ public final class GraspFci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -310,24 +319,6 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
-    }
-
-    /**
-     * Sets whether to use the discriminating path tail rule for GRaSP.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether to use the discriminating path collider rule for GRaSP.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     /**
@@ -384,15 +375,6 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets whether to leave out the final orientation in the search algorithm.
-     *
-     * @param ablationLeaveOutFinalOrientation true if the final orientation should be left out, false otherwise.
-     */
-    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
     /**

@@ -74,7 +74,7 @@ public class PerformanceTestsDan {
             final double alphaPc = 0.01;
             final int penaltyDiscount = 1;
             final int depth = 3;
-            final int maxPathLength = -1;
+            final int maxDiscriminatingPathLength = -1;
 
             final int numVars = 15;
             final double edgesPerNode = 1.0;
@@ -128,7 +128,7 @@ public class PerformanceTestsDan {
             out1.println("Alpha for FFCI = " + alphaGFci);
             out1.println("Penalty discount = " + penaltyDiscount);
             out1.println("Depth = " + depth);
-            out1.println("Maximum reachable path length for msep search and discriminating undirectedPaths = " + maxPathLength);
+            out1.println("Maximum reachable path length for msep search and discriminating undirectedPaths = " + maxDiscriminatingPathLength);
 
             List<Node> vars = new ArrayList<>();
             for (int i = 0; i < numVars; i++) vars.add(new GraphNode("X" + (i + 1)));
@@ -196,7 +196,7 @@ public class PerformanceTestsDan {
             GFci gFci = new GFci(independenceTestGFci, scoreGfci);
             gFci.setVerbose(false);
             gFci.setMaxDegree(depth);
-            gFci.setMaxPathLength(maxPathLength);
+            gFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
 //            gFci.setPossibleMsepSearchDone(true);
             gFci.setCompleteRuleSetUsed(true);
 

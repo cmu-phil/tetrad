@@ -89,14 +89,6 @@ public final class Params {
      */
     public static final String SEPSET_FINDER_METHOD = "sepsetFinderMethod";
     /**
-     * Constant <code>DO_DISCRIMINATING_PATH_COLLIDER_RULE="doDiscriminatingPathColliderRule"</code>
-     */
-    public static final String DO_DISCRIMINATING_PATH_COLLIDER_RULE = "doDiscriminatingPathColliderRule";
-    /**
-     * Constant <code>DO_DISCRIMINATING_PATH_TAIL_RULE="doDiscriminatingPathTailRule"</code>
-     */
-    public static final String DO_DISCRIMINATING_PATH_TAIL_RULE = "doDiscriminatingPathTailRule";
-    /**
      * Constant <code>CONCURRENT_FAS="concurrentFAS"</code>
      */
     public static final String CONCURRENT_FAS = "concurrentFAS";
@@ -363,7 +355,7 @@ public final class Params {
     /**
      * Constant <code>MAX_PATH_LENGTH="maxPathLength"</code>
      */
-    public static final String MAX_PATH_LENGTH = "maxPathLength";
+    public static final String MAX_DISCRIMINATING_PATH_LENGTH = "maxDiscriminatingPathLength";
     /**
      * Constant <code>MAXIT="maxit"</code>
      */
@@ -657,10 +649,6 @@ public final class Params {
      */
     public static final String VERBOSE = "verbose";
     /**
-     * Constant <code>MEEK_VERBOSE="meekVerbose"</code>
-     */
-    public static final String MEEK_VERBOSE = "meekVerbose";
-    /**
      * Constant <code>SEM_BIC_RULE="semBicRule"</code>
      */
     public static final String SEM_BIC_RULE = "semBicRule";
@@ -888,18 +876,6 @@ public final class Params {
      */
     public static final String MIN_SAMPLE_SIZE_PER_CELL = "minSampleSizePerCell";
     /**
-     * Constant <code>ABLATION_LEAVE_OUT_TUCKING_STEP="ablationLeaveOutTuckingStep"</code>
-     */
-    public static final String ABLATION_LEAVE_OUT_TUCKING_STEP = "ablationLeaveOutTuckingStep";
-    /**
-     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep""</code>
-     */
-    public static final String ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep";
-    /**
-     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps""</code>
-     */
-    public static final String ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps";
-    /**
      * Constant <code>MAX_SCORE_DROP="maxScoreDrop"</code>
      */
     public static final String MAX_SCORE_DROP = "maxScoreDrop";
@@ -935,6 +911,10 @@ public final class Params {
      * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
+    /**
+     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
+     */
+    public static String CELL_TABLE_TYPE = "cellTableType";
 
 
     private Params() {

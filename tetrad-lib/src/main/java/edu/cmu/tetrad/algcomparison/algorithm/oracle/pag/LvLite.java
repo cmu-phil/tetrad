@@ -11,7 +11,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -128,10 +127,8 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {
-            if (parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TUCKING_STEP)) {
-                if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
-                    throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
-                }
+            if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
+                throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
             }
         }
 
@@ -146,18 +143,12 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
         // LV-Lite
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxDdpPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-
-        // Ablation
-        search.setAblationLeaveOutScoringStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_SCORING_STEP));
-        search.setAblationLeaveOutTestingStep(parameters.getBoolean(Params.ABLATION_LEAVE_OUT_TESTING_STEPS));
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
@@ -222,26 +213,19 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
 
         // LV-Lite
         params.add(Params.LV_LITE_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);
-        params.add(Params.ABLATION_LEAVE_OUT_SCORING_STEP);
-        params.add(Params.ABLATION_LEAVE_OUT_TESTING_STEPS);
-        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.GUARANTEE_PAG);
 
         // General
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
         params.add(Params.TEST_TIMEOUT);
-
-        // Ablation
-//        params.add(Params.ABLATATION_LEAVE_OUT_FINAL_ORIENTATION);
 
         return params;
     }

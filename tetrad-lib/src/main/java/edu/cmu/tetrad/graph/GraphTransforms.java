@@ -31,7 +31,7 @@ public class GraphTransforms {
      * null.
      */
     public static Graph dagFromCpdag(Graph graph) {
-        return dagFromCpdag(graph, null, true, true);
+        return dagFromCpdag(graph, null, true, false);
     }
 
     /**
@@ -70,7 +70,7 @@ public class GraphTransforms {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph dagFromCpdag(Graph graph, Knowledge knowledge) {
-        return dagFromCpdag(graph, knowledge, true, true);
+        return dagFromCpdag(graph, knowledge, true, false);
     }
 
     /**
@@ -192,8 +192,7 @@ public class GraphTransforms {
                     pag.setEndpoint(edge.getFirst(), edge.getSecond(), Endpoint.ARROW);
                 }
 
-                FciOrient fciOrient = new FciOrient(
-                        R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
+                FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
                 fciOrient.finalOrientation(pag);
             }
         }

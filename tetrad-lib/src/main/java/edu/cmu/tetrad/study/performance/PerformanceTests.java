@@ -758,7 +758,7 @@ public class PerformanceTests {
         Fci fci = new Fci(independenceTest);
         fci.setVerbose(false);
         fci.setDepth(depth);
-        fci.setMaxPathLength(2);
+        fci.setMaxDiscriminatingPathLength(2);
 //        fci.setTrueDag(truePag);
         Graph outGraph = fci.search();
 
@@ -787,7 +787,7 @@ public class PerformanceTests {
         final double alpha = .1;
         final int depth = -1;
         final double penaltyDiscount = 4.0;
-        final int maxPathLength = -1;
+        final int maxDiscriminatingPathLength = -1;
         final double coefLow = .3;
         final double coefHigh = 1.5;
         final int numLatentConfounders = 50;
@@ -853,7 +853,7 @@ public class PerformanceTests {
         GFci fci = new GFci(independenceTest, score);
 
         fci.setVerbose(false);
-        fci.setMaxPathLength(maxPathLength);
+        fci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fci.setMaxDegree(depth);
         fci.setFaithfulnessAssumed(true);
         fci.setCompleteRuleSetUsed(true);
@@ -1500,7 +1500,7 @@ public class PerformanceTests {
 //            FCI fci = new FCI(independenceTest);
             GFci fci = new GFci(independenceTest, score);
             fci.setMaxDegree(depth);
-            fci.setMaxPathLength(maxPathLength);
+            fci.setMaxDiscriminatingPathLength(maxPathLength);
 //            fci.setPossibleNsepSearchDone(possibleMsepDone);
             fci.setCompleteRuleSetUsed(completeRuleSetUsed);
             fci.setFaithfulnessAssumed(faithfulnessAssumed);

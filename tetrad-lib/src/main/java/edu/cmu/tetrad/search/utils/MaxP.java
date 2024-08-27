@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -46,7 +45,7 @@ public final class MaxP {
     private int depth = -1;
     private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
     private boolean verbose = false;
 
@@ -91,14 +90,14 @@ public final class MaxP {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -171,7 +170,7 @@ public final class MaxP {
             }
 
             if (this.useHeuristic) {
-                if (existsShortPath(a, c, this.maxPathLength, graph)) {
+                if (existsShortPath(a, c, this.maxDiscriminatingPathLength, graph)) {
                     testColliderMaxP(graph, scores, a, b, c);
                 } else {
                     testColliderHeuristic(graph, scores, a, b, c);

@@ -69,10 +69,10 @@ public final class DagToPag2 {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private int maxPathLength = -1;
-    private boolean doDiscriminatingPathTailRule = true;
-    private boolean doDiscriminatingPathColliderRule = true;
-
+    /**
+     * The maximum length of any discriminating path, or -1 if unlimited.
+     */
+    private int maxDiscriminatingPathLength = -1;
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -85,12 +85,13 @@ public final class DagToPag2 {
 
 
     /**
-     * <p>existsInducingPathInto.</p>
+     * Checks if there exists an inducing path from node x to node y in the given graph.
      *
-     * @param x     a {@link Node} object
-     * @param y     a {@link Node} object
-     * @param graph a {@link Graph} object
-     * @return a boolean
+     * @param x the starting node
+     * @param y the ending node
+     * @param graph the graph to search in
+     * @return true if an inducing path exists, false otherwise
+     * @throws IllegalArgumentException if either x or y is not of NodeType.MEASURED
      */
     public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
@@ -135,6 +136,7 @@ public final class DagToPag2 {
 
         FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(dag, knowledge));
         fciOrient.finalOrientation(graph);
+        fciOrient.setMaxDiscriminatingPathLength(this.maxDiscriminatingPathLength);
 
         if (this.verbose) {
             System.out.println("Finishing final orientation");
@@ -197,32 +199,14 @@ public final class DagToPag2 {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     private Graph calcAdjacencyGraph() {

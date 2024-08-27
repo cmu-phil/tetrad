@@ -96,7 +96,7 @@ public class AlgorithmParameterPanel extends JPanel {
             Set<String> params = new LinkedHashSet<>();
             // RFCI
             params.add(Params.DEPTH);
-            params.add(Params.MAX_PATH_LENGTH);
+            params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
             params.add(Params.COMPLETE_RULE_SET_USED);
             params.add(Params.VERBOSE);
             this.mainPanel.add(createSubPanel(title, params, parameters));

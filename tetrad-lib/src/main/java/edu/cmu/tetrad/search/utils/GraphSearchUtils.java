@@ -684,7 +684,7 @@ public final class GraphSearchUtils {
      * @param d             a set of vertices (intuitively to be used in tests of legality, for example, the set of
      *                      ancestors of c).
      * @param graph         the graph with respect to which reachability is
-     * @param maxPathLength a int
+     * @param maxPathLength the maximum length of a path to be considered.
      * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
      * criteria in the given legal pairs object.
      * <p>
@@ -694,8 +694,8 @@ public final class GraphSearchUtils {
      * <p>
      * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, and Pearl (1990).
      */
-    public static Set<Node> getReachableNodes(List<Node> initialNodes,
-                                              LegalPairs legalPairs, List<Node> c, List<Node> d, Graph graph, int maxPathLength) {
+    public static Set<Node> getReachableNodes(List<Node> initialNodes, LegalPairs legalPairs, List<Node> c,
+                                              List<Node> d, Graph graph, int maxPathLength) {
         HashSet<Node> reachable = new HashSet<>();
         MultiKeyMap<Node, Boolean> visited = new MultiKeyMap<>();
         List<ReachabilityEdge> nextEdges = new LinkedList<>();
@@ -1227,6 +1227,18 @@ public final class GraphSearchUtils {
         } finally {
             executor.shutdown();
         }
+    }
+
+    /**
+     * Returns a list of rows 1...sampleSize.
+     *
+     * @param sampleSize the number of rows in the dataset.
+     * @return a list of rows 1...sampleSize.
+     */
+    public static List<Integer> getAllRows(int sampleSize) {
+        List<Integer> rows = new ArrayList<>();
+        for (int i = 0; i < sampleSize; i++) rows.add(i);
+        return rows;
     }
 
     /**

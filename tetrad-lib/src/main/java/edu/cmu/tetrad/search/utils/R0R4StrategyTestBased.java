@@ -52,14 +52,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     private boolean verbose = false;
     /**
-     * Determines whether the Discriminating Path Collider Rule should be applied or not.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
-     * Determines whether the Discriminating Path Tail Rule is enabled or not.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
      * The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy. This variable is
      * initially set to null. Use the setAllowedColliders method to set the allowed colliders. Use the
      * getInitialAllowedColliders method to retrieve the initial set of allowed colliders.
@@ -103,15 +95,11 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      *
      * @param test                             the IndependenceTest object used by the strategy
      * @param knowledge                        the Knowledge object used by the strategy
-     * @param doDiscriminatingPathTailRule     boolean indicating whether to use the Discriminating Path Tail Rule
-     * @param doDiscriminatingPathColliderRule boolean indicating whether to use the Discriminating Path Collider Rule
      * @param verbose                          boolean indicating whether to provide verbose output
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
     public static R0R4Strategy specialConfiguration(IndependenceTest test, Knowledge knowledge,
-                                                    boolean doDiscriminatingPathTailRule,
-                                                    boolean doDiscriminatingPathColliderRule,
                                                     boolean verbose) {
         if (test == null) {
             throw new IllegalArgumentException("Test is null.");
@@ -126,8 +114,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         } else {
             R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
             strategy.setKnowledge(knowledge);
-            strategy.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-            strategy.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
             strategy.setVerbose(verbose);
             return strategy;
         }
@@ -154,8 +140,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public static R0R4Strategy defaultConfiguration(IndependenceTest test, Knowledge knowledge) {
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
-        strategy.setDoDiscriminatingPathTailRule(true);
-        strategy.setDoDiscriminatingPathColliderRule(true);
         strategy.setVerbose(false);
         strategy.setKnowledge(knowledge);
         return strategy;
@@ -227,55 +211,49 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         boolean collider = !sepset.contains(b);
 
         if (collider) {
-            if (doDiscriminatingPathColliderRule) {
-                if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (initialAllowedColliders != null) {
-                    initialAllowedColliders.add(new Triple(a, b, c));
-                } else {
-                    if (allowedColliders != null && !allowedColliders.contains(new Triple(a, b, c))) {
-                        return Pair.of(discriminatingPath, false);
-                    }
-                }
-
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                return Pair.of(discriminatingPath, true);
+            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                return Pair.of(discriminatingPath, false);
             }
+
+            if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (initialAllowedColliders != null) {
+                initialAllowedColliders.add(new Triple(a, b, c));
+            } else {
+                if (allowedColliders != null && !allowedColliders.contains(new Triple(a, b, c))) {
+                    return Pair.of(discriminatingPath, false);
+                }
+            }
+
+            graph.setEndpoint(a, b, Endpoint.ARROW);
+            graph.setEndpoint(c, b, Endpoint.ARROW);
+
+            if (this.verbose) {
+                TetradLogger.getInstance().log(
+                        "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+            }
+
+            return Pair.of(discriminatingPath, true);
         } else {
-            if (doDiscriminatingPathTailRule) {
-                if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                graph.setEndpoint(c, b, Endpoint.TAIL);
-
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                return Pair.of(discriminatingPath, true);
+            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                return Pair.of(discriminatingPath, false);
             }
-        }
 
-        return Pair.of(discriminatingPath, false);
+            graph.setEndpoint(c, b, Endpoint.TAIL);
+
+            if (this.verbose) {
+                TetradLogger.getInstance().log(
+                        "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+            }
+
+            return Pair.of(discriminatingPath, true);
+        }
     }
 
     /**
@@ -333,43 +311,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public IndependenceTest getTest() {
         return test;
-    }
-
-    /**
-     * Determines whether the Discriminating Path Collider Rule is enabled or not.
-     *
-     * @return true if the Discriminating Path Collider Rule is enabled, false otherwise
-     */
-    public boolean isDoDiscriminatingPathColliderRule() {
-        return doDiscriminatingPathColliderRule;
-    }
-
-    /**
-     * Sets the value indicating whether to use the Discriminating Path Collider Rule.
-     *
-     * @param doDiscriminatingPathColliderRule boolean value indicating whether to use the Discriminating Path Collider
-     *                                         Rule
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    /**
-     * Returns the value indicating whether the Discriminating Path Tail Rule is enabled or not.
-     *
-     * @return true if the Discriminating Path Tail Rule is enabled, false otherwise
-     */
-    public boolean isDoDiscriminatingPathTailRule() {
-        return doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets the value indicating whether to use the Discriminating Path Tail Rule.
-     *
-     * @param doDiscriminatingPathTailRule boolean value indicating whether to use the Discriminating Path Tail Rule
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
     /**

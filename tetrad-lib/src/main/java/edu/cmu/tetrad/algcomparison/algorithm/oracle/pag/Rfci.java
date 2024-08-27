@@ -95,7 +95,7 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataModel, parameters));
         search.setKnowledge(this.knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return search.search();
@@ -138,7 +138,7 @@ public class Rfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.DEPTH);
-        parameters.add(Params.MAX_PATH_LENGTH);
+        parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);

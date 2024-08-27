@@ -32,8 +32,8 @@ import edu.cmu.tetrad.search.utils.NRooks;
 import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -200,7 +200,7 @@ public class IcaLingD {
      * @return True iff the model is stable.
      */
     public static boolean isStable(Matrix bHat) {
-        EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(bHat.toArray()));
+        EigenDecomposition eigen = new EigenDecomposition(MatrixUtils.createRealMatrix(bHat.toArray()));
         double[] realEigenvalues = eigen.getRealEigenvalues();
         double[] imagEigenvalues = eigen.getImagEigenvalues();
 

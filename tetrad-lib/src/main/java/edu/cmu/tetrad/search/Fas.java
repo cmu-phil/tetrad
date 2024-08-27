@@ -208,7 +208,7 @@ public class Fas implements IFas {
             }
         }
 
-        for (int d = 0; d <= _depth; d++) {
+        for (int d = 1; d <= _depth; d++) {
             if (verbose) {
                 System.out.println("Depth: " + d);
             }

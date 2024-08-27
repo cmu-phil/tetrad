@@ -21,15 +21,12 @@
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.CellTable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.CombinationIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.List;
 
-import static java.lang.Math.sqrt;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
@@ -59,7 +56,8 @@ public class ChiSquareTest {
      */
     private final TestType testType;
     /**
-     * The rows to use in the data.
+     * The user may specify that the test should only take into account a subset of the rows in the data set. This is
+     * useful for subsampling, for instance.
      */
     private final List<Integer> rows;
     /**
@@ -76,6 +74,10 @@ public class ChiSquareTest {
      * This should not be changed during execution, as it is not immutable.
      */
     private double minCountPerCell = 1.0;
+    /**
+     * The type of cell table to use.
+     */
+    private CellTableType cellTableType = CellTableType.AD_TREE;
 
     /**
      * Constructs a test using the given data set and significance level.
@@ -83,7 +85,6 @@ public class ChiSquareTest {
      * @param dataSet  A data set consisting entirely of discrete variables.
      * @param alpha    The significance level, usually 0.05.
      * @param testType The type of test to perform, either CHI_SQUARE or G_SQUARE.
-     * @param rows     The rows to use in the data.
      */
     public ChiSquareTest(DataSet dataSet, double alpha, TestType testType, List<Integer> rows) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -91,7 +92,6 @@ public class ChiSquareTest {
         }
 
         this.dims = new int[dataSet.getNumColumns()];
-        this.rows = rows;
 
         for (int i = 0; i < getDims().length; i++) {
             DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(i);
@@ -101,6 +101,7 @@ public class ChiSquareTest {
         this.testType = testType;
         this.dataSet = dataSet;
         this.alpha = alpha;
+        this.rows = rows;
     }
 
     /**
@@ -111,8 +112,8 @@ public class ChiSquareTest {
      * p-value is returned based on the Chi-Square distribution with the total degrees of freedom and total chi-square.
      *
      * @param testIndices These indices, in order.
-     * @param sampleSize The sample size to use for the test; expected and observed counts will be multiplied by the
-     *                   ratio of this to the sample size of the data.
+     * @param sampleSize  The sample size to use for the test; expected and observed counts will be multiplied by the
+     *                    ratio of this to the sample size of the data.
      * @return a Chi square test result.
      * @see Result
      */
@@ -123,9 +124,15 @@ public class ChiSquareTest {
         // multiplied by the ratio of the sample size to the data set size. jdramsey 2024-08-22
         double fraction = sampleSize / getDataSet().getNumRows();
 
-        // Reset the cell table for the columns referred to in
-        // 'testIndices.' Do cell coefs for those columns.
-        CellTable cellTable = new CellTable(dims, DiscreteVariable.MISSING_VALUE, rows, getDataSet(), testIndices);
+        CellTable cellTable;
+
+        if (cellTableType == CellTableType.COUNT_SAMPLE) {
+            cellTable = new CellTableCountSample(getDataSet(), testIndices, rows);
+        } else if (cellTableType == CellTableType.AD_TREE) {
+            cellTable = new CellTableAdTree(getDataSet(), testIndices, rows);
+        } else {
+            throw new IllegalArgumentException("Unknown cell table type: " + cellTableType);
+        }
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to
@@ -151,6 +158,7 @@ public class ChiSquareTest {
         // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.
         while (combinationIterator.hasNext()) {
             int[] combination = combinationIterator.next();
+
             System.arraycopy(combination, 0, coords, 2, combination.length);
 
             double[] sumRows = new double[numRows];
@@ -171,6 +179,8 @@ public class ChiSquareTest {
                 }
             }
 
+            if (numNonZeroRows == 0) continue;
+
             for (int j = 0; j < numCols; j++) {
                 coords[1] = j;
                 sumCols[j] = cellTable.calcMargin(coords, firstVar);
@@ -181,6 +191,8 @@ public class ChiSquareTest {
                     numNonZeroCols++;
                 }
             }
+
+            if (numNonZeroCols == 0) continue;
 
             double total = cellTable.calcMargin(coords, bothVars);
 
@@ -256,7 +268,15 @@ public class ChiSquareTest {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
-        CellTable cellTable = new CellTable(dims, DiscreteVariable.MISSING_VALUE, rows, getDataSet(), testIndices);
+        CellTable cellTable;
+
+        if (cellTableType == CellTableType.COUNT_SAMPLE) {
+            cellTable = new CellTableCountSample(getDataSet(), testIndices, rows);
+        } else if (cellTableType == CellTableType.AD_TREE) {
+            cellTable = new CellTableAdTree(getDataSet(), testIndices, rows);
+        } else {
+            throw new IllegalArgumentException("Unknown cell table type: " + cellTableType);
+        }
 
         // Indicator arrays to tell the cell table which margins
         // to calculate. For x _||_ y | z1, z2, ..., we want to
@@ -335,6 +355,14 @@ public class ChiSquareTest {
         this.minCountPerCell = minCountPerCell;
     }
 
+    /**
+     * Returns the minimum number of counts per conditional table for chi-square for that table and its degrees of
+     * freedom
+     *
+     * @param arr     The array to select from.
+     * @param indices The indices to select.
+     * @return The selected array.
+     */
     private int[] selectFromArray(int[] arr, int[] indices) {
         int[] retArr = new int[indices.length];
 
@@ -345,12 +373,31 @@ public class ChiSquareTest {
         return retArr;
     }
 
+    /**
+     * Returns the data set this test uses.
+     *
+     * @return this data set.
+     */
     private DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * Returns the dimensions of variables in the dataset.
+     *
+     * @return these dimensions.
+     */
     private int[] getDims() {
         return this.dims;
+    }
+
+    /**
+     * Sets the type of cell table to use.
+     *
+     * @param cellTableType The type of cell table to use.
+     */
+    public void setCellTableType(CellTableType cellTableType) {
+        this.cellTableType = cellTableType;
     }
 
     /**
@@ -367,6 +414,11 @@ public class ChiSquareTest {
          * The G-square test. See Spirtes et al. Causation, Prediction and Search.
          */
         G_SQUARE
+    }
+
+    public enum CellTableType {
+        COUNT_SAMPLE,
+        AD_TREE
     }
 
     /**

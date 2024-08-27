@@ -101,15 +101,7 @@ public class FciOrient {
      * <p>
      * This variable represents the maximum length of a discriminating path, or -1 if no maximum length is set.
      */
-    private int maxPathLength = -1;
-    /**
-     * Indicates whether the Discriminating Path Collider Rule should be applied or not.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
-     * Indicates whether the discriminating path tail rule should be applied.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * Stores knowledge.
      */
@@ -666,52 +658,50 @@ public class FciOrient {
     private Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph) {
         Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
 
-        if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
-            List<Node> nodes = graph.getNodes();
+        List<Node> nodes = graph.getNodes();
 
-            for (Node b : nodes) {
+        for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            //  *         B
+            // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
+            // *        /  \
+            // *       v    *
+            // * E....A --> C
+
+            // Here we simply assert that A and C are adjacent to B; we let the DiscriminatingPath class determine
+            // whether the path is valid.
+            List<Node> possA = graph.getAdjacentNodes(b);
+            List<Node> possC = graph.getAdjacentNodes(b);
+
+            for (Node a : possA) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                //  *         B
-                // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
-                // *        /  \
-                // *       v    *
-                // * E....A --> C
-
-                // Here we simply assert that A and C are adjacent to B; we let the DiscriminatingPath class determine
-                // whether the path is valid.
-                List<Node> possA = graph.getAdjacentNodes(b);
-                List<Node> possC = graph.getAdjacentNodes(b);
-
-                for (Node a : possA) {
+                for (Node c : possC) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
 
-                    for (Node c : possC) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
+                    if (a == c) continue;
 
-                        if (a == c) continue;
-
-                        if (!graph.isParentOf(a, c)) {
-                            continue;
-                        }
-
-                        // We ignore any discriminating paths that do not require orientation.
-                        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                            continue;
-                        }
-
-                        if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-                            continue;
-                        }
-
-                        discriminatingPathBfs(a, b, c, graph, discriminatingPaths);
+                    if (!graph.isParentOf(a, c)) {
+                        continue;
                     }
+
+                    // We ignore any discriminating paths that do not require orientation.
+                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                        continue;
+                    }
+
+                    if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
+                        continue;
+                    }
+
+                    discriminatingPathBfs(a, b, c, graph, discriminatingPaths);
                 }
             }
         }
@@ -772,7 +762,7 @@ public class FciOrient {
                     }
                 }
 
-                if (maxPathLength != -1 && colliderPath.size() > maxPathLength) {
+                if (maxDiscriminatingPathLength != -1 && colliderPath.size() > maxDiscriminatingPathLength) {
                     continue;
                 }
 
@@ -1095,8 +1085,8 @@ public class FciOrient {
      * an uncovered p.d. path from α to θ. Let μ be the vertex adjacent to α on p1 (μ could be β), and ω be the vertex
      * adjacent to α on p2 (ω could be θ). If μ and ω are distinct, and are not adjacent, then orient α o→ γ as α → γ.
      *
-     * @param alpha     α
-     * @param gamma     γ
+     * @param alpha α
+     * @param gamma γ
      * @param graph alpha {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR10(Node alpha, Node gamma, Graph graph) {
@@ -1173,39 +1163,21 @@ public class FciOrient {
      *
      * @return the maximum path length
      */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
+    public int getMaxDiscriminatingPathLength() {
+        return this.maxDiscriminatingPathLength;
     }
 
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**

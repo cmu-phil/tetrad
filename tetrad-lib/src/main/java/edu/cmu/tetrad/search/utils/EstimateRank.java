@@ -50,9 +50,9 @@ public class EstimateRank {
      * @return an array of {@link double} objects
      */
     public static double[] CanCor(double[][] A, double[][] B) {
-        RealMatrix Ua = new SingularValueDecomposition(new BlockRealMatrix(A)).getU();
+        RealMatrix Ua = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(A)).getU();
         RealMatrix UTa = Ua.transpose();
-        RealMatrix Ub = new SingularValueDecomposition(new BlockRealMatrix(B)).getU();
+        RealMatrix Ub = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(B)).getU();
         return new SingularValueDecomposition(UTa.multiply(Ub)).getSingularValues();
     }
 
@@ -65,10 +65,10 @@ public class EstimateRank {
      * @return an array of {@link double} objects
      */
     public static double[] CanCor(int[] iA, int[] iB, double[][] cov) {
-        RealMatrix covA = new BlockRealMatrix(cov).getSubMatrix(iA, iA);
-        RealMatrix covB = new BlockRealMatrix(cov).getSubMatrix(iB, iB);
-        RealMatrix covAB = new BlockRealMatrix(cov).getSubMatrix(iA, iB);
-        RealMatrix covBA = new BlockRealMatrix(cov).getSubMatrix(iB, iA);
+        RealMatrix covA = MatrixUtils.createRealMatrix(cov).getSubMatrix(iA, iA);
+        RealMatrix covB = MatrixUtils.createRealMatrix(cov).getSubMatrix(iB, iB);
+        RealMatrix covAB = MatrixUtils.createRealMatrix(cov).getSubMatrix(iA, iB);
+        RealMatrix covBA = MatrixUtils.createRealMatrix(cov).getSubMatrix(iB, iA);
         RealMatrix S = getInverse(covA).multiply(covAB).multiply(getInverse(covB)).multiply(covBA);
         double[] rtCors = new EigenDecomposition(S).getRealEigenvalues();
         Arrays.sort(rtCors);

@@ -2450,10 +2450,9 @@ public final class TestGrasp {
 
         params.set(Params.BOSS_ALG, 1);
         params.set(Params.DEPTH, -1);
-        params.set(Params.MAX_PATH_LENGTH, 2);
+        params.set(Params.MAX_DISCRIMINATING_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_MSEP_DONE, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
 
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
@@ -2571,10 +2570,9 @@ public final class TestGrasp {
 
         params.set(Params.BOSS_ALG, 1);
         params.set(Params.DEPTH, -1);
-        params.set(Params.MAX_PATH_LENGTH, 2);
+        params.set(Params.MAX_DISCRIMINATING_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_MSEP_DONE, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
 
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
@@ -2786,8 +2784,6 @@ public final class TestGrasp {
             params.set(Params.BOSS_ALG, 1, 2, 3);
             params.set(Params.DEPTH, 3);
             params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 4);
-            params.set(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE, false);
-            params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
 
             // default for GIC scores is gic = 4, pd = 1.
             params.set(Params.SEM_GIC_RULE, 2, 3, 4);
@@ -2852,8 +2848,6 @@ public final class TestGrasp {
             params.set(Params.BOSS_ALG, 1);
             params.set(Params.DEPTH, 3);
             params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 4);
-            params.set(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE, false);
-            params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
 
             // default for GIC scores is gic = 4, pd = 1.
             params.set(Params.SEM_GIC_RULE, 4);
