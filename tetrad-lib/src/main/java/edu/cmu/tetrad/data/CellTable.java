@@ -1,6 +1,13 @@
 package edu.cmu.tetrad.data;
 
+/**
+ * Represents a cell table that stores the values of the cells in a table of arbitrary dimension, for use, e.g.,
+ * in the context of a contingency table--e.g. for chi-square or g-square tests.
+ *
+ * @author josephramsey
+ */
 public interface CellTable {
+
     /**
      * Returns the dimension of the specified variable in the cell table.
      *

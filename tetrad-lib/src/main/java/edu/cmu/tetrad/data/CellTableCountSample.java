@@ -33,6 +33,9 @@ import java.util.List;
  * Stores a cell count table of arbitrary dimension. Provides methods for incrementing particular cells and for
  * calculating marginals.
  * <p>
+ * This implementation of CellTable uses a MultiDimIntTable to store the cell counts and counts data in the dataset to
+ * populate the tables, for each independence question encountered.
+ * <p>
  * Immutable.
  *
  * @author josephramsey
@@ -41,42 +44,38 @@ import java.util.List;
  */
 public final class CellTableCountSample implements CellTable {
 
-    private final int[] _dims;
+    /**
+     * An array of integers representing the dimensions of a multidimensional table.
+     * Each element of the array specifies the number of values for each dimension.
+     * The dimensions must be integers greater than zero.
+     *
+     * The variable is final, indicating that its value cannot be changed after initialization.
+     */
+    private final int[] dims;
     /**
      * The table of cell counts.
      */
     private MultiDimIntTable table;
-    /**
-     * The value used in the data for missing values.
-     */
-    private int missingValue = -99;
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
      *
-     * @param dims        The dimensions of the table.
-     * @param dataSet     The data set to be used in the table.
-     * @param testIndices The indices of the variables to be used in the table.
-     */
-    public CellTableCountSample(int[] dims, DataSet dataSet, int[] testIndices) {
-        this(dataSet, testIndices);
-    }
-
-    /**
-     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
-     *
-     * @param dims         the dimensions of the variables in the data.
-     * @param missingValue the value used in the data for missing values.
-     * @param dataSet      the data set to be used in the table.
-     * @param testIndices  the indices of the variables to be used in the table.
+     * @param dataSet     the data set to be used in the table.
+     * @param testIndices the indices of the variables to be used in the table.
      */
     public CellTableCountSample(DataSet dataSet, int[] testIndices) {
-        _dims = selectDims(getDiscreteVariables(dataSet, testIndices));
-        this.table = new MultiDimIntTable(_dims);
-        setMissingValue(missingValue);
+        dims = selectDims(getDiscreteVariables(dataSet, testIndices));
+        this.table = new MultiDimIntTable(dims);
         countTable(dataSet, testIndices);
     }
 
+    /**
+     * Returns a list of discrete variables from the given DataSet based on the provided test indices.
+     *
+     * @param dataSet      the DataSet from which to extract the discrete variables
+     * @param testIndices  the indices of the variables to be extracted
+     * @return a list of discrete variables
+     */
     private static @NotNull List<DiscreteVariable> getDiscreteVariables(DataSet dataSet, int[] testIndices) {
         List<DiscreteVariable> vars = new ArrayList<>();
 
@@ -87,6 +86,12 @@ public final class CellTableCountSample implements CellTable {
         return vars;
     }
 
+    /**
+     * Selects dimensions for the given list of discrete variables.
+     *
+     * @param vars the list of discrete variables
+     * @return an array of dimensions for the variables
+     */
     private int @NotNull [] selectDims(List<DiscreteVariable> vars) {
         int[] _dims = new int[vars.size()];
 
@@ -124,7 +129,7 @@ public final class CellTableCountSample implements CellTable {
                     coords[j] = dataSet.getInt(i, j);
                 }
 
-                if (coords[j] == getMissingValue()) {
+                if (coords[j] == -99) {
                     continue POINTS;
                 }
             }
@@ -141,7 +146,7 @@ public final class CellTableCountSample implements CellTable {
      */
     @Override
     public int getDimension(int varIndex) {
-        return _dims[varIndex];
+        return dims[varIndex];
     }
 
     /**
@@ -212,24 +217,6 @@ public final class CellTableCountSample implements CellTable {
      */
     private int[] internalCoordCopy(int[] coords) {
         return Arrays.copyOf(coords, coords.length);
-    }
-
-    /**
-     * Returns the missing value marker.
-     *
-     * @return the missing value marker.
-     */
-    private int getMissingValue() {
-        return this.missingValue;
-    }
-
-    /**
-     * Sets the missing value marker.
-     *
-     * @param missingValue the missing value marker.
-     */
-    private void setMissingValue(int missingValue) {
-        this.missingValue = missingValue;
     }
 }
 

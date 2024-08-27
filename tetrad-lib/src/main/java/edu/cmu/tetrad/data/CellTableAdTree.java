@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -43,9 +44,12 @@ import java.util.List;
 public final class CellTableAdTree implements CellTable {
 
     /**
-     * The list of cell leaves from AD leaf tree.
+     * The list of cell leaves from AD leaf tree. This stores all cell counts in multidimensional table. The indices
+     * into the table are calculated using the getCellIndex method from the AdLeafTree class.
+     *
+     * @see edu.cmu.tetrad.search.utils.AdLeafTree
      */
-    private final List<List<Integer>> cellLeaves;
+    private final Map<Integer, List<Integer>> cellLeaves;
     /**
      * The dimensions of the test variables.
      */
@@ -63,6 +67,13 @@ public final class CellTableAdTree implements CellTable {
         this.dims = selectDims(vars);
     }
 
+    /**
+     * Retrieves a list of discrete variables from a given data set, based on the provided test indices.
+     *
+     * @param dataSet      the data set from which the variables are retrieved
+     * @param testIndices  the indices of the variables to be retrieved
+     * @return a list of discrete variables from the data set, based on the provided test indices
+     */
     private static @NotNull List<DiscreteVariable> getDiscreteVariables(DataSet dataSet, int[] testIndices) {
         List<DiscreteVariable> vars = new ArrayList<>();
 
@@ -73,6 +84,12 @@ public final class CellTableAdTree implements CellTable {
         return vars;
     }
 
+    /**
+     * Selects the dimensions of the given list of discrete variables.
+     *
+     * @param vars the list of discrete variables
+     * @return an array of integers representing the dimensions of the variables
+     */
     private int @NotNull [] selectDims(List<DiscreteVariable> vars) {
         int[] _dims = new int[vars.size()];
 
