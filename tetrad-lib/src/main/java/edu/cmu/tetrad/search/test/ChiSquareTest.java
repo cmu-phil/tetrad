@@ -151,6 +151,7 @@ public class ChiSquareTest {
         // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.
         while (combinationIterator.hasNext()) {
             int[] combination = combinationIterator.next();
+
             System.arraycopy(combination, 0, coords, 2, combination.length);
 
             double[] sumRows = new double[numRows];
@@ -171,6 +172,8 @@ public class ChiSquareTest {
                 }
             }
 
+            if (numNonZeroRows == 0) continue;
+
             for (int j = 0; j < numCols; j++) {
                 coords[1] = j;
                 sumCols[j] = cellTable.calcMargin(coords, firstVar);
@@ -181,6 +184,8 @@ public class ChiSquareTest {
                     numNonZeroCols++;
                 }
             }
+
+            if (numNonZeroCols == 0) continue;
 
             double total = cellTable.calcMargin(coords, bothVars);
 

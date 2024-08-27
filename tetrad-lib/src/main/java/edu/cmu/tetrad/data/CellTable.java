@@ -114,7 +114,7 @@ public final class CellTable {
 
         int[] coords = new int[indices.length];
 
-        Points:
+        POINTS:
         for (int i : rows) {
             for (int j = 0; j < indices.length; j++) {
                 try {
@@ -124,7 +124,7 @@ public final class CellTable {
                 }
 
                 if (coords[j] == getMissingValue()) {
-                    continue Points;
+                    continue POINTS;
                 }
             }
 
@@ -151,10 +151,10 @@ public final class CellTable {
      * @param coords an array of the sort described above.
      * @return the marginal sum specified.
      */
-    public long calcMargin(int[] coords) {
+    public int calcMargin(int[] coords) {
         int[] coordCopy = internalCoordCopy(coords);
 
-        long sum = 0;
+        int sum = 0;
         int i = -1;
 
         while (++i < coordCopy.length) {
@@ -182,7 +182,7 @@ public final class CellTable {
      * @param marginVars an <code>int[]</code> value
      * @return an <code>int</code> value
      */
-    public long calcMargin(int[] coords, int[] marginVars) {
+    public int calcMargin(int[] coords, int[] marginVars) {
         int[] coordCopy = internalCoordCopy(coords);
 
         for (int marginVar : marginVars) {
@@ -198,7 +198,7 @@ public final class CellTable {
      * @param testCell the coordinates of the cell.
      * @return the value of the cell.
      */
-    public long getValue(int[] testCell) {
+    public int getValue(int[] testCell) {
         return this.table.getValue(testCell);
     }
 
