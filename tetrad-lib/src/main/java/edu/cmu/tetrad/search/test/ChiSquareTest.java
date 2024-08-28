@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.CombinationIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -85,6 +86,7 @@ public class ChiSquareTest {
      * @param dataSet  A data set consisting entirely of discrete variables.
      * @param alpha    The significance level, usually 0.05.
      * @param testType The type of test to perform, either CHI_SQUARE or G_SQUARE.
+     * @param rows     The rows to use in the test; if null, all rows are used.
      */
     public ChiSquareTest(DataSet dataSet, double alpha, TestType testType, List<Integer> rows) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -101,7 +103,7 @@ public class ChiSquareTest {
         this.testType = testType;
         this.dataSet = dataSet;
         this.alpha = alpha;
-        this.rows = rows;
+        this.rows = rows == null ? GraphSearchUtils.getAllRows(dataSet.getNumRows()) : rows;
     }
 
     /**
