@@ -27,8 +27,8 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
  * <p>
  * Continuous variables are ignored for this data structure.
  * <p>
- * This is an adaptation of the AD tree as described in: Komarek, P., & Moore, A. W. (2000, June). A Dynamic Adaptation
- * of AD-trees for Efficient Machine Learning on Large Data Sets. In ICML (pp. 495-502).
+ * This is an adaptation of the AD tree as described in: Anderson, B., &amp; Moore, A. W. (1998). AD-trees for fast
+ * counting and rule learning. In KDD98 Conference.
  *
  * @author josephramsey 2024-8-28
  */
