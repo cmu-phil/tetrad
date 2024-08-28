@@ -177,7 +177,6 @@ public class MvpLikelihood {
 
         for (int k = 0; k < adTree.getNumCells(); k++) {
             List<Integer> cell = adTree.getCell(k);
-            if (cell == null) cell = new ArrayList<>();
             int r = cell.size();
 
             if (r > 1) {
