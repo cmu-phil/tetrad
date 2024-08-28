@@ -418,8 +418,19 @@ public class ChiSquareTest {
         G_SQUARE
     }
 
+    /**
+     * The type of cell table to use.
+     */
     public enum CellTableType {
+
+        /**
+         * The count sample cell table. This table uses a sample of the data to calculate counts.
+         */
         COUNT_SAMPLE,
+
+        /**
+         * The AD tree cell table. This table uses an AD tree to calculate counts.
+         */
         AD_TREE
     }
 
