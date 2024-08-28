@@ -6,23 +6,29 @@ import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.collections4.map.HashedMap;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 
 /**
- * Constructs and AD tree for a given data set. The AD tree is used to calculate the cells of a multidimensional
- * contingency table for a given set of variables. The AD tree is constructed by specifying the variables to be used in
- * the table and then calling the calculateTable method. Each of these cells is a list of indices into the rows of the
- * data set; the sizes of these cells give the counts for the multidimensional contingency table over the given
- * variables. The number of cells in the table is given by the getNumCells method. The cells of the table are accessed
- * using the getCell methods.
+ * An AD tree is a data structure used to store the data for a given dataset in a way that makes it easy to calculate
+ * cell counts for a multidimensional contingency table for a given set of variables. It is a tree of cells, where each
+ * cell is a list of indices into the rows of the data set. Each child cell is a subset of the parent cell for a
+ * particular value of a new variables in the list.
  * <p>
- * Continuous variables in the data set are ignored.
+ * The list of variables is given in the method <code>buildTable</code>. The tree starts with a node representing the
+ * list of all rows in the data (or all rows given in the constructor), and then subdivides the data by each variable in
+ * turn. The leaves of the tree constitute the final subdivision of the data into cells, and the sizes of these cells
+ * are the counts for the multidimensional contingency table for the given list of variables.
+ * <p>
+ * Continuous variables are ignored for this data structure.
+ * <p>
+ * This is an adaptation of the AD tree as described in: Komarek, P., & Moore, A. W. (2000, June). A Dynamic Adaptation
+ * of AD-trees for Efficient Machine Learning on Large Data Sets. In ICML (pp. 495-502).
  *
- * @author josephramsey
- * @version $Id: $Id
+ * @author josephramsey 2024-8-28
  */
 public class AdTree {
     /**
@@ -34,23 +40,9 @@ public class AdTree {
      */
     private final int[][] discreteData;
     /**
-     * Dimensions of the discrete variables in the data. These are the variables passed into the constructor.
-     */
-    private final int[] dims;
-    /**
      * The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
      */
     private final List<Integer> rows;
-    /**
-     * The dimensions of the test variables, in order. These are the variables given to the calculateTable method.
-     *
-     * @see #calculateTable(List)
-     */
-    private int[] _dims;
-    /**
-     * Contains the root of the tree.
-     */
-    private List<Subdivision> allData;
     /**
      * The cell leaves.
      * <p>
@@ -59,7 +51,11 @@ public class AdTree {
      * The list at index i is the list of indices into the rows of the data set that are in cell i of the table; the
      * coordinates of this cell are calculated using the getCellIndex method.
      */
-    private Map<Integer, List<Integer>> cellLeaves;
+    private Map<Integer, Subdivision> leaves;
+    /**
+     * The variables in the table.
+     */
+    private List<DiscreteVariable> tableVariables;
 
     /**
      * Constructs an AD Leaf Tree for the given dataset, without subsampling.
@@ -96,7 +92,6 @@ public class AdTree {
 
         this.rows = rows;
         this.discreteData = new int[dataSet.getNumColumns()][];
-        this.dims = new int[dataSet.getNumColumns()];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
@@ -109,7 +104,6 @@ public class AdTree {
                 }
 
                 this.discreteData[j] = col;
-                this.dims[j] = ((DiscreteVariable) v).getNumCategories();
             }
         }
 
@@ -121,6 +115,54 @@ public class AdTree {
     }
 
     /**
+     * Calculates the cells for each combination of the given variables. The sizes of these cells are counts for a
+     * multidimensional contingency table for the given variables.
+     *
+     * @param A A list of discrete variables. variable.
+     */
+    public void buildTable(List<DiscreteVariable> A) {
+        this.tableVariables = A;
+
+        // Now we subdivide the data by each variable in A, in order.
+        Map<Integer, Subdivision> subdivisions = new HashedMap<>();
+        subdivisions.put(0, new Subdivision(null, -1, rows));
+
+        for (DiscreteVariable v : A) {
+
+            // For each new discrete variable, we need to subdivide the cell into subcells based on the
+            // categories of the variable.
+            Map<Integer, Subdivision> newSubdivisions = new HashedMap<>();
+
+            for (int prevIndex : subdivisions.keySet()) {
+                Subdivision prevSubdivision = subdivisions.get(prevIndex);
+                List<Integer> cell = prevSubdivision.getCell();
+                Map<Integer, List<Integer>> subcells = new HashedMap<>();
+                int newVar = nodesHash.get(v);
+
+                for (int i : cell) {
+                    int category = discreteData[newVar][i];
+
+                    if (!subcells.containsKey(category)) {
+                        subcells.put(category, new ArrayList<>());
+                    }
+
+                    subcells.get(category).add(i);
+                }
+
+                for (int category : subcells.keySet()) {
+                    List<Integer> newCell = subcells.get(category);
+                    Subdivision newSubdivision = new Subdivision(prevSubdivision, category, newCell);
+                    newSubdivisions.put(getIndex(newSubdivision), newSubdivision);
+                }
+            }
+
+            subdivisions = newSubdivisions;
+        }
+
+        this.leaves = subdivisions;
+    }
+
+    /**
      * Return the number of cells in the table.
      *
      * @return the number of cells in the table.
@@ -128,7 +170,7 @@ public class AdTree {
     public int getNumCells() {
         int numCells = 1;
 
-        for (int dim : this._dims) {
+        for (int dim : this.tableVariables.stream().mapToInt(DiscreteVariable::getNumCategories).toArray()) {
             numCells *= dim;
         }
 
@@ -142,12 +184,8 @@ public class AdTree {
      * @return the index of the cell in the table.
      */
     public int getCellIndex(int... coords) {
-        if (_dims.length != coords.length) {
-            throw new IllegalArgumentException("Wrong number of coordinates.");
-        }
-
         for (int i = 0; i < coords.length; i++) {
-            if (coords[i] < 0 || coords[i] >= _dims[i]) {
+            if (coords[i] < 0 || coords[i] >= tableVariables.get(i).getNumCategories()) {
                 throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
             }
         }
@@ -155,7 +193,7 @@ public class AdTree {
         int cellIndex = 0;
 
         for (int i = 0; i < coords.length; i++) {
-            cellIndex *= _dims[i];
+            cellIndex *= this.tableVariables.get(i).getNumCategories();
             cellIndex += coords[i];
         }
 
@@ -173,7 +211,7 @@ public class AdTree {
      * @see #getCellIndex(int[])
      */
     public List<Integer> getCell(int cellIndex) {
-        return cellLeaves.get(cellIndex);
+        return leaves.get(cellIndex).getCell();
     }
 
     /**
@@ -194,77 +232,26 @@ public class AdTree {
      * @return the cell in the table.
      */
     public int getCount(int cellIndex) {
-        List<Integer> cell = cellLeaves.get(cellIndex);
-        return cell == null ? 0 : cell.size();
+        Subdivision subdivision = leaves.get(cellIndex);
+        return subdivision == null ? 0 : subdivision.getCell().size();
     }
 
     /**
-     * Calculates the cells for each combination of the given variables. The sizes of these cells are counts for a
-     * multidimensional contingency table for the given variables.
+     * Returns the index of the cell in the table for the given subdivision. We get this by following the previous
+     * subdivisions back to the root and recording the categories and dimensions of each variable.
      *
-     * @param A A list of discrete variables. variable.
+     * @param subdivision the subdivision.
+     * @return the index of the cell in the table.
      */
-    public void calculateTable(List<DiscreteVariable> A) {
-        this._dims = new int[A.size()];
+    private int getIndex(Subdivision subdivision) {
+        LinkedList<Integer> indices = new LinkedList<>();
 
-        for (int i = 0; i < A.size(); i++) {
-            this._dims[i] = A.get(i).getNumCategories();
+        while (subdivision.getPreviousSubdivision() != null) {
+            indices.addFirst(subdivision.getCategory());
+            subdivision = subdivision.getPreviousSubdivision();
         }
 
-        // All subdivisions of the data are subdivisions of the entire dataset (or list of all rows to be used).
-        // If this hasn't been calculated yet, we calculate it now.
-        if (this.allData == null) {
-            Subdivision subdivision = new Subdivision(rows);
-            this.allData = new ArrayList<>();
-            this.allData.add(subdivision);
-        }
-
-        // Now we subdivide the data by each variable in A, in order.
-        List<Subdivision> subdivisions = this.allData;
-
-        for (DiscreteVariable v : A) {
-            subdivisions = getSubdivision(subdivisions, this.nodesHash.get(v));
-        }
-
-        // We now need to reassemble the map from indices to cells. The subdivisions are in the right order, since
-        // we constructed them in order. We just need to reassemble the cells in the right order for each category
-        // of the last variable. We do not need to store cells if they are null or empty.
-        Map<Integer, List<Integer>> cells = new HashedMap<>();
-
-        int index = 0;
-
-        for (Subdivision subdivision : subdivisions) {
-            for (int i = 0; i < subdivision.getNumCategories(); i++) {
-                List<Integer> cell = subdivision.getCells().get(i);
-
-                if (cell != null && !cell.isEmpty()) {
-                    cells.put(index, cell);
-                }
-
-                index++;
-            }
-        }
-
-        this.cellLeaves = cells;
-    }
-
-    /**
-     * Retrieves a list of subdivisions based on the provided list of subdivisions and a variable index.
-     *
-     * @param varies A list of subdivisions to be used for generating new subdivisions.
-     * @param v      The variable index.
-     * @return A list of subdivisions generated based on the provided subdivisions and variable index.
-     */
-    private List<Subdivision> getSubdivision(List<Subdivision> varies, int v) {
-        List<Subdivision> subdivisions = new ArrayList<>();
-
-        for (Subdivision subdivision : varies) {
-            for (int i = 0; i < subdivision.getNumCategories(); i++) {
-                subdivisions.add(subdivision.getNextSubdivision(v, i));
-            }
-        }
-
-        return subdivisions;
+        return getCellIndex(indices.stream().mapToInt(i -> i).toArray());
     }
 
     /**
@@ -273,103 +260,58 @@ public class AdTree {
      * cells, where each cell is a list of indices into the rows of the data set. The sizes of these lists give the
      * counts for the multidimensional contingency table over the given variables.
      */
-    private class Subdivision {
+    private static class Subdivision {
         /**
-         * The number of categories for the variables that we're subdividing by.
+         * The previous subdivision.
          */
-        private final int numCategories;
+        private final Subdivision previousSubdivision;
         /**
-         * The subdivided cells, in order.
+         * The category of the variable.
          */
-        private final Map<Integer, List<Integer>> cells = new HashedMap<>();
+        private final int category;
         /**
-         * The subdivisions of the data by the categories of the variable we're subdividing by.
+         * The cell.
          */
-        private List<Map<Integer, Subdivision>> subdivisions = new ArrayList<>();
+        private final List<Integer> cell;
 
         /**
-         * This constructor is used to get the base case--i.e., the subdivision that consists of the entire dataset (or
-         * at least all the rows under consideration in a subsample or bootstrap sample) as one big cell.
+         * Represents a subdivision of a dataset in an AD Tree.
+         *
+         * @param previousSubdivision The previous subdivision.
+         * @param category            The category of the variable.
+         * @param cell                The cell.
          */
-        public Subdivision(List<Integer> rows) {
-            this.subdivisions.add(new HashedMap<>());
-            this.numCategories = 1;
-            this.cells.put(0, rows);
-            this.subdivisions = new ArrayList<>();
-            this.subdivisions.add(new HashedMap<>());
+        public Subdivision(Subdivision previousSubdivision, int category, List<Integer> cell) {
+            this.previousSubdivision = previousSubdivision;
+            this.category = category;
+            this.cell = cell;
         }
 
         /**
-         * Represents a subdivision of a dataset in an AD Tree. This subdivides all the rows in the dataset into cells
-         * or subcells of cells based on the categories of a single variable.
+         * Returns the previous subdivision.
          *
-         * @param var              The variable to subdivide by.
-         * @param numCategories    The number of categories in the variable.
-         * @param previousCellRows The rows in the previous cell that we're subdividing.
-         * @param discreteData     The discrete data.
+         * @return the previous subdivision.
          */
-        public Subdivision(int var, int numCategories, List<Integer> previousCellRows, int[][] discreteData) {
-            this.numCategories = numCategories;
-
-            for (int index = 0; index < numCategories; index++) {
-                this.cells.put(index, new ArrayList<>());
-            }
-
-            for (int index = 0; index < numCategories; index++) {
-                this.subdivisions.add(new HashedMap<>());
-            }
-
-            if (previousCellRows != null && !previousCellRows.isEmpty()) {
-                for (int i : previousCellRows) {
-                    int index = discreteData[var][i];
-
-                    if (index != -99) {
-                        this.cells.get(index).add(i);
-                    }
-                }
-
-                for (int i = 0; i < numCategories; i++) {
-                    if (this.cells.get(i).isEmpty()) {
-                        this.cells.remove(i);
-                    }
-                }
-            }
+        public Subdivision getPreviousSubdivision() {
+            return previousSubdivision;
         }
 
         /**
-         * Returns the cells of the Subdivision.
+         * Returns the category of the variable for this subdivision.
          *
-         * @return a map from indices to cells.
+         * @return the category of the variable.
          */
-        public Map<Integer, List<Integer>> getCells() {
-            return this.cells;
+        public int getCategory() {
+            return category;
         }
 
         /**
-         * Returns the next subdivision for a given variable and category in the AD Tree.
+         * Returns the cell. This is a list of indices into the rows of the data set for this subdivision.
          *
-         * @param w   The variable index.
-         * @param cat The category index.
-         * @return The next subdivision for the given variable and category.
+         * @return the cell.
          */
-        public Subdivision getNextSubdivision(int w, int cat) {
-            Subdivision subdivision = this.subdivisions.get(cat).get(w);
-
-            if (subdivision == null) {
-                subdivision = new Subdivision(w, AdTree.this.dims[w], this.cells.get(cat), AdTree.this.discreteData);
-                this.subdivisions.get(cat).put(w, subdivision);
-            }
-
-            return subdivision;
-        }
-
-        /**
-         * Returns the number of categories in the Subdivision.
-         *
-         * @return The number of categories in the Subdivision.
-         */
-        public int getNumCategories() {
-            return this.numCategories;
+        public List<Integer> getCell() {
+            return cell;
         }
     }
 }
