@@ -211,8 +211,8 @@ public class AdTree {
             this._dims[i] = A.get(i).getNumCategories();
         }
 
-        // All subdivisions of the data are subdivisions of the entire dataset. If this hasn't been calculated
-        // yet, we calculate it now. This is just a list of all cells in the data.
+        // All subdivisions of the data are subdivisions of the entire dataset (or list of all rows to be used).
+        // If this hasn't been calculated yet, we calculate it now.
         if (this.allData == null) {
             Subdivision subdivision = new Subdivision(rows);
             this.allData = new ArrayList<>();
