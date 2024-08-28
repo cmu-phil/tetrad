@@ -319,7 +319,7 @@ public class AdTree {
                 this.subdivisions.add(new HashedMap<>());
             }
 
-            if (previousCellRows != null) {
+            if (previousCellRows != null && !previousCellRows.isEmpty()) {
                 for (int i : previousCellRows) {
                     int index = discreteData[var][i];
 
