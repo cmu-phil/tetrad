@@ -123,6 +123,17 @@ public class AdTree {
      * @param A A list of discrete variables. variable.
      */
     public void buildTable(List<DiscreteVariable> A) {
+        if (A == null) {
+            throw new IllegalArgumentException("Variables must not be null.");
+        }
+
+        // Make sure all variables are in the dataset.
+        for (DiscreteVariable v : A) {
+            if (!nodesHash.containsKey(v)) {
+                throw new IllegalArgumentException("Variable not in dataset: " + v);
+            }
+        }
+
         this.tableVariables = A;
 
         // Now we subdivide the data by each variable in A, in order.
@@ -180,12 +191,25 @@ public class AdTree {
     }
 
     /**
-     * Returns the index of the cell in the table for the given coordinates.
+     * Returns the index of the cell in the table for the given coordinates. It is assumed that the given coordinates
+     * are within the bounds of the table--that is, that the first coordinate is between 0 and the number of categories
+     * of the first variable, the second coordinate is between 0 and the number of categories of the second variable,
+     * and so on.
+     * <p>
+     * There cannot be more coordinates than there are variables in the table.
      *
      * @param coords the coordinates of the cell.
      * @return the index of the cell in the table.
      */
     public int getCellIndex(int... coords) {
+        if (coords == null) {
+            throw new IllegalArgumentException("Coordinates must not be null.");
+        }
+
+        if (coords.length > tableVariables.size()) {
+            throw new IllegalArgumentException("Too many coordinates.");
+        }
+
         for (int i = 0; i < coords.length; i++) {
             if (coords[i] < 0 || coords[i] >= tableVariables.get(i).getNumCategories()) {
                 throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
