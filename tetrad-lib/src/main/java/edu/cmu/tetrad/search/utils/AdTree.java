@@ -288,8 +288,8 @@ public class AdTree {
         private List<Map<Integer, Subdivision>> subdivisions = new ArrayList<>();
 
         /**
-         * This constructor is used to get the base case--i.e., the subdivision that consists of the entire dataset as
-         * one big cell.
+         * This constructor is used to get the base case--i.e., the subdivision that consists of the entire dataset (or
+         * at least all the rows under consideration in a subsample or bootstrap sample) as one big cell.
          */
         public Subdivision(List<Integer> rows) {
             this.subdivisions.add(new HashedMap<>());
