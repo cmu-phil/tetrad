@@ -203,52 +203,39 @@ public class AdTree {
 
     /**
      * Returns the index of the cell in the table for the given coordinates. It is assumed that the given coordinates
-     * are within the bounds of the table--that is, that the first coordinate is between 0 and the number of categories
-     * of the first variable, the second coordinate is between 0 and the number of categories of the second variable,
-     * and so on.
+     * are within the bounds of the table--that is, that the first coordinate is between 0 and the dimension of the
+     * first of the first variable, the second coordinate is between 0 and the dimension of the second variable, and so
+     * on. The coordinates are 0-based. It is also assumed that the number of coordinates is equal to the number of
+     * variables in the table.
      * <p>
      * There cannot be more coordinates than there are variables in the table.
      *
      * @param coords the coordinates of the cell.
      * @return the index of the cell in the table.
+     * @throws IllegalArgumentException if the coordinates are null, if there are too many coordinates, if a coordinate
+     *                                  is out of bounds, or if the number of coordinates is not equal to the number of
+     *                                  variables in the table.
      */
     public int getCellIndex(int... coords) {
-        if (coords == null) {
-            throw new IllegalArgumentException("Coordinates must not be null.");
+        if (coords.length != tableVariables.size()) {
+            throw new IllegalArgumentException("Wrong number of coordinates.");
         }
 
-        if (coords.length > tableVariables.size()) {
-            throw new IllegalArgumentException("Too many coordinates.");
-        }
-
-        for (int i = 0; i < coords.length; i++) {
-            if (coords[i] < 0 || coords[i] >= dims[i]) {
-                throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
-            }
-        }
-
-        int cellIndex = 0;
-
-        for (int i = 0; i < coords.length; i++) {
-            cellIndex *= dims[i];
-            cellIndex += coords[i];
-        }
-
-        return cellIndex;
+        return getCellIndexPrivate(coords);
     }
 
     /**
-     * Returns the cell in the table for the given index, or null if no cell has been recorded there (which case we may
-     * assume the cell is empty).
+     * Returns the cell in the table for the given index.
      * <p>
      * This is a list of indices into the rows of the data set.
      *
      * @param cellIndex the index of the cell.
-     * @return the cell in the table, or null if no cell has been recorded there.
+     * @return the cell in the table.
      * @see #getCellIndex(int[])
      */
     public List<Integer> getCell(int cellIndex) {
-        return leaves.get(cellIndex).cell();
+        Subdivision subdivision = leaves.get(cellIndex);
+        return subdivision == null ? new ArrayList<>() : subdivision.cell();
     }
 
     /**
@@ -274,6 +261,43 @@ public class AdTree {
     }
 
     /**
+     * Returns the index of the cell in the table for the given coordinates. It is assumed that the given coordinates
+     * are within the bounds of the table--that is, that the first coordinate is between 0 and the number of categories
+     * of the first variable, the second coordinate is between 0 and the number of categories of the second variable,
+     * and so on.
+     * <p>
+     * There cannot be more coordinates than there are variables in the table.
+     *
+     * @param coords the coordinates of the cell.
+     * @return the index of the cell in the table.
+     */
+    private int getCellIndexPrivate(int[] coords) {
+        if (coords == null) {
+            throw new IllegalArgumentException("Coordinates must not be null.");
+        }
+
+        if (coords.length > tableVariables.size()) {
+            throw new IllegalArgumentException("Too many coordinates.");
+        }
+
+        for (int i = 0; i < coords.length; i++) {
+            if (coords[i] < 0 || coords[i] >= dims[i]) {
+                throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
+            }
+        }
+
+        int cellIndex = 0;
+
+        for (int i = 0; i < coords.length; i++) {
+            cellIndex *= dims[i];
+            cellIndex += coords[i];
+        }
+
+        return cellIndex;
+    }
+
+
+    /**
      * Returns the index of the cell in the table for the given subdivision. We get this by following the previous
      * subdivisions back to the root and recording the categories and dimensions of each variable.
      *
@@ -288,7 +312,7 @@ public class AdTree {
             subdivision = subdivision.previousSubdivision();
         }
 
-        return getCellIndex(indices.stream().mapToInt(i -> i).toArray());
+        return getCellIndexPrivate(indices.stream().mapToInt(i -> i).toArray());
     }
 
     /**
