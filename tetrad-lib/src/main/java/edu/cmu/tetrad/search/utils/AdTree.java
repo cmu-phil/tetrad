@@ -207,8 +207,6 @@ public class AdTree {
      * first of the first variable, the second coordinate is between 0 and the dimension of the second variable, and so
      * on. The coordinates are 0-based. It is also assumed that the number of coordinates is equal to the number of
      * variables in the table.
-     * <p>
-     * There cannot be more coordinates than there are variables in the table.
      *
      * @param coords the coordinates of the cell.
      * @return the index of the cell in the table.
