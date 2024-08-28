@@ -14,9 +14,11 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 
 /**
  * An AD tree is a data structure used to store the data for a given dataset in a way that makes it easy to calculate
- * cell counts for a multidimensional contingency table for a given set of variables. It is a tree of cells, where each
- * cell is a list of indices into the rows of the data set. Each child cell is a subset of the parent cell for a
- * particular value of a new variables in the list.
+ * cell counts for a multidimensional contingency table for a given set of variables.
+ * <p>
+ * It is a tree of cells, where each cell is a list of indices into the rows of the data set.
+ * <p>
+ * Each child cell is a subset of the parent cell for a particular value of a new variables in the list.
  * <p>
  * The list of variables is given in the method <code>buildTable</code>. The tree starts with a node representing the
  * list of all rows in the data (or all rows given in the constructor), and then subdivides the data by each variable in
@@ -135,7 +137,7 @@ public class AdTree {
 
             for (int prevIndex : subdivisions.keySet()) {
                 Subdivision prevSubdivision = subdivisions.get(prevIndex);
-                List<Integer> cell = prevSubdivision.getCell();
+                List<Integer> cell = prevSubdivision.cell();
                 Map<Integer, List<Integer>> subcells = new HashedMap<>();
                 int newVar = nodesHash.get(v);
 
@@ -211,7 +213,7 @@ public class AdTree {
      * @see #getCellIndex(int[])
      */
     public List<Integer> getCell(int cellIndex) {
-        return leaves.get(cellIndex).getCell();
+        return leaves.get(cellIndex).cell();
     }
 
     /**
@@ -233,7 +235,7 @@ public class AdTree {
      */
     public int getCount(int cellIndex) {
         Subdivision subdivision = leaves.get(cellIndex);
-        return subdivision == null ? 0 : subdivision.getCell().size();
+        return subdivision == null ? 0 : subdivision.cell().size();
     }
 
     /**
@@ -246,72 +248,24 @@ public class AdTree {
     private int getIndex(Subdivision subdivision) {
         LinkedList<Integer> indices = new LinkedList<>();
 
-        while (subdivision.getPreviousSubdivision() != null) {
-            indices.addFirst(subdivision.getCategory());
-            subdivision = subdivision.getPreviousSubdivision();
+        while (subdivision.previousSubdivision() != null) {
+            indices.addFirst(subdivision.category());
+            subdivision = subdivision.previousSubdivision();
         }
 
         return getCellIndex(indices.stream().mapToInt(i -> i).toArray());
     }
 
     /**
-     * Represents a subdivision of a dataset in an AD Tree. This subdivides all the rows in the dataset into cells or
-     * subcells of cells based on the categories of a single variables. The rows in the dataset are stored in a list of
-     * cells, where each cell is a list of indices into the rows of the data set. The sizes of these lists give the
-     * counts for the multidimensional contingency table over the given variables.
+     * Represents a subdivision of an AD Leaf Tree.
+     * <p>
+     * A subdivision is a combination of previous subdivisions, a category, and a list of cells. It is used to calculate
+     * the cells for each combination of variables in the tree's table.
+     *
+     * @param previousSubdivision The previous subdivision in the tree.
+     * @param category            The category of the current subdivision.
+     * @param cell                The list of cells in the subdivision.
      */
-    private static class Subdivision {
-        /**
-         * The previous subdivision.
-         */
-        private final Subdivision previousSubdivision;
-        /**
-         * The category of the variable.
-         */
-        private final int category;
-        /**
-         * The cell.
-         */
-        private final List<Integer> cell;
-
-        /**
-         * Represents a subdivision of a dataset in an AD Tree.
-         *
-         * @param previousSubdivision The previous subdivision.
-         * @param category            The category of the variable.
-         * @param cell                The cell.
-         */
-        public Subdivision(Subdivision previousSubdivision, int category, List<Integer> cell) {
-            this.previousSubdivision = previousSubdivision;
-            this.category = category;
-            this.cell = cell;
-        }
-
-        /**
-         * Returns the previous subdivision.
-         *
-         * @return the previous subdivision.
-         */
-        public Subdivision getPreviousSubdivision() {
-            return previousSubdivision;
-        }
-
-        /**
-         * Returns the category of the variable for this subdivision.
-         *
-         * @return the category of the variable.
-         */
-        public int getCategory() {
-            return category;
-        }
-
-        /**
-         * Returns the cell. This is a list of indices into the rows of the data set for this subdivision.
-         *
-         * @return the cell.
-         */
-        public List<Integer> getCell() {
-            return cell;
-        }
+    private record Subdivision(AdTree.Subdivision previousSubdivision, int category, List<Integer> cell) {
     }
 }
