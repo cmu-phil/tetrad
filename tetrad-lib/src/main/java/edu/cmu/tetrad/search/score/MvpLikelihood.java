@@ -170,7 +170,7 @@ public class MvpLikelihood {
 
         int p = continuous_parents.size();
 
-        this.adTree.calculateTable(discrete_parents);
+        this.adTree.buildTable(discrete_parents);
 
         int[] continuousCols = new int[p];
         for (int j = 0; j < p; j++) continuousCols[j] = this.nodesHash.get(continuous_parents.get(j));
@@ -262,7 +262,7 @@ public class MvpLikelihood {
             }
         }
 
-        this.adTree.calculateTable(discrete_parents);
+        this.adTree.buildTable(discrete_parents);
 
         for (int k = 0; k < adTree.getNumCells(); k++) {
             int r = adTree.getCount(k);

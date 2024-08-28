@@ -23,7 +23,6 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.search.utils.AdTree;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.util.MultiDimIntTable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -96,7 +95,7 @@ public final class CellTableAdTree implements CellTable {
 
         List<DiscreteVariable> vars = getDiscreteVariables(dataSet, testIndices);
         this.adTree = new AdTree(dataSet, rows);
-        this.adTree.calculateTable(vars);
+        this.adTree.buildTable(vars);
         this.dims = new int[vars.size()];
         for (int i = 0; i < vars.size(); i++) {
             dims[i] = vars.get(i).getNumCategories();
