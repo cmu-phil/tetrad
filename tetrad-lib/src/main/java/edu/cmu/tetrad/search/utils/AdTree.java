@@ -52,10 +52,12 @@ public class AdTree {
      */
     private List<Subdivision> allData;
     /**
-     * The cell leaves. This is a list of cells, where each cell is a list of indices into the
-     * rows of the data set. The list at index i is the list of indices into the rows of the data
-     * set that are in cell i of the table; the coordinates of this cell are calculated using the
-     * getCellIndex method.
+     * The cell leaves.
+     * <p>
+     * This is a list of cells, where each cell is a list of indices into the rows of the data set.
+     * <p>
+     * The list at index i is the list of indices into the rows of the data set that are in cell i of the table; the
+     * coordinates of this cell are calculated using the getCellIndex method.
      */
     private Map<Integer, List<Integer>> cellLeaves;
 
@@ -72,7 +74,9 @@ public class AdTree {
      * Constructs an AD Leaf Tree for the given dataset.
      *
      * @param dataSet A discrete dataset.
-     * @param rows    The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
+     * @param rows    The rows of the dataset to use; the default is to use all the rows.
+     *                <p>
+     *                This is useful for subsampling.
      */
     public AdTree(DataSet dataSet, List<Integer> rows) {
         if (dataSet == null) {
@@ -159,21 +163,10 @@ public class AdTree {
     }
 
     /**
-     * Returns the cell in the table for the given coordinates, or null if no cell has been recorded there (which case
-     * we may assume  the cell is empty). This is a list of indices into the rows of the data set.
-     *
-     * @param coords the coordinates of the cell.
-     * @return the cell in the table, or null if no cell has been recorded there.
-     * @see #getCell(int)
-     */
-    public List<Integer> getCell(int[] coords) {
-        int cellIndex = getCellIndex(coords);
-        return getCell(cellIndex);
-    }
-
-    /**
      * Returns the cell in the table for the given index, or null if no cell has been recorded there (which case we may
-     * assume  the cell is empty). This is a list of indices into the rows of the data set.
+     * assume the cell is empty).
+     * <p>
+     * This is a list of indices into the rows of the data set.
      *
      * @param cellIndex the index of the cell.
      * @return the cell in the table, or null if no cell has been recorded there.
@@ -267,7 +260,7 @@ public class AdTree {
 
         for (Subdivision subdivision : varies) {
             for (int i = 0; i < subdivision.getNumCategories(); i++) {
-                subdivisions.add(subdivision.getNextSubdivion(v, i));
+                subdivisions.add(subdivision.getNextSubdivision(v, i));
             }
         }
 
@@ -277,8 +270,8 @@ public class AdTree {
     /**
      * Represents a subdivision of a dataset in an AD Tree. This subdivides all the rows in the dataset into cells or
      * subcells of cells based on the categories of a single variables. The rows in the dataset are stored in a list of
-     * lists of integers, where each list of integers is a list of indices into the rows of the data set. The sizes of
-     * these lists give the counts for the multidimensional contingency table over the given variables.
+     * cells, where each cell is a list of indices into the rows of the data set. The sizes of these lists give the
+     * counts for the multidimensional contingency table over the given variables.
      */
     private class Subdivision {
         /**
@@ -359,7 +352,7 @@ public class AdTree {
          * @param cat The category index.
          * @return The next subdivision for the given variable and category.
          */
-        public Subdivision getNextSubdivion(int w, int cat) {
+        public Subdivision getNextSubdivision(int w, int cat) {
             Subdivision subdivision = this.subdivisions.get(cat).get(w);
 
             if (subdivision == null) {
