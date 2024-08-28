@@ -46,6 +46,10 @@ public class AdTree {
      */
     private final List<Integer> rows;
     /**
+     * The number of categories for each of the variables in the table.
+     */
+    private int[] dims;
+    /**
      * The cell leaves.
      * <p>
      * This is a list of cells, where each cell is a list of indices into the rows of the data set.
@@ -136,6 +140,13 @@ public class AdTree {
 
         this.tableVariables = A;
 
+        // Calculate the dimensions of the table.
+        this.dims = new int[A.size()];
+
+        for (int i = 0; i < A.size(); i++) {
+            dims[i] = A.get(i).getNumCategories();
+        }
+
         // Now we subdivide the data by each variable in A, in order.
         Map<Integer, Subdivision> subdivisions = new HashedMap<>();
         subdivisions.put(0, new Subdivision(null, -1, rows));
@@ -183,7 +194,7 @@ public class AdTree {
     public int getNumCells() {
         int numCells = 1;
 
-        for (int dim : this.tableVariables.stream().mapToInt(DiscreteVariable::getNumCategories).toArray()) {
+        for (int dim : dims) {
             numCells *= dim;
         }
 
@@ -211,7 +222,7 @@ public class AdTree {
         }
 
         for (int i = 0; i < coords.length; i++) {
-            if (coords[i] < 0 || coords[i] >= tableVariables.get(i).getNumCategories()) {
+            if (coords[i] < 0 || coords[i] >= dims[i]) {
                 throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
             }
         }
@@ -219,7 +230,7 @@ public class AdTree {
         int cellIndex = 0;
 
         for (int i = 0; i < coords.length; i++) {
-            cellIndex *= this.tableVariables.get(i).getNumCategories();
+            cellIndex *= dims[i];
             cellIndex += coords[i];
         }
 
