@@ -77,8 +77,35 @@ public final class CellTableCountSample implements CellTable {
      *
      * @param dataSet     the data set to be used in the table.
      * @param testIndices the indices of the variables to be used in the table.
+     * @param rows        the rows of the dataset to use; if null, all rows are used.
      */
     public CellTableCountSample(DataSet dataSet, int[] testIndices, List<Integer> rows) {
+        if (dataSet == null) {
+            throw new IllegalArgumentException("Data set must not be null.");
+        }
+
+        if (testIndices == null) {
+            throw new IllegalArgumentException("Test indices must not be null.");
+        }
+
+        // Make sure all test indices are less than the number of variables in the dataset.
+        for (int testIndex : testIndices) {
+            if (testIndex >= dataSet.getNumColumns()) {
+                throw new IllegalArgumentException("Test index out of bounds: " + testIndex);
+            }
+        }
+
+        if (rows == null) {
+            rows = getAllRows(dataSet.getNumRows());
+        }
+
+        // Make sure all rows are less than the number of rows in the dataset.
+        for (int row : rows) {
+            if (row >= dataSet.getNumRows()) {
+                throw new IllegalArgumentException("Row index out of bounds: " + row);
+            }
+        }
+
         dims = selectDims(getDiscreteVariables(dataSet, testIndices));
         this.table = new MultiDimIntTable(dims);
         this.rows = rows;
@@ -125,6 +152,10 @@ public final class CellTableCountSample implements CellTable {
      * @param indices the indices of the variables to be used in the table.
      */
     private void countTable(DataSet dataSet, int[] indices, List<Integer> rows) {
+        if (rows == null) {
+            rows = getAllRows(dataSet.getNumRows());
+        }
+
         int[] dims = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {

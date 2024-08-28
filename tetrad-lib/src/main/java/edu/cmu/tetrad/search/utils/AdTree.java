@@ -72,10 +72,25 @@ public class AdTree {
      * Constructs an AD Leaf Tree for the given dataset.
      *
      * @param dataSet A discrete dataset.
+     * @param rows    The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
      */
     public AdTree(DataSet dataSet, List<Integer> rows) {
-        this.rows = rows;
+        if (dataSet == null) {
+            throw new IllegalArgumentException("Data set must not be null.");
+        }
 
+        if (rows == null) {
+            rows = getAllRows(dataSet.getNumRows());
+        }
+
+        // Make sure all rows are less than the number of rows in the dataset.
+        for (int row : rows) {
+            if (row >= dataSet.getNumRows()) {
+                throw new IllegalArgumentException("Row index out of bounds: " + row);
+            }
+        }
+
+        this.rows = rows;
         this.discreteData = new int[dataSet.getNumColumns()][];
         this.dims = new int[dataSet.getNumColumns()];
 
