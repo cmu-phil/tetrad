@@ -43,6 +43,16 @@ public class AdTree {
      */
     private final List<Integer> rows;
     /**
+     * Cache to store subdivisions for reuse, using a List<Node> as the key.
+     */
+    private final Map<List<Node>, Map<Integer, Subdivision>> subdivisionCache =
+            new LinkedHashMap<List<Node>, Map<Integer, Subdivision>>(MAX_CACHE_SIZE, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<List<Node>, Map<Integer, Subdivision>> eldest) {
+                    return this.size() > MAX_CACHE_SIZE;
+                }
+            };
+    /**
      * The number of categories for each of the variables in the table.
      */
     private int[] dims;
@@ -59,16 +69,6 @@ public class AdTree {
      * The variables in the table.
      */
     private List<DiscreteVariable> tableVariables;
-    /**
-     * Cache to store subdivisions for reuse, using a List<Node> as the key.
-     */
-    private final Map<List<Node>, Map<Integer, Subdivision>> subdivisionCache =
-            new LinkedHashMap<List<Node>, Map<Integer, Subdivision>>(MAX_CACHE_SIZE, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<List<Node>, Map<Integer, Subdivision>> eldest) {
-                    return this.size() > MAX_CACHE_SIZE;
-                }
-            };
     private ArrayList<DiscreteVariable> originalOrder;
     private HashedMap<Integer, Integer> inverseMap;
 
@@ -96,6 +96,15 @@ public class AdTree {
         this.nodesHash = buildNodesHash(dataSet);
     }
 
+    // Utility method for getting all rows (assumes existence of this method or similar)
+    private static List<Integer> getAllRows(int numRows) {
+        List<Integer> rows = new ArrayList<>(numRows);
+        for (int i = 0; i < numRows; i++) {
+            rows.add(i);
+        }
+        return rows;
+    }
+
     /**
      * Builds the contingency table based on the given list of discrete variables.
      *
@@ -110,11 +119,16 @@ public class AdTree {
         // Create the inverse mapping from the index in the sorted list to the original order.
         this.inverseMap = new HashedMap<>();
 
-        for (int i = 0; i < variables.size(); i++) {
-            this.inverseMap.put(variables.indexOf(variables.get(i)), originalOrder.indexOf(variables.get(i)));
+        // Create a temporary map to track the original indices.
+        Map<DiscreteVariable, Integer> originalIndices = new HashMap<>();
+        for (int i = 0; i < originalOrder.size(); i++) {
+            originalIndices.put(originalOrder.get(i), i);
         }
 
-        // Now in ever other public method, we need to use this inverse map to get the original order.
+        // Populate the inverseMap by mapping sorted indices to the original indices.
+        for (int i = 0; i < variables.size(); i++) {
+            this.inverseMap.put(i, originalIndices.get(variables.get(i)));
+        }
 
         validateVariables(variables);
         this.tableVariables = variables;
@@ -259,12 +273,7 @@ public class AdTree {
             throw new IllegalArgumentException("Wrong number of coordinates.");
         }
 
-        int[] _coords = new int[coords.length];
-        for (int i = 0; i < coords.length; i++) {
-            _coords[i] = coords[inverseMap.get(i)];
-        }
-
-        return getCellIndexPrivate(_coords);
+        return getCellIndexPrivate(coords, true);
     }
 
     /**
@@ -311,10 +320,11 @@ public class AdTree {
      * <p>
      * There cannot be more coordinates than there are variables in the table.
      *
-     * @param coords the coordinates of the cell.
+     * @param coords  the coordinates of the cell.
+     * @param inverse  whether to use the original order of the variables.
      * @return the index of the cell in the table.
      */
-    private int getCellIndexPrivate(int[] coords) {
+    private int getCellIndexPrivate(int[] coords, boolean inverse) {
         if (coords == null) {
             throw new IllegalArgumentException("Coordinates must not be null.");
         }
@@ -323,17 +333,17 @@ public class AdTree {
             throw new IllegalArgumentException("Too many coordinates.");
         }
 
-        for (int i = 0; i < coords.length; i++) {
-            if (coords[i] < 0 || coords[i] >= dims[i]) {
-                throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
-            }
-        }
-
         int cellIndex = 0;
 
         for (int i = 0; i < coords.length; i++) {
+            int mappedIndex = inverse ? inverseMap.get(i) : i;
+
+            if (coords[mappedIndex] < 0 || coords[mappedIndex] >= dims[i]) {
+                throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
+            }
+
             cellIndex *= dims[i];
-            cellIndex += coords[i];
+            cellIndex += coords[mappedIndex];
         }
 
         return cellIndex;
@@ -354,7 +364,7 @@ public class AdTree {
             subdivision = subdivision.previousSubdivision();
         }
 
-        return getCellIndexPrivate(indices.stream().mapToInt(i -> i).toArray());
+        return getCellIndexPrivate(indices.stream().mapToInt(i -> i).toArray(), false);
     }
 
     /**
@@ -368,14 +378,5 @@ public class AdTree {
      * @param cell                The list of cells in the subdivision.
      */
     private record Subdivision(AdTree.Subdivision previousSubdivision, int category, List<Integer> cell) {
-    }
-
-    // Utility method for getting all rows (assumes existence of this method or similar)
-    private static List<Integer> getAllRows(int numRows) {
-        List<Integer> rows = new ArrayList<>(numRows);
-        for (int i = 0; i < numRows; i++) {
-            rows.add(i);
-        }
-        return rows;
     }
 }
