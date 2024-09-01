@@ -69,7 +69,9 @@ public class AdTree {
      * The variables in the table.
      */
     private List<DiscreteVariable> tableVariables;
-    private ArrayList<DiscreteVariable> originalOrder;
+    /**
+     * The inverse mapping from the index in the sorted list to the original order.
+     */
     private HashedMap<Integer, Integer> inverseMap;
 
     /**
@@ -111,7 +113,7 @@ public class AdTree {
      * @param variables A list of discrete variables.
      */
     public void buildTable(List<DiscreteVariable> variables) {
-        this.originalOrder = new ArrayList<>(variables);
+        ArrayList<DiscreteVariable> originalOrder = new ArrayList<>(variables);
 
         // Sort the variables to in order of nodesHash.
         variables.sort(Comparator.comparingInt(nodesHash::get));
@@ -148,6 +150,78 @@ public class AdTree {
         }
 
         this.leaves = subdivisionsHolder[0];
+    }
+
+    /**
+     * Return the number of cells in the table.
+     *
+     * @return the number of cells in the table.
+     */
+    public int getNumCells() {
+        int numCells = 1;
+
+        for (int dim : dims) {
+            numCells *= dim;
+        }
+
+        return numCells;
+    }
+
+    /**
+     * Returns the index of the cell in the table for the given coordinates. It is assumed that the given coordinates
+     * are within the bounds of the table--that is, that the first coordinate is between 0 and the dimension of the
+     * first of the first variable, the second coordinate is between 0 and the dimension of the second variable, and so
+     * on. The coordinates are 0-based. It is also assumed that the number of coordinates is equal to the number of
+     * variables in the table.
+     *
+     * @param coords the coordinates of the cell.
+     * @return the index of the cell in the table.
+     * @throws IllegalArgumentException if the coordinates are null, if there are too many coordinates, if a coordinate
+     *                                  is out of bounds, or if the number of coordinates is not equal to the number of
+     *                                  variables in the table.
+     */
+    public int getCellIndex(int... coords) {
+        if (coords.length != tableVariables.size()) {
+            throw new IllegalArgumentException("Wrong number of coordinates.");
+        }
+
+        return getCellIndexPrivate(coords, true);
+    }
+
+    /**
+     * Returns the cell in the table for the given index.
+     * <p>
+     * This is a list of indices into the rows of the data set.
+     *
+     * @param cellIndex the index of the cell.
+     * @return the cell in the table.
+     * @see #getCellIndex(int[])
+     */
+    public List<Integer> getCell(int cellIndex) {
+        Subdivision subdivision = leaves.get(cellIndex);
+        return subdivision == null ? new ArrayList<>() : subdivision.cell();
+    }
+
+    /**
+     * Returns the count of the cell in the table for the given coordinates.
+     *
+     * @param coords the coordinates of the cell.
+     * @return the cell in the table.
+     */
+    public int getCount(int[] coords) {
+        int cellIndex = getCellIndex(coords);
+        return getCount(cellIndex);
+    }
+
+    /**
+     * Returns the count of the cell in the table for the given index.
+     *
+     * @param cellIndex the index of the cell.
+     * @return the cell in the table.
+     */
+    public int getCount(int cellIndex) {
+        Subdivision subdivision = leaves.get(cellIndex);
+        return subdivision == null ? 0 : subdivision.cell().size();
     }
 
     private void validateDataSet(DataSet dataSet) {
@@ -238,78 +312,6 @@ public class AdTree {
             newSubdivisions.put(getIndex(newSubdivision), newSubdivision);
         }
         return newSubdivisions;
-    }
-
-    /**
-     * Return the number of cells in the table.
-     *
-     * @return the number of cells in the table.
-     */
-    public int getNumCells() {
-        int numCells = 1;
-
-        for (int dim : dims) {
-            numCells *= dim;
-        }
-
-        return numCells;
-    }
-
-    /**
-     * Returns the index of the cell in the table for the given coordinates. It is assumed that the given coordinates
-     * are within the bounds of the table--that is, that the first coordinate is between 0 and the dimension of the
-     * first of the first variable, the second coordinate is between 0 and the dimension of the second variable, and so
-     * on. The coordinates are 0-based. It is also assumed that the number of coordinates is equal to the number of
-     * variables in the table.
-     *
-     * @param coords the coordinates of the cell.
-     * @return the index of the cell in the table.
-     * @throws IllegalArgumentException if the coordinates are null, if there are too many coordinates, if a coordinate
-     *                                  is out of bounds, or if the number of coordinates is not equal to the number of
-     *                                  variables in the table.
-     */
-    public int getCellIndex(int... coords) {
-        if (coords.length != tableVariables.size()) {
-            throw new IllegalArgumentException("Wrong number of coordinates.");
-        }
-
-        return getCellIndexPrivate(coords, true);
-    }
-
-    /**
-     * Returns the cell in the table for the given index.
-     * <p>
-     * This is a list of indices into the rows of the data set.
-     *
-     * @param cellIndex the index of the cell.
-     * @return the cell in the table.
-     * @see #getCellIndex(int[])
-     */
-    public List<Integer> getCell(int cellIndex) {
-        Subdivision subdivision = leaves.get(cellIndex);
-        return subdivision == null ? new ArrayList<>() : subdivision.cell();
-    }
-
-    /**
-     * Returns the count of the cell in the table for the given coordinates.
-     *
-     * @param coords the coordinates of the cell.
-     * @return the cell in the table.
-     */
-    public int getCount(int[] coords) {
-        int cellIndex = getCellIndex(coords);
-        return getCount(cellIndex);
-    }
-
-    /**
-     * Returns the count of the cell in the table for the given index.
-     *
-     * @param cellIndex the index of the cell.
-     * @return the cell in the table.
-     */
-    public int getCount(int cellIndex) {
-        Subdivision subdivision = leaves.get(cellIndex);
-        return subdivision == null ? 0 : subdivision.cell().size();
     }
 
     /**
