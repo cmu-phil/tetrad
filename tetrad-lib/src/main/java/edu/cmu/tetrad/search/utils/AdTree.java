@@ -403,9 +403,9 @@ public class AdTree {
         for (int i = 0; i < coords.length; i++) {
             int mappedIndex = inverse ? inverseMap.get(i) : i;
 
-//            if (coords[mappedIndex] < 0 || coords[mappedIndex] >= dims[i]) {
-//                throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
-//            }
+            if (coords[mappedIndex] < 0 || coords[mappedIndex] >= dims[i]) {
+                throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
+            }
 
             cellIndex *= dims[i];
             cellIndex += coords[mappedIndex];
