@@ -24,12 +24,24 @@ import java.util.*;
  * <p>
  * This is an adaptation of the AD tree as described in: Anderson, B., &amp; Moore, A. W. (1998). AD-trees for fast
  * counting and rule learning. In KDD98 Conference.
+ * <p>
+ * We add some optimizations to this class to help speed it up. First, we add a cache to store subdivisions for reuse.
+ * This cache uses a List<Node> as the key, which is the list of variables in the table. We limit the cache size to
+ * avoid using too much memory. We also add a maximum cache size parameter to make it easier to change the cache size.
+ * <p>
+ * Second, we add a depth limit to the cache. This is useful for cases where the cache is not being used effectively. We
+ * set the default depth limit to 5, which means that the cache will only store a tree of subdivision results out to a
+ * depth of 5. This is useful because long keys to the cache are less likely to be reused, so we only store initial
+ * segments of each branch.
+ * <p>
+ * Third, we internally sort the variables in the table to match the order of the nodesHash. This is useful because
+ * fewer branches need to be created in the tree. For instance, building a tree with variables [A, B, C] and [C, B, A]
+ * will result in the same marginal tables, just permuted, so we sort the variables to avoid this duplication. The
+ * inverse mapping is used to map the sorted indices back to the original order for the public methods.
  *
- * @author josephramsey 2024-8-28
+ * @author josephramsey 2024-9-1
  */
 public class AdTree {
-    private static final int MAX_CACHE_SIZE = 1000; // Example cache size limit
-
     /**
      * Indices of variables.
      */
@@ -43,15 +55,23 @@ public class AdTree {
      */
     private final List<Integer> rows;
     /**
+     * The maximum size of the cache.
+     */
+    private int maxCacheSize = 1000; // Example cache size limit
+    /**
      * Cache to store subdivisions for reuse, using a List<Node> as the key.
      */
     private final Map<List<Node>, Map<Integer, Subdivision>> subdivisionCache =
-            new LinkedHashMap<List<Node>, Map<Integer, Subdivision>>(MAX_CACHE_SIZE, 0.75f, true) {
+            new LinkedHashMap<List<Node>, Map<Integer, Subdivision>>(maxCacheSize, 0.75f, true) {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<List<Node>, Map<Integer, Subdivision>> eldest) {
-                    return this.size() > MAX_CACHE_SIZE;
+                    return this.size() > maxCacheSize;
                 }
             };
+    /**
+     * The maximum depth of the cache.
+     */
+    private int cacheDepthLimit = 5;
     /**
      * The number of categories for each of the variables in the table.
      */
@@ -224,6 +244,32 @@ public class AdTree {
         return subdivision == null ? 0 : subdivision.cell().size();
     }
 
+    /**
+     * Sets the maximum size of the cache. Default is 1000. This is useful for cases where the cache is not being used
+     * effectively. The deault size is 1000.
+     *
+     * @param maxCacheSize The maximum size of the cache.
+     */
+    public void setMaxCacheSize(int maxCacheSize) {
+        if (maxCacheSize < 1) {
+            throw new IllegalArgumentException("Cache size must be at least 1.");
+        }
+        this.maxCacheSize = maxCacheSize;
+    }
+
+    /**
+     * Sets the maximum depth of the cache. This is useful for cases where the cache is not being used effectively.
+     * Default is 5.
+     *
+     * @param cacheDepthLimit The maximum depth of the cache.
+     */
+    public void setCacheDepthLimit(int cacheDepthLimit) {
+        if (cacheDepthLimit < 0) {
+            throw new IllegalArgumentException("Cache depth limit must be at least 0.");
+        }
+        this.cacheDepthLimit = cacheDepthLimit;
+    }
+
     private void validateDataSet(DataSet dataSet) {
         if (dataSet == null) {
             throw new IllegalArgumentException("Data set must not be null.");
@@ -323,7 +369,7 @@ public class AdTree {
      * There cannot be more coordinates than there are variables in the table.
      *
      * @param coords  the coordinates of the cell.
-     * @param inverse  whether to use the original order of the variables.
+     * @param inverse whether to use the original order of the variables.
      * @return the index of the cell in the table.
      */
     private int getCellIndexPrivate(int[] coords, boolean inverse) {
