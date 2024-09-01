@@ -26,7 +26,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import org.apache.commons.math3.util.FastMath;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
@@ -60,6 +62,7 @@ public class DiscreteBicScore implements DiscreteScore {
      * The number of categories for each variable.
      */
     private final int[] numCategories;
+    private final HashMap<Integer, Map<Integer, Integer>> attestedCategories;
     /**
      * The variables of the dataset.
      */
@@ -119,6 +122,26 @@ public class DiscreteBicScore implements DiscreteScore {
         for (int i = 0; i < variables.size(); i++) {
             this.numCategories[i] = getVariable(i).getNumCategories();
         }
+
+        attestedCategories = new HashMap<Integer, Map<Integer, Integer>>();
+
+        for (int i = 0; i < data.length; i++) {
+            attestedCategories.put(i, new HashMap<Integer, Integer>());
+            int c = 0;
+
+            // Go through the data and map each new category to an integer if it hasn't been seen before.
+            for (int j = 0; j < data[i].length; j++) {
+                if (data[i][j] != -99) {
+                    if (attestedCategories.get(i).containsKey(data[i][j])) {
+                        continue;
+                    }
+
+                    attestedCategories.get(i).put(data[i][j], c++);
+                }
+            }
+        }
+
+        System.out.println("DiscreteBicScore: attestedCategories = " + attestedCategories);
     }
 
     private static int getRowIndex(int[] dim, int[] values) {
@@ -149,13 +172,15 @@ public class DiscreteBicScore implements DiscreteScore {
         }
 
         // Number of categories for node.
-        int c = this.numCategories[node];
+//        int c = this.numCategories[node];
+        int c = attestedCategories.get(node).keySet().size();
 
         // Numbers of categories of parents.
         int[] dims = new int[parents.length];
 
         for (int p = 0; p < parents.length; p++) {
-            dims[p] = this.numCategories[parents[p]];
+//            dims[p] = this.numCategories[parents[p]];
+            dims[p] = attestedCategories.get(parents[p]).keySet().size();
         }
 
         // Number of parent states.
@@ -181,15 +206,14 @@ public class DiscreteBicScore implements DiscreteScore {
         ROW:
         for (int i = 0; i < this.sampleSize; i++) {
             for (int p = 0; p < parents.length; p++) {
-                if (myParents[p][i] == -99) continue ROW;
-                parentValues[p] = myParents[p][i];
+                if (myParents[p][i] == -99) parentValues[p] = -99;
+                else parentValues[p] = attestedCategories.get(parents[p]).get(myParents[p][i]);
             }
 
-            int childValue = myChild[i];
+            int childValue;
 
-            if (childValue == -99) {
-                continue;
-            }
+            if (myChild[i] == -99) childValue = -99;
+            else childValue = myChild[i];
 
             int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
 
@@ -201,24 +225,27 @@ public class DiscreteBicScore implements DiscreteScore {
         double lik = 0.0;
 
         for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+            int rowCount = n_j[rowIndex];
+            if (rowCount == 0) continue;
+
             for (int childValue = 0; childValue < c; childValue++) {
                 int cellCount = n_jk[rowIndex][childValue];
-                int rowCount = n_j[rowIndex];
+                if (cellCount == 0) continue;
 
-                if (cellCount == 0 || rowCount == 0) continue;
                 lik += cellCount * FastMath.log(cellCount / (double) rowCount);
             }
         }
 
-        int attestedRows = 0;
-
-        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
-            if (n_j[rowIndex] > 0) {
-                attestedRows++;
-            }
-        }
-
-        int params = attestedRows * (c - 1);
+//        int attestedRows = 0;
+//
+//        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+//            if (n_j[rowIndex] > 0) {
+//                attestedRows++;
+//            }
+//        }
+//
+//        int params = attestedRows * (c - 1);
+        int params = r * (c - 1);
 
         double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(sampleSize) + 2 * getPriorForStructure(parents.length);
 
@@ -247,11 +274,16 @@ public class DiscreteBicScore implements DiscreteScore {
             }
         }
 
+        // Number of categories for node.
+//        int c = this.numCategories[node];
+        int c = attestedCategories.get(node).keySet().size();
+
         // Numbers of categories of parents.
         int[] dims = new int[parents.length];
 
         for (int p = 0; p < parents.length; p++) {
-            dims[p] = this.numCategories[parents[p]];
+//            dims[p] = this.numCategories[parents[p]];
+            dims[p] = attestedCategories.get(parents[p]).keySet().size();
         }
 
         // Number of parent states.
@@ -261,44 +293,7 @@ public class DiscreteBicScore implements DiscreteScore {
             r *= dims[p];
         }
 
-        // Conditional cell coefs of data for node given parents(node).
-        int[] n_j = new int[r];
-
-        int[] parentValues = new int[parents.length];
-
-        int[][] myParents = new int[parents.length][];
-        for (int i = 0; i < parents.length; i++) {
-            myParents[i] = this.data[parents[i]];
-        }
-
-        int[] myChild = this.data[node];
-
-        ROW:
-        for (int i = 0; i < this.sampleSize; i++) {
-            for (int p = 0; p < parents.length; p++) {
-                if (myParents[p][i] == -99) continue ROW;
-                parentValues[p] = myParents[p][i];
-            }
-
-            int childValue = myChild[i];
-
-            if (childValue == -99) {
-                continue;
-            }
-
-            int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
-            n_j[rowIndex]++;
-        }
-
-        int attestedRows = 0;
-
-        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
-            if (n_j[rowIndex] > 0) {
-                attestedRows++;
-            }
-        }
-
-        return attestedRows * (this.numCategories[node] - 1);
+        return r * (c - 1);
     }
 
     /**
