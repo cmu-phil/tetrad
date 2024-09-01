@@ -166,7 +166,13 @@ public class AdTree {
             cacheKey.add(v);
             List<Node> key = Collections.unmodifiableList(new ArrayList<>(cacheKey));
 
-            subdivisionsHolder[0] = subdivisionCache.computeIfAbsent(key, k -> subdivide(subdivisionsHolder[0], v));
+            // If the key length is <= depth limit, look up the value in the cache if it is there or if not, compute it.
+            // If the key length is > depth limit, compute it without caching.
+            if (key.size() <= cacheDepthLimit) {
+                subdivisionsHolder[0] = subdivisionCache.computeIfAbsent(key, k -> subdivide(subdivisionsHolder[0], v));
+            } else {
+                subdivisionsHolder[0] = subdivide(subdivisionsHolder[0], v);
+            }
         }
 
         this.leaves = subdivisionsHolder[0];
@@ -245,10 +251,9 @@ public class AdTree {
     }
 
     /**
-     * Sets the maximum size of the cache. Default is 1000. This is useful for cases where the cache is not being used
-     * effectively. The deault size is 1000.
+     * Sets the maximum size of the cache. This is useful for cases where the cache is not being used effectively.
      *
-     * @param maxCacheSize The maximum size of the cache.
+     * @param maxCacheSize The maximum size of the cache. Must be >= 1. Default is 1000.
      */
     public void setMaxCacheSize(int maxCacheSize) {
         if (maxCacheSize < 1) {
@@ -259,9 +264,8 @@ public class AdTree {
 
     /**
      * Sets the maximum depth of the cache. This is useful for cases where the cache is not being used effectively.
-     * Default is 5.
      *
-     * @param cacheDepthLimit The maximum depth of the cache.
+     * @param cacheDepthLimit The maximum depth of the cache. Must be >= 0. Default it 5.
      */
     public void setCacheDepthLimit(int cacheDepthLimit) {
         if (cacheDepthLimit < 0) {
