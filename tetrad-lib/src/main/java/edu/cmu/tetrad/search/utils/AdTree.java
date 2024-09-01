@@ -28,8 +28,9 @@ import java.util.*;
  * counting and rule learning. In KDD98 Conference.
  * <p>
  * We add some optimizations to this class to help speed it up. First, we add a cache to store subdivisions for reuse.
- * This cache uses a List<Node> as the key, which is the list of variables in the table. We limit the cache size to
- * avoid using too much memory. We also add a maximum cache size parameter to make it easier to change the cache size.
+ * This cache uses a List&lt;Node&gt; as the key, which is the list of variables in the table. We limit the cache size
+ * to avoid using too much memory. We also add a maximum cache size parameter to make it easier to change the cache
+ * size.
  * <p>
  * Second, we add a depth limit to the cache. This is useful for cases where the cache is not being used effectively. We
  * set the default depth limit to 5, which means that the cache will only store a tree of subdivision results out to a
