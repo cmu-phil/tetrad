@@ -25,9 +25,11 @@ import java.util.*;
  * This is an adaptation of the AD tree as described in: Anderson, B., &amp; Moore, A. W. (1998). AD-trees for fast
  * counting and rule learning. In KDD98 Conference.
  *
- * @author josephramsey 2024-9-1
+ * @author josephramsey 2024-8-28
  */
 public class AdTree {
+    private static final int MAX_CACHE_SIZE = 1000; // Example cache size limit
+
     /**
      * Indices of variables.
      */
@@ -40,27 +42,6 @@ public class AdTree {
      * The rows of the dataset to use; the default is to use all the rows. This is useful for subsampling.
      */
     private final List<Integer> rows;
-    /**
-     * Represents the maximum size limit for a cache. This variable determines the maximum number of items that can be
-     * stored in the cache.
-     * <p>
-     * By default, the value is set to 1000.
-     */
-    private int maxCacheSize = 1000; // Example cache size limit
-    /**
-     * Cache to store subdivisions for reuse, using a List<Node> as the key.
-     */
-    private final Map<List<Node>, Map<Integer, Subdivision>> subdivisionCache =
-            new LinkedHashMap<>(maxCacheSize, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<List<Node>, Map<Integer, Subdivision>> eldest) {
-                    return this.size() > maxCacheSize;
-                }
-            };
-    /**
-     * The depth of the tree.
-     */
-    private int depth = -1;
     /**
      * The number of categories for each of the variables in the table.
      */
@@ -79,14 +60,17 @@ public class AdTree {
      */
     private List<DiscreteVariable> tableVariables;
     /**
-     * The traversal order of the discrete variables in the AD Tree. The order in which the variables are traversed can
-     * affect the efficiency and performance of certain operations on the tree. This is a private field and should not
-     * be accessed directly. The traversal order is a list of DiscreteVariable objects. It is used by the buildTable
-     * method to construct the contingency table, and by other methods that need to access or manipulate the variables
-     * in the tree. It is recommended to set the traversal order before calling the buildTable method to ensure the
-     * desired order of variables in the table.
+     * Cache to store subdivisions for reuse, using a List<Node> as the key.
      */
-    private List<DiscreteVariable> traversalOrder;
+    private final Map<List<Node>, Map<Integer, Subdivision>> subdivisionCache =
+            new LinkedHashMap<List<Node>, Map<Integer, Subdivision>>(MAX_CACHE_SIZE, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<List<Node>, Map<Integer, Subdivision>> eldest) {
+                    return this.size() > MAX_CACHE_SIZE;
+                }
+            };
+    private ArrayList<DiscreteVariable> originalOrder;
+    private HashedMap<Integer, Integer> inverseMap;
 
     /**
      * Constructs an AD Leaf Tree for the given dataset, without subsampling.
@@ -118,137 +102,38 @@ public class AdTree {
      * @param variables A list of discrete variables.
      */
     public void buildTable(List<DiscreteVariable> variables) {
+        this.originalOrder = new ArrayList<>(variables);
+
+        // Sort the variables to in order of nodesHash.
+        variables.sort(Comparator.comparingInt(nodesHash::get));
+
+        // Create the inverse mapping from the index in the sorted list to the original order.
+        this.inverseMap = new HashedMap<>();
+
+        for (int i = 0; i < variables.size(); i++) {
+            this.inverseMap.put(variables.indexOf(variables.get(i)), originalOrder.indexOf(variables.get(i)));
+        }
+
+        // Now in ever other public method, we need to use this inverse map to get the original order.
+
         validateVariables(variables);
         this.tableVariables = variables;
         this.dims = calculateDimensions(variables);
 
-        this.traversalOrder = new ArrayList<>();
+        // Use a holder array to avoid "effectively final" issues
         final Map<Integer, Subdivision>[] subdivisionsHolder = new Map[]{new HashedMap<>()};
         subdivisionsHolder[0].put(0, new Subdivision(null, -1, rows));
 
-        for (DiscreteVariable v : variables) {
-            traversalOrder.add(v);
+        List<Node> cacheKey = new ArrayList<>();
 
-            // Create a key using only the first 'depth' elements
-            int depth = this.depth < 0 ? traversalOrder.size() : this.depth;
-            List<Node> key = List.copyOf(traversalOrder.subList(0, Math.min(depth, traversalOrder.size())));
+        for (DiscreteVariable v : variables) {
+            cacheKey.add(v);
+            List<Node> key = Collections.unmodifiableList(new ArrayList<>(cacheKey));
+
             subdivisionsHolder[0] = subdivisionCache.computeIfAbsent(key, k -> subdivide(subdivisionsHolder[0], v));
         }
 
         this.leaves = subdivisionsHolder[0];
-    }
-
-    /**
-     * Return the number of cells in the table.
-     *
-     * @return the number of cells in the table.
-     */
-    public int getNumCells() {
-        int numCells = 1;
-
-        for (int dim : dims) {
-            numCells *= dim;
-        }
-
-        return numCells;
-    }
-
-    /**
-     * Returns the index of the cell in the table for the given coordinates. It is assumed that the given coordinates
-     * are within the bounds of the table--that is, that the first coordinate is between 0 and the dimension of the
-     * first of the first variable, the second coordinate is between 0 and the dimension of the second variable, and so
-     * on. The coordinates are 0-based. It is also assumed that the number of coordinates is equal to the number of
-     * variables in the table.
-     *
-     * @param coords the coordinates of the cell.
-     * @return the index of the cell in the table.
-     * @throws IllegalArgumentException if the coordinates are null, if there are too many coordinates, if a coordinate
-     *                                  is out of bounds, or if the number of coordinates is not equal to the number of
-     *                                  variables in the table.
-     */
-    public int getCellIndex(int... coords) {
-        if (coords.length != tableVariables.size()) {
-            throw new IllegalArgumentException("Wrong number of coordinates.");
-        }
-
-        // Translate the coordinates from the original order to the traversal order
-        int[] mappedCoords = new int[coords.length];
-        for (int i = 0; i < coords.length; i++) {
-            Node originalVariable = tableVariables.get(i);
-            int traversalIndex = traversalOrder.indexOf(originalVariable);
-            mappedCoords[traversalIndex] = coords[i];
-        }
-
-        return getCellIndexPrivate(mappedCoords);
-    }
-
-    /**
-     * Returns the cell in the table for the given index.
-     * <p>
-     * This is a list of indices into the rows of the data set.
-     *
-     * @param cellIndex the index of the cell.
-     * @return the cell in the table.
-     * @see #getCellIndex(int[])
-     */
-    public List<Integer> getCell(int cellIndex) {
-        Subdivision subdivision = leaves.get(cellIndex);
-        if (subdivision == null) return new ArrayList<>();
-
-        List<Integer> originalOrderCell = new ArrayList<>(subdivision.cell().size());
-        // Apply reverse mapping here if needed
-        originalOrderCell.addAll(subdivision.cell());
-        return originalOrderCell;
-    }
-
-    /**
-     * Returns the count of the cell in the table for the given coordinates.
-     *
-     * @param coords the coordinates of the cell.
-     * @return the cell in the table.
-     */
-    public int getCount(int[] coords) {
-        int cellIndex = getCellIndex(coords);
-        return getCount(cellIndex);
-    }
-
-    /**
-     * Returns the count of the cell in the table for the given index.
-     *
-     * @param cellIndex the index of the cell.
-     * @return the cell in the table.
-     */
-    public int getCount(int cellIndex) {
-        Subdivision subdivision = leaves.get(cellIndex);
-        return subdivision == null ? 0 : subdivision.cell().size();
-    }
-
-    /**
-     * Sets the depth of the AD Tree.
-     *
-     * @param depth the depth value to set for the AD Tree.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
-     * Sets the maximum cache size for the AD Tree. The cache is used to store subdivisions for reuse. The default value
-     * is 1000.
-     *
-     * @param maxCacheSize the maximum cache size to set for the AD Tree.
-     */
-    public void setMaxCacheSize(int maxCacheSize) {
-        this.maxCacheSize = maxCacheSize;
-    }
-
-    // Utility method for getting all rows (assumes existence of this method or similar)
-    private static List<Integer> getAllRows(int numRows) {
-        List<Integer> rows = new ArrayList<>(numRows);
-        for (int i = 0; i < numRows; i++) {
-            rows.add(i);
-        }
-        return rows;
     }
 
     private void validateDataSet(DataSet dataSet) {
@@ -342,6 +227,83 @@ public class AdTree {
     }
 
     /**
+     * Return the number of cells in the table.
+     *
+     * @return the number of cells in the table.
+     */
+    public int getNumCells() {
+        int numCells = 1;
+
+        for (int dim : dims) {
+            numCells *= dim;
+        }
+
+        return numCells;
+    }
+
+    /**
+     * Returns the index of the cell in the table for the given coordinates. It is assumed that the given coordinates
+     * are within the bounds of the table--that is, that the first coordinate is between 0 and the dimension of the
+     * first of the first variable, the second coordinate is between 0 and the dimension of the second variable, and so
+     * on. The coordinates are 0-based. It is also assumed that the number of coordinates is equal to the number of
+     * variables in the table.
+     *
+     * @param coords the coordinates of the cell.
+     * @return the index of the cell in the table.
+     * @throws IllegalArgumentException if the coordinates are null, if there are too many coordinates, if a coordinate
+     *                                  is out of bounds, or if the number of coordinates is not equal to the number of
+     *                                  variables in the table.
+     */
+    public int getCellIndex(int... coords) {
+        if (coords.length != tableVariables.size()) {
+            throw new IllegalArgumentException("Wrong number of coordinates.");
+        }
+
+        int[] _coords = new int[coords.length];
+        for (int i = 0; i < coords.length; i++) {
+            _coords[i] = coords[inverseMap.get(i)];
+        }
+
+        return getCellIndexPrivate(_coords);
+    }
+
+    /**
+     * Returns the cell in the table for the given index.
+     * <p>
+     * This is a list of indices into the rows of the data set.
+     *
+     * @param cellIndex the index of the cell.
+     * @return the cell in the table.
+     * @see #getCellIndex(int[])
+     */
+    public List<Integer> getCell(int cellIndex) {
+        Subdivision subdivision = leaves.get(cellIndex);
+        return subdivision == null ? new ArrayList<>() : subdivision.cell();
+    }
+
+    /**
+     * Returns the count of the cell in the table for the given coordinates.
+     *
+     * @param coords the coordinates of the cell.
+     * @return the cell in the table.
+     */
+    public int getCount(int[] coords) {
+        int cellIndex = getCellIndex(coords);
+        return getCount(cellIndex);
+    }
+
+    /**
+     * Returns the count of the cell in the table for the given index.
+     *
+     * @param cellIndex the index of the cell.
+     * @return the cell in the table.
+     */
+    public int getCount(int cellIndex) {
+        Subdivision subdivision = leaves.get(cellIndex);
+        return subdivision == null ? 0 : subdivision.cell().size();
+    }
+
+    /**
      * Returns the index of the cell in the table for the given coordinates. It is assumed that the given coordinates
      * are within the bounds of the table--that is, that the first coordinate is between 0 and the number of categories
      * of the first variable, the second coordinate is between 0 and the number of categories of the second variable,
@@ -406,5 +368,14 @@ public class AdTree {
      * @param cell                The list of cells in the subdivision.
      */
     private record Subdivision(AdTree.Subdivision previousSubdivision, int category, List<Integer> cell) {
+    }
+
+    // Utility method for getting all rows (assumes existence of this method or similar)
+    private static List<Integer> getAllRows(int numRows) {
+        List<Integer> rows = new ArrayList<>(numRows);
+        for (int i = 0; i < numRows; i++) {
+            rows.add(i);
+        }
+        return rows;
     }
 }
