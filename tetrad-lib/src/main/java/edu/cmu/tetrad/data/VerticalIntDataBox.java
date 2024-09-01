@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class VerticalIntDataBox implements DataBox {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
