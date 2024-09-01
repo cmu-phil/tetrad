@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.search.utils;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.collections4.map.HashedMap;
 
@@ -19,7 +22,7 @@ import java.util.*;
  * turn. The leaves of the tree constitute the final subdivision of the data into cells, and the sizes of these cells
  * are the counts for the multidimensional contingency table for the given list of variables.
  * <p>
- * The dataset for this must be discrete.
+ * Continuous variables are ignored for this data structure.
  * <p>
  * This is an adaptation of the AD tree as described in: Anderson, B., &amp; Moore, A. W. (1998). AD-trees for fast
  * counting and rule learning. In KDD98 Conference.
@@ -32,6 +35,11 @@ import java.util.*;
  * set the default depth limit to 5, which means that the cache will only store a tree of subdivision results out to a
  * depth of 5. This is useful because long keys to the cache are less likely to be reused, so we only store initial
  * segments of each branch.
+ * <p>
+ * Third, we internally sort the variables in the table to match the order of the nodesHash. This is useful because
+ * fewer branches need to be created in the tree. For instance, building a tree with variables [A, B, C] and [C, B, A]
+ * will result in the same marginal tables, just permuted, so we sort the variables to avoid this duplication. The
+ * inverse mapping is used to map the sorted indices back to the original order for the public methods.
  *
  * @author josephramsey 2024-9-1
  */
@@ -56,7 +64,7 @@ public class AdTree {
      * Cache to store subdivisions for reuse, using a List<Node> as the key.
      */
     private final Map<List<Node>, Map<Integer, Subdivision>> subdivisionCache =
-            new LinkedHashMap<>(maxCacheSize, 0.75f, true) {
+            new LinkedHashMap<List<Node>, Map<Integer, Subdivision>>(maxCacheSize, 0.75f, true) {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<List<Node>, Map<Integer, Subdivision>> eldest) {
                     return this.size() > maxCacheSize;
@@ -83,6 +91,10 @@ public class AdTree {
      * The variables in the table.
      */
     private List<DiscreteVariable> tableVariables;
+    /**
+     * The inverse mapping from the index in the sorted list to the original order.
+     */
+    private HashedMap<Integer, Integer> inverseMap;
 
     /**
      * Constructs an AD Leaf Tree for the given dataset, without subsampling.
@@ -102,10 +114,6 @@ public class AdTree {
      *                This is useful for subsampling.
      */
     public AdTree(DataSet dataSet, List<Integer> rows) {
-        if (!dataSet.isDiscrete()) {
-            throw new IllegalArgumentException("Data set must be discrete.");
-        }
-
         validateDataSet(dataSet);
         this.rows = (rows == null) ? getAllRows(dataSet.getNumRows()) : validateRows(dataSet, rows);
         this.discreteData = initializeDiscreteData(dataSet);
@@ -127,9 +135,29 @@ public class AdTree {
      * @param variables A list of discrete variables.
      */
     public void buildTable(List<DiscreteVariable> variables) {
-        validateVariables(variables);
-        this.tableVariables = new ArrayList<>(variables);
-        this.dims = calculateDimensions(variables);
+        ArrayList<DiscreteVariable> originalOrder = new ArrayList<>(variables);
+        ArrayList<DiscreteVariable> sortedOrder = new ArrayList<>(variables);
+
+        // Sort the variables to in order of nodesHash.
+        sortedOrder.sort(Comparator.comparingInt(nodesHash::get));
+
+        // Create the inverse mapping from the index in the sorted list to the original order.
+        this.inverseMap = new HashedMap<>();
+
+        // Create a temporary map to track the original indices.
+        Map<DiscreteVariable, Integer> originalIndices = new HashMap<>();
+        for (int i = 0; i < originalOrder.size(); i++) {
+            originalIndices.put(originalOrder.get(i), i);
+        }
+
+        // Populate the inverseMap by mapping sorted indices to the original indices.
+        for (int i = 0; i < sortedOrder.size(); i++) {
+            this.inverseMap.put(i, originalIndices.get(sortedOrder.get(i)));
+        }
+
+        validateVariables(sortedOrder);
+        this.tableVariables = sortedOrder;
+        this.dims = calculateDimensions(sortedOrder);
 
         // Use a holder array to avoid "effectively final" issues
         final Map<Integer, Subdivision>[] subdivisionsHolder = new Map[]{new HashedMap<>()};
@@ -137,7 +165,7 @@ public class AdTree {
 
         List<Node> cacheKey = new ArrayList<>();
 
-        for (DiscreteVariable v : variables) {
+        for (DiscreteVariable v : sortedOrder) {
             cacheKey.add(v);
             List<Node> key = Collections.unmodifiableList(new ArrayList<>(cacheKey));
 
@@ -186,7 +214,7 @@ public class AdTree {
             throw new IllegalArgumentException("Wrong number of coordinates.");
         }
 
-        return getCellIndexPrivate(coords);
+        return getCellIndexPrivate(coords, true);
     }
 
     /**
@@ -357,9 +385,10 @@ public class AdTree {
      * There cannot be more coordinates than there are variables in the table.
      *
      * @param coords  the coordinates of the cell.
+     * @param inverse whether to use the original order of the variables.
      * @return the index of the cell in the table.
      */
-    private int getCellIndexPrivate(int[] coords) {
+    private int getCellIndexPrivate(int[] coords, boolean inverse) {
         if (coords == null) {
             throw new IllegalArgumentException("Coordinates must not be null.");
         }
@@ -371,12 +400,14 @@ public class AdTree {
         int cellIndex = 0;
 
         for (int i = 0; i < coords.length; i++) {
-            if (coords[i] < 0 || coords[i] >= dims[i]) {
-                throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
-            }
+            int mappedIndex = inverse ? inverseMap.get(i) : i;
+
+//            if (coords[mappedIndex] < 0 || coords[mappedIndex] >= dims[i]) {
+//                throw new IllegalArgumentException("Coordinate " + i + " is out of bounds.");
+//            }
 
             cellIndex *= dims[i];
-            cellIndex += coords[i];
+            cellIndex += coords[mappedIndex];
         }
 
         return cellIndex;
@@ -397,7 +428,7 @@ public class AdTree {
             subdivision = subdivision.previousSubdivision();
         }
 
-        return getCellIndexPrivate(indices.stream().mapToInt(i -> i).toArray());
+        return getCellIndexPrivate(indices.stream().mapToInt(i -> i).toArray(), false);
     }
 
     /**
