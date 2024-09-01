@@ -81,109 +81,121 @@ public class AdTree {
      *                This is useful for subsampling.
      */
     public AdTree(DataSet dataSet, List<Integer> rows) {
+        validateDataSet(dataSet);
+        this.rows = (rows == null) ? getAllRows(dataSet.getNumRows()) : validateRows(dataSet, rows);
+        this.discreteData = initializeDiscreteData(dataSet);
+        this.nodesHash = buildNodesHash(dataSet);
+    }
+
+    /**
+     * Builds the contingency table based on the given list of discrete variables.
+     *
+     * @param variables A list of discrete variables.
+     */
+    public void buildTable(List<DiscreteVariable> variables) {
+        validateVariables(variables);
+        this.tableVariables = variables;
+        this.dims = calculateDimensions(variables);
+        this.leaves = buildSubdivisions(variables);
+    }
+
+    private void validateDataSet(DataSet dataSet) {
         if (dataSet == null) {
             throw new IllegalArgumentException("Data set must not be null.");
         }
+    }
 
-        if (rows == null) {
-            rows = getAllRows(dataSet.getNumRows());
-        }
-
-        // Make sure all rows are less than the number of rows in the dataset.
+    private List<Integer> validateRows(DataSet dataSet, List<Integer> rows) {
         for (int row : rows) {
             if (row >= dataSet.getNumRows()) {
                 throw new IllegalArgumentException("Row index out of bounds: " + row);
             }
         }
+        return rows;
+    }
 
-        this.rows = rows;
-        this.discreteData = new int[dataSet.getNumColumns()][];
-
+    private int[][] initializeDiscreteData(DataSet dataSet) {
+        int[][] discreteData = new int[dataSet.getNumColumns()][];
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
-
             if (v instanceof DiscreteVariable) {
-                int[] col = new int[dataSet.getNumRows()];
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    col[i] = dataSet.getInt(i, j);
-                }
-
-                this.discreteData[j] = col;
+                discreteData[j] = extractColumn(dataSet, j);
             }
         }
+        return discreteData;
+    }
 
-        this.nodesHash = new HashedMap<>();
+    private int[] extractColumn(DataSet dataSet, int columnIndex) {
+        int[] column = new int[dataSet.getNumRows()];
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            column[i] = dataSet.getInt(i, columnIndex);
+        }
+        return column;
+    }
 
+    private Map<Node, Integer> buildNodesHash(DataSet dataSet) {
+        Map<Node, Integer> nodesHash = new HashedMap<>();
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            this.nodesHash.put(dataSet.getVariable(j), j);
+            nodesHash.put(dataSet.getVariable(j), j);
+        }
+        return nodesHash;
+    }
+
+    private void validateVariables(List<DiscreteVariable> variables) {
+        if (variables == null || variables.isEmpty()) {
+            throw new IllegalArgumentException("Variables list must not be null or empty.");
+        }
+        for (DiscreteVariable v : variables) {
+            if (!nodesHash.containsKey(v)) {
+                throw new IllegalArgumentException("Variable not in dataset: " + v.getName());
+            }
         }
     }
 
-    /**
-     * Calculates the cells for each combination of the given variables. The sizes of these cells are counts for a
-     * multidimensional contingency table for the given variables.
-     *
-     * @param A A list of discrete variables. variable.
-     */
-    public void buildTable(List<DiscreteVariable> A) {
-        if (A == null) {
-            throw new IllegalArgumentException("Variables must not be null.");
+    private int[] calculateDimensions(List<DiscreteVariable> variables) {
+        int[] dimensions = new int[variables.size()];
+        for (int i = 0; i < variables.size(); i++) {
+            dimensions[i] = variables.get(i).getNumCategories();
         }
+        return dimensions;
+    }
 
-        // Make sure all variables are in the dataset.
-        for (DiscreteVariable v : A) {
-            if (!nodesHash.containsKey(v)) {
-                throw new IllegalArgumentException("Variable not in dataset: " + v);
-            }
-        }
-
-        this.tableVariables = A;
-
-        // Calculate the dimensions of the table.
-        this.dims = new int[A.size()];
-
-        for (int i = 0; i < A.size(); i++) {
-            dims[i] = A.get(i).getNumCategories();
-        }
-
-        // Now we subdivide the data by each variable in A, in order.
+    private Map<Integer, Subdivision> buildSubdivisions(List<DiscreteVariable> variables) {
         Map<Integer, Subdivision> subdivisions = new HashedMap<>();
         subdivisions.put(0, new Subdivision(null, -1, rows));
-
-        for (DiscreteVariable v : A) {
-
-            // For each new discrete variable, we need to subdivide the cell into subcells based on the
-            // categories of the variable.
-            Map<Integer, Subdivision> newSubdivisions = new HashedMap<>();
-
-            for (int prevIndex : subdivisions.keySet()) {
-                Subdivision prevSubdivision = subdivisions.get(prevIndex);
-                List<Integer> cell = prevSubdivision.cell();
-                Map<Integer, List<Integer>> subcells = new HashedMap<>();
-                int newVar = nodesHash.get(v);
-
-                for (int i : cell) {
-                    int category = discreteData[newVar][i];
-
-                    if (!subcells.containsKey(category)) {
-                        subcells.put(category, new ArrayList<>());
-                    }
-
-                    subcells.get(category).add(i);
-                }
-
-                for (int category : subcells.keySet()) {
-                    List<Integer> newCell = subcells.get(category);
-                    Subdivision newSubdivision = new Subdivision(prevSubdivision, category, newCell);
-                    newSubdivisions.put(getIndex(newSubdivision), newSubdivision);
-                }
-            }
-
-            subdivisions = newSubdivisions;
+        for (DiscreteVariable v : variables) {
+            subdivisions = subdivide(subdivisions, v);
         }
+        return subdivisions;
+    }
 
-        this.leaves = subdivisions;
+    private Map<Integer, Subdivision> subdivide(Map<Integer, Subdivision> subdivisions, DiscreteVariable variable) {
+        Map<Integer, Subdivision> newSubdivisions = new HashedMap<>();
+        int varIndex = nodesHash.get(variable);
+        for (Map.Entry<Integer, Subdivision> entry : subdivisions.entrySet()) {
+            List<Integer> cell = entry.getValue().cell();
+            Map<Integer, List<Integer>> subcells = groupByCategory(cell, varIndex);
+            newSubdivisions.putAll(createSubdivisions(entry.getValue(), subcells));
+        }
+        return newSubdivisions;
+    }
+
+    private Map<Integer, List<Integer>> groupByCategory(List<Integer> cell, int varIndex) {
+        Map<Integer, List<Integer>> subcells = new HashedMap<>();
+        for (int i : cell) {
+            int category = discreteData[varIndex][i];
+            subcells.computeIfAbsent(category, k -> new ArrayList<>()).add(i);
+        }
+        return subcells;
+    }
+
+    private Map<Integer, Subdivision> createSubdivisions(Subdivision parent, Map<Integer, List<Integer>> subcells) {
+        Map<Integer, Subdivision> newSubdivisions = new HashedMap<>();
+        for (Map.Entry<Integer, List<Integer>> entry : subcells.entrySet()) {
+            Subdivision newSubdivision = new Subdivision(parent, entry.getKey(), entry.getValue());
+            newSubdivisions.put(getIndex(newSubdivision), newSubdivision);
+        }
+        return newSubdivisions;
     }
 
     /**
