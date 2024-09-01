@@ -20,10 +20,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -1373,7 +1370,12 @@ public class MarkovCheck implements SampleSizeSettable {
 
                 if (independenceTest instanceof RowsSettable) {
                     List<Integer> rows = getSubsampleRows(percentResample); // Default as 0.5
+//                    List<Integer> rows = getBootstrapRows(1.0);
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
+
+//                    if (independenceTest instanceof SampleSizeSettable) {
+//                        ((SampleSizeSettable) independenceTest).setSampleSize(getBootstrapEffectiveSampleSize(rows));
+//                    }
                 }
 
                 addResults(resultsIndep, resultsDep, fact, x, y, z);
@@ -1446,6 +1448,36 @@ public class MarkovCheck implements SampleSizeSettable {
 
             pool.shutdown();
         }
+    }
+
+    private int getBootstrapEffectiveSampleSize(List<Integer> rows) {
+        int[] ni = new int[rows.size()];
+
+        for (int i = 0; i < ni.length; i++) {
+
+            // Count the number of times the ith row appears in the bootstrap sample.
+            ni[i] = 0;
+
+            int rowi = rows.get(i);
+
+            for (Integer row : rows) {
+                if (row.equals(rowi)) {
+                    ni[i]++;
+                }
+            }
+        }
+
+        // Now the effective sample size is (SUM(ni^2)^2 / SUM(ni^2)).
+        double sum = 0.0;
+        double sumSquared = 0.0;
+
+        for (int j : ni) {
+            sum += j;
+            sumSquared += j * j;
+        }
+
+        double effectiveSampleSize = (sum * sum) / sumSquared;
+        return (int) FastMath.round(effectiveSampleSize);
     }
 
     /**
@@ -1536,6 +1568,24 @@ public class MarkovCheck implements SampleSizeSettable {
         }
         Collections.shuffle(rows);
         return rows.subList(0, subsampleSize);
+    }
+
+    private List<Integer> getBootstrapRows(double v) {
+        int sampleSize = independenceTest.getSampleSize();
+        int subsampleSize = (int) FastMath.floor(sampleSize * v);
+
+        // Draw a sample of size subsampleSize with replacement from the set of all rows.
+        List<Integer> rows = new ArrayList<>(sampleSize);
+        for (int i = 0; i < sampleSize; i++) {
+            rows.add(i);
+        }
+
+        List<Integer> bootstrapRows = new ArrayList<>(subsampleSize);
+        for (int i = 0; i < subsampleSize; i++) {
+            bootstrapRows.add(rows.get(ThreadLocalRandom.current().nextInt(sampleSize)));
+        }
+
+        return bootstrapRows;
     }
 
     /**
