@@ -143,8 +143,12 @@ public final class BFci implements IGraphSearch {
      * @see Score
      */
     public BFci(IndependenceTest test, Score score) {
+        if (test == null) {
+            throw new NullPointerException("Test is null");
+        }
+
         if (score == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Score is null");
         }
         this.score = score;
         this.independenceTest = test;
