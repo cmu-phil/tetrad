@@ -791,7 +791,7 @@ public class MarkovCheck implements SampleSizeSettable {
      *              appended to the existing results.
      * @see #getResults(boolean)
      */
-    public void generateResults(boolean clear) throws InterruptedException {
+    public void generateResults(boolean clear) {
         if (clear) {
             clear();
         }
@@ -886,9 +886,13 @@ public class MarkovCheck implements SampleSizeSettable {
                 }
             }
 
-            generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
-            generateResults(msep, true);
-            generateResults(mconn, false);
+            try {
+                generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
+                generateResults(msep, true);
+                generateResults(mconn, false);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             this.numTestsIndep = msep.size();
             this.numTestsDep = mconn.size();
