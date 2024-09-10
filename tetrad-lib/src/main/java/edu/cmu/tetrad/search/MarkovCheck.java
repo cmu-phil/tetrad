@@ -791,7 +791,7 @@ public class MarkovCheck implements SampleSizeSettable {
      *              appended to the existing results.
      * @see #getResults(boolean)
      */
-    public void generateResults(boolean clear) {
+    public void generateResults(boolean clear) throws InterruptedException {
         if (clear) {
             clear();
         }
@@ -1202,7 +1202,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * @return The Markov check record.
      * @see MarkovCheckRecord
      */
-    public MarkovCheckRecord getMarkovCheckRecord() {
+    public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
         setPercentResample(percentResample);
         generateResults(true);
         double adInd = getAndersonDarlingP(true);
@@ -1222,7 +1222,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * @return The Markov check record as a string.
      * @see MarkovCheckRecord
      */
-    public String getMarkovCheckRecordString() {
+    public String getMarkovCheckRecordString() throws InterruptedException {
         NumberFormat nf = new DecimalFormat("0.000");
         MarkovCheckRecord record = getMarkovCheckRecord();
 
@@ -1264,7 +1264,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * @param msepTest             The m-separation test.
      */
     private void generateMseps(List<IndependenceFact> allIndependenceFacts, Set<IndependenceFact> msep, Set<IndependenceFact> mconn,
-                               MsepTest msepTest) {
+                               MsepTest msepTest) throws InterruptedException {
         class IndCheckTask implements Callable<Pair<Set<IndependenceFact>, Set<IndependenceFact>>> {
             private final int index;
             private final List<IndependenceFact> facts;
@@ -1344,7 +1344,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * @param facts The set of independence facts.
      * @param msep  True if for implied independencies, false if for implied dependencies.
      */
-    private void generateResults(Set<IndependenceFact> facts, boolean msep) {
+    private void generateResults(Set<IndependenceFact> facts, boolean msep) throws InterruptedException {
         class IndCheckTask implements Callable<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> {
             private final int index;
             private final List<IndependenceFact> facts;
@@ -1595,8 +1595,12 @@ public class MarkovCheck implements SampleSizeSettable {
      * @param mconn The set of m-connection facts.
      */
     private void generateResultsAllSubsets(Set<IndependenceFact> msep, Set<IndependenceFact> mconn) {
-        generateResults(msep, true);
-        generateResults(mconn, false);
+        try {
+            generateResults(msep, true);
+            generateResults(mconn, false);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
