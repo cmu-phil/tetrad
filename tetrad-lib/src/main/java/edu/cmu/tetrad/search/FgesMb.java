@@ -883,7 +883,12 @@ public final class FgesMb implements DagScorer {
         if (this.parallelized) {
             int parallelism = Runtime.getRuntime().availableProcessors();
             ForkJoinPool pool = new ForkJoinPool(parallelism);
-            List<Future<EvalPair>> futures = pool.invokeAll(tasks);
+            List<Future<EvalPair>> futures = null;
+            try {
+                futures = pool.invokeAll(tasks);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             for (Future<EvalPair> future : futures) {
                 try {
