@@ -153,7 +153,7 @@ public class IdaCheck {
      * y -&gt; x over all possible parents sets of y.
      */
     public static double getSquaredDistanceXonY(String y, String x, double trueCoefficient, Graph mpdag,
-                                                               DataSet dataSet) {
+                                                DataSet dataSet) {
 
         // Make sure the arguments are not null.
         if (mpdag == null) {
