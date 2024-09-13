@@ -263,15 +263,17 @@ public class IdaCheck {
      * the undirected edges adjacent to the node). We need to calculate the distance of the true beta to the nearest
      * endpoint for the range of possible betas for the node, given the possible parents.
      *
-     * @param cpdag   the CPDAG.
-     * @param dataSet the data set.
      * @param y       the parent node.
      * @param x       the child node.
+     * @param mpdag   the MPDAG. (CPDAG, DAG, or CPDAG with background knowledge)
+     * @param dataSet the data set.
      * @return the average of the squared distances between the true total effects and the IDA effect ranges for a pair
      * y -&gt; x over all possible parents sets of y.
      */
-    public double getAverageSquaredDistanceNodeOnParent(Graph cpdag, DataSet dataSet, Node y, Node x) {
-        if (cpdag == null) {
+    public double getAverageSquaredDistanceNodeOnParent(Node y, Node x, Graph mpdag, DataSet dataSet) {
+
+        // Make sure the arguments are not null.
+        if (mpdag == null) {
             throw new NullPointerException("Graph is null.");
         }
 
@@ -279,27 +281,46 @@ public class IdaCheck {
             throw new NullPointerException("DataSet is null.");
         }
 
+        if (x == null) {
+            throw new NullPointerException("Node x is null.");
+        }
+
+        if (y == null) {
+            throw new NullPointerException("Node y is null.");
+        }
+
+        // Make sure the data set is continuous (not discrete or mixed).
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Expecting a continuous data set.");
         }
 
-        // Check to make sure the graph is a CPDAG.
-        if (!cpdag.paths().isLegalCpdag()) {
-            throw new IllegalArgumentException("Expecting an CPDAG.");
+        // Check to make sure the graph is an MPDAG.
+        if (!mpdag.paths().isLegalMpdag()) {
+            throw new IllegalArgumentException("Expecting an MPDAG.");
+        }
+
+        // Check to make sure the names of the variables in the mpdag are contained in the names of variables
+        // in dataset as well as in the true SEM IM.
+        if (!new HashSet<>(dataSet.getVariableNames()).containsAll(mpdag.getNodeNames())) {
+            throw new IllegalArgumentException("The variables in the MPDAG are not contained in the data set.");
+        }
+
+        if (!new HashSet<>(trueSemIm.getSemPm().getGraph().getNodeNames()).containsAll(mpdag.getNodeNames())) {
+            throw new IllegalArgumentException("The variables in the MPDAG are not contained in the true SEM IM.");
         }
 
         // Check if x and y are adjacent
-        if (!cpdag.isAdjacentTo(y, x)) {
+        if (!mpdag.isAdjacentTo(y, x)) {
             return 0.0;
         }
 
         // Check if y is a parent of x
-        if (!cpdag.isParentOf(y, x)) {
+        if (!mpdag.isParentOf(y, x)) {
             return 0.0;
         }
 
         // Get the edges adjacent to y.
-        Set<Edge> edges = cpdag.getEdges(y);
+        Set<Edge> edges = mpdag.getEdges(y);
 
         // Separate edges into lists of those that are parents and those that are undirected. Discard any that are
         // children of y.
@@ -307,7 +328,7 @@ public class IdaCheck {
         List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : edges) {
-            if (cpdag.isParentOf(edge.getDistalNode(y), y)) {
+            if (mpdag.isParentOf(edge.getDistalNode(y), y)) {
                 parentEdges.add(edge);
             } else if (Edges.isUndirectedEdge(edge)) {
                 undirectedEdges.add(edge);
@@ -347,8 +368,9 @@ public class IdaCheck {
 
             // Get the variables for the regression.
             List<Node> regressors = new ArrayList<>();
-            regressors.add(y); // This must be the first.
+            regressors.add(y); // y must be the first regressor
 
+            // Now add the other nodes in the combination.
             for (Edge edge : combination) {
                 regressors.add(edge.getDistalNode(y));
             }
@@ -356,16 +378,17 @@ public class IdaCheck {
             RegressionResult result = regressionDatasetSample.regress(x, regressors);
             double betaThisCombination = result.getCoef()[1];
 
-            if (betaThisCombination < min) {
+            if (betaThisCombination <= min) {
                 min = betaThisCombination;
             }
 
-            if (betaThisCombination > max) {
+            if (betaThisCombination >= max) {
                 max = betaThisCombination;
             }
         }
 
-        // Calculate the squared distance of trueBeta to the closest of max or min.
+        // Calculate the squared distance of trueBeta to the closest of max or min, or zero if trueBeta is between
+        // max and min.
         if (trueBeta > min && trueBeta < max) {
             return 0.0;
         } else {
