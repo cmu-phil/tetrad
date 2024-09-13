@@ -1,11 +1,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.OrderedPair;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.util.*;
 
@@ -247,6 +247,131 @@ public class IdaCheck {
         }
 
         return sum / pairs.size();
+    }
+
+
+    /**
+     * Returns the squared distances of the true beta to the nearest endpoint of [minBeta, maxBeta]. Here, the true beta
+     * is obtained from the true SEM IM by regressing x on y and all of y's true parents. In addition, minBeta is the
+     * minimum beta coefficient of y regressed on x and all possible parents sets of x in the given dataset. Also,
+     * maxBeta is the maximum beta coefficient of y regressed on x and all possible parents sets of x in the given
+     * dataset.
+     * <p>
+     * This is an adaptation of IDA to the problem of calculating an IDA-like distance for a node conditional on its
+     * parents, rather than for a pair of nodes. The parents maybe be different from the true model to the estimated
+     * model, so need to consider the range of possible parents for the node in the estimated CPDAG (taking account of
+     * the undirected edges adjacent to the node). We need to calculate the distance of the true beta to the nearest
+     * endpoint for the range of possible betas for the node, given the possible parents.
+     *
+     * @param cpdag   the CPDAG.
+     * @param dataSet the data set.
+     * @param y       the parent node.
+     * @param x       the child node.
+     * @return the average of the squared distances between the true total effects and the IDA effect ranges for a pair
+     * y -&gt; x over all possible parents sets of y.
+     */
+    public double getAverageSquaredDistanceNodeOnParent(Graph cpdag, DataSet dataSet, Node y, Node x) {
+        if (cpdag == null) {
+            throw new NullPointerException("Graph is null.");
+        }
+
+        if (dataSet == null) {
+            throw new NullPointerException("DataSet is null.");
+        }
+
+        if (!dataSet.isContinuous()) {
+            throw new IllegalArgumentException("Expecting a continuous data set.");
+        }
+
+        // Check to make sure the graph is an CPDAG.
+        if (!cpdag.paths().isLegalCpdag()) {
+            throw new IllegalArgumentException("Expecting an CPDAG.");
+        }
+
+        // Check if x and y are adjacent
+        if (!cpdag.isAdjacentTo(x, y)) {
+            return 0.0;
+        }
+
+        // Check if y is a parent of x
+        if (cpdag.isParentOf(y, x)) {
+            return 0.0;
+        }
+
+        // Get the edges adjacent to y.
+        Set<Edge> edges = cpdag.getEdges(y);
+
+        // Separate edges into lists of those that are parents and those that are undirected. Discard any that are children of y.
+        List<Edge> parentEdges = new ArrayList<>();
+        List<Edge> undirectedEdges = new ArrayList<>();
+
+        for (Edge edge : edges) {
+            if (cpdag.isParentOf(edge.getDistalNode(y), y)) {
+                parentEdges.add(edge);
+            } else if (Edges.isUndirectedEdge(edge)) {
+                undirectedEdges.add(edge);
+            }
+        }
+
+        // If there are no parent edges or undirected edges, return 0.
+        if (parentEdges.isEmpty() && undirectedEdges.isEmpty()) {
+            return 0.0;
+        }
+
+        // Get the true total effect of y on x given the combination of possible parents.
+        List<Node> trueRegressors = trueSemIm.getSemPm().getGraph().getParents(y);
+        trueRegressors.add(y);
+
+        List<Node> trueall = new ArrayList<>(trueRegressors);
+        trueall.add(x);
+
+        RegressionDataset regressionDatasetTrue = new RegressionDataset(trueSemIm.getImplCovar(trueall), trueall);
+        RegressionResult resultTrue = regressionDatasetTrue.regress(x, trueRegressors);
+
+        double trueBeta = resultTrue.getCoef()[1];
+
+        RegressionDataset regressionDatasetSample = new RegressionDataset(dataSet);
+
+        // Iterate over all combinations of the undirected edges; these can possibly be parents of x. Form all
+        // combinations of the undirected edges and the parent edges.
+        // Find the minimum and maximum beta values for the combinations.
+        SublistGenerator sublistGenerator = new SublistGenerator(undirectedEdges.size(), undirectedEdges.size());
+        int[] choice;
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+
+        while ((choice = sublistGenerator.next()) != null) {
+            List<Edge> combination = new ArrayList<>();
+
+            for (int i : choice) {
+                combination.add(undirectedEdges.get(i));
+            }
+
+            combination.addAll(parentEdges);
+
+            // Get the variables for the regression.
+            List<Node> regressors = new ArrayList<>();
+            regressors.add(y);
+
+            for (Edge edge : combination) {
+                regressors.add(edge.getDistalNode(y));
+            }
+
+            RegressionResult result = regressionDatasetSample.regress(x, regressors);
+            double beta = result.getCoef()[1];
+
+            if (beta < min) {
+                min = beta;
+            }
+
+            if (beta > max) {
+                max = beta;
+            }
+        }
+
+        // Calculate the squared distance of trueBeta to the closest of max or min.
+        double diff = Math.min(Math.abs(trueBeta - min), Math.abs(trueBeta - max));
+        return diff * diff;
     }
 
     /**

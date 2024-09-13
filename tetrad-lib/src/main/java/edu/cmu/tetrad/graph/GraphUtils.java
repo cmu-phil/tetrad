@@ -3330,7 +3330,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns D-SEP(x, y) for a MAG G. This method implements a non-reachability stle.
+     * Returns D-SEP(x, y) for a MAG G. This method implements a non-reachability style.
      * <p>
      * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
      *
