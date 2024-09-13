@@ -132,10 +132,10 @@ public class IdaCheck {
     }
 
     /**
-     * Returns the squared distances of the true beta to the nearest endpoint of [minBeta, maxBeta]. Here, the true beta
-     * is obtained from the true SEM IM by regressing x on y and all of y's true parents. In addition, minBeta is the
-     * minimum beta coefficient of y regressed on x and all possible parents sets of x in the given dataset. Also,
-     * maxBeta is the maximum beta coefficient of y regressed on x and all possible parents sets of x in the given
+     * Static method to return the squared distance of the true beta to the nearest endpoint of [minBeta, maxBeta].
+     * Here, the true beta is the coefficient for the y -&gt; x edge obtained from the true SEM IM. In addition, minBeta
+     * is the minimum beta coefficient of y regressed on x and all possible parents sets of x in the given dataset.
+     * Also, maxBeta is the maximum beta coefficient of y regressed on x and all possible parents sets of x in the given
      * dataset.
      * <p>
      * This is an adaptation of IDA to the problem of calculating an IDA-like distance for a node conditional on its
@@ -152,7 +152,7 @@ public class IdaCheck {
      * @return the average of the squared distances between the true total effects and the IDA effect ranges for a pair
      * y -&gt; x over all possible parents sets of y.
      */
-    public static double getAverageSquaredDistanceNodeOnParent(String y, String x, double trueCoefficient, Graph mpdag,
+    public static double getSquaredDistanceXonY(String y, String x, double trueCoefficient, Graph mpdag,
                                                                DataSet dataSet) {
 
         // Make sure the arguments are not null.
