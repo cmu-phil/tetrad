@@ -283,25 +283,26 @@ public class IdaCheck {
             throw new IllegalArgumentException("Expecting a continuous data set.");
         }
 
-        // Check to make sure the graph is an CPDAG.
+        // Check to make sure the graph is a CPDAG.
         if (!cpdag.paths().isLegalCpdag()) {
             throw new IllegalArgumentException("Expecting an CPDAG.");
         }
 
         // Check if x and y are adjacent
-        if (!cpdag.isAdjacentTo(x, y)) {
+        if (!cpdag.isAdjacentTo(y, x)) {
             return 0.0;
         }
 
         // Check if y is a parent of x
-        if (cpdag.isParentOf(y, x)) {
+        if (!cpdag.isParentOf(y, x)) {
             return 0.0;
         }
 
         // Get the edges adjacent to y.
         Set<Edge> edges = cpdag.getEdges(y);
 
-        // Separate edges into lists of those that are parents and those that are undirected. Discard any that are children of y.
+        // Separate edges into lists of those that are parents and those that are undirected. Discard any that are
+        // children of y.
         List<Edge> parentEdges = new ArrayList<>();
         List<Edge> undirectedEdges = new ArrayList<>();
 
@@ -311,11 +312,6 @@ public class IdaCheck {
             } else if (Edges.isUndirectedEdge(edge)) {
                 undirectedEdges.add(edge);
             }
-        }
-
-        // If there are no parent edges or undirected edges, return 0.
-        if (parentEdges.isEmpty() && undirectedEdges.isEmpty()) {
-            return 0.0;
         }
 
         // Get the true total effect of y on x given the combination of possible parents.
@@ -351,27 +347,31 @@ public class IdaCheck {
 
             // Get the variables for the regression.
             List<Node> regressors = new ArrayList<>();
-            regressors.add(y);
+            regressors.add(y); // This must be the first.
 
             for (Edge edge : combination) {
                 regressors.add(edge.getDistalNode(y));
             }
 
             RegressionResult result = regressionDatasetSample.regress(x, regressors);
-            double beta = result.getCoef()[1];
+            double betaThisCombination = result.getCoef()[1];
 
-            if (beta < min) {
-                min = beta;
+            if (betaThisCombination < min) {
+                min = betaThisCombination;
             }
 
-            if (beta > max) {
-                max = beta;
+            if (betaThisCombination > max) {
+                max = betaThisCombination;
             }
         }
 
         // Calculate the squared distance of trueBeta to the closest of max or min.
-        double diff = Math.min(Math.abs(trueBeta - min), Math.abs(trueBeta - max));
-        return diff * diff;
+        if (trueBeta > min && trueBeta < max) {
+            return 0.0;
+        } else {
+            double diff = Math.min(Math.abs(trueBeta - min), Math.abs(trueBeta - max));
+            return diff * diff;
+        }
     }
 
     /**
