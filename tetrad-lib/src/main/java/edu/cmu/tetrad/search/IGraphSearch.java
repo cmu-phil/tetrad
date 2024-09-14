@@ -36,7 +36,7 @@ public interface IGraphSearch {
      *
      * @return The discovered graph.
      */
-    Graph search();
+    Graph search() throws InterruptedException;
 }
 
 

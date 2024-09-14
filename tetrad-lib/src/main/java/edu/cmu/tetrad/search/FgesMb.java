@@ -359,18 +359,30 @@ public final class FgesMb implements DagScorer {
 
         this.mode = Mode.heuristicSpeedup;
 
-        fes();
+        try {
+            fes();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         bes();
 
         this.mode = Mode.coverNoncolliders;
 
-        fes();
+        try {
+            fes();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         bes();
 
         if (!faithfulnessAssumed) {
             this.mode = Mode.allowUnfaithfulness;
 
-            fes();
+            try {
+                fes();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             bes();
         }
     }
@@ -606,7 +618,7 @@ public final class FgesMb implements DagScorer {
      * This method does not return any values. It updates the graph by inserting new arrows and updating the set of
      * arrows to be processed.
      */
-    private void fes() {
+    private void fes() throws InterruptedException {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
         reevaluateForward(new HashSet<>(variables));
@@ -692,7 +704,7 @@ public final class FgesMb implements DagScorer {
      *
      * @param nodes the set of nodes for which to reevaluate the forward arrows
      */
-    private void reevaluateForward(final Set<Node> nodes) {
+    private void reevaluateForward(final Set<Node> nodes) throws InterruptedException {
         class AdjTask implements Callable<Boolean> {
 
             private final List<Node> nodes;
@@ -706,7 +718,7 @@ public final class FgesMb implements DagScorer {
             }
 
             @Override
-            public Boolean call() {
+            public Boolean call() throws InterruptedException {
                 for (int _y = from; _y < to; _y++) {
                     if (Thread.currentThread().isInterrupted()) break;
 
@@ -788,7 +800,7 @@ public final class FgesMb implements DagScorer {
      * @param a The source node.
      * @param b The target node.
      */
-    private void calculateArrowsForward(Node a, Node b) {
+    private void calculateArrowsForward(Node a, Node b) throws InterruptedException {
         if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
             return;
         }
@@ -884,11 +896,7 @@ public final class FgesMb implements DagScorer {
             int parallelism = Runtime.getRuntime().availableProcessors();
             ForkJoinPool pool = new ForkJoinPool(parallelism);
             List<Future<EvalPair>> futures = null;
-            try {
-                futures = pool.invokeAll(tasks);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            futures = pool.invokeAll(tasks);
 
             for (Future<EvalPair> future : futures) {
                 try {

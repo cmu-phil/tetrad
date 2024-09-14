@@ -630,7 +630,11 @@ public final class Fges implements IGraphSearch, DagScorer {
                             continue;
                         }
 
-                        calculateArrowsForward(x, y);
+                        try {
+                            calculateArrowsForward(x, y);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
 
@@ -666,7 +670,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @param a the starting node
      * @param b the ending node
      */
-    private void calculateArrowsForward(Node a, Node b) {
+    private void calculateArrowsForward(Node a, Node b) throws InterruptedException {
         if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
             return;
         }
@@ -755,11 +759,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         List<Future<EvalPair>> futures = null;
-        try {
-            futures = pool.invokeAll(tasks);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        futures = pool.invokeAll(tasks);
 
         for (Future<EvalPair> future : futures) {
             try {
