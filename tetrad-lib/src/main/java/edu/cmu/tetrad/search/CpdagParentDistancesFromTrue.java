@@ -67,7 +67,6 @@ public class CpdagParentDistancesFromTrue {
         return dist; // Return the distance matrix
     }
 
-
     /**
      * Calculates the distance for a specific edge u -&gt; v. The distance is based on the difference between the true
      * edge strength to the range of estimated regression coefficients. The range is determined by considering all
