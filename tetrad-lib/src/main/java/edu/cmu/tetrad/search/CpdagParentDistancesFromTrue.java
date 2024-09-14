@@ -41,13 +41,16 @@ public class CpdagParentDistancesFromTrue {
      * The distance matrix is a square matrix where the entry at row v and column u is the distance for the edge u -&gt;
      * v.
      *
-     * @param outputCpdag      The estimated CPDAG.
-     * @param trueEdgeStrengths The true edge strengths (coefficients) for the true DAG.
+     * @param outputCpdag       The estimated CPDAG.
+     * @param trueEdgeStrengths The true edge strengths (coefficients) for the true DAG, where trueEdgeStrengths[u][v]
+     *                          is the beta coefficient for u -&gt; v.
      * @param dataSet           The dataset used for regression.
      * @param distanceType      The type of distance to calculate (absolute or squared).
-     * @return A matrix of distances between true edge strengths and estimated strengths.
+     * @return A matrix of distances between true edge strengths and estimated strengths. Here, dist[v][u] is the
+     * distance for the edge u -&gt; v.
      */
-    public static double[][] getDistances(Graph outputCpdag, double[][] trueEdgeStrengths, DataSet dataSet, DistanceType distanceType) {
+    public static double[][] getDistances(Graph outputCpdag, double[][] trueEdgeStrengths, DataSet dataSet,
+                                          DistanceType distanceType) {
         int n = outputCpdag.getNumNodes(); // Number of nodes in the graph
         double[][] dist = new double[n][n]; // Initialize the distance matrix
 
@@ -78,7 +81,7 @@ public class CpdagParentDistancesFromTrue {
      *
      * @param u                 Index of the parent node u.
      * @param v                 Index of the child node v.
-     * @param outputCpdag      The estimated CPDAG.
+     * @param outputCpdag       The estimated CPDAG.
      * @param trueEdgeStrengths The true edge strengths (coefficients). Here, trueEdgeStrengths[u][v] is the beta
      *                          coefficient for u -&gt; v.
      * @param dataSet           The dataset used for regression.
