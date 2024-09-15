@@ -1373,36 +1373,40 @@ public class MarkovCheck implements SampleSizeSettable {
                 Set<Node> z = fact.getZ();
 
                 if (independenceTest instanceof RowsSettable) {
-                    List<Integer> rows = getSubsampleRows(percentResample); // Default as 0.5
+                    List<Integer> rows = getSubsampleRows(percentResample);
 //                    List<Integer> rows = getBootstrapRows(1.0);
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
 
-//                    if (independenceTest instanceof SampleSizeSettable) {
+//                    if (independenceTest instanceof SampleSizeSettable) {xk
 //                        ((SampleSizeSettable) independenceTest).setSampleSize(getBootstrapEffectiveSampleSize(rows));
 //                    }
                 }
 
-                addResults(resultsIndep, resultsDep, fact, x, y, z);
-
+                addResult(resultsIndep, resultsDep, fact, x, y, z);
                 return new Pair<>(resultsIndep, resultsDep);
             }
 
-            private void addResults(Set<IndependenceResult> resultsIndep, Set<IndependenceResult> resultsDep, IndependenceFact fact, Node x, Node y, Set<Node> z) {
+            private void addResult(Set<IndependenceResult> resultsIndep, Set<IndependenceResult> resultsDep,
+                                   IndependenceFact fact, Node x, Node y, Set<Node> z) {
                 boolean verbose = independenceTest.isVerbose();
+
                 // Temporarily turn off verbose
                 independenceTest.setVerbose(false);
                 IndependenceResult result;
+
                 try {
                     result = independenceTest.checkIndependence(x, y, z);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    TetradLogger.getInstance().log("Error in independence test; not adding result: " + e.getMessage());
+                    return;
                 }
+
                 boolean indep = result.isIndependent();
                 double pValue = result.getPValue();
 
                 double min = 0.0;
 
-                // Optionally, remove the p-values less than alpha.
+                // Optionally, remove the p-values less than alpha. Hard-coding this for now.
                 if (false) {
                     min = independenceTest.getAlpha();
                 }
@@ -1414,6 +1418,9 @@ public class MarkovCheck implements SampleSizeSettable {
                         resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                     }
                 }
+
+                // Restore verbose
+                independenceTest.setVerbose(verbose);
             }
         }
 
