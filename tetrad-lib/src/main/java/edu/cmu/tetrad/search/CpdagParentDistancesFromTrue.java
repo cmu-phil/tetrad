@@ -46,7 +46,7 @@ public class CpdagParentDistancesFromTrue {
      *                          is the beta coefficient for u -&gt; v.
      * @param dataSet           The dataset used for regression.
      * @param distanceType      The type of distance to calculate (absolute or squared).
-     * @return A matrix of distances between true edge strengths and estimated strengths. Here, dist[v][u] is the
+     * @return A matrix of distances between true edge strengths and estimated strengths. Here, dist[u][v] is the
      * distance for the edge u -&gt; v.
      */
     public static double[][] getDistances(Graph outputCpdag, double[][] trueEdgeStrengths, DataSet dataSet,
@@ -63,7 +63,7 @@ public class CpdagParentDistancesFromTrue {
             // Iterate over each vertex v (by index)
             for (int v = 0; v < n; v++) {
                 // Calculate the distance for the edge u -> v
-                dist[v][u] = calculateDistanceForEdge(u, v, outputCpdag, trueEdgeStrengths, dataSet, nodes, distanceType);
+                dist[u][v] = calculateDistanceForEdge(u, v, outputCpdag, trueEdgeStrengths, dataSet, nodes, distanceType);
             }
         });
 
