@@ -105,7 +105,7 @@ public class CpdagParentDistancesFromTrue {
 
             // Add the coefficient for each parent node
             for (Node parent : parentSet) {
-                coefflist.add(regCoeffs[parentSet.indexOf(parent)]);
+                coefflist.add(regCoeffs[parentSet.indexOf(parent)] + 1); // The coef at index 0 is the intercept.
             }
 
             // For nodes not in the parent set, add 0 as the coefficient
