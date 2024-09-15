@@ -1388,9 +1388,8 @@ public class MarkovCheck implements SampleSizeSettable {
 
             private void addResult(Set<IndependenceResult> resultsIndep, Set<IndependenceResult> resultsDep,
                                    IndependenceFact fact, Node x, Node y, Set<Node> z) {
-                boolean verbose = independenceTest.isVerbose();
 
-                // Temporarily turn off verbose
+                // Turn off verbose
                 independenceTest.setVerbose(false);
                 IndependenceResult result;
 
@@ -1418,9 +1417,6 @@ public class MarkovCheck implements SampleSizeSettable {
                         resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                     }
                 }
-
-                // Restore verbose
-                independenceTest.setVerbose(verbose);
             }
         }
 
