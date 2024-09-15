@@ -98,19 +98,19 @@ public class CpdagParentDistancesFromTrue {
         List<List<Node>> possibleParentSets = formAllPossibleParentSets(nodes.get(v), outputCpdag);
 
         // Iterate over each parent set
-        for (List<Node> parentSet : possibleParentSets) {
+        for (List<Node> parentList : possibleParentSets) {
             // Regress v on the parent set
-            RegressionResult regResult = regress(nodes.get(v), parentSet, regressionDataset);
+            RegressionResult regResult = regress(nodes.get(v), parentList, regressionDataset);
             double[] regCoeffs = regResult.getCoef(); // Get the regression coefficients
 
             // Add the coefficient for each parent node
-            for (Node parent : parentSet) {
-                coefflist.add(regCoeffs[parentSet.indexOf(parent)] + 1); // The coef at index 0 is the intercept.
+            for (Node parent : parentList) {
+                coefflist.add(regCoeffs[parentList.indexOf(parent)] + 1); // The coef at index 0 is the intercept.
             }
 
             // For nodes not in the parent set, add 0 as the coefficient
             for (Node other : outputCpdag.getNodes()) {
-                if (!parentSet.contains(other)) {
+                if (!parentList.contains(other)) {
                     coefflist.add(0.0);
                 }
             }
