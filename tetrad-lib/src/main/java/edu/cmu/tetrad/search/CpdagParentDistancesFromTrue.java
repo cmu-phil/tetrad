@@ -10,6 +10,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -29,18 +30,21 @@ import java.util.Set;
 public class CpdagParentDistancesFromTrue {
 
     /**
-     * Calculates the distance matrix for the edges in the given CPDAG (outputCpdag). The distance for each edge u -> v
-     * is computed based on how far the true edge strength (from trueEdgeStrengths) is from the estimated regression
-     * coefficients for u -&gt; v. The distances are based on the difference between the true edge strength to the range
-     * of estimated regression coefficients. The range is determined by considering all possible parent sets for node v.
-     * The distance is 0 if the true edge strength falls within the range of coefficients. If the true edge strength is
-     * less than the minimum coefficient, the distance is the absolute value of the difference between the true strength
-     * and the minimum coefficient. If the true edge strength is greater than the maximum coefficient, the distance is
-     * the absolute value of the difference between the true strength and the maximum * coefficient.
+     * Calculates the distance matrix for the edges in the given CPDAG (outputCpdag). The nodes in the output CPDAG must
+     * all be in the full list of nodes given. The distance for each edge u -> v is computed based on how far the true
+     * edge strength (from trueEdgeStrengths) is from the estimated regression coefficients for u -&gt; v. The distances
+     * are based on the difference between the true edge strength to the range of estimated regression coefficients. The
+     * range is determined by considering all possible parent sets for node v. The distance is 0 if the true edge
+     * strength falls within the range of coefficients. If the true edge strength is less than the minimum coefficient,
+     * the distance is the absolute value of the difference between the true strength and the minimum coefficient. If
+     * the true edge strength is greater than the maximum coefficient, the distance is the absolute value of the
+     * difference between the true strength and the maximum * coefficient.
      * <p>
      * The distance matrix is a square matrix where the entry at row v and column u is the distance for the edge u -&gt;
      * v.
      *
+     * @param nodes             The full list of nodes; these will be used to index the true edge strengths and the
+     *                          distance matrix.
      * @param outputCpdag       The estimated CPDAG.
      * @param trueEdgeStrengths The true edge strengths (coefficients) for the true DAG, where trueEdgeStrengths[u][v]
      *                          is the beta coefficient for u -&gt; v.
@@ -49,13 +53,18 @@ public class CpdagParentDistancesFromTrue {
      * @return A matrix of distances between true edge strengths and estimated strengths. Here, dist[u][v] is the
      * distance for the edge u -&gt; v.
      */
-    public static double[][] getDistances(Graph outputCpdag, double[][] trueEdgeStrengths, DataSet dataSet,
+    public static double[][] getDistances(List<Node> nodes, Graph outputCpdag, double[][] trueEdgeStrengths, DataSet dataSet,
                                           DistanceType distanceType) {
         int n = outputCpdag.getNumNodes(); // Number of nodes in the graph
         double[][] dist = new double[n][n]; // Initialize the distance matrix
 
         // Get the list of nodes in the outputCpdag
-        List<Node> nodes = outputCpdag.getNodes();
+        List<Node> _nodes = outputCpdag.getNodes();
+
+        // Make sure the nodes in the output CPDAG are all contained the given list of nodes
+        if (!new HashSet<>(nodes).containsAll(_nodes)) {
+            throw new IllegalArgumentException("The list of nodes in the CPDAG must be a subset of the list of nodes.");
+        }
 
         // Parallelize the outer loop over u
         nodes.parallelStream().forEach(nodeU -> {

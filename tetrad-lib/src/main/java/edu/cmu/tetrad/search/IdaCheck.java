@@ -265,6 +265,10 @@ public class IdaCheck {
 
         double min = Double.MAX_VALUE;
 
+        if (totalEffects.isEmpty()) {
+            return trueTotalEffect;
+        }
+
         for (double totalEffect : totalEffects) {
             double diff = totalEffect - trueTotalEffect;
             diff *= diff;
@@ -313,6 +317,10 @@ public class IdaCheck {
         double trueTotalEffect = getTrueTotalEffect(pair);
 
         double max = 0;
+
+        if (totalEffects.isEmpty()) {
+            return trueTotalEffect;
+        }
 
         for (double totalEffect : totalEffects) {
             double diff = totalEffect - trueTotalEffect;
