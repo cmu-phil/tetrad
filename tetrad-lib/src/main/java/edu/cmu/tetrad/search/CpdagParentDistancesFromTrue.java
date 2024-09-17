@@ -7,7 +7,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.util.ArrayList;
@@ -109,6 +108,13 @@ public class CpdagParentDistancesFromTrue {
      * Adjusts the min and max estimated coefficients for nodes u adjacent to v in the CPDAG by regressing node v on all
      * possible parents set of v that do not imply new unshielded colliders. The adjusted min and max coefficients are
      * stored in the minCoef and maxCoef matrices.
+     *
+     * @param v                 The target node v.
+     * @param outputCpdag       The estimated CPDAG.
+     * @param minCoef           The matrix of minimum estimated coefficients.
+     * @param maxCoef           The matrix of maximum estimated coefficients.
+     * @param nodes             The list of nodes in the CPDAG.
+     * @param regressionDataSet The dataset wrapper for regression.
      */
     private static void calculateMinMaxCoefPerNode(int v, Graph outputCpdag,
                                                    double[][] minCoef, double[][] maxCoef, List<Node> nodes,
@@ -161,6 +167,18 @@ public class CpdagParentDistancesFromTrue {
         }
     }
 
+    /**
+     * Calculates the distance for the edge u -> v based on the true edge strength and the range of estimated
+     * coefficients.
+     *
+     * @param u                 The parent node u.
+     * @param v                 The child node v.
+     * @param trueEdgeStrengths The true edge strengths.
+     * @param minCoef           The matrix of minimum estimated coefficients.
+     * @param maxCoef           The matrix of maximum estimated coefficients.
+     * @param distanceType      The type of distance to calculate.
+     * @return The distance for the edge u -> v.
+     */
     private static double calculateDistancesForEdge(int u, int v, double[][] trueEdgeStrengths,
                                                     double[][] minCoef, double[][] maxCoef, DistanceType distanceType) {
 
