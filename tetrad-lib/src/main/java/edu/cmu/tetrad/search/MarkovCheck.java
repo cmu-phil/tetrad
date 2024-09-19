@@ -886,9 +886,13 @@ public class MarkovCheck implements SampleSizeSettable {
                 }
             }
 
-            generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
-            generateResults(msep, true);
-            generateResults(mconn, false);
+            try {
+                generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
+                generateResults(msep, true);
+                generateResults(mconn, false);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             this.numTestsIndep = msep.size();
             this.numTestsDep = mconn.size();
@@ -1202,7 +1206,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * @return The Markov check record.
      * @see MarkovCheckRecord
      */
-    public MarkovCheckRecord getMarkovCheckRecord() {
+    public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
         setPercentResample(percentResample);
         generateResults(true);
         double adInd = getAndersonDarlingP(true);
@@ -1222,7 +1226,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * @return The Markov check record as a string.
      * @see MarkovCheckRecord
      */
-    public String getMarkovCheckRecordString() {
+    public String getMarkovCheckRecordString() throws InterruptedException {
         NumberFormat nf = new DecimalFormat("0.000");
         MarkovCheckRecord record = getMarkovCheckRecord();
 
@@ -1264,7 +1268,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * @param msepTest             The m-separation test.
      */
     private void generateMseps(List<IndependenceFact> allIndependenceFacts, Set<IndependenceFact> msep, Set<IndependenceFact> mconn,
-                               MsepTest msepTest) {
+                               MsepTest msepTest) throws InterruptedException {
         class IndCheckTask implements Callable<Pair<Set<IndependenceFact>, Set<IndependenceFact>>> {
             private final int index;
             private final List<IndependenceFact> facts;
@@ -1344,7 +1348,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * @param facts The set of independence facts.
      * @param msep  True if for implied independencies, false if for implied dependencies.
      */
-    private void generateResults(Set<IndependenceFact> facts, boolean msep) {
+    private void generateResults(Set<IndependenceFact> facts, boolean msep) throws InterruptedException {
         class IndCheckTask implements Callable<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> {
             private final int index;
             private final List<IndependenceFact> facts;
@@ -1369,36 +1373,39 @@ public class MarkovCheck implements SampleSizeSettable {
                 Set<Node> z = fact.getZ();
 
                 if (independenceTest instanceof RowsSettable) {
-                    List<Integer> rows = getSubsampleRows(percentResample); // Default as 0.5
+                    List<Integer> rows = getSubsampleRows(percentResample);
 //                    List<Integer> rows = getBootstrapRows(1.0);
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
 
-//                    if (independenceTest instanceof SampleSizeSettable) {
+//                    if (independenceTest instanceof SampleSizeSettable) {xk
 //                        ((SampleSizeSettable) independenceTest).setSampleSize(getBootstrapEffectiveSampleSize(rows));
 //                    }
                 }
 
-                addResults(resultsIndep, resultsDep, fact, x, y, z);
-
+                addResult(resultsIndep, resultsDep, fact, x, y, z);
                 return new Pair<>(resultsIndep, resultsDep);
             }
 
-            private void addResults(Set<IndependenceResult> resultsIndep, Set<IndependenceResult> resultsDep, IndependenceFact fact, Node x, Node y, Set<Node> z) {
-                boolean verbose = independenceTest.isVerbose();
-                // Temporarily turn off verbose
+            private void addResult(Set<IndependenceResult> resultsIndep, Set<IndependenceResult> resultsDep,
+                                   IndependenceFact fact, Node x, Node y, Set<Node> z) {
+
+                // Turn off verbose
                 independenceTest.setVerbose(false);
                 IndependenceResult result;
+
                 try {
                     result = independenceTest.checkIndependence(x, y, z);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    TetradLogger.getInstance().log("Error in independence test; not adding result: " + e.getMessage());
+                    return;
                 }
+
                 boolean indep = result.isIndependent();
                 double pValue = result.getPValue();
 
                 double min = 0.0;
 
-                // Optionally, remove the p-values less than alpha.
+                // Optionally, remove the p-values less than alpha. Hard-coding this for now.
                 if (false) {
                     min = independenceTest.getAlpha();
                 }
@@ -1595,8 +1602,12 @@ public class MarkovCheck implements SampleSizeSettable {
      * @param mconn The set of m-connection facts.
      */
     private void generateResultsAllSubsets(Set<IndependenceFact> msep, Set<IndependenceFact> mconn) {
-        generateResults(msep, true);
-        generateResults(mconn, false);
+        try {
+            generateResults(msep, true);
+            generateResults(mconn, false);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

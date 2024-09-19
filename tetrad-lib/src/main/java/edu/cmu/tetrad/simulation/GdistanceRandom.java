@@ -73,7 +73,11 @@ public class GdistanceRandom {
         //run Gdistance on these two graphs
         if (this.verbose) System.out.println("running Gdistance on the CPDAGs");
         Gdistance gdist = new Gdistance(GdistanceRandom.locationMap, this.xdist, this.ydist, this.zdist);
-        return gdist.distances(graph1, graph2);
+        try {
+            return gdist.distances(graph1, graph2);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //**********Methods for setting values of private variables**************//

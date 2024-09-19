@@ -81,7 +81,7 @@ public class StandardizedSemIm implements Simulator {
 
     /**
      * The edge coefficient matrix of the model, a la SemIm. Note that this will normally need to be transposed, since
-     * [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE PARAMETERS OF THE MODEL--THE ONLY
+     * [a][b] is the edge coefficient for a--&gt;b, not b--&gt;a. Sorry. History. THESE ARE PARAMETERS OF THE MODEL--THE ONLY
      * PARAMETERS.
      */
     private Matrix edgeCoef;

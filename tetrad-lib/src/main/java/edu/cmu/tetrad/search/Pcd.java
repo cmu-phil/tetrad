@@ -276,7 +276,11 @@ public class Pcd implements IGraphSearch {
         fas.setDepth(getDepth());
         fas.setVerbose(this.verbose);
 
-        this.graph = fas.search();
+        try {
+            this.graph = fas.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         this.sepsets = fas.getSepsets();
 
         this.numIndependenceTests = fas.getNumIndependenceTests();

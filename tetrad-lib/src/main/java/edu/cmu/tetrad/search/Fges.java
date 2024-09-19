@@ -245,7 +245,11 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         addRequiredEdges(graph);
 
-        initializeEffectEdges(getVariables());
+        try {
+            initializeEffectEdges(getVariables());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         this.mode = Mode.heuristicSpeedup;
         fes();
@@ -436,7 +440,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @param nodes The list of nodes.
      */
-    private void initializeEffectEdges(final List<Node> nodes) {
+    private void initializeEffectEdges(final List<Node> nodes) throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
 
@@ -489,7 +493,11 @@ public final class Fges implements IGraphSearch, DagScorer {
     private void fes() {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
-        reevaluateForward(new HashSet<>(variables));
+        try {
+            reevaluateForward(new HashSet<>(variables));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         while (!sortedArrows.isEmpty()) {
             Arrow arrow = sortedArrows.first();
@@ -534,7 +542,11 @@ public final class Fges implements IGraphSearch, DagScorer {
             process.add(y);
             process.addAll(getCommonAdjacents(x, y));
 
-            reevaluateForward(new HashSet<>(process));
+            try {
+                reevaluateForward(new HashSet<>(process));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -565,7 +577,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @param nodes the set of nodes for which to reevaluate arrows
      */
-    private void reevaluateForward(final Set<Node> nodes) {
+    private void reevaluateForward(final Set<Node> nodes) throws InterruptedException {
         class AdjTask implements Callable<Boolean> {
 
             private final List<Node> nodes;
@@ -618,7 +630,11 @@ public final class Fges implements IGraphSearch, DagScorer {
                             continue;
                         }
 
-                        calculateArrowsForward(x, y);
+                        try {
+                            calculateArrowsForward(x, y);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
 
@@ -654,7 +670,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @param a the starting node
      * @param b the ending node
      */
-    private void calculateArrowsForward(Node a, Node b) {
+    private void calculateArrowsForward(Node a, Node b) throws InterruptedException {
         if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
             return;
         }
@@ -742,7 +758,8 @@ public final class Fges implements IGraphSearch, DagScorer {
             tasks.add(task);
         }
 
-        List<Future<EvalPair>> futures = pool.invokeAll(tasks);
+        List<Future<EvalPair>> futures = null;
+        futures = pool.invokeAll(tasks);
 
         for (Future<EvalPair> future : futures) {
             try {

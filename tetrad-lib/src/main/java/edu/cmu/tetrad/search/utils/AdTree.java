@@ -65,7 +65,7 @@ public class AdTree {
      * Cache to store subdivisions for reuse, using a List<Node> as the key.
      */
     private final Map<List<Node>, Map<Integer, Subdivision>> subdivisionCache =
-            new LinkedHashMap<List<Node>, Map<Integer, Subdivision>>(maxCacheSize, 0.75f, true) {
+            new LinkedHashMap<>(maxCacheSize, 0.75f, true) {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<List<Node>, Map<Integer, Subdivision>> eldest) {
                     return this.size() > maxCacheSize;
@@ -119,15 +119,6 @@ public class AdTree {
         this.rows = (rows == null) ? getAllRows(dataSet.getNumRows()) : validateRows(dataSet, rows);
         this.discreteData = initializeDiscreteData(dataSet);
         this.nodesHash = buildNodesHash(dataSet);
-    }
-
-    // Utility method for getting all rows (assumes existence of this method or similar)
-    private static List<Integer> getAllRows(int numRows) {
-        List<Integer> rows = new ArrayList<>(numRows);
-        for (int i = 0; i < numRows; i++) {
-            rows.add(i);
-        }
-        return rows;
     }
 
     /**
@@ -276,6 +267,16 @@ public class AdTree {
             throw new IllegalArgumentException("Cache depth limit must be at least 0.");
         }
         this.cacheDepthLimit = cacheDepthLimit;
+    }
+
+
+    // Utility method for getting all rows (assumes existence of this method or similar)
+    private static List<Integer> getAllRows(int numRows) {
+        List<Integer> rows = new ArrayList<>(numRows);
+        for (int i = 0; i < numRows; i++) {
+            rows.add(i);
+        }
+        return rows;
     }
 
     private void validateDataSet(DataSet dataSet) {

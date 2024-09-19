@@ -109,7 +109,11 @@ public class TestCheckMarkov {
         MarkovCheck markovCheck = new MarkovCheck(cpdag, test, ConditioningSetType.LOCAL_MARKOV);
         markovCheck.setPercentResample(0.7);
 
-        System.out.println(markovCheck.getMarkovCheckRecordString());
+        try {
+            System.out.println(markovCheck.getMarkovCheckRecordString());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 //    @Test
