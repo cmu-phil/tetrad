@@ -536,7 +536,14 @@ public class SepsetFinder {
     }
 
     private static double getPValue(Node x, Node y, Set<Node> combination, IndependenceTest test) {
-        return test.checkIndependence(x, y, combination).getPValue();
+        double pValue = 0;
+        try {
+            pValue = test.checkIndependence(x, y, combination).getPValue();
+        } catch (Exception e) {
+            TetradLogger.getInstance().log("Error in getPValue: " + e.getMessage());
+            return 0.0;
+        }
+        return Double.isNaN(pValue) ? 1.0 : pValue;
     }
 
     /**

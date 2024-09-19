@@ -265,7 +265,11 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         if (Double.isNaN(lik_diff)) {
             throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
         } else {
-            pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(-2 * lik_diff);
+            try {
+                pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(-2 * lik_diff);
+            } catch (Exception e) {
+                throw new RuntimeException("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z), e);
+            }
         }
 
         this.pValue = pValue;
