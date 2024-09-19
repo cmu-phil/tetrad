@@ -62,6 +62,7 @@ public enum Endpoint implements TetradSerializable {
      * No endpoint.
      */
     NULL;
+
     /**
      * Constant <code>serialVersionUID=23L</code>
      */
