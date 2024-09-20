@@ -656,7 +656,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * Node tooltip to show the node attributes - Added by Kong
+     * Node tooltip to show the node attributes.
      *
      * @param modelNode   a {@link edu.cmu.tetrad.graph.Node} object
      * @param toolTipText a {@link java.lang.String} object
@@ -2157,34 +2157,64 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Object source = e.getSource();
 
         if (source instanceof DisplayEdge) {
+            System.out.println("source = " + source);
+
             IDisplayEdge displayEdge = (DisplayEdge) source;
             Edge edge = displayEdge.getModelEdge();
+
+            // Bootstrapping Distribution
+            List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
+
+            String endpoint1 = switch (edge.getEndpoint1()) {
+                case TAIL -> "-";
+                case ARROW -> "<";
+                case CIRCLE -> "o";
+                case STAR -> "*";
+                case NULL ->  "Null";
+            };
+
+            String endpoint2 = switch (edge.getEndpoint2()) {
+                case TAIL -> "-";
+                case ARROW -> ">";
+                case CIRCLE -> "o";
+                case STAR -> "*";
+                case NULL -> "Null";
+            };
+
             if (this.graph.containsEdge(edge)) {
-                // Bootstrapping Distribution
-                List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
+                System.out.println("graph contains edge = " + edge);
 
-                if (edgeProb != null) {
-                    String endpoint1 = switch (edge.getEndpoint1()) {
-                        case TAIL -> "-";
-                        case ARROW -> "<";
-                        case CIRCLE -> "o";
-                        case STAR -> "*";
-                        case NULL -> "Null";
-                    };
-
-                    String endpoint2 = switch (edge.getEndpoint2()) {
-                        case TAIL -> "-";
-                        case ARROW -> ">";
-                        case CIRCLE -> "o";
-                        case STAR -> "*";
-                        case NULL -> "Null";
-                    };
+                if (edgeProb.isEmpty()) {
+                    System.out.println("edgeProb empty");
 
                     StringBuilder _properties = new StringBuilder();
                     if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
                         for (Edge.Property property : edge.getProperties()) {
                             _properties.append(" ").append(property.toString());
                         }
+                    }
+
+                    String text = "<html>Graph Edge: " + edge.getNode1().getName()
+                                  + " " + endpoint1 + "-" + endpoint2 + " "
+                                  + edge.getNode2().getName()
+                                  + _properties
+                                  + "<html>";
+
+                    System.out.println("Setting edge tooltip for " + edge + " to: " + text);
+
+                    setEdgeToolTip(edge, text);
+                } else {
+                    System.out.println("edgeProb not empty.");
+
+                    StringBuilder _properties = new StringBuilder();
+                    if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
+                        for (Edge.Property property : edge.getProperties()) {
+                            _properties.append(" ").append(property.toString());
+                        }
+                    }
+
+                    if (_properties.isEmpty()) {
+                        _properties.append(" ");
                     }
 
                     StringBuilder text = new StringBuilder("<html>Summary Edge: " + edge.getNode1().getName()
@@ -2228,14 +2258,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                     text.append("</html>");
 
-                    System.out.println("text = " + text.toString());
+                    System.out.println("Setting edge tooltip for " + edge + " to: " + text);
 
                     setEdgeToolTip(edge, text.toString());
                 }
             }
-        }
-
-        if (source instanceof DisplayNode displayNode) {
+        } else if (source instanceof DisplayNode displayNode) {
             Node node = displayNode.getModelNode();
             if (this.graph.containsNode(node)) {
                 Map<String, Object> attributes = node.getAllAttributes();
