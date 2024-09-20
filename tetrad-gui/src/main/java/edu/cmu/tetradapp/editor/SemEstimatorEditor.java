@@ -2114,7 +2114,7 @@ public final class SemEstimatorEditor extends JPanel {
         /**
          * @return the parameter for the given edge, or null if the edge does not have a parameter associated with it in
          * the model. The edge must be either directed or bidirected, since it has to come from a SemGraph. For directed
-         * edges, this method automatically adjusts if the user has changed the endpoints of an edge X1 --> X2 to X1
+         * edges, this method automatically adjusts if the user has changed the endpoints of an edge X1 --&gt; X2 to X1
          * &lt;-- X2 and returns the correct parameter. @throws IllegalArgumentException if the edge is neither directed
          * nor bidirected.
          */

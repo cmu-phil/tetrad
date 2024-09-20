@@ -106,7 +106,11 @@ public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, Ha
         RfciBsc.setUpperBound(parameters.getDouble(Params.UPPER_BOUND));
         RfciBsc.setOutputRBD(parameters.getBoolean(Params.OUTPUT_RBD));
         RfciBsc.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        return RfciBsc.search();
+        try {
+            return RfciBsc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

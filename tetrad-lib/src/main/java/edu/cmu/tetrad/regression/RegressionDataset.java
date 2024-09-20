@@ -123,12 +123,7 @@ public class RegressionDataset implements Regression {
 
         Matrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
-        Vector _yHat = yHat.getColumn(0);
         Vector _res = res.getColumn(0);
-
-        yHat.getNumColumns();
-
-        //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
         double rss = RegressionDataset.rss(x, y, b);
         double se = FastMath.sqrt(rss / (n - k));
@@ -253,7 +248,7 @@ public class RegressionDataset implements Regression {
 
         Matrix x;
 
-        if (regressors.size() > 0) {
+        if (!regressors.isEmpty()) {
             x = new Matrix(xSub.getNumRows(), xSub.getNumColumns() + 1);
 
             for (int i = 0; i < x.getNumRows(); i++) {
@@ -286,7 +281,6 @@ public class RegressionDataset implements Regression {
 
         Matrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
-        Vector _yHat = yHat.getColumn(0);
         Vector _res = res.getColumn(0);
 
         Matrix b2 = b.copy();
@@ -330,7 +324,7 @@ public class RegressionDataset implements Regression {
         double[] seArray = sqErr.toArray();
 
 
-        return new RegressionResult(regressors.size() == 0, vNames, n,
+        return new RegressionResult(regressors.isEmpty(), vNames, n,
                 bArray, tArray, pArray, seArray, r2, rss, this.alpha, _res);
     }
 

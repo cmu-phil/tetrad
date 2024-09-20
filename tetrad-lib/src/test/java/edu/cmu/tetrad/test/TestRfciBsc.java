@@ -114,7 +114,11 @@ public class TestRfciBsc {
 
         long start = MillisecondTimes.timeMillis();
 
-        rfciBsc.search();
+        try {
+            rfciBsc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -187,7 +191,11 @@ public class TestRfciBsc {
 
         long start = MillisecondTimes.timeMillis();
 
-        rfciBsc.search();
+        try {
+            rfciBsc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         long stop = MillisecondTimes.timeMillis();
 

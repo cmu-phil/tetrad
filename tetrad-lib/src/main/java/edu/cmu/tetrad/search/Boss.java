@@ -195,7 +195,13 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
                     if (this.verbose && (suborder.size() > 1)) System.out.println(x);
 
                     if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
-                    else improved |= betterMutationAsync(prefix, suborder, x);
+                    else {
+                        try {
+                            improved |= betterMutationAsync(prefix, suborder, x);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
 
                 if (this.verbose && (suborder.size() > 1)) {
@@ -370,7 +376,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
      * @param x        The node to be moved in the suborder.
      * @return true if the suborder was modified, false otherwise.
      */
-    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
+    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) throws InterruptedException {
         List<Callable<Void>> tasks = new ArrayList<>();
 
         double[] scores = new double[suborder.size()];

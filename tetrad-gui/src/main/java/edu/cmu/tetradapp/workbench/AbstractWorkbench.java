@@ -99,10 +99,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private final LinkedList<Graph> graphStack = new LinkedList<>();
     /**
-     * A stack that holds Graph objects used for redo operations.
-     * This stack is implemented using a LinkedList data structure.
-     * Graph objects can be pushed onto and popped from this stack.
-     * This stack is thread-safe.
+     * A stack that holds Graph objects used for redo operations. This stack is implemented using a LinkedList data
+     * structure. Graph objects can be pushed onto and popped from this stack. This stack is thread-safe.
      */
     private final LinkedList<Graph> redoStack = new LinkedList<>();
     /**
@@ -658,7 +656,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * Node tooltip to show the node attributes - Added by Kong
+     * Node tooltip to show the node attributes.
      *
      * @param modelNode   a {@link edu.cmu.tetrad.graph.Node} object
      * @param toolTipText a {@link java.lang.String} object
@@ -691,6 +689,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         DisplayEdge displayEdge = (DisplayEdge) getModelEdgesToDisplay().get(modelEdge);
 
         displayEdge.setToolTipText(toolTipText);
+        revalidate();
     }
 
     /**
@@ -2158,61 +2157,70 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Object source = e.getSource();
 
         if (source instanceof DisplayEdge) {
+            System.out.println("source = " + source);
+
             IDisplayEdge displayEdge = (DisplayEdge) source;
             Edge edge = displayEdge.getModelEdge();
+
+            // Bootstrapping Distribution
+            List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
+
+            String endpoint1 = switch (edge.getEndpoint1()) {
+                case TAIL -> "-";
+                case ARROW -> "<";
+                case CIRCLE -> "o";
+                case STAR -> "*";
+                case NULL ->  "Null";
+            };
+
+            String endpoint2 = switch (edge.getEndpoint2()) {
+                case TAIL -> "-";
+                case ARROW -> ">";
+                case CIRCLE -> "o";
+                case STAR -> "*";
+                case NULL -> "Null";
+            };
+
             if (this.graph.containsEdge(edge)) {
-                // Bootstrapping Distribution
-                List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
-                if (edgeProb != null) {
-                    String endpoint1 = edge.getEndpoint1().toString();
-                    switch (endpoint1) {
-                        case "Tail":
-                            endpoint1 = "-";
-                            break;
-                        case "Arrow":
-                            endpoint1 = "<";
-                            break;
-                        case "Circle":
-                            endpoint1 = "o";
-                            break;
-                        case "Star":
-                            endpoint1 = "*";
-                            break;
-                        case "Null":
-                            endpoint1 = "Null";
-                            break;
-                    }
+                System.out.println("graph contains edge = " + edge);
 
-                    String endpoint2 = edge.getEndpoint2().toString();
-                    switch (endpoint2) {
-                        case "Tail":
-                            endpoint2 = "-";
-                            break;
-                        case "Arrow":
-                            endpoint2 = ">";
-                            break;
-                        case "Circle":
-                            endpoint2 = "o";
-                            break;
-                        case "Star":
-                            endpoint2 = "*";
-                            break;
-                        case "Null":
-                            endpoint2 = "Null";
-                            break;
-                    }
+                if (edgeProb.isEmpty()) {
+                    System.out.println("edgeProb empty");
 
-                    StringBuilder properties = new StringBuilder();
-                    if (edge.getProperties() != null && edge.getProperties().size() > 0) {
+                    StringBuilder _properties = new StringBuilder();
+                    if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
                         for (Edge.Property property : edge.getProperties()) {
-                            properties.append(" ").append(property.toString());
+                            _properties.append(" ").append(property.toString());
                         }
                     }
 
-                    StringBuilder text = new StringBuilder("<html>" + edge.getNode1().getName()
+                    String text = "<html>Graph Edge: " + edge.getNode1().getName()
+                                  + " " + endpoint1 + "-" + endpoint2 + " "
+                                  + edge.getNode2().getName()
+                                  + _properties
+                                  + "<html>";
+
+                    System.out.println("Setting edge tooltip for " + edge + " to: " + text);
+
+                    setEdgeToolTip(edge, text);
+                } else {
+                    System.out.println("edgeProb not empty.");
+
+                    StringBuilder _properties = new StringBuilder();
+                    if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
+                        for (Edge.Property property : edge.getProperties()) {
+                            _properties.append(" ").append(property.toString());
+                        }
+                    }
+
+                    if (_properties.isEmpty()) {
+                        _properties.append(" ");
+                    }
+
+                    StringBuilder text = new StringBuilder("<html>Summary Edge: " + edge.getNode1().getName()
                                                            + " " + endpoint1 + "-" + endpoint2 + " "
                                                            + edge.getNode2().getName()
-                                                           + properties
+                                                           + _properties
                                                            + "<br>");
                     String n1 = edge.getNode1().getName();
                     String n2 = edge.getNode2().getName();
@@ -2221,66 +2229,41 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     nodes.add(n2);
                     Collections.sort(nodes);
                     for (EdgeTypeProbability edgeTypeProb : edgeProb) {
-                        String _type = "" + edgeTypeProb.getEdgeType();
-                        switch (edgeTypeProb.getEdgeType()) {
-                            case nil:
-                                _type = "no edge";
-                                break;
-                            case ta:
-                                _type = "--?";
-                                _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
-                                break;
-                            case at:
-                                _type = "<--";
-                                _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
-                                break;
-                            case ca:
-                                _type = "o->";
-                                _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
-                                break;
-                            case ac:
-                                _type = "<-o";
-                                _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
-                                break;
-                            case cc:
-                                _type = "o-o";
-                                _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
-                                break;
-                            case aa:
-                                _type = "<->";
-                                _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
-                                break;
-                            case tt:
-                                _type = "---";
-                                _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
-                                break;
-                            default:
-                                break;
-                        }
-                        if (edgeTypeProb.getProbability() > 0) {
-                            properties = new StringBuilder();
-                            if (edgeTypeProb.getProperties() != null && edgeTypeProb.getProperties().size() > 0) {
+                        String type = switch (edgeTypeProb.getEdgeType()) {
+                            case nil -> "no edge";
+                            case ta -> nodes.get(0) + " --&gt; " + nodes.get(1);
+                            case at -> nodes.get(0) + " &lt;-- " + nodes.get(1);
+                            case ca -> nodes.get(0) + " o-&gt; " + nodes.get(1);
+                            case ac -> nodes.get(0) + " &lt;-o " + nodes.get(1);
+                            case cc -> nodes.get(0) + " o-o " + nodes.get(1);
+                            case aa -> nodes.get(0) + " &lt;-&gt; " + nodes.get(1);
+                            case tt -> nodes.get(0) + " --- " + nodes.get(1);
+                        };
+
+                        System.out.println("type = " + type);
+
+                        if (edgeTypeProb.getProbability() > 0d) {
+                            StringBuilder properties = new StringBuilder();
+
+                            if (edgeTypeProb.getProperties() != null && !edgeTypeProb.getProperties().isEmpty()) {
                                 for (Edge.Property property : edgeTypeProb.getProperties()) {
                                     properties.append(" ").append(property.toString());
                                 }
                             }
-                            text.append("[").append(_type).append(properties).append("]:").append(String.format("%.4f", edgeTypeProb.getProbability()));
+
+                            text.append(type).append(properties).append(": frequency = ").append(String.format("%.4f", edgeTypeProb.getProbability()));
                             text.append("<br>");
                         }
                     }
 
-                    // Commented out by Zhou
-//					JLabel edgeTypeDistLabel = new JLabel(text);
-//					edgeTypeDistLabel.setOpaque(true);
-//					edgeTypeDistLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-//					setEdgeLabel(edge, edgeTypeDistLabel);
-                    // Use tooltip instead of label - Added by Zhou
+                    text.append("</html>");
+
+                    System.out.println("Setting edge tooltip for " + edge + " to: " + text);
+
                     setEdgeToolTip(edge, text.toString());
                 }
             }
-        }
-
-        if (source instanceof DisplayNode displayNode) {
+        } else if (source instanceof DisplayNode displayNode) {
             Node node = displayNode.getModelNode();
             if (this.graph.containsNode(node)) {
                 Map<String, Object> attributes = node.getAllAttributes();
@@ -2592,7 +2575,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * special coloring to the page edges. If the flag is set to false, all special markings on page edges are removed.
      *
      * @param pagEdgeSpecializationsMarked a boolean value indicating whether to mark the page edge specializations or
-     *                                       not
+     *                                     not
      */
     public void markPagEdgeSpecializations(boolean pagEdgeSpecializationsMarked) {
         this.pagEdgeSpecializationMarked = pagEdgeSpecializationsMarked;
@@ -2657,6 +2640,42 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     protected void setRightClickPopupAllowed(boolean rightClickPopupAllowed) {
         this.rightClickPopupAllowed = rightClickPopupAllowed;
+    }
+
+    /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -2991,42 +3010,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             } else if ("cloneMe".equals(propName)) {
                 AbstractWorkbench.this.firePropertyChange("cloneMe", e.getOldValue(), e.getNewValue());
             }
-        }
-    }
-
-    /**
-     * Writes the object to the specified ObjectOutputStream.
-     *
-     * @param out The ObjectOutputStream to write the object to.
-     * @throws IOException If an I/O error occurs.
-     */
-    @Serial
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        try {
-            out.defaultWriteObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
-            throw e;
-        }
-    }
-
-    /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
-     *
-     * @param in The ObjectInputStream to read the object from.
-     * @throws IOException            If an I/O error occurs.
-     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
-     */
-    @Serial
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        try {
-            in.defaultReadObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
-            throw e;
         }
     }
 }

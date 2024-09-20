@@ -104,7 +104,7 @@ public class Ida {
      */
     public double distance(LinkedList<Double> effects, double trueEffect) {
         effects = new LinkedList<>(effects);
-        if (effects.isEmpty()) return Double.NaN; // counted as not estimated.
+        if (effects.isEmpty()) return trueEffect;
 
         if (effects.size() == 1) {
             double effect = effects.get(0);

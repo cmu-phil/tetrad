@@ -235,7 +235,7 @@ public class RfciBsc implements IGraphSearch {
      * Performs the search.
      */
     @Override
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long stop = 0;
         long start = MillisecondTimes.timeMillis();
 

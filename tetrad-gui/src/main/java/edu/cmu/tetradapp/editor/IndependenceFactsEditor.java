@@ -534,7 +534,7 @@ public class IndependenceFactsEditor extends JPanel {
         StringBuilder buf = new StringBuilder();
 
         if (this.getVars().size() == 0) {
-            buf.append("Choose variables and wildcards from dropdown-->");
+            buf.append("Choose variables and wildcards from dropdown--&gt;");
         }
 
         if (this.getVars().size() > 0) {

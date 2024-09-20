@@ -181,7 +181,11 @@ public final class Rfci implements IGraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
         fas.setVerbose(this.verbose);
-        this.graph = fas.search();
+        try {
+            this.graph = fas.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         this.sepsets = fas.getSepsets();
 

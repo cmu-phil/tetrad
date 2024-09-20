@@ -1,11 +1,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.OrderedPair;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.regression.RegressionDataset;
+import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.util.*;
 
@@ -265,6 +265,10 @@ public class IdaCheck {
 
         double min = Double.MAX_VALUE;
 
+        if (totalEffects.isEmpty()) {
+            return trueTotalEffect;
+        }
+
         for (double totalEffect : totalEffects) {
             double diff = totalEffect - trueTotalEffect;
             diff *= diff;
@@ -313,6 +317,10 @@ public class IdaCheck {
         double trueTotalEffect = getTrueTotalEffect(pair);
 
         double max = 0;
+
+        if (totalEffects.isEmpty()) {
+            return trueTotalEffect;
+        }
 
         for (double totalEffect : totalEffects) {
             double diff = totalEffect - trueTotalEffect;

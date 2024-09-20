@@ -421,7 +421,11 @@ public class TestFci {
 
         IGraphSearch search = new Pc(test);
 
-        return search.search();
+        try {
+            return search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

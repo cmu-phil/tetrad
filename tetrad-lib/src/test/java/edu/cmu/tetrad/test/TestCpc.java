@@ -120,7 +120,12 @@ public class TestCpc {
         IGraphSearch search = new Cpc(independence);
 
         // Run search
-        Graph resultGraph = search.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
