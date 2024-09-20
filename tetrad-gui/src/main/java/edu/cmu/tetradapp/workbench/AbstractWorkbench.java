@@ -2163,7 +2163,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             Edge edge = displayEdge.getModelEdge();
 
             // Bootstrapping Distribution
-            List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
+            List<EdgeTypeProbability> edgeProb = new ArrayList<>();
+
+            if (edge != null) {
+                edgeProb = edge.getEdgeTypeProbabilities();
+            }
 
             String endpoint1 = switch (edge.getEndpoint1()) {
                 case TAIL -> "-";
