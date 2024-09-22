@@ -2162,35 +2162,28 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             IDisplayEdge displayEdge = (DisplayEdge) source;
             Edge edge = displayEdge.getModelEdge();
 
-            // Bootstrapping Distribution
-            List<EdgeTypeProbability> edgeProb = new ArrayList<>();
-
-            if (edge != null) {
-                edgeProb = edge.getEdgeTypeProbabilities();
-            }
-
-            String endpoint1 = switch (edge.getEndpoint1()) {
-                case TAIL -> "-";
-                case ARROW -> "<";
-                case CIRCLE -> "o";
-                case STAR -> "*";
-                case NULL ->  "Null";
-            };
-
-            String endpoint2 = switch (edge.getEndpoint2()) {
-                case TAIL -> "-";
-                case ARROW -> ">";
-                case CIRCLE -> "o";
-                case STAR -> "*";
-                case NULL -> "Null";
-            };
-
             if (this.graph.containsEdge(edge)) {
-                System.out.println("graph contains edge = " + edge);
+
+                // Bootstrapping Distribution
+                List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
+
+                String endpoint1 = switch (edge.getEndpoint1()) {
+                    case TAIL -> "-";
+                    case ARROW -> "<";
+                    case CIRCLE -> "o";
+                    case STAR -> "*";
+                    case NULL -> "Null";
+                };
+
+                String endpoint2 = switch (edge.getEndpoint2()) {
+                    case TAIL -> "-";
+                    case ARROW -> ">";
+                    case CIRCLE -> "o";
+                    case STAR -> "*";
+                    case NULL -> "Null";
+                };
 
                 if (edgeProb.isEmpty()) {
-                    System.out.println("edgeProb empty");
-
                     StringBuilder _properties = new StringBuilder();
                     if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
                         for (Edge.Property property : edge.getProperties()) {
@@ -2204,12 +2197,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                                   + _properties
                                   + "<html>";
 
-                    System.out.println("Setting edge tooltip for " + edge + " to: " + text);
-
                     setEdgeToolTip(edge, text);
                 } else {
-                    System.out.println("edgeProb not empty.");
-
                     StringBuilder _properties = new StringBuilder();
                     if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
                         for (Edge.Property property : edge.getProperties()) {
@@ -2244,8 +2233,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                             case tt -> nodes.get(0) + " --- " + nodes.get(1);
                         };
 
-                        System.out.println("type = " + type);
-
                         if (edgeTypeProb.getProbability() > 0d) {
                             StringBuilder properties = new StringBuilder();
 
@@ -2261,9 +2248,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     }
 
                     text.append("</html>");
-
-                    System.out.println("Setting edge tooltip for " + edge + " to: " + text);
-
                     setEdgeToolTip(edge, text.toString());
                 }
             }
@@ -2271,15 +2255,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             Node node = displayNode.getModelNode();
             if (this.graph.containsNode(node)) {
                 Map<String, Object> attributes = node.getAllAttributes();
-                if (!attributes.isEmpty()) {
-                    StringBuilder attribute = new StringBuilder();
+                if (!attributes.isEmpty()) {                    StringBuilder attribute = new StringBuilder();
                     for (String key : attributes.keySet()) {
                         Object value = attributes.get(key);
                         attribute.append(key).append(": ").append(value).append("<br>");
                     }
 
                     String text = "<html>Node: " + node.getName() + "<br>" + attribute;
-
                     setNodeToolTip(node, text);
                 }
             }
