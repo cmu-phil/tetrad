@@ -196,7 +196,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         Set<Node> blacklist = new HashSet<>();
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1,
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(graph, e, c, test, -1, -1,
                 true, blacklist);
 
         if (verbose) {

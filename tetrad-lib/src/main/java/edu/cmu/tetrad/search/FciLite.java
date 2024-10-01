@@ -213,7 +213,7 @@ public final class FciLite implements IGraphSearch {
         scorer.setKnowledge(knowledge);
         scorer.bookmark();
 
-        // We initialize the estimated PAG to the BOSS/GRaSP CPDAG.
+        // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
         pag = new EdgeListGraph(dag);
 
         if (verbose) {
@@ -264,9 +264,11 @@ public final class FciLite implements IGraphSearch {
 
         Map<Edge, Set<Node>> extraSepsets;
 
-        // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
-        // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
-        // per edge.
+        // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
+        // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
+        // each side. So in a dense graph, this can take a very long time to complete. Here, we look for a sepset
+        // for each edge by examining the structure of the current graph and finding a sepset that blocks all
+        // paths between x and y. This is a simpler problem.
         extraSepsets = removeExtraEdges(pag, unshieldedColliders);
 
         if (verbose) {
@@ -487,14 +489,12 @@ public final class FciLite implements IGraphSearch {
         // Note that we can use the MAG here instead of the DAG.
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
-        // TODO: Explore the speed and accuracy implications for doing the extra edge removal in parallel or
-        //  in serial.
         if (extraEdgeRemovalStyle == ExtraEdgeRemovalStyle.PARALLEL) {
             List<Callable<Pair<Edge, Set<Node>>>> tasks = new ArrayList<>();
 
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
-                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
+                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
 
                     return Pair.of(edge, sepset);
                 });
@@ -540,7 +540,7 @@ public final class FciLite implements IGraphSearch {
                 Edge edge = toVisit.removeFirst();
                 visited.add(edge);
 
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
 
                 if (verbose) {
                     TetradLogger.getInstance().log("For edge " + edge + " sepset: " + sepset);
