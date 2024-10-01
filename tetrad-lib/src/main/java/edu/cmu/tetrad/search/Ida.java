@@ -175,8 +175,6 @@ public class Ida {
                 _regressors.addAll(siblingsChoice);
                 List<Node> regressors = new ArrayList<>(_regressors);
 
-                System.out.println(x + " to " + y + " regressors: " + regressors);
-
                 double beta;
 
                 if (regressors.contains(y)) {

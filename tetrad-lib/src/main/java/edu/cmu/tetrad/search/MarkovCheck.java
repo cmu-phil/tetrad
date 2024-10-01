@@ -888,8 +888,8 @@ public class MarkovCheck implements SampleSizeSettable {
 
             try {
                 generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
-                generateResults(msep, true);
-                generateResults(mconn, false);
+                generateResults(msep, true, this.percentResample);
+                generateResults(mconn, false, this.percentResample);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -1348,7 +1348,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * @param facts The set of independence facts.
      * @param msep  True if for implied independencies, false if for implied dependencies.
      */
-    private void generateResults(Set<IndependenceFact> facts, boolean msep) throws InterruptedException {
+    private void generateResults(Set<IndependenceFact> facts, boolean msep, double percentResample) throws InterruptedException {
         class IndCheckTask implements Callable<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> {
             private final int index;
             private final List<IndependenceFact> facts;
@@ -1374,10 +1374,9 @@ public class MarkovCheck implements SampleSizeSettable {
 
                 if (independenceTest instanceof RowsSettable) {
                     List<Integer> rows = getSubsampleRows(percentResample);
-//                    List<Integer> rows = getBootstrapRows(1.0);
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
 
-//                    if (independenceTest instanceof SampleSizeSettable) {xk
+//                    if (independenceTest instanceof SampleSizeSettable) {
 //                        ((SampleSizeSettable) independenceTest).setSampleSize(getBootstrapEffectiveSampleSize(rows));
 //                    }
                 }
@@ -1563,12 +1562,12 @@ public class MarkovCheck implements SampleSizeSettable {
     /**
      * Returns a list of row indices for a subsample of the data set.
      *
-     * @param v The fraction of the data set to use.
+     * @param percentResample The fraction of the data set to use.
      * @return A list of row indices for a subsample of the data set.
      */
-    private List<Integer> getSubsampleRows(double v) {
+    private List<Integer> getSubsampleRows(double percentResample) {
         int sampleSize = independenceTest.getSampleSize();
-        int subsampleSize = (int) FastMath.floor(sampleSize * v);
+        int subsampleSize = (int) FastMath.floor(sampleSize * percentResample);
         List<Integer> rows = new ArrayList<>(sampleSize);
         for (int i = 0; i < sampleSize; i++) {
             rows.add(i);
@@ -1603,8 +1602,8 @@ public class MarkovCheck implements SampleSizeSettable {
      */
     private void generateResultsAllSubsets(Set<IndependenceFact> msep, Set<IndependenceFact> mconn) {
         try {
-            generateResults(msep, true);
-            generateResults(mconn, false);
+            generateResults(msep, true, this.percentResample);
+            generateResults(mconn, false, this.percentResample);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

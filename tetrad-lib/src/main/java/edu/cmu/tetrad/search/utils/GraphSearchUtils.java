@@ -932,21 +932,37 @@ public final class GraphSearchUtils {
     private static int structuralHammingDistanceOneEdge(Edge e1, Edge e2) {
         int error = 0;
 
+        // Case where both edges are null (no error)
         if (!(e1 == null && e2 == null)) {
             if (e1 != null && e2 != null) {
-                if (!e1.equals(e2)) {
+                // Case where both edges exist
+                if (Edges.isUndirectedEdge(e1) && Edges.isUndirectedEdge(e2)) {
+                    // Both edges are undirected, no error
+                    return error; // No increment, they are considered equal
+                } else if (Edges.isUndirectedEdge(e1) != Edges.isUndirectedEdge(e2)) {
+                    // One edge is undirected, the other is directed
+                    error++; // This is counted as one error
+                } else if (!e1.equals(e2)) {
+                    // Both edges are directed but unequal
                     error++;
                 }
-            } else if (Edges.isUndirectedEdge(Objects.requireNonNullElse(e2, e1))) {
-                error++;
             } else {
-                error++;
-                error++;
+                // Case where one edge is null and the other is not
+                Edge nonNullEdge = e1 != null ? e1 : e2;
+                if (Edges.isUndirectedEdge(nonNullEdge)) {
+                    // If the non-null edge is undirected, count 1 error
+                    error++;
+                } else {
+                    // If it's directed, count as 2 errors (one edge is missing)
+                    error += 2;
+                }
             }
         }
 
         return error;
     }
+
+
 
     /**
      * Just counts arrowhead errors--for cyclic edges counts an arrowhead at each node.

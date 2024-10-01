@@ -111,6 +111,10 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
      * Use pseudoinverse instead of correlation matrix.
      */
     private boolean usePseudoinverse = false;
+    /**
+     * Whether to cache results.
+     */
+    private boolean doCaching = false;
 
 
     /**
@@ -252,15 +256,20 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        IndependenceResult _result = facts.get(new IndependenceFact(x, y, z));
+        if (this.doCaching) {
+            IndependenceResult _result = facts.get(new IndependenceFact(x, y, z));
 
-        if (_result != null) {
-            return _result;
+            if (_result != null) {
+                return _result;
+            }
         }
 
         if (usePseudoinverse) {
             IndependenceResult result = checkIndependencePseudoinverse(x, y, z);
-            facts.put(new IndependenceFact(x, y, z), result);
+
+            if (this.doCaching) {
+                facts.put(new IndependenceFact(x, y, z), result);
+            }
             return result;
         } else { // Use inverse.
 
@@ -285,7 +294,11 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
                 throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
             } else {
                 IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
-                facts.put(new IndependenceFact(x, y, z), result);
+
+                if (this.doCaching) {
+                    facts.put(new IndependenceFact(x, y, z), result);
+                }
+
                 return result;
             }
         }
@@ -404,6 +417,7 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
             allVars.add(y);
 
             List<Integer> rows = getRows(allVars, this.nodesHash);
+
             r = getR(x, y, z, rows);
             n = rows.size();
         }
@@ -842,7 +856,7 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
      * @return The rows used in the test.
      */
     public List<Integer> getRows() {
-        return rows;
+        return this.rows;
     }
 
     /**
@@ -873,6 +887,10 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
      */
     public void setUsePseudoinverse(boolean usePseudoinverse) {
         this.usePseudoinverse = usePseudoinverse;
+    }
+
+    public void setDoCaching(boolean doCaching) {
+        this.doCaching = doCaching;
     }
 }
 
