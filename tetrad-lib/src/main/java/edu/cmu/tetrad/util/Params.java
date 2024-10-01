@@ -892,15 +892,15 @@ public final class Params {
      */
     public static String PC_HEURISTIC = "pcHeuristic";
     /**
-     * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
+     * Constant <code>FCI_LITE_STARTS_WITGH="FciLiteStartsWith"</code>
      */
-    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
+    public static String FCI_LITE_STARTS_WITH = "fciLiteStartsWith";
     /**
      * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
      */
     public static String EXTRA_EDGE_REMOVAL_STEP = "extraEdgeRemovalStep";
     /**
-     * Constant <code>LV_LITE_MAX_PATH_LENGTH="lvLiteMaxPathLength"</code>
+     * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
     /**

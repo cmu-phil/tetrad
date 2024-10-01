@@ -74,7 +74,7 @@ public class DagSepsets implements SepsetProducer {
     public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth) {
 //        return dag.getSepset(a, b);
         return ((EdgeListGraph) dag).getSepsetContaining(a, b, s, true);
-//        return LvLite.getSepset(a, b, getDag(), new MsepTest(getDag()), null, -1, -1, -1);
+//        return FciLite.getSepset(a, b, getDag(), new MsepTest(getDag()), null, -1, -1, -1);
     }
 
     /**

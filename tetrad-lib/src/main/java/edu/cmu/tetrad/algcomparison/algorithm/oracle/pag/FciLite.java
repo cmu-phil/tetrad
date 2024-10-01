@@ -30,20 +30,20 @@ import java.util.List;
 
 
 /**
- * This class represents the LV-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
+ * This class represents the FCI-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
  * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
  * afterward.
  *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Lite",
-        command = "lv-lite",
+        name = "FCI-Lite",
+        command = "fci-lite",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 //@Experimental
-public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -65,10 +65,10 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a LV-Lite algorithm.
+     * This class represents a FCI-Lite algorithm.
      *
      * <p>
-     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCI-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -76,15 +76,15 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvLite() {
+    public FciLite() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * LV-Lite is a class that represents a LV-Lite algorithm.
+     * FCI-Lite is a class that represents a FCI-Lite algorithm.
      *
      * <p>
-     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCI-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -94,7 +94,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvLite(IndependenceWrapper test, ScoreWrapper score) {
+    public FciLite(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -127,12 +127,12 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {
-            if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
+            if (parameters.getInt(Params.FCI_LITE_STARTS_WITH) == 1) {
                 throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
             }
         }
 
-        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
+        edu.cmu.tetrad.search.FciLite search = new edu.cmu.tetrad.search.FciLite(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -150,12 +150,12 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
-        if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
-        } else if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.GRASP);
+        if (parameters.getInt(Params.FCI_LITE_STARTS_WITH) == 1) {
+            search.setStartWith(edu.cmu.tetrad.search.FciLite.START_WITH.BOSS);
+        } else if (parameters.getInt(Params.FCI_LITE_STARTS_WITH) == 2) {
+            search.setStartWith(edu.cmu.tetrad.search.FciLite.START_WITH.GRASP);
         } else {
-            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.LV_LITE_STARTS_WITH));
+            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCI_LITE_STARTS_WITH));
         }
 
         // General
@@ -215,7 +215,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.COMPLETE_RULE_SET_USED);
 
         // LV-Lite
-        params.add(Params.LV_LITE_STARTS_WITH);
+        params.add(Params.FCI_LITE_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);

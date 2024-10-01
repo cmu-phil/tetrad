@@ -26,10 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.GraspFci;
-import edu.cmu.tetrad.search.LvLite;
+import edu.cmu.tetrad.search.FciLite;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.test.MsepTest;
 
@@ -87,17 +84,17 @@ public class TestLvFromOracle {
 //////                case FCI_MAX -> estimated = new FciMax(msepTest).search();
 //////                case GFCI -> estimated = new GFci(msepTest, score).search();
 ////                case GRASP_FCI -> estimated = new GraspFci(msepTest, score).search();
-//////                case LV_LITE -> {
-//////                    LvLite lvLite = new LvLite(msepTest, score);
-//////                    lvLite.setTuckingAllowed(false);
-//////                    estimated = lvLite.search();
+//////                case FCI_LITE -> {
+//////                    FciLite fciLite = new FciLite(msepTest, score);
+//////                    fciLite.setTuckingAllowed(false);
+//////                    estimated = fciLite.search();
 //////                }
 ////                default -> throw new IllegalArgumentException();
 ////            }}
 
-        LV_ALGORITHMS algorithm = LV_ALGORITHMS.LV_LITE;
+        LV_ALGORITHMS algorithm = LV_ALGORITHMS.FCI_LITE;
 
-        Graph estimated = new LvLite(msepTest, score).search();
+        Graph estimated = new FciLite(msepTest, score).search();
 //
 //           Graph estimated = new GFci(msepTest, score).search();
 
@@ -131,7 +128,7 @@ public class TestLvFromOracle {
 
     // BFCI currently cannot be run from Oracle.
     private enum LV_ALGORITHMS {
-        FCI, CFCI, FCI_MAX, GFCI, GRASP_FCI, LV_LITE
+        FCI, CFCI, FCI_MAX, GFCI, GRASP_FCI, FCI_LITE
 //        GRASP_FCI
     }
 }

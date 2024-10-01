@@ -37,14 +37,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * The LV-Lite algorithm implements a search algorithm for learning the structure of a graphical model from
+ * The FCIL algorihtm (FCI-Lite) algorithm implements a search algorithm for learning the structure of a graphical model from
  * observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial CPDAG.
  * Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing step to
  * remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the graph.
  *
  * @author josephramsey
  */
-public final class LvLite implements IGraphSearch {
+public final class FciLite implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -115,14 +115,14 @@ public final class LvLite implements IGraphSearch {
     private long testTimeout = 500;
 
     /**
-     * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
+     * FCI-Lite constructor. Initializes a new object of FCI-Lite search algorithm with the given IndependenceTest and
      * Score object.
      *
      * @param test  The IndependenceTest object to be used for testing independence between variables.
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public LvLite(IndependenceTest test, Score score) {
+    public FciLite(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -148,7 +148,7 @@ public final class LvLite implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(this.score.getVariables());
 
         if (verbose) {
-            TetradLogger.getInstance().log("===Starting LV-Lite===");
+            TetradLogger.getInstance().log("===Starting FCI-Lite===");
         }
 
         Graph pag;
@@ -241,12 +241,11 @@ public final class LvLite implements IGraphSearch {
         GraphUtils.reorientWithCircles(pag, verbose);
 
         // We're looking for unshielded colliders in these next steps that we can detect without using only
-        // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and nearby graphs
-        // that can be reached by constrained tucking. The BOSS graph should be edge minimal, so should have the
-        // highest number of unshielded colliders to copy to the PAG. Nearby graphs should have fewer unshielded
-        // colliders, though like the BOSS graph, they should be Markov, so their unshielded colliders should be
-        // valid. From sample, because of unfaithfulness, the quality may fall off depending on the difference in
-        // score between the best order and a tucked order.
+        // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
+        // unshielded colliders from the BOSS graph into the estimated PAG. This step is justified in the
+        // GFCI algorithm. Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
+        // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
+        // PMLR.
         for (Node b : best) {
             var adj = pag.getAdjacentNodes(b);
 
@@ -259,13 +258,6 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-        // These are the unshielded colliders copied from BOSS. BOSS by itself is not the cause of almost
-        // cycles; it's the subsequent testing steps that cause them. So we do not need to remove any
-        // unshielded colliders that are in this set to resolve almost-cycles.
-
-        // These will be the unshielded colliders that are found in the subsequent steps.
-        Set<Triple> subsequentUnshieldedColliders = new HashSet<>();
-
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
@@ -275,8 +267,7 @@ public final class LvLite implements IGraphSearch {
         // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
         // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
         // per edge.
-        extraSepsets = removeExtraEdges(pag, subsequentUnshieldedColliders);
-        unshieldedColliders.addAll(subsequentUnshieldedColliders);
+        extraSepsets = removeExtraEdges(pag, unshieldedColliders);
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation after extra sepsets found");
