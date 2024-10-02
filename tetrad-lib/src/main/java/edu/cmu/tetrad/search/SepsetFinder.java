@@ -722,10 +722,9 @@ public class SepsetFinder {
                     // If the path is of at least length 1, and the last two nodes on the path form a noncollider
                     // with 'adjacent', we need to block these noncolliders first by conditioning on node.
                     if (newPath.size() - 1 > 1) {
-                        Node z1 = newPath.get(newPath.size() - 3);
                         Node z2 = newPath.get(newPath.size() - 2);
 
-                        if (!graph.isDefCollider(z1, z2, z3)) {
+                        if (graph.isDefCollider(x, z2, y)) {
                             blockPath(newPath, graph, conditioningSet, couldBeColliders, blacklist, x, y);
 
                             if (graph.paths().isMConnectingPath(newPath, conditioningSet, isPag)) {
@@ -751,7 +750,7 @@ public class SepsetFinder {
                         Node z1 = newPath.get(newPath.size() - 3);
                         Node z2 = newPath.get(newPath.size() - 2);
 
-                        if (graph.isDefCollider(z1, z2, z3)) {
+                        if (!graph.isDefCollider(x, z2, y)) {
                             blockPath(newPath, graph, conditioningSet, couldBeColliders, blacklist, x, y);
 
                             if (graph.paths().isMConnectingPath(newPath, conditioningSet, isPag)) {
