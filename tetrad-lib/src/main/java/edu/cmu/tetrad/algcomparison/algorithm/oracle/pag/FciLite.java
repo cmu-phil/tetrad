@@ -142,7 +142,7 @@ public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, Us
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-        // LV-Lite
+        // FCI-Lite
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
@@ -184,7 +184,7 @@ public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, Us
      */
     @Override
     public String getDescription() {
-        return "LV-Lite (Latent Variable \"Lite\") using " + this.score.getDescription();
+        return "FCI-Lite (Latent Variable \"Lite\") using " + this.score.getDescription();
     }
 
     /**
@@ -214,7 +214,7 @@ public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, Us
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
 
-        // LV-Lite
+        // Lite
         params.add(Params.FCI_LITE_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);

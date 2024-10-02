@@ -312,7 +312,7 @@ public final class FciLite implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("LV-Lite finished.");
+            TetradLogger.getInstance().log("FCI-Lite finished.");
         }
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
@@ -486,6 +486,8 @@ public final class FciLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
+        IndependenceTest test = new MsepTest(pag);
+
         // Note that we can use the MAG here instead of the DAG.
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
@@ -535,13 +537,15 @@ public final class FciLite implements IGraphSearch {
             Deque<Edge> toVisit = new LinkedList<>(edges);
 
             // Sort edges x *-* y in toVisit by |adj(x)| + |adj(y)|.
-            toVisit = toVisit.stream().sorted(Comparator.comparingInt(edge -> pag.getAdjacentNodes(edge.getNode1()).size() + pag.getAdjacentNodes(edge.getNode2()).size())).collect(Collectors.toCollection(LinkedList::new));
+            toVisit = toVisit.stream().sorted(Comparator.comparingInt(edge -> pag.getAdjacentNodes(
+                    edge.getNode1()).size() + pag.getAdjacentNodes(edge.getNode2()).size())).collect(Collectors.toCollection(LinkedList::new));
 
             while (!toVisit.isEmpty()) {
                 Edge edge = toVisit.removeFirst();
                 visited.add(edge);
 
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(),
+                        test, maxBlockingPathLength, depth, true, new HashSet<>());
 
                 if (verbose) {
                     TetradLogger.getInstance().log("For edge " + edge + " sepset: " + sepset);

@@ -226,7 +226,7 @@ public class SepsetFinder {
      * to y except for an edge from x to y itself. These possible sets are then tested for independence, and the first
      * set that is found to be independent is returned as the sepset.
      * <p>
-     * This is the sepset finding method from LV-lite.
+     * This is the sepset finding method from FCI-Lite.
      *
      * @param mpdag     the MPDAG graph to analyze (can be a DAG or a CPDAG)
      * @param x         the first node
@@ -591,9 +591,10 @@ public class SepsetFinder {
                 // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
                 // it could be a collider. We will need to either consider this to be a collider or
                 // a noncollider below.
-                if (graph.isAdjacentTo(z1, z3)) {
+                if (z1 == x && z3 == y && graph.isAdjacentTo(z1, z3)) {
                     couldBeColliders.add(z2);
                 }
+
                 break;
             }
         }
@@ -680,8 +681,9 @@ public class SepsetFinder {
     }
 
     /**
-     * Performs a breadth-first search to find all paths out of a specific node in a graph, considering certain
-     * conditions and constraints.
+     * Performs a breadth-first search to find a set of noncolliders to block all paths from node x to node y in a given
+     * graph. The method returns a pair of sets, where the first set contains the conditioning set and the second set
+     * contains the nodes that could be colliders but whose status is cannot be determined from the graph.
      *
      * @param graph              the graph to search
      * @param blacklist          the set of nodes to exclude from the search
@@ -695,7 +697,6 @@ public class SepsetFinder {
         Set<Node> conditioningSet = new HashSet<>();
         Set<Node> couldBeColliders = new HashSet<>();
 
-//        Set<List<Node>> allPaths = new HashSet<>();
         Queue<List<Node>> queue = new LinkedList<>();
         queue.add(Collections.singletonList(x));
 
@@ -833,18 +834,15 @@ public class SepsetFinder {
 
     /**
      * This method searches for m-connecting paths of increasing lengths away from x and then tries to block these paths
-     * by conditioning on definite noncollider nodes. If all paths are blocked at any point, the method returns the
-     * sepset used to block them all; otherwise, it returns null. The lengths of these paths can be limited by the
-     * <code>maxLength</code> parameter, and the maximum number of nodes in the final sepset can be limited by the
-     * <code>depth</code> parameter. If the length of any path needs to be longer than <code>maxLength</code>, the
-     * method returns null. If y is ever encountered along a path, we know not all paths from x to y can be blocked, so
-     * null is returned. When increasing the considered path length does not yield any new paths, the search is
-     * terminated early and null is returned.
+     * by conditioning on definite noncollider nodes. If a conditioning set is found conditional on which x is
+     * independent of y, the method returns this conditioning set; otherwise, it returns null.
+     * <p>
+     * It is assumed that the test in question is a test of m-separation.
      *
      * @param mpdag              The graph representing the Markov equivalence class that contains the nodes.
      * @param x                  The first node in the pair.
      * @param y                  The second node in the pair.
-     * @param test               The independence test object to use for checking independence.
+     * @param test               The independence test object to use for checking m-separation.
      * @param maxLength          The maximum length of the paths to consider. If set to a negative value or a value
      *                           greater than the number of nodes minus one, it is adjusted accordingly.
      * @param depth              A limit on the number of potential variables to consider in any sepset out of the list
