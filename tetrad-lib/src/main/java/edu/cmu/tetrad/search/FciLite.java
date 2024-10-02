@@ -37,10 +37,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * The FCIL algorihtm (FCI-Lite) algorithm implements a search algorithm for learning the structure of a graphical model from
- * observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial CPDAG.
- * Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing step to
- * remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the graph.
+ * The FCIL algorihtm (FCI-Lite) algorithm implements a search algorithm for learning the structure of a graphical model
+ * from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
+ * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing step
+ * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
+ * graph.
  *
  * @author josephramsey
  */
@@ -133,6 +134,8 @@ public final class FciLite implements IGraphSearch {
 
         this.test = test;
         this.score = score;
+
+        test.setVerbose(false);
 
         if (test instanceof MsepTest) {
             this.startWith = START_WITH.GRASP;
@@ -486,7 +489,7 @@ public final class FciLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
-        IndependenceTest test = new MsepTest(pag);
+        IndependenceTest msep = new MsepTest(pag);
 
         // Note that we can use the MAG here instead of the DAG.
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
@@ -597,6 +600,10 @@ public final class FciLite implements IGraphSearch {
         common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
 
         pag.removeEdge(edge.getNode1(), edge.getNode2());
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing adjacency " + edge.getNode1() + " *-* " + edge.getNode2() + " from PAG.");
+        }
 
         for (Node node : common) {
             if (!extraSepsets.get(edge).contains(node)) {

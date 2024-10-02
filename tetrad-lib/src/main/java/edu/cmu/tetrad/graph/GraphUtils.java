@@ -1939,7 +1939,7 @@ public final class GraphUtils {
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes,
                                                 SepsetProducer sepsets, int depth, boolean verbose) {
         if (verbose) {
-            TetradLogger.getInstance().log("Starting extra-edge removal step.");
+            TetradLogger.getInstance().log("Starting GFCI extra-edge removal step.");
         }
 
         for (Node b : nodes) {
@@ -1972,12 +1972,17 @@ public final class GraphUtils {
 
                         if (verbose) {
                             double pValue = sepsets.getPValue(a, c, sepset);
-                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
-                                                           + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
+                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + ", sepset = " + sepset);
                         }
+
+                        break;
                     }
                 }
             }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished GFCI extra-edge removal step.");
         }
     }
 
@@ -2528,7 +2533,7 @@ public final class GraphUtils {
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
                               boolean verbose, Set<Triple> unshieldedTriples) {
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-R0.");
+            TetradLogger.getInstance().log("Starting GFCI R0 Step.");
         }
 
         pag.reorientAllWith(Endpoint.CIRCLE);
@@ -2562,11 +2567,11 @@ public final class GraphUtils {
                             TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
 
                             if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
+                                TetradLogger.getInstance().log("Created a bidirected edge: " + pag.getEdge(x, y));
                             }
 
                             if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
+                                TetradLogger.getInstance().log("Created a bidirected edge: " + pag.getEdge(y, z));
                             }
                         }
                     }
@@ -2587,14 +2592,14 @@ public final class GraphUtils {
                                     double p = sepsets.getPValue(x, z, sepset);
                                     String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
 
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ", p = " + _p + ".");
+                                    TetradLogger.getInstance().log("Oriented collider by a test " + x + " *-> " + y + " <-* " + z);
 
                                     if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
+                                        TetradLogger.getInstance().log("Created a bidirected edge: " + pag.getEdge(x, y));
                                     }
 
                                     if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
+                                        TetradLogger.getInstance().log("Created a bidirected edge: " + pag.getEdge(y, z));
                                     }
                                 }
                             }
@@ -2602,6 +2607,10 @@ public final class GraphUtils {
                     }
                 }
             }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished GFCI R0 Step.");
         }
     }
 
