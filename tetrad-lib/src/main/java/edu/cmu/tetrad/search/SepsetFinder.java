@@ -566,11 +566,6 @@ public class SepsetFinder {
             Node z2 = path.get(n);
             Node z3 = path.get(n + 1);
 
-            if (z1.getNodeType().equals(NodeType.LATENT) || z2.getNodeType().equals(NodeType.LATENT)
-                || z3.getNodeType() == NodeType.LATENT) {
-                continue;
-            }
-
             if (graph.isDefCollider(z1, z2, z3)) {
                 if (z1 == x && z3 == y) {
                     if (graph.isAdjacentTo(z1, z3)) {
@@ -706,63 +701,44 @@ public class SepsetFinder {
 
             Node node = path.get(path.size() - 1);
 
-            for (Node z3 : graph.getAdjacentNodes(node)) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
+            // We handle the cases where the path is of the form x *-> z2 <-* y separately.
+            queuePaths(queue, path, graph, node, x, y, conditioningSet, couldBeColliders, blacklist, isPag, false);
+            queuePaths(queue, path, graph, node, x, y, conditioningSet, couldBeColliders, blacklist, isPag, true);
+        }
+
+        return Pair.of(conditioningSet, couldBeColliders);
+    }
+
+    private static void queuePaths(Queue<List<Node>> queue, List<Node> path, Graph graph, Node node, Node x, Node y, Set<Node> conditioningSet, Set<Node> couldBeColliders, Set<Node> blacklist, boolean isPag,
+                                   boolean ifColliders) {
+        for (Node z3 : graph.getAdjacentNodes(node)) {
+            if (!path.contains(z3)) {
+                List<Node> newPath = new ArrayList<>(path);
+                newPath.add(z3);
+
+                if (newPath.size() - 1 == 1) {
+                    queue.add(newPath);
                 }
 
-                if (!path.contains(z3)) {
-                    List<Node> newPath = new ArrayList<>(path);
-                    newPath.add(z3);
+                if (newPath.size() - 1 > 1) {
+                    Node z2 = newPath.get(newPath.size() - 2);
 
-                    if (newPath.size() - 1 == 1) {
-                        queue.add(newPath);
+                    boolean condition = graph.isDefCollider(x, z2, y);
+
+                    if (!ifColliders) {
+                        condition = !condition;
                     }
 
-                    // If the path is of at least length 1, and the last two nodes on the path form a noncollider
-                    // with 'adjacent', we need to block these noncolliders first by conditioning on node.
-                    if (newPath.size() - 1 > 1) {
-                        Node z2 = newPath.get(newPath.size() - 2);
+                    if (condition) {
+                        blockPath(newPath, graph, conditioningSet, couldBeColliders, blacklist, x, y);
 
-                        if (graph.isDefCollider(x, z2, y)) {
-                            blockPath(newPath, graph, conditioningSet, couldBeColliders, blacklist, x, y);
-
-                            if (graph.paths().isMConnectingPath(newPath, conditioningSet, isPag)) {
-                                queue.add(newPath);
-                            }
-                        }
-                    }
-                }
-            }
-
-            for (Node z3 : graph.getAdjacentNodes(node)) {
-                if (!path.contains(z3)) {
-                    List<Node> newPath = new ArrayList<>(path);
-                    newPath.add(z3);
-
-                    if (newPath.size() - 1 == 1) {
-                        queue.add(newPath);
-                    }
-
-                    // If the path is of at least length 1, and the last two nodes on the path form a noncollider
-                    // with 'adjacent', we need to block these noncolliders first by conditioning on node.
-                    if (newPath.size() - 1 > 1) {
-                        Node z1 = newPath.get(newPath.size() - 3);
-                        Node z2 = newPath.get(newPath.size() - 2);
-
-                        if (!graph.isDefCollider(x, z2, y)) {
-                            blockPath(newPath, graph, conditioningSet, couldBeColliders, blacklist, x, y);
-
-                            if (graph.paths().isMConnectingPath(newPath, conditioningSet, isPag)) {
-                                queue.add(newPath);
-                            }
+                        if (graph.paths().isMConnectingPath(newPath, conditioningSet, isPag)) {
+                            queue.add(newPath);
                         }
                     }
                 }
             }
         }
-
-        return Pair.of(conditioningSet, couldBeColliders);
     }
 
     /**
