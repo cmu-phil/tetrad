@@ -690,10 +690,10 @@ public class SepsetFinder {
      * @param maxLength          the maximum length of the paths (-1 for unlimited)
      * @param x                  the starting node
      * @param y                  the destination node
-     * @param allowSelectionBias flag to indicate whether to allow selection bias in path selection
+     * @param isPag flag to indicate whether to allow selection bias in path selection
      * @return a pair of sets, where the first set contains the conditioning set and the second set contains the nodes
      */
-    public static Pair<Set<Node>, Set<Node>> possibleConditioningSets(Graph graph, Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias) {
+    public static Pair<Set<Node>, Set<Node>> possibleConditioningSets(Graph graph, Set<Node> blacklist, int maxLength, Node x, Node y, boolean isPag) {
         Set<Node> conditioningSet = new HashSet<>();
         Set<Node> couldBeColliders = new HashSet<>();
 
@@ -735,7 +735,7 @@ public class SepsetFinder {
                         if (!graph.isDefCollider(z1, z2, z3)) {
                             blockPath(newPath, graph, conditioningSet, couldBeColliders, blacklist, x, y, true);
 
-                            if (graph.paths().isMConnectingPath(newPath, conditioningSet, allowSelectionBias)) {
+                            if (graph.paths().isMConnectingPath(newPath, conditioningSet, isPag)) {
                                 queue.add(newPath);
                             }
                         }
@@ -761,7 +761,7 @@ public class SepsetFinder {
                         if (graph.isDefCollider(z1, z2, z3)) {
                             blockPath(newPath, graph, conditioningSet, couldBeColliders, blacklist, x, y, true);
 
-                            if (graph.paths().isMConnectingPath(newPath, conditioningSet, allowSelectionBias)) {
+                            if (graph.paths().isMConnectingPath(newPath, conditioningSet, isPag)) {
                                 queue.add(newPath);
                             }
                         }
@@ -780,18 +780,18 @@ public class SepsetFinder {
      * @param node1              The starting node for finding paths.
      * @param maxLength          The maximum length of paths to consider.
      * @param conditionSet       The set of conditions that the paths must satisfy.
-     * @param allowSelectionBias Determines whether to allow biased selection when multiple paths are available.
+     * @param isPag Determines whether to allow biased selection when multiple paths are available.
      * @return A set of lists, where each list represents a path from the starting node that satisfies the conditions.
      */
     public static Set<List<Node>> allPathsOutOf(Graph graph, Node node1, int maxLength, Set<Node> conditionSet,
-                                                boolean allowSelectionBias) {
+                                                boolean isPag) {
         Set<List<Node>> paths = new HashSet<>();
-        allPathsVisitOutOf(graph, null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
+        allPathsVisitOutOf(graph, null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, isPag);
         return paths;
     }
 
     private static void allPathsVisitOutOf(Graph graph, Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
-                                           Set<Node> conditionSet, boolean allowSelectionBias) {
+                                           Set<Node> conditionSet, boolean isPag) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
         }
@@ -807,7 +807,7 @@ public class SepsetFinder {
         int maxPaths = 500;
 
         if (path.size() - 1 > 1) {
-            if (paths.size() < maxPaths && graph.paths().isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+            if (paths.size() < maxPaths && graph.paths().isMConnectingPath(path, conditionSet, isPag)) {
                 paths.add(_path);
             }
         }
@@ -824,7 +824,7 @@ public class SepsetFinder {
             }
 
             if (paths.size() < maxPaths) {
-                allPathsVisitOutOf(graph, node1, child, pathSet, path, paths, maxLength, conditionSet, allowSelectionBias);
+                allPathsVisitOutOf(graph, node1, child, pathSet, path, paths, maxLength, conditionSet, isPag);
             }
         }
 
@@ -848,12 +848,12 @@ public class SepsetFinder {
      * @param depth              A limit on the number of potential variables to consider in any sepset out of the list
      *                           of possible variables that could be colliders. If set to a negative value, it is taken
      *                           to be unlimited.
-     * @param allowSelectionBias A boolean flag indicating whether to allow selection bias.
+     * @param isPag A boolean flag indicating whether to assume the graph is a PAG.
      * @param blacklist          The set of nodes to blacklist.
      * @return The sepset if independence holds, otherwise null.
      */
     public static Set<Node> getSepsetPathBlockingFromSideOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                             int maxLength, int depth, boolean allowSelectionBias,
+                                                             int maxLength, int depth, boolean isPag,
                                                              Set<Node> blacklist) {
 
         int maxLength1 = maxLength;
@@ -863,7 +863,7 @@ public class SepsetFinder {
 
         // This returns a list of paths, but this list is not used. Rather, the conditioning set and the 'could be
         // colliders' set are used.
-        Pair<Set<Node>, Set<Node>> pair = possibleConditioningSets(mpdag, blacklist, maxLength1, x, y, allowSelectionBias);
+        Pair<Set<Node>, Set<Node>> pair = possibleConditioningSets(mpdag, blacklist, maxLength1, x, y, isPag);
         Set<Node> conditioningSet = pair.getLeft();
         Set<Node> couldBeColliders = pair.getRight();
 

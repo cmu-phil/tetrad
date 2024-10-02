@@ -95,15 +95,15 @@ public class Paths implements TetradSerializable {
     /**
      * Returns the parents of the node at index p, calculated using Pearl's method.
      *
-     * @param pi                 The list of nodes.
-     * @param p                  The index.
-     * @param g                  The graph.
-     * @param verbose            Whether to print verbose output.
-     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     * @param pi      The list of nodes.
+     * @param p       The index.
+     * @param g       The graph.
+     * @param verbose Whether to print verbose output.
+     * @param isPag   whether to assume the graph is a PAG; if true, then undirected edges X--Y are uniformly treated as
+     *                X-&gt;L&lt;-Y.
      * @return The parents, as a Pair object (parents + score).
      */
-    public static Set<Node> getParents(List<Node> pi, int p, Graph g, boolean verbose, boolean allowSelectionBias) {
+    public static Set<Node> getParents(List<Node> pi, int p, Graph g, boolean verbose, boolean isPag) {
         Node x = pi.get(p);
         Set<Node> parents = new HashSet<>();
         Set<Node> prefix = getPrefix(pi, p);
@@ -114,7 +114,7 @@ public class Paths implements TetradSerializable {
             minus.remove(x);
             Set<Node> z = new HashSet<>(minus);
 
-            if (!g.paths().isMSeparatedFrom(x, y, z, allowSelectionBias)) {
+            if (!g.paths().isMSeparatedFrom(x, y, z, isPag)) {
                 if (verbose) {
                     System.out.println("Adding " + y + " as a parent of " + x + " with z = " + z);
                 }
@@ -588,58 +588,58 @@ public class Paths implements TetradSerializable {
      * Finds all paths between two nodes within a given maximum length, considering optional condition set and selection
      * bias.
      *
-     * @param node1              the starting node
-     * @param node2              the target node
-     * @param maxLength          the maximum length of each path
-     * @param conditionSet       a set of nodes that need to be included in the path (optional)
-     * @param allowSelectionBias if true, undirected edges are interpreted as selection bias; otherwise, as directed
-     *                           edges in one direction or the other.
+     * @param node1        the starting node
+     * @param node2        the target node
+     * @param maxLength    the maximum length of each path
+     * @param conditionSet a set of nodes that need to be included in the path (optional)
+     * @param isPag        if true, undirected edges are interpreted as selection bias; otherwise, as directed edges in
+     *                     one direction or the other.
      * @return a set of paths between node1 and node2 that satisfy the conditions
      */
     public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
-                                    boolean allowSelectionBias) {
+                                    boolean isPag) {
         Set<List<Node>> paths = new HashSet<>();
-        allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, -1, maxLength, conditionSet, null, allowSelectionBias);
+        allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, -1, maxLength, conditionSet, null, isPag);
         return paths;
     }
 
     /**
      * Finds all paths between two nodes satisfying certain conditions.
      *
-     * @param node1              the starting node
-     * @param node2              the ending node
-     * @param minLength          the minimum length of paths to consider
-     * @param maxLength          the maximum length of paths to consider
-     * @param conditionSet       a set of nodes that must be present in the paths
-     * @param ancestors          a map representing the ancestry relationships of nodes
-     * @param allowSelectionBias true if selection bias is allowed, false otherwise
+     * @param node1        the starting node
+     * @param node2        the ending node
+     * @param minLength    the minimum length of paths to consider
+     * @param maxLength    the maximum length of paths to consider
+     * @param conditionSet a set of nodes that must be present in the paths
+     * @param ancestors    a map representing the ancestry relationships of nodes
+     * @param isPag        true if selection bias is allowed, false otherwise
      * @return a set of lists representing all paths between node1 and node2
      */
     public Set<List<Node>> allPaths(Node node1, Node node2, int minLength, int maxLength, Set<Node> conditionSet,
-                                    Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+                                    Map<Node, Set<Node>> ancestors, boolean isPag) {
         Set<List<Node>> paths = new HashSet<>();
-        allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
+        allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, minLength, maxLength, conditionSet, ancestors, isPag);
         return paths;
     }
 
     /**
      * Generates all paths out of a given node within a specified maximum length and conditional set.
      *
-     * @param node1              The starting node.
-     * @param maxLength          The maximum length of each path.
-     * @param conditionSet       The set of nodes that must be present in each path.
-     * @param allowSelectionBias Determines whether to allow selection bias when choosing the next node to visit.
+     * @param node1        The starting node.
+     * @param maxLength    The maximum length of each path.
+     * @param conditionSet The set of nodes that must be present in each path.
+     * @param isPag        Determines whether to allow selection bias when choosing the next node to visit.
      * @return A set containing all generated paths as lists of nodes.
      */
     public Set<List<Node>> allPathsOutOf(Node node1, int maxLength, Set<Node> conditionSet,
-                                         boolean allowSelectionBias) {
+                                         boolean isPag) {
         Set<List<Node>> paths = new HashSet<>();
-        allPathsVisitOutOf(null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
+        allPathsVisitOutOf(null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, isPag);
         return paths;
     }
 
     private void allPathsVisit(Node node1, Node node2, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int minLength, int maxLength,
-                               Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+                               Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean isPag) {
         if (minLength != -1 && path.size() - 1 < minLength) {
             return;
         }
@@ -661,11 +661,11 @@ public class Paths implements TetradSerializable {
 
                 if (path.size() > 1) {
                     if (ancestors != null) {
-                        if (isMConnectingPath(path, conditionSet, ancestors, allowSelectionBias)) {
+                        if (isMConnectingPath(path, conditionSet, ancestors, isPag)) {
                             paths.add(_path);
                         }
                     } else {
-                        if (isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+                        if (isMConnectingPath(path, conditionSet, isPag)) {
                             paths.add(_path);
                         }
                     }
@@ -686,7 +686,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            allPathsVisit(child, node2, pathSet, path, paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
+            allPathsVisit(child, node2, pathSet, path, paths, minLength, maxLength, conditionSet, ancestors, isPag);
         }
 
         path.removeLast();
@@ -694,7 +694,7 @@ public class Paths implements TetradSerializable {
     }
 
     private void allPathsVisitOutOf(Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
-                                    Set<Node> conditionSet, boolean allowSelectionBias) {
+                                    Set<Node> conditionSet, boolean isPag) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
         }
@@ -710,7 +710,7 @@ public class Paths implements TetradSerializable {
         int maxPaths = 500;
 
         if (path.size() - 1 > 1) {
-            if (paths.size() < maxPaths && isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+            if (paths.size() < maxPaths && isMConnectingPath(path, conditionSet, isPag)) {
                 paths.add(_path);
             }
         }
@@ -735,7 +735,7 @@ public class Paths implements TetradSerializable {
 //            }
 
             if (paths.size() < maxPaths) {
-                allPathsVisitOutOf(node1, child, pathSet, path, paths, maxLength, conditionSet, allowSelectionBias);
+                allPathsVisitOutOf(node1, child, pathSet, path, paths, maxLength, conditionSet, isPag);
             }
         }
 
@@ -1408,12 +1408,12 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Calculates the possible d-separation nodes between two given Nodes within a graph,
-     * using a maximum path length constraint.
+     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
+     * constraint.
      *
-     * @param x                     the starting Node for the path
-     * @param y                     the ending Node for the path
-     * @param maxPossibleDsepPathLength  the maximum length of the path, -1 for unlimited
+     * @param x                         the starting Node for the path
+     * @param y                         the ending Node for the path
+     * @param maxPossibleDsepPathLength the maximum length of the path, -1 for unlimited
      * @return a List of Nodes representing the possible d-separation nodes
      */
     public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
@@ -1637,14 +1637,14 @@ public class Paths implements TetradSerializable {
     /**
      * Finds a sepset for x and y, if there is one; otherwise, returns null.
      *
-     * @param x                  The first node.
-     * @param y                  The second node.
-     * @param allowSelectionBias Whether to allow selection bias.
-     * @param test               The independence test to use.
-     * @param depth              The maximum depth to search for a sepset.
+     * @param x     The first node.
+     * @param y     The second node.
+     * @param isPag Whether to allow selection bias.
+     * @param test  The independence test to use.
+     * @param depth The maximum depth to search for a sepset.
      * @return A sepset for x and y, if there is one; otherwise, null.
      */
-    public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test, int depth) {
+    public Set<Node> getSepset(Node x, Node y, boolean isPag, IndependenceTest test, int depth) {
         return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test, depth);
     }
 
@@ -1663,25 +1663,25 @@ public class Paths implements TetradSerializable {
     }
 
 
-    private boolean separates(Node x, Node y, boolean allowSelectionBias, Set<Node> combination) {
+    private boolean separates(Node x, Node y, boolean isPag, Set<Node> combination) {
         if (graph.getNumEdges(x) < graph.getNumEdges(y)) {
-            return !isMConnectedTo(x, y, combination, allowSelectionBias);
+            return !isMConnectedTo(x, y, combination, isPag);
         } else {
-            return !isMConnectedTo(y, x, combination, allowSelectionBias);
+            return !isMConnectedTo(y, x, combination, isPag);
         }
     }
 
     /**
      * Determmines whether x and y are d-connected given z.
      *
-     * @param x                  a {@link Node} object
-     * @param y                  a {@link Node} object
-     * @param z                  a {@link Set} object
-     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     * @param x     a {@link Node} object
+     * @param y     a {@link Node} object
+     * @param z     a {@link Set} object
+     * @param isPag whether to allow selection bias; if true, then undirected edges X--Y are uniformly treated as
+     *              X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
-    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, boolean allowSelectionBias) {
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, boolean isPag) {
         class EdgeNode {
 
             private final Edge edge;
@@ -1750,7 +1750,7 @@ public class Paths implements TetradSerializable {
                     // "virtual edges" that are directed in the direction of the arrow, so that the reachability
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
-                    if (!allowSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                    if (!isPag && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
                         if (Edges.isUndirectedEdge(edge2)) {
                             edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                         } else if (Edges.isNondirectedEdge(edge2)) {
@@ -1774,12 +1774,12 @@ public class Paths implements TetradSerializable {
     /**
      * Checks if the given path is an m-connecting path.
      *
-     * @param path               The path to check.
-     * @param conditioningSet    The set of nodes to check reachability against.
-     * @param allowSelectionBias Determines if selection bias is allowed in the m-connection procedure.
+     * @param path            The path to check.
+     * @param conditioningSet The set of nodes to check reachability against.
+     * @param isPag           Determines if selection bias is allowed in the m-connection procedure.
      * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
      */
-    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, boolean allowSelectionBias) {
+    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, boolean isPag) {
         Edge edge1, edge2;
 
         if (path.size() - 1 == 1) return true;
@@ -1803,9 +1803,9 @@ public class Paths implements TetradSerializable {
             // algorithm can eventually find any colliders along the path that may be implied.
             // jdramsey 2024-04-14
             if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
-                if (!allowSelectionBias && Edges.isUndirectedEdge(edge2)) {
+                if (!isPag && Edges.isUndirectedEdge(edge2)) {
                     edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                } else if (allowSelectionBias && Edges.isNondirectedEdge(edge2)) {
+                } else if (isPag && Edges.isNondirectedEdge(edge2)) {
                     edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                 }
             }
@@ -1822,13 +1822,13 @@ public class Paths implements TetradSerializable {
     /**
      * Checks if the given path is an m-connecting path.
      *
-     * @param path               The path to check.
-     * @param conditioningSet    The set of nodes to check reachability against.
-     * @param allowSelectionBias Determines if selection bias is allowed in the m-connection procedure.
-     * @param ancestors          The ancestors of each node in the graph.
+     * @param path            The path to check.
+     * @param conditioningSet The set of nodes to check reachability against.
+     * @param isPag           Determines if selection bias is allowed in the m-connection procedure.
+     * @param ancestors       The ancestors of each node in the graph.
      * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
      */
-    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean isPag) {
         Edge edge1, edge2;
 
         edge2 = graph.getEdge(path.get(0), path.get(1));
@@ -1850,9 +1850,9 @@ public class Paths implements TetradSerializable {
             // algorithm can eventually find any colliders along the path that may be implied.
             // jdramsey 2024-04-14
             if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
-                if (!allowSelectionBias && Edges.isUndirectedEdge(edge2)) {
+                if (!isPag && Edges.isUndirectedEdge(edge2)) {
                     edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                } else if (allowSelectionBias && Edges.isNondirectedEdge(edge2)) {
+                } else if (isPag && Edges.isNondirectedEdge(edge2)) {
                     edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                 }
             }
@@ -1868,15 +1868,15 @@ public class Paths implements TetradSerializable {
     /**
      * Detemrmines whether x and y are d-connected given z.
      *
-     * @param x                  a {@link Node} object
-     * @param y                  a {@link Node} object
-     * @param z                  a {@link Set} object
-     * @param ancestors          a {@link Map} object
-     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     * @param x         a {@link Node} object
+     * @param y         a {@link Node} object
+     * @param z         a {@link Set} object
+     * @param ancestors a {@link Map} object
+     * @param isPag     whether to allow selection bias; if true, then undirected edges X--Y are uniformly treated as
+     *                  X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
-    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean isPag) {
 
         class EdgeNode {
 
@@ -1945,7 +1945,7 @@ public class Paths implements TetradSerializable {
                     // "virtual edges" that are directed in the direction of the arrow, so that the reachability
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
-                    if (!allowSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                    if (!isPag && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
                         if (Edges.isUndirectedEdge(edge2)) {
                             edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
                         } else if (Edges.isNondirectedEdge(edge2)) {
@@ -2281,30 +2281,30 @@ public class Paths implements TetradSerializable {
      * <p>
      * Precondition: This graph is a DAG. Please don't violate this constraint; weird things can happen!
      *
-     * @param node1              the first node.
-     * @param node2              the second node.
-     * @param z                  the conditioning set.
-     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     * @param node1 the first node.
+     * @param node2 the second node.
+     * @param z     the conditioning set.
+     * @param isPag whether to allow selection bias; if true, then undirected edges X--Y are uniformly treated as
+     *              X-&gt;L&lt;-Y.
      * @return true if node1 is d-separated from node2 given set t, false if not.
      */
-    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, boolean allowSelectionBias) {
-        return separates(node1, node2, allowSelectionBias, z);
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, boolean isPag) {
+        return separates(node1, node2, isPag, z);
     }
 
     /**
      * Checks if two nodes are M-separated.
      *
-     * @param node1              The first node.
-     * @param node2              The second node.
-     * @param z                  The set of nodes to be excluded from the path.
-     * @param ancestors          A map containing the ancestors of each node.
-     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     * @param node1     The first node.
+     * @param node2     The second node.
+     * @param z         The set of nodes to be excluded from the path.
+     * @param ancestors A map containing the ancestors of each node.
+     * @param isPag     whether to allow selection bias; if true, then undirected edges X--Y are uniformly treated as
+     *                  X-&gt;L&lt;-Y.
      * @return {@code true} if the two nodes are M-separated, {@code false} otherwise.
      */
-    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
-        return !isMConnectedTo(node1, node2, z, ancestors, allowSelectionBias);
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean isPag) {
+        return !isMConnectedTo(node1, node2, z, ancestors, isPag);
     }
 
     /**

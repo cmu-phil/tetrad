@@ -303,24 +303,24 @@ public final class GraphUtils {
      * Returns a string representation of the given path in the graph, with additional information about conditioning
      * variables.
      *
-     * @param graph              the graph containing the path
-     * @param path               the list of nodes representing the path
-     * @param conditioningVars   the list of nodes representing the conditioning variables
-     * @param showBlocked        whether to show information about blocked paths
-     * @param allowSelectionBias whether to allow selection bias. For CPDAGs, this should be false, since undirected
-     *                           edges mean directed in one direction or the other. For PAGs, it should be true, since
-     *                           undirected edges indicate selection bias.
+     * @param graph            the graph containing the path
+     * @param path             the list of nodes representing the path
+     * @param conditioningVars the list of nodes representing the conditioning variables
+     * @param showBlocked      whether to show information about blocked paths
+     * @param isPag            whether to assume the graph is a PAG. For CPDAGs, this should be false, since undirected
+     *                         edges mean directed in one direction or the other. For PAGs, it should be true, since
+     *                         undirected edges indicate selection bias.
      * @return a string representation of the path with conditioning information
      */
     public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked,
-                                    boolean allowSelectionBias) {
+                                    boolean isPag) {
         StringBuilder buf = new StringBuilder();
 
         if (path.size() < 2) {
             return "NO PATH";
         }
 
-        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, allowSelectionBias);
+        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, isPag);
 
         if (showBlocked) {
             if (!mConnecting) {
@@ -3732,7 +3732,7 @@ public final class GraphUtils {
      * @param n the nodes to check for distinctness
      * @return true if x, b, and y are distinct; false otherwise
      */
-    public static boolean distinct(Node ... n) {
+    public static boolean distinct(Node... n) {
         for (int i = 0; i < n.length; i++) {
             for (int j = i + 1; j < n.length; j++) {
                 if (n[i].equals(n[j])) {
