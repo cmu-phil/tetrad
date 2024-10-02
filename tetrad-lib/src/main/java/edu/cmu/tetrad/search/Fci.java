@@ -37,7 +37,7 @@ import java.util.Set;
 
 /**
  * Implements the Fast Causal Inference (FCI) algorithm due to Peter Spirtes, which addressed the case where latent
- * common causes cannot be assumed not to exist with respect to the data set being analyzed. That is, it is assumed that
+ * common causes cannot be assumed to not exist with respect to the data set being analyzed. That is, it is assumed that
  * there may be variables that are not included in the data that nonetheless may be causes of two or more variables that
  * are included in data.
  * <p>
@@ -75,10 +75,6 @@ public final class Fci implements IGraphSearch {
      * The independence test to use.
      */
     private final IndependenceTest independenceTest;
-    /**
-     * The logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
     /**
      * The sepsets from FAS.
      */
