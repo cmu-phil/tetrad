@@ -129,7 +129,7 @@ public class TestSepsetMethods {
 
         long start5 = System.currentTimeMillis();
         Set<Node> sepset5 = SepsetFinder.getSepsetPathBlockingFromSideOfX(dag, x, y, msepTest, -1, -1,
-                true, new HashSet<>());
+                true);
 
         long stop5 = System.currentTimeMillis();
         times[4] = stop5 - start5;
@@ -198,7 +198,7 @@ public class TestSepsetMethods {
         } while (x.equals(y));
 
         Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingFromSideOfX(dag, x, y, new MsepTest(dag), -1, -1,
-                false, new HashSet<>());
+                false);
 
         System.out.println((dag.isAdjacentTo(x, y) ? "adjacent" : "###NOT ADJACENT###") + " x = " + x + " y = " + y + " sepset = " + sepset6);
 

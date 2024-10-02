@@ -497,7 +497,7 @@ public final class FciLite implements IGraphSearch {
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
                     Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(),
-                            edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
+                            edge.getNode2(), test, maxBlockingPathLength, depth, true);
                     return Pair.of(edge, sepset);
                 });
             }
@@ -545,7 +545,7 @@ public final class FciLite implements IGraphSearch {
                 visited.add(edge);
 
                 Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(),
-                        test, maxBlockingPathLength, depth, true, new HashSet<>());
+                        test, maxBlockingPathLength, depth, true);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("For edge " + edge + " sepset: " + sepset);
