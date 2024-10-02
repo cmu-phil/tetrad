@@ -549,8 +549,8 @@ public class SepsetFinder {
 
     /**
      * Tries to block the given path by conditioning on the first noncollider along the path that is not in the
-     * blacklist. If the path is of the form x *-> z <-* y, the method adds z to the couldBeColliders set if x and y
-     * are adjacent, or to the blacklist otherwise. Latent nodes are ignored.
+     * blacklist. If the path is of the form x *-> z <-* y, the method adds z to the couldBeColliders set if x and y are
+     * adjacent, or to the blacklist otherwise. Latent nodes are ignored.
      *
      * @param path             the path to check
      * @param graph            the graph to analyze. This could be a CPDAG (MPDAG) or a PAG.
@@ -709,7 +709,25 @@ public class SepsetFinder {
         return Pair.of(conditioningSet, couldBeColliders);
     }
 
-    private static void queuePaths(Queue<List<Node>> queue, List<Node> path, Graph graph, Node node, Node x, Node y, Set<Node> conditioningSet, Set<Node> couldBeColliders, Set<Node> blacklist, boolean isPag,
+    /**
+     * Queues paths for the breadth first search. Has a side effect of collecting up variables for the conditioning set
+     * and variables that ambiguously might or might not be in the conditioning set.
+     *
+     * @param queue            the queue of paths
+     * @param path             the current path
+     * @param graph            the graph
+     * @param node             the current node
+     * @param x                the from node
+     * @param y                the to node
+     * @param conditioningSet  the set of nodes that need to be conditioned on
+     * @param couldBeColliders the set of nodes that could be colliders
+     * @param blacklist        the set of nodes that are blacklisted
+     * @param isPag            the flag to indicate whether to allow selection bias in path selection
+     * @param ifColliders      the flag to indicate whether to consider colliders of the form x *-> z2 <-* y or to not
+     *                         consider them; these cases are handled separately
+     */
+    private static void queuePaths(Queue<List<Node>> queue, List<Node> path, Graph graph, Node node, Node x, Node y,
+                                   Set<Node> conditioningSet, Set<Node> couldBeColliders, Set<Node> blacklist, boolean isPag,
                                    boolean ifColliders) {
         for (Node z3 : graph.getAdjacentNodes(node)) {
             if (!path.contains(z3)) {
