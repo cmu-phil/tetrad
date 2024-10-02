@@ -870,9 +870,9 @@ public class SepsetFinder {
                                                              int maxLength, int depth, boolean allowSelectionBias,
                                                              Set<Node> blacklist) {
 
-        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
-            return new HashSet<>();
-        }
+//        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
+//            return new HashSet<>();
+//        }
 
         int maxLength1 = maxLength;
         if (maxLength1 < 0 || maxLength1 > mpdag.getNumNodes() - 1) {
@@ -940,6 +940,10 @@ public class SepsetFinder {
 
                 return sepset;
             }
+        }
+
+        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
+            return new HashSet<>();
         }
 
         return null;

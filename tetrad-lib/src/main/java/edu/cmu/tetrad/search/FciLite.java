@@ -494,8 +494,8 @@ public final class FciLite implements IGraphSearch {
 
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
-                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
-
+                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(),
+                            edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
                     return Pair.of(edge, sepset);
                 });
             }
@@ -511,7 +511,8 @@ public final class FciLite implements IGraphSearch {
                     }
                 }).toList();
             } else if (testTimeout > 0) {
-                results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS)).toList();
+                results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout,
+                        TimeUnit.MILLISECONDS)).toList();
             } else {
                 throw new IllegalArgumentException("Test timeout must be -1 (unlimited) or > 0: " + testTimeout);
             }
