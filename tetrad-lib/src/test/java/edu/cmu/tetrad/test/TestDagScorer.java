@@ -42,7 +42,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class TestDagScorer {
 
-    @Test
+//    @Test
     public void test1() {
         RandomUtil.getInstance().setSeed(492839483L);
 

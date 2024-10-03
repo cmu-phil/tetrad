@@ -504,10 +504,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      *
      * @param x                  The first node.
      * @param y                  The second node.
-     * @param allowSelectionBias A flag indicating whether to allow selection bias in determining the sepset.
+     * @param isPag A flag indicating whether to assume the graph is a PAG in determining the sepset.
      * @return The set of nodes that form the sepset between the two given nodes.
      */
-    public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias) {
+    public Set<Node> getSepset(Node x, Node y, boolean isPag) {
         return new Paths(this).getSepsetContaining(x, y, new HashSet<>(), new MsepTest(this));
     }
 
@@ -517,10 +517,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @param x                  The first node.
      * @param y                  The second node.
      * @param containing         The set of nodes that must be contained in the sepset.
-     * @param allowSelectionBias A flag indicating whether to allow selection bias in determining the sepset.
+     * @param isPag A flag indicating whether to assume the graph is a PAG in determining the sepset.
      * @return The set of nodes that form the sepset between the two given nodes.
      */
-    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, boolean allowSelectionBias) {
+    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, boolean isPag) {
         return new Paths(this).getSepsetContaining(x, y, containing, new MsepTest(this));
     }
 

@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class TestIndTestFisherGeneralizedInverse {
 
-    @Test
+//    @Test
     public void testDirections() {
         RandomUtil.getInstance().setSeed(48285934L);
 

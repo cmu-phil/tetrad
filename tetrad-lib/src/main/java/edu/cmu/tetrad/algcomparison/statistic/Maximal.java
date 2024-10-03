@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Paths;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
@@ -53,7 +54,7 @@ public class Maximal implements Statistic {
                 Node n1 = nodes.get(i);
                 Node n2 = nodes.get(j);
                 if (!estGraph.isAdjacentTo(n1, n2)) {
-                    List<Node> inducingPath = estGraph.paths().getInducingPath(n1, n2);
+                    List<Node> inducingPath = Paths.getInducingPath(estGraph, n1, n2);
 
                     if (inducingPath != null) {
                         TetradLogger.getInstance().log("Maximality check: Found an inducing path for "

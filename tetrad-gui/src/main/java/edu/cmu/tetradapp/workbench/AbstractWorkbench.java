@@ -1301,7 +1301,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     private void adjustForNewModelNodes() {
-        this.graph.getNodes().forEach(node -> {
+        this.graph.getNodes().parallelStream().forEach(node -> {
             if (this.modelNodesToDisplay.get(node) == null) {
                 int centerX = node.getCenterX();
                 int centerY = node.getCenterY();

@@ -303,24 +303,24 @@ public final class GraphUtils {
      * Returns a string representation of the given path in the graph, with additional information about conditioning
      * variables.
      *
-     * @param graph              the graph containing the path
-     * @param path               the list of nodes representing the path
-     * @param conditioningVars   the list of nodes representing the conditioning variables
-     * @param showBlocked        whether to show information about blocked paths
-     * @param allowSelectionBias whether to allow selection bias. For CPDAGs, this should be false, since undirected
-     *                           edges mean directed in one direction or the other. For PAGs, it should be true, since
-     *                           undirected edges indicate selection bias.
+     * @param graph            the graph containing the path
+     * @param path             the list of nodes representing the path
+     * @param conditioningVars the list of nodes representing the conditioning variables
+     * @param showBlocked      whether to show information about blocked paths
+     * @param isPag            whether to assume the graph is a PAG. For CPDAGs, this should be false, since undirected
+     *                         edges mean directed in one direction or the other. For PAGs, it should be true, since
+     *                         undirected edges indicate selection bias.
      * @return a string representation of the path with conditioning information
      */
     public static String pathString(Graph graph, List<Node> path, Set<Node> conditioningVars, boolean showBlocked,
-                                    boolean allowSelectionBias) {
+                                    boolean isPag) {
         StringBuilder buf = new StringBuilder();
 
         if (path.size() < 2) {
             return "NO PATH";
         }
 
-        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, allowSelectionBias);
+        boolean mConnecting = graph.paths().isMConnectingPath(path, conditioningVars, isPag);
 
         if (showBlocked) {
             if (!mConnecting) {
@@ -1939,7 +1939,7 @@ public final class GraphUtils {
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes,
                                                 SepsetProducer sepsets, int depth, boolean verbose) {
         if (verbose) {
-            TetradLogger.getInstance().log("Starting extra-edge removal step.");
+            TetradLogger.getInstance().log("Starting GFCI extra-edge removal step.");
         }
 
         for (Node b : nodes) {
@@ -1972,12 +1972,17 @@ public final class GraphUtils {
 
                         if (verbose) {
                             double pValue = sepsets.getPValue(a, c, sepset);
-                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
-                                                           + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
+                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + ", sepset = " + sepset);
                         }
+
+                        break;
                     }
                 }
             }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished GFCI extra-edge removal step.");
         }
     }
 
@@ -2528,7 +2533,7 @@ public final class GraphUtils {
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
                               boolean verbose, Set<Triple> unshieldedTriples) {
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-R0.");
+            TetradLogger.getInstance().log("Starting GFCI R0 Step.");
         }
 
         pag.reorientAllWith(Endpoint.CIRCLE);
@@ -2562,11 +2567,11 @@ public final class GraphUtils {
                             TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
 
                             if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
+                                TetradLogger.getInstance().log("Created a bidirected edge: " + pag.getEdge(x, y));
                             }
 
                             if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
+                                TetradLogger.getInstance().log("Created a bidirected edge: " + pag.getEdge(y, z));
                             }
                         }
                     }
@@ -2587,14 +2592,14 @@ public final class GraphUtils {
                                     double p = sepsets.getPValue(x, z, sepset);
                                     String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
 
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ", p = " + _p + ".");
+                                    TetradLogger.getInstance().log("Oriented collider by a test " + x + " *-> " + y + " <-* " + z);
 
                                     if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
+                                        TetradLogger.getInstance().log("Created a bidirected edge: " + pag.getEdge(x, y));
                                     }
 
                                     if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
+                                        TetradLogger.getInstance().log("Created a bidirected edge: " + pag.getEdge(y, z));
                                     }
                                 }
                             }
@@ -2602,6 +2607,10 @@ public final class GraphUtils {
                     }
                 }
             }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished GFCI R0 Step.");
         }
     }
 
@@ -3732,7 +3741,7 @@ public final class GraphUtils {
      * @param n the nodes to check for distinctness
      * @return true if x, b, and y are distinct; false otherwise
      */
-    public static boolean distinct(Node ... n) {
+    public static boolean distinct(Node... n) {
         for (int i = 0; i < n.length; i++) {
             for (int j = i + 1; j < n.length; j++) {
                 if (n[i].equals(n[j])) {

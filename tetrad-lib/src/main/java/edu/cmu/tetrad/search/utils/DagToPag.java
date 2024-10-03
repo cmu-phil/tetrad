@@ -76,6 +76,32 @@ public final class DagToPag {
      * @param dag The input Directed Acyclic Graph (DAG).
      * @return The adjacency graph represented by a Graph object.
      */
+//    public static Graph calcAdjacencyGraph(Graph dag) {
+//        List<Node> allNodes = dag.getNodes();
+//        List<Node> measured = new ArrayList<>(allNodes);
+//        measured.removeIf(node -> node.getNodeType() != NodeType.MEASURED);
+//
+//        Graph graph = new EdgeListGraph(measured);
+//
+//        for (int i = 0; i < measured.size(); i++) {
+//            for (int j = i + 1; j < measured.size(); j++) {
+//                Node n1 = measured.get(i);
+//                Node n2 = measured.get(j);
+//
+//                if (graph.isAdjacentTo(n1, n2)) continue;
+//
+//                List<Node> inducingPath = dag.paths().getInducingPath(n1, n2);
+//
+//                boolean exists = inducingPath != null;
+//
+//                if (exists) {
+//                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+//                }
+//            }
+//        }
+//
+//        return graph;
+//    }
     public static Graph calcAdjacencyGraph(Graph dag) {
         List<Node> allNodes = dag.getNodes();
         List<Node> measured = new ArrayList<>(allNodes);
@@ -83,25 +109,27 @@ public final class DagToPag {
 
         Graph graph = new EdgeListGraph(measured);
 
-        for (int i = 0; i < measured.size(); i++) {
-            for (int j = i + 1; j < measured.size(); j++) {
-                Node n1 = measured.get(i);
+        // Parallelize this part
+        measured.parallelStream().forEach(n1 -> {
+            for (int j = measured.indexOf(n1) + 1; j < measured.size(); j++) {
                 Node n2 = measured.get(j);
 
                 if (graph.isAdjacentTo(n1, n2)) continue;
 
-                List<Node> inducingPath = dag.paths().getInducingPath(n1, n2);
-
+                List<Node> inducingPath = Paths.getInducingPath(dag, n1, n2);
                 boolean exists = inducingPath != null;
 
                 if (exists) {
-                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                    synchronized (graph) {
+                        graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                    }
                 }
             }
-        }
+        });
 
         return graph;
     }
+
 
     /**
      * Returns the final strategy for finding a PAG using D-SEP.

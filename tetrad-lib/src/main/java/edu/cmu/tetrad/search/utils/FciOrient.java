@@ -34,6 +34,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -655,59 +657,109 @@ public class FciOrient {
      * @param graph the graph to analyze
      * @return a set of discriminating paths found in the graph
      */
+//    private Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph) {
+//        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+//
+//        List<Node> nodes = graph.getNodes();
+//
+//        for (Node b : nodes) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            //  *         B
+//            // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
+//            // *        /  \
+//            // *       v    *
+//            // * E....A --> C
+//
+//            // Here we simply assert that A and C are adjacent to B; we let the DiscriminatingPath class determine
+//            // whether the path is valid.
+//            List<Node> possA = graph.getAdjacentNodes(b);
+//            List<Node> possC = graph.getAdjacentNodes(b);
+//
+//            for (Node a : possA) {
+//                if (Thread.currentThread().isInterrupted()) {
+//                    break;
+//                }
+//
+//                for (Node c : possC) {
+//                    if (Thread.currentThread().isInterrupted()) {
+//                        break;
+//                    }
+//
+//                    if (a == c) continue;
+//
+//                    if (!graph.isParentOf(a, c)) {
+//                        continue;
+//                    }
+//
+//                    // We ignore any discriminating paths that do not require orientation.
+//                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+//                        continue;
+//                    }
+//
+//                    if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
+//                        continue;
+//                    }
+//
+//                    discriminatingPathBfs(a, b, c, graph, discriminatingPaths);
+//                }
+//            }
+//        }
+//
+//        return discriminatingPaths;
+//    }
     private Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph) {
         Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
-
         List<Node> nodes = graph.getNodes();
 
-        for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            //  *         B
-            // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
-            // *        /  \
-            // *       v    *
-            // * E....A --> C
-
-            // Here we simply assert that A and C are adjacent to B; we let the DiscriminatingPath class determine
-            // whether the path is valid.
-            List<Node> possA = graph.getAdjacentNodes(b);
-            List<Node> possC = graph.getAdjacentNodes(b);
-
-            for (Node a : possA) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                for (Node c : possC) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    if (a == c) continue;
-
-                    if (!graph.isParentOf(a, c)) {
-                        continue;
-                    }
-
-                    // We ignore any discriminating paths that do not require orientation.
-                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                        continue;
-                    }
-
-                    if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    discriminatingPathBfs(a, b, c, graph, discriminatingPaths);
-                }
-            }
-        }
+        ForkJoinPool pool = new ForkJoinPool();
+        pool.invoke(new NodeProcessor(nodes, discriminatingPaths, graph));
 
         return discriminatingPaths;
     }
+
+    private class NodeProcessor extends RecursiveAction {
+        private final List<Node> nodes;
+        private final Set<DiscriminatingPath> discriminatingPaths;
+        private final Graph graph;
+
+        public NodeProcessor(List<Node> nodes, Set<DiscriminatingPath> discriminatingPaths, Graph graph) {
+            this.nodes = nodes;
+            this.discriminatingPaths = discriminatingPaths;
+            this.graph = graph;
+        }
+
+        @Override
+        protected void compute() {
+            nodes.parallelStream().forEach(b -> {
+                if (Thread.currentThread().isInterrupted()) return;
+
+                List<Node> possA = graph.getAdjacentNodes(b);
+                List<Node> possC = graph.getAdjacentNodes(b);
+
+                possA.parallelStream().forEach(a -> {
+                    if (Thread.currentThread().isInterrupted()) return;
+
+                    possC.parallelStream().forEach(c -> {
+                        if (Thread.currentThread().isInterrupted()) return;
+
+                        if (a == c) return;
+
+                        if (!graph.isParentOf(a, c)) return;
+
+                        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) return;
+
+                        if (graph.getEndpoint(b, c) != Endpoint.ARROW) return;
+
+                        discriminatingPathBfs(a, b, c, graph, discriminatingPaths, maxDiscriminatingPathLength);
+                    });
+                });
+            });
+        }
+    }
+
 
     /**
      * A method to search "back from a" to find a discriminating path. It is called with a reachability list (first
@@ -719,7 +771,8 @@ public class FciOrient {
      * @param c     a {@link Node} object
      * @param graph a {@link Graph} object
      */
-    private void discriminatingPathBfs(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths) {
+    private static void discriminatingPathBfs(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths,
+                                       int maxDiscriminatingPathLength) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
         Map<Node, Node> previous = new HashMap<>();

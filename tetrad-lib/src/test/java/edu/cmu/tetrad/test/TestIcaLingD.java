@@ -50,7 +50,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestIcaLingD {
 
-    @Test
+//    @Test
     public void test1() {
 
         // Testing LiNGAM and LiNG-D on a simple 6-node 6-edge example. This

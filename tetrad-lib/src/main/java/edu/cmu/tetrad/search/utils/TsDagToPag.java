@@ -332,7 +332,7 @@ public final class TsDagToPag {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
 
-                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2);
+                List<Node> inducingPath = Paths.getInducingPath(this.dag, n1, n2);
 
                 boolean exists = inducingPath != null;
 

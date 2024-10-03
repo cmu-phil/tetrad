@@ -25,7 +25,7 @@ import java.util.List;
 
 
 /**
- * This class represents the LV-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
+ * This class represents the FCI-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
  * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
  * afterward.
  *
@@ -55,10 +55,10 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a LV-Lite algorithm.
+     * This class represents a FCI-Lite algorithm.
      *
      * <p>
-     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCI-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -71,10 +71,10 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
     }
 
     /**
-     * LV-Lite is a class that represents a LV-Lite algorithm.
+     * FCI-Lite is a class that represents a FCI-Lite algorithm.
      *
      * <p>
-     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCI-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>

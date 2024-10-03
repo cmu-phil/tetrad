@@ -93,21 +93,31 @@ public class TestCheckMarkov {
      */
     @Test
     public void test2() {
-        Graph dag = RandomGraph.randomDag(10, 0, 10, 100, 100,
+        Graph dag = RandomGraph.randomDag(5, 0, 5, 100, 100,
                 100, false);
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
         DataSet data = im.simulateData(500, false);
 
         SemBicScore score = new SemBicScore(data, true);
-
+//        score.setPenaltyDiscount(1);
         PermutationSearch search = new PermutationSearch(new Boss(score));
         Graph cpdag = search.search();
 
         IndependenceTest test = new IndTestFisherZ(data, 0.05);
 
         MarkovCheck markovCheck = new MarkovCheck(cpdag, test, ConditioningSetType.LOCAL_MARKOV);
-        markovCheck.setPercentResample(0.7);
+        markovCheck.setPercentResample(0.5);
+
+        System.out.println("Generating results true...");
+
+        markovCheck.generateResults(true);
+
+        System.out.println("Generating results false...");
+
+        markovCheck.generateResults(false);
+
+        System.out.println(markovCheck.getPValues(markovCheck.getResults(true)));
 
         try {
             System.out.println(markovCheck.getMarkovCheckRecordString());

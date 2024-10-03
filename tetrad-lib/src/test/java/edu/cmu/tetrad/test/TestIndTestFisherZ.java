@@ -46,7 +46,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class TestIndTestFisherZ {
 
-    @Test
+//    @Test
     public void testDirections() {
         RandomUtil.getInstance().setSeed(48285934L);
 

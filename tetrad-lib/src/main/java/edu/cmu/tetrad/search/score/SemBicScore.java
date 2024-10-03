@@ -161,6 +161,7 @@ public class SemBicScore implements Score {
 
         this.dataModel = dataSet;
         this.data = dataSet.getDoubleData();
+        this.penaltyDiscount = 1.0;
 
         if (!dataSet.existsMissingValue()) {
             setCovariances(getCovarianceMatrix(dataSet, precomputeCovariances));
@@ -178,7 +179,6 @@ public class SemBicScore implements Score {
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
         this.logN = log(sampleSize);
-        penaltyDiscount = 1.0;
     }
 
     /**

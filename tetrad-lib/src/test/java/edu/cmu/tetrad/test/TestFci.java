@@ -84,7 +84,7 @@ public class TestFci {
     @Test
     public void testSearch4() {
         checkSearch("Latent(G),Latent(R),H-->F,F<--G,G-->A,A<--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
-                "A<->C,A-->D,Bo->C,Bo->D,Co->D,F<->A,F-->D,Ho->F", new Knowledge());
+                "A<->C,Ao->D,Bo->C,Bo->D,Co->D,F<->A,F-->D,Ho->F", new Knowledge());
     }
 
     /**
@@ -113,19 +113,19 @@ public class TestFci {
         //D;H;L;M;I;S;P
         //
         //Graph Edges:
-        //1. D <-> H
-        //2. D --> L
-        //3. D --> M
-        //4. H --> M
-        //5. I o-> S
-        //6. L <-> H
-        //7. L --> M
-        //8. P o-> S
-        //9. S --> D
+//        1. D --> L
+//        2. D --> M
+//        3. H o-> D
+//        4. H o-> L
+//        5. H o-> M
+//        6. I o-> S
+//        7. L o-o M
+//        8. P o-> S
+//        9. S --> D
 
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
-                    "H-->M,L-->M,S-->D,I-->S,P-->S",
-                "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,L-->M,Po->S,S-->D", new Knowledge());
+                    "Ho->M,L-->M,S-->D,I-->S,P-->S",
+                "D-->L,D-->M,Ho->D,Ho->L,Ho->M,Io->S,Lo-oM,Po->S,S-->D", new Knowledge());
     }
 
     /**
