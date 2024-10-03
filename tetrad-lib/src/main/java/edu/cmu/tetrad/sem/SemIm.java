@@ -38,6 +38,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
@@ -1651,6 +1652,77 @@ public final class SemIm implements Im, ISemIm {
      * @param latentDataSaved a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
+//    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
+//        int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
+//        double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
+//        double errorParam2 = params.getDouble(Params.SIMULATION_PARAM2);
+//
+//        int numVars = getVariableNodes().size();
+//
+//        // Calculate inv(I - edgeCoefC)
+//        Matrix B = edgeCoef().transpose();
+//        Matrix iMinusBInv = Matrix.identity(B.getNumRows()).minus(B).inverse();
+//
+//        // Pick error values e, for each calculate inv * e.
+//        Matrix sim = new Matrix(sampleSize, numVars);
+//
+//        ROW:
+//        for (int row = 0; row < sampleSize; row++) {
+//
+//            // Step 1. Generate normal samples.
+//            Vector e = new Vector(this.edgeCoef.getNumColumns());
+//
+//            for (int i = 0; i < e.size(); i++) {
+//                if (errorType == 1) {
+//                    double errCovar = this.errCovar.get(i, i);
+//                    if (errCovar == 0.0) {
+//                        e.set(i, 0.0);
+//                    } else {
+//                        e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar)));
+//                    }
+//                } else if (errorType == 2) {
+//                    e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
+//                } else if (errorType == 3) {
+//                    e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
+//                } else if (errorType == 4) {
+//                    e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
+//                } else if (errorType == 5) {
+//                    e.set(i, RandomUtil.getInstance().nextGamma(errorParam1, errorParam2));
+//                }
+//            }
+//
+//            // Step 3. Calculate the new rows in the data.
+//            Vector sample = iMinusBInv.times(e);
+//            sim.assignRow(row, sample);
+//
+//            for (int col = 0; col < sample.size(); col++) {
+//                double value = sim.get(row, col) + this.variableMeans[col];
+//
+//                if (isSimulatedPositiveDataOnly() && value < 0) {
+//                    row--;
+//                    continue ROW;
+//                }
+//
+//                sim.set(row, col, value);
+//            }
+//        }
+//
+//        List<Node> continuousVars = new ArrayList<>();
+//
+//        for (Node node : getVariableNodes()) {
+//            ContinuousVariable var = new ContinuousVariable(node.getName());
+//            var.setNodeType(node.getNodeType());
+//            continuousVars.add(var);
+//        }
+//
+//        DataSet fullDataSet = new BoxDataSet(new DoubleDataBox(sim.toArray()), continuousVars);
+//
+//        if (latentDataSaved) {
+//            return fullDataSet;
+//        } else {
+//            return DataTransforms.restrictToMeasured(fullDataSet);
+//        }
+//    }
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
         double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
@@ -1662,15 +1734,14 @@ public final class SemIm implements Im, ISemIm {
         Matrix B = edgeCoef().transpose();
         Matrix iMinusBInv = Matrix.identity(B.getNumRows()).minus(B).inverse();
 
-        // Pick error values e, for each calculate inv * e.
+        // Prepare for parallel execution
         Matrix sim = new Matrix(sampleSize, numVars);
 
-        ROW:
-        for (int row = 0; row < sampleSize; row++) {
-
-            // Step 1. Generate normal samples.
+        // Parallelize the row generation
+        IntStream.range(0, sampleSize).parallel().forEach(row -> {
             Vector e = new Vector(this.edgeCoef.getNumColumns());
 
+            // Generate error values 'e'
             for (int i = 0; i < e.size(); i++) {
                 if (errorType == 1) {
                     double errCovar = this.errCovar.get(i, i);
@@ -1690,24 +1761,24 @@ public final class SemIm implements Im, ISemIm {
                 }
             }
 
-            // Step 3. Calculate the new rows in the data.
+            // Calculate the new row based on inv(I - B) * e
             Vector sample = iMinusBInv.times(e);
             sim.assignRow(row, sample);
 
+            // Apply the variable means and check for positivity if required
             for (int col = 0; col < sample.size(); col++) {
                 double value = sim.get(row, col) + this.variableMeans[col];
 
                 if (isSimulatedPositiveDataOnly() && value < 0) {
-                    row--;
-                    continue ROW;
+                    row--; // This will cause the row to be recalculated
+                    return; // Skip this row and continue
                 }
 
                 sim.set(row, col, value);
             }
-        }
+        });
 
         List<Node> continuousVars = new ArrayList<>();
-
         for (Node node : getVariableNodes()) {
             ContinuousVariable var = new ContinuousVariable(node.getName());
             var.setNodeType(node.getNodeType());
@@ -1722,6 +1793,7 @@ public final class SemIm implements Im, ISemIm {
             return DataTransforms.restrictToMeasured(fullDataSet);
         }
     }
+
 
     // For testing.
 

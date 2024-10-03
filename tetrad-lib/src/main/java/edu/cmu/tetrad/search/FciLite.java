@@ -167,10 +167,21 @@ public final class FciLite implements IGraphSearch {
 
             long start = MillisecondTimes.wallTimeMillis();
 
-            var permutationSearch = getBossSearch();
-            dag = permutationSearch.search(false);
-            best = permutationSearch.getOrder();
-            best = dag.paths().getValidOrder(best, true);
+            Boss subAlg = new Boss(this.score);
+            subAlg.setUseBes(false);
+            subAlg.setNumStarts(this.numStarts);
+            subAlg.setNumThreads(30);
+            subAlg.setVerbose(verbose);
+            PermutationSearch alg = new PermutationSearch(subAlg);
+            alg.setKnowledge(this.knowledge);
+
+            dag = alg.search();
+            best = dag.paths().getValidOrder(dag.getNodes(), true);
+
+//            var permutationSearch = getBossSearch();
+//            dag = permutationSearch.search(false);
+//            best = permutationSearch.getOrder();
+//            best = dag.paths().getValidOrder(best, true);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -224,13 +235,18 @@ public final class FciLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        R0R4Strategy strategy = R0R4StrategyTestBased.specialConfiguration(test, knowledge, false);
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(test,
+                knowledge, false);
+        strategy.setDepth(depth);
+        strategy.setMaxBlockingPathLength(maxBlockingPathLength);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setTestTimeout(testTimeout);
         fciOrient.setVerbose(verbose);
+        fciOrient.setParallel(true);
+        fciOrient.setKnowledge(knowledge);
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
