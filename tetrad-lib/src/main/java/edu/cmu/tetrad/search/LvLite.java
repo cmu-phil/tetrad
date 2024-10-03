@@ -503,7 +503,7 @@ public final class LvLite implements IGraphSearch {
 
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
-                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
+                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true);
 
                     return Pair.of(edge, sepset);
                 });
@@ -549,7 +549,7 @@ public final class LvLite implements IGraphSearch {
                 Edge edge = toVisit.removeFirst();
                 visited.add(edge);
 
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("For edge " + edge + " sepset: " + sepset);
