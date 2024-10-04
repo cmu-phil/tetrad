@@ -2157,8 +2157,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Object source = e.getSource();
 
         if (source instanceof DisplayEdge) {
-            System.out.println("source = " + source);
-
             IDisplayEdge displayEdge = (DisplayEdge) source;
             Edge edge = displayEdge.getModelEdge();
 
@@ -2186,11 +2184,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             };
 
             if (this.graph.containsEdge(edge)) {
-                System.out.println("graph contains edge = " + edge);
-
                 if (edgeProb.isEmpty()) {
-                    System.out.println("edgeProb empty");
-
                     StringBuilder _properties = new StringBuilder();
                     if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
                         for (Edge.Property property : edge.getProperties()) {
@@ -2204,12 +2198,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                                   + _properties
                                   + "<html>";
 
-                    System.out.println("Setting edge tooltip for " + edge + " to: " + text);
-
                     setEdgeToolTip(edge, text);
                 } else {
-                    System.out.println("edgeProb not empty.");
-
                     StringBuilder _properties = new StringBuilder();
                     if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
                         for (Edge.Property property : edge.getProperties()) {
@@ -2244,8 +2234,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                             case tt -> nodes.get(0) + " --- " + nodes.get(1);
                         };
 
-                        System.out.println("type = " + type);
-
                         if (edgeTypeProb.getProbability() > 0d) {
                             StringBuilder properties = new StringBuilder();
 
@@ -2261,8 +2249,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     }
 
                     text.append("</html>");
-
-                    System.out.println("Setting edge tooltip for " + edge + " to: " + text);
 
                     setEdgeToolTip(edge, text.toString());
                 }
