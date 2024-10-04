@@ -195,9 +195,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
         }
 
-        Set<Node> blacklist = new HashSet<>();
         Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1,
-                true, blacklist);
+                true);
 
         if (verbose) {
             TetradLogger.getInstance().log("Discriminating path check--sepset for e = " + e + " and c = "

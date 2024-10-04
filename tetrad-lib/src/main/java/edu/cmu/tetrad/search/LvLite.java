@@ -507,15 +507,13 @@ public final class LvLite implements IGraphSearch {
         // Note that we can use the MAG here instead of the DAG.
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
-        // TODO: Explore the speed and accuracy implications for doing the extra edge removal in parallel or
-        //  in serial.
         if (extraEdgeRemovalStyle == ExtraEdgeRemovalStyle.PARALLEL) {
             List<Callable<Pair<Edge, Set<Node>>>> tasks = new ArrayList<>();
 
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
-                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
-
+                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(),
+                            test, maxBlockingPathLength, depth, true);
                     return Pair.of(edge, sepset);
                 });
             }
@@ -531,7 +529,8 @@ public final class LvLite implements IGraphSearch {
                     }
                 }).toList();
             } else if (testTimeout > 0) {
-                results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS)).toList();
+                results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout,
+                        TimeUnit.MILLISECONDS)).toList();
             } else {
                 throw new IllegalArgumentException("Test timeout must be -1 (unlimited) or > 0: " + testTimeout);
             }
@@ -560,7 +559,7 @@ public final class LvLite implements IGraphSearch {
                 Edge edge = toVisit.removeFirst();
                 visited.add(edge);
 
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true, new HashSet<>());
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("For edge " + edge + " sepset: " + sepset);

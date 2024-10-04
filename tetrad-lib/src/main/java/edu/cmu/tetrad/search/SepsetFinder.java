@@ -3,11 +3,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 /**
@@ -688,8 +687,6 @@ public class SepsetFinder {
      * conditions and constraints.
      *
      * @param graph              the graph to search
-     * @param conditionSet       the set of nodes that need to be conditioned on
-     * @param couldBeColliders   the set of nodes that could potentially be colliders
      * @param blacklist          the set of nodes to exclude from the search
      * @param maxLength          the maximum length of the paths (-1 for unlimited)
      * @param x                  the starting node
@@ -698,15 +695,13 @@ public class SepsetFinder {
      * @return a set of all paths that satisfy the conditions and constraints
      * @throws IllegalArgumentException if the conditioning set is null
      */
-    public static Set<List<Node>> bfsAllPathsOutOfX(Graph graph, Set<Node> conditionSet, Set<Node> couldBeColliders,
-                                                    Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias) {
-        Set<List<Node>> allPaths = new HashSet<>();
+    public static Pair<Set<Node>, Set<Node>> bfsAllPathsOutOfX(Graph graph, Set<Node> blacklist, int maxLength,
+                                                               Node x, Node y, boolean allowSelectionBias) {
+        Set<Node> conditionSet = new HashSet<>();
+        Set<Node> couldBeColliders = new HashSet<>();
+
         Queue<List<Node>> queue = new LinkedList<>();
         queue.add(Collections.singletonList(x));
-
-        if (conditionSet == null) {
-            throw new IllegalArgumentException("Conditioning set cannot be null.");
-        }
 
         while (!queue.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -720,14 +715,6 @@ public class SepsetFinder {
             }
 
             Node node = path.get(path.size() - 1);
-
-            if (path.size() < 2) {
-                allPaths.add(path);
-            }
-
-            if (path.size() >= 2 && graph.paths().isMConnectingPath(path, conditionSet, allowSelectionBias)) {
-                allPaths.add(path);
-            }
 
             for (Node z3 : graph.getAdjacentNodes(node)) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -786,7 +773,7 @@ public class SepsetFinder {
             }
         }
 
-        return allPaths;
+        return Pair.of(conditionSet, couldBeColliders);
     }
 
     /**
@@ -865,21 +852,22 @@ public class SepsetFinder {
      * @param depth              The maximum depth of the final sepset. If set to a negative value, no limit is
      *                           applied.
      * @param allowSelectionBias A boolean flag indicating whether to allow selection bias.
-     * @param blacklist          The set of nodes to blacklist.
      * @return The sepset if independence holds, otherwise null.
      */
     public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                        int maxLength, int depth, boolean allowSelectionBias,
-                                                        Set<Node> blacklist) {
+                                                        int maxLength, int depth, boolean allowSelectionBias) {
+        Set<Node> blacklist = new HashSet<>();
+
         int maxLength1 = maxLength;
         if (maxLength1 < 0 || maxLength1 > mpdag.getNumNodes() - 1) {
             maxLength1 = mpdag.getNumNodes() - 1;
         }
 
-        Set<Node> conditioningSet = new HashSet<>();
-        Set<Node> couldBeColliders = new HashSet<>();
 
-        Set<List<Node>> paths = bfsAllPathsOutOfX(mpdag, conditioningSet, couldBeColliders, blacklist, maxLength1, x, y, allowSelectionBias);
+        Pair<Set<Node>, Set<Node>> ret = bfsAllPathsOutOfX(mpdag, blacklist, maxLength1, x, y, allowSelectionBias);
+
+        Set<Node> conditioningSet = ret.getLeft();
+        Set<Node> couldBeColliders = ret.getRight();
 
         List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
         conditioningSet.removeAll(couldBeColliders);
@@ -930,6 +918,7 @@ public class SepsetFinder {
         if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
             return new HashSet<>();
         }
+
         return null;
     }
 }
