@@ -48,6 +48,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     private int depth = -1;
     /**
+     * Private variable representing the maximum length of a blocking path.
+     */
+    private int maxBlockingPathLength = -1;
+    /**
      * Determines whether verbose mode is enabled or not.
      */
     private boolean verbose = false;
@@ -93,9 +97,9 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     /**
      * Provides a special configuration for creating an instance of FciOrientDataExaminationStrategy.
      *
-     * @param test                             the IndependenceTest object used by the strategy
-     * @param knowledge                        the Knowledge object used by the strategy
-     * @param verbose                          boolean indicating whether to provide verbose output
+     * @param test      the IndependenceTest object used by the strategy
+     * @param knowledge the Knowledge object used by the strategy
+     * @param verbose   boolean indicating whether to provide verbose output
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
@@ -195,7 +199,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
         }
 
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1,
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(graph, e, c, test, maxBlockingPathLength, depth,
                 true);
 
         if (verbose) {
@@ -328,5 +332,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
         this.initialAllowedColliders = initialAllowedColliders;
+    }
+
+    /**
+     * Retrieves the maximum length of a blocking path.
+     *
+     * @param maxBlockingPathLength the maximum length of a blocking path
+     */
+    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
+        this.maxBlockingPathLength = maxBlockingPathLength;
     }
 }

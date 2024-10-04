@@ -854,8 +854,8 @@ public class SepsetFinder {
      * @param allowSelectionBias A boolean flag indicating whether to allow selection bias.
      * @return The sepset if independence holds, otherwise null.
      */
-    public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                        int maxLength, int depth, boolean allowSelectionBias) {
+    public static Set<Node> getSepsetPathBlockingFromSideOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
+                                                             int maxLength, int depth, boolean allowSelectionBias) {
         Set<Node> blacklist = new HashSet<>();
 
         int maxLength1 = maxLength;

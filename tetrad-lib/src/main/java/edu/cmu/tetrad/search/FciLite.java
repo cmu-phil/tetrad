@@ -37,14 +37,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * The LV-Lite algorithm implements a search algorithm for learning the structure of a graphical model from
- * observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial CPDAG.
- * Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing step to
- * remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the graph.
+ * The FCIL algorihtm (FCI-Lite) algorithm implements a search algorithm for learning the structure of a graphical model
+ * from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
+ * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing step
+ * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
+ * graph.
  *
  * @author josephramsey
  */
-public final class LvLite implements IGraphSearch {
+public final class FciLite implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -115,14 +116,14 @@ public final class LvLite implements IGraphSearch {
     private long testTimeout = 500;
 
     /**
-     * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
+     * FCI-Lite constructor. Initializes a new object of FCI-Lite search algorithm with the given IndependenceTest and
      * Score object.
      *
      * @param test  The IndependenceTest object to be used for testing independence between variables.
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public LvLite(IndependenceTest test, Score score) {
+    public FciLite(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -133,6 +134,8 @@ public final class LvLite implements IGraphSearch {
 
         this.test = test;
         this.score = score;
+
+        test.setVerbose(false);
 
         if (test instanceof MsepTest) {
             this.startWith = START_WITH.GRASP;
@@ -148,7 +151,7 @@ public final class LvLite implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(this.score.getVariables());
 
         if (verbose) {
-            TetradLogger.getInstance().log("===Starting LV-Lite===");
+            TetradLogger.getInstance().log("===Starting FCI-Lite===");
         }
 
         Graph pag;
@@ -224,7 +227,7 @@ public final class LvLite implements IGraphSearch {
         scorer.setKnowledge(knowledge);
         scorer.bookmark();
 
-        // We initialize the estimated PAG to the BOSS/GRaSP CPDAG.
+        // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
         pag = new EdgeListGraph(dag);
 
         if (verbose) {
@@ -232,13 +235,18 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        R0R4Strategy strategy = R0R4StrategyTestBased.specialConfiguration(test, knowledge, false);
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(test,
+                knowledge, false);
+        strategy.setDepth(depth);
+        strategy.setMaxBlockingPathLength(maxBlockingPathLength);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setTestTimeout(testTimeout);
         fciOrient.setVerbose(verbose);
+        fciOrient.setParallel(true);
+        fciOrient.setKnowledge(knowledge);
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -252,12 +260,11 @@ public final class LvLite implements IGraphSearch {
         GraphUtils.reorientWithCircles(pag, verbose);
 
         // We're looking for unshielded colliders in these next steps that we can detect without using only
-        // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and nearby graphs
-        // that can be reached by constrained tucking. The BOSS graph should be edge minimal, so should have the
-        // highest number of unshielded colliders to copy to the PAG. Nearby graphs should have fewer unshielded
-        // colliders, though like the BOSS graph, they should be Markov, so their unshielded colliders should be
-        // valid. From sample, because of unfaithfulness, the quality may fall off depending on the difference in
-        // score between the best order and a tucked order.
+        // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
+        // unshielded colliders from the BOSS graph into the estimated PAG. This step is justified in the
+        // GFCI algorithm. Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
+        // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
+        // PMLR.
         for (Node b : best) {
             var adj = pag.getAdjacentNodes(b);
 
@@ -270,24 +277,18 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-        // These are the unshielded colliders copied from BOSS. BOSS by itself is not the cause of almost
-        // cycles; it's the subsequent testing steps that cause them. So we do not need to remove any
-        // unshielded colliders that are in this set to resolve almost-cycles.
-
-        // These will be the unshielded colliders that are found in the subsequent steps.
-        Set<Triple> subsequentUnshieldedColliders = new HashSet<>();
-
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
         Map<Edge, Set<Node>> extraSepsets;
 
-        // Remove extra edges using a test by examining paths in the BOSS/GRaSP DAG. The goal of this is to find a
-        // sufficient set of sepsets to test for extra edges in the PAG that is small, preferably just one test
-        // per edge.
-        extraSepsets = removeExtraEdges(pag, subsequentUnshieldedColliders);
-        unshieldedColliders.addAll(subsequentUnshieldedColliders);
+        // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
+        // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
+        // each side. So in a dense graph, this can take a very long time to complete. Here, we look for a sepset
+        // for each edge by examining the structure of the current graph and finding a sepset that blocks all
+        // paths between x and y. This is a simpler problem.
+        extraSepsets = removeExtraEdges(pag, unshieldedColliders);
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation after extra sepsets found");
@@ -330,7 +331,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("LV-Lite finished.");
+            TetradLogger.getInstance().log("FCI-Lite finished.");
         }
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
@@ -504,6 +505,8 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
+        IndependenceTest msep = new MsepTest(pag);
+
         // Note that we can use the MAG here instead of the DAG.
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
@@ -512,8 +515,8 @@ public final class LvLite implements IGraphSearch {
 
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
-                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(),
-                            test, maxBlockingPathLength, depth, true);
+                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(),
+                            edge.getNode2(), test, maxBlockingPathLength, depth, true);
                     return Pair.of(edge, sepset);
                 });
             }
@@ -553,13 +556,15 @@ public final class LvLite implements IGraphSearch {
             Deque<Edge> toVisit = new LinkedList<>(edges);
 
             // Sort edges x *-* y in toVisit by |adj(x)| + |adj(y)|.
-            toVisit = toVisit.stream().sorted(Comparator.comparingInt(edge -> pag.getAdjacentNodes(edge.getNode1()).size() + pag.getAdjacentNodes(edge.getNode2()).size())).collect(Collectors.toCollection(LinkedList::new));
+            toVisit = toVisit.stream().sorted(Comparator.comparingInt(edge -> pag.getAdjacentNodes(
+                    edge.getNode1()).size() + pag.getAdjacentNodes(edge.getNode2()).size())).collect(Collectors.toCollection(LinkedList::new));
 
             while (!toVisit.isEmpty()) {
                 Edge edge = toVisit.removeFirst();
                 visited.add(edge);
 
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(), test, maxBlockingPathLength, depth, true);
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(),
+                        test, maxBlockingPathLength, depth, true);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("For edge " + edge + " sepset: " + sepset);
@@ -611,6 +616,10 @@ public final class LvLite implements IGraphSearch {
         common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
 
         pag.removeEdge(edge.getNode1(), edge.getNode2());
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing adjacency " + edge.getNode1() + " *-* " + edge.getNode2() + " from PAG.");
+        }
 
         for (Node node : common) {
             if (!extraSepsets.get(edge).contains(node)) {

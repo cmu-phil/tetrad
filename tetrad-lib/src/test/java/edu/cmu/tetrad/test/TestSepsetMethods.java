@@ -128,7 +128,7 @@ public class TestSepsetMethods {
         System.out.println("Time taken by getSepsetContainingMinP: " + (stop4 - start4) + " ms");
 
         long start5 = System.currentTimeMillis();
-        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlockingOutOfX(dag, x, y, msepTest, 50, -1,
+        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlockingFromSideOfX(dag, x, y, msepTest, 50, -1,
                 false);
         long stop5 = System.currentTimeMillis();
         times[4] = stop5 - start5;
@@ -196,7 +196,7 @@ public class TestSepsetMethods {
             y = nodes.get((int) (Math.random() * numNodes));
         } while (x.equals(y));
 
-        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOfX(dag, x, y, new MsepTest(dag), -1, -1,
+        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingFromSideOfX(dag, x, y, new MsepTest(dag), -1, -1,
                 false);
 
         System.out.println((dag.isAdjacentTo(x, y) ? "adjacent" : "###NOT ADJACENT###") + " x = " + x + " y = " + y + " sepset = " + sepset6);

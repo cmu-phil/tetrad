@@ -17,6 +17,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.FciLite;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -132,7 +133,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
             }
         }
 
-        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
+        FciLite search = new FciLite(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -151,9 +152,9 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
+            search.setStartWith(FciLite.START_WITH.BOSS);
         } else if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.GRASP);
+            search.setStartWith(FciLite.START_WITH.GRASP);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.LV_LITE_STARTS_WITH));
         }
