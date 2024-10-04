@@ -24,7 +24,10 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
+import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
@@ -54,6 +57,11 @@ public final class FciLite implements IGraphSearch {
      * The score.
      */
     private final Score score;
+    /**
+     * The initial CPDAG, if this is given in the constructor. This is used in place of the DAG/CPDAG obtained from the
+     * BOSS or GRaSP algorithm, and only if the startWith parameter is set to INITIAL_GRAPH.
+     */
+    private Graph cpdag = null;
     /**
      * The background knowledge.
      */
@@ -142,6 +150,16 @@ public final class FciLite implements IGraphSearch {
         }
     }
 
+    public FciLite(Graph graph, IndependenceTest test, Score score) {
+        this.score = score;
+        this.test = test;
+        this.cpdag = graph;
+
+        this.startWith = START_WITH.INITIAL_GRAPH;
+
+        test.setVerbose(false);
+    }
+
     /**
      * Run the search and return s a PAG.
      *
@@ -157,7 +175,6 @@ public final class FciLite implements IGraphSearch {
         Graph pag;
         Graph dag;
         List<Node> best;
-
 
         if (startWith == START_WITH.BOSS) {
 
@@ -213,6 +230,18 @@ public final class FciLite implements IGraphSearch {
             if (verbose) {
                 TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
                 TetradLogger.getInstance().log("Initializing scorer with GRaSP best order.");
+            }
+        } else if (startWith == START_WITH.INITIAL_GRAPH) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Using initial graph.");
+            }
+
+            dag = GraphUtils.replaceNodes(this.cpdag, nodes);
+            best = dag.paths().getValidOrder(dag.getNodes(), true);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Initializing PAG to initial CPDAG.");
+                TetradLogger.getInstance().log("Initializing scorer with initial CPDAG best order.");
             }
         } else {
             throw new IllegalArgumentException("Unknown startWith algorithm: " + startWith);
@@ -719,7 +748,11 @@ public final class FciLite implements IGraphSearch {
         /**
          * Start with GRaSP.
          */
-        GRASP
+        GRASP,
+        /**
+         * Starts with an initial graph over the variables of the independence test.
+         */
+        INITIAL_GRAPH
     }
 
     /**
