@@ -164,10 +164,21 @@ public final class LvLite implements IGraphSearch {
 
             long start = MillisecondTimes.wallTimeMillis();
 
-            var permutationSearch = getBossSearch();
-            dag = permutationSearch.search(false);
-            best = permutationSearch.getOrder();
-            best = dag.paths().getValidOrder(best, true);
+            Boss subAlg = new Boss(this.score);
+            subAlg.setUseBes(false);
+            subAlg.setNumStarts(this.numStarts);
+            subAlg.setNumThreads(30);
+            subAlg.setVerbose(verbose);
+            PermutationSearch alg = new PermutationSearch(subAlg);
+            alg.setKnowledge(this.knowledge);
+
+            dag = alg.search();
+            best = dag.paths().getValidOrder(dag.getNodes(), true);
+
+//            var permutationSearch = getBossSearch();
+//            dag = permutationSearch.search(false);
+//            best = permutationSearch.getOrder();
+//            best = dag.paths().getValidOrder(best, true);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
