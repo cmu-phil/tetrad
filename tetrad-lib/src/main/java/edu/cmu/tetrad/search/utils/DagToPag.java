@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 
 /**
@@ -83,22 +84,35 @@ public final class DagToPag {
 
         Graph graph = new EdgeListGraph(measured);
 
-        for (int i = 0; i < measured.size(); i++) {
-            for (int j = i + 1; j < measured.size(); j++) {
-                Node n1 = measured.get(i);
+        IntStream.range(0, measured.size()).parallel().forEach(i -> {
+            Node n1 = measured.get(i);
+            IntStream.range(i + 1, measured.size()).forEach(j -> {
                 Node n2 = measured.get(j);
-
-                if (graph.isAdjacentTo(n1, n2)) continue;
-
-                List<Node> inducingPath = dag.paths().getInducingPath(n1, n2);
-
-                boolean exists = inducingPath != null;
-
-                if (exists) {
-                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                if (!graph.isAdjacentTo(n1, n2)) {
+                    List<Node> inducingPath = dag.paths().getInducingPath(n1, n2);
+                    if (inducingPath != null) {
+                        graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                    }
                 }
-            }
-        }
+            });
+        });
+
+//        for (int i = 0; i < measured.size(); i++) {
+//            for (int j = i + 1; j < measured.size(); j++) {
+//                Node n1 = measured.get(i);
+//                Node n2 = measured.get(j);
+//
+//                if (graph.isAdjacentTo(n1, n2)) continue;
+//
+//                List<Node> inducingPath = dag.paths().getInducingPath(n1, n2);
+//
+//                boolean exists = inducingPath != null;
+//
+//                if (exists) {
+//                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+//                }
+//            }
+//        }
 
         return graph;
     }

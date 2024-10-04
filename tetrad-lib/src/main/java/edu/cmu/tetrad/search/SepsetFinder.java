@@ -96,9 +96,7 @@ public class SepsetFinder {
         Function<List<Integer>, Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
         // Find the object that maximizes the function in parallel
-        List<Integer> maxObject = choices.parallelStream()
-                .max(Comparator.comparing(function))
-                .orElse(null);
+        List<Integer> maxObject = choices.parallelStream().max(Comparator.comparing(function)).orElse(null);
 
         if (maxObject != null && getPValue(x, y, combination(maxObject, adjx), test) > test.getAlpha()) {
             return combination(maxObject, adjx);
@@ -109,9 +107,7 @@ public class SepsetFinder {
         function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
         // Find the object that maximizes the function in parallel
-        maxObject = choices.parallelStream()
-                .max(Comparator.comparing(function))
-                .orElse(null);
+        maxObject = choices.parallelStream().max(Comparator.comparing(function)).orElse(null);
 
         if (maxObject != null && getPValue(x, y, combination(maxObject, adjx), test) > test.getAlpha()) {
             return combination(maxObject, adjx);
@@ -148,9 +144,7 @@ public class SepsetFinder {
         List<List<Integer>> choices = getChoices(adjx, depth);
         Function<List<Integer>, Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
-        List<Integer> minObject = choices.parallelStream()
-                .min(Comparator.comparing(function))
-                .orElse(null);
+        List<Integer> minObject = choices.parallelStream().min(Comparator.comparing(function)).orElse(null);
 
         if (minObject != null && getPValue(x, y, combination(minObject, adjx), test) > test.getAlpha()) {
             return combination(minObject, adjx);
@@ -159,9 +153,7 @@ public class SepsetFinder {
         choices = getChoices(adjx, depth);
         function = choice -> getPValue(x, y, combination(choice, adjx), test);
 
-        minObject = choices.parallelStream()
-                .min(Comparator.comparing(function))
-                .orElse(null);
+        minObject = choices.parallelStream().min(Comparator.comparing(function)).orElse(null);
 
         if (minObject != null && getPValue(x, y, combination(minObject, adjx), test) > test.getAlpha()) {
             return combination(minObject, adjx);
@@ -239,8 +231,7 @@ public class SepsetFinder {
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    public static Set<Node> getSepsetPathBlockingXtoY(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                      int maxLength, int depth, boolean verbose) {
+    public static Set<Node> getSepsetPathBlockingXtoY(Graph mpdag, Node x, Node y, IndependenceTest test, int maxLength, int depth, boolean verbose) {
         if (verbose) {
             Edge e = mpdag.getEdge(x, y);
             TetradLogger.getInstance().log("\n\n### CHECKING x = " + x + " y = " + y + "edge = " + ((e != null) ? e : "null") + " ###\n\n");
@@ -294,7 +285,7 @@ public class SepsetFinder {
                         blocked = true;
                         _changed = true;
 
-                        addCouldBeCollider(z1, z2, z3, path, mpdag, couldBeColliders, verbose);
+                        addCouldBeCollider(z1, z2, z3, mpdag, couldBeColliders);
 
                         if (depth != -1 && conditioningSet.size() > depth) {
                             return null;
@@ -399,8 +390,7 @@ public class SepsetFinder {
         }
     }
 
-    private static boolean sepsetPathFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node,
-            Set<Node>> ancestorMap, IndependenceTest test) {
+    private static boolean sepsetPathFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node, Set<Node>> ancestorMap, IndependenceTest test) {
         if (b == y) {
             return true;
         }
@@ -556,8 +546,8 @@ public class SepsetFinder {
      * @param y                the second node
      * @param verbose          whether to print trace information
      */
-    private static void blockPath(List<Node> path, Graph graph, Set<Node> conditioningSet, Set<Node> couldBeColliders, Set<Node> blacklist,
-                                  Node x, Node y, boolean verbose) {
+    private static void blockPath(List<Node> path, Graph graph, Set<Node> conditioningSet, Set<Node> couldBeColliders,
+                                  Set<Node> blacklist, Node x, Node y, boolean verbose) {
 
         for (int n = 1; n < path.size() - 1; n++) {
             Node z1 = path.get(n - 1);
@@ -580,7 +570,7 @@ public class SepsetFinder {
             if (!graph.isDefCollider(z1, z2, z3)) {
                 if (conditioningSet.contains(z2)) {
                     conditioningSet.removeAll(blacklist);
-                    addCouldBeCollider(z1, z2, z3, path, graph, couldBeColliders, verbose);
+                    addCouldBeCollider(z1, z2, z3, graph, couldBeColliders);
                 }
 
                 conditioningSet.add(z2);
@@ -589,15 +579,26 @@ public class SepsetFinder {
                 // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
                 // it could be a collider. We will need to either consider this to be a collider or
                 // a noncollider below.
-                addCouldBeCollider(z1, z2, z3, path, graph, couldBeColliders, verbose);
+                addCouldBeCollider(z1, z2, z3, graph, couldBeColliders);
                 break;
             }
         }
     }
 
-    private static void addCouldBeCollider(Node z1, Node z2, Node z3, List<Node> path, Graph mpdag,
-                                           Set<Node> couldBeColliders, boolean verbose) {
-        if (mpdag.isAdjacentTo(z1, z3)) {
+    /**
+     * Add nodes to the set of couldBeColliders where z1 and z3 are adjacent and the orientation of
+     * z1 *-* z2 *-* z3 is not already determined as a collider or a noncollider in the graph.
+     * @param z1 The first node.
+     * @param z2 The second node.
+     * @param z3 The third node.
+     * @param graph The graph to analyze.
+     * @param couldBeColliders The set of nodes that could be colliders or noncolliders so far as we know.
+     */
+    private static void addCouldBeCollider(Node z1, Node z2, Node z3, Graph graph, Set<Node> couldBeColliders) {
+        if (graph.isAdjacentTo(z1, z3)
+            && !(graph.isDefCollider(z1, z2, z3)
+                 || (graph.getEndpoint(z1, z2) == Endpoint.ARROW && graph.getEndpoint(z3, z2) == Endpoint.TAIL)
+                 || (graph.getEndpoint(z1, z2) == Endpoint.TAIL && graph.getEndpoint(z3, z2) == Endpoint.ARROW))) {
             couldBeColliders.add(z2);
         }
     }
@@ -614,8 +615,7 @@ public class SepsetFinder {
      * @param printTrace       A boolean indicating whether to print error traces.
      * @return true if z2 could be a collider on the given path, false otherwise.
      */
-    private static boolean addCouldBeCollider2(Node z1, Node z2, Node z3, List<Node> path, Graph mpdag,
-                                               Set<Triple> couldBeColliders, boolean printTrace) {
+    private static boolean addCouldBeCollider2(Node z1, Node z2, Node z3, List<Node> path, Graph mpdag, Set<Triple> couldBeColliders, boolean printTrace) {
         if (mpdag.isAdjacentTo(z1, z3)) {
             couldBeColliders.add(new Triple(z1, z2, z3));
 
@@ -683,8 +683,11 @@ public class SepsetFinder {
     }
 
     /**
-     * Performs a breadth-first search to find all paths out of a specific node in a graph, considering certain
-     * conditions and constraints.
+     * Returns the conditioning set for blocking all paths from x to y in a given graph, together with the set of nodes
+     * that could be colliders or noncolliders. The nodes in the latter set need to be checked separately in every
+     * combination in order to find a set that blocks all paths from x to y if possible, in the data. (We cannot
+     * determine this from the graph alone, since there maybe triangles involving an edge x *-* y where this edge covers
+     * a collider or a noncollider which is not already oriented as such in the graph.)
      *
      * @param graph              the graph to search
      * @param blacklist          the set of nodes to exclude from the search
@@ -692,11 +695,14 @@ public class SepsetFinder {
      * @param x                  the starting node
      * @param y                  the destination node
      * @param allowSelectionBias flag to indicate whether to allow selection bias in path selection
-     * @return a set of all paths that satisfy the conditions and constraints
+     * @return a pair of sets, where the first set contains the conditioning set in order to block the known paths and
+     * the second set contains the nodes that could be colliders or noncolliders (and which need to be checked
+     * separately in every combination in order to find a set that blocks all paths from x to y if possible)
      * @throws IllegalArgumentException if the conditioning set is null
      */
-    public static Pair<Set<Node>, Set<Node>> bfsAllPathsOutOfX(Graph graph, Set<Node> blacklist, int maxLength,
-                                                               Node x, Node y, boolean allowSelectionBias) {
+    private static Pair<Set<Node>, Set<Node>> getConditioningVariables(Graph graph, Set<Node> blacklist,
+                                                                       int maxLength, Node x, Node y,
+                                                                       boolean allowSelectionBias) {
         Set<Node> conditionSet = new HashSet<>();
         Set<Node> couldBeColliders = new HashSet<>();
 
@@ -786,15 +792,13 @@ public class SepsetFinder {
      * @param allowSelectionBias Determines whether to allow biased selection when multiple paths are available.
      * @return A set of lists, where each list represents a path from the starting node that satisfies the conditions.
      */
-    public static Set<List<Node>> allPathsOutOf(Graph graph, Node node1, int maxLength, Set<Node> conditionSet,
-                                                boolean allowSelectionBias) {
+    public static Set<List<Node>> allPathsOutOf(Graph graph, Node node1, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
         allPathsVisitOutOf(graph, null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
         return paths;
     }
 
-    private static void allPathsVisitOutOf(Graph graph, Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
-                                           Set<Node> conditionSet, boolean allowSelectionBias) {
+    private static void allPathsVisitOutOf(Graph graph, Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
         }
@@ -836,26 +840,24 @@ public class SepsetFinder {
     }
 
     /**
-     * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph. This method searches
-     * for m-connecting paths out of x and y, and then tries to block these paths by conditioning on definite
-     * noncollider nodes. If all paths are blocked, the method returns the sepset; otherwise, it returns null. The
-     * length of the paths to consider can be limited by the maxLength parameter, and the depth of the final sepset can
-     * be limited by the depth parameter. When increasing the considered path length does not yield any new paths, the
-     * search is terminated early.
+     * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph, in a PAG or MPDAG.
+     * This method searches for m-connecting paths out of x and y, and then tries to block these paths by conditioning
+     * on definite noncollider nodes. If all paths are blocked, the method returns the sepset; otherwise, it returns
+     * null. The length of the paths to consider can be limited by the maxLength parameter, and the depth of the final
+     * sepset can be limited by the depth parameter. When increasing the considered path length does not yield any new
+     * paths, the search is terminated early.
      *
-     * @param mpdag              The graph representing the Markov equivalence class that contains the nodes.
-     * @param x                  The first node in the pair.
-     * @param y                  The second node in the pair.
-     * @param test               The independence test object to use for checking independence.
-     * @param maxLength          The maximum length of the paths to consider. If set to a negative value or a value
-     *                           greater than the number of nodes minus one, it is adjusted accordingly.
-     * @param depth              The maximum depth of the final sepset. If set to a negative value, no limit is
-     *                           applied.
-     * @param allowSelectionBias A boolean flag indicating whether to allow selection bias.
+     * @param mpdag     The graph representing the Markov equivalence class that contains the nodes.
+     * @param x         The first node in the pair.
+     * @param y         The second node in the pair.
+     * @param test      The independence test object to use for checking independence.
+     * @param maxLength The maximum length of the paths to consider. If set to a negative value or a value greater than
+     *                  the number of nodes minus one, it is adjusted accordingly.
+     * @param depth     The maximum depth of the final sepset. If set to a negative value, no limit is applied.
+     * @param isPag     A flag indicating whether the graph is a PAG or a CPDAG, true = PAG, false = MPDAG.
      * @return The sepset if independence holds, otherwise null.
      */
-    public static Set<Node> getSepsetPathBlockingFromSideOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
-                                                             int maxLength, int depth, boolean allowSelectionBias) {
+    public static Set<Node> getSepsetPathBlockingFromSideOfX(Graph mpdag, Node x, Node y, IndependenceTest test, int maxLength, int depth, boolean isPag) {
         Set<Node> blacklist = new HashSet<>();
 
         int maxLength1 = maxLength;
@@ -863,8 +865,7 @@ public class SepsetFinder {
             maxLength1 = mpdag.getNumNodes() - 1;
         }
 
-
-        Pair<Set<Node>, Set<Node>> ret = bfsAllPathsOutOfX(mpdag, blacklist, maxLength1, x, y, allowSelectionBias);
+        Pair<Set<Node>, Set<Node>> ret = getConditioningVariables(mpdag, blacklist, maxLength1, x, y, isPag);
 
         Set<Node> conditioningSet = ret.getLeft();
         Set<Node> couldBeColliders = ret.getRight();
@@ -915,6 +916,7 @@ public class SepsetFinder {
             }
         }
 
+        // Finally, we need to check to see whether the empty set is a sepset if a sepset has not been found yet.
         if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
             return new HashSet<>();
         }

@@ -258,6 +258,7 @@ public final class FciLite implements IGraphSearch {
 
         scorer.score(best);
         GraphUtils.reorientWithCircles(pag, verbose);
+        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
 
         // We're looking for unshielded colliders in these next steps that we can detect without using only
         // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
@@ -287,7 +288,7 @@ public final class FciLite implements IGraphSearch {
         // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
         // each side. So in a dense graph, this can take a very long time to complete. Here, we look for a sepset
         // for each edge by examining the structure of the current graph and finding a sepset that blocks all
-        // paths between x and y. This is a simpler problem.
+        // paths between x and y. This is a simpler problem and scales better to dense graphs (though not perfectly).
         extraSepsets = removeExtraEdges(pag, unshieldedColliders);
 
         if (verbose) {
@@ -504,8 +505,6 @@ public final class FciLite implements IGraphSearch {
         if (verbose) {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
-
-        IndependenceTest msep = new MsepTest(pag);
 
         // Note that we can use the MAG here instead of the DAG.
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
