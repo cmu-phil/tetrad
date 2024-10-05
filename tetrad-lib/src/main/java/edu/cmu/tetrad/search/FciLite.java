@@ -126,6 +126,9 @@ public final class FciLite implements IGraphSearch {
     /**
      * FCI-Lite constructor. Initializes a new object of FCI-Lite search algorithm with the given IndependenceTest and
      * Score object.
+     * <p>
+     * In this constructor, we will use BOSS or GRaSP internally to infer an initial CPDAG and valid order of the
+     * variables. This is the default behavior of the FCI-Lite algorithm.
      *
      * @param test  The IndependenceTest object to be used for testing independence between variables.
      * @param score The Score object to be used for scoring DAGs.
@@ -150,10 +153,31 @@ public final class FciLite implements IGraphSearch {
         }
     }
 
-    public FciLite(Graph graph, IndependenceTest test, Score score) {
-        this.score = score;
+    /**
+     * Alternative FCI-Lite constructor. Initializes a new object of FCI-Lite search algorithm with the given initial
+     * CPDAG, along with the IndependenceTest. These should all be over the same set of variables. (Well, the CPDAG just
+     * needs to use the same set of variable names; we will replace these internally with the variables from the test.)
+     * <p>
+     * This constructor allows the user to employ an external algorithm to find this initial CPDAG (and an implied order
+     * of the variables). This is useful when the user has a preferred algorithm for this task. In this case, the
+     * algorithm will perform only the steps after the CPDAG initialization step.
+     * <p>
+     * It is important here that the CPDAG be obtained from an algorithm like BOSS or GRaSP that yields a high-quality
+     * DAG or CPDAG over the variables, with a valid order, under the (possibly false) assumption that the data model is
+     * causally sufficient. The CPDAG is used to establish the initial structure of the estimated PAG and to copy
+     * unshielded colliders from the CPDAG into the estimated PAG. This step is justified in the GFCI algorithm.
+     * Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
+     * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR. The idea is we start with this
+     * initial estimated of the PAG, with edges reoriented as o-o edges. Then we use the scorer to copy unshielded
+     * colliders from the CPDAG into the estimated PAG, as an initial step of converting the initial CPDAG into a PAG.
+     *
+     * @param cpdag The initial CPDAG.
+     * @param test  The independence test.
+     */
+    public FciLite(Graph cpdag, IndependenceTest test) {
+        this.score = null;
         this.test = test;
-        this.cpdag = graph;
+        this.cpdag = GraphUtils.replaceNodes(cpdag, this.test.getVariables());
 
         this.startWith = START_WITH.INITIAL_GRAPH;
 
@@ -166,14 +190,20 @@ public final class FciLite implements IGraphSearch {
      * @return The PAG.
      */
     public Graph search() {
-        List<Node> nodes = new ArrayList<>(this.score.getVariables());
+        List<Node> nodes;
+
+        if (this.score != null) {
+            nodes = new ArrayList<>(this.score.getVariables());
+        } else {
+            nodes = new ArrayList<>(this.test.getVariables());
+        }
 
         if (verbose) {
             TetradLogger.getInstance().log("===Starting FCI-Lite===");
         }
 
         Graph pag;
-        Graph dag;
+        Graph cpdag;
         List<Node> best;
 
         if (startWith == START_WITH.BOSS) {
@@ -192,13 +222,13 @@ public final class FciLite implements IGraphSearch {
             PermutationSearch alg = new PermutationSearch(subAlg);
             alg.setKnowledge(this.knowledge);
 
-            dag = alg.search();
-            best = dag.paths().getValidOrder(dag.getNodes(), true);
+            cpdag = alg.search();
+            best = cpdag.paths().getValidOrder(cpdag.getNodes(), true);
 
 //            var permutationSearch = getBossSearch();
-//            dag = permutationSearch.search(false);
+//            cpdag = permutationSearch.search(false);
 //            best = permutationSearch.getOrder();
-//            best = dag.paths().getValidOrder(best, true);
+//            best = cpdag.paths().getValidOrder(best, true);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -219,7 +249,7 @@ public final class FciLite implements IGraphSearch {
 
             Grasp grasp = getGraspSearch();
             best = grasp.bestOrder(nodes);
-            dag = grasp.getGraph(false);
+            cpdag = grasp.getGraph(false);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -236,8 +266,8 @@ public final class FciLite implements IGraphSearch {
                 TetradLogger.getInstance().log("Using initial graph.");
             }
 
-            dag = GraphUtils.replaceNodes(this.cpdag, nodes);
-            best = dag.paths().getValidOrder(dag.getNodes(), true);
+            cpdag = GraphUtils.replaceNodes(this.cpdag, nodes);
+            best = cpdag.paths().getValidOrder(cpdag.getNodes(), true);
 
             if (verbose) {
                 TetradLogger.getInstance().log("Initializing PAG to initial CPDAG.");
@@ -251,13 +281,17 @@ public final class FciLite implements IGraphSearch {
             TetradLogger.getInstance().log("Best order: " + best);
         }
 
-        var scorer = new TeyssierScorer(test, score);
-        scorer.score(best);
-        scorer.setKnowledge(knowledge);
-        scorer.bookmark();
+        TeyssierScorer scorer = null;
+
+        if (this.score != null) {
+            scorer = new TeyssierScorer(test, score);
+            scorer.score(best);
+            scorer.setKnowledge(knowledge);
+            scorer.bookmark();
+        }
 
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
-        pag = new EdgeListGraph(dag);
+        pag = new EdgeListGraph(cpdag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
@@ -285,7 +319,10 @@ public final class FciLite implements IGraphSearch {
         Set<Triple> unshieldedColliders = new HashSet<>();
         Set<Triple> checked = new HashSet<>();
 
-        scorer.score(best);
+        if (scorer != null) {
+            scorer.score(best);
+        }
+
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
 
@@ -301,7 +338,7 @@ public final class FciLite implements IGraphSearch {
             for (Node x : adj) {
                 for (Node y : adj) {
                     if (GraphUtils.distinct(x, b, y) && !checked.contains(new Triple(x, b, y))) {
-                        checkUntucked(x, b, y, pag, dag, scorer, unshieldedColliders, checked);
+                        copyUnshieldedCollider(x, b, y, pag, cpdag, scorer, unshieldedColliders, checked);
                     }
                 }
             }
@@ -378,7 +415,7 @@ public final class FciLite implements IGraphSearch {
      * @param unshieldedColliders The set to store unshielded colliders.
      * @param checked             The set to store already checked nodes.
      */
-    private void checkUntucked(Node x, Node b, Node y, Graph pag, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Set<Triple> checked) {
+    private void copyUnshieldedCollider(Node x, Node b, Node y, Graph pag, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Set<Triple> checked) {
         tryAddingCollider(x, b, y, pag, cpdag, scorer, unshieldedColliders, checked, knowledge, verbose);
     }
 
@@ -661,7 +698,6 @@ public final class FciLite implements IGraphSearch {
                 unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
             }
         }
-
     }
 
     /**
@@ -679,23 +715,29 @@ public final class FciLite implements IGraphSearch {
      */
     private void tryAddingCollider(Node x, Node b, Node y, Graph pag, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Set<Triple> checked, Knowledge knowledge, boolean verbose) {
         if (cpdag != null) {
-            if (cpdag.isDefCollider(x, b, y) && !cpdag.isAdjacentTo(x, y)) {
-                unshieldedColliders.add(new Triple(x, b, y));
-                checked.add(new Triple(x, b, y));
+            if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
+                if (cpdag.isDefCollider(x, b, y) && !cpdag.isAdjacentTo(x, y)) {
+                    unshieldedColliders.add(new Triple(x, b, y));
+                    checked.add(new Triple(x, b, y));
 
-                if (verbose) {
-                    TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    }
                 }
             }
-        } else if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
-            if (scorer.unshieldedCollider(x, b, y)) {
-                unshieldedColliders.add(new Triple(x, b, y));
-                checked.add(new Triple(x, b, y));
+        } else if (score != null) {
+            if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
+                if (scorer.unshieldedCollider(x, b, y)) {
+                    unshieldedColliders.add(new Triple(x, b, y));
+                    checked.add(new Triple(x, b, y));
 
-                if (verbose) {
-                    TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                    }
                 }
             }
+        } else {
+            throw new IllegalArgumentException("No CPDAG or scorer available.");
         }
     }
 

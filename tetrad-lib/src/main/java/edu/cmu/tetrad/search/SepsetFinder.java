@@ -544,10 +544,9 @@ public class SepsetFinder {
      * @param conditioningSet  the set of nodes to condition on; this may be modified
      * @param couldBeColliders the set of nodes that could be colliders; this may be modified
      * @param y                the second node
-     * @param verbose          whether to print trace information
      */
     private static void blockPath(List<Node> path, Graph graph, Set<Node> conditioningSet, Set<Node> couldBeColliders,
-                                  Set<Node> blacklist, Node x, Node y, boolean verbose) {
+                                  Set<Node> blacklist, Node x, Node y) {
 
         for (int n = 1; n < path.size() - 1; n++) {
             Node z1 = path.get(n - 1);
@@ -558,7 +557,11 @@ public class SepsetFinder {
                 continue;
             }
 
-            if (z1.getNodeType().equals(NodeType.LATENT) || z3.getNodeType().equals(NodeType.LATENT)) {
+            if (z1.getNodeType().equals(NodeType.LATENT)) {
+                continue;
+            }
+
+            if (z3.getNodeType().equals(NodeType.LATENT)) {
                 continue;
             }
 
@@ -568,30 +571,28 @@ public class SepsetFinder {
             }
 
             if (!graph.isDefCollider(z1, z2, z3)) {
-                if (conditioningSet.contains(z2)) {
-                    conditioningSet.removeAll(blacklist);
-                    addCouldBeCollider(z1, z2, z3, graph, couldBeColliders);
-                }
-
                 conditioningSet.add(z2);
                 conditioningSet.removeAll(blacklist);
 
-                // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
-                // it could be a collider. We will need to either consider this to be a collider or
-                // a noncollider below.
-                addCouldBeCollider(z1, z2, z3, graph, couldBeColliders);
-                break;
+                 if (conditioningSet.contains(z2)) {
+                     // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
+                     // it could be a collider. We will need to either consider this to be a collider or
+                     // a noncollider below.
+                     addCouldBeCollider(z1, z2, z3, graph, couldBeColliders);
+                     break;
+                }
             }
         }
     }
 
     /**
-     * Add nodes to the set of couldBeColliders where z1 and z3 are adjacent and the orientation of
-     * z1 *-* z2 *-* z3 is not already determined as a collider or a noncollider in the graph.
-     * @param z1 The first node.
-     * @param z2 The second node.
-     * @param z3 The third node.
-     * @param graph The graph to analyze.
+     * Add nodes to the set of couldBeColliders where z1 and z3 are adjacent and the orientation of z1 *-* z2 *-* z3 is
+     * not already determined as a collider or a noncollider in the graph.
+     *
+     * @param z1               The first node.
+     * @param z2               The second node.
+     * @param z3               The third node.
+     * @param graph            The graph to analyze.
      * @param couldBeColliders The set of nodes that could be colliders or noncolliders so far as we know.
      */
     private static void addCouldBeCollider(Node z1, Node z2, Node z3, Graph graph, Set<Node> couldBeColliders) {
@@ -742,7 +743,7 @@ public class SepsetFinder {
                         Node z2 = newPath.get(newPath.size() - 2);
 
                         if (!graph.isDefCollider(z1, z2, z3)) {
-                            blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y, true);
+                            blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y);
 
                             if (graph.paths().isMConnectingPath(newPath, conditionSet, allowSelectionBias)) {
                                 queue.add(newPath);
@@ -768,7 +769,7 @@ public class SepsetFinder {
                         Node z2 = newPath.get(newPath.size() - 2);
 
                         if (graph.isDefCollider(z1, z2, z3)) {
-                            blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y, true);
+                            blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y);
 
                             if (graph.paths().isMConnectingPath(newPath, conditionSet, allowSelectionBias)) {
                                 queue.add(newPath);
