@@ -121,14 +121,14 @@ public class TestSepsetMethods {
         times[2] = stop3 - start3;
         System.out.println("Time taken by getSepsetContainingMaxP: " + (stop3 - start3) + " ms");
 
-        long start4 = System.currentTimeMillis();
-        Set<Node> sepset4 = SepsetFinder.getSepsetContainingMinP(dag, x, y, new HashSet<>(), msepTest, -1);
-        long stop4 = System.currentTimeMillis();
-        times[3] = stop4 - start4;
-        System.out.println("Time taken by getSepsetContainingMinP: " + (stop4 - start4) + " ms");
+//        long start4 = System.currentTimeMillis();
+//        Set<Node> sepset4 = SepsetFinder.getSepsetContainingMinP(dag, x, y, new HashSet<>(), msepTest, -1);
+//        long stop4 = System.currentTimeMillis();
+//        times[3] = stop4 - start4;
+//        System.out.println("Time taken by getSepsetContainingMinP: " + (stop4 - start4) + " ms");
 
         long start5 = System.currentTimeMillis();
-        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlockingFromSideOfX(dag, x, y, msepTest, 50, -1,
+        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlockingFromSideOfX(dag, x, y, msepTest, -1, -1,
                 false);
         long stop5 = System.currentTimeMillis();
         times[4] = stop5 - start5;
@@ -144,7 +144,7 @@ public class TestSepsetMethods {
         System.out.println("Sepset 1: " + sepset1);
         System.out.println("Sepset 2: " + sepset2);
         System.out.println("Sepset 3: " + sepset3);
-        System.out.println("Sepset 4: " + sepset4);
+//        System.out.println("Sepset 4: " + sepset4);
         System.out.println("Sepset 5: " + sepset5);
 //        System.out.println("Sepset 6: " + sepset6);
 

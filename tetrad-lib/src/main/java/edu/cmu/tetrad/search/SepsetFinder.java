@@ -536,56 +536,6 @@ public class SepsetFinder {
     }
 
     /**
-     * Tries to block the given path is blocked by conditioning on definite noncollider nodes. Return true if the path
-     * is blocked, false otherwise.
-     *
-     * @param path             the path to check
-     * @param graph            the MPDAG graph to analyze
-     * @param conditioningSet  the set of nodes to condition on; this may be modified
-     * @param couldBeColliders the set of nodes that could be colliders; this may be modified
-     * @param y                the second node
-     */
-    private static void blockPath(List<Node> path, Graph graph, Set<Node> conditioningSet, Set<Node> couldBeColliders,
-                                  Set<Node> blacklist, Node x, Node y) {
-
-        for (int n = 1; n < path.size() - 1; n++) {
-            Node z1 = path.get(n - 1);
-            Node z2 = path.get(n);
-            Node z3 = path.get(n + 1);
-
-            if (z2.getNodeType() == NodeType.LATENT) {
-                continue;
-            }
-
-            if (z1.getNodeType().equals(NodeType.LATENT)) {
-                continue;
-            }
-
-            if (z3.getNodeType().equals(NodeType.LATENT)) {
-                continue;
-            }
-
-            if (z1 == x && z3 == y && graph.isDefCollider(z1, z2, z3)) {
-                blacklist.add(z2);
-                break;
-            }
-
-            if (!graph.isDefCollider(z1, z2, z3)) {
-                conditioningSet.add(z2);
-                conditioningSet.removeAll(blacklist);
-
-                 if (conditioningSet.contains(z2)) {
-                     // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
-                     // it could be a collider. We will need to either consider this to be a collider or
-                     // a noncollider below.
-                     addCouldBeCollider(z1, z2, z3, graph, couldBeColliders);
-                     break;
-                }
-            }
-        }
-    }
-
-    /**
      * Add nodes to the set of couldBeColliders where z1 and z3 are adjacent and the orientation of z1 *-* z2 *-* z3 is
      * not already determined as a collider or a noncollider in the graph.
      *
@@ -596,10 +546,10 @@ public class SepsetFinder {
      * @param couldBeColliders The set of nodes that could be colliders or noncolliders so far as we know.
      */
     private static void addCouldBeCollider(Node z1, Node z2, Node z3, Graph graph, Set<Node> couldBeColliders) {
-        if (graph.isAdjacentTo(z1, z3)
-            && !(graph.isDefCollider(z1, z2, z3)
-                 || (graph.getEndpoint(z1, z2) == Endpoint.ARROW && graph.getEndpoint(z3, z2) == Endpoint.TAIL)
-                 || (graph.getEndpoint(z1, z2) == Endpoint.TAIL && graph.getEndpoint(z3, z2) == Endpoint.ARROW))) {
+        if (graph.isAdjacentTo(z1, z3)) {
+//            && !(graph.isDefCollider(z1, z2, z3)
+//                 || (graph.getEndpoint(z1, z2) == Endpoint.ARROW && graph.getEndpoint(z3, z2) == Endpoint.TAIL)
+//                 || (graph.getEndpoint(z1, z2) == Endpoint.TAIL && graph.getEndpoint(z3, z2) == Endpoint.ARROW))) {
             couldBeColliders.add(z2);
         }
     }
@@ -691,7 +641,6 @@ public class SepsetFinder {
      * a collider or a noncollider which is not already oriented as such in the graph.)
      *
      * @param graph              the graph to search
-     * @param blacklist          the set of nodes to exclude from the search
      * @param maxLength          the maximum length of the paths (-1 for unlimited)
      * @param x                  the starting node
      * @param y                  the destination node
@@ -701,11 +650,11 @@ public class SepsetFinder {
      * separately in every combination in order to find a set that blocks all paths from x to y if possible)
      * @throws IllegalArgumentException if the conditioning set is null
      */
-    private static Pair<Set<Node>, Set<Node>> getConditioningVariables(Graph graph, Set<Node> blacklist,
-                                                                       int maxLength, Node x, Node y,
+    private static Pair<Set<Node>, Set<Node>> getConditioningVariables(Graph graph, int maxLength, Node x, Node y,
                                                                        boolean allowSelectionBias) {
-        Set<Node> conditionSet = new HashSet<>();
-        Set<Node> couldBeColliders = new HashSet<>();
+        Set<Node> conditionedNoncolliders = new HashSet<>();
+        Set<Node> unshieldedNoncolliders = new HashSet<>();
+        Set<Node> blacklist = new HashSet<>();
 
         Queue<List<Node>> queue = new LinkedList<>();
         queue.add(Collections.singletonList(x));
@@ -723,56 +672,44 @@ public class SepsetFinder {
 
             Node node = path.get(path.size() - 1);
 
-            for (Node z3 : graph.getAdjacentNodes(node)) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                if (!path.contains(z3)) {
-                    List<Node> newPath = new ArrayList<>(path);
-                    newPath.add(z3);
-
-                    if (newPath.size() - 1 == 1) {
-                        queue.add(newPath);
-                    }
-
-                    // If the path is of at least length 1, and the last two nodes on the path form a noncollider
-                    // with 'adjacent', we need to block these noncolliders first by conditioning on node.
-                    if (newPath.size() - 1 > 1) {
-                        Node z1 = newPath.get(newPath.size() - 3);
-                        Node z2 = newPath.get(newPath.size() - 2);
-
-                        if (!graph.isDefCollider(z1, z2, z3)) {
-                            blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y);
-
-                            if (graph.paths().isMConnectingPath(newPath, conditionSet, allowSelectionBias)) {
-                                queue.add(newPath);
-                            }
-                        }
-                    }
-                }
+            if (node == y) {
+                break;
             }
 
-            for (Node z3 : graph.getAdjacentNodes(node)) {
-                if (!path.contains(z3)) {
+            // Add the adjacents of the current node to the conditioning set. Then extend the path to new paths for
+            // each adjacent node of the current node and look to see whether any of these (or any other triple of
+            // nodes on the path) could be a collider. If so, remove those nodes from the conditioning set.
+            for (Node adjacent : graph.getAdjacentNodes(node)) {
+                if (!path.contains(adjacent)) {
                     List<Node> newPath = new ArrayList<>(path);
-                    newPath.add(z3);
+                    newPath.add(adjacent);
 
-                    if (newPath.size() - 1 == 1) {
+                    if (newPath.size() - 1 <= 1) {
                         queue.add(newPath);
-                    }
+                    } else {
+                        for (int i = 1; i < newPath.size() - 1; i++) {
+                            Node z1 = newPath.get(i - 1);
+                            Node z2 = newPath.get(i);
+                            Node z3 = newPath.get(i + 1);
 
-                    // If the path is of at least length 1, and the last two nodes on the path form a noncollider
-                    // with 'adjacent', we need to block these noncolliders first by conditioning on node.
-                    if (newPath.size() - 1 > 1) {
-                        Node z1 = newPath.get(newPath.size() - 3);
-                        Node z2 = newPath.get(newPath.size() - 2);
+                            if (!graph.isDefCollider(z1, z2, z3)) {
+                                if (conditionedNoncolliders.contains(z2)) {
+                                    continue;
+                                }
 
-                        if (graph.isDefCollider(z1, z2, z3)) {
-                            blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y);
+                                conditionedNoncolliders.add(z2);
 
-                            if (graph.paths().isMConnectingPath(newPath, conditionSet, allowSelectionBias)) {
-                                queue.add(newPath);
+                                if (!graph.isAdjacentTo(z1, z3)) {
+                                    unshieldedNoncolliders.add(z2);
+                                }
+                            } else {
+                                blacklist.add(z2);
+                                blacklist.addAll(graph.paths().getDescendants(z2));
+                                conditionedNoncolliders.removeAll(blacklist);
+
+                                if (graph.paths().isMConnectingPath(path, conditionedNoncolliders, allowSelectionBias)) {
+                                    queue.add(newPath);
+                                }
                             }
                         }
                     }
@@ -780,7 +717,8 @@ public class SepsetFinder {
             }
         }
 
-        return Pair.of(conditionSet, couldBeColliders);
+        conditionedNoncolliders.removeAll(unshieldedNoncolliders);
+        return Pair.of(conditionedNoncolliders, unshieldedNoncolliders);
     }
 
     /**
@@ -859,67 +797,32 @@ public class SepsetFinder {
      * @return The sepset if independence holds, otherwise null.
      */
     public static Set<Node> getSepsetPathBlockingFromSideOfX(Graph mpdag, Node x, Node y, IndependenceTest test, int maxLength, int depth, boolean isPag) {
-        Set<Node> blacklist = new HashSet<>();
+        Pair<Set<Node>, Set<Node>> ret = getConditioningVariables(mpdag, maxLength, x, y, isPag);
 
-        int maxLength1 = maxLength;
-        if (maxLength1 < 0 || maxLength1 > mpdag.getNumNodes() - 1) {
-            maxLength1 = mpdag.getNumNodes() - 1;
-        }
+        Set<Node> known = ret.getLeft();
+        Set<Node> ambiguous = ret.getRight();
 
-        Pair<Set<Node>, Set<Node>> ret = getConditioningVariables(mpdag, blacklist, maxLength1, x, y, isPag);
+        List<Node> ambiguousList = new ArrayList<>(ambiguous);
 
-        Set<Node> conditioningSet = ret.getLeft();
-        Set<Node> couldBeColliders = ret.getRight();
-
-        List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
-        conditioningSet.removeAll(couldBeColliders);
-
-        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), depth);
+        SublistGenerator generator = new SublistGenerator(ambiguousList.size(), depth);
         int[] choice;
 
         while ((choice = generator.next()) != null) {
             Set<Node> sepset = new HashSet<>();
 
             for (int k : choice) {
-                sepset.add(couldBeCollidersList.get(k));
+                sepset.add(ambiguousList.get(k));
             }
 
-            sepset.addAll(conditioningSet);
+            sepset.addAll(known);
 
             if (depth != -1 && sepset.size() > depth) {
                 continue;
             }
 
-            sepset.remove(y);
-
             if (test.checkIndependence(x, y, sepset).isIndependent()) {
-                Set<Node> _z = new HashSet<>(sepset);
-                boolean removed;
-
-                do {
-                    removed = false;
-
-                    for (Node w : new HashSet<>(_z)) {
-                        Set<Node> __z = new HashSet<>(_z);
-
-                        __z.remove(w);
-
-                        if (test.checkIndependence(x, y, __z).isIndependent()) {
-                            removed = true;
-                            _z = __z;
-                        }
-                    }
-                } while (removed);
-
-                sepset = new HashSet<>(_z);
-
                 return sepset;
             }
-        }
-
-        // Finally, we need to check to see whether the empty set is a sepset if a sepset has not been found yet.
-        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
-            return new HashSet<>();
         }
 
         return null;

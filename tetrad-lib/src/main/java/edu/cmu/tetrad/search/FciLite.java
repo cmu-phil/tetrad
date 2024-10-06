@@ -580,6 +580,8 @@ public final class FciLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
+        MsepTest test = new MsepTest(pag);
+
         // Note that we can use the MAG here instead of the DAG.
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
@@ -590,7 +592,14 @@ public final class FciLite implements IGraphSearch {
                 tasks.add(() -> {
                     Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(),
                             edge.getNode2(), test, maxBlockingPathLength, depth, true);
-                    return Pair.of(edge, sepset);
+
+                    if (this.test.checkIndependence(edge.getNode1(), edge.getNode2(), sepset).isIndependent()) {
+                        return Pair.of(edge, sepset);
+                    } else {
+                        return Pair.of(edge, null);
+                    }
+
+//                    return Pair.of(edge, sepset);
                 });
             }
 
