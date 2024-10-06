@@ -634,26 +634,35 @@ public class SepsetFinder {
     }
 
     /**
-     * Returns the conditioning set for blocking all paths from x to y in a given graph, together with the set of nodes
-     * that could be colliders or noncolliders. The nodes in the latter set need to be checked separately in every
-     * combination in order to find a set that blocks all paths from x to y if possible, in the data. (We cannot
-     * determine this from the graph alone, since there maybe triangles involving an edge x *-* y where this edge covers
-     * a collider or a noncollider which is not already oriented as such in the graph.)
+     * Returns information about the nodes that must be conditioned on and the nodes that might be conditioned on in a
+     * graph to separate a pair of nodes x and y. The strategy is to condition only on noncolliders, as these
+     * conditionings tend to be more effective than conditioning on colliders. The recommendation is to condition on the
+     * nodes in the first set, and then condition on the nodes in the second set in some combination to yield
+     * independence.
+     * <p>
+     * These nodes are found by iteratively extending paths from x to y and conditioning on noncolliders without
+     * conditioning on colliders.
+     * <p>
+     * It is not necessary to condition on all the nodes in the second set, as they may form chains, for instance, and
+     * you only need to condition on one in each chain. The user should do a combinatoric search of the nodes they want
+     * to condition on in the second set (in addition to the nodes in the first set) to keep the conditioning set
+     * small.
      *
-     * @param graph              the graph to search
-     * @param maxLength          the maximum length of the paths (-1 for unlimited)
-     * @param x                  the starting node
-     * @param y                  the destination node
-     * @param allowSelectionBias flag to indicate whether to allow selection bias in path selection
-     * @return a pair of sets, where the first set contains the conditioning set in order to block the known paths and
-     * the second set contains the nodes that could be colliders or noncolliders (and which need to be checked
-     * separately in every combination in order to find a set that blocks all paths from x to y if possible)
+     * @param graph     the graph to search
+     * @param maxLength the maximum length of the paths (-1 for unlimited)
+     * @param x         the starting node
+     * @param y         the destination node
+     * @param isPag     whether the graph is a PAG
+     * @return a pair of sets, where the first set contains the nodes that must be conditioned on, and the second set
+     * contains the nodes that might be conditioned on. The second set contains nodes z2 for noncolliders z1 *-* z2 *-*
+     * z3 where z1 and z3 are not adjacent to each other in the graph. The first set contains nodes z2 for noncolliders
+     * z1 *-* z2 *-* z3 where z1 and z3 are adjacent to each other in the graph.
      * @throws IllegalArgumentException if the conditioning set is null
      */
     private static Pair<Set<Node>, Set<Node>> getConditioningVariables(Graph graph, int maxLength, Node x, Node y,
-                                                                       boolean allowSelectionBias) {
-        Set<Node> conditionedNoncolliders = new HashSet<>();
-        Set<Node> unshieldedNoncolliders = new HashSet<>();
+                                                                       boolean isPag) {
+        Set<Node> mustCondition = new HashSet<>();
+        Set<Node> mightCondition = new HashSet<>();
         Set<Node> blacklist = new HashSet<>();
 
         Queue<List<Node>> queue = new LinkedList<>();
@@ -672,13 +681,16 @@ public class SepsetFinder {
 
             Node node = path.get(path.size() - 1);
 
+            // If you ever reach y, you failed to separate x from y on this path so try to block some other paths.
             if (node == y) {
-                break;
+                continue;
             }
 
             // Add the adjacents of the current node to the conditioning set. Then extend the path to new paths for
             // each adjacent node of the current node and look to see whether any of these (or any other triple of
-            // nodes on the path) could be a collider. If so, remove those nodes from the conditioning set.
+            // nodes on the path) could be a collider. If so, remove those nodes from the conditioning set. Keep
+            // a blacklist of nodes that are colliders to make sure they don't get re-added. Make sure to add the
+            // descendants of blacklist nodes to the blacklist. Add new paths to the queue if they are m-connecting.
             for (Node adjacent : graph.getAdjacentNodes(node)) {
                 if (!path.contains(adjacent)) {
                     List<Node> newPath = new ArrayList<>(path);
@@ -692,22 +704,20 @@ public class SepsetFinder {
                             Node z2 = newPath.get(i);
                             Node z3 = newPath.get(i + 1);
 
-                            if (!graph.isDefCollider(z1, z2, z3)) {
-                                if (conditionedNoncolliders.contains(z2)) {
-                                    continue;
-                                }
+                            if (!graph.isDefCollider(z1, z2, z3)) { // if a noncollider
+                                if (!mustCondition.contains(z2)) {
+                                    mustCondition.add(z2);
 
-                                conditionedNoncolliders.add(z2);
-
-                                if (!graph.isAdjacentTo(z1, z3)) {
-                                    unshieldedNoncolliders.add(z2);
+                                    if (!graph.isAdjacentTo(z1, z3)) {
+                                        mightCondition.add(z2);
+                                    }
                                 }
-                            } else {
+                            } else { // if a collider
                                 blacklist.add(z2);
                                 blacklist.addAll(graph.paths().getDescendants(z2));
-                                conditionedNoncolliders.removeAll(blacklist);
+                                mustCondition.removeAll(blacklist);
 
-                                if (graph.paths().isMConnectingPath(path, conditionedNoncolliders, allowSelectionBias)) {
+                                if (graph.paths().isMConnectingPath(path, mustCondition, isPag)) {
                                     queue.add(newPath);
                                 }
                             }
@@ -717,8 +727,11 @@ public class SepsetFinder {
             }
         }
 
-        conditionedNoncolliders.removeAll(unshieldedNoncolliders);
-        return Pair.of(conditionedNoncolliders, unshieldedNoncolliders);
+        // You don't have to condition on all of the unshielded noncolliders. They may form chains, for instance,
+        // and you only need to condition one in each chain. So recommend the use do a combinatoric search of the
+        // ones they want ot condition on to keep the conditioning set small.
+        mustCondition.removeAll(mightCondition);
+        return Pair.of(mustCondition, mightCondition);
     }
 
     /**
@@ -799,22 +812,21 @@ public class SepsetFinder {
     public static Set<Node> getSepsetPathBlockingFromSideOfX(Graph mpdag, Node x, Node y, IndependenceTest test, int maxLength, int depth, boolean isPag) {
         Pair<Set<Node>, Set<Node>> ret = getConditioningVariables(mpdag, maxLength, x, y, isPag);
 
-        Set<Node> known = ret.getLeft();
-        Set<Node> ambiguous = ret.getRight();
+        Set<Node> mustCondition = ret.getLeft();
+        Set<Node> mightCondition = ret.getRight();
+        List<Node> mightConditionList = new ArrayList<>(mightCondition);
 
-        List<Node> ambiguousList = new ArrayList<>(ambiguous);
-
-        SublistGenerator generator = new SublistGenerator(ambiguousList.size(), depth);
+        SublistGenerator generator = new SublistGenerator(mightConditionList.size(), depth);
         int[] choice;
 
         while ((choice = generator.next()) != null) {
             Set<Node> sepset = new HashSet<>();
 
             for (int k : choice) {
-                sepset.add(ambiguousList.get(k));
+                sepset.add(mightConditionList.get(k));
             }
 
-            sepset.addAll(known);
+            sepset.addAll(mustCondition);
 
             if (depth != -1 && sepset.size() > depth) {
                 continue;

@@ -598,8 +598,6 @@ public final class FciLite implements IGraphSearch {
                     } else {
                         return Pair.of(edge, null);
                     }
-
-//                    return Pair.of(edge, sepset);
                 });
             }
 
