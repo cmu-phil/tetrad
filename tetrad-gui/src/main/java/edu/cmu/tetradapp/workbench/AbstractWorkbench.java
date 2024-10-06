@@ -2162,26 +2162,28 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             // Bootstrapping Distribution
             List<EdgeTypeProbability> edgeProb = new ArrayList<>();
+            String endpoint1 = null;
+            String endpoint2 = null;
 
             if (edge != null) {
                 edgeProb = edge.getEdgeTypeProbabilities();
+
+                endpoint1 = switch (edge.getEndpoint1()) {
+                    case TAIL -> "-";
+                    case ARROW -> "<";
+                    case CIRCLE -> "o";
+                    case STAR -> "*";
+                    case NULL -> "Null";
+                };
+
+                endpoint2 = switch (edge.getEndpoint2()) {
+                    case TAIL -> "-";
+                    case ARROW -> ">";
+                    case CIRCLE -> "o";
+                    case STAR -> "*";
+                    case NULL -> "Null";
+                };
             }
-
-            String endpoint1 = switch (edge.getEndpoint1()) {
-                case TAIL -> "-";
-                case ARROW -> "<";
-                case CIRCLE -> "o";
-                case STAR -> "*";
-                case NULL ->  "Null";
-            };
-
-            String endpoint2 = switch (edge.getEndpoint2()) {
-                case TAIL -> "-";
-                case ARROW -> ">";
-                case CIRCLE -> "o";
-                case STAR -> "*";
-                case NULL -> "Null";
-            };
 
             if (this.graph.containsEdge(edge)) {
                 if (edgeProb.isEmpty()) {
