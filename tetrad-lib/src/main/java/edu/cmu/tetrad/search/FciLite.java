@@ -155,8 +155,8 @@ public final class FciLite implements IGraphSearch {
 
     /**
      * Alternative FCI-Lite constructor. Initializes a new object of FCI-Lite search algorithm with the given initial
-     * CPDAG, along with the IndependenceTest. These should all be over the same set of variables. (Well, the CPDAG just
-     * needs to use the same set of variable names; we will replace these internally with the variables from the test.)
+     * CPDAG, along with the IndependenceTest. These should all be over variables with the same names as the variables
+     * in the supplied test.
      * <p>
      * This constructor allows the user to employ an external algorithm to find this initial CPDAG (and an implied order
      * of the variables). This is useful when the user has a preferred algorithm for this task. In this case, the
@@ -178,6 +178,14 @@ public final class FciLite implements IGraphSearch {
         this.score = null;
         this.test = test;
         this.cpdag = GraphUtils.replaceNodes(cpdag, this.test.getVariables());
+
+        // Check to make sure the variable names in the cpdag are the same as the variable names in the test.
+        List<String> cpdagVariableNames = cpdag.getNodes().stream().map(Node::getName).toList();
+        List<String> testVariableNames = test.getVariables().stream().map(Node::getName).toList();
+
+        if (!new HashSet<>(cpdagVariableNames).equals(new HashSet<>(testVariableNames))) {
+            throw new IllegalArgumentException("The variable names in the CPDAG must be the same as the variable names in the test.");
+        }
 
         this.startWith = START_WITH.INITIAL_GRAPH;
 
@@ -792,7 +800,8 @@ public final class FciLite implements IGraphSearch {
          */
         GRASP,
         /**
-         * Starts with an initial graph over the variables of the independence test.
+         * Starts with an initial CPDAG over the variables of the independence test
+         * that is given in the constructor.
          */
         INITIAL_GRAPH
     }
