@@ -2371,7 +2371,7 @@ public final class GraphUtils {
         while ((choice = sublists.next()) != null) {
             List<Node> subset = GraphUtils.asList(choice, _S);
             HashSet<Node> s = new HashSet<>(subset);
-            if (G.paths().isMSeparatedFrom(X, Y, s, false)) {
+            if (G.paths().isMSeparatedFrom(X, Y, s, true)) {
 
                 if (choice.length > size) {
                     size = choice.length;
@@ -2400,7 +2400,6 @@ public final class GraphUtils {
     public static Set<Node> anteriority(Graph G, Node... x) {
         Set<Node> anteriority = new HashSet<>();
 
-        Z:
         for (Node z : G.getNodes()) {
             for (Node _x : x) {
                 if (G.paths().existsDirectedPath(z, _x)) {

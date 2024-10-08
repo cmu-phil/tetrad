@@ -1408,12 +1408,12 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Calculates the possible d-separation nodes between two given Nodes within a graph,
-     * using a maximum path length constraint.
+     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
+     * constraint.
      *
-     * @param x                     the starting Node for the path
-     * @param y                     the ending Node for the path
-     * @param maxPossibleDsepPathLength  the maximum length of the path, -1 for unlimited
+     * @param x                         the starting Node for the path
+     * @param y                         the ending Node for the path
+     * @param maxPossibleDsepPathLength the maximum length of the path, -1 for unlimited
      * @return a List of Nodes representing the possible d-separation nodes
      */
     public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
@@ -1659,7 +1659,7 @@ public class Paths implements TetradSerializable {
      * @return the sepset between the two nodes
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, IndependenceTest test) {
-        return SepsetFinder.getSepsetContainingRecursive(graph, x, y, containing, test);
+        return SepsetFinder.getSepsetContainingRecursiveOptimized(graph, x, y, containing, test);
     }
 
 
@@ -1774,15 +1774,15 @@ public class Paths implements TetradSerializable {
     /**
      * Checks if the given path is an m-connecting path.
      *
-     * @param path               The path to check.
-     * @param conditioningSet    The set of nodes to check reachability against.
-     * @param allowSelectionBias Determines if selection bias is allowed in the m-connection procedure.
+     * @param path            The path to check.
+     * @param conditioningSet The set of nodes to check reachability against.
+     * @param isPag           Determines if selection bias is allowed in the m-connection procedure.
      * @return {@code true} if the given path is an m-connecting path, {@code false} otherwise.
      */
-    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, boolean allowSelectionBias) {
+    public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, boolean isPag) {
         Edge edge1, edge2;
 
-        if (path.size() - 1 == 1) return true;
+        if (path.size() - 1 <= 1) return true;
 
         edge2 = graph.getEdge(path.get(0), path.get(1));
 
@@ -1803,9 +1803,9 @@ public class Paths implements TetradSerializable {
             // algorithm can eventually find any colliders along the path that may be implied.
             // jdramsey 2024-04-14
             if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
-                if (!allowSelectionBias && Edges.isUndirectedEdge(edge2)) {
+                if (!isPag && Edges.isUndirectedEdge(edge2)) {
                     edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                } else if (allowSelectionBias && Edges.isNondirectedEdge(edge2)) {
+                } else if (isPag && Edges.isNondirectedEdge(edge2)) {
                     edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
                 }
             }

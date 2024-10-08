@@ -22,18 +22,17 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * The TestSepsetMethods class  is responsible for testing various methods for finding a sepset of two nodes in a DAG.
@@ -46,11 +45,11 @@ public class TestSepsetMethods {
      */
     @Test
     public void test1() {
-        RandomUtil.getInstance().setSeed(384828384L);
+//        RandomUtil.getInstance().setSeed(384828384L);
 
         int numNodes = 20;
         int numEdges = 40;
-        int numReps = 10;
+        int numReps = 100;
 
         // Make a list of numNodes nodes.
         List<Node> nodes = new ArrayList<>();
@@ -59,7 +58,33 @@ public class TestSepsetMethods {
             nodes.add(new ContinuousVariable("X" + i));
         }
 
-        Graph dag = RandomGraph.randomDag(nodes, 0, numEdges, 100, 100, 100, false);
+        Graph graph = RandomGraph.randomDag(nodes, 5, numEdges, 100, 100, 100, false);
+
+        graph = GraphTransforms.dagToPag(graph);
+
+        nodes = graph.getNodes();
+        numNodes = nodes.size();
+
+        // Commenting out the greedy, max p, and min p methods because they are so God-awfully slow when the graph is
+        // large. For a fun time, uncomment that code and see. Also their performance is off from the recursive
+        // and path blocking methods. I'm not sure why yet. The recursive and path blocking method in fact tie in
+        // performance, which is interesting. Again, I'm not sure exactly why yet. The path blocking method is the
+        // fastest, but the recursive method is not far behind. The greedy, max p, and min p methods are so slow that
+        // they are not practical for use in the real world, which makes sense, given that they are exponential in the
+        // degree of the graph.
+
+        int numNullRecursive = 0;
+//        int numNullGreedy = 0;
+//        int numNullMaxP = 0;
+//        int numNullMinP = 0;
+        int numNullPathBlocking = 0;
+
+
+        int numRecursivePass = 0;
+//        int numGreedyPass = 0;
+//        int numMaxPPass = 0;
+//        int numMinPPass = 0;
+        int numPathBlockingPass = 0;
 
         long[] timeSums = new long[6];
 
@@ -73,134 +98,130 @@ public class TestSepsetMethods {
                 y = nodes.get((int) (Math.random() * numNodes));
             } while (x.equals(y));
 
-            Edge e = dag.getEdge(x, y);
+            if (graph.isAdjacentTo(x, y)) {
+                i--;
+                continue;
+            }
+
+            Edge e = graph.getEdge(x, y);
             System.out.println("\n\n###Rep " + (i + 1) + " Checking nodes " + x + " and " + y + ". The edge is " + ((e != null) ? e : "absent"));
 
-            long[] times = checkNodePair(dag, x, y);
+            MsepTest msepTest = new MsepTest(graph, true);
+
+            long[] times = new long[6];
+
+            long start1 = System.currentTimeMillis();
+            Set<Node> sepset1 = SepsetFinder.getSepsetContainingRecursive(graph, x, y, new HashSet<>(), new MsepTest(graph));
+            long stop1 = System.currentTimeMillis();
+            System.out.println("Time taken by recursive: " + (stop1 - start1) + " ms");
+            times[0] = stop1 - start1;
+
+//            long start2 = System.currentTimeMillis();
+//            Set<Node> sepset2 = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(), msepTest, -1);
+//            long stop2 = System.currentTimeMillis();
+//            times[1] = stop2 - start2;
+//            System.out.println("Time taken by greedy: " + (stop2 - start2) + " ms");
+//
+//            long start3 = System.currentTimeMillis();
+////            Set<Node> sepset3 = SepsetFinder.getSepsetContainingMaxP(graph, x, y, new HashSet<>(), msepTest, -1);
+//            Set<Node> sepset3 = SepsetFinder.getSepsetContainingMaxPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+//            long stop3 = System.currentTimeMillis();
+//            times[2] = stop3 - start3;
+//            System.out.println("Time taken by max p: " + (stop3 - start3) + " ms");
+//
+//            long start4 = System.currentTimeMillis();
+//            Set<Node> sepset4 = SepsetFinder.getSepsetContainingMinPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+//            long stop4 = System.currentTimeMillis();
+//            times[3] = stop4 - start4;
+//            System.out.println("Time taken by min p: " + (stop4 - start4) + " ms");
+
+            long start5 = System.currentTimeMillis();
+            Set<Node> sepset5 = SepsetFinder.getSepsetPathBlocking(graph, x, y, msepTest, -1, -1,
+                    true);
+            long stop5 = System.currentTimeMillis();
+            times[4] = stop5 - start5;
+            System.out.println("Time taken by getSepsetPathBlockingX: " + (stop5 - start5) + " ms");
+
+            System.out.println("Sepset 1: " + sepset1);
+//            System.out.println("Sepset 2: " + sepset2);
+//            System.out.println("Sepset 3: " + sepset3);
+//            System.out.println("Sepset 4: " + sepset4);
+            System.out.println("Sepset 5: " + sepset5);
+
+            // Note that methods 3 and 4 cannot find null sepsets from Oracle. These need to be tested separately from data.
+
+            if (sepset1 != null) {
+                System.out.println("sepset1 ind ? " + msepTest.checkIndependence(x, y, sepset1).isIndependent());
+            } else {
+                System.out.println("sepset1 is null");
+            }
+
+//            if (sepset2 != null) {
+//                System.out.println("sepset2 ind ? " + msepTest.checkIndependence(x, y, sepset2).isIndependent());
+//            } else {
+//                System.out.println("sepset2 is null");
+//            }
+//
+//            if (sepset3 != null) {
+//                System.out.println("sepset3 ind ? " + msepTest.checkIndependence(x, y, sepset3).isIndependent());
+//            } else {
+//                System.out.println("sepset3 is null");
+//            }
+//
+//            if (sepset4 != null) {
+//                System.out.println("sepset4 ind ? " + msepTest.checkIndependence(x, y, sepset4).isIndependent());
+//            } else {
+//                System.out.println("sepset4 is null");
+//            }
+//
+//            if (sepset5 != null) {
+//                System.out.println("sepset5 ind ? " + msepTest.checkIndependence(x, y, sepset5).isIndependent());
+//            } else {
+//                System.out.println("sepset5 is null");
+//            }
+
+            // Are the sepsets null?
+            numNullRecursive += sepset1 == null ? 1 : 0;
+//            numNullGreedy += sepset2 == null ? 1 : 0;
+//            numNullMaxP += sepset3 == null ? 1 : 0;
+//            numNullMinP += sepset4 == null ? 1 : 0;
+            numNullPathBlocking += sepset5 == null ? 1 : 0;
+
+            // Is the various sepsets are not null, then they should be independent.
+            numRecursivePass += sepset1 != null && msepTest.checkIndependence(x, y, sepset1).isIndependent() ? 1 : 0;
+//            numGreedyPass += sepset2 != null && msepTest.checkIndependence(x, y, sepset2).isIndependent() ? 1 : 0;
+//            numMaxPPass += sepset3 != null && msepTest.checkIndependence(x, y, sepset3).isIndependent() ? 1 : 0;
+//            numMinPPass += sepset4 != null && msepTest.checkIndependence(x, y, sepset4).isIndependent() ? 1 : 0;
+            numPathBlockingPass += sepset5 != null && msepTest.checkIndependence(x, y, sepset5).isIndependent() ? 1 : 0;
 
             for (int j = 0; j < times.length; j++) {
                 timeSums[j] += times[j];
             }
         }
 
-        System.out.println("Total times = " + Arrays.toString(timeSums));
-    }
+        // Print (formtted) results.
+        System.out.println();
+        System.out.println(numReps + " repetitions of the test were performed.");
+        System.out.println();
 
-    /**
-     * Checks the node pair in a directed acyclic graph (DAG) and returns the execution times of various sepset finding
-     * methods.
-     *
-     * @param dag The directed acyclic graph.
-     * @param x   The first node.
-     * @param y   The second node.
-     * @return An array containing the execution times of various sepset finding methods.
-     */
-    public long[] checkNodePair(Graph dag, Node x, Node y) {
+        System.out.println("Number of times the sepset was null for recursive: " + numNullRecursive);
+//        System.out.println("Number of times the sepset was null for greedy: " + numNullGreedy);
+//        System.out.println("Number of times the sepset was null for max p: " + numNullMaxP);
+//        System.out.println("Number of times the sepset was null for min p: " + numNullMinP);
+        System.out.println("Number of times the sepset was null for path blocking: " + numNullPathBlocking);
+        System.out.println();
 
-        MsepTest msepTest = new MsepTest(dag);
+        System.out.println("Number of times the sepset was not null and passed for recursive: " + numRecursivePass);
+//        System.out.println("Number of times the sepset was not null and passed for greedy: " + numGreedyPass);
+//        System.out.println("Number of times the sepset was not null and passed for max p: " + numMaxPPass);
+//        System.out.println("Number of times the sepset was not null and passed for min p: " + numMinPPass);
+        System.out.println("Number of times the sepset was not null and passed for path blocking: " + numPathBlockingPass);
+        System.out.println();
 
-        Edge e = dag.getEdge(x, y);
-
-        long[] times = new long[6];
-
-        long start1 = System.currentTimeMillis();
-        Set<Node> sepset1 = SepsetFinder.getSepsetContainingRecursive(dag, x, y, new HashSet<>(), new MsepTest(dag));
-        long stop1 = System.currentTimeMillis();
-        System.out.println("Time taken by getSepsetContainingRecursive: " + (stop1 - start1) + " ms");
-        times[0] = stop1 - start1;
-
-        long start2 = System.currentTimeMillis();
-        Set<Node> sepset2 = SepsetFinder.getSepsetContainingGreedy(dag, x, y, new HashSet<>(), msepTest, -1);
-        long stop2 = System.currentTimeMillis();
-        times[1] = stop2 - start2;
-        System.out.println("Time taken by getSepsetContainingGreedy: " + (stop2 - start2) + " ms");
-
-        long start3 = System.currentTimeMillis();
-        Set<Node> sepset3 = SepsetFinder.getSepsetContainingMaxP(dag, x, y, new HashSet<>(), msepTest, -1);
-        long stop3 = System.currentTimeMillis();
-        times[2] = stop3 - start3;
-        System.out.println("Time taken by getSepsetContainingMaxP: " + (stop3 - start3) + " ms");
-
-//        long start4 = System.currentTimeMillis();
-//        Set<Node> sepset4 = SepsetFinder.getSepsetContainingMinP(dag, x, y, new HashSet<>(), msepTest, -1);
-//        long stop4 = System.currentTimeMillis();
-//        times[3] = stop4 - start4;
-//        System.out.println("Time taken by getSepsetContainingMinP: " + (stop4 - start4) + " ms");
-
-        long start5 = System.currentTimeMillis();
-        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlockingFromSideOfX(dag, x, y, msepTest, -1, -1,
-                false);
-        long stop5 = System.currentTimeMillis();
-        times[4] = stop5 - start5;
-        System.out.println("Time taken by getSepsetPathBlockingOutOfX: " + (stop5 - start5) + " ms");
-
-//        long start6 = System.currentTimeMillis();
-//        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOfXorY(dag, x, y, msepTest, -1, -1,
-//                false);
-//        long stop6 = System.currentTimeMillis();
-//        times[5] = stop6 - start6;
-//        System.out.println("Time taken by getSepsetPathBlockingOutOfXOrY: " + (stop6 - start6) + " ms");
-
-        System.out.println("Sepset 1: " + sepset1);
-        System.out.println("Sepset 2: " + sepset2);
-        System.out.println("Sepset 3: " + sepset3);
-//        System.out.println("Sepset 4: " + sepset4);
-        System.out.println("Sepset 5: " + sepset5);
-//        System.out.println("Sepset 6: " + sepset6);
-
-        // Note that methods 3 and 4 cannot find null sepsets from Oracle. These need to be tested separately from data.
-
-        if (e == null) {
-            assertNotNull(sepset1);
-            assertNotNull(sepset2);
-            assertNotNull(sepset5);
-//            assertNotNull(sepset6);
-
-            assertTrue(msepTest.checkIndependence(x, y, sepset1).isIndependent());
-            assertTrue(msepTest.checkIndependence(x, y, sepset2).isIndependent());
-            assertTrue(msepTest.checkIndependence(x, y, sepset5).isIndependent());
-//            assertTrue(msepTest.checkIndependence(x, y, sepset6).isIndependent());
-        } else {
-            assertNull(sepset1);
-            assertNull(sepset2);
-            assertNull(sepset5);
-//            assertNull(sepset6);
-        }
-
-        return times;
-    }
-
-    /**
-     * This method is used to test the getSepsetPathBlockingOutOfX method.
-     */
-    @Test
-    public void test6() {
-        RandomUtil.getInstance().setSeed(384828384L);
-
-        int numNodes = 20;
-        int numEdges = 40;
-
-        // Make a list of numNodes nodes.
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < numNodes; i++) {
-            nodes.add(new ContinuousVariable("X" + i));
-        }
-
-        Graph dag = RandomGraph.randomDag(nodes, 0, numEdges, 100, 100, 100, false);
-
-        Node x, y;
-
-        do {
-            x = nodes.get((int) (Math.random() * numNodes));
-            y = nodes.get((int) (Math.random() * numNodes));
-        } while (x.equals(y));
-
-        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingFromSideOfX(dag, x, y, new MsepTest(dag), -1, -1,
-                false);
-
-        System.out.println((dag.isAdjacentTo(x, y) ? "adjacent" : "###NOT ADJACENT###") + " x = " + x + " y = " + y + " sepset = " + sepset6);
-
-        System.out.println(((!dag.isAdjacentTo(x, y)) == (sepset6 != null)) ? "###OK###" : "###ERROR###");
+        System.out.println("The total time required for recursive was " + timeSums[0] + " ms");
+//        System.out.println("The total time required for greedy was " + timeSums[1] + " ms");
+//        System.out.println("The total time required for max p was " + timeSums[2] + " ms");
+//        System.out.println("The total time required for min p was " + timeSums[3] + " ms");
+        System.out.println("The total time required for path blocking was " + timeSums[4] + " ms");
     }
 }

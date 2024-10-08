@@ -256,7 +256,7 @@ public class MsepTest implements IndependenceTest {
         boolean mSeparated;
 
         if (graph != null) {
-            mSeparated = !getGraph().paths().isMConnectedTo(x, y, z, ancestorMap, false);
+            mSeparated = !getGraph().paths().isMConnectedTo(x, y, z, ancestorMap, true);
         } else {
             mSeparated = independenceFacts.isIndependent(x, y, z);
         }

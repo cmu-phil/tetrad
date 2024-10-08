@@ -590,7 +590,9 @@ public final class FciLite implements IGraphSearch {
 
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
-                    Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(),
+//                    Set<Node> sepset = SepsetFinder.getSepsetContainingRecursive(pag, edge.getNode1(),
+//                            edge.getNode2(), new HashSet<>(), test);
+                    Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(pag, edge.getNode1(),
                             edge.getNode2(), test, maxBlockingPathLength, depth, true);
 
                     if (this.test.checkIndependence(edge.getNode1(), edge.getNode2(), sepset).isIndependent()) {
@@ -643,7 +645,7 @@ public final class FciLite implements IGraphSearch {
                 Edge edge = toVisit.removeFirst();
                 visited.add(edge);
 
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(pag, edge.getNode1(), edge.getNode2(),
+                Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(pag, edge.getNode1(), edge.getNode2(),
                         test, maxBlockingPathLength, depth, true);
 
                 if (verbose) {

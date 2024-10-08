@@ -199,7 +199,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
         }
 
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingFromSideOfX(graph, e, c, test, maxBlockingPathLength, depth,
+        Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(graph, e, c, test, maxBlockingPathLength, depth,
                 true);
 
         if (verbose) {

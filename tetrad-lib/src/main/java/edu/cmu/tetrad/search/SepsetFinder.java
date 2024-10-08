@@ -7,7 +7,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * This class provides methods for finding sepsets in a given graph.
@@ -77,7 +76,7 @@ public class SepsetFinder {
      * @param depth      the maximum depth to explore for each separating set
      * @return the set of nodes that act as a separating set, or null if such set is not found
      */
-    public static Set<Node> getSepsetContainingMaxP(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
+    public static Set<Node> getSepsetContainingMaxPHybrid(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
         adjx.remove(y);
@@ -88,33 +87,48 @@ public class SepsetFinder {
             adjy.removeAll(containing);
         }
 
-        // remove latents.
+        // Remove latent nodes.
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        List<List<Integer>> choices = getChoices(adjx, depth);
-        Function<List<Integer>, Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
-
-        // Find the object that maximizes the function in parallel
-        List<Integer> maxObject = choices.parallelStream().max(Comparator.comparing(function)).orElse(null);
-
-        if (maxObject != null && getPValue(x, y, combination(maxObject, adjx), test) > test.getAlpha()) {
-            return combination(maxObject, adjx);
+        // Find the best separating set among adjx
+        Set<Node> bestSepset = findMaxPSepset(x, y, adjx, test, depth);
+        if (bestSepset != null) {
+            return bestSepset;
         }
 
-        // Do the same for adjy.
-        choices = getChoices(adjx, depth);
-        function = choice -> getPValue(x, y, combination(choice, adjx), test);
+        // Find the best separating set among adjy
+        return findMaxPSepset(x, y, adjy, test, depth);
+    }
 
-        // Find the object that maximizes the function in parallel
-        maxObject = choices.parallelStream().max(Comparator.comparing(function)).orElse(null);
+    private static Set<Node> findMaxPSepset(Node x, Node y, List<Node> adj, IndependenceTest test, int depth) {
+        List<List<Integer>> choices = getChoices(adj, depth);
+        double maxPValue = -1.0;
+        List<Integer> bestChoice = null;
 
-        if (maxObject != null && getPValue(x, y, combination(maxObject, adjx), test) > test.getAlpha()) {
-            return combination(maxObject, adjx);
+        for (List<Integer> choice : choices) {
+            Set<Node> subset = combination(choice, adj);
+
+            // Check if the subset is a separating set
+            if (separates(x, y, subset, test)) {
+                double pValue = getPValue(x, y, subset, test);
+
+                // Track the subset with the highest p-value
+                if (pValue > maxPValue) {
+                    maxPValue = pValue;
+                    bestChoice = choice;
+                }
+            }
+        }
+
+        // Check if we found a valid separating set with a p-value above the alpha threshold
+        if (bestChoice != null && maxPValue > test.getAlpha()) {
+            return combination(bestChoice, adj);
         }
 
         return null;
     }
+
 
     /**
      * Returns the sepset containing the minimum p-value for the given variables x and y.
@@ -127,7 +141,7 @@ public class SepsetFinder {
      * @param depth      the depth of the search for the sepset
      * @return the sepset containing the minimum p-value, or null if no sepset is found
      */
-    public static Set<Node> getSepsetContainingMinP(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
+    public static Set<Node> getSepsetContainingMinPHybrid(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
         adjx.remove(y);
@@ -138,25 +152,43 @@ public class SepsetFinder {
             adjy.removeAll(containing);
         }
 
+        // Remove latent nodes.
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        List<List<Integer>> choices = getChoices(adjx, depth);
-        Function<List<Integer>, Double> function = choice -> getPValue(x, y, combination(choice, adjx), test);
-
-        List<Integer> minObject = choices.parallelStream().min(Comparator.comparing(function)).orElse(null);
-
-        if (minObject != null && getPValue(x, y, combination(minObject, adjx), test) > test.getAlpha()) {
-            return combination(minObject, adjx);
+        // Find the best separating set among adjx
+        Set<Node> bestSepset = findMinPSepset(x, y, adjx, test, depth);
+        if (bestSepset != null) {
+            return bestSepset;
         }
 
-        choices = getChoices(adjx, depth);
-        function = choice -> getPValue(x, y, combination(choice, adjx), test);
+        // Find the best separating set among adjy
+        return findMinPSepset(x, y, adjy, test, depth);
+    }
 
-        minObject = choices.parallelStream().min(Comparator.comparing(function)).orElse(null);
+    private static Set<Node> findMinPSepset(Node x, Node y, List<Node> adj, IndependenceTest test, int depth) {
+        List<List<Integer>> choices = getChoices(adj, depth);
+        double minPValue = Double.MAX_VALUE;
+        List<Integer> bestChoice = null;
 
-        if (minObject != null && getPValue(x, y, combination(minObject, adjx), test) > test.getAlpha()) {
-            return combination(minObject, adjx);
+        for (List<Integer> choice : choices) {
+            Set<Node> subset = combination(choice, adj);
+
+            // Check if the subset is a separating set
+            if (separates(x, y, subset, test)) {
+                double pValue = getPValue(x, y, subset, test);
+
+                // Track the subset with the smallest p-value that is still above the alpha threshold
+                if (pValue < minPValue && pValue > test.getAlpha()) {
+                    minPValue = pValue;
+                    bestChoice = choice;
+                }
+            }
+        }
+
+        // Return the combination with the smallest p-value above the alpha threshold
+        if (bestChoice != null) {
+            return combination(bestChoice, adj);
         }
 
         return null;
@@ -176,188 +208,6 @@ public class SepsetFinder {
      */
     public static Set<Node> getSepsetContainingRecursive(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
         return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test);
-    }
-
-    /**
-     * Retrieves the parents of nodes X and Y that also share in their parents based on the given DAG graph and the
-     * provided independence test.
-     *
-     * @param dag  the DAG graph to analyze
-     * @param x    the first node
-     * @param y    the second node
-     * @param test the independence test to use
-     * @return the set of nodes that are parents of both X and Y, excluding X and Y themselves, and excluding any latent
-     * nodes. Returns {@code null} if no common parents can be found or if the given graph is not a legal DAG.
-     * @throws IllegalArgumentException if the given graph is not a legal DAG
-     */
-    public static Set<Node> getSepsetParentsOfXorY(Graph dag, Node x, Node y, IndependenceTest test) {
-        if (!dag.paths().isLegalDag()) {
-            throw new IllegalArgumentException("Graph is not a legal DAG; can't use this method.");
-        }
-
-        Set<Node> parentsX = new HashSet<>(dag.getParents(x));
-        Set<Node> parentsY = new HashSet<>(dag.getParents(y));
-        parentsX.remove(y);
-        parentsY.remove(x);
-
-        // Remove latents.
-        parentsX.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-        parentsY.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-        if (test.checkIndependence(x, y, parentsX).isIndependent()) {
-            return parentsX;
-        } else if (test.checkIndependence(x, y, parentsY).isIndependent()) {
-            return parentsY;
-        }
-
-        return null;
-    }
-
-    /**
-     * Searches for sets, by following paths from x to y in the given MPDAG, that could possibly block all paths from x
-     * to y except for an edge from x to y itself. These possible sets are then tested for independence, and the first
-     * set that is found to be independent is returned as the sepset.
-     * <p>
-     * This is the sepset finding method from LV-lite.
-     *
-     * @param mpdag     the MPDAG graph to analyze (can be a DAG or a CPDAG)
-     * @param x         the first node
-     * @param y         the second node
-     * @param test      the independence test to use
-     * @param maxLength the maximum blocking length for paths, or -1 for no limit
-     * @param depth     the maximum depth of the sepset, or -1 for no limit
-     * @param verbose   whether to print trace information; false by default. This can be quite verbose, so it's
-     *                  recommended to only use this for debugging.
-     * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
-     * {@code null} if no sepset can be found.
-     */
-    public static Set<Node> getSepsetPathBlockingXtoY(Graph mpdag, Node x, Node y, IndependenceTest test, int maxLength, int depth, boolean verbose) {
-        if (verbose) {
-            Edge e = mpdag.getEdge(x, y);
-            TetradLogger.getInstance().log("\n\n### CHECKING x = " + x + " y = " + y + "edge = " + ((e != null) ? e : "null") + " ###\n\n");
-        }
-
-        // This is the set of all possible conditioning variables, though note below.
-        Set<Node> conditioningSet = new HashSet<>();
-
-        // We are considering removing the edge x *-* y, so for length 2 paths, so we don't know whether
-        // noncollider z2 in the GRaSP/BOSS DAG is a noncollider or a collider in the true DAG. We need to
-        // check both scenarios.
-        Set<Node> couldBeColliders = new HashSet<>();
-
-        Set<List<Node>> paths;
-
-        boolean _changed = true;
-
-        while (_changed) {
-            _changed = false;
-
-            paths = bfsAllPaths(mpdag, conditioningSet, maxLength, x, y);
-
-            // We note whether all current paths are blocked.
-            boolean allBlocked = true;
-
-            List<List<Node>> _paths = new ArrayList<>(paths);
-
-            // Sort paths by increasing size. We want to block the sorter paths first.
-            _paths.sort(Comparator.comparingInt(List::size));
-
-            for (List<Node> path : _paths) {
-                boolean blocked = false;
-
-                for (int n = 1; n < path.size() - 1; n++) {
-                    Node z1 = path.get(n - 1);
-                    Node z2 = path.get(n);
-                    Node z3 = path.get(n + 1);
-
-                    if (!mpdag.isDefCollider(z1, z2, z3)) {
-                        if (conditioningSet.contains(z2)) {
-                            blocked = true;
-
-                            if (verbose) {
-                                TetradLogger.getInstance().log("This " + path + "--is already blocked by " + z2);
-                            }
-
-                            break;
-                        }
-
-                        conditioningSet.add(z2);
-                        blocked = true;
-                        _changed = true;
-
-                        addCouldBeCollider(z1, z2, z3, mpdag, couldBeColliders);
-
-                        if (depth != -1 && conditioningSet.size() > depth) {
-                            return null;
-                        }
-
-                        break;
-                    }
-                }
-
-                if (path.size() - 1 > 1 && !blocked) {
-                    allBlocked = false;
-                }
-            }
-
-            // We need to block *all* of the current paths, so if any path remains unblocked after that above, we
-            // need to return false (since we can't remove the edge).
-            if (!allBlocked) {
-                return null;
-            }
-        }
-
-        // Now, for each conditioning set we identify, where the length-2 conditioningSet are either included or not
-        // in the set, we check independence greedily. Hopefully the number of options here is small.
-        List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
-        conditioningSet.removeAll(couldBeColliders);
-
-        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), couldBeCollidersList.size());
-        int[] choice;
-
-        while ((choice = generator.next()) != null) {
-            Set<Node> sepset = new HashSet<>();
-
-            for (int k : choice) {
-                sepset.add(couldBeCollidersList.get(k));
-            }
-
-            sepset.addAll(conditioningSet);
-
-            if (depth != -1 && sepset.size() > depth) {
-                continue;
-            }
-
-            if (test.checkIndependence(x, y, sepset).isIndependent()) {
-                return sepset;
-            }
-        }
-
-        // We've checked a sufficient set of possible sepsets, and none of them worked, so we return false, since
-        // we can't remove the edge.
-        return null;
-    }
-
-    /**
-     * Returns the sepset (separation set) between two nodes in a graph based on the given independence test.
-     *
-     * @param mag  The graph containing the nodes.
-     * @param x    The first node.
-     * @param y    The second node.
-     * @param test The independence test used to check the independence between the nodes.
-     * @return The sepset between the two nodes, or null if no sepset is found.
-     */
-    public static Set<Node> getDsepSepset(Graph mag, Node x, Node y, IndependenceTest test) {
-        Set<Node> sepset1 = mag.paths().dsep(x, y);
-        Set<Node> sepset2 = mag.paths().dsep(y, x);
-
-        if (test.checkIndependence(x, y, sepset1).isIndependent()) {
-            return sepset1;
-        } else if (test.checkIndependence(x, y, sepset2).isIndependent()) {
-            return sepset2;
-        } else {
-            return null;
-        }
     }
 
     private static Set<Node> getSepsetVisit(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test) {
@@ -493,6 +343,80 @@ public class SepsetFinder {
         }
     }
 
+    public static Set<Node> getSepsetContainingRecursiveOptimized(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
+        Map<Triple, Boolean> pathMemo = new HashMap<>(); // Memoization map to store path exploration results.
+        return getSepsetVisitOptimized(graph, x, y, containing, graph.paths().getAncestorMap(), test, pathMemo);
+    }
+
+    private static Set<Node> getSepsetVisitOptimized(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test, Map<Triple, Boolean> pathMemo) {
+        if (x == y) {
+            return null;
+        }
+
+        Set<Node> z = new HashSet<>(containing);
+        Set<Node> previousZ;
+
+        do {
+            previousZ = new HashSet<>(z);
+
+            Set<Node> path = new HashSet<>();
+            path.add(x);
+            Set<Triple> colliders = new HashSet<>();
+
+            // Iterate over adjacent nodes to find potential paths
+            for (Node b : graph.getAdjacentNodes(x)) {
+                if (sepsetPathFoundOptimized(graph, x, b, y, path, z, colliders, -1, ancestorMap, test, pathMemo)) {
+                    return null; // Early stop if a direct path is found.
+                }
+            }
+        } while (!previousZ.equals(z)); // Only repeat if the set z changes.
+
+        // Final independence check
+        if (test.checkIndependence(x, y, z).isIndependent()) {
+            return z;
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean sepsetPathFoundOptimized(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node, Set<Node>> ancestorMap, IndependenceTest test, Map<Triple, Boolean> pathMemo) {
+        // Use a Triple as a key to store path exploration results for memoization
+        Triple key = new Triple(a, b, y);
+        if (pathMemo.containsKey(key)) {
+            return pathMemo.get(key);
+        }
+
+        if (b == y) {
+            pathMemo.put(key, true);
+            return true; // Path found.
+        }
+
+        if (path.contains(b) || path.size() > (bound == -1 ? 100 : bound)) {
+            pathMemo.put(key, false);
+            return false; // Avoid cycles or exceeding depth.
+        }
+
+        path.add(b);
+        boolean found = false;
+
+        List<Node> passNodes = getPassNodes(graph, a, b, z, ancestorMap);
+        for (Node c : passNodes) {
+            if (sepsetPathFoundOptimized(graph, b, c, y, path, z, colliders, bound, ancestorMap, test, pathMemo)) {
+                found = true;
+                break; // Stop further exploration if a path is found.
+            }
+        }
+
+        // Only add the node to z if it is not latent and was necessary for the path.
+        if (!z.contains(b) && !found) {
+            z.add(b);
+        }
+
+        path.remove(b);
+        pathMemo.put(key, found);
+        return found;
+    }
+
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {
         List<List<Integer>> choices = new ArrayList<>();
 
@@ -535,286 +459,70 @@ public class SepsetFinder {
         return Double.isNaN(pValue) ? 1.0 : pValue;
     }
 
-    /**
-     * Add nodes to the set of couldBeColliders where z1 and z3 are adjacent and the orientation of z1 *-* z2 *-* z3 is
-     * not already determined as a collider or a noncollider in the graph.
-     *
-     * @param z1               The first node.
-     * @param z2               The second node.
-     * @param z3               The third node.
-     * @param graph            The graph to analyze.
-     * @param couldBeColliders The set of nodes that could be colliders or noncolliders so far as we know.
-     */
-    private static void addCouldBeCollider(Node z1, Node z2, Node z3, Graph graph, Set<Node> couldBeColliders) {
-        if (graph.isAdjacentTo(z1, z3)) {
-//            && !(graph.isDefCollider(z1, z2, z3)
-//                 || (graph.getEndpoint(z1, z2) == Endpoint.ARROW && graph.getEndpoint(z3, z2) == Endpoint.TAIL)
-//                 || (graph.getEndpoint(z1, z2) == Endpoint.TAIL && graph.getEndpoint(z3, z2) == Endpoint.ARROW))) {
-            couldBeColliders.add(z2);
-        }
-    }
+//    public static Set<Node> getSepsetPathBlocking(Graph graph, Node x, Node y, IndependenceTest test, int maxLength,
+//                                                  int depth, boolean isPag) {
+//        Pair<Set<Node>, Set<Node>> ret = getConditioningVariables(graph, maxLength, x, y, isPag);
+//
+//        Set<Node> mustCondition = ret.getLeft();
+//        Set<Node> mightCondition = ret.getRight();
+//        List<Node> mightConditionList = new ArrayList<>(mightCondition);
+//
+//        System.out.println("mustCondition: " + mustCondition);
+//        System.out.println("mightCondition: " + mightCondition);
+//
+//        SublistGenerator generator = new SublistGenerator(mightConditionList.size(), depth);
+//        int[] choice;
+//
+//        while ((choice = generator.next()) != null) {
+//            Set<Node> sepset = new HashSet<>();
+//
+//            for (int k : choice) {
+//                sepset.add(mightConditionList.get(k));
+//            }
+//
+//            sepset.addAll(mustCondition);
+//
+//            if (depth != -1 && sepset.size() > depth) {
+//                continue;
+//            }
+//
+//            if (test.checkIndependence(x, y, sepset).isIndependent()) {
+//                return sepset;
+//            }
+//        }
+//
+//        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
+//            return new HashSet<>();
+//        }
+//
+//        return null;
+//    }
 
     /**
-     * Adds potential colliders to the set of couldBeColliders based on a given condition.
+     * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph, in a DAG, CPDAG, or
+     * PAG by conditioning only on noncollider nodes in a search outward from the x variables for an edge x *-* y.
      *
-     * @param z1               The first Node.
-     * @param z2               The second Node.
-     * @param z3               The third Node.
-     * @param path             The List of Nodes representing the path.
-     * @param mpdag            The Graph representing the Multi-Perturbation Directed Acyclic Graph.
-     * @param couldBeColliders The Set of Triples representing potential colliders.
-     * @param printTrace       A boolean indicating whether to print error traces.
-     * @return true if z2 could be a collider on the given path, false otherwise.
-     */
-    private static boolean addCouldBeCollider2(Node z1, Node z2, Node z3, List<Node> path, Graph mpdag, Set<Triple> couldBeColliders, boolean printTrace) {
-        if (mpdag.isAdjacentTo(z1, z3)) {
-            couldBeColliders.add(new Triple(z1, z2, z3));
-
-            if (printTrace) {
-                TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Performs a breadth-first search to find all paths from node x to node y in a given graph.
-     *
-     * @param graph        the graph to perform the search on
-     * @param conditionSet a set of nodes to condition the paths on
-     * @param maxLength    the maximum length of the paths, -1 for no limit
-     * @param x            the starting node
-     * @param y            the target node
-     * @return a set of lists of nodes, representing all found paths from x to y
-     * @throws IllegalArgumentException if the conditionSet is null
-     */
-    public static Set<List<Node>> bfsAllPaths(Graph graph, Set<Node> conditionSet, int maxLength, Node x, Node y) {
-        Set<List<Node>> allPaths = new HashSet<>();
-        Queue<List<Node>> queue = new LinkedList<>();
-        queue.add(Collections.singletonList(x));
-
-        if (conditionSet == null) {
-            throw new IllegalArgumentException("Conditioning set cannot be null.");
-        }
-
-        while (!queue.isEmpty()) {
-            List<Node> path = queue.poll();
-
-            if (maxLength >= 0 && path.size() > maxLength) {
-                continue;
-            }
-
-            Node node = path.get(path.size() - 1);
-
-            if (node == y) {
-                allPaths.add(path);
-            } else {
-                for (Node adjacent : graph.getAdjacentNodes(node)) {
-                    if (!path.contains(adjacent)) {
-                        List<Node> newPath = new ArrayList<>(path);
-                        newPath.add(adjacent);
-                        queue.add(newPath);
-
-                        if (newPath.size() - 1 <= 1) {
-                            queue.add(newPath);
-                        } else {
-                            if (graph.paths().isMConnectingPath(path, conditionSet, true)) {
-                                queue.add(newPath);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return allPaths;
-    }
-
-    /**
-     * Returns information about the nodes that must be conditioned on and the nodes that might be conditioned on in a
-     * graph to separate a pair of nodes x and y. The strategy is to condition only on noncolliders, as these
-     * conditionings tend to be more effective than conditioning on colliders. The recommendation is to condition on the
-     * nodes in the first set, and then condition on the nodes in the second set in some combination to yield
-     * independence.
-     * <p>
-     * These nodes are found by iteratively extending paths from x to y and conditioning on noncolliders without
-     * conditioning on colliders.
-     * <p>
-     * It is not necessary to condition on all the nodes in the second set, as they may form chains, for instance, and
-     * you only need to condition on one in each chain. The user should do a combinatoric search of the nodes they want
-     * to condition on in the second set (in addition to the nodes in the first set) to keep the conditioning set
-     * small.
-     *
-     * @param graph     the graph to search
-     * @param maxLength the maximum length of the paths (-1 for unlimited)
-     * @param x         the starting node
-     * @param y         the destination node
-     * @param isPag     whether the graph is a PAG
-     * @return a pair of sets, where the first set contains the nodes that must be conditioned on, and the second set
-     * contains the nodes that might be conditioned on. The second set contains nodes z2 for noncolliders z1 *-* z2 *-*
-     * z3 where z1 and z3 are not adjacent to each other in the graph. The first set contains nodes z2 for noncolliders
-     * z1 *-* z2 *-* z3 where z1 and z3 are adjacent to each other in the graph.
-     * @throws IllegalArgumentException if the conditioning set is null
-     */
-    private static Pair<Set<Node>, Set<Node>> getConditioningVariables(Graph graph, int maxLength, Node x, Node y,
-                                                                       boolean isPag) {
-        Set<Node> mustCondition = new HashSet<>();
-        Set<Node> mightCondition = new HashSet<>();
-        Set<Node> blacklist = new HashSet<>();
-
-        Queue<List<Node>> queue = new LinkedList<>();
-        queue.add(Collections.singletonList(x));
-
-        while (!queue.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Node> path = queue.poll();
-
-            if (maxLength != -1 && path.size() > maxLength) {
-                continue;
-            }
-
-            Node node = path.get(path.size() - 1);
-
-            // If you ever reach y, you failed to separate x from y on this path so try to block some other paths.
-            if (node == y) {
-                continue;
-            }
-
-            // Add the adjacents of the current node to the conditioning set. Then extend the path to new paths for
-            // each adjacent node of the current node and look to see whether any of these (or any other triple of
-            // nodes on the path) could be a collider. If so, remove those nodes from the conditioning set. Keep
-            // a blacklist of nodes that are colliders to make sure they don't get re-added. Make sure to add the
-            // descendants of blacklist nodes to the blacklist. Add new paths to the queue if they are m-connecting.
-            for (Node adjacent : graph.getAdjacentNodes(node)) {
-                if (!path.contains(adjacent)) {
-                    List<Node> newPath = new ArrayList<>(path);
-                    newPath.add(adjacent);
-
-                    if (newPath.size() - 1 <= 1) {
-                        queue.add(newPath);
-                    } else {
-                        for (int i = 1; i < newPath.size() - 1; i++) {
-                            Node z1 = newPath.get(i - 1);
-                            Node z2 = newPath.get(i);
-                            Node z3 = newPath.get(i + 1);
-
-                            if (!graph.isDefCollider(z1, z2, z3)) { // if a noncollider
-                                if (!mustCondition.contains(z2)) {
-                                    mustCondition.add(z2);
-
-                                    if (!graph.isAdjacentTo(z1, z3)) {
-                                        mightCondition.add(z2);
-                                    }
-                                }
-                            } else { // if a collider
-                                blacklist.add(z2);
-                                blacklist.addAll(graph.paths().getDescendants(z2));
-                                mustCondition.removeAll(blacklist);
-
-                                if (graph.paths().isMConnectingPath(path, mustCondition, isPag)) {
-                                    queue.add(newPath);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // You don't have to condition on all of the unshielded noncolliders. They may form chains, for instance,
-        // and you only need to condition one in each chain. So recommend the use do a combinatoric search of the
-        // ones they want ot condition on to keep the conditioning set small.
-        mustCondition.removeAll(mightCondition);
-        return Pair.of(mustCondition, mightCondition);
-    }
-
-    /**
-     * Finds all paths from a given starting node in a graph, with a maximum length and satisfying a set of conditions.
-     *
-     * @param graph              The input graph.
-     * @param node1              The starting node for finding paths.
-     * @param maxLength          The maximum length of paths to consider.
-     * @param conditionSet       The set of conditions that the paths must satisfy.
-     * @param allowSelectionBias Determines whether to allow biased selection when multiple paths are available.
-     * @return A set of lists, where each list represents a path from the starting node that satisfies the conditions.
-     */
-    public static Set<List<Node>> allPathsOutOf(Graph graph, Node node1, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
-        Set<List<Node>> paths = new HashSet<>();
-        allPathsVisitOutOf(graph, null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
-        return paths;
-    }
-
-    private static void allPathsVisitOutOf(Graph graph, Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
-        if (maxLength != -1 && path.size() - 1 > maxLength) {
-            return;
-        }
-
-        if (pathSet.contains(node1)) {
-            return;
-        }
-
-        path.addLast(node1);
-        pathSet.add(node1);
-
-        LinkedList<Node> _path = new LinkedList<>(path);
-        int maxPaths = 500;
-
-        if (path.size() - 1 > 1) {
-            if (paths.size() < maxPaths && graph.paths().isMConnectingPath(path, conditionSet, allowSelectionBias)) {
-                paths.add(_path);
-            }
-        }
-
-        for (Edge edge : graph.getEdges(node1)) {
-            Node child = Edges.traverse(node1, edge);
-
-            if (child == null) {
-                continue;
-            }
-
-            if (pathSet.contains(child)) {
-                continue;
-            }
-
-            if (paths.size() < maxPaths) {
-                allPathsVisitOutOf(graph, node1, child, pathSet, path, paths, maxLength, conditionSet, allowSelectionBias);
-            }
-        }
-
-        path.removeLast();
-        pathSet.remove(node1);
-    }
-
-    /**
-     * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph, in a PAG or MPDAG.
-     * This method searches for m-connecting paths out of x and y, and then tries to block these paths by conditioning
-     * on definite noncollider nodes. If all paths are blocked, the method returns the sepset; otherwise, it returns
-     * null. The length of the paths to consider can be limited by the maxLength parameter, and the depth of the final
-     * sepset can be limited by the depth parameter. When increasing the considered path length does not yield any new
-     * paths, the search is terminated early.
-     *
-     * @param mpdag     The graph representing the Markov equivalence class that contains the nodes.
+     * @param graph     The graph representing the Markov equivalence class that contains the nodes.
      * @param x         The first node in the pair.
      * @param y         The second node in the pair.
      * @param test      The independence test object to use for checking independence.
      * @param maxLength The maximum length of the paths to consider. If set to a negative value or a value greater than
      *                  the number of nodes minus one, it is adjusted accordingly.
      * @param depth     The maximum depth of the final sepset. If set to a negative value, no limit is applied.
-     * @param isPag     A flag indicating whether the graph is a PAG or a CPDAG, true = PAG, false = MPDAG.
+     * @param isPag     A flag indicating whether the graph is a PAG or a CPDAG, true = PAG, false = MPDAG. This is
+     *                  needed to make sure the proper version of the separation algorithm is used.
      * @return The sepset if independence holds, otherwise null.
      */
-    public static Set<Node> getSepsetPathBlockingFromSideOfX(Graph mpdag, Node x, Node y, IndependenceTest test, int maxLength, int depth, boolean isPag) {
-        Pair<Set<Node>, Set<Node>> ret = getConditioningVariables(mpdag, maxLength, x, y, isPag);
+    public static Set<Node> getSepsetPathBlocking(Graph graph, Node x, Node y, IndependenceTest test, int maxLength,
+                                                  int depth, boolean isPag) {
+        Pair<Set<Node>, Set<Node>> ret = getConditioningVariables(graph, maxLength, x, y, isPag);
 
         Set<Node> mustCondition = ret.getLeft();
         Set<Node> mightCondition = ret.getRight();
         List<Node> mightConditionList = new ArrayList<>(mightCondition);
+
+        System.out.println("mustCondition: " + mustCondition);
+        System.out.println("mightCondition: " + mightCondition);
 
         SublistGenerator generator = new SublistGenerator(mightConditionList.size(), depth);
         int[] choice;
@@ -837,6 +545,82 @@ public class SepsetFinder {
             }
         }
 
+        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
+            return new HashSet<>();
+        }
+
         return null;
+    }
+
+    private static Pair<Set<Node>, Set<Node>> getConditioningVariables(Graph graph, int maxLength, Node x, Node y, boolean isPag) {
+        Set<Node> mustCondition = new HashSet<>();
+        Set<Node> mightCondition = new HashSet<>();
+        Set<Node> blackList = new HashSet<>();
+
+        Deque<List<Node>> queue = new LinkedList<>();
+        queue.add(Collections.singletonList(x));
+
+        while (!queue.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> path = queue.poll();
+
+            if (maxLength != -1 && path.size() > maxLength) {
+                continue;
+            }
+
+            Node node = path.get(path.size() - 1);
+            Map<Node, Boolean> blocked = new HashMap<>();
+
+            for (Node adjacent : graph.getAdjacentNodes(node)) {
+                blocked.put(adjacent, false);
+
+                if (!path.contains(adjacent)) {
+                    List<Node> newPath = new ArrayList<>(path);
+                    newPath.add(adjacent);
+
+                    // If the path length is less than 3, it cannot form a triple and is added directly.
+                    if (newPath.size() < 3) {
+                        queue.add(newPath);
+                    } else {
+                        for (int i = 1; i < newPath.size() - 1; i++) {
+                            if (blocked.get(adjacent)) {
+                                break;
+                            }
+
+                            Node z1 = newPath.get(i - 1);
+                            Node z2 = newPath.get(i);
+                            Node z3 = newPath.get(i + 1);
+
+                            // Skip this node if it forms a collider in the path, but move past it to
+                            // find a noncollider.
+                            if (graph.isDefCollider(z1, z2, z3)) {
+                                blackList.add(z2);  // Mark the collider to prevent conditioning.
+                                blackList.addAll(graph.paths().getDescendants(z2));
+
+                                // This is a collider; if the path is not already blocked by a noncollider,
+                                // we want to move past it to find a noncollider.
+                                if (graph.paths().isMConnectingPath(path, mustCondition, isPag)) {
+                                    queue.add(newPath);
+                                }
+                            } else {
+                                if (!blackList.contains(z2)) {
+                                    if (!graph.isAdjacentTo(z1, z3)) {
+                                        mustCondition.add(z2);
+                                        blocked.put(adjacent, true);
+                                    } else {
+                                        mightCondition.add(z2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return Pair.of(mustCondition, new HashSet<>());
     }
 }
