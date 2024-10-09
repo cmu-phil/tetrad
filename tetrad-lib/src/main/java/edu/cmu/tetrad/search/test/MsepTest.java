@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -79,6 +78,10 @@ public class MsepTest implements IndependenceTest {
      * Whether there are any latents.
      */
     private boolean hasLatents = false;
+    /**
+     * Whether the graph is a PAG.
+     */
+    private boolean isPag = false;
 
     /**
      * Constructor.
@@ -256,7 +259,7 @@ public class MsepTest implements IndependenceTest {
         boolean mSeparated;
 
         if (graph != null) {
-            mSeparated = !getGraph().paths().isMConnectedTo(x, y, z, ancestorMap, true);
+            mSeparated = !getGraph().paths().isMConnectedTo(x, y, z, ancestorMap, isPag);
         } else {
             mSeparated = independenceFacts.isIndependent(x, y, z);
         }
@@ -410,6 +413,15 @@ public class MsepTest implements IndependenceTest {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * True iff the graph is a PAG
+     *
+     * @param pag True if the graph is a PAG, false if a DAG, MPDAG, or CPDAG.
+     */
+    public void setPag(boolean pag) {
+        isPag = pag;
     }
 }
 

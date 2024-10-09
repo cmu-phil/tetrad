@@ -200,9 +200,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         MsepTest msepTest = new MsepTest(graph);
+        msepTest.setPag(true);
 
-        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, a, c, new HashSet<>(), msepTest);
-
+//        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, a, c, new HashSet<>(path), msepTest);
+//
 //        Set<Node> sepset;
 //
 //        if (test.checkIndependence(a, c, blocking).isIndependent()) {

@@ -26,10 +26,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -237,7 +234,7 @@ public class TestFci {
         IndependenceTest independence = new MsepTest(graph);
 
         Fci fci = new Fci(independence);
-        fci.setPossibleMsepSearchDone(true);
+        fci.setPossibleDsepSearchDone(true);
         fci.setCompleteRuleSetUsed(true);
         fci.setMaxDiscriminatingPathLength(-1);
         fci.setKnowledge(knowledge);

@@ -338,7 +338,7 @@ public final class Fci implements IGraphSearch {
      *
      * @param possibleMsepSearchDone True, if so.
      */
-    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
+    public void setPossibleDsepSearchDone(boolean possibleMsepSearchDone) {
         this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
