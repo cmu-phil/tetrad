@@ -1659,7 +1659,7 @@ public class Paths implements TetradSerializable {
      * @return the sepset between the two nodes
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, IndependenceTest test) {
-        return SepsetFinder.getSepsetContainingRecursiveOptimized(graph, x, y, containing, test);
+        return SepsetFinder.blockPathsRecursively(graph, x, y, containing, test);
     }
 
 
@@ -1872,11 +1872,11 @@ public class Paths implements TetradSerializable {
      * @param y                  a {@link Node} object
      * @param z                  a {@link Set} object
      * @param ancestors          a {@link Map} object
-     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     * @param isPag whether to allow selection bias; if true, then undirected edges X--Y are uniformly
      *                           treated as X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
-    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean isPag) {
 
         class EdgeNode {
 
@@ -1945,11 +1945,17 @@ public class Paths implements TetradSerializable {
                     // "virtual edges" that are directed in the direction of the arrow, so that the reachability
                     // algorithm can eventually find any colliders along the path that may be implied.
                     // jdramsey 2024-04-14
-                    if (!allowSelectionBias && edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
-                        if (Edges.isUndirectedEdge(edge2)) {
-                            edge2 = Edges.directedEdge(b, edge2.getDistalNode(b));
-                        } else if (Edges.isNondirectedEdge(edge2)) {
-                            edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                    if (isPag) {
+                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                            if (Edges.isNondirectedEdge(edge2)) {
+                                edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                            }
+                        }
+                    } else {
+                        if (edge1.getProximalEndpoint(b) == Endpoint.ARROW) {
+                            if (Edges.isNondirectedEdge(edge2)) {
+                                edge2 = Edges.partiallyOrientedEdge(b, edge2.getDistalNode(b));
+                            }
                         }
                     }
 

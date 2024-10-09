@@ -580,7 +580,7 @@ public final class FciLite implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
-        MsepTest test = new MsepTest(pag);
+        MsepTest msep = new MsepTest(pag);
 
         // Note that we can use the MAG here instead of the DAG.
         Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
@@ -590,13 +590,23 @@ public final class FciLite implements IGraphSearch {
 
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
-//                    Set<Node> sepset = SepsetFinder.getSepsetContainingRecursive(pag, edge.getNode1(),
-//                            edge.getNode2(), new HashSet<>(), test);
-                    Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(pag, edge.getNode1(),
-                            edge.getNode2(), test, maxBlockingPathLength, depth, true);
+//                    Set<Node> blockers = SepsetFinder.getSepsetContainingRecursive(pag, edge.getNode1(),
+//                            edge.getNode2(), new HashSet<>(), msep);
 
-                    if (this.test.checkIndependence(edge.getNode1(), edge.getNode2(), sepset).isIndependent()) {
-                        return Pair.of(edge, sepset);
+                    Set<Node> blockers = SepsetFinder.blockPathsNoncollidersOnly(pag, edge.getNode1(),
+                            edge.getNode2(), maxBlockingPathLength, true);
+
+//                    return Pair.of(edge, sepset);
+//
+//                    Set<Node> blockers = SepsetFinder.getSepsetContainingRecursiveOptimized(pag, edge.getNode1(),
+//                            edge.getNode2(), new HashSet<>(), msep);
+
+//                    if (blockers == null) {
+//                        throw new IllegalArgumentException();
+//                    }
+////
+                    if (this.test.checkIndependence(edge.getNode1(), edge.getNode2(), blockers).isIndependent()) {
+                        return Pair.of(edge, blockers);
                     } else {
                         return Pair.of(edge, null);
                     }
@@ -645,8 +655,8 @@ public final class FciLite implements IGraphSearch {
                 Edge edge = toVisit.removeFirst();
                 visited.add(edge);
 
-                Set<Node> sepset = SepsetFinder.getSepsetPathBlocking(pag, edge.getNode1(), edge.getNode2(),
-                        test, maxBlockingPathLength, depth, true);
+                Set<Node> sepset = SepsetFinder.blockPathsNoncollidersOnly(pag, edge.getNode1(), edge.getNode2(),
+                        maxBlockingPathLength, true);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("For edge " + edge + " sepset: " + sepset);

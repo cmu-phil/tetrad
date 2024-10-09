@@ -3,7 +3,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -194,6 +193,10 @@ public class SepsetFinder {
         return null;
     }
 
+    public static Set<Node> blockPathsLocalMarkov(Graph graph, Node x) {
+        return new HashSet<>(graph.getParents(x));
+    }
+
     /**
      * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
      * to be conditioned on to render two nodes conditionally independent.
@@ -206,7 +209,7 @@ public class SepsetFinder {
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    public static Set<Node> getSepsetContainingRecursive(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
+    public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
         return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test);
     }
 
@@ -227,20 +230,20 @@ public class SepsetFinder {
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
-                if (sepsetPathFound(graph, x, b, y, path, z, colliders, -1, ancestorMap, test)) {
-                    return null;
+                if (sepsetPathFound(graph, x, b, y, path, z, colliders, -1, ancestorMap)) {
+                    continue;
                 }
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
-        if (test.checkIndependence(x, y, z).isIndependent()) {
+//        if (test.checkIndependence(x, y, z).isIndependent()) {
             return z;
-        } else {
-            return null;
-        }
+//        } else {
+//            return null;
+//        }
     }
 
-    private static boolean sepsetPathFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node, Set<Node>> ancestorMap, IndependenceTest test) {
+    private static boolean sepsetPathFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node, Set<Node>> ancestorMap) {
         if (b == y) {
             return true;
         }
@@ -259,7 +262,7 @@ public class SepsetFinder {
             List<Node> passNodes = getPassNodes(graph, a, b, z, ancestorMap);
 
             for (Node c : passNodes) {
-                if (sepsetPathFound(graph, b, c, y, path, z, colliders, bound, ancestorMap, test)) {
+                if (sepsetPathFound(graph, b, c, y, path, z, colliders, bound, ancestorMap)) {
                     return true;
                 }
             }
@@ -271,7 +274,7 @@ public class SepsetFinder {
             Set<Triple> _colliders1 = new HashSet<>();
 
             for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
-                if (sepsetPathFound(graph, b, c, y, path, z, _colliders1, bound, ancestorMap, test)) {
+                if (sepsetPathFound(graph, b, c, y, path, z, _colliders1, bound, ancestorMap)) {
                     found1 = true;
                     break;
                 }
@@ -288,7 +291,7 @@ public class SepsetFinder {
             Set<Triple> _colliders2 = new HashSet<>();
 
             for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
-                if (sepsetPathFound(graph, b, c, y, path, z, _colliders2, bound, ancestorMap, test)) {
+                if (sepsetPathFound(graph, b, c, y, path, z, _colliders2, bound, ancestorMap)) {
                     found2 = true;
                     break;
                 }
@@ -343,12 +346,12 @@ public class SepsetFinder {
         }
     }
 
-    public static Set<Node> getSepsetContainingRecursiveOptimized(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
+    public static Set<Node> getPathBlockingSetRecursive(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
         Map<Triple, Boolean> pathMemo = new HashMap<>(); // Memoization map to store path exploration results.
-        return getSepsetVisitOptimized(graph, x, y, containing, graph.paths().getAncestorMap(), test, pathMemo);
+        return getPathBlockingSetRecursiveVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test, pathMemo);
     }
 
-    private static Set<Node> getSepsetVisitOptimized(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test, Map<Triple, Boolean> pathMemo) {
+    private static Set<Node> getPathBlockingSetRecursiveVisit(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test, Map<Triple, Boolean> pathMemo) {
         if (x == y) {
             return null;
         }
@@ -363,58 +366,13 @@ public class SepsetFinder {
             path.add(x);
             Set<Triple> colliders = new HashSet<>();
 
-            // Iterate over adjacent nodes to find potential paths
+            // Iterate over adjacent nodes to find potential paths.
             for (Node b : graph.getAdjacentNodes(x)) {
-                if (sepsetPathFoundOptimized(graph, x, b, y, path, z, colliders, -1, ancestorMap, test, pathMemo)) {
-                    return null; // Early stop if a direct path is found.
-                }
+                sepsetPathFound(graph, x, b, y, path, z, colliders, -1, ancestorMap);
             }
-        } while (!previousZ.equals(z)); // Only repeat if the set z changes.
+        } while (!previousZ.equals(z)); // Repeat if the set z changes.
 
-        // Final independence check
-        if (test.checkIndependence(x, y, z).isIndependent()) {
-            return z;
-        } else {
-            return null;
-        }
-    }
-
-    private static boolean sepsetPathFoundOptimized(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node, Set<Node>> ancestorMap, IndependenceTest test, Map<Triple, Boolean> pathMemo) {
-        // Use a Triple as a key to store path exploration results for memoization
-        Triple key = new Triple(a, b, y);
-        if (pathMemo.containsKey(key)) {
-            return pathMemo.get(key);
-        }
-
-        if (b == y) {
-            pathMemo.put(key, true);
-            return true; // Path found.
-        }
-
-        if (path.contains(b) || path.size() > (bound == -1 ? 100 : bound)) {
-            pathMemo.put(key, false);
-            return false; // Avoid cycles or exceeding depth.
-        }
-
-        path.add(b);
-        boolean found = false;
-
-        List<Node> passNodes = getPassNodes(graph, a, b, z, ancestorMap);
-        for (Node c : passNodes) {
-            if (sepsetPathFoundOptimized(graph, b, c, y, path, z, colliders, bound, ancestorMap, test, pathMemo)) {
-                found = true;
-                break; // Stop further exploration if a path is found.
-            }
-        }
-
-        // Only add the node to z if it is not latent and was necessary for the path.
-        if (!z.contains(b) && !found) {
-            z.add(b);
-        }
-
-        path.remove(b);
-        pathMemo.put(key, found);
-        return found;
+        return z;
     }
 
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {
@@ -499,62 +457,21 @@ public class SepsetFinder {
 //    }
 
     /**
-     * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph, in a DAG, CPDAG, or
-     * PAG by conditioning only on noncollider nodes in a search outward from the x variables for an edge x *-* y.
+     * Returns a set that blocks all paths that can be blocked by conditioning on noncolliders only, searching outward
+     * from x.
      *
      * @param graph     The graph representing the Markov equivalence class that contains the nodes.
      * @param x         The first node in the pair.
      * @param y         The second node in the pair.
-     * @param test      The independence test object to use for checking independence.
      * @param maxLength The maximum length of the paths to consider. If set to a negative value or a value greater than
      *                  the number of nodes minus one, it is adjusted accordingly.
-     * @param depth     The maximum depth of the final sepset. If set to a negative value, no limit is applied.
      * @param isPag     A flag indicating whether the graph is a PAG or a CPDAG, true = PAG, false = MPDAG. This is
      *                  needed to make sure the proper version of the separation algorithm is used.
-     * @return The sepset if independence holds, otherwise null.
+     * @return A set of nodes that can block all blockable paths from x to y that can be blocked with noncolliders only,
+     * or null if no such set exists.
      */
-    public static Set<Node> getSepsetPathBlocking(Graph graph, Node x, Node y, IndependenceTest test, int maxLength,
-                                                  int depth, boolean isPag) {
-        Pair<Set<Node>, Set<Node>> ret = getConditioningVariables(graph, maxLength, x, y, isPag);
-
-        Set<Node> mustCondition = ret.getLeft();
-        Set<Node> mightCondition = ret.getRight();
-        List<Node> mightConditionList = new ArrayList<>(mightCondition);
-
-        System.out.println("mustCondition: " + mustCondition);
-        System.out.println("mightCondition: " + mightCondition);
-
-        SublistGenerator generator = new SublistGenerator(mightConditionList.size(), depth);
-        int[] choice;
-
-        while ((choice = generator.next()) != null) {
-            Set<Node> sepset = new HashSet<>();
-
-            for (int k : choice) {
-                sepset.add(mightConditionList.get(k));
-            }
-
-            sepset.addAll(mustCondition);
-
-            if (depth != -1 && sepset.size() > depth) {
-                continue;
-            }
-
-            if (test.checkIndependence(x, y, sepset).isIndependent()) {
-                return sepset;
-            }
-        }
-
-        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
-            return new HashSet<>();
-        }
-
-        return null;
-    }
-
-    private static Pair<Set<Node>, Set<Node>> getConditioningVariables(Graph graph, int maxLength, Node x, Node y, boolean isPag) {
-        Set<Node> mustCondition = new HashSet<>();
-        Set<Node> mightCondition = new HashSet<>();
+    public static Set<Node> blockPathsNoncollidersOnly(Graph graph, Node x, Node y, int maxLength, boolean isPag) {
+        Set<Node> cond = new HashSet<>();
         Set<Node> blackList = new HashSet<>();
 
         Deque<List<Node>> queue = new LinkedList<>();
@@ -572,6 +489,9 @@ public class SepsetFinder {
             }
 
             Node node = path.get(path.size() - 1);
+
+            if (node == y) continue;
+
             Map<Node, Boolean> blocked = new HashMap<>();
 
             for (Node adjacent : graph.getAdjacentNodes(node)) {
@@ -598,20 +518,18 @@ public class SepsetFinder {
                             // find a noncollider.
                             if (graph.isDefCollider(z1, z2, z3)) {
                                 blackList.add(z2);  // Mark the collider to prevent conditioning.
-                                blackList.addAll(graph.paths().getDescendants(z2));
 
                                 // This is a collider; if the path is not already blocked by a noncollider,
                                 // we want to move past it to find a noncollider.
-                                if (graph.paths().isMConnectingPath(path, mustCondition, isPag)) {
-                                    queue.add(newPath);
+                                if (graph.paths().isMConnectingPath(path, cond, isPag)) {
+                                    queue.offer(newPath);
                                 }
                             } else {
                                 if (!blackList.contains(z2)) {
                                     if (!graph.isAdjacentTo(z1, z3)) {
-                                        mustCondition.add(z2);
+                                        cond.add(z2);
+                                        blackList.addAll(graph.paths().getDescendants(z2));
                                         blocked.put(adjacent, true);
-                                    } else {
-                                        mightCondition.add(z2);
                                     }
                                 }
                             }
@@ -621,6 +539,220 @@ public class SepsetFinder {
             }
         }
 
-        return Pair.of(mustCondition, new HashSet<>());
+        return cond;
     }
+
+//    public static Set<Node> blockPathsWithColliders(Graph graph, Node x, Node y, int maxLength, boolean isPag) {
+//        Set<Node> cond = new HashSet<>();
+//        Set<Node> blackList = new HashSet<>();
+//
+//        Deque<List<Node>> queue = new LinkedList<>();
+//        queue.add(Collections.singletonList(x));
+//
+//        while (!queue.isEmpty()) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                break;
+//            }
+//
+//            List<Node> path = queue.poll();
+//
+//            if (maxLength != -1 && path.size() > maxLength) {
+//                continue;
+//            }
+//
+//            Node node = path.get(path.size() - 1);
+//            Map<Node, Boolean> blocked = new HashMap<>();
+//
+//            for (Node adjacent : graph.getAdjacentNodes(node)) {
+//                blocked.put(adjacent, false);
+//
+//                if (!path.contains(adjacent)) {
+//                    List<Node> newPath = new ArrayList<>(path);
+//                    newPath.add(adjacent);
+//
+//                    // If the path length is less than 3, it cannot form a triple and is added directly.
+//                    if (newPath.size() < 3) {
+//                        queue.add(newPath);
+//                    } else {
+//                        for (int i = 1; i < newPath.size() - 1; i++) {
+//                            if (blocked.get(adjacent)) {
+//                                break;
+//                            }
+//
+//                            Node z1 = newPath.get(i - 1);
+//                            Node z2 = newPath.get(i);
+//                            Node z3 = newPath.get(i + 1);
+//
+//                            // Skip this node if it forms a collider in the path, but move past it to
+//                            // find a noncollider.
+//                            if (graph.isDefCollider(z1, z2, z3)) {
+//                                blackList.add(z2);  // Mark the collider to prevent conditioning.
+//
+//                                // This is a collider; if the path is not already blocked by a noncollider,
+//                                // we want to move past it to find a noncollider.
+//                                if (graph.paths().isMConnectingPath(path, cond, isPag)) {
+//                                    queue.offer(newPath);
+//                                }
+//                            } else {
+//                                if (!blackList.contains(z2)) {
+//                                    if (!graph.isAdjacentTo(z1, z3)) {
+//                                        cond.add(z2);
+//                                        blackList.addAll(graph.paths().getDescendants(z2));
+//                                        blocked.put(adjacent, true);
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        return cond;
+//    }
+
+
+    public static Set<Node> blockPathsMsep(Graph graph, Node x, Node y, int maxLength, Map<Node, Set<Node>> ancestorMap,
+                                           boolean isPag) {
+        Set<Node> cond = new HashSet<>();
+
+        Deque<List<Node>> queue = new LinkedList<>();
+        queue.add(Collections.singletonList(x));
+
+        while (!queue.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> path = queue.poll();
+
+            if (maxLength != -1 && path.size() > maxLength) {
+                continue;
+            }
+
+            Node node = path.get(path.size() - 1);
+
+            for (Node adjacent : graph.getAdjacentNodes(node)) {
+                if (!path.contains(adjacent) && !cond.contains(adjacent)) {
+                    List<Node> newPath = new ArrayList<>(path);
+                    newPath.add(adjacent);
+
+                    if (graph.paths().isMConnectingPath(newPath, cond, isPag)) {
+                        cond.add(adjacent);
+                        queue.offer(newPath);
+                    } else {
+                        System.out.println("FALSE: " + newPath);
+                    }
+                }
+            }
+        }
+
+        return cond;
+    }
+
+    public static Set<Node> blockPathsMsep2(Graph graph, Node x, Node y, int maxLength, boolean isPag) {
+        Set<Node> cond = new HashSet<>();
+        Deque<List<Node>> deque = new LinkedList<>();
+        deque.add(Collections.singletonList(x));
+
+        while (!deque.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> path = deque.removeLast();
+
+            // Skip this path if it exceeds maxLength
+            if (maxLength != -1 && path.size() > maxLength) {
+                continue;
+            }
+
+            Node current = path.get(path.size() - 1);
+            cond.add(current);
+
+            // Check if we've reached y, meaning path is fully connected
+//            if (current.equals(y)) {
+//                continue;
+//            }
+
+            // Attempt to block the path if it is m-connecting x and y
+            if (graph.paths().isMConnectingPath(path, cond, isPag)) {
+                boolean anyExtensions = false;
+
+                for (Node adjacent : graph.getAdjacentNodes(current)) {
+                    // Skip already visited or conditioned nodes
+                    if (!path.contains(adjacent) && !cond.contains(adjacent)) {
+                        List<Node> newPath = new ArrayList<>(path);
+                        newPath.add(adjacent);
+
+                        // If this new path is m-connecting, explore it further
+                        if (graph.paths().isMConnectingPath(newPath, cond, isPag)) {
+                            deque.addFirst(newPath);
+                            anyExtensions = true;
+                        }
+                    }
+                }
+
+                // If no extensions were possible, add the current node to cond
+                if (!anyExtensions) {
+                    cond.remove(current);
+                }
+            }
+        }
+
+//        // Verify that the resulting cond indeed blocks all paths between x and y
+//        if (!graph.paths().isMSeparatedFrom(x, y, cond, isPag)) {
+//            throw new IllegalStateException("Failed to find a valid conditioning set.");
+//        }
+
+        return cond;
+    }
+
+    public static Set<Node> blockPathsWithMarkovBlanket(Node x, Graph G) {
+        Set<Node> mb = new HashSet<>();
+
+        LinkedList<Node> path = new LinkedList<>();
+
+        // Follow all the colliders.
+        markovBlanketFollowColliders(null, x, path, G, mb);
+        mb.addAll(G.getAdjacentNodes(x));
+        mb.remove(x);
+        return mb;
+    }
+
+    /**
+     * This method calculates the Markov Blanket by following colliders in a given graph.
+     *
+     * @param d    The node representing the direct cause (can be null).
+     * @param a    The node for which the Markov Blanket is calculated.
+     * @param path A linked list of nodes in the current path.
+     * @param G    The graph in which the Markov Blanket is calculated.
+     * @param mb   A set to store the nodes in the Markov Blanket.
+     */
+    private static void markovBlanketFollowColliders(Node d, Node a, LinkedList<Node> path, Graph G, Set<Node> mb) {
+        if (path.contains(a)) return;
+        path.add(a);
+
+        for (Node b : G.getNodesOutTo(a, Endpoint.ARROW)) {
+            if (path.contains(b)) continue;
+
+            // Make sure that d*->a<-* b is a collider.
+            if (d != null && !G.isDefCollider(d, a, b)) continue;
+
+            for (Node c : G.getNodesInTo(b, Endpoint.ARROW)) {
+                if (path.contains(c)) continue;
+
+                if (!G.isDefCollider(a, b, c)) continue;
+
+                // a *-> b <-* c
+                mb.add(b);
+                mb.add(c);
+
+                markovBlanketFollowColliders(a, b, path, G, mb);
+            }
+        }
+
+        path.remove(a);
+    }
+
 }
