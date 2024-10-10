@@ -48,10 +48,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     private int depth = -1;
     /**
-     * Private variable representing the maximum length of a blocking path.
-     */
-    private int maxBlockingPathLength = -1;
-    /**
      * Determines whether verbose mode is enabled or not.
      */
     private boolean verbose = false;
@@ -333,14 +329,5 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
         this.initialAllowedColliders = initialAllowedColliders;
-    }
-
-    /**
-     * Retrieves the maximum length of a blocking path.
-     *
-     * @param maxBlockingPathLength the maximum length of a blocking path
-     */
-    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
-        this.maxBlockingPathLength = maxBlockingPathLength;
     }
 }
