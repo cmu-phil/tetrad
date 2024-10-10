@@ -307,7 +307,7 @@ public final class FciLite implements IGraphSearch {
         }
 
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(test,
-                knowledge, false);
+                knowledge, verbose);
         strategy.setDepth(depth);
         strategy.setMaxBlockingPathLength(maxBlockingPathLength);
 

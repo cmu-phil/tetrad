@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.PcCommon;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
-import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -211,7 +208,8 @@ public final class Fci implements IGraphSearch {
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-        FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose));
+        R0R4Strategy strategy = R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
+        FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
