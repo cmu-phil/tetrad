@@ -201,18 +201,21 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         MsepTest msepTest = new MsepTest(graph);
         msepTest.setPag(true);
-
+        path.remove(a);
+//
 //        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, a, c, new HashSet<>(path), msepTest);
 //
 //        Set<Node> sepset;
 //
-//        if (test.checkIndependence(a, c, blocking).isIndependent()) {
+////        if (test.checkIndependence(a, c, blocking).isIndependent()) {
 //            sepset = blocking;
-//        } else {
-//            sepset = null;
-//        }
+////        } else {
+////            sepset = null;
+////        }
 
-        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
+
+
+        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(path), test, depth);
 
         if (verbose) {
             TetradLogger.getInstance().log("Discriminating path check--sepset for e = " + e + " and c = "

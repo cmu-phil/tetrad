@@ -48,14 +48,14 @@ public class TestSepsetMethods {
     public void test1() {
         int numNodes = 20;
         int numEdges = 40;
-        int numLatentsForPag = 0; // Ignored for the DAG or CPDAG cases.
+        int numLatentsForPag = 5; // Ignored for the DAG or CPDAG cases.
         int numReps = 100;
 
         enum GraphType {
             DAG, CPDAG, PAG
         }
 
-        GraphType graphType = GraphType.CPDAG;
+        GraphType graphType = GraphType.PAG;
 
         enum Method {
             BLOCK_PATHS_WITH_MARKOV_BLANKET,
@@ -101,6 +101,7 @@ public class TestSepsetMethods {
 
         nodes = graph.getNodes();
         numNodes = nodes.size();
+        numEdges = graph.getNumEdges();
 
         long[] timeSums = new long[methods.size()];
         int[] numPass = new int[methods.size()];
