@@ -414,45 +414,6 @@ public class SepsetFinder {
         return Double.isNaN(pValue) ? 1.0 : pValue;
     }
 
-//    public static Set<Node> getSepsetPathBlocking(Graph graph, Node x, Node y, IndependenceTest test, int maxLength,
-//                                                  int depth, boolean isPag) {
-//        Pair<Set<Node>, Set<Node>> ret = getConditioningVariables(graph, maxLength, x, y, isPag);
-//
-//        Set<Node> mustCondition = ret.getLeft();
-//        Set<Node> mightCondition = ret.getRight();
-//        List<Node> mightConditionList = new ArrayList<>(mightCondition);
-//
-//        System.out.println("mustCondition: " + mustCondition);
-//        System.out.println("mightCondition: " + mightCondition);
-//
-//        SublistGenerator generator = new SublistGenerator(mightConditionList.size(), depth);
-//        int[] choice;
-//
-//        while ((choice = generator.next()) != null) {
-//            Set<Node> sepset = new HashSet<>();
-//
-//            for (int k : choice) {
-//                sepset.add(mightConditionList.get(k));
-//            }
-//
-//            sepset.addAll(mustCondition);
-//
-//            if (depth != -1 && sepset.size() > depth) {
-//                continue;
-//            }
-//
-//            if (test.checkIndependence(x, y, sepset).isIndependent()) {
-//                return sepset;
-//            }
-//        }
-//
-//        if (test.checkIndependence(x, y, new HashSet<>()).isIndependent()) {
-//            return new HashSet<>();
-//        }
-//
-//        return null;
-//    }
-
     /**
      * Returns a set that blocks all paths that can be blocked by conditioning on noncolliders only, searching outward
      * from x.
@@ -607,5 +568,4 @@ public class SepsetFinder {
 
         path.remove(a);
     }
-
 }

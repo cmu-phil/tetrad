@@ -405,7 +405,7 @@ public class MarkovCheckEditor extends JPanel {
 
         JLabel conditioningSetsLabel = new JLabel("Conditioning Sets:");
 
-        JCheckBox removeExtraneousVariables = new JCheckBox("Smallest Subset Yielding Independence");
+        JCheckBox removeExtraneousVariables = new JCheckBox("Smallest Subset Yielding M-Separation");
         removeExtraneousVariables.setSelected(false);
 
         removeExtraneousVariables.addActionListener(e -> {
