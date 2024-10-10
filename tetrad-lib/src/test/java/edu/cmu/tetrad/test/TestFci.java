@@ -231,7 +231,7 @@ public class TestFci {
         System.out.println("Graph = " + graph);
 
         // Set up search.
-        IndependenceTest independence = new MsepTest(graph);
+        MsepTest independence = new MsepTest(graph);
 
         Fci fci = new Fci(independence);
         fci.setPossibleDsepSearchDone(true);

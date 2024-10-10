@@ -1877,7 +1877,6 @@ public class Paths implements TetradSerializable {
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean isPag) {
-
         class EdgeNode {
 
             private final Edge edge;

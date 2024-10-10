@@ -556,7 +556,7 @@ public class FciOrient {
             while (true) {
                 List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
 
-                List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream()
+                List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream()
                         .map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
                         .toList();
 

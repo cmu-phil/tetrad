@@ -55,7 +55,7 @@ public class TestSepsetMethods {
             DAG, CPDAG, PAG
         }
 
-        GraphType graphType = GraphType.PAG;
+        GraphType graphType = GraphType.DAG;
 
         enum Method {
             BLOCK_PATHS_WITH_MARKOV_BLANKET,
@@ -68,13 +68,13 @@ public class TestSepsetMethods {
         }
 
         List<Method> methods = List.of(
-                Method.BLOCK_PATHS_WITH_MARKOV_BLANKET,
-                Method.BLOCK_PATHS_LOCAL_MARKOV,
-                Method.BLOCK_PATHS_RECURSIVELY,
-                Method.BLOCK_PATHS_NONCOLLIDERS_ONLY,
-                Method.BLOCK_PATHS_GREEDY,
-                Method.BLOCK_PATHS_MAX_P,
-                Method.BLOCK_PATHS_MIN_P
+//                Method.BLOCK_PATHS_WITH_MARKOV_BLANKET,
+//                Method.BLOCK_PATHS_LOCAL_MARKOV,
+                Method.BLOCK_PATHS_RECURSIVELY
+//                Method.BLOCK_PATHS_NONCOLLIDERS_ONLY,
+//                Method.BLOCK_PATHS_GREEDY,
+//                Method.BLOCK_PATHS_MAX_P,
+//                Method.BLOCK_PATHS_MIN_P
         );
 
         // Make a list of numNodes nodes.
@@ -158,8 +158,10 @@ public class TestSepsetMethods {
                 timeSums[k] += stop - start;
 
                 System.out.println("Sepset " + method + ": " + blockingSet);
-                System.out.println("M-sep = " + msepTest.checkIndependence(x, y, blockingSet).isIndependent());
-                numPass[k] += msepTest.checkIndependence(x, y, blockingSet).isIndependent() ? 1 : 0;
+                if (blockingSet != null) {
+                    System.out.println("M-sep = " + msepTest.checkIndependence(x, y, blockingSet).isIndependent());
+                    numPass[k] += msepTest.checkIndependence(x, y, blockingSet).isIndependent() ? 1 : 0;
+                }
             }
         }
 

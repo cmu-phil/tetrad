@@ -176,6 +176,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+        System.out.println("Checking discriminating path: " + discriminatingPath);
+
         Node e = discriminatingPath.getE();
         Node a = discriminatingPath.getA();
         Node b = discriminatingPath.getB();
@@ -201,30 +203,42 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         MsepTest msepTest = new MsepTest(graph);
         msepTest.setPag(true);
-        path.remove(a);
-//
-//        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, a, c, new HashSet<>(path), msepTest);
-//
-//        Set<Node> sepset;
-//
-////        if (test.checkIndependence(a, c, blocking).isIndependent()) {
-//            sepset = blocking;
-////        } else {
-////            sepset = null;
-////        }
+//        path.remove(a);
 
+        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(), msepTest);
 
+        Set<Node> sepset2;
 
-        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(path), test, depth);
+        blocking.add(b);
+
+        if (test.checkIndependence(e, c, blocking).isIndependent()) {
+            sepset2 = blocking;
+        } else {
+            blocking.remove(b);
+            sepset2 = blocking;
+//
+//            if (test.checkIndependence(e, c, blocking).isIndependent()) {
+//                sepset2 = blocking;
+//            } else {
+//                sepset2 = null;
+//            }
+        }
+
+        Set<Node> sepset1 = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(), test, depth);
+//        Set<Node> sepset = sepset1;
+        Set<Node> sepset = sepset2;
+
+        System.out.println("Greedy sepset = " + sepset1 + " recursive msep sepset = " + sepset2 + " recursive blocking = " + blocking + " sepset = " + sepset + " b = " + b);
+        TetradLogger.getInstance().log("    WAS: " + GraphUtils.pathString(graph, a, b, c));
 
         if (verbose) {
             TetradLogger.getInstance().log("Discriminating path check--sepset for e = " + e + " and c = "
                                            + c + " = " + sepset + " path = " + path);
         }
-
-        if (sepset == null) {
-            return Pair.of(discriminatingPath, false);
-        }
+//
+//        if (sepset == null) {
+//            return Pair.of(discriminatingPath, false);
+//        }
 
         boolean collider = !sepset.contains(b);
 
@@ -252,10 +266,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             graph.setEndpoint(a, b, Endpoint.ARROW);
             graph.setEndpoint(c, b, Endpoint.ARROW);
 
-            if (this.verbose) {
+//            if (this.verbose) {
                 TetradLogger.getInstance().log(
                         "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-            }
+//            }
 
             return Pair.of(discriminatingPath, true);
         } else {
@@ -265,10 +279,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             graph.setEndpoint(c, b, Endpoint.TAIL);
 
-            if (this.verbose) {
+//            if (this.verbose) {
                 TetradLogger.getInstance().log(
                         "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-            }
+//            }
 
             return Pair.of(discriminatingPath, true);
         }
