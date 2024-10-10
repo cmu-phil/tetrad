@@ -150,6 +150,10 @@ public class MarkovCheck implements SampleSizeSettable {
      * True if a smallest subset of conditioning nodes should be found.
      */
     private boolean findSmallestSubset = false;
+    /**
+     * The maximum length of paths to consider, for relevant methods.
+     */
+    private int maxLength = -1;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -864,10 +868,10 @@ public class MarkovCheck implements SampleSizeSettable {
                             z = GraphUtils.markovBlanket(x, graph);
                             break;
                         case RECURSIVE_MSEP:
-                            z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), new MsepTest(graph));
+                            z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), maxLength);
                             break;
                         case NONCOLLIDERS_ONLY:
-                            z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, -1, true);
+                            z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, maxLength, true);
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown separation set type: " + setType);
@@ -1770,6 +1774,15 @@ public class MarkovCheck implements SampleSizeSettable {
         }
 
         ((SampleSizeSettable) independenceTest).setSampleSize(sampleSize);
+    }
+
+    /**
+     * Sets the maximum path length for relevant paths.
+     *
+     * @param maxLength the maximum path length for relevant paths
+     */
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
     }
 
     /**

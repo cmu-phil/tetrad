@@ -134,7 +134,7 @@ public class TestSepsetMethods {
                         blockingSet = SepsetFinder.blockPathsWithMarkovBlanket(x, graph);
                     }
                     case BLOCK_PATHS_RECURSIVELY -> {
-                        blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), msepTest);
+                        blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), -1);
                     }
                     case BLOCK_PATHS_LOCAL_MARKOV -> {
                         blockingSet = blockPathsLocalMarkov(graph, x);

@@ -80,6 +80,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Note: This is an example and the actual values and implementation may vary depending on the context.
      */
     private HashSet<Triple> initialAllowedColliders = null;
+    /**
+     * The maximum length of the path, for relevant paths.
+     */
+    private int maxLength;
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -197,10 +201,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
         }
 
-        MsepTest msepTest = new MsepTest(graph);
-        msepTest.setPag(true);
-
-        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(), msepTest);
+        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(), maxLength);
 
         blocking.add(b);
 
@@ -329,5 +330,18 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
         this.initialAllowedColliders = initialAllowedColliders;
+    }
+
+    /**
+     * Sets the maximum length for relevant paths.
+     *
+     * @param maxLength the maximum length to be set. Set to -1 for no maximum length.
+     */
+    public void setMaxLength(int maxLength) {
+        if (maxLength < -1) {
+            throw new IllegalArgumentException("Maximum length must be -1 or greater.");
+        }
+
+        this.maxLength = maxLength;
     }
 }

@@ -202,19 +202,20 @@ public class SepsetFinder {
      * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
      * to be conditioned on to render two nodes conditionally independent.
      *
-     * @param graph      the graph to analyze
-     * @param x          the first node
-     * @param y          the second node
-     * @param containing the set of nodes that must be in the sepset
-     * @param test       the independence test to use
+     * @param graph         the graph to analyze
+     * @param x             the first node
+     * @param y             the second node
+     * @param containing    the set of nodes that must be in the sepset
+     * @param maxPathLength the maximum length of a path to consider
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
      */
-    public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
-        return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test);
+    public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, int maxPathLength) {
+        return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), maxPathLength);
     }
 
-    private static Set<Node> getSepsetVisit(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test) {
+    private static Set<Node> getSepsetVisit(Graph graph, Node x, Node y, Set<Node> containing,
+                                            Map<Node, Set<Node>> ancestorMap, int maxPathLength) {
         if (x == y) {
             return null;
         }
@@ -231,77 +232,13 @@ public class SepsetFinder {
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
-                if (sepsetPathFound(graph, x, b, y, path, z, colliders, -1, ancestorMap)) {
+                if (pathToTargetFound(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap)) {
                     continue;
                 }
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
         return z;
-    }
-
-    private static boolean sepsetPathFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node, Set<Node>> ancestorMap) {
-        if (b == y) {
-            return true;
-        }
-
-        if (path.contains(b)) {
-            return false;
-        }
-
-        if (path.size() > (bound == -1 ? 1000 : bound)) {
-            return false;
-        }
-
-        path.add(b);
-
-        if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
-            List<Node> passNodes = getPassNodes(graph, a, b, z, ancestorMap);
-
-            for (Node c : passNodes) {
-                if (sepsetPathFound(graph, b, c, y, path, z, colliders, bound, ancestorMap)) {
-                    return true;
-                }
-            }
-
-            path.remove(b);
-            return false;
-        } else {
-            boolean found1 = false;
-            Set<Triple> _colliders1 = new HashSet<>();
-
-            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
-                if (sepsetPathFound(graph, b, c, y, path, z, _colliders1, bound, ancestorMap)) {
-                    found1 = true;
-                    break;
-                }
-            }
-
-            if (!found1) {
-                path.remove(b);
-                colliders.addAll(_colliders1);
-                return false;
-            }
-
-            z.add(b);
-            boolean found2 = false;
-            Set<Triple> _colliders2 = new HashSet<>();
-
-            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
-                if (sepsetPathFound(graph, b, c, y, path, z, _colliders2, bound, ancestorMap)) {
-                    found2 = true;
-                    break;
-                }
-            }
-
-            if (!found2) {
-                path.remove(b);
-                colliders.addAll(_colliders2);
-                return false;
-            }
-
-            return true;
-        }
     }
 
     private static List<Node> getPassNodes(Graph graph, Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
@@ -343,12 +280,12 @@ public class SepsetFinder {
         }
     }
 
-    public static Set<Node> getPathBlockingSetRecursive(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test) {
-        Map<Triple, Boolean> pathMemo = new HashMap<>(); // Memoization map to store path exploration results.
-        return getPathBlockingSetRecursiveVisit(graph, x, y, containing, graph.paths().getAncestorMap(), test, pathMemo);
+    public static Set<Node> getPathBlockingSetRecursive(Graph graph, Node x, Node y, Set<Node> containing, int maxPathLength) {
+        return getPathBlockingSetRecursiveVisit(graph, x, y, containing, graph.paths().getAncestorMap(), maxPathLength);
     }
 
-    private static Set<Node> getPathBlockingSetRecursiveVisit(Graph graph, Node x, Node y, Set<Node> containing, Map<Node, Set<Node>> ancestorMap, IndependenceTest test, Map<Triple, Boolean> pathMemo) {
+    private static Set<Node> getPathBlockingSetRecursiveVisit(Graph graph, Node x, Node y, Set<Node> containing,
+                                                              Map<Node, Set<Node>> ancestorMap, int maxPathLength) {
         if (x == y) {
             return null;
         }
@@ -365,11 +302,78 @@ public class SepsetFinder {
 
             // Iterate over adjacent nodes to find potential paths.
             for (Node b : graph.getAdjacentNodes(x)) {
-                sepsetPathFound(graph, x, b, y, path, z, colliders, -1, ancestorMap);
+                pathToTargetFound(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap);
             }
         } while (!previousZ.equals(z)); // Repeat if the set z changes.
 
         return z;
+    }
+
+    private static boolean pathToTargetFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
+                                             Set<Triple> colliders, int maxPathLength, Map<Node, Set<Node>> ancestorMap) {
+        if (b == y) {
+            return true;
+        }
+
+        if (path.contains(b)) {
+            return false;
+        }
+
+        path.add(b);
+
+        if (maxPathLength != -1) {
+            if (path.size() > maxPathLength) {
+                return false;
+            }
+        }
+
+        if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
+            List<Node> passNodes = getPassNodes(graph, a, b, z, ancestorMap);
+
+            for (Node c : passNodes) {
+                if (pathToTargetFound(graph, b, c, y, path, z, colliders, maxPathLength, ancestorMap)) {
+                    return true;
+                }
+            }
+
+            path.remove(b);
+            return false;
+        } else {
+            boolean found1 = false;
+            Set<Triple> _colliders1 = new HashSet<>();
+
+            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
+                if (pathToTargetFound(graph, b, c, y, path, z, _colliders1, maxPathLength, ancestorMap)) {
+                    found1 = true;
+                    break;
+                }
+            }
+
+            if (!found1) {
+                path.remove(b);
+                colliders.addAll(_colliders1);
+                return false;
+            }
+
+            z.add(b);
+            boolean found2 = false;
+            Set<Triple> _colliders2 = new HashSet<>();
+
+            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
+                if (pathToTargetFound(graph, b, c, y, path, z, _colliders2, maxPathLength, ancestorMap)) {
+                    found2 = true;
+                    break;
+                }
+            }
+
+            if (!found2) {
+                path.remove(b);
+                colliders.addAll(_colliders2);
+                return false;
+            }
+
+            return true;
+        }
     }
 
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {

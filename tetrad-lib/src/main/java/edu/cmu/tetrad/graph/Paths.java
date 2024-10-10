@@ -1649,17 +1649,23 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
-     * to be conditioned on in order to render two nodes conditionally independent.
+     * Retrieves a sepset (a set of nodes) between two given nodes.
      *
      * @param x          the first node
      * @param y          the second node
      * @param containing the set of nodes that the sepset must contain
-     * @param test       the independence test to use
+     * @param maxPathLength the maximum length of the path to search for the blocking set
      * @return the sepset between the two nodes
      */
-    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, IndependenceTest test) {
-        return SepsetFinder.blockPathsRecursively(graph, x, y, containing, test);
+    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) {
+        Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, containing, maxPathLength);
+
+        // TODO - should allow the user to determine whether this is a PAG.
+        if (isMSeparatedFrom(x, y, blocking, false)) {
+            return blocking;
+        }
+
+        return null;
     }
 
 
@@ -2289,12 +2295,12 @@ public class Paths implements TetradSerializable {
      * @param node1              the first node.
      * @param node2              the second node.
      * @param z                  the conditioning set.
-     * @param allowSelectionBias whether to allow selection bias; if true, then undirected edges X--Y are uniformly
+     * @param isPag whether to allow selection bias; if true, then undirected edges X--Y are uniformly
      *                           treated as X-&gt;L&lt;-Y.
      * @return true if node1 is d-separated from node2 given set t, false if not.
      */
-    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, boolean allowSelectionBias) {
-        return separates(node1, node2, allowSelectionBias, z);
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, boolean isPag) {
+        return separates(node1, node2, isPag, z);
     }
 
     /**

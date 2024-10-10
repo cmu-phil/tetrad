@@ -309,6 +309,7 @@ public final class FciLite implements IGraphSearch {
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(test,
                 knowledge, verbose);
         strategy.setDepth(depth);
+        strategy.setMaxLength(maxBlockingPathLength);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
@@ -589,21 +590,11 @@ public final class FciLite implements IGraphSearch {
 
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
-//                    Set<Node> blockers = SepsetFinder.getSepsetContainingRecursive(pag, edge.getNode1(),
-//                            edge.getNode2(), new HashSet<>(), msep);
-
-                    Set<Node> blockers = SepsetFinder.blockPathsNoncollidersOnly(pag, edge.getNode1(),
-                            edge.getNode2(), maxBlockingPathLength, true);
-
-//                    return Pair.of(edge, sepset);
+                    Set<Node> blockers = SepsetFinder.getPathBlockingSetRecursive(pag, edge.getNode1(),
+                            edge.getNode2(), new HashSet<>(), maxBlockingPathLength);
+//                    Set<Node> blockers = SepsetFinder.blockPathsNoncollidersOnly(pag, edge.getNode1(),
+//                            edge.getNode2(), maxBlockingPathLength, true);
 //
-//                    Set<Node> blockers = SepsetFinder.getSepsetContainingRecursiveOptimized(pag, edge.getNode1(),
-//                            edge.getNode2(), new HashSet<>(), msep);
-
-//                    if (blockers == null) {
-//                        throw new IllegalArgumentException();
-//                    }
-////
                     if (this.test.checkIndependence(edge.getNode1(), edge.getNode2(), blockers).isIndependent()) {
                         return Pair.of(edge, blockers);
                     } else {
