@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -236,11 +237,7 @@ public class SepsetFinder {
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
-//        if (test.checkIndependence(x, y, z).isIndependent()) {
-            return z;
-//        } else {
-//            return null;
-//        }
+        return z;
     }
 
     private static boolean sepsetPathFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound, Map<Node, Set<Node>> ancestorMap) {
@@ -542,168 +539,24 @@ public class SepsetFinder {
         return cond;
     }
 
-//    public static Set<Node> blockPathsWithColliders(Graph graph, Node x, Node y, int maxLength, boolean isPag) {
-//        Set<Node> cond = new HashSet<>();
-//        Set<Node> blackList = new HashSet<>();
-//
-//        Deque<List<Node>> queue = new LinkedList<>();
-//        queue.add(Collections.singletonList(x));
-//
-//        while (!queue.isEmpty()) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
-//
-//            List<Node> path = queue.poll();
-//
-//            if (maxLength != -1 && path.size() > maxLength) {
-//                continue;
-//            }
-//
-//            Node node = path.get(path.size() - 1);
-//            Map<Node, Boolean> blocked = new HashMap<>();
-//
-//            for (Node adjacent : graph.getAdjacentNodes(node)) {
-//                blocked.put(adjacent, false);
-//
-//                if (!path.contains(adjacent)) {
-//                    List<Node> newPath = new ArrayList<>(path);
-//                    newPath.add(adjacent);
-//
-//                    // If the path length is less than 3, it cannot form a triple and is added directly.
-//                    if (newPath.size() < 3) {
-//                        queue.add(newPath);
-//                    } else {
-//                        for (int i = 1; i < newPath.size() - 1; i++) {
-//                            if (blocked.get(adjacent)) {
-//                                break;
-//                            }
-//
-//                            Node z1 = newPath.get(i - 1);
-//                            Node z2 = newPath.get(i);
-//                            Node z3 = newPath.get(i + 1);
-//
-//                            // Skip this node if it forms a collider in the path, but move past it to
-//                            // find a noncollider.
-//                            if (graph.isDefCollider(z1, z2, z3)) {
-//                                blackList.add(z2);  // Mark the collider to prevent conditioning.
-//
-//                                // This is a collider; if the path is not already blocked by a noncollider,
-//                                // we want to move past it to find a noncollider.
-//                                if (graph.paths().isMConnectingPath(path, cond, isPag)) {
-//                                    queue.offer(newPath);
-//                                }
-//                            } else {
-//                                if (!blackList.contains(z2)) {
-//                                    if (!graph.isAdjacentTo(z1, z3)) {
-//                                        cond.add(z2);
-//                                        blackList.addAll(graph.paths().getDescendants(z2));
-//                                        blocked.put(adjacent, true);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return cond;
-//    }
+    public static @NotNull Set<Node> getSmallestSubset(Node x, Node y, Set<Node> cond, Graph graph, boolean isPag) {
+        List<Node> _cond = new ArrayList<>(cond);
+        SublistGenerator generator = new SublistGenerator(_cond.size(), -1);
+        int[] choice;
+        MsepTest test = new MsepTest(graph, isPag);
 
+        while ((choice = generator.next()) != null) {
+            Set<Node> sepset = new HashSet<>();
 
-    public static Set<Node> blockPathsMsep(Graph graph, Node x, Node y, int maxLength, Map<Node, Set<Node>> ancestorMap,
-                                           boolean isPag) {
-        Set<Node> cond = new HashSet<>();
+            for (int k : choice) {
+                sepset.add(_cond.get(k));
+            }
 
-        Deque<List<Node>> queue = new LinkedList<>();
-        queue.add(Collections.singletonList(x));
-
-        while (!queue.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) {
+            if (test.checkIndependence(x, y, sepset).isIndependent()) {
+                cond = sepset;
                 break;
             }
-
-            List<Node> path = queue.poll();
-
-            if (maxLength != -1 && path.size() > maxLength) {
-                continue;
-            }
-
-            Node node = path.get(path.size() - 1);
-
-            for (Node adjacent : graph.getAdjacentNodes(node)) {
-                if (!path.contains(adjacent) && !cond.contains(adjacent)) {
-                    List<Node> newPath = new ArrayList<>(path);
-                    newPath.add(adjacent);
-
-                    if (graph.paths().isMConnectingPath(newPath, cond, isPag)) {
-                        cond.add(adjacent);
-                        queue.offer(newPath);
-                    } else {
-                        System.out.println("FALSE: " + newPath);
-                    }
-                }
-            }
         }
-
-        return cond;
-    }
-
-    public static Set<Node> blockPathsMsep2(Graph graph, Node x, Node y, int maxLength, boolean isPag) {
-        Set<Node> cond = new HashSet<>();
-        Deque<List<Node>> deque = new LinkedList<>();
-        deque.add(Collections.singletonList(x));
-
-        while (!deque.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Node> path = deque.removeLast();
-
-            // Skip this path if it exceeds maxLength
-            if (maxLength != -1 && path.size() > maxLength) {
-                continue;
-            }
-
-            Node current = path.get(path.size() - 1);
-            cond.add(current);
-
-            // Check if we've reached y, meaning path is fully connected
-//            if (current.equals(y)) {
-//                continue;
-//            }
-
-            // Attempt to block the path if it is m-connecting x and y
-            if (graph.paths().isMConnectingPath(path, cond, isPag)) {
-                boolean anyExtensions = false;
-
-                for (Node adjacent : graph.getAdjacentNodes(current)) {
-                    // Skip already visited or conditioned nodes
-                    if (!path.contains(adjacent) && !cond.contains(adjacent)) {
-                        List<Node> newPath = new ArrayList<>(path);
-                        newPath.add(adjacent);
-
-                        // If this new path is m-connecting, explore it further
-                        if (graph.paths().isMConnectingPath(newPath, cond, isPag)) {
-                            deque.addFirst(newPath);
-                            anyExtensions = true;
-                        }
-                    }
-                }
-
-                // If no extensions were possible, add the current node to cond
-                if (!anyExtensions) {
-                    cond.remove(current);
-                }
-            }
-        }
-
-//        // Verify that the resulting cond indeed blocks all paths between x and y
-//        if (!graph.paths().isMSeparatedFrom(x, y, cond, isPag)) {
-//            throw new IllegalStateException("Failed to find a valid conditioning set.");
-//        }
 
         return cond;
     }

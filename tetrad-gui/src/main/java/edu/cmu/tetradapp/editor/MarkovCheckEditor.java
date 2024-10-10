@@ -222,6 +222,8 @@ public class MarkovCheckEditor extends JPanel {
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) for a Valid Order (Ordered Local Markov)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
+        conditioningSetTypeJComboBox.addItem("Recursive M-Sep Conditioning Set");
+        conditioningSetTypeJComboBox.addItem("Conditioning on Noncolliders Only");
         conditioningSetTypeJComboBox.addItem("All Subsets (Global Markov)");
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
@@ -237,6 +239,12 @@ public class MarkovCheckEditor extends JPanel {
                     break;
                 case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.MARKOV_BLANKET);
+                    break;
+                case "Recursive M-Sep Conditioning Set":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.RECURSIVE_MSEP);
+                    break;
+                case "Conditioning on Noncolliders Only":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.NONCOLLIDERS_ONLY);
                     break;
                 case "All Subsets (Global Markov)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.GLOBAL_MARKOV);
@@ -397,11 +405,11 @@ public class MarkovCheckEditor extends JPanel {
 
         JLabel conditioningSetsLabel = new JLabel("Conditioning Sets:");
 
-        JCheckBox removeExtraneousVariables = new JCheckBox("Remove Extraneous Variables");
+        JCheckBox removeExtraneousVariables = new JCheckBox("Smallest Subset Yielding Independence");
         removeExtraneousVariables.setSelected(false);
 
         removeExtraneousVariables.addActionListener(e -> {
-            model.getMarkovCheck().setRemoveExtraneousVariables(removeExtraneousVariables.isSelected());
+            model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
             refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, percent, true);
         });
 
