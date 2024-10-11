@@ -1212,6 +1212,7 @@ public class MarkovCheck implements SampleSizeSettable {
      *
      * @return The Markov check record.
      * @see MarkovCheckRecord
+     * @throws InterruptedException if the thread is interrupted
      */
     public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
         setPercentResample(percentResample);
@@ -1232,6 +1233,7 @@ public class MarkovCheck implements SampleSizeSettable {
      *
      * @return The Markov check record as a string.
      * @see MarkovCheckRecord
+     * @throws InterruptedException if the thread is interrupted
      */
     public String getMarkovCheckRecordString() throws InterruptedException {
         NumberFormat nf = new DecimalFormat("0.000");

@@ -310,6 +310,7 @@ public class DiscreteBicScoreAdTree implements DiscreteScore {
      * Returns an integer array containing the parent values for a given node index and row index.
      *
      * @param rowIndex the index of the row in question.
+     * @param parents  the indices of the parent nodes.
      * @return an integer array containing the parent values.
      */
     public int[] getParentValues(int[] parents, int rowIndex) {

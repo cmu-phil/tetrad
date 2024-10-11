@@ -194,6 +194,13 @@ public class SepsetFinder {
         return null;
     }
 
+    /**
+     * Returns a set of nodes that are the parents of the given node in the graph.
+     *
+     * @param graph the graph containing the nodes and edges
+     * @param x the node whose parent nodes are to be found
+     * @return a set of nodes that are the parents of the given node
+     */
     public static Set<Node> blockPathsLocalMarkov(Graph graph, Node x) {
         return new HashSet<>(graph.getParents(x));
     }
@@ -280,6 +287,17 @@ public class SepsetFinder {
         }
     }
 
+    /**
+     * Finds a set of nodes that blocks all paths from node x to node y in a graph, considering a maximum path length
+     * and a set of nodes that must be included in the blocking set.
+     *
+     * @param graph         The graph containing the nodes.
+     * @param x             The starting node of the path.
+     * @param y             The ending node of the path.
+     * @param containing    The set of nodes that must be included in the blocking set.
+     * @param maxPathLength The maximum length of the paths to consider.
+     * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
+     */
     public static Set<Node> getPathBlockingSetRecursive(Graph graph, Node x, Node y, Set<Node> containing, int maxPathLength) {
         return getPathBlockingSetRecursiveVisit(graph, x, y, containing, graph.paths().getAncestorMap(), maxPathLength);
     }
@@ -504,6 +522,17 @@ public class SepsetFinder {
         return cond;
     }
 
+    /**
+     * Finds a smallest set of nodes that can render two nodes x and y conditionally independent given a set of
+     * conditioning nodes and the structure of a graph. (There may be more than one smallest subset.)
+     *
+     * @param x     the first node.
+     * @param y     the second node.
+     * @param cond  the initial set of conditioning nodes.
+     * @param graph the graph containing the nodes.
+     * @param isPag true if the graph is a PAG (Partial Ancestral Graph), false otherwise.
+     * @return the smallest set of nodes that renders x and y conditionally independent.
+     */
     public static @NotNull Set<Node> getSmallestSubset(Node x, Node y, Set<Node> cond, Graph graph, boolean isPag) {
         List<Node> _cond = new ArrayList<>(cond);
         SublistGenerator generator = new SublistGenerator(_cond.size(), -1);
@@ -526,6 +555,13 @@ public class SepsetFinder {
         return cond;
     }
 
+    /**
+     * Identifies the set of nodes that form the Markov Blanket for a given node in a graph.
+     *
+     * @param x The node for which the Markov Blanket is to be identified.
+     * @param G The graph containing the node and its relationships.
+     * @return A set of nodes that form the Markov Blanket of the specified node.
+     */
     public static Set<Node> blockPathsWithMarkovBlanket(Node x, Graph G) {
         Set<Node> mb = new HashSet<>();
 

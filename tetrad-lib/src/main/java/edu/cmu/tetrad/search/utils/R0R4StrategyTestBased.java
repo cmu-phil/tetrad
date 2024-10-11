@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SepsetFinder;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
@@ -201,17 +202,29 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
         }
 
-        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(), maxLength);
+        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
+
+        blocking.remove(b);
+        IndependenceResult independenceResult1 = test.checkIndependence(e, c, blocking);
+        boolean independentCollider = independenceResult1.isIndependent();
+        double p1 = independenceResult1.getPValue();
 
         blocking.add(b);
+        IndependenceResult independenceResult2 = test.checkIndependence(e, c, blocking);
+        double p2 = independenceResult2.getPValue();
+        boolean independentNoncollider = independenceResult2.isIndependent();
 
-        if (!test.checkIndependence(e, c, blocking).isIndependent()) {
-            blocking.remove(b);
+        if (independentCollider && independentNoncollider) {
+            if (verbose) {
+                TetradLogger.getInstance().log("R4: Discriminating path not oriented because of ambiguity: " + discriminatingPath);
+                TetradLogger.getInstance().log("    Alpha level of test = " + test.getAlpha());
+                TetradLogger.getInstance().log("    p1 (without B) = " + p1 + ", p2 (with B) = " + p2);
+            }
+
+            return Pair.of(discriminatingPath, false);
         }
 
-        boolean collider = !blocking.contains(b);
-
-        if (collider) {
+        if (independentCollider) {
             if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
                 return Pair.of(discriminatingPath, false);
             }
@@ -236,7 +249,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             graph.setEndpoint(c, b, Endpoint.ARROW);
 
             if (verbose) {
-                TetradLogger.getInstance().log("R4: Discriminating path oriented: " + discriminatingPath);
+                TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
                 TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
             }
 
@@ -249,7 +262,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             graph.setEndpoint(c, b, Endpoint.TAIL);
 
             if (verbose) {
-                TetradLogger.getInstance().log("R4: Discriminating path oriented: " + discriminatingPath);
+                TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
                 TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
             }
 

@@ -166,9 +166,9 @@ public final class LvLite implements IGraphSearch {
      * DAG or CPDAG over the variables, with a valid order, under the (possibly false) assumption that the data model is
      * causally sufficient. The CPDAG is used to establish the initial structure of the estimated PAG and to copy
      * unshielded colliders from the CPDAG into the estimated PAG. This step is justified in the GFCI algorithm.
-     * Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
-     * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR. The idea is we start with this
-     * initial estimated of the PAG, with edges reoriented as o-o edges. Then we use the scorer to copy unshielded
+     * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent
+     * variable models. In Conference on probabilistic graphical models (pp. 368-379). PMLR. The idea is we start with
+     * this initial estimated of the PAG, with edges reoriented as o-o edges. Then we use the scorer to copy unshielded
      * colliders from the CPDAG into the estimated PAG, as an initial step of converting the initial CPDAG into a PAG.
      *
      * @param cpdag The initial CPDAG.
