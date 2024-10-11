@@ -40,15 +40,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * The FCIL algorihtm (FCI-Lite) algorithm implements a search algorithm for learning the structure of a graphical model
- * from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
- * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing step
- * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
- * graph.
+ * The LV-Lite algorithm (Latent Variable "Lite") algorithm implements a search algorithm for learning the structure of
+ * a graphical model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to
+ * get an initial CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with
+ * a testing step to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is
+ * applied to the graph.
  *
  * @author josephramsey
  */
-public final class FciLite implements IGraphSearch {
+public final class LvLite implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -124,17 +124,17 @@ public final class FciLite implements IGraphSearch {
     private long testTimeout = 500;
 
     /**
-     * FCI-Lite constructor. Initializes a new object of FCI-Lite search algorithm with the given IndependenceTest and
+     * LV-Lite constructor. Initializes a new object of LV-Lite search algorithm with the given IndependenceTest and
      * Score object.
      * <p>
      * In this constructor, we will use BOSS or GRaSP internally to infer an initial CPDAG and valid order of the
-     * variables. This is the default behavior of the FCI-Lite algorithm.
+     * variables. This is the default behavior of the LV-Lite algorithm.
      *
      * @param test  The IndependenceTest object to be used for testing independence between variables.
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public FciLite(IndependenceTest test, Score score) {
+    public LvLite(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -154,7 +154,7 @@ public final class FciLite implements IGraphSearch {
     }
 
     /**
-     * Alternative FCI-Lite constructor. Initializes a new object of FCI-Lite search algorithm with the given initial
+     * Alternative LV-Lite constructor. Initializes a new object of LV-Lite search algorithm with the given initial
      * CPDAG, along with the IndependenceTest. These should all be over variables with the same names as the variables
      * in the supplied test.
      * <p>
@@ -174,7 +174,7 @@ public final class FciLite implements IGraphSearch {
      * @param cpdag The initial CPDAG.
      * @param test  The independence test.
      */
-    public FciLite(Graph cpdag, IndependenceTest test) {
+    public LvLite(Graph cpdag, IndependenceTest test) {
         this.score = null;
         this.test = test;
         this.cpdag = GraphUtils.replaceNodes(cpdag, this.test.getVariables());
@@ -207,7 +207,7 @@ public final class FciLite implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("===Starting FCI-Lite===");
+            TetradLogger.getInstance().log("===Starting LV-Lite===");
         }
 
         Graph pag;
@@ -406,7 +406,7 @@ public final class FciLite implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("FCI-Lite finished.");
+            TetradLogger.getInstance().log("LV-Lite finished.");
         }
 
         return GraphUtils.replaceNodes(pag, this.score.getVariables());
@@ -809,8 +809,7 @@ public final class FciLite implements IGraphSearch {
          */
         GRASP,
         /**
-         * Starts with an initial CPDAG over the variables of the independence test
-         * that is given in the constructor.
+         * Starts with an initial CPDAG over the variables of the independence test that is given in the constructor.
          */
         INITIAL_GRAPH
     }

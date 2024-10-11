@@ -894,7 +894,7 @@ public final class Params {
     /**
      * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
      */
-    public static String FCI_LITE_STARTS_WITH = "fciLiteStartsWith";
+    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
     /**
      * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
      */

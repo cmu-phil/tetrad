@@ -30,20 +30,20 @@ import java.util.List;
 
 
 /**
- * This class represents the FCI-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
+ * This class represents the LV-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
  * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
  * afterward.
  *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCI-Lite",
-        command = "fci-lite",
+        name = "LV-Lite",
+        command = "lv-lite",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 //@Experimental
-public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -65,10 +65,10 @@ public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, Us
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a FCI-Lite algorithm.
+     * This class represents a LV-Lite algorithm.
      *
      * <p>
-     * The FCI-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -76,7 +76,7 @@ public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FciLite() {
+    public LvLite() {
         // Used for reflection; do not delete.
     }
 
@@ -94,7 +94,7 @@ public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FciLite(IndependenceWrapper test, ScoreWrapper score) {
+    public LvLite(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -127,12 +127,12 @@ public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, Us
         Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {
-            if (parameters.getInt(Params.FCI_LITE_STARTS_WITH) == 1) {
+            if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
                 throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
             }
         }
 
-        edu.cmu.tetrad.search.FciLite search = new edu.cmu.tetrad.search.FciLite(test, score);
+        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -150,12 +150,12 @@ public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, Us
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
-        if (parameters.getInt(Params.FCI_LITE_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.FciLite.START_WITH.BOSS);
-        } else if (parameters.getInt(Params.FCI_LITE_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.FciLite.START_WITH.GRASP);
+        if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
+            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
+        } else if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 2) {
+            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.GRASP);
         } else {
-            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCI_LITE_STARTS_WITH));
+            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.LV_LITE_STARTS_WITH));
         }
 
         // General
@@ -215,7 +215,7 @@ public class FciLite extends AbstractBootstrapAlgorithm implements Algorithm, Us
         params.add(Params.COMPLETE_RULE_SET_USED);
 
         // FCI-Lite
-        params.add(Params.FCI_LITE_STARTS_WITH);
+        params.add(Params.LV_LITE_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);
