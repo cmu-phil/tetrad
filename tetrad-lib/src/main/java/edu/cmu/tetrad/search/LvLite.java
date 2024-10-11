@@ -409,7 +409,7 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("LV-Lite finished.");
         }
 
-        return GraphUtils.replaceNodes(pag, this.score.getVariables());
+        return GraphUtils.replaceNodes(pag, nodes);
     }
 
     /**

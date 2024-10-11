@@ -81,10 +81,10 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
     }
 
     /**
-     * FCI-Lite is a class that represents a FCI-Lite algorithm.
+     * LV-Lite is a class that represents a LV-Lite algorithm.
      *
      * <p>
-     * The FCI-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -142,7 +142,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-        // FCI-Lite
+        // LV-Lite
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
@@ -184,7 +184,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     @Override
     public String getDescription() {
-        return "FCI-Lite (Fast Causal Inference \"Lite\") using " + this.score.getDescription();
+        return "LV-Lite (Latent Variable \"Lite\") using " + this.score.getDescription();
     }
 
     /**
@@ -214,7 +214,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
 
-        // FCI-Lite
+        // LV-Lite
         params.add(Params.LV_LITE_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
