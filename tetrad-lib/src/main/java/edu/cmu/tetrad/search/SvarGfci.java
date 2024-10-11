@@ -162,7 +162,11 @@ public final class SvarGfci implements IGraphSearch {
 
         modifiedR0(fgesGraph);
 
-        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(this.independenceTest));
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
+                knowledge, verbose);
+        strategy.setDepth(-1);
+        strategy.setMaxLength(-1);
+        FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.setEndpointStrategy(new SvarSetEndpointStrategy(this.independenceTest, this.knowledge));
 
