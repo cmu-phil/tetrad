@@ -62,6 +62,11 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
      */
     private DisplayComp displayComp;
 
+    /**
+     * True iff this node is a selection bias node.
+     */
+    private boolean selectionBias;
+
     //===========================CONSTRUCTORS==============================//
 
     /**
@@ -235,6 +240,26 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         }
 
         //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * Returns the selection bias status for this node.
+     *
+     * @return the selection bias status for this node.
+     */
+    @Override
+    public boolean getSelectionBias() {
+        return false;
+    }
+
+    /**
+     * Sets the selection bias status for this node.
+     *
+     * @param selectionBias the selection bias status for this node.
+     */
+    @Override
+    public void setSelectionBias(boolean selectionBias) {
+        this.selectionBias = selectionBias;
     }
 
     /**

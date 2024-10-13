@@ -82,6 +82,20 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     void setNodeType(NodeType nodeType);
 
     /**
+     * Returns the selection bias status for this node.
+     *
+     * @param selectionBias the selection bias status for this node.
+     */
+    void setSelectionBias(boolean selectionBias);
+
+    /**
+     * Returns the selection bias status for this node.
+     *
+     * @return the selection bias status for this node.
+     */
+    boolean getSelectionBias();
+
+    /**
      * Returns the node shape for this node.
      *
      * @return the intervention type

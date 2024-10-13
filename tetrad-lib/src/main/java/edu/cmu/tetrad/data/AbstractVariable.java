@@ -46,6 +46,11 @@ public abstract class AbstractVariable implements Variable {
     public static int LAST_ID;
 
     /**
+     * True just in case this node is a selection bias node.
+     */
+    private boolean selectionBias;
+
+    /**
      * Name of this variable.
      *
      * @serial
@@ -134,6 +139,23 @@ public abstract class AbstractVariable implements Variable {
      * {@inheritDoc}
      */
     public abstract Node like(String name);
+
+    /**
+     * True just in case this node is a selection bias node.
+     */
+    public boolean isSelectionBias() {
+        return selectionBias;
+    }
+
+    /**
+     * Sets the selection bias status for this node.
+     *
+     * @param selectionBias the selection bias status for this node.
+     */
+    @Override
+    public void setSelectionBias(boolean selectionBias) {
+        this.selectionBias = selectionBias;
+    }
 
 //    @Override
 //    public int compareTo(Node node) {

@@ -165,6 +165,7 @@ public class SessionNode implements Node {
      * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
+    private boolean selectionBias;
 
     //==========================CONSTRUCTORS===========================//
 
@@ -1091,6 +1092,16 @@ public class SessionNode implements Node {
     @Override
     public void setNodeType(NodeType nodeType) {
 
+    }
+
+    @Override
+    public void setSelectionBias(boolean selectionBias) {
+        this.selectionBias = selectionBias;
+    }
+
+    @Override
+    public boolean getSelectionBias() {
+        return selectionBias;
     }
 
     /**

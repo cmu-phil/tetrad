@@ -96,8 +96,9 @@ public class GraphNodeMeasured extends DisplayNode {
         String newName;
         List<Node> nodes = graph.getNodes();
         JCheckBox latentCheckBox = new JCheckBox("Latent", false);
+        JCheckBox selectionBiasCheckBox = new JCheckBox("Selection Bias", false);
 
-        newName = chooseNewVariableName(latentCheckBox, nodes);
+        newName = chooseNewVariableName(latentCheckBox, selectionBiasCheckBox, nodes);
 
         boolean changed = false;
 
@@ -119,7 +120,7 @@ public class GraphNodeMeasured extends DisplayNode {
         }
     }
 
-    private String chooseNewVariableName(JCheckBox latentCheckBox,
+    private String chooseNewVariableName(JCheckBox latentCheckBox, JCheckBox selectionBiasCheckBox,
                                          List<Node> nodes) {
         String newName;
 
@@ -151,6 +152,7 @@ public class GraphNodeMeasured extends DisplayNode {
             message.add(nameField);
 
             message.add(latentCheckBox);
+            message.add(selectionBiasCheckBox);
 
             JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);

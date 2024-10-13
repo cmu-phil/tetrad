@@ -54,6 +54,12 @@ public class GraphNode implements Node {
      * @see edu.cmu.tetrad.graph.NodeType
      */
     private NodeType nodeType = NodeType.MEASURED;
+
+    /**
+     * Whether the node is selected as a bias node.
+     */
+    private boolean selectionBias;
+
     /**
      * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
@@ -283,6 +289,14 @@ public class GraphNode implements Node {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NodeVariableType getNodeVariableType() {
+        return this.nodeVariableType;
+    }
+
 //    @Override
 //    public int compareTo(Node node) {
 //        String node1 = getName();
@@ -340,14 +354,6 @@ public class GraphNode implements Node {
      * {@inheritDoc}
      */
     @Override
-    public NodeVariableType getNodeVariableType() {
-        return this.nodeVariableType;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
@@ -384,6 +390,39 @@ public class GraphNode implements Node {
         this.attributes.put(key, value);
     }
 
+    /**
+     * /** Whether the node is selected as a bias node.
+     */
+    /**
+     * Whether the node is selected as a bias node.
+     */
+    public boolean isSelectionBias() {
+        return selectionBias;
+    }
 
+    /**
+     * Returns true if this node is selected as a bias node.
+     *
+     * @return true if this node is selected as a bias node.
+     */
+    @Override
+    public boolean getSelectionBias() {
+        return false;
+    }
 
+    /**
+     * Sets whether the node is selected as a bias node.
+     */
+    public final void setSelectionBias(boolean selectionBias) {
+        if (selectionBias) {
+            this.selectionBias = selectionBias;
+        }
+    }
+
+    /**
+     * Returns true if this node is selected as a bias node.
+     */
+    public final boolean getSelectionBias(boolean selectionBias) {
+        return this.selectionBias = selectionBias;
+    }
 }
