@@ -251,7 +251,8 @@ public final class DagToPag {
         } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
             mag = GraphTransforms.zhangMagFromPag(dag);
         } else {
-            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no latents" + "but possibly with circle endpoints.");
+            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no " +
+                                               "latents but possibly with circle endpoints.");
         }
 
         Graph pag = new EdgeListGraph(mag);

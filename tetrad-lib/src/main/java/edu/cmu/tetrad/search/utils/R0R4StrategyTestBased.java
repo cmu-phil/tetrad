@@ -205,15 +205,12 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // Now we need a sepset for e and c, which can only be determined by looking at the data. However, we can
         // look at the estimated PAG for a hint.
         Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
-        blocking = SepsetFinder.getSmallestSubset(e, c, blocking, new HashSet<>(path), graph, true);
 
-//        if (blocking != null) {
-//            blocking = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(path), test, depth);
-//        }
-
-        if (blocking == null || !test.checkIndependence(e, c, blocking).isIndependent()) {
+        if (!test.checkIndependence(e, c, blocking).isIndependent()) {
             return Pair.of(discriminatingPath, false);
         }
+
+        blocking = SepsetFinder.getSmallestSubset(e, c, blocking, new HashSet<>(path), graph, true);
 
         Set<Node> blocking1 = new HashSet<>(blocking);
         blocking1.remove(b);
@@ -234,8 +231,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
                 blocking = blocking2;
             }
         }
-
-//        blocking = SepsetFinder.getSmallestSubset(e, c, blocking, new HashSet<>(path), graph, true);
 
         // Now proceed with Zhang's specificiation.
         if (blocking.contains(b)) {

@@ -99,8 +99,7 @@ public class GraphTransforms {
      *                          unshielded colliders in the graph.
      * @param verbose           Whether to print verbose output.
      */
-    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles,
-                                                   boolean verbose) {
+    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
         List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
@@ -199,7 +198,7 @@ public class GraphTransforms {
     }
 
     /**
-     * Transforms a partially ancestral graph (PAG) into a maximally ancestral graph (MAG) using Zhang's 2008 Theorem
+     * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem
      * 2.
      *
      * @param pag The partially ancestral graph to transform.
