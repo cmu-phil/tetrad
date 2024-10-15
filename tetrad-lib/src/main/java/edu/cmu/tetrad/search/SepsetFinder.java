@@ -198,7 +198,7 @@ public class SepsetFinder {
      * Returns a set of nodes that are the parents of the given node in the graph.
      *
      * @param graph the graph containing the nodes and edges
-     * @param x the node whose parent nodes are to be found
+     * @param x     the node whose parent nodes are to be found
      * @return a set of nodes that are the parents of the given node
      */
     public static Set<Node> blockPathsLocalMarkov(Graph graph, Node x) {
@@ -523,18 +523,22 @@ public class SepsetFinder {
     }
 
     /**
-     * Finds a smallest set of nodes that can render two nodes x and y conditionally independent given a set of
-     * conditioning nodes and the structure of a graph. (There may be more than one smallest subset.)
+     * Finds a smallest subset S of <code>blocking</code> that renders two nodes x and y conditionally d-separated
+     * conditional on S in the given graph. (There may be more than one smallest subset; only one is returned.)
      *
-     * @param x     the first node.
-     * @param y     the second node.
-     * @param cond  the initial set of conditioning nodes.
-     * @param graph the graph containing the nodes.
-     * @param isPag true if the graph is a PAG (Partial Ancestral Graph), false otherwise.
+     * @param x          the first node.
+     * @param y          the second node.
+     * @param blocking   the initial set of blocking nodes; this may not be a sepset.
+     * @param graph      the graph containing the nodes.
+     * @param containing a set of nodes that must be contained in the sepset.
+     * @param isPag      true if the graph is a PAG (Partial Ancestral Graph), false otherwise.
      * @return the smallest set of nodes that renders x and y conditionally independent.
      */
-    public static @NotNull Set<Node> getSmallestSubset(Node x, Node y, Set<Node> cond, Graph graph, boolean isPag) {
-        List<Node> _cond = new ArrayList<>(cond);
+    public static Set<Node> getSmallestSubset(Node x, Node y, Set<Node> blocking, Set<Node> containing, Graph graph, boolean isPag) {
+        List<Node> _cond = new ArrayList<>(blocking);
+
+        Set<Node> newCond = null;
+
         SublistGenerator generator = new SublistGenerator(_cond.size(), -1);
         int[] choice;
         MsepTest test = new MsepTest(graph, isPag);
@@ -546,13 +550,17 @@ public class SepsetFinder {
                 sepset.add(_cond.get(k));
             }
 
+            if (!sepset.containsAll(containing)) {
+                continue;
+            }
+
             if (test.checkIndependence(x, y, sepset).isIndependent()) {
-                cond = sepset;
+                newCond = sepset;
                 break;
             }
         }
 
-        return cond;
+        return newCond;
     }
 
     /**

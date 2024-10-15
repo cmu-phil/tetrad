@@ -52,11 +52,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Determines whether verbose mode is enabled or not.
      */
     private boolean verbose = false;
-    /**
-     * The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy. This variable is
-     * initially set to null. Use the setAllowedColliders method to set the allowed colliders. Use the
-     * getInitialAllowedColliders method to retrieve the initial set of allowed colliders.
-     */
     private Set<Triple> allowedColliders = null;
     /**
      * This variable represents the initial set of allowed colliders for the FciOrientDataExaminationStrategy. It is a
@@ -202,7 +197,9 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
         }
 
-        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
+//        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
+
+        Set<Node> blocking = graph.paths().anteriority(e, c);
 
         blocking.remove(b);
         IndependenceResult independenceResult1 = test.checkIndependence(e, c, blocking);
@@ -356,5 +353,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         this.maxLength = maxLength;
+    }
+
+    /**
+     * The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy. This variable is
+     * initially set to null. Use the setAllowedColliders method to set the allowed colliders. Use the
+     * getInitialAllowedColliders method to retrieve the initial set of allowed colliders.
+     */
+    public Set<Triple> getAllowedColliders() {
+        return allowedColliders;
     }
 }

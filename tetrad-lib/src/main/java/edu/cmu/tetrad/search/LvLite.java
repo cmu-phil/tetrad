@@ -23,11 +23,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
-import edu.cmu.tetrad.search.utils.TeyssierScorer;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
@@ -38,6 +36,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import edu.cmu.tetrad.search.utils.DiscriminatingPath;
 
 /**
  * The LV-Lite algorithm (Latent Variable "Lite") algorithm implements a search algorithm for learning the structure of
@@ -306,8 +306,117 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(test,
-                knowledge, verbose);
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test) {
+            @Override
+            public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
+                Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, new HashSet<>(), test, depth);
+                return sepset != null && !sepset.contains(j);
+            }
+
+            @Override
+            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+                Node e = discriminatingPath.getE();
+                Node a = discriminatingPath.getA();
+                Node b = discriminatingPath.getB();
+                Node c = discriminatingPath.getC();
+                List<Node> path = discriminatingPath.getColliderPath();
+
+                // Check that the discriminating path construct still exists in the graph.
+                if (!discriminatingPath.existsIn(graph)) {
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                // Check that the discriminating path has not yet been oriented; we don't need to list the ones that have
+                // already been oriented.
+                if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                for (Node n : path) {
+                    if (!graph.isParentOf(n, c)) {
+                        throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
+                    }
+                }
+
+                // Now we need a sepset for e and c, which can only be determined by looking at the data. However, we can
+                // look at the estimated PAG for a hint.
+                Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxBlockingPathLength);
+
+                if (!test.checkIndependence(e, c, blocking).isIndependent()) {
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                blocking = SepsetFinder.getSmallestSubset(e, c, blocking, new HashSet<>(path), graph, true);
+
+                Set<Node> blocking1 = new HashSet<>(blocking);
+                blocking1.remove(b);
+
+                IndependenceResult independenceResult1 = test.checkIndependence(e, c, blocking1);
+                boolean independent1 = independenceResult1.isIndependent();
+
+                if (independent1) {
+                    blocking = blocking1;
+                } else {
+                    Set<Node> blocking2 = new HashSet<>(blocking);
+                    blocking2.add(b);
+
+                    IndependenceResult independenceResult2 = test.checkIndependence(e, c, blocking2);
+                    boolean independent2 = independenceResult2.isIndependent();
+
+                    if (independent2) {
+                        blocking = blocking2;
+                    }
+                }
+
+                // Now proceed with Zhang's specificiation.
+                if (blocking.contains(b)) {
+                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                        return Pair.of(discriminatingPath, false);
+                    }
+
+                    graph.setEndpoint(c, b, Endpoint.TAIL);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log("R4: Discriminating path was oriented: " + discriminatingPath);
+                        TetradLogger.getInstance().log("    ORIENTED AS NONCOLLIDER: " + GraphUtils.pathString(graph, a, b, c));
+                    }
+
+                    return Pair.of(discriminatingPath, true);
+                } else {
+                    if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
+                        return Pair.of(discriminatingPath, false);
+                    }
+
+                    if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                        return Pair.of(discriminatingPath, false);
+                    }
+
+                    if (getInitialAllowedColliders() != null) {
+                        getInitialAllowedColliders().add(new Triple(a, b, c));
+                    } else {
+                        if ( getAllowedColliders() != null && !getAllowedColliders().contains(new Triple(a, b, c))) {
+                            return Pair.of(discriminatingPath, false);
+                        }
+                    }
+
+                    graph.setEndpoint(a, b, Endpoint.ARROW);
+                    graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log("R4: Discriminating path was oriented: " + discriminatingPath);
+                        TetradLogger.getInstance().log("    ORIENTED AS COLLIDER: " + GraphUtils.pathString(graph, a, b, c));
+                    }
+
+                    return Pair.of(discriminatingPath, true);
+
+                }
+            }
+        };
+//        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) r0R4Strategy;
+        strategy.setVerbose(verbose);
+
+//        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(test,
+//                knowledge, verbose);
         strategy.setDepth(depth);
         strategy.setMaxLength(maxBlockingPathLength);
 
@@ -402,8 +511,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose,
-                    new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose, new HashSet<>());
         }
 
         if (verbose) {
