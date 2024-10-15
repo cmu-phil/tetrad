@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -79,7 +80,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     /**
      * The maximum length of the path, for relevant paths.
      */
-    private int maxLength;
+    private int maxLength = -1;
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -197,31 +198,38 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
         }
 
-//        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
+        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
+//        Set<Node> blocking = graph.paths().anteriority(e, c);
 
-        Set<Node> blocking = graph.paths().anteriority(e, c);
+//        path = new ArrayList<>(path);
+//        path.remove(a);
 
-        blocking.remove(b);
-        IndependenceResult independenceResult1 = test.checkIndependence(e, c, blocking);
-        boolean independentCollider = independenceResult1.isIndependent();
-        double p1 = independenceResult1.getPValue();
+//        blocking = SepsetFinder.getSmallestSubset(e, c, blocking, new HashSet<>(path), graph, true);
 
-        blocking.add(b);
-        IndependenceResult independenceResult2 = test.checkIndependence(e, c, blocking);
-        double p2 = independenceResult2.getPValue();
-        boolean independentNoncollider = independenceResult2.isIndependent();
+//        MsepTest msep = new MsepTest(graph);
+//
+//        if (!msep.checkIndependence(e, c, blocking).isIndependent()) {
+//            throw new IllegalArgumentException("Blocking set is not a separating set.");
+//        }
 
-        if (independentCollider && independentNoncollider) {
-            if (verbose) {
-                TetradLogger.getInstance().log("R4: Discriminating path not oriented because of ambiguity: " + discriminatingPath);
-                TetradLogger.getInstance().log("    Alpha level of test = " + test.getAlpha());
-                TetradLogger.getInstance().log("    p1 (without B) = " + p1 + ", p2 (with B) = " + p2);
+        System.out.println("Blocking size = " + blocking.size());
+
+        // The worry is that maybe blocking isn't the sepset.
+
+        if (test.checkIndependence(e, c, blocking).isIndependent() && blocking.contains(b)) {
+            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                return Pair.of(discriminatingPath, false);
             }
 
-            return Pair.of(discriminatingPath, false);
-        }
+            graph.setEndpoint(c, b, Endpoint.TAIL);
 
-        if (independentCollider) {
+            if (verbose) {
+                TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
+                TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
+            }
+
+            return Pair.of(discriminatingPath, true);
+        } else {
             if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
                 return Pair.of(discriminatingPath, false);
             }
@@ -244,19 +252,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             graph.setEndpoint(a, b, Endpoint.ARROW);
             graph.setEndpoint(c, b, Endpoint.ARROW);
-
-            if (verbose) {
-                TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
-                TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
-            }
-
-            return Pair.of(discriminatingPath, true);
-        } else {
-            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            graph.setEndpoint(c, b, Endpoint.TAIL);
 
             if (verbose) {
                 TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);

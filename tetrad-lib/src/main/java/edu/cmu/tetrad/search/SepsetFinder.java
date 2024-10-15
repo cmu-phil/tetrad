@@ -239,16 +239,14 @@ public class SepsetFinder {
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
-                if (pathToTargetFound(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap)) {
-                    continue;
-                }
+                pathToTargetFound(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap);
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
         return z;
     }
 
-    private static List<Node> getPassNodes(Graph graph, Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
+    private static List<Node> getReachableNodes(Graph graph, Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
         List<Node> passNodes = new ArrayList<>();
 
         for (Node c : graph.getAdjacentNodes(b)) {
@@ -345,24 +343,30 @@ public class SepsetFinder {
             }
         }
 
+        // If b is latent, we cannot condition on it. If z already contains b, we know we've already conditioned on
+        // it, so there's no point considering further whether to condition on it or now.
         if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
-            List<Node> passNodes = getPassNodes(graph, a, b, z, ancestorMap);
+            List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
 
             for (Node c : passNodes) {
                 if (pathToTargetFound(graph, b, c, y, path, z, colliders, maxPathLength, ancestorMap)) {
-                    return true;
+                    return true; // can't be blocked.
                 }
             }
 
             path.remove(b);
-            return false;
+            return false; // blocked.
         } else {
+
+            // We're going to look to see whether the path to y has already been blocked by z. If it has, we can
+            // stop here. If it hasn't, we'll see if we can block it by conditioning also on b. If it can't be
+            // blocked either way, well, then, it just can't be blocked.
             boolean found1 = false;
             Set<Triple> _colliders1 = new HashSet<>();
 
-            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
+            for (Node c : getReachableNodes(graph, a, b, z, ancestorMap)) {
                 if (pathToTargetFound(graph, b, c, y, path, z, _colliders1, maxPathLength, ancestorMap)) {
-                    found1 = true;
+                    found1 = true; // can't be blocked.
                     break;
                 }
             }
@@ -370,14 +374,15 @@ public class SepsetFinder {
             if (!found1) {
                 path.remove(b);
                 colliders.addAll(_colliders1);
-                return false;
+                return false; // blocked.
             }
 
             z.add(b);
+
             boolean found2 = false;
             Set<Triple> _colliders2 = new HashSet<>();
 
-            for (Node c : getPassNodes(graph, a, b, z, ancestorMap)) {
+            for (Node c : getReachableNodes(graph, a, b, z, ancestorMap)) {
                 if (pathToTargetFound(graph, b, c, y, path, z, _colliders2, maxPathLength, ancestorMap)) {
                     found2 = true;
                     break;
@@ -387,10 +392,10 @@ public class SepsetFinder {
             if (!found2) {
                 path.remove(b);
                 colliders.addAll(_colliders2);
-                return false;
+                return false; // blocked
             }
 
-            return true;
+            return true; // can't be blocked.
         }
     }
 
