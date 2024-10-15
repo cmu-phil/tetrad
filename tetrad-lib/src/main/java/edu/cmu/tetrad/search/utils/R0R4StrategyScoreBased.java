@@ -88,10 +88,10 @@ public class R0R4StrategyScoreBased implements R0R4Strategy {
      */
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
-        Node e = discriminatingPath.getE();
-        Node a = discriminatingPath.getA();
-        Node b = discriminatingPath.getB();
-        Node c = discriminatingPath.getC();
+        Node e = discriminatingPath.getX();
+        Node a = discriminatingPath.getW();
+        Node b = discriminatingPath.getV();
+        Node c = discriminatingPath.getY();
         List<Node> path = discriminatingPath.getColliderPath();
 
         // Check that the discriminating path construct still exists in the graph.

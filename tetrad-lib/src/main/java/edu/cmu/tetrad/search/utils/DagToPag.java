@@ -165,10 +165,10 @@ public final class DagToPag {
              * @see DiscriminatingPath
              */
             public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
-                Node e = discriminatingPath.getE();
-                Node a = discriminatingPath.getA();
-                Node b = discriminatingPath.getB();
-                Node c = discriminatingPath.getC();
+                Node e = discriminatingPath.getX();
+                Node a = discriminatingPath.getW();
+                Node b = discriminatingPath.getV();
+                Node c = discriminatingPath.getY();
 
                 // Check that the discriminating path construct still exists in the graph.
                 if (!discriminatingPath.existsIn(graph)) {

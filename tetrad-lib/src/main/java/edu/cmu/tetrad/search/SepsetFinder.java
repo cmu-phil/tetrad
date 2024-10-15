@@ -37,31 +37,36 @@ public class SepsetFinder {
         adjx.remove(y);
         adjy.remove(x);
 
-        if (containing != null) {
-            adjx.removeAll(containing);
-            adjy.removeAll(containing);
-        }
-
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
         List<List<Integer>> choices = getChoices(adjx, depth);
-        List<Integer> sepset = choices.parallelStream().filter(_choice -> separates(x, y, combination(_choice, adjx), test)).findFirst().orElse(null);
+
+        // Parallelize processing for adjx
+        Set<Node> sepset = choices.parallelStream()
+                .map(choice -> combination(choice, adjx)) // Generate combinations in parallel
+                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                .filter(subset -> separates(x, y, subset, test)) // Further filter by separating sets
+                .findFirst() // Return the first matching subset
+                .orElse(null);
 
         if (sepset != null) {
-            return combination(sepset, adjx);
+            return sepset;
         }
 
-        // Do the same for adjy.
+        // Parallelize processing for adjy
         choices = getChoices(adjy, depth);
-        sepset = choices.parallelStream().filter(_choice -> separates(x, y, combination(_choice, adjy), test)).findFirst().orElse(null);
 
-        if (sepset != null) {
-            return combination(sepset, adjy);
-        }
+        sepset = choices.parallelStream()
+                .map(choice -> combination(choice, adjy)) // Generate combinations in parallel
+                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                .filter(subset -> separates(x, y, subset, test)) // Further filter by separating sets
+                .findFirst() // Return the first matching subset
+                .orElse(null);
 
-        return null;
+        return sepset;
     }
+
 
     /**
      * Returns the set of nodes that act as a separating set between two given nodes (x and y) in a graph. The method
@@ -82,32 +87,33 @@ public class SepsetFinder {
         adjx.remove(y);
         adjy.remove(x);
 
-        if (containing != null) {
-            adjx.removeAll(containing);
-            adjy.removeAll(containing);
-        }
+//        if (containing != null) {
+//            adjx.removeAll(containing);
+//            adjy.removeAll(containing);
+//        }
 
         // Remove latent nodes.
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
         // Find the best separating set among adjx
-        Set<Node> bestSepset = findMaxPSepset(x, y, adjx, test, depth);
+        Set<Node> bestSepset = findMaxPSepset(x, y, adjx, test, containing, depth);
         if (bestSepset != null) {
             return bestSepset;
         }
 
         // Find the best separating set among adjy
-        return findMaxPSepset(x, y, adjy, test, depth);
+        return findMaxPSepset(x, y, adjy, test, containing, depth);
     }
 
-    private static Set<Node> findMaxPSepset(Node x, Node y, List<Node> adj, IndependenceTest test, int depth) {
+    private static Set<Node> findMaxPSepset(Node x, Node y, List<Node> adj, IndependenceTest test, Set<Node> containing, int depth) {
         List<List<Integer>> choices = getChoices(adj, depth);
         double maxPValue = -1.0;
         List<Integer> bestChoice = null;
 
         for (List<Integer> choice : choices) {
             Set<Node> subset = combination(choice, adj);
+            if (!subset.containsAll(containing)) continue;
 
             // Check if the subset is a separating set
             if (separates(x, y, subset, test)) {
@@ -147,10 +153,10 @@ public class SepsetFinder {
         adjx.remove(y);
         adjy.remove(x);
 
-        if (containing != null) {
-            adjx.removeAll(containing);
-            adjy.removeAll(containing);
-        }
+//        if (containing != null) {
+//            adjx.removeAll(containing);
+//            adjy.removeAll(containing);
+//        }
 
         // Remove latent nodes.
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);

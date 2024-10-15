@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SepsetFinder;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
@@ -175,19 +174,18 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
-        Node e = discriminatingPath.getE();
-        Node a = discriminatingPath.getA();
-        Node b = discriminatingPath.getB();
-        Node c = discriminatingPath.getC();
+        Node e = discriminatingPath.getX();
+        Node a = discriminatingPath.getW();
+        Node b = discriminatingPath.getV();
+        Node c = discriminatingPath.getY();
         List<Node> path = discriminatingPath.getColliderPath();
 
-        // Check that the discriminating path has not yet been oriented; we don't need to list the ones that have
-        // already been oriented.
+        // Check that the discriminating path has not yet been oriented; we don't need to orient those.
         if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
             return Pair.of(discriminatingPath, false);
         }
 
-        // Check that the discriminating path construct still exists in the graph.
+        // Check that the discriminating path still exists in the graph.
         if (!discriminatingPath.existsIn(graph)) {
             return Pair.of(discriminatingPath, false);
         }
@@ -198,23 +196,22 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
         }
 
-        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
-//        Set<Node> blocking = graph.paths().anteriority(e, c);
+        System.out.println("path = " + path);
 
 //        path = new ArrayList<>(path);
 //        path.remove(a);
 
-//        blocking = SepsetFinder.getSmallestSubset(e, c, blocking, new HashSet<>(path), graph, true);
+//        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
+        Set<Node> blocking = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(path), test, depth);
 
-//        MsepTest msep = new MsepTest(graph);
-//
-//        if (!msep.checkIndependence(e, c, blocking).isIndependent()) {
-//            throw new IllegalArgumentException("Blocking set is not a separating set.");
-//        }
+//        Graph mag = GraphTransforms.zhangMagFromPag(graph);
+//        Set<Node> blocking = mag.paths().anteriority(e, c);
 
-        System.out.println("Blocking size = " + blocking.size());
+        System.out.println("blocking: " + blocking);
 
-        // The worry is that maybe blocking isn't the sepset.
+        if (blocking == null) {
+            throw new IllegalArgumentException("Sepset is null.");
+        }
 
         if (test.checkIndependence(e, c, blocking).isIndependent() && blocking.contains(b)) {
             if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
