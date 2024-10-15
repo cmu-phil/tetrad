@@ -261,7 +261,8 @@ public final class Fci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose,
+                    new HashSet<>());
         }
 
         long stop = MillisecondTimes.timeMillis();

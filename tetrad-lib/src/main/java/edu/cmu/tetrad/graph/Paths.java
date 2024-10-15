@@ -336,7 +336,16 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a legal mag, false otherwise
      */
     public boolean isLegalMag() {
-        return GraphSearchUtils.isLegalMag(graph).isLegalMag();
+        List<Node> latent = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+
+        List<Node> measured = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        List<Node> selection = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        return GraphSearchUtils.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
     }
 
     /**
@@ -345,7 +354,16 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a Legal PAG, false otherwise
      */
     public boolean isLegalPag() {
-        return GraphSearchUtils.isLegalPag(graph).isLegalPag();
+        List<Node> latent = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+
+        List<Node> measured = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        List<Node> selection = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
     /**
@@ -1307,11 +1325,12 @@ public class Paths implements TetradSerializable {
      * Determines whether an inducing path exists between node1 and node2, given a set O of observed nodes and a set sem
      * of conditioned nodes.
      *
-     * @param x the first node.
-     * @param y the second node.
+     * @param x                  the first node.
+     * @param y                  the second node.
+     * @param selectionVariables the set of selection variables.
      * @return true if an inducing path exists, false if not.
      */
-    public boolean existsInducingPath(Node x, Node y) {
+    public boolean existsInducingPath(Node x, Node y, Set<Node> selectionVariables) {
         if (x.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException();
         }
@@ -1323,7 +1342,7 @@ public class Paths implements TetradSerializable {
         path.add(x);
 
         for (Node b : graph.getAdjacentNodes(x)) {
-            if (existsInducingPathVisit(x, b, x, y, path)) {
+            if (existsInducingPathVisit(x, b, x, y, selectionVariables, path)) {
                 return true;
             }
         }
@@ -1334,14 +1353,15 @@ public class Paths implements TetradSerializable {
     /**
      * <p>existsInducingPathVisit.</p>
      *
-     * @param a    a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b    a {@link edu.cmu.tetrad.graph.Node} object
-     * @param x    a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y    a {@link edu.cmu.tetrad.graph.Node} object
-     * @param path a {@link java.util.LinkedList} object
+     * @param a                  a {@link Node} object
+     * @param b                  a {@link Node} object
+     * @param x                  a {@link Node} object
+     * @param y                  a {@link Node} object
+     * @param selectionVariables
+     * @param path               a {@link LinkedList} object
      * @return a boolean
      */
-    public boolean existsInducingPathVisit(Node a, Node b, Node x, Node y, LinkedList<Node> path) {
+    public boolean existsInducingPathVisit(Node a, Node b, Node x, Node y, Set<Node> selectionVariables, LinkedList<Node> path) {
         if (path.contains(b)) {
             return false;
         }
@@ -1365,12 +1385,13 @@ public class Paths implements TetradSerializable {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y))) {
+                if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y))
+                    || graph.paths().isAncestor(b, selectionVariables)) {
                     continue;
                 }
             }
 
-            if (existsInducingPathVisit(b, c, x, y, path)) {
+            if (existsInducingPathVisit(b, c, x, y, selectionVariables, path)) {
                 return true;
             }
         }
@@ -1382,12 +1403,13 @@ public class Paths implements TetradSerializable {
     /**
      * This method calculates the inducing path between two measured nodes in a graph.
      *
-     * @param x the first measured node in the graph
-     * @param y the second measured node in the graph
+     * @param x                  the first measured node in the graph
+     * @param y                  the second measured node in the graph
+     * @param selectionVariables
      * @return the inducing path between node x and node y, or null if no inducing path exists
      * @throws IllegalArgumentException if either x or y is not of NodeType.MEASURED
      */
-    public List<Node> getInducingPath(Node x, Node y) {
+    public List<Node> getInducingPath(Node x, Node y, Set<Node> selectionVariables) {
         if (x.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException();
         }
@@ -1399,7 +1421,7 @@ public class Paths implements TetradSerializable {
         path.add(x);
 
         for (Node b : graph.getAdjacentNodes(x)) {
-            if (existsInducingPathVisit(x, b, x, y, path)) {
+            if (existsInducingPathVisit(x, b, x, y, selectionVariables, path)) {
                 return path;
             }
         }

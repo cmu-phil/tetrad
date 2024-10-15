@@ -27,7 +27,6 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -79,8 +78,15 @@ public final class DagToPag {
      */
     public static Graph calcAdjacencyGraph(Graph dag) {
         List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<>(allNodes);
-        measured.removeIf(node -> node.getNodeType() != NodeType.MEASURED);
+
+        List<Node> latent = allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+
+        List<Node> measured = allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        List<Node> selection = allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         Graph graph = new EdgeListGraph(measured);
 
@@ -89,7 +95,7 @@ public final class DagToPag {
             IntStream.range(i + 1, measured.size()).forEach(j -> {
                 Node n2 = measured.get(j);
                 if (!graph.isAdjacentTo(n1, n2)) {
-                    List<Node> inducingPath = dag.paths().getInducingPath(n1, n2);
+                    List<Node> inducingPath = dag.paths().getInducingPath(n1, n2, new HashSet<>(selection));
                     if (inducingPath != null) {
                         graph.addEdge(Edges.nondirectedEdge(n1, n2));
                     }

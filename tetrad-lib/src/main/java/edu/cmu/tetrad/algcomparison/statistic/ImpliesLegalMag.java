@@ -3,9 +3,13 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import java.io.Serial;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Implies Legal MAG
@@ -44,8 +48,17 @@ public class ImpliesLegalMag implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        List<Node> latent = trueGraph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+
+        List<Node> measured = trueGraph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        List<Node> selection = trueGraph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
-        GraphSearchUtils.LegalMagRet legalPag = GraphSearchUtils.isLegalMag(estGraph);
+        GraphSearchUtils.LegalMagRet legalPag = GraphSearchUtils.isLegalMag(estGraph, new HashSet<>(selection));
 
         if (legalPag.isLegalMag()) {
             return 1.0;

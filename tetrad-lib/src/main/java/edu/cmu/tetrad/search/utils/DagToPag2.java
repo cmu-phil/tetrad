@@ -24,9 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -97,6 +95,15 @@ public final class DagToPag2 {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
         if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
 
+        List<Node> latent = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+
+        List<Node> measured = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        List<Node> selection = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
         LinkedList<Node> path = new LinkedList<>();
         path.add(x);
 
@@ -104,7 +111,7 @@ public final class DagToPag2 {
             Edge edge = graph.getEdge(x, b);
             if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
 
-            if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
+            if (graph.paths().existsInducingPathVisit(x, b, x, y, new HashSet<>(selection), path)) {
                 return true;
             }
         }
@@ -122,7 +129,16 @@ public final class DagToPag2 {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
         }
 
-        Graph graph = calcAdjacencyGraph();
+        List<Node> latent = dag.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+
+        List<Node> measured = dag.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        List<Node> selection = dag.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        Graph graph = calcAdjacencyGraph(new HashSet<>(selection));
 
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting collider orientation");
@@ -209,7 +225,7 @@ public final class DagToPag2 {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
-    private Graph calcAdjacencyGraph() {
+    private Graph calcAdjacencyGraph(Set<Node> selection) {
         List<Node> allNodes = this.dag.getNodes();
         List<Node> measured = new ArrayList<>(allNodes);
         measured.removeIf(node -> node.getNodeType() != NodeType.MEASURED);
@@ -223,7 +239,7 @@ public final class DagToPag2 {
 
                 if (graph.isAdjacentTo(n1, n2)) continue;
 
-                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2);
+                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2, selection);
 
                 boolean exists = inducingPath != null;
 

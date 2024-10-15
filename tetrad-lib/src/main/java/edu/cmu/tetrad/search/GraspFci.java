@@ -237,7 +237,8 @@ public final class GraspFci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose,
+                    new HashSet<>());
         }
 
         if (verbose) {

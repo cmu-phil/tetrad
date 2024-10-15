@@ -2908,11 +2908,13 @@ public final class GraphUtils {
      * @param unshieldedColliders the set of unshielded colliders to be updated
      * @param checkCyclicity      indicates whether or not to check for cyclicity
      * @param verbose             indicates whether or not to print verbose output
+     * @param selection
      * @return the repaired PAG
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                     Set<Triple> unshieldedColliders, boolean checkCyclicity, boolean verbose) {
+                                     Set<Triple> unshieldedColliders, boolean checkCyclicity,
+                                     boolean verbose, Set<Node> selection) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2927,7 +2929,7 @@ public final class GraphUtils {
             anyChange = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose) || anyChange;
         }
 
-        anyChange = repairMaximality(pag, verbose, anyChange) || anyChange;
+        anyChange = repairMaximality(pag, verbose, anyChange, selection) || anyChange;
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing final orientation...");
@@ -3035,11 +3037,11 @@ public final class GraphUtils {
         return anyChange;
     }
 
-    private static boolean repairMaximality(Graph pag, boolean verbose, boolean anyChange) {
+    private static boolean repairMaximality(Graph pag, boolean verbose, boolean anyChange, Set<Node> selection) {
         // Repair maximality.
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
-                if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y)) {
+                if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, selection)) {
 //                        pag.addNondirectedEdge(x, y);
                     pag.addNondirectedEdge(x, y); // Zhang 2008
 
