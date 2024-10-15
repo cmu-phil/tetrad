@@ -881,7 +881,7 @@ public class MarkovCheck implements SampleSizeSettable {
 
                     if (findSmallestSubset && graph.paths().isMSeparatedFrom(x, y, z, false)) {
 //                        z = removeExtraneousVariables(z, x, y, !isMpdag);
-                        z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isMpdag);
+                        z = SepsetFinder.getSmallestSubset(x, y, z, graph, !isMpdag);
                     }
 
                     if (!checkNodeIndependenceAndConditioning(x, y, z)) {
