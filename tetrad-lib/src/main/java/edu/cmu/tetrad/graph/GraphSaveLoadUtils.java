@@ -1490,7 +1490,7 @@ public class GraphSaveLoadUtils {
      * @param pagEdgeSpecializationMarked whether to add edge specialization markups to the graph before conversion
      * @return the human-readable representation of the graph
      */
-    public static String graphToText(Graph graph, boolean pagEdgeSpecializationMarked) {
+    public static String loadGraphTxt(Graph graph, boolean pagEdgeSpecializationMarked) {
         if (pagEdgeSpecializationMarked) {
             GraphUtils.addEdgeSpecializationMarkup(graph);
         }

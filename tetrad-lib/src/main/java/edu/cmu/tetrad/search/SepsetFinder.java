@@ -113,7 +113,7 @@ public class SepsetFinder {
 
         for (List<Integer> choice : choices) {
             Set<Node> subset = combination(choice, adj);
-            if (!subset.containsAll(containing)) continue;
+            if (containing != null && !subset.containsAll(containing)) continue;
 
             // Check if the subset is a separating set
             if (separates(x, y, subset, test)) {

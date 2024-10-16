@@ -1166,7 +1166,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public String toString() {
-        return GraphSaveLoadUtils.graphToText(this, false);
+        return GraphSaveLoadUtils.loadGraphTxt(this, false);
     }
 
     /**
