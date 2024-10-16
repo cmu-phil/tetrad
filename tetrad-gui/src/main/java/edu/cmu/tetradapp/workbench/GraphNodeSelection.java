@@ -39,28 +39,28 @@ import java.io.Serial;
 import java.util.List;
 
 /**
- * Represents a latent variable in the workbench. Appears as an oval with the variable name in it. Clicking on the oval
- * pops up a dialog that lets the user modify the name of the variable and whether the variable is latent.
+ * Represents a selection variable in the workbench. Appears as an oval with the variable name in it. Clicking on the oval
+ * pops up a dialog that lets the user modify the name of the variable and whether the variable is selection.
  *
  * @author josephramsey
  * @author Willie Wheeler
  * @version $Id: $Id
  */
-public class GraphNodeLatent extends DisplayNode {
+public class GraphNodeSelection extends DisplayNode {
 
     /**
-     * Constructs a new node for representing latent variables in the graph workbench.
+     * Constructs a new node for representing selection variables in the graph workbench.
      *
      * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
-    public GraphNodeLatent(Node modelNode) {
+    public GraphNodeSelection(Node modelNode) {
         setModelNode(modelNode);
-        if (modelNode.getNodeType() != NodeType.LATENT) {
-            throw new IllegalArgumentException("GraphNodeLatent requires " +
-                                               "a GraphNode of type NodeType.LATENT.");
+        if (modelNode.getNodeType() != NodeType.SELECTION) {
+            throw new IllegalArgumentException("GraphNodeSelection requires " +
+                                               "a GraphNode of type NodeType.SELECTION.");
         }
 
-        setDisplayComp(new LatentDisplayComp(modelNode.getName()));
+        setDisplayComp(new SelectionDisplayComp(modelNode.getName()));
     }
 
     /**
@@ -74,7 +74,7 @@ public class GraphNodeLatent extends DisplayNode {
         typeBox.addItem("Latent");
         typeBox.addItem("Selection");
 
-        typeBox.setSelectedItem("Latent");
+        typeBox.setSelectedItem("Selection");
 
         newName = chooseNewVariableName(typeBox, nodes);
 
@@ -93,17 +93,17 @@ public class GraphNodeLatent extends DisplayNode {
             changed = true;
         }
 
-//        if (typeBox.getSelectedItem().equals("Latent")) {
-//            this.getModelNode().setNodeType(NodeType.LATENT);
-//            firePropertyChange("resetGraph", null, null);
-//            changed = true;
-//        }
-
-        if (typeBox.getSelectedItem().equals("Selection")) {
-            this.getModelNode().setNodeType(NodeType.SELECTION);
+        if (typeBox.getSelectedItem().equals("Latent")) {
+            this.getModelNode().setNodeType(NodeType.LATENT);
             firePropertyChange("resetGraph", null, null);
             changed = true;
         }
+
+//        if (typeBox.getSelectedItem().equals("Selection")) {
+//            this.getModelNode().setNodeType(NodeType.SELECTION);
+//            firePropertyChange("resetGraph", null, null);
+//            changed = true;
+//        }
 
         if (changed) {
             firePropertyChange("editingValueChanged", null, null);

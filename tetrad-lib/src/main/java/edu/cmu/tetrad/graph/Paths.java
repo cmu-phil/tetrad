@@ -1405,15 +1405,15 @@ public class Paths implements TetradSerializable {
      *
      * @param x                  the first measured node in the graph
      * @param y                  the second measured node in the graph
-     * @param selectionVariables
+     * @param selectionVariables the set of selection variables
      * @return the inducing path between node x and node y, or null if no inducing path exists
      * @throws IllegalArgumentException if either x or y is not of NodeType.MEASURED
      */
     public List<Node> getInducingPath(Node x, Node y, Set<Node> selectionVariables) {
-        if (x.getNodeType() != NodeType.MEASURED) {
+        if (x.getNodeType() != NodeType.MEASURED && !selectionVariables.contains(x)) {
             throw new IllegalArgumentException();
         }
-        if (y.getNodeType() != NodeType.MEASURED) {
+        if (y.getNodeType() != NodeType.MEASURED && !selectionVariables.contains(y)) {
             throw new IllegalArgumentException();
         }
 
@@ -1673,9 +1673,9 @@ public class Paths implements TetradSerializable {
     /**
      * Retrieves a sepset (a set of nodes) between two given nodes.
      *
-     * @param x          the first node
-     * @param y          the second node
-     * @param containing the set of nodes that the sepset must contain
+     * @param x             the first node
+     * @param y             the second node
+     * @param containing    the set of nodes that the sepset must contain
      * @param maxPathLength the maximum length of the path to search for the blocking set
      * @return the sepset between the two nodes
      */
@@ -1896,12 +1896,12 @@ public class Paths implements TetradSerializable {
     /**
      * Detemrmines whether x and y are d-connected given z.
      *
-     * @param x                  a {@link Node} object
-     * @param y                  a {@link Node} object
-     * @param z                  a {@link Set} object
-     * @param ancestors          a {@link Map} object
-     * @param isPag whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     * @param x         a {@link Node} object
+     * @param y         a {@link Node} object
+     * @param z         a {@link Set} object
+     * @param ancestors a {@link Map} object
+     * @param isPag     whether to allow selection bias; if true, then undirected edges X--Y are uniformly treated as
+     *                  X-&gt;L&lt;-Y.
      * @return true if x and y are d-connected given z; false otherwise.
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors, boolean isPag) {
@@ -2314,11 +2314,11 @@ public class Paths implements TetradSerializable {
      * <p>
      * Precondition: This graph is a DAG. Please don't violate this constraint; weird things can happen!
      *
-     * @param node1              the first node.
-     * @param node2              the second node.
-     * @param z                  the conditioning set.
-     * @param isPag whether to allow selection bias; if true, then undirected edges X--Y are uniformly
-     *                           treated as X-&gt;L&lt;-Y.
+     * @param node1 the first node.
+     * @param node2 the second node.
+     * @param z     the conditioning set.
+     * @param isPag whether to allow selection bias; if true, then undirected edges X--Y are uniformly treated as
+     *              X-&gt;L&lt;-Y.
      * @return true if node1 is d-separated from node2 given set t, false if not.
      */
     public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, boolean isPag) {

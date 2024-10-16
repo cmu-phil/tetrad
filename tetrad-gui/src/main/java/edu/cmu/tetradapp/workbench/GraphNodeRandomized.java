@@ -68,10 +68,12 @@ public class GraphNodeRandomized extends DisplayNode {
     public void doDoubleClickAction(Graph graph) {
         String newName;
         List<Node> nodes = graph.getNodes();
-        JCheckBox latentCheckBox = new JCheckBox("Latent", true);
-        JCheckBox selectionBiasCheckBox = new JCheckBox("Selection Bias", true);
+        JComboBox<String> typeBox = new JComboBox<>();
+        typeBox.addItem("Measured");
+        typeBox.addItem("Latent");
+        typeBox.addItem("Selection");
 
-        newName = chooseNewVariableName(latentCheckBox, selectionBiasCheckBox, nodes);
+        newName = chooseNewVariableName(typeBox, nodes);
 
         boolean changed = false;
 
@@ -82,7 +84,9 @@ public class GraphNodeRandomized extends DisplayNode {
             changed = true;
         }
 
-        if (!latentCheckBox.isSelected()) {
+        Object selectedItem = typeBox.getSelectedItem();
+
+        if (selectedItem != null && !selectedItem.equals("Measured")) {
             this.getModelNode().setNodeType(NodeType.MEASURED);
             firePropertyChange("resetGraph", null, null);
             changed = true;
@@ -93,7 +97,7 @@ public class GraphNodeRandomized extends DisplayNode {
         }
     }
 
-    private String chooseNewVariableName(JCheckBox latentCheckBox, JCheckBox selectionBiasCheckBox,
+    private String chooseNewVariableName(JComboBox<String> typeBox,
                                          List<Node> nodes) {
         String newName;
 
@@ -124,8 +128,7 @@ public class GraphNodeRandomized extends DisplayNode {
             message.add(new JLabel("Name:"));
             message.add(nameField);
 
-            message.add(latentCheckBox);
-            message.add(selectionBiasCheckBox);
+            message.add(typeBox);
 
             JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
@@ -136,7 +139,7 @@ public class GraphNodeRandomized extends DisplayNode {
 
             newName = nameField.getText();
 
-            // Tests that newName is a well formed variable
+            // Tests that newName is a well-formed variable
             if (!NamingProtocol.isLegalName(newName)) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         NamingProtocol.getProtocolDescription());

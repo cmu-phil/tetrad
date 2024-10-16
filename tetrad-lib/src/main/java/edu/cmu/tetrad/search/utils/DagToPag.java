@@ -79,21 +79,24 @@ public final class DagToPag {
     public static Graph calcAdjacencyGraph(Graph dag) {
         List<Node> allNodes = dag.getNodes();
 
-        List<Node> latent = allNodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
-
-        List<Node> measured = allNodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+//        List<Node> latent = allNodes.stream()
+//                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+//
+//        List<Node> measured = allNodes.stream()
+//                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
 
         List<Node> selection = allNodes.stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        Graph graph = new EdgeListGraph(measured);
+        List<Node> nonLatent = allNodes.stream()
+                .filter(node -> node.getNodeType() != NodeType.LATENT).toList();
 
-        IntStream.range(0, measured.size()).parallel().forEach(i -> {
-            Node n1 = measured.get(i);
-            IntStream.range(i + 1, measured.size()).forEach(j -> {
-                Node n2 = measured.get(j);
+        Graph graph = new EdgeListGraph(nonLatent);
+
+        IntStream.range(0, nonLatent.size()).parallel().forEach(i -> {
+            Node n1 = nonLatent.get(i);
+            IntStream.range(i + 1, nonLatent.size()).forEach(j -> {
+                Node n2 = nonLatent.get(j);
                 if (!graph.isAdjacentTo(n1, n2)) {
                     List<Node> inducingPath = dag.paths().getInducingPath(n1, n2, new HashSet<>(selection));
                     if (inducingPath != null) {
@@ -185,30 +188,38 @@ public final class DagToPag {
                     throw new IllegalArgumentException("e and c must not be adjacent");
                 }
 
-                Graph mag1 = ((MsepTest) getTest()).getGraph();
+//                Graph mag1 = ((MsepTest) getTest()).getGraph();
+//
+//                Set<Node> dsepe = GraphUtils.dsep(e, c, mag1);
+//                Set<Node> dsepc = GraphUtils.dsep(c, e, mag1);
+//
+//                Set<Node> sepset = null;
+//
+//                if (getTest().checkIndependence(e, c, dsepe).isIndependent()) {
+//                    sepset = dsepe;
+//                } else if (getTest().checkIndependence(c, e, dsepc).isIndependent()) {
+//                    sepset = dsepc;
+//                }
 
-                Set<Node> dsepe = GraphUtils.dsep(e, c, mag1);
-                Set<Node> dsepc = GraphUtils.dsep(c, e, mag1);
+                Set<Node> sepset = mag.paths().anteriority(e, c);
 
-                Set<Node> sepset = null;
-
-                if (getTest().checkIndependence(e, c, dsepe).isIndependent()) {
-                    sepset = dsepe;
-                } else if (getTest().checkIndependence(c, e, dsepc).isIndependent()) {
-                    sepset = dsepc;
-                }
-
-                if (sepset == null) {
-                    return Pair.of(discriminatingPath, false);
-                }
+//                if (sepset == null) {
+//                    return Pair.of(discriminatingPath, false);
+//                }
 
                 if (verbose) {
                     TetradLogger.getInstance().log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
                 }
 
-                boolean collider = !sepset.contains(b);
+                if (sepset.contains(b)) {
+                    graph.setEndpoint(c, b, Endpoint.TAIL);
 
-                if (collider) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                    }
+
+                    return Pair.of(discriminatingPath, true);
+                } else {
                     if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
                         return Pair.of(discriminatingPath, false);
                     }
@@ -222,14 +233,6 @@ public final class DagToPag {
 
                     if (verbose) {
                         TetradLogger.getInstance().log("R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                    }
-
-                    return Pair.of(discriminatingPath, true);
-                } else {
-                    graph.setEndpoint(c, b, Endpoint.TAIL);
-
-                    if (verbose) {
-                        TetradLogger.getInstance().log("R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
                     }
 
                     return Pair.of(discriminatingPath, true);
@@ -249,7 +252,6 @@ public final class DagToPag {
      * @return Returns the converted PAG.
      */
     public Graph convert() {
-
         Graph mag;
 
         if (dag.paths().isLegalDag()) {
