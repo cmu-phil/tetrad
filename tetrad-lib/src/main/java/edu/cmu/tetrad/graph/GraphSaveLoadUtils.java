@@ -699,6 +699,12 @@ public class GraphSaveLoadUtils {
                     Node node = new GraphNode(token);
                     node.setNodeType(NodeType.LATENT);
                     graph.addNode(node);
+                } else if (token.startsWith("[") && token.endsWith("]")) {
+                    token = token.replace("[", "");
+                    token = token.replace("]", "");
+                    Node node = new GraphNode(token);
+                    node.setNodeType(NodeType.SELECTION);
+                    graph.addNode(node);
                 } else {
                     Node node = new GraphNode(token);
                     node.setNodeType(NodeType.MEASURED);
@@ -1477,4 +1483,51 @@ public class GraphSaveLoadUtils {
     }
 
 
+    /**
+     * Converts a given graph to human-readable text format.
+     *
+     * @param graph                       the graph to be converted
+     * @param pagEdgeSpecializationMarked whether to add edge specialization markups to the graph before conversion
+     * @return the human-readable representation of the graph
+     */
+    public static String graphToText(Graph graph, boolean pagEdgeSpecializationMarked) {
+        if (pagEdgeSpecializationMarked) {
+            GraphUtils.addEdgeSpecializationMarkup(graph);
+        }
+
+        Formatter fmt = new Formatter();
+        fmt.format("%s%n%n", GraphUtils.graphNodesToText(graph, "Graph Nodes:", ';'));
+        fmt.format("%s%n", GraphUtils.graphEdgesToText(graph, "Graph Edges:"));
+
+        // Graph Attributes
+        String graphAttributes = GraphUtils.graphAttributesToText(graph, "Graph Attributes:");
+        if (graphAttributes != null) {
+            fmt.format("%s%n", graphAttributes);
+        }
+
+        // Nodes Attributes
+        if (graph.getNumNodes() < 50) {
+            String graphNodeAttributes = GraphUtils.graphNodeAttributesToText(graph, "Graph Node Attributes:", ';');
+            if (graphNodeAttributes != null) {
+                fmt.format("%s%n", graphNodeAttributes);
+            }
+        }
+
+        Set<Triple> ambiguousTriples = graph.getAmbiguousTriples();
+        if (!ambiguousTriples.isEmpty()) {
+            fmt.format("%n%n%s", GraphUtils.triplesToText(ambiguousTriples, "Ambiguous triples (i.e. list of triples for which there is ambiguous data about whether they are colliders or not):"));
+        }
+
+        Set<Triple> underLineTriples = graph.getUnderLines();
+        if (!underLineTriples.isEmpty()) {
+            fmt.format("%n%n%s", GraphUtils.triplesToText(underLineTriples, "Underline triples:"));
+        }
+
+        Set<Triple> dottedUnderLineTriples = graph.getDottedUnderlines();
+        if (!dottedUnderLineTriples.isEmpty()) {
+            fmt.format("%n%n%s", GraphUtils.triplesToText(dottedUnderLineTriples, "Dotted underline triples:"));
+        }
+
+        return fmt.toString();
+    }
 }

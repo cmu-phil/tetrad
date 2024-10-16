@@ -8,7 +8,6 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -201,8 +200,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 //        path = new ArrayList<>(path);
 //        path.remove(a);
 
-//        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
-        Set<Node> blocking = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(path), test, depth);
+        Set<Node> blocking = SepsetFinder.getPathBlockingSetRecursive(graph, e, c, new HashSet<>(path), maxLength);
+//        Set<Node> blocking = SepsetFinder.getSepsetContainingGreedy(graph, e, c, new HashSet<>(path), test, depth);
 
 //        Graph mag = GraphTransforms.zhangMagFromPag(graph);
 //        Set<Node> blocking = mag.paths().anteriority(e, c);
@@ -280,16 +279,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     }
 
     /**
-     * Sets the allowed colliders for the FciOrientDataExaminationStrategy.
-     *
-     * @param allowedColliders the Set of Triples representing allowed colliders
-     */
-    @Override
-    public void setAllowedColliders(Set<Triple> allowedColliders) {
-        this.allowedColliders = allowedColliders;
-    }
-
-    /**
      * Sets the verbose mode for the FciOrientDataExaminationStrategy object.
      *
      * @param verbose true to enable verbose output, false otherwise
@@ -351,8 +340,20 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy. This variable is
      * initially set to null. Use the setAllowedColliders method to set the allowed colliders. Use the
      * getInitialAllowedColliders method to retrieve the initial set of allowed colliders.
+     *
+     * @return The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy.
      */
     public Set<Triple> getAllowedColliders() {
         return allowedColliders;
+    }
+
+    /**
+     * Sets the allowed colliders for the FciOrientDataExaminationStrategy.
+     *
+     * @param allowedColliders the Set of Triples representing allowed colliders
+     */
+    @Override
+    public void setAllowedColliders(Set<Triple> allowedColliders) {
+        this.allowedColliders = allowedColliders;
     }
 }

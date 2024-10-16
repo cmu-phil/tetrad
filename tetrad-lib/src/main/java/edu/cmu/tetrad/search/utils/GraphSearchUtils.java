@@ -399,7 +399,7 @@ public final class GraphSearchUtils {
      * Checks if the provided Directed Acyclic Graph (PAG) is a legal PAG.
      *
      * @param pag       The Directed Acyclic Graph (PAG) to be checked
-     * @param selection
+     * @param selection The set of nodes to be conditioned on
      * @return A LegalPagRet object indicating whether the PAG is legal or not, along with a reason if it is not legal.
      */
     public static LegalPagRet isLegalPag(Graph pag, Set<Node> selection) {
@@ -459,7 +459,7 @@ public final class GraphSearchUtils {
      * Determines whether the given graph is a legal Mixed Ancestral Graph (MAG).
      *
      * @param mag       the graph to be checked
-     * @param selection
+     * @param selection the set of nodes to be conditioned on
      * @return a LegalMagRet object indicating whether the graph is legal and providing an error message if it is not
      */
     public static LegalMagRet isLegalMag(Graph mag, Set<Node> selection) {

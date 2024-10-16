@@ -1254,7 +1254,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Adds markups for edge specilizations for the edges in the given graph.
+     * Adds markups for edge specializations for the edges in the given graph.
      *
      * @param graph The graph to which PAG edge specialization markups will be added.
      */
@@ -1541,54 +1541,6 @@ public final class GraphUtils {
     }
 
     /**
-     * Converts a given graph to human-readable text format.
-     *
-     * @param graph                       the graph to be converted
-     * @param pagEdgeSpecializationMarked whether to add edge specialization markups to the graph before conversion
-     * @return the human-readable representation of the graph
-     */
-    public static String graphToText(Graph graph, boolean pagEdgeSpecializationMarked) {
-        if (pagEdgeSpecializationMarked) {
-            GraphUtils.addEdgeSpecializationMarkup(graph);
-        }
-
-        Formatter fmt = new Formatter();
-        fmt.format("%s%n%n", GraphUtils.graphNodesToText(graph, "Graph Nodes:", ';'));
-        fmt.format("%s%n", GraphUtils.graphEdgesToText(graph, "Graph Edges:"));
-
-        // Graph Attributes
-        String graphAttributes = GraphUtils.graphAttributesToText(graph, "Graph Attributes:");
-        if (graphAttributes != null) {
-            fmt.format("%s%n", graphAttributes);
-        }
-
-        // Nodes Attributes
-        if (graph.getNumNodes() < 50) {
-            String graphNodeAttributes = GraphUtils.graphNodeAttributesToText(graph, "Graph Node Attributes:", ';');
-            if (graphNodeAttributes != null) {
-                fmt.format("%s%n", graphNodeAttributes);
-            }
-        }
-
-        Set<Triple> ambiguousTriples = graph.getAmbiguousTriples();
-        if (!ambiguousTriples.isEmpty()) {
-            fmt.format("%n%n%s", GraphUtils.triplesToText(ambiguousTriples, "Ambiguous triples (i.e. list of triples for which there is ambiguous data about whether they are colliders or not):"));
-        }
-
-        Set<Triple> underLineTriples = graph.getUnderLines();
-        if (!underLineTriples.isEmpty()) {
-            fmt.format("%n%n%s", GraphUtils.triplesToText(underLineTriples, "Underline triples:"));
-        }
-
-        Set<Triple> dottedUnderLineTriples = graph.getDottedUnderlines();
-        if (!dottedUnderLineTriples.isEmpty()) {
-            fmt.format("%n%n%s", GraphUtils.triplesToText(dottedUnderLineTriples, "Dotted underline triples:"));
-        }
-
-        return fmt.toString();
-    }
-
-    /**
      * Converts the attributes of nodes in a graph to text format.
      *
      * @param graph     the graph containing nodes
@@ -1699,6 +1651,8 @@ public final class GraphUtils {
 
             if (node.getNodeType() == NodeType.LATENT) {
                 sb.append("(").append(node.getName()).append(")");
+            } else if (node.getNodeType() == NodeType.SELECTION) {
+                sb.append("[").append(node.getName()).append("]");
             } else {
                 sb.append(node.getName());
             }
@@ -2908,7 +2862,7 @@ public final class GraphUtils {
      * @param unshieldedColliders the set of unshielded colliders to be updated
      * @param checkCyclicity      indicates whether or not to check for cyclicity
      * @param verbose             indicates whether or not to print verbose output
-     * @param selection
+     * @param selection           the set of nodes to consider for selection
      * @return the repaired PAG
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
@@ -3733,7 +3687,7 @@ public final class GraphUtils {
      * @param n the nodes to check for distinctness
      * @return true if x, b, and y are distinct; false otherwise
      */
-    public static boolean distinct(Node ... n) {
+    public static boolean distinct(Node... n) {
         for (int i = 0; i < n.length; i++) {
             for (int j = i + 1; j < n.length; j++) {
                 if (n[i].equals(n[j])) {
@@ -3915,7 +3869,10 @@ public final class GraphUtils {
          * @param edgesRemoved a {@link java.util.List} object
          * @param counts       a int[][]
          */
-        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int ahdFn, int ahdFp, int ahdCorrect, double adjPrec, double adjRec, double ahdPrec, double ahdRec, int shd, List<Edge> edgesAdded, List<Edge> edgesRemoved, int[][] counts) {
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int ahdFn, int ahdFp,
+                               int ahdCorrect, double adjPrec, double adjRec, double ahdPrec,
+                               double ahdRec, int shd, List<Edge> edgesAdded, List<Edge> edgesRemoved,
+                               int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;

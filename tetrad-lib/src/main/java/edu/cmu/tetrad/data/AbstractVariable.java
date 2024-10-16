@@ -141,13 +141,6 @@ public abstract class AbstractVariable implements Variable {
     public abstract Node like(String name);
 
     /**
-     * True just in case this node is a selection bias node.
-     */
-    public boolean isSelectionBias() {
-        return selectionBias;
-    }
-
-    /**
      * Sets the selection bias status for this node.
      *
      * @param selectionBias the selection bias status for this node.

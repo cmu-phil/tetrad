@@ -747,7 +747,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
         Map<Node, Set<Edge>> edgeListMap = this.edgeLists;
 
-        synchronized (edgeListMap) {
+//        synchronized (edgeListMap) {
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();
 
@@ -773,7 +773,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
             this.parentsHash.remove(node1);
             this.parentsHash.remove(node2);
-        }
+//        }
 
         if (Edges.isDirectedEdge(edge)) {
             Node node = Edges.getDirectedEdgeTail(edge);
@@ -1166,7 +1166,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public String toString() {
-        return GraphUtils.graphToText(this, false);
+        return GraphSaveLoadUtils.graphToText(this, false);
     }
 
     /**

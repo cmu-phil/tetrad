@@ -391,16 +391,6 @@ public class GraphNode implements Node {
     }
 
     /**
-     * /** Whether the node is selected as a bias node.
-     */
-    /**
-     * Whether the node is selected as a bias node.
-     */
-    public boolean isSelectionBias() {
-        return selectionBias;
-    }
-
-    /**
      * Returns true if this node is selected as a bias node.
      *
      * @return true if this node is selected as a bias node.
@@ -417,12 +407,5 @@ public class GraphNode implements Node {
         if (selectionBias) {
             this.selectionBias = selectionBias;
         }
-    }
-
-    /**
-     * Returns true if this node is selected as a bias node.
-     */
-    public final boolean getSelectionBias(boolean selectionBias) {
-        return this.selectionBias = selectionBias;
     }
 }

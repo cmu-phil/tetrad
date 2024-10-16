@@ -1351,15 +1351,15 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>existsInducingPathVisit.</p>
+     * Determines whether an inducing path exists between two nodes in a graph.
      *
-     * @param a                  a {@link Node} object
-     * @param b                  a {@link Node} object
-     * @param x                  a {@link Node} object
-     * @param y                  a {@link Node} object
-     * @param selectionVariables
-     * @param path               a {@link LinkedList} object
-     * @return a boolean
+     * @param a                  the first node in the graph
+     * @param b                  the second node in the graph
+     * @param x                  the first measured node in the graph
+     * @param y                  the second measured node in the graph
+     * @param selectionVariables the set of selection variables
+     * @param path               the path to check
+     * @return true if an inducing path exists, false if not
      */
     public boolean existsInducingPathVisit(Node a, Node b, Node x, Node y, Set<Node> selectionVariables, LinkedList<Node> path) {
         if (path.contains(b)) {
