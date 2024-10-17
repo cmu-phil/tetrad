@@ -639,11 +639,17 @@ public class FciOrient {
     private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedCollders) {
         Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph);
 
+        Set<Node> vNodes = new HashSet<>();
+
+        for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
+            vNodes.add(discriminatingPath.getV());
+        }
+
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
         strategy.setAllowedColliders(allowedCollders);
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, graph));
+            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, graph, vNodes));
         }
 
         return tasks;

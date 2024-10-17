@@ -81,13 +81,14 @@ public class R0R4StrategyScoreBased implements R0R4Strategy {
      *
      * @param discriminatingPath the discriminating path
      * @param graph              the graph representation
+     * @param vNodes
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      * @see DiscriminatingPath
      */
     @Override
-    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
         Node e = discriminatingPath.getX();
         Node a = discriminatingPath.getW();
         Node b = discriminatingPath.getV();

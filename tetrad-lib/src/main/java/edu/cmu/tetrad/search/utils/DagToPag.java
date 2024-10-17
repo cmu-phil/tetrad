@@ -163,11 +163,13 @@ public final class DagToPag {
              *
              * @param discriminatingPath the discriminating path
              * @param graph              the graph representation
-             * @return a pair of the discriminating path construct and a boolean indicating whether the orientation was determined.
+             * @param vNodes
+             * @return a pair of the discriminating path construct and a boolean indicating whether the
+             * orientation was determined.
              * @throws IllegalArgumentException if 'e' is adjacent to 'c'
              * @see DiscriminatingPath
              */
-            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
+            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
                 Node e = discriminatingPath.getX();
                 Node a = discriminatingPath.getW();
                 Node b = discriminatingPath.getV();
