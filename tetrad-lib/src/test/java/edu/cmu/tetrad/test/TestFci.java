@@ -21,12 +21,15 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -136,7 +139,7 @@ public class TestFci {
     }
 
     /**
-     * A specific graph. This is the test case from p. 142-144 that tests the possible Msep step of FCI. This doesn't
+     * A specific graph. This is the test case from p. 142-144 that tests the possible dsep step of FCI. This doesn't
      * work in the optimized FCI algorithm. It works in the updated version (FciSearch).  (ekorber)
      */
     @Test
@@ -217,6 +220,24 @@ public class TestFci {
     }
 
     /**
+     * This checks to see whether the R4 rule can correctly orient multiple discriminating paths from X to Y in
+     * various configurations.
+     */
+    @Test
+    public void testSearch14() {
+
+        checkSearch("X-->W1,V1-->W1,V1-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
+                "Xo->W1,V1o->W1,V1-->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
+
+
+        checkSearch("Latent(R),Latent(S),X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
+                "Xo->W1,V1<->W1,V1<->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
+
+        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
+                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
+    }
+
+    /**
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
@@ -232,6 +253,7 @@ public class TestFci {
 
         // Set up search.
         MsepTest independence = new MsepTest(graph);
+        Score score = new GraphScore(graph);
 
         Fci fci = new Fci(independence);
         fci.setPossibleDsepSearchDone(true);
@@ -239,6 +261,16 @@ public class TestFci {
         fci.setMaxDiscriminatingPathLength(-1);
         fci.setKnowledge(knowledge);
         fci.setVerbose(true);
+
+//        GraspFci fci = new GraspFci(independence, score);
+//        fci.setKnowledge(knowledge);
+//        fci.setVerbose(true);
+//
+//        LvLite fci = new LvLite(independence, score);
+//        fci.setStartWith(LvLite.START_WITH.GRASP);
+//        fci.setKnowledge(knowledge);
+//        fci.setVerbose(true);
+
 
         // Run search
         Graph resultGraph = fci.search();

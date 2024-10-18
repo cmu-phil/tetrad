@@ -295,6 +295,8 @@ public final class LvLite implements IGraphSearch {
             scorer = new TeyssierScorer(test, score);
             scorer.score(best);
             scorer.setKnowledge(knowledge);
+            scorer.setUseScore(false);
+            scorer.setUseRaskuttiUhler(true);
             scorer.bookmark();
         }
 
