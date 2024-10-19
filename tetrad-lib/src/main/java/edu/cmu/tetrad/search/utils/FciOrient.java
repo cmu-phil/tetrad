@@ -176,6 +176,159 @@ public class FciOrient {
     }
 
     /**
+     * Lists all the discriminating paths in the given graph.
+     *
+     * @param graph                       the graph to analyze
+     * @param maxDiscriminatingPathLength the maximum length of a discriminating path
+     * @param listEcNonadjacency
+     * @return a set of discriminating paths found in the graph
+     */
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean listEcNonadjacency) {
+        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+
+        List<Node> nodes = graph.getNodes();
+
+        //  *         B
+        // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
+        // *        /  \
+        // *       v    *
+        // * E....A --> C
+        for (Node a : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            for (Node c : graph.getAdjacentNodes(a)) {
+                discriminatingPaths.addAll(listDiscriminatingPaths(graph, a, c, maxDiscriminatingPathLength, listEcNonadjacency));
+            }
+        }
+
+        return discriminatingPaths;
+    }
+
+    /**
+     * Lists the discriminating paths for <a, c> in the graph.
+     *
+     * @param graph                       The graph.
+     * @param a                           The first node.
+     * @param c                           The second node.
+     * @param maxDiscriminatingPathLength The maximum length of a discriminating path.
+     * @param checkEcNonadjacency         Whether to check for EC nonadjacency.
+     * @return The set of discriminating paths for &lt;a, c&gt;.
+     */
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, Node a, Node c,
+                                                                  int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+
+        if (!graph.isParentOf(a, c)) {
+            return discriminatingPaths;
+        }
+
+        List<Node> bnodes = graph.getAdjacentNodes(c);
+        bnodes.retainAll(graph.getAdjacentNodes(a));
+
+        for (Node b : bnodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            // Here we simply assert that A and C are adjacent to B; we let the DiscriminatingPath class determine
+            // whether the path is valid.
+
+            if (a == c) continue;
+
+            if (!graph.isParentOf(a, c)) {
+                continue;
+            }
+
+            // We ignore any discriminating paths that do not require orientation.
+            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                continue;
+            }
+
+            if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
+                continue;
+            }
+
+            discriminatingPathBfs(a, b, c, graph, discriminatingPaths, maxDiscriminatingPathLength, checkEcNonadjacency);
+        }
+
+        return discriminatingPaths;
+    }
+
+    /**
+     * A method to search "back from a" to find a discriminating path. It is called with a reachability list (first
+     * consisting only of a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990.
+     * The body of a discriminating path consists of colliders that are parents of c.
+     *
+     * @param a                   a {@link Node} object
+     * @param b                   a {@link Node} object
+     * @param c                   a {@link Node} object
+     * @param graph               a {@link Graph} object
+     * @param checkEcNonadjacency Whether to check for EC nonadjacency
+     */
+    private static void discriminatingPathBfs(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths,
+                                              int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+        Queue<Node> Q = new ArrayDeque<>();
+        Set<Node> V = new HashSet<>();
+        Map<Node, Node> previous = new HashMap<>();
+
+        Q.offer(a);
+        V.add(a);
+        V.add(b);
+
+        previous.put(a, null);
+        previous.put(b, a);
+
+        while (!Q.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            Node t = Q.poll();
+
+            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
+
+            for (Node e : nodesInTo) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                if (V.contains(e)) {
+                    continue;
+                }
+
+                previous.put(e, t);
+
+                // The collider path should be all nodes between E and C.
+                LinkedList<Node> colliderPath = new LinkedList<>();
+                Node d = e;
+
+                while ((d = previous.get(d)) != null) {
+                    if (d != e) {
+                        colliderPath.addFirst(d);
+                    }
+                }
+
+                if (maxDiscriminatingPathLength != -1 && colliderPath.size() > maxDiscriminatingPathLength) {
+                    continue;
+                }
+
+                DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath, checkEcNonadjacency);
+
+                if (discriminatingPath.existsIn(graph)) {
+                    discriminatingPaths.add(discriminatingPath);
+                }
+
+                if (!V.contains(e)) {
+                    Q.offer(e);
+                    V.add(e);
+                }
+            }
+        }
+    }
+
+    /**
      * Performs FCI orientation on the given graph, including R0 and either the Spirtes or Zhang final orientation
      * rules.
      *
@@ -637,7 +790,7 @@ public class FciOrient {
      * @return the list of tasks
      */
     private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedCollders) {
-        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph);
+        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
 
         Set<Node> vNodes = new HashSet<>();
 
@@ -653,137 +806,6 @@ public class FciOrient {
         }
 
         return tasks;
-    }
-
-    /**
-     * Lists all the discriminating paths in the given graph.
-     *
-     * @param graph the graph to analyze
-     * @return a set of discriminating paths found in the graph
-     */
-    private Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph) {
-        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
-
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            //  *         B
-            // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
-            // *        /  \
-            // *       v    *
-            // * E....A --> C
-
-            // Here we simply assert that A and C are adjacent to B; we let the DiscriminatingPath class determine
-            // whether the path is valid.
-            List<Node> possA = graph.getAdjacentNodes(b);
-            List<Node> possC = graph.getAdjacentNodes(b);
-
-            for (Node a : possA) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                for (Node c : possC) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    if (a == c) continue;
-
-                    if (!graph.isParentOf(a, c)) {
-                        continue;
-                    }
-
-                    // We ignore any discriminating paths that do not require orientation.
-                    if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                        continue;
-                    }
-
-                    if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    discriminatingPathBfs(a, b, c, graph, discriminatingPaths);
-                }
-            }
-        }
-
-        return discriminatingPaths;
-    }
-
-    /**
-     * A method to search "back from a" to find a discriminating path. It is called with a reachability list (first
-     * consisting only of a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990.
-     * The body of a discriminating path consists of colliders that are parents of c.
-     *
-     * @param a     a {@link Node} object
-     * @param b     a {@link Node} object
-     * @param c     a {@link Node} object
-     * @param graph a {@link Graph} object
-     */
-    private void discriminatingPathBfs(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
-        Map<Node, Node> previous = new HashMap<>();
-
-        Q.offer(a);
-        V.add(a);
-        V.add(b);
-
-        previous.put(a, null);
-        previous.put(b, a);
-
-        while (!Q.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            Node t = Q.poll();
-
-            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
-
-            D:
-            for (Node e : nodesInTo) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                if (V.contains(e)) {
-                    continue;
-                }
-
-                previous.put(e, t);
-
-                // The collider path should be all nodes between E and C.
-                LinkedList<Node> colliderPath = new LinkedList<>();
-                Node d = e;
-
-                while ((d = previous.get(d)) != null) {
-                    if (d != e) {
-                        colliderPath.addFirst(d);
-                    }
-                }
-
-                if (maxDiscriminatingPathLength != -1 && colliderPath.size() > maxDiscriminatingPathLength) {
-                    continue;
-                }
-
-                DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath);
-
-                if (discriminatingPath.existsIn(graph)) {
-                    discriminatingPaths.add(discriminatingPath);
-                }
-
-                if (!V.contains(e)) {
-                    Q.offer(e);
-                    V.add(e);
-                }
-            }
-        }
     }
 
     /**

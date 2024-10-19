@@ -2441,9 +2441,7 @@ public final class GraphUtils {
 
             if (edgeSpec.lastIndexOf("-->") != -1) {
                 graph.addDirectedEdge(nodeA, nodeB);
-            }
-
-            if (edgeSpec.lastIndexOf("<--") != -1) {
+            } else if (edgeSpec.lastIndexOf("<--") != -1) {
                 graph.addDirectedEdge(nodeB, nodeA);
             } else if (edgeSpec.lastIndexOf("---") != -1) {
                 graph.addUndirectedEdge(nodeA, nodeB);
@@ -2461,6 +2459,8 @@ public final class GraphUtils {
             } else if (edgeSpec.lastIndexOf("--o") != -1) {
                 Edge _edge = new Edge(nodeA, nodeB, Endpoint.TAIL, Endpoint.CIRCLE);
                 graph.addEdge(_edge);
+            } else {
+                throw new IllegalArgumentException("Unknown edge spec: " + edgeSpec);
             }
         }
 

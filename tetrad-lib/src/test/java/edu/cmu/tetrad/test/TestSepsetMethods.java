@@ -34,6 +34,7 @@ import java.util.Set;
 
 import static edu.cmu.tetrad.search.SepsetFinder.blockPathsLocalMarkov;
 import static edu.cmu.tetrad.search.SepsetFinder.blockPathsRecursively;
+import static org.junit.Assert.assertTrue;
 
 /**
  * The TestSepsetMethods class  is responsible for testing various methods for finding a sepset of two nodes in a DAG.
@@ -183,5 +184,32 @@ public class TestSepsetMethods {
         for (int i = 0; i < methods.size(); i++) {
             System.out.println("The total time required for " + methods.get(i) + " = " + timeSums[i]);
         }
+    }
+
+    /**
+     * This method is used to test the blockPathsRecursively method for finding a set of nodes that blocks all
+     * blockable paths between two nodes in a graph.
+     */
+    @Test
+    public void test2() {
+
+        // Example 1
+        Graph graph = GraphUtils.convert("X-->Y,X-->Z,X-->W,Y-->Z,W-->Z");
+
+        System.out.println(graph);
+
+        Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, graph.getNode("X"), graph.getNode("Z"),
+                new HashSet<>(), -1);
+
+        System.out.println(blocking);
+
+        assertTrue(blocking.containsAll(Set.of(graph.getNode("Y"), graph.getNode("W"))));
+
+        Graph graph2 = GraphUtils.convert("X-->Y,X-->W,Y-->Z,W-->Z");
+
+        assertTrue(new MsepTest(graph2, false).checkIndependence(graph2.getNode("X"), graph2.getNode("Z"), blocking).isIndependent());
+
+        // Example 2 -- let's try to make an induced edge.
+
     }
 }

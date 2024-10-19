@@ -23,10 +23,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -36,8 +36,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import edu.cmu.tetrad.search.utils.DiscriminatingPath;
 
 /**
  * The LV-Lite algorithm (Latent Variable "Lite") algorithm implements a search algorithm for learning the structure of
@@ -81,7 +79,7 @@ public final class LvLite implements IGraphSearch {
     /**
      * The depth of the GRaSP if it is used.
      */
-    private int recursionDepth = 10;
+    private int recursionDepth = -1;
     /**
      * The maximum path length for blocking paths.
      */
@@ -358,38 +356,124 @@ public final class LvLite implements IGraphSearch {
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
-        Map<Edge, Set<Node>> extraSepsets;
-
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
         // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
         // each side. So in a dense graph, this can take a very long time to complete. Here, we look for a sepset
         // for each edge by examining the structure of the current graph and finding a sepset that blocks all
         // paths between x and y. This is a simpler problem and scales better to dense graphs (though not perfectly).
-        extraSepsets = removeExtraEdges(pag, unshieldedColliders);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Doing implied orientation after extra sepsets found");
-        }
+        Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, unshieldedColliders);
 
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
+        // Final FCI orientation.
         if (verbose) {
-            TetradLogger.getInstance().log("Finished implied orientation after extra sepsets found");
+            TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Orienting common adjacents");
-        }
-
-        for (Edge edge : extraSepsets.keySet()) {
-            orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
-        }
+        fciOrient.setInitialAllowedColliders(new HashSet<>());
+        fciOrient.finalOrientation(pag);
 
         if (verbose) {
-            TetradLogger.getInstance().log("Done orienting common adjacents");
+            TetradLogger.getInstance().log("Finished implied orientation.");
         }
+
+        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
+        // there in this graph.
+        for (Edge edge : pag.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            List<Node> exclude = new ArrayList<>();
+
+            for (Node z : pag.getAdjacentNodes(x)) {
+                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, x, z, maxDdpPathLength, false);
+
+                for (DiscriminatingPath path : discriminatingPaths) {
+                    if (path.getX() == y) {
+                        pag.removeEdge(x, y);
+                        exclude.add(path.getV());
+                    }
+                }
+            }
+
+            for (Node z : pag.getAdjacentNodes(y)) {
+                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, y, z, maxDdpPathLength,
+                        false);
+
+                for (DiscriminatingPath path : discriminatingPaths) {
+                    if (path.getX() == x) {
+                        pag.removeEdge(x, y);
+                        exclude.add(path.getV());
+                    }
+                }
+            }
+
+            // We're only checking length 3 DDPs here; there could be longer ones.
+//            for (Node w : pag.getAdjacentNodes(x)) {
+//                for (Node v : pag.getAdjacentNodes(y)) {
+//                    if (w == v) continue;
+//                    if (w == y || v == x) continue;
+////                    if (pag.isAdjacentTo(y, w) && pag.isAdjacentTo(v, w) && !pag.isAdjacentTo(x, v)) {
+////                        if (pag.getEndpoint(x, w) == Endpoint.ARROW
+////                            && pag.getEndpoint(v, y) == Endpoint.ARROW
+////                            && pag.getEndpoint(v, w) == Endpoint.ARROW
+////                            && pag.getEndpoint(y, w) != Endpoint.ARROW
+////                            && pag.getEndpoint(w, v) == Endpoint.CIRCLE
+////                            && pag.getEndpoint(y, v) == Endpoint.CIRCLE) {
+////                            exclude.add(v);
+////                        }
+////                    }
+//
+//                    if (pag.isAdjacentTo(y, w) && pag.isAdjacentTo(v, w) && !pag.isAdjacentTo(x, v)) {
+//                        if (pag.getEndpoint(x, w) != Endpoint.ARROW) {
+//                            continue;
+//                        }
+//                        if (pag.getEndpoint(v, y) != Endpoint.ARROW) {
+//                            continue;
+//                        }
+//                        if (pag.getEndpoint(v, w) != Endpoint.ARROW) {
+//                            continue;
+//                        }
+//                        if (pag.getEndpoint(y, w) == Endpoint.ARROW) {
+//                            continue;
+//                        }
+//                        if (pag.getEndpoint(w, v) != Endpoint.CIRCLE) {
+//                            continue;
+//                        }
+//                        if (pag.getEndpoint(y, v) != Endpoint.CIRCLE) {
+//                            continue;
+//                        }
+//
+//                        exclude.add(v);
+//                    }
+//                }
+//            }
+
+            Set<Node> blocking = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), maxBlockingPathLength);
+
+            SublistGenerator gen = new SublistGenerator(exclude.size(), exclude.size());
+            int[] choice;
+
+            while ((choice = gen.next()) != null) {
+                Set<Node> myExclude = GraphUtils.asSet(choice, exclude);
+                blocking.removeAll(myExclude);
+
+                if (test.checkIndependence(x, y, blocking).isIndependent()) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Removed edge " + x + " *-* " + y + " because of DDP.");
+                    }
+
+                    pag.removeEdge(x, y);
+                    break;
+                }
+            }
+        }
+
+        GraphUtils.reorientWithCircles(pag, verbose);
+        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+        GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
         // Final FCI orientation.
         if (verbose) {
@@ -592,12 +676,30 @@ public final class LvLite implements IGraphSearch {
 
             for (Edge edge : pag.getEdges()) {
                 tasks.add(() -> {
-                    Set<Node> blockers = SepsetFinder.getPathBlockingSetRecursive(pag, edge.getNode1(),
-                            edge.getNode2(), new HashSet<>(), maxBlockingPathLength);
+                    Node x = edge.getNode1();
+                    Node y = edge.getNode2();
+
+                    Set<Node> blockers = SepsetFinder.getPathBlockingSetRecursive(pag, x,
+                            y, new HashSet<>(), maxBlockingPathLength);
 //                    Set<Node> blockers = SepsetFinder.blockPathsNoncollidersOnly(pag, edge.getNode1(),
 //                            edge.getNode2(), maxBlockingPathLength, true);
-//
-                    if (this.test.checkIndependence(edge.getNode1(), edge.getNode2(), blockers).isIndependent()) {
+//                    Set<Node> blockers = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(),
+//                            msep, -1, -1, true, new HashSet<>());
+
+                    // Find the common adjacents of x and y.
+                    List<Node> common = pag.getAdjacentNodes(x);
+                    common.retainAll(pag.getAdjacentNodes(y));
+
+//                    for (Node z : common) {
+//                        if (!pag.isDefCollider(x, z, y)) {
+//                            blockers.remove(z);
+//                        }
+//                    }
+
+
+                    blockers.removeAll(common);
+
+                    if (this.test.checkIndependence(x, y, blockers).isIndependent()) {
                         return Pair.of(edge, blockers);
                     } else {
                         return Pair.of(edge, null);
@@ -616,7 +718,7 @@ public final class LvLite implements IGraphSearch {
                     }
                 }).toList();
             } else if (testTimeout > 0) {
-                results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout,
+                results = tasks.stream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout,
                         TimeUnit.MILLISECONDS)).toList();
             } else {
                 throw new IllegalArgumentException("Test timeout must be -1 (unlimited) or > 0: " + testTimeout);
@@ -628,10 +730,8 @@ public final class LvLite implements IGraphSearch {
                 }
             }
 
-            for (Pair<Edge, Set<Node>> _edge : results) {
-                if (_edge != null && _edge.getRight() != null) {
-                    orientCommonAdjacents(_edge.getLeft(), pag, unshieldedColliders, extraSepsets);
-                }
+            for (Edge edge : extraSepsets.keySet()) {
+                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
             }
         } else if (extraEdgeRemovalStyle == ExtraEdgeRemovalStyle.SERIAL) {
 
@@ -694,29 +794,41 @@ public final class LvLite implements IGraphSearch {
      * @param unshieldedColliders The set of unshielded colliders to add the new unshielded collider to.
      * @param extraSepsets        The map of edges to sepsets used to remove them.
      */
-    private void orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
+    private boolean orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
+        boolean changed = false;
 
-        List<Node> common = pag.getAdjacentNodes(edge.getNode1());
-        common.retainAll(pag.getAdjacentNodes(edge.getNode2()));
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
 
-        pag.removeEdge(edge.getNode1(), edge.getNode2());
+        if (pag.isAdjacentTo(x, y)) {
+            pag.removeEdge(x, y);
+            changed = true;
+        }
+
+        List<Node> common = pag.getAdjacentNodes(x);
+        common.retainAll(pag.getAdjacentNodes(y));
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing adjacency " + edge.getNode1() + " *-* " + edge.getNode2() + " from PAG.");
+            TetradLogger.getInstance().log("Removing adjacency " + x + " *-* " + y + " from PAG.");
         }
 
         for (Node node : common) {
             if (!extraSepsets.get(edge).contains(node)) {
-                pag.setEndpoint(edge.getNode1(), node, Endpoint.ARROW);
-                pag.setEndpoint(edge.getNode2(), node, Endpoint.ARROW);
+                if (!pag.isDefCollider(x, node, y)) {
+                    pag.setEndpoint(x, node, Endpoint.ARROW);
+                    pag.setEndpoint(y, node, Endpoint.ARROW);
 
-                if (verbose) {
-                    TetradLogger.getInstance().log("Oriented " + edge.getNode1() + " *-> " + node + " <-* " + edge.getNode2() + " in PAG.");
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
+                    }
+
+                    unshieldedColliders.add(new Triple(x, node, y));
+                    changed = true;
                 }
-
-                unshieldedColliders.add(new Triple(edge.getNode1(), node, edge.getNode2()));
             }
         }
+
+        return changed;
     }
 
     /**

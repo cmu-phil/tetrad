@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
@@ -143,10 +142,10 @@ public class TestFci {
      * work in the optimized FCI algorithm. It works in the updated version (FciSearch).  (ekorber)
      */
     @Test
-    public void  testSearch9() {
+    public void testSearch9() {
         checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
                     "H-->D,D-->A,T2-->D,T2-->E",
-                 "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
+                "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
     }
 
     /**
@@ -220,8 +219,8 @@ public class TestFci {
     }
 
     /**
-     * This checks to see whether the R4 rule can correctly orient multiple discriminating paths from X to Y in
-     * various configurations.
+     * This checks to see whether the R4 rule can correctly orient multiple discriminating paths from X to Y in various
+     * configurations.
      */
     @Test
     public void testSearch14() {
@@ -252,7 +251,7 @@ public class TestFci {
         System.out.println("Graph = " + graph);
 
         // Set up search.
-        MsepTest independence = new MsepTest(graph);
+        IndependenceTest independence = new MsepTest(graph);
         Score score = new GraphScore(graph);
 
         Fci fci = new Fci(independence);
@@ -265,12 +264,14 @@ public class TestFci {
 //        GraspFci fci = new GraspFci(independence, score);
 //        fci.setKnowledge(knowledge);
 //        fci.setVerbose(true);
-//
-//        LvLite fci = new LvLite(independence, score);
-//        fci.setStartWith(LvLite.START_WITH.GRASP);
+
+//        GFci fci = new GFci(independence, score);
 //        fci.setKnowledge(knowledge);
 //        fci.setVerbose(true);
 
+//        LvLite fci = new LvLite(independence, score);
+////        fci.setKnowledge(knowledge);
+//        fci.setVerbose(true);
 
         // Run search
         Graph resultGraph = fci.search();

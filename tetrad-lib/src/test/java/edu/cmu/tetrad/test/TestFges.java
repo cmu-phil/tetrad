@@ -255,7 +255,7 @@ public class TestFges {
 
     @Test
     public void testExplore5() {
-        Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
+        Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,A-->E,B-->F,C-->F,D-->F,E-->F");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         fges.setFaithfulnessAssumed(true);
         Graph CPDAG = fges.search();

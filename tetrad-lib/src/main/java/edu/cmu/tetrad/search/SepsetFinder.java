@@ -224,11 +224,11 @@ public class SepsetFinder {
      * {@code null} if no sepset can be found.
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, int maxPathLength) {
-        return getSepsetVisit(graph, x, y, containing, graph.paths().getAncestorMap(), maxPathLength);
+        return blockPathsRecursivelyVisit(graph, x, y, containing, graph.paths().getAncestorMap(), maxPathLength);
     }
 
-    private static Set<Node> getSepsetVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                            Map<Node, Set<Node>> ancestorMap, int maxPathLength) {
+    private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
+                                                        Map<Node, Set<Node>> ancestorMap, int maxPathLength) {
         if (x == y) {
             return null;
         }
@@ -252,7 +252,7 @@ public class SepsetFinder {
         return z;
     }
 
-    private static List<Node> getReachableNodes(Graph graph, Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
+    private static List<Node>       getReachableNodes(Graph graph, Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
         List<Node> passNodes = new ArrayList<>();
 
         for (Node c : graph.getAdjacentNodes(b)) {
@@ -627,4 +627,270 @@ public class SepsetFinder {
 
         path.remove(a);
     }
+
+    /**
+     * Calculates the sepset path blocking out-of operation for a given pair of nodes in a graph. This method searches
+     * for m-connecting paths out of x and y, and then tries to block these paths by conditioning on definite
+     * noncollider nodes. If all paths are blocked, the method returns the sepset; otherwise, it returns null. The
+     * length of the paths to consider can be limited by the maxLength parameter, and the depth of the final sepset can
+     * be limited by the depth parameter. When increasing the considered path length does not yield any new paths, the
+     * search is terminated early.
+     *
+     * @param mpdag              The graph representing the Markov equivalence class that contains the nodes.
+     * @param x                  The first node in the pair.
+     * @param y                  The second node in the pair.
+     * @param test               The independence test object to use for checking independence.
+     * @param maxLength          The maximum length of the paths to consider. If set to a negative value or a value
+     *                           greater than the number of nodes minus one, it is adjusted accordingly.
+     * @param depth              The maximum depth of the final sepset. If set to a negative value, no limit is
+     *                           applied.
+     * @param allowSelectionBias A boolean flag indicating whether to allow selection bias.
+     * @param blacklist          The set of nodes to blacklist.
+     * @return The sepset if independence holds, otherwise null.
+     */
+    public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
+                                                        int maxLength, int depth, boolean allowSelectionBias,
+                                                        Set<Node> blacklist) {
+        int maxLength1 = maxLength;
+        if (maxLength1 < 0 || maxLength1 > mpdag.getNumNodes() - 1) {
+            maxLength1 = mpdag.getNumNodes() - 1;
+        }
+
+        Set<Node> conditioningSet = new HashSet<>();
+        Set<Node> couldBeColliders = new HashSet<>();
+
+        Set<List<Node>> paths = bfsAllPathsOutOfX(mpdag, conditioningSet, couldBeColliders, blacklist, maxLength1, x, y, allowSelectionBias);
+
+        List<Node> couldBeCollidersList = new ArrayList<>(couldBeColliders);
+        conditioningSet.removeAll(couldBeColliders);
+
+        SublistGenerator generator = new SublistGenerator(couldBeCollidersList.size(), depth);
+        int[] choice;
+
+        while ((choice = generator.next()) != null) {
+            Set<Node> sepset = new HashSet<>();
+
+            for (int k : choice) {
+                sepset.add(couldBeCollidersList.get(k));
+            }
+
+            sepset.addAll(conditioningSet);
+
+            if (depth != -1 && sepset.size() > depth) {
+                continue;
+            }
+
+            sepset.remove(y);
+
+            if (test.checkIndependence(x, y, sepset).isIndependent()) {
+                Set<Node> _z = new HashSet<>(sepset);
+                boolean removed;
+
+                do {
+                    removed = false;
+
+                    for (Node w : new HashSet<>(_z)) {
+                        Set<Node> __z = new HashSet<>(_z);
+
+                        __z.remove(w);
+
+                        if (test.checkIndependence(x, y, __z).isIndependent()) {
+                            removed = true;
+                            _z = __z;
+                        }
+                    }
+                } while (removed);
+
+                sepset = new HashSet<>(_z);
+
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("\n\tINDEPENDENCE HOLDS!: " + LogUtilsSearch.independenceFact(x, y, sepset));
+//                }
+
+                return sepset;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Performs a breadth-first search to find all paths out of a specific node in a graph, considering certain
+     * conditions and constraints.
+     *
+     * @param graph              the graph to search
+     * @param conditionSet       the set of nodes that need to be conditioned on
+     * @param couldBeColliders   the set of nodes that could potentially be colliders
+     * @param blacklist          the set of nodes to exclude from the search
+     * @param maxLength          the maximum length of the paths (-1 for unlimited)
+     * @param x                  the starting node
+     * @param y                  the destination node
+     * @param allowSelectionBias flag to indicate whether to allow selection bias in path selection
+     * @return a set of all paths that satisfy the conditions and constraints
+     * @throws IllegalArgumentException if the conditioning set is null
+     */
+    public static Set<List<Node>> bfsAllPathsOutOfX(Graph graph, Set<Node> conditionSet, Set<Node> couldBeColliders,
+                                                    Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias) {
+        Set<List<Node>> allPaths = new HashSet<>();
+        Queue<List<Node>> queue = new LinkedList<>();
+        queue.add(Collections.singletonList(x));
+
+        if (conditionSet == null) {
+            throw new IllegalArgumentException("Conditioning set cannot be null.");
+        }
+
+        while (!queue.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> path = queue.poll();
+
+            if (maxLength != -1 && path.size() > maxLength) {
+                continue;
+            }
+
+            Node node = path.get(path.size() - 1);
+
+            if (path.size() < 2) {
+                allPaths.add(path);
+            }
+
+            if (path.size() >= 2 && graph.paths().isMConnectingPath(path, conditionSet, allowSelectionBias)) {
+                allPaths.add(path);
+            }
+
+            for (Node z3 : graph.getAdjacentNodes(node)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                if (!path.contains(z3)) {
+                    List<Node> newPath = new ArrayList<>(path);
+                    newPath.add(z3);
+
+                    if (newPath.size() - 1 == 1) {
+                        queue.add(newPath);
+                    }
+
+                    // If the path is of at least length 1, and the last two nodes on the path form a noncollider
+                    // with 'adjacent', we need to block these noncolliders first by conditioning on node.
+                    if (newPath.size() - 1 > 1) {
+                        Node z1 = newPath.get(newPath.size() - 3);
+                        Node z2 = newPath.get(newPath.size() - 2);
+
+                        if (!graph.isDefCollider(z1, z2, z3)) {
+//                            if (blacklist.contains(z2)) {
+//                                continue;
+//                            }
+
+                            blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y, true);
+
+                            if (graph.paths().isMConnectingPath(newPath, conditionSet, allowSelectionBias)) {
+                                queue.add(newPath);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (Node z3 : graph.getAdjacentNodes(node)) {
+                if (!path.contains(z3)) {
+                    List<Node> newPath = new ArrayList<>(path);
+                    newPath.add(z3);
+
+                    if (newPath.size() - 1 == 1) {
+                        queue.add(newPath);
+                    }
+
+                    // If the path is of at least length 1, and the last two nodes on the path form a noncollider
+                    // with 'adjacent', we need to block these noncolliders first by conditioning on node.
+                    if (newPath.size() - 1 > 1) {
+                        Node z1 = newPath.get(newPath.size() - 3);
+                        Node z2 = newPath.get(newPath.size() - 2);
+
+                        if (graph.isDefCollider(z1, z2, z3)) {
+                            blockPath(newPath, graph, conditionSet, couldBeColliders, blacklist, x, y, true);
+
+                            if (graph.paths().isMConnectingPath(newPath, conditionSet, allowSelectionBias)) {
+                                queue.add(newPath);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return allPaths;
+    }
+
+    /**
+     * Tries to block the given path is blocked by conditioning on definite noncollider nodes. Return true if the path
+     * is blocked, false otherwise.
+     *
+     * @param path             the path to check
+     * @param graph            the MPDAG graph to analyze
+     * @param conditioningSet  the set of nodes to condition on; this may be modified
+     * @param couldBeColliders the set of nodes that could be colliders; this may be modified
+     * @param y                the second node
+     * @param verbose          whether to print trace information
+     */
+    private static void blockPath(List<Node> path, Graph graph, Set<Node> conditioningSet, Set<Node> couldBeColliders, Set<Node> blacklist,
+                                  Node x, Node y, boolean verbose) {
+
+        for (int n = 1; n < path.size() - 1; n++) {
+            Node z1 = path.get(n - 1);
+            Node z2 = path.get(n);
+            Node z3 = path.get(n + 1);
+
+            if (z2.getNodeType() == NodeType.LATENT) {
+                continue;
+            }
+
+            if (z1.getNodeType().equals(NodeType.LATENT) || z3.getNodeType().equals(NodeType.LATENT)) {
+                continue;
+            }
+
+            if (z1 == x && z3 == y && graph.isDefCollider(z1, z2, z3)) {
+                blacklist.add(z2);
+                break;
+            }
+
+            if (!graph.isDefCollider(z1, z2, z3)) {
+                if (conditioningSet.contains(z2)) {
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("This " + path + "--is already blocked by " + z2);
+//                    }
+
+                    conditioningSet.removeAll(blacklist);
+                    addCouldBeCollider(z1, z2, z3, path, graph, couldBeColliders, verbose);
+                }
+
+                conditioningSet.add(z2);
+                conditioningSet.removeAll(blacklist);
+
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("Blocking " + path + " with noncollider " + z2);
+//                }
+
+                // If this noncollider is adjacent to the endpoints (i.e. is covered), we note that
+                // it could be a collider. We will need to either consider this to be a collider or
+                // a noncollider below.
+                addCouldBeCollider(z1, z2, z3, path, graph, couldBeColliders, verbose);
+                break;
+            }
+        }
+    }
+
+    private static void addCouldBeCollider(Node z1, Node z2, Node z3, List<Node> path, Graph mpdag,
+                                           Set<Node> couldBeColliders, boolean verbose) {
+        if (mpdag.isAdjacentTo(z1, z3)) {
+            couldBeColliders.add(z2);
+
+//            if (verbose) {
+//                TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
+//            }
+        }
+    }
+
 }
