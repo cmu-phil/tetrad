@@ -218,10 +218,6 @@ public class FciOrient {
      */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, Node w, Node y,
                                                                   int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
-        if (w.getName().equals("W1") && y.getName().equals("Y")) {
-            System.out.println("here");
-        }
-
         Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
 
         if (checkEcNonadjacency) {

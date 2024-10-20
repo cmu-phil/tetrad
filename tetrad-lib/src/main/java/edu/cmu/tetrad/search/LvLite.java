@@ -362,21 +362,16 @@ public final class LvLite implements IGraphSearch {
         // paths between x and y. This is a simpler problem and scales better to dense graphs (though not perfectly).
         Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, unshieldedColliders);
 
+        for (Edge edge : extraSepsets.keySet()) {
+            orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
+        }
+
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
-        // Final FCI orientation.
-        if (verbose) {
-            TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
-        }
-
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.finalOrientation(pag);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Finished implied orientation.");
-        }
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
@@ -408,7 +403,6 @@ public final class LvLite implements IGraphSearch {
 
             SublistGenerator gen = new SublistGenerator(perhapsNotFollowed.size(), perhapsNotFollowed.size());
             int[] choice;
-            boolean removed = false;
 
             while ((choice = gen.next()) != null) {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, perhapsNotFollowed);
@@ -420,15 +414,17 @@ public final class LvLite implements IGraphSearch {
                     }
 
                     pag.removeEdge(x, y);
-                    removed = true;
 
-                    extraSepsets = new HashMap<>();
+                    List<Node> common = pag.getAdjacentNodes(x);
+                    common.retainAll(pag.getAdjacentNodes(y));
 
-                    for (Edge _edge : extraSepsets.keySet()) {
-                        orientCommonAdjacents(_edge, pag, unshieldedColliders, extraSepsets, false);
+                    for (Node node : common) {
+                        if (!blocking.contains(node)) {
+                            unshieldedColliders.add(new Triple(x, node, y));
+                            pag.setEndpoint(x, node, Endpoint.ARROW);
+                            pag.setEndpoint(y, node, Endpoint.ARROW);
+                        }
                     }
-
-                    break;
                 }
             }
         }
@@ -640,21 +636,56 @@ public final class LvLite implements IGraphSearch {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                Set<Node> blockers = SepsetFinder.getPathBlockingSetRecursive(pag, x,
-                        y, new HashSet<>(), maxBlockingPathLength, Set.of());
-//                    Set<Node> blockers = SepsetFinder.blockPathsNoncollidersOnly(pag, edge.getNode1(),
-//                            edge.getNode2(), maxBlockingPathLength, true);
-//                    Set<Node> blockers = SepsetFinder.getSepsetPathBlockingOutOfX(pag, edge.getNode1(), edge.getNode2(),
-//                            msep, -1, -1, true, new HashSet<>());
-
-                // Find the common adjacents of x and y.
                 List<Node> common = pag.getAdjacentNodes(x);
                 common.retainAll(pag.getAdjacentNodes(y));
-                blockers.removeAll(common);
 
-                if (this.test.checkIndependence(x, y, blockers).isIndependent()) {
-                    return Pair.of(edge, blockers);
-                } else {
+//                {
+//                    SublistGenerator gen = new SublistGenerator(common.size(), common.size());
+//                    int[] choice;
+//
+//                    while ((choice = gen.next()) != null) {
+//                        Set<Node> notFollowed = GraphUtils.asSet(choice, common);
+//                        Set<Node> blocking = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
+//
+//                        if (test.checkIndependence(x, y, blocking).isIndependent()) {
+//                            if (verbose) {
+//                                TetradLogger.getInstance().log("Removed edge " + edge + " because of potential DDP collider orientations.");
+//                            }
+//
+//                            if (this.test.checkIndependence(x, y, blocking).isIndependent()) {
+//                                return Pair.of(edge, blocking);
+//                            }
+//                        }
+//                    }
+//
+//                    return Pair.of(edge, null);
+//                }
+
+                {
+                    Set<Node> blockers = SepsetFinder.blockPathsRecursively(pag, x,
+                            y, new HashSet<>(), Set.of(), maxBlockingPathLength);
+
+                    // Find the common adjacents of x and y.
+//                    blockers.removeAll(common);
+
+                    SublistGenerator gen = new SublistGenerator(common.size(), common.size());
+                    int [] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        Set<Node> e = GraphUtils.asSet(choice, common);
+                        Set<Node> _blocking = new HashSet<>(blockers);
+                        _blocking.removeAll(e);
+
+                        if (test.checkIndependence(x, y, _blocking).isIndependent()) {
+                            return Pair.of(edge, _blocking);
+                        }
+                    }
+
+//                    if (this.test.checkIndependence(x, y, blockers).isIndependent()) {
+//                        return Pair.of(edge, blockers);
+//                    } else {
+//                        return Pair.of(edge, null);
+//                    }
                     return Pair.of(edge, null);
                 }
             });
@@ -663,7 +694,7 @@ public final class LvLite implements IGraphSearch {
         List<Pair<Edge, Set<Node>>> results;
 
         if (testTimeout == -1) {
-            results = tasks.parallelStream().map(task -> {
+            results = tasks.stream().map(task -> {
                 try {
                     return task.call();
                 } catch (Exception e) {
@@ -683,10 +714,6 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-        for (Edge edge : extraSepsets.keySet()) {
-            orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets, true);
-        }
-
         if (verbose) {
             TetradLogger.getInstance().log("Done checking for additional sepsets max length = " + maxBlockingPathLength + ".");
         }
@@ -702,9 +729,8 @@ public final class LvLite implements IGraphSearch {
      * @param pag                 The graph in which to orient the unshielded collider.
      * @param unshieldedColliders The set of unshielded colliders to add the new unshielded collider to.
      * @param extraSepsets        The map of edges to sepsets used to remove them.
-     * @param doOrientation
      */
-    private boolean orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets, boolean doOrientation) {
+    private boolean orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
         boolean changed = false;
 
         Node x = edge.getNode1();
@@ -725,13 +751,11 @@ public final class LvLite implements IGraphSearch {
         for (Node node : common) {
             if (!extraSepsets.get(edge).contains(node)) {
                 if (!pag.isDefCollider(x, node, y)) {
-                    if (doOrientation) {
-                        pag.setEndpoint(x, node, Endpoint.ARROW);
-                        pag.setEndpoint(y, node, Endpoint.ARROW);
+                    pag.setEndpoint(x, node, Endpoint.ARROW);
+                    pag.setEndpoint(y, node, Endpoint.ARROW);
 
-                        if (verbose) {
-                            TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
-                        }
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
                     }
 
                     unshieldedColliders.add(new Triple(x, node, y));

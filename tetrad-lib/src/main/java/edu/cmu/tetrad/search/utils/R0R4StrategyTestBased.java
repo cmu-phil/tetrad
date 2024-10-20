@@ -198,7 +198,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-
         Set<Node> blocking;
 
         if (blockingType == BlockingType.RECURSIVE) {

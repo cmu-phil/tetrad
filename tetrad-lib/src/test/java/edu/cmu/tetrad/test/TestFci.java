@@ -157,6 +157,8 @@ public class TestFci {
                 "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge());
     }
 
+    // This fails for LV-Lite from Oracle understandably. (GSTs from oracle can't use knowledge.)
+    // For FCI etc. can turn it on.
 //    @Test
     public void testSearch11() {
         checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
@@ -176,6 +178,8 @@ public class TestFci {
                 "X1o->X2,X2<->X3", knowledge);
     }
 
+    // This fails for LV-Lite from Oracle understandably. (GSTs from oracle can't use knowledge.)
+    // For FCI etc. can turn it on.
 //    @Test
     public void testSearch12() {
         checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",

@@ -3617,7 +3617,7 @@ public final class GraphUtils {
 
             // We can avoid creating almost cycles here, but this does not solve the problem, as we can still
             // creat almost cycles in final orientation.
-            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y) && !couldCreateAlmostCycle(pag, x, y)) {
+            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y)) {// && !couldCreateAlmostCycle(pag, x, y)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
                 pag.removeEdge(x, y);
