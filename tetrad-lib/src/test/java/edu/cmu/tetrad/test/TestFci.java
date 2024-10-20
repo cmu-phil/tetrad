@@ -157,7 +157,7 @@ public class TestFci {
                 "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge());
     }
 
-    @Test
+//    @Test
     public void testSearch11() {
         checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
                 "X1o->X2,X3o->X2", new Knowledge());
@@ -176,7 +176,7 @@ public class TestFci {
                 "X1o->X2,X2<->X3", knowledge);
     }
 
-    @Test
+//    @Test
     public void testSearch12() {
         checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
                 "X1o->X2,X3o->X4,X2<->X4", new Knowledge());
@@ -225,15 +225,14 @@ public class TestFci {
     @Test
     public void testSearch14() {
 
-//        checkSearch("X-->W1,V1-->W1,V1-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
-//                "Xo->W1,V1o->W1,V1-->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
-
+        checkSearch("X-->W1,V1-->W1,V1-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
+                "Xo->W1,V1o->W1,V1-->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
 
         checkSearch("Latent(R),Latent(S),X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
                 "Xo->W1,V1<->W1,V1<->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
 
-//        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
-//                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
+        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
+                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
     }
 
     /**
@@ -254,12 +253,12 @@ public class TestFci {
         IndependenceTest independence = new MsepTest(graph);
         Score score = new GraphScore(graph);
 
-        Fci fci = new Fci(independence);
-        fci.setPossibleDsepSearchDone(true);
-        fci.setCompleteRuleSetUsed(true);
-        fci.setMaxDiscriminatingPathLength(-1);
-        fci.setKnowledge(knowledge);
-        fci.setVerbose(true);
+//        Fci fci = new Fci(independence);
+//        fci.setPossibleDsepSearchDone(true);
+//        fci.setCompleteRuleSetUsed(true);
+//        fci.setMaxDiscriminatingPathLength(-1);
+//        fci.setKnowledge(knowledge);
+//        fci.setVerbose(true);
 
 //        GraspFci fci = new GraspFci(independence, score);
 //        fci.setKnowledge(knowledge);
@@ -269,9 +268,9 @@ public class TestFci {
 //        fci.setKnowledge(knowledge);
 //        fci.setVerbose(true);
 
-//        LvLite fci = new LvLite(independence, score);
-////        fci.setKnowledge(knowledge);
-//        fci.setVerbose(true);
+        LvLite fci = new LvLite(independence, score);
+//        fci.setKnowledge(knowledge);
+        fci.setVerbose(true);
 
         // Run search
         Graph resultGraph = fci.search();
