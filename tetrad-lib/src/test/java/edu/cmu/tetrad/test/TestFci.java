@@ -254,12 +254,12 @@ public class TestFci {
         IndependenceTest independence = new MsepTest(graph);
         Score score = new GraphScore(graph);
 
-//        Fci fci = new Fci(independence);
-//        fci.setPossibleDsepSearchDone(true);
-//        fci.setCompleteRuleSetUsed(true);
-//        fci.setMaxDiscriminatingPathLength(-1);
-//        fci.setKnowledge(knowledge);
-//        fci.setVerbose(true);
+        Fci fci = new Fci(independence);
+        fci.setPossibleDsepSearchDone(true);
+        fci.setCompleteRuleSetUsed(true);
+        fci.setMaxDiscriminatingPathLength(-1);
+        fci.setKnowledge(knowledge);
+        fci.setVerbose(true);
 
 //        GraspFci fci = new GraspFci(independence, score);
 //        fci.setKnowledge(knowledge);
@@ -269,9 +269,9 @@ public class TestFci {
 //        fci.setKnowledge(knowledge);
 //        fci.setVerbose(true);
 
-        LvLite fci = new LvLite(independence, score);
-//        fci.setKnowledge(knowledge);
-        fci.setVerbose(true);
+//        LvLite fci = new LvLite(independence, score);
+////        fci.setKnowledge(knowledge);
+//        fci.setVerbose(true);
 
         // Run search
         Graph resultGraph = fci.search();
