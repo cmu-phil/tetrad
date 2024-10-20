@@ -145,8 +145,18 @@ public class DiscriminatingPath {
                 return false;
             }
 
-            if (!graph.isParentOf(n2, y)) {
+            if (checkEcNonadjacency && !graph.isParentOf(n2, y)) {
                 return false;
+            }
+
+            if (checkEcNonadjacency) {
+                if (!graph.isParentOf(n2, y)) {
+                    return false;
+                }
+            } else {
+                if (!graph.isAdjacentTo(y, n2) || graph.getEndpoint(y, n2) == Endpoint.ARROW) {
+                    return false;
+                }
             }
         }
 

@@ -207,78 +207,90 @@ public class FciOrient {
     }
 
     /**
-     * Lists the discriminating paths for <a, c> in the graph.
+     * Lists the discriminating paths for <w, y> in the graph.
      *
      * @param graph                       The graph.
-     * @param a                           The first node.
-     * @param c                           The second node.
-     * @param maxDiscriminatingPathLength The maximum length of a discriminating path.
+     * @param w                           The first node.
+     * @param y                           The second node.
+     * @param maxDiscriminatingPathLength The maximum length of w discriminating path.
      * @param checkEcNonadjacency         Whether to check for EC nonadjacency.
-     * @return The set of discriminating paths for &lt;a, c&gt;.
+     * @return The set of discriminating paths for &lt;w, y&gt;.
      */
-    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, Node a, Node c,
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, Node w, Node y,
                                                                   int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
-        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
-
-        if (!graph.isParentOf(a, c)) {
-            return discriminatingPaths;
+        if (w.getName().equals("W1") && y.getName().equals("Y")) {
+            System.out.println("here");
         }
 
-        List<Node> bnodes = graph.getAdjacentNodes(c);
-        bnodes.retainAll(graph.getAdjacentNodes(a));
+        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
 
-        for (Node b : bnodes) {
+        if (checkEcNonadjacency) {
+            if (!graph.isParentOf(w, y)) {
+                return discriminatingPaths;
+            }
+        } else {
+            if (graph.getEndpoint(y, w) == Endpoint.ARROW) {
+                return discriminatingPaths;
+            }
+        }
+
+        List<Node> vnodes = graph.getAdjacentNodes(y);
+        vnodes.retainAll(graph.getAdjacentNodes(w));
+
+        for (Node v : vnodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            // Here we simply assert that A and C are adjacent to B; we let the DiscriminatingPath class determine
+            // Here we simply assert that W and Y are adjacent to V; we let the DiscriminatingPath class determine
             // whether the path is valid.
 
-            if (a == c) continue;
+            if (w == y) continue;
 
-            if (!graph.isParentOf(a, c)) {
-                continue;
+            if (checkEcNonadjacency) {
+                if (!graph.isParentOf(w, y)) continue;
+            } else {
+                if (graph.getEndpoint(y, w) == Endpoint.ARROW) continue;
             }
 
             // We ignore any discriminating paths that do not require orientation.
-            if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
                 continue;
             }
 
-            if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
+            if (graph.getEndpoint(v, y) != Endpoint.ARROW) {
                 continue;
             }
 
-            discriminatingPathBfs(a, b, c, graph, discriminatingPaths, maxDiscriminatingPathLength, checkEcNonadjacency);
+            discriminatingPathBfs(w, v, y, graph, discriminatingPaths, maxDiscriminatingPathLength, checkEcNonadjacency);
         }
 
         return discriminatingPaths;
     }
 
     /**
-     * A method to search "back from a" to find a discriminating path. It is called with a reachability list (first
-     * consisting only of a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990.
-     * The body of a discriminating path consists of colliders that are parents of c.
+     * A method to search "back from w" to find w discriminating path. It is called with w reachability list (first
+     * consisting only of w). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990.
+     * The body of w discriminating path consists of colliders that are parents of y.
      *
-     * @param a                   a {@link Node} object
-     * @param b                   a {@link Node} object
-     * @param c                   a {@link Node} object
-     * @param graph               a {@link Graph} object
+     * @param w                   w {@link Node} object
+     * @param v                   w {@link Node} object
+     * @param y                   w {@link Node} object
+     * @param graph               w {@link Graph} object
      * @param checkEcNonadjacency Whether to check for EC nonadjacency
      */
-    private static void discriminatingPathBfs(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths,
+    private static void discriminatingPathBfs(Node w, Node v, Node y, Graph graph, Set<DiscriminatingPath> discriminatingPaths,
                                               int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
         Map<Node, Node> previous = new HashMap<>();
 
-        Q.offer(a);
-        V.add(a);
-        V.add(b);
+        Q.offer(w);
+        V.add(w);
+        V.add(v);
 
-        previous.put(a, null);
-        previous.put(b, a);
+        previous.put(w, null);
+        previous.put(v, w);
 
         while (!Q.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -314,7 +326,7 @@ public class FciOrient {
                     continue;
                 }
 
-                DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath, checkEcNonadjacency);
+                DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, w, v, y, colliderPath, checkEcNonadjacency);
 
                 if (discriminatingPath.existsIn(graph)) {
                     discriminatingPaths.add(discriminatingPath);

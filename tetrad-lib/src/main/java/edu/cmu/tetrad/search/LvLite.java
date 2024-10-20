@@ -387,74 +387,47 @@ public final class LvLite implements IGraphSearch {
 
             List<Node> exclude = new ArrayList<>();
 
-            for (Node z : pag.getAdjacentNodes(x)) {
-                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, x, z, maxDdpPathLength, false);
+            for (Node w : pag.getAdjacentNodes(x)) {
+                if (w.getName().equals("W1") && x.getName().equals("Y")) {
+                    System.out.println("found");
+                }
+
+                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, x, maxDdpPathLength, false);
+
+                if (w.getName().equals("W1") && x.getName().equals("Y")) {
+                    System.out.println("Discriminating paths for " + w + " -> " + y + ": " + discriminatingPaths);
+                }
 
                 for (DiscriminatingPath path : discriminatingPaths) {
                     if (path.getX() == y) {
-                        pag.removeEdge(x, y);
                         exclude.add(path.getV());
                     }
                 }
             }
 
-            for (Node z : pag.getAdjacentNodes(y)) {
-                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, y, z, maxDdpPathLength,
-                        false);
+            for (Node w : pag.getAdjacentNodes(y)) {
+                if (w.getName().equals("W1") && y.getName().equals("Y")) {
+                    System.out.println("found");
+                }
+
+                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, y, maxDdpPathLength, false);
+
+                if (w.getName().equals("W1") && x.getName().equals("Y")) {
+                    System.out.println("Discriminating paths for " + w + " -> " + y + ": " + discriminatingPaths);
+                }
 
                 for (DiscriminatingPath path : discriminatingPaths) {
                     if (path.getX() == x) {
-                        pag.removeEdge(x, y);
                         exclude.add(path.getV());
                     }
                 }
             }
-
-            // We're only checking length 3 DDPs here; there could be longer ones.
-//            for (Node w : pag.getAdjacentNodes(x)) {
-//                for (Node v : pag.getAdjacentNodes(y)) {
-//                    if (w == v) continue;
-//                    if (w == y || v == x) continue;
-////                    if (pag.isAdjacentTo(y, w) && pag.isAdjacentTo(v, w) && !pag.isAdjacentTo(x, v)) {
-////                        if (pag.getEndpoint(x, w) == Endpoint.ARROW
-////                            && pag.getEndpoint(v, y) == Endpoint.ARROW
-////                            && pag.getEndpoint(v, w) == Endpoint.ARROW
-////                            && pag.getEndpoint(y, w) != Endpoint.ARROW
-////                            && pag.getEndpoint(w, v) == Endpoint.CIRCLE
-////                            && pag.getEndpoint(y, v) == Endpoint.CIRCLE) {
-////                            exclude.add(v);
-////                        }
-////                    }
-//
-//                    if (pag.isAdjacentTo(y, w) && pag.isAdjacentTo(v, w) && !pag.isAdjacentTo(x, v)) {
-//                        if (pag.getEndpoint(x, w) != Endpoint.ARROW) {
-//                            continue;
-//                        }
-//                        if (pag.getEndpoint(v, y) != Endpoint.ARROW) {
-//                            continue;
-//                        }
-//                        if (pag.getEndpoint(v, w) != Endpoint.ARROW) {
-//                            continue;
-//                        }
-//                        if (pag.getEndpoint(y, w) == Endpoint.ARROW) {
-//                            continue;
-//                        }
-//                        if (pag.getEndpoint(w, v) != Endpoint.CIRCLE) {
-//                            continue;
-//                        }
-//                        if (pag.getEndpoint(y, v) != Endpoint.CIRCLE) {
-//                            continue;
-//                        }
-//
-//                        exclude.add(v);
-//                    }
-//                }
-//            }
 
             Set<Node> blocking = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), maxBlockingPathLength);
 
             SublistGenerator gen = new SublistGenerator(exclude.size(), exclude.size());
             int[] choice;
+            boolean removed = false;
 
             while ((choice = gen.next()) != null) {
                 Set<Node> myExclude = GraphUtils.asSet(choice, exclude);
@@ -466,6 +439,14 @@ public final class LvLite implements IGraphSearch {
                     }
 
                     pag.removeEdge(x, y);
+                    removed = true;
+
+                    extraSepsets = new HashMap<>();
+
+                    for (Edge _edge : extraSepsets.keySet()) {
+                        orientCommonAdjacents(_edge, pag, unshieldedColliders, extraSepsets);
+                    }
+
                     break;
                 }
             }
