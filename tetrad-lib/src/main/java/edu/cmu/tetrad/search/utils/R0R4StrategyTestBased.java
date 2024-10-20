@@ -202,7 +202,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         Set<Node> blocking;
 
         if (blockingType == BlockingType.RECURSIVE) {
-            blocking = SepsetFinder.getPathBlockingSetRecursive(graph, x, y, new HashSet<>(path), maxLength);
+            blocking = SepsetFinder.getPathBlockingSetRecursive(graph, x, y, new HashSet<>(path), maxLength, Set.of());
         } else if (blockingType == BlockingType.GREEDY) {
             blocking = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(path), test, depth);
         } else {

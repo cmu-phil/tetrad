@@ -868,7 +868,7 @@ public class MarkovCheck implements SampleSizeSettable {
                             z = GraphUtils.markovBlanket(x, graph);
                             break;
                         case RECURSIVE_MSEP:
-                            z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), maxLength);
+                            z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
                             break;
                         case NONCOLLIDERS_ONLY:
                             z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, maxLength, true);

@@ -1680,7 +1680,7 @@ public class Paths implements TetradSerializable {
      * @return the sepset between the two nodes
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) {
-        Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, containing, maxPathLength);
+        Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength);
 
         // TODO - should allow the user to determine whether this is a PAG.
         if (isMSeparatedFrom(x, y, blocking, false)) {
