@@ -373,61 +373,128 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.finalOrientation(pag);
 
+        Graph _pag = pag;
+
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
-        for (Edge edge : pag.getEdges()) {
+//        for (Edge edge : pag.getEdges()) {
+//            Node x = edge.getNode1();
+//            Node y = edge.getNode2();
+//
+//            List<Node> perhapsNotFollowed = new ArrayList<>();
+//
+//            for (Node w : pag.getAdjacentNodes(x)) {
+//                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, x, maxDdpPathLength, false);
+//
+//                for (DiscriminatingPath path : discriminatingPaths) {
+//                    if (path.getX() == y) {
+//                        perhapsNotFollowed.add(path.getV());
+//                    }
+//                }
+//            }
+//
+//            for (Node w : pag.getAdjacentNodes(y)) {
+//                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, y, maxDdpPathLength, false);
+//
+//                for (DiscriminatingPath path : discriminatingPaths) {
+//                    if (path.getX() == x) {
+//                        perhapsNotFollowed.add(path.getV());
+//                    }
+//                }
+//            }
+//
+//            SublistGenerator gen = new SublistGenerator(perhapsNotFollowed.size(), perhapsNotFollowed.size());
+//            int[] choice;
+//
+//            while ((choice = gen.next()) != null) {
+//                Set<Node> notFollowed = GraphUtils.asSet(choice, perhapsNotFollowed);
+//                Set<Node> blocking = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
+//
+//                if (test.checkIndependence(x, y, blocking).isIndependent()) {
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("Removed edge " + edge + " because of potential DDP collider orientations.");
+//                    }
+//
+//                    pag.removeEdge(x, y);
+//
+//                    List<Node> common = pag.getAdjacentNodes(x);
+//                    common.retainAll(pag.getAdjacentNodes(y));
+//
+//                    for (Node node : common) {
+//                        if (!blocking.contains(node)) {
+//                            unshieldedColliders.add(new Triple(x, node, y));
+//                            pag.setEndpoint(x, node, Endpoint.ARROW);
+//                            pag.setEndpoint(y, node, Endpoint.ARROW);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+
+
+        // Assuming 'unshieldedColliders' is a thread-safe list
+        _pag.getEdges().parallelStream().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
             List<Node> perhapsNotFollowed = new ArrayList<>();
 
-            for (Node w : pag.getAdjacentNodes(x)) {
-                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, x, maxDdpPathLength, false);
+            // Process adjacent nodes of x
+            _pag.getAdjacentNodes(x).parallelStream().forEach(w -> {
+                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(_pag, w, x, maxDdpPathLength, false);
 
-                for (DiscriminatingPath path : discriminatingPaths) {
+                discriminatingPaths.forEach(path -> {
                     if (path.getX() == y) {
-                        perhapsNotFollowed.add(path.getV());
+                        synchronized (perhapsNotFollowed) {
+                            perhapsNotFollowed.add(path.getV());
+                        }
                     }
-                }
-            }
+                });
+            });
 
-            for (Node w : pag.getAdjacentNodes(y)) {
-                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, y, maxDdpPathLength, false);
+            // Process adjacent nodes of y
+            _pag.getAdjacentNodes(y).parallelStream().forEach(w -> {
+                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(_pag, w, y, maxDdpPathLength, false);
 
-                for (DiscriminatingPath path : discriminatingPaths) {
+                discriminatingPaths.forEach(path -> {
                     if (path.getX() == x) {
-                        perhapsNotFollowed.add(path.getV());
+                        synchronized (perhapsNotFollowed) {
+                            perhapsNotFollowed.add(path.getV());
+                        }
                     }
-                }
-            }
+                });
+            });
 
+            // Generate subsets and check blocking paths
             SublistGenerator gen = new SublistGenerator(perhapsNotFollowed.size(), perhapsNotFollowed.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, perhapsNotFollowed);
-                Set<Node> blocking = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
+                Set<Node> blocking = SepsetFinder.blockPathsRecursively(_pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
 
                 if (test.checkIndependence(x, y, blocking).isIndependent()) {
                     if (verbose) {
                         TetradLogger.getInstance().log("Removed edge " + edge + " because of potential DDP collider orientations.");
                     }
 
-                    pag.removeEdge(x, y);
+                    _pag.removeEdge(x, y);
 
-                    List<Node> common = pag.getAdjacentNodes(x);
-                    common.retainAll(pag.getAdjacentNodes(y));
+                    List<Node> common = _pag.getAdjacentNodes(x);
+                    common.retainAll(_pag.getAdjacentNodes(y));
 
-                    for (Node node : common) {
+                    common.parallelStream().forEach(node -> {
                         if (!blocking.contains(node)) {
-                            unshieldedColliders.add(new Triple(x, node, y));
-                            pag.setEndpoint(x, node, Endpoint.ARROW);
-                            pag.setEndpoint(y, node, Endpoint.ARROW);
+                            synchronized (unshieldedColliders) {
+                                unshieldedColliders.add(new Triple(x, node, y));
+                            }
+                            _pag.setEndpoint(x, node, Endpoint.ARROW);
+                            _pag.setEndpoint(y, node, Endpoint.ARROW);
                         }
-                    }
+                    });
                 }
             }
-        }
+        });
 
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
@@ -639,62 +706,30 @@ public final class LvLite implements IGraphSearch {
                 List<Node> common = pag.getAdjacentNodes(x);
                 common.retainAll(pag.getAdjacentNodes(y));
 
-//                {
-//                    SublistGenerator gen = new SublistGenerator(common.size(), common.size());
-//                    int[] choice;
-//
-//                    while ((choice = gen.next()) != null) {
-//                        Set<Node> notFollowed = GraphUtils.asSet(choice, common);
-//                        Set<Node> blocking = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
-//
-//                        if (test.checkIndependence(x, y, blocking).isIndependent()) {
-//                            if (verbose) {
-//                                TetradLogger.getInstance().log("Removed edge " + edge + " because of potential DDP collider orientations.");
-//                            }
-//
-//                            if (this.test.checkIndependence(x, y, blocking).isIndependent()) {
-//                                return Pair.of(edge, blocking);
-//                            }
-//                        }
-//                    }
-//
-//                    return Pair.of(edge, null);
-//                }
+                Set<Node> blockers = SepsetFinder.blockPathsRecursively(pag, x,
+                        y, new HashSet<>(), Set.of(), maxBlockingPathLength);
 
-                {
-                    Set<Node> blockers = SepsetFinder.blockPathsRecursively(pag, x,
-                            y, new HashSet<>(), Set.of(), maxBlockingPathLength);
+                SublistGenerator gen = new SublistGenerator(common.size(), common.size());
+                int[] choice;
 
-                    // Find the common adjacents of x and y.
-//                    blockers.removeAll(common);
+                while ((choice = gen.next()) != null) {
+                    Set<Node> e = GraphUtils.asSet(choice, common);
+                    Set<Node> _blocking = new HashSet<>(blockers);
+                    _blocking.removeAll(e);
 
-                    SublistGenerator gen = new SublistGenerator(common.size(), common.size());
-                    int [] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        Set<Node> e = GraphUtils.asSet(choice, common);
-                        Set<Node> _blocking = new HashSet<>(blockers);
-                        _blocking.removeAll(e);
-
-                        if (test.checkIndependence(x, y, _blocking).isIndependent()) {
-                            return Pair.of(edge, _blocking);
-                        }
+                    if (test.checkIndependence(x, y, _blocking).isIndependent()) {
+                        return Pair.of(edge, _blocking);
                     }
-
-//                    if (this.test.checkIndependence(x, y, blockers).isIndependent()) {
-//                        return Pair.of(edge, blockers);
-//                    } else {
-//                        return Pair.of(edge, null);
-//                    }
-                    return Pair.of(edge, null);
                 }
+
+                return Pair.of(edge, null);
             });
         }
 
         List<Pair<Edge, Set<Node>>> results;
 
         if (testTimeout == -1) {
-            results = tasks.stream().map(task -> {
+            results = tasks.parallelStream().map(task -> {
                 try {
                     return task.call();
                 } catch (Exception e) {

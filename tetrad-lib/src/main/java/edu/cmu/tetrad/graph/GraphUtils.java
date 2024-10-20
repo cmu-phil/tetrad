@@ -36,6 +36,7 @@ import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static edu.cmu.tetrad.search.utils.DagToPag.getFinalStrategyUsingDsep;
 
@@ -2876,14 +2877,22 @@ public final class GraphUtils {
         pag = new EdgeListGraph(pag);
         fciOrient.setKnowledge(knowledge);
 
-//        boolean anyChange = resolveAlmostCycles1(pag, knowledge, unshieldedColliders, verbose);
-        boolean anyChange = removeAlmostCycles2(unshieldedColliders, fciOrient, pag, knowledge, verbose);
+        AtomicBoolean anyChange = removeAlmostCycles2(unshieldedColliders, fciOrient, pag, knowledge, verbose);
 
         if (checkCyclicity) {
-            anyChange = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose) || anyChange;
+            AtomicBoolean b = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
+
+            if (b.get()) {
+                anyChange.set(true);
+            }
+
+//            anyChange = b || anyChange;
         }
 
-        anyChange = repairMaximality(pag, verbose, anyChange, selection) || anyChange;
+        AtomicBoolean anyChange1 = repairMaximality(pag, verbose, anyChange, selection);
+
+
+        anyChange.set(anyChange1.get() || anyChange.get());
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing final orientation...");
@@ -2901,7 +2910,7 @@ public final class GraphUtils {
         // This uses the discriminating pth rule using DSEP.
         _fciOrient.finalOrientation(pag);
 
-        if (!anyChange) {
+        if (!anyChange.get()) {
             if (verbose) {
                 TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
             }
@@ -2991,7 +3000,7 @@ public final class GraphUtils {
         return anyChange;
     }
 
-    private static boolean repairMaximality(Graph pag, boolean verbose, boolean anyChange, Set<Node> selection) {
+    private static AtomicBoolean repairMaximality(Graph pag, boolean verbose, AtomicBoolean anyChange, Set<Node> selection) {
         // Repair maximality.
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
@@ -3012,7 +3021,7 @@ public final class GraphUtils {
                     }
 
 //                        changed = true;
-                    anyChange = true;
+                    anyChange.set(true);
                 }
             }
         }
@@ -3362,13 +3371,13 @@ public final class GraphUtils {
      * @param verbose             a flag indicating whether to log verbose output
      * @return true if any change was made to the graph, false otherwise
      */
-    public static boolean removeAlmostCycles2(Set<Triple> unshieldedColliders, FciOrient fciOrient,
+    public static AtomicBoolean removeAlmostCycles2(Set<Triple> unshieldedColliders, FciOrient fciOrient,
                                               Graph pag, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Removing almost cycles.");
         }
 
-        boolean anyChange = false;
+        AtomicBoolean anyChange = new AtomicBoolean(false);
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.finalOrientation(pag);
@@ -3410,7 +3419,41 @@ public final class GraphUtils {
                 TetradLogger.getInstance().log("# almost cycles = " + almostCyclesSet.size());
             }
 
-            for (Edge almostCycle : almostCyclesSet) {
+//            for (Edge almostCycle : almostCyclesSet) {
+//
+//                Node x = almostCycle.getNode1();
+//                Node y = almostCycle.getNode2();
+//
+//                // Find all unshielded triples z *→ x ↔ y in subsequentUnshieldedColliders
+//                Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
+//
+//                for (Triple triple : new HashSet<>(unshieldedColliders)) {
+//                    if (triple.getY().equals(x) && triple.getZ().equals(y)) {
+//                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
+//                            unshieldedColliders.remove(triple);
+//                            unshieldedTriplesIntoX.add(triple);
+//                            anyChange = true;
+//                        }
+//                    } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
+//                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
+//                            unshieldedColliders.remove(triple);
+//                            unshieldedTriplesIntoX.add(triple);
+//                            anyChange = true;
+//                        }
+//                    }
+//                }
+//
+//                // Remove any unshielded collider in unshieldedTriplesIntoX from the _unshieldedColliders.
+//                if (!unshieldedColliders.isEmpty()) {
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
+//                        TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
+//                    }
+//                }
+//            }
+
+
+            almostCyclesSet.parallelStream().forEach(almostCycle -> {
 
                 Node x = almostCycle.getNode1();
                 Node y = almostCycle.getNode2();
@@ -3418,30 +3461,33 @@ public final class GraphUtils {
                 // Find all unshielded triples z *→ x ↔ y in subsequentUnshieldedColliders
                 Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
 
-                for (Triple triple : new HashSet<>(unshieldedColliders)) {
-                    if (triple.getY().equals(x) && triple.getZ().equals(y)) {
-                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
-                            unshieldedColliders.remove(triple);
-                            unshieldedTriplesIntoX.add(triple);
-                            anyChange = true;
-                        }
-                    } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
-                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
-                            unshieldedColliders.remove(triple);
-                            unshieldedTriplesIntoX.add(triple);
-                            anyChange = true;
+                // Synchronize or use concurrent collections for `unshieldedColliders`
+                synchronized (unshieldedColliders) {
+                    for (Triple triple : new HashSet<>(unshieldedColliders)) {
+                        if (triple.getY().equals(x) && triple.getZ().equals(y)) {
+                            if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
+                                unshieldedColliders.remove(triple);
+                                unshieldedTriplesIntoX.add(triple);
+                                anyChange.set(true);
+                            }
+                        } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
+                            if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
+                                unshieldedColliders.remove(triple);
+                                unshieldedTriplesIntoX.add(triple);
+                                anyChange.set(true);
+                            }
                         }
                     }
                 }
 
-                // Remove any unshielded collider in unshieldedTriplesIntoX from the _unshieldedColliders.
-                if (!unshieldedColliders.isEmpty()) {
-                    if (verbose) {
+                // Synchronize or use concurrent collections for logging and other shared resources
+                if (!unshieldedColliders.isEmpty() && verbose) {
+                    synchronized (TetradLogger.getInstance()) {
                         TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
                         TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
                     }
                 }
-            }
+            });
 
             if (verbose) {
                 TetradLogger.getInstance().log("Done removing almost cycles this round.");
@@ -3491,13 +3537,13 @@ public final class GraphUtils {
      * @param verbose             a flag indicating whether to log verbose information
      * @return true if any cycles were removed, false otherwise
      */
-    public static boolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
+    public static AtomicBoolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
                                        Graph pag, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Removing cycles.");
         }
 
-        boolean anyChange = false;
+        AtomicBoolean anyChange = new AtomicBoolean(false);
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.finalOrientation(pag);
@@ -3519,7 +3565,7 @@ public final class GraphUtils {
                             if (pag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
                                 unshieldedColliders.remove(triple);
                                 unshieldedTriplesIntoX.add(triple);
-                                anyChange = true;
+                                anyChange.set(true);
                             }
                         }
                     }
