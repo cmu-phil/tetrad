@@ -2908,6 +2908,7 @@ public final class GraphUtils {
         _fciOrient.ruleR0(pag, new HashSet<>());
 
         // This uses the discriminating pth rule using DSEP.
+        _fciOrient.setDoR4(true);
         _fciOrient.finalOrientation(pag);
 
         if (!anyChange.get()) {
@@ -3418,40 +3419,6 @@ public final class GraphUtils {
 
                 TetradLogger.getInstance().log("# almost cycles = " + almostCyclesSet.size());
             }
-
-//            for (Edge almostCycle : almostCyclesSet) {
-//
-//                Node x = almostCycle.getNode1();
-//                Node y = almostCycle.getNode2();
-//
-//                // Find all unshielded triples z *→ x ↔ y in subsequentUnshieldedColliders
-//                Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
-//
-//                for (Triple triple : new HashSet<>(unshieldedColliders)) {
-//                    if (triple.getY().equals(x) && triple.getZ().equals(y)) {
-//                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
-//                            unshieldedColliders.remove(triple);
-//                            unshieldedTriplesIntoX.add(triple);
-//                            anyChange = true;
-//                        }
-//                    } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
-//                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
-//                            unshieldedColliders.remove(triple);
-//                            unshieldedTriplesIntoX.add(triple);
-//                            anyChange = true;
-//                        }
-//                    }
-//                }
-//
-//                // Remove any unshielded collider in unshieldedTriplesIntoX from the _unshieldedColliders.
-//                if (!unshieldedColliders.isEmpty()) {
-//                    if (verbose) {
-//                        TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
-//                        TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
-//                    }
-//                }
-//            }
-
 
             almostCyclesSet.parallelStream().forEach(almostCycle -> {
 

@@ -123,6 +123,10 @@ public class FciOrient {
      * The endpoint strategy to use for setting endpoints.
      */
     private SetEndpointStrategy endpointStrategy = new DefaultSetEndpointStrategy();
+    /**
+     * Indicates whether to run R4 or not.
+     */
+    private boolean doR4 = true;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified R4Strategy.
@@ -703,6 +707,10 @@ public class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR4(Graph graph) {
+
+        if (!doR4) {
+            return;
+        }
 
         if (verbose) {
             TetradLogger.getInstance().log("R4: Discriminating path orientation started.");
@@ -1372,5 +1380,14 @@ public class FciOrient {
 
     private void setEndpoint(Graph graph, Node a, Node b, Endpoint endpoint) {
         endpointStrategy.setEndpoint(graph, a, b, endpoint);
+    }
+
+    /**
+     * Sets whether R4 should be run.
+     *
+     * @param doR4 True, if so.
+     */
+    public void setDoR4(boolean doR4) {
+        this.doR4 = doR4;
     }
 }

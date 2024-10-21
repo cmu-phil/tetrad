@@ -230,11 +230,6 @@ public final class LvLite implements IGraphSearch {
             cpdag = alg.search();
             best = cpdag.paths().getValidOrder(cpdag.getNodes(), true);
 
-//            var permutationSearch = getBossSearch();
-//            cpdag = permutationSearch.search(false);
-//            best = permutationSearch.getOrder();
-//            best = cpdag.paths().getValidOrder(best, true);
-
             long stop = MillisecondTimes.wallTimeMillis();
 
             if (verbose) {
@@ -371,67 +366,13 @@ public final class LvLite implements IGraphSearch {
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
+        fciOrient.setDoR4(false);
         fciOrient.finalOrientation(pag);
 
         Graph _pag = pag;
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
-//        for (Edge edge : pag.getEdges()) {
-//            Node x = edge.getNode1();
-//            Node y = edge.getNode2();
-//
-//            List<Node> perhapsNotFollowed = new ArrayList<>();
-//
-//            for (Node w : pag.getAdjacentNodes(x)) {
-//                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, x, maxDdpPathLength, false);
-//
-//                for (DiscriminatingPath path : discriminatingPaths) {
-//                    if (path.getX() == y) {
-//                        perhapsNotFollowed.add(path.getV());
-//                    }
-//                }
-//            }
-//
-//            for (Node w : pag.getAdjacentNodes(y)) {
-//                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, y, maxDdpPathLength, false);
-//
-//                for (DiscriminatingPath path : discriminatingPaths) {
-//                    if (path.getX() == x) {
-//                        perhapsNotFollowed.add(path.getV());
-//                    }
-//                }
-//            }
-//
-//            SublistGenerator gen = new SublistGenerator(perhapsNotFollowed.size(), perhapsNotFollowed.size());
-//            int[] choice;
-//
-//            while ((choice = gen.next()) != null) {
-//                Set<Node> notFollowed = GraphUtils.asSet(choice, perhapsNotFollowed);
-//                Set<Node> blocking = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
-//
-//                if (test.checkIndependence(x, y, blocking).isIndependent()) {
-//                    if (verbose) {
-//                        TetradLogger.getInstance().log("Removed edge " + edge + " because of potential DDP collider orientations.");
-//                    }
-//
-//                    pag.removeEdge(x, y);
-//
-//                    List<Node> common = pag.getAdjacentNodes(x);
-//                    common.retainAll(pag.getAdjacentNodes(y));
-//
-//                    for (Node node : common) {
-//                        if (!blocking.contains(node)) {
-//                            unshieldedColliders.add(new Triple(x, node, y));
-//                            pag.setEndpoint(x, node, Endpoint.ARROW);
-//                            pag.setEndpoint(y, node, Endpoint.ARROW);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
-
         // Assuming 'unshieldedColliders' is a thread-safe list
         _pag.getEdges().parallelStream().forEach(edge -> {
             Node x = edge.getNode1();
@@ -506,6 +447,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
+        fciOrient.setDoR4(true);
         fciOrient.finalOrientation(pag);
 
         if (verbose) {
