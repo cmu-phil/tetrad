@@ -247,7 +247,7 @@ public class SepsetFinder {
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
-                pathToTargetFound(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap, notFollowing);
+                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap, notFollowing);
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
@@ -327,15 +327,15 @@ public class SepsetFinder {
 
             // Iterate over adjacent nodes to find potential paths.
             for (Node b : graph.getAdjacentNodes(x)) {
-                pathToTargetFound(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap, notFollowed);
+                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap, notFollowed);
             }
         } while (!previousZ.equals(z)); // Repeat if the set z changes.
 
         return z;
     }
 
-    private static boolean pathToTargetFound(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
-                                             Set<Triple> colliders, int maxPathLength, Map<Node, Set<Node>> ancestorMap, Set<Node> notFollowed) {
+    private static boolean findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
+                                            Set<Triple> colliders, int maxPathLength, Map<Node, Set<Node>> ancestorMap, Set<Node> notFollowed) {
         if (b == y) {
             return true;
         }
@@ -359,7 +359,7 @@ public class SepsetFinder {
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {
-                if (pathToTargetFound(graph, b, c, y, path, z, colliders, maxPathLength, ancestorMap, notFollowed)) {
+                if (findPathToTarget(graph, b, c, y, path, z, colliders, maxPathLength, ancestorMap, notFollowed)) {
                     return true; // can't be blocked.
                 }
             }
@@ -378,7 +378,7 @@ public class SepsetFinder {
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {
-                if (pathToTargetFound(graph, b, c, y, path, z, _colliders1, maxPathLength, ancestorMap, notFollowed)) {
+                if (findPathToTarget(graph, b, c, y, path, z, _colliders1, maxPathLength, ancestorMap, notFollowed)) {
                     found1 = true; // can't be blocked.
                     break;
                 }
@@ -399,7 +399,7 @@ public class SepsetFinder {
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {
-                if (pathToTargetFound(graph, b, c, y, path, z, _colliders2, maxPathLength, ancestorMap, notFollowed)) {
+                if (findPathToTarget(graph, b, c, y, path, z, _colliders2, maxPathLength, ancestorMap, notFollowed)) {
                     found2 = true;
                     break;
                 }

@@ -887,7 +887,11 @@ public final class Params {
      * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
-   /**
+    /**
+     * Constant <code>DO_DDP_EDGE_REMOVAL_STEP="doDdpEdgeRemovalStep"</code>
+     */
+    public static final String DO_DDP_EDGE_REMOVAL_STEP = "doDdpEdgeRemovalStep";
+    /**
      * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
      */
     public static String PC_HEURISTIC = "pcHeuristic";

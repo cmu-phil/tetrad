@@ -119,6 +119,11 @@ public final class LvLite implements IGraphSearch {
      * The timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
      */
     private long testTimeout = 500;
+    /**
+     * Indicates whether the DDP (Definite Discriminating Path) edge removal algorithm should be performed. This step
+     * may be computationally expensive for large models and addresses a relatively rare condition in the search space.
+     */
+    private boolean doDdpEdgeRemovalStep = true;
 
     /**
      * LV-Lite constructor. Initializes a new object of LV-Lite search algorithm with the given IndependenceTest and
@@ -357,9 +362,19 @@ public final class LvLite implements IGraphSearch {
         // paths between x and y. This is a simpler problem and scales better to dense graphs (though not perfectly).
         Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, unshieldedColliders);
 
-        for (Edge edge : extraSepsets.keySet()) {
-            orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
-        }
+        Graph _pag = pag;
+
+        extraSepsets.keySet().parallelStream().forEach(edge -> {
+                    if (unshieldedColliders.contains(edge)) {
+                        _pag.removeEdge(edge);
+                    }
+                }
+        );
+
+        extraSepsets.keySet().parallelStream().forEach(edge ->
+                orientCommonAdjacents(edge, _pag, unshieldedColliders, extraSepsets)
+        );
+
 
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
@@ -369,7 +384,40 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setDoR4(false);
         fciOrient.finalOrientation(pag);
 
-        Graph _pag = pag;
+        if (doDdpEdgeRemovalStep) {
+            pag = ddpEdgeRemovalStep(pag, unshieldedColliders);
+        }
+
+        GraphUtils.reorientWithCircles(pag, verbose);
+        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+        GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+
+        // Final FCI orientation.
+        if (verbose) {
+            TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
+        }
+
+        fciOrient.setInitialAllowedColliders(new HashSet<>());
+        fciOrient.setDoR4(true);
+        fciOrient.finalOrientation(pag);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished implied orientation.");
+        }
+
+        if (guaranteePag) {
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose, new HashSet<>());
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("LV-Lite finished.");
+        }
+
+        return GraphUtils.replaceNodes(pag, nodes);
+    }
+
+    private Graph ddpEdgeRemovalStep(Graph pag, Set<Triple> unshieldedColliders) {
+        Graph _pag = new EdgeListGraph(pag);
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
@@ -437,32 +485,7 @@ public final class LvLite implements IGraphSearch {
             }
         });
 
-        GraphUtils.reorientWithCircles(pag, verbose);
-        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-        GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-
-        // Final FCI orientation.
-        if (verbose) {
-            TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
-        }
-
-        fciOrient.setInitialAllowedColliders(new HashSet<>());
-        fciOrient.setDoR4(true);
-        fciOrient.finalOrientation(pag);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Finished implied orientation.");
-        }
-
-        if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose, new HashSet<>());
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("LV-Lite finished.");
-        }
-
-        return GraphUtils.replaceNodes(pag, nodes);
+        return _pag;
     }
 
     /**
@@ -679,7 +702,7 @@ public final class LvLite implements IGraphSearch {
                 }
             }).toList();
         } else if (testTimeout > 0) {
-            results = tasks.stream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout,
+            results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout,
                     TimeUnit.MILLISECONDS)).toList();
         } else {
             throw new IllegalArgumentException("Test timeout must be -1 (unlimited) or > 0: " + testTimeout);
@@ -700,7 +723,7 @@ public final class LvLite implements IGraphSearch {
 
     /**
      * Orients an unshielded collider in a graph based on a sepset from a test and adds the unshielded collider to the
-     * set of unshielded colliders.
+     * set of unshielded colliders. Assumes that all relevant edges have been removed from the graph.
      *
      * @param edge                The edge to remove the adjacency for.
      * @param pag                 The graph in which to orient the unshielded collider.
@@ -712,11 +735,6 @@ public final class LvLite implements IGraphSearch {
 
         Node x = edge.getNode1();
         Node y = edge.getNode2();
-
-        if (pag.isAdjacentTo(x, y)) {
-            pag.removeEdge(x, y);
-            changed = true;
-        }
 
         List<Node> common = pag.getAdjacentNodes(x);
         common.retainAll(pag.getAdjacentNodes(y));
@@ -820,6 +838,17 @@ public final class LvLite implements IGraphSearch {
      */
     public void setTestTimeout(long testTimeout) {
         this.testTimeout = testTimeout;
+    }
+
+    /**
+     * Sets whether to perform DDP edge removal step. This step may be computationally expensive for large models and
+     * addresses a relatively rare condition in the search space. By default the step is done, since it is needed
+     * for correctness.
+     *
+     * @param doDdpEdgeRemovalStep a boolean indicating if the DDP edge removal step should be executed
+     */
+    public void setDoDdpEdgeRemovalStep(boolean doDdpEdgeRemovalStep) {
+        this.doDdpEdgeRemovalStep = doDdpEdgeRemovalStep;
     }
 
 
