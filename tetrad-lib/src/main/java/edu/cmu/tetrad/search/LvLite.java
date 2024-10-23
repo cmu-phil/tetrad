@@ -33,7 +33,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -123,7 +122,7 @@ public final class LvLite implements IGraphSearch {
      * Indicates whether the DDP (Definite Discriminating Path) edge removal algorithm should be performed. This step
      * may be computationally expensive for large models and addresses a relatively rare condition in the search space.
      */
-    private boolean doDdpEdgeRemovalStep = true;
+    private boolean doDdpExtraEdgeRemovalStep = true;
 
     /**
      * LV-Lite constructor. Initializes a new object of LV-Lite search algorithm with the given IndependenceTest and
@@ -246,6 +245,8 @@ public final class LvLite implements IGraphSearch {
                 TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
             }
         } else if (startWith == START_WITH.GRASP) {
+            // We need to include the GRaSP option here so that we can run LV-Lite from Oracle.
+
             if (verbose) {
                 TetradLogger.getInstance().log("Running GRaSP...");
             }
@@ -297,7 +298,7 @@ public final class LvLite implements IGraphSearch {
             scorer.bookmark();
         }
 
-         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
+        // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
         pag = new EdgeListGraph(cpdag);
 
         if (verbose) {
@@ -334,24 +335,7 @@ public final class LvLite implements IGraphSearch {
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
 
-        // We're looking for unshielded colliders in these next steps that we can detect without using only
-        // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
-        // unshielded colliders from the BOSS graph into the estimated PAG. This step is justified in the
-        // GFCI algorithm. Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
-        // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
-        // PMLR.
-        for (Node b : best) {
-            var adj = pag.getAdjacentNodes(b);
-
-            for (Node x : adj) {
-                for (Node y : adj) {
-                    if (GraphUtils.distinct(x, b, y) && !checked.contains(new Triple(x, b, y))) {
-                        copyUnshieldedCollider(x, b, y, pag, cpdag, scorer, unshieldedColliders, checked);
-                    }
-                }
-            }
-        }
-
+        copyUnshieldedCollidersFromCpdag(best, pag, checked, cpdag, scorer, unshieldedColliders, extraSepsets, fciOrient);
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
@@ -360,15 +344,10 @@ public final class LvLite implements IGraphSearch {
         // for each edge by examining the structure of the current graph and finding a sepset that blocks all
         // paths between x and y. This is a simpler problem and scales better to dense graphs (though not perfectly).
         removeExtraEdgesCommonColliders(pag, extraSepsets);
-
-        pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
-
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
-        if (doDdpEdgeRemovalStep) {
-            fciOrient.finalOrientation(pag);
-            removeExtraEdgesDdp(pag, extraSepsets);
-
+        if (doDdpExtraEdgeRemovalStep) {
+            removeExtraEdgesDdp(pag, extraSepsets, fciOrient);
             pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
         }
 
@@ -396,7 +375,28 @@ public final class LvLite implements IGraphSearch {
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
+    private void copyUnshieldedCollidersFromCpdag(List<Node> best, Graph pag, Set<Triple> checked, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient) {
+        // We're looking for unshielded colliders in these next steps that we can detect without using only
+        // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
+        // unshielded colliders from the BOSS graph into the estimated PAG. This step is justified in the
+        // GFCI algorithm. Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
+        // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
+        // PMLR.
+        for (Node b : best) {
+            var adj = pag.getAdjacentNodes(b);
+
+            for (Node x : adj) {
+                for (Node y : adj) {
+                    if (GraphUtils.distinct(x, b, y) && !checked.contains(new Triple(x, b, y))) {
+                        copyUnshieldedCollider(x, b, y, pag, cpdag, scorer, unshieldedColliders, checked);
+                    }
+                }
+            }
+        }
+    }
+
     private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders, FciOrient fciOrient, List<Node> best) {
+        pag = new EdgeListGraph(pag);
         GraphUtils.reorientWithCircles(pag, verbose);
         pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
@@ -420,7 +420,8 @@ public final class LvLite implements IGraphSearch {
         return _pag;
     }
 
-    private void removeExtraEdgesDdp(Graph pag, Map<Edge, Set<Node>> extraSepsets) {
+    private void removeExtraEdgesDdp(Graph pag, Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient) {
+        fciOrient.finalOrientation(pag);
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
@@ -489,14 +490,7 @@ public final class LvLite implements IGraphSearch {
                         }
 
                         extraSepsets.put(pag.getEdge(x, y), b);
-                        pag.removeEdge(x, y);
-
-//                        for (Node z : c) {  // Orient common adjacents  s
-//                            if (!b.contains(z)) {
-//                                unshieldedColliders.add(new Triple(x, z, y));
-//
-//                            }
-//                        }
+                        break;
                     }
                 }
             }
@@ -861,10 +855,10 @@ public final class LvLite implements IGraphSearch {
      * addresses a relatively rare condition in the search space. By default the step is done, since it is needed for
      * correctness.
      *
-     * @param doDdpEdgeRemovalStep a boolean indicating if the DDP edge removal step should be executed
+     * @param doDdpExtraEdgeRemovalStep a boolean indicating if the DDP edge removal step should be executed
      */
-    public void setDoDdpEdgeRemovalStep(boolean doDdpEdgeRemovalStep) {
-        this.doDdpEdgeRemovalStep = doDdpEdgeRemovalStep;
+    public void setDoDdpExtraEdgeRemovalStep(boolean doDdpExtraEdgeRemovalStep) {
+        this.doDdpExtraEdgeRemovalStep = doDdpExtraEdgeRemovalStep;
     }
 
 
