@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -122,7 +123,7 @@ public final class LvLite implements IGraphSearch {
      * Indicates whether the DDP (Definite Discriminating Path) edge removal algorithm should be performed. This step
      * may be computationally expensive for large models and addresses a relatively rare condition in the search space.
      */
-    private boolean doDdpExtraEdgeRemovalStep = true;
+    private boolean doDdpEdgeRemovalStep = true;
 
     /**
      * LV-Lite constructor. Initializes a new object of LV-Lite search algorithm with the given IndependenceTest and
@@ -346,7 +347,7 @@ public final class LvLite implements IGraphSearch {
         removeExtraEdgesCommonColliders(pag, extraSepsets);
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
-        if (doDdpExtraEdgeRemovalStep) {
+        if (doDdpEdgeRemovalStep) {
             removeExtraEdgesDdp(pag, extraSepsets, fciOrient);
             pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
         }
@@ -396,7 +397,6 @@ public final class LvLite implements IGraphSearch {
     }
 
     private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders, FciOrient fciOrient, List<Node> best) {
-        pag = new EdgeListGraph(pag);
         GraphUtils.reorientWithCircles(pag, verbose);
         pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
@@ -490,7 +490,14 @@ public final class LvLite implements IGraphSearch {
                         }
 
                         extraSepsets.put(pag.getEdge(x, y), b);
-                        break;
+                        pag.removeEdge(x, y);
+
+//                        for (Node z : c) {  // Orient common adjacents  s
+//                            if (!b.contains(z)) {
+//                                unshieldedColliders.add(new Triple(x, z, y));
+//
+//                            }
+//                        }
                     }
                 }
             }
@@ -855,10 +862,10 @@ public final class LvLite implements IGraphSearch {
      * addresses a relatively rare condition in the search space. By default the step is done, since it is needed for
      * correctness.
      *
-     * @param doDdpExtraEdgeRemovalStep a boolean indicating if the DDP edge removal step should be executed
+     * @param doDdpEdgeRemovalStep a boolean indicating if the DDP edge removal step should be executed
      */
-    public void setDoDdpExtraEdgeRemovalStep(boolean doDdpExtraEdgeRemovalStep) {
-        this.doDdpExtraEdgeRemovalStep = doDdpExtraEdgeRemovalStep;
+    public void setDoDdpEdgeRemovalStep(boolean doDdpEdgeRemovalStep) {
+        this.doDdpEdgeRemovalStep = doDdpEdgeRemovalStep;
     }
 
 
