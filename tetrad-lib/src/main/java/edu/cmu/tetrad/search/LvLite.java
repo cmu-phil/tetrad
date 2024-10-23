@@ -297,7 +297,7 @@ public final class LvLite implements IGraphSearch {
             scorer.bookmark();
         }
 
-        // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
+         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
         pag = new EdgeListGraph(cpdag);
 
         if (verbose) {
@@ -324,6 +324,7 @@ public final class LvLite implements IGraphSearch {
 
         // The main procedure.
         Set<Triple> unshieldedColliders = new HashSet<>();
+        Map<Edge, Set<Node>> extraSepsets = new HashMap<>();
         Set<Triple> checked = new HashSet<>();
 
         if (scorer != null) {
@@ -351,46 +352,25 @@ public final class LvLite implements IGraphSearch {
             }
         }
 
-        GraphUtils.reorientWithCircles(pag, verbose);
-        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
-        GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
         // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
         // each side. So in a dense graph, this can take a very long time to complete. Here, we look for a sepset
         // for each edge by examining the structure of the current graph and finding a sepset that blocks all
         // paths between x and y. This is a simpler problem and scales better to dense graphs (though not perfectly).
-        Map<Edge, Set<Node>> extraSepsets = removeExtraEdges(pag, unshieldedColliders);
+        removeExtraEdgesCommonColliders(pag, extraSepsets);
 
-        Graph _pag = pag;
+        pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
 
-        extraSepsets.keySet().parallelStream().forEach(edge -> {
-                    if (unshieldedColliders.contains(edge)) {
-                        _pag.removeEdge(edge);
-                    }
-                }
-        );
-
-        extraSepsets.keySet().parallelStream().forEach(edge ->
-                orientCommonAdjacents(edge, _pag, unshieldedColliders, extraSepsets)
-        );
-
-
-        GraphUtils.reorientWithCircles(pag, verbose);
-        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-        GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-
-        fciOrient.setInitialAllowedColliders(new HashSet<>());
-        fciOrient.setDoR4(false);
-        fciOrient.finalOrientation(pag);
+        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
         if (doDdpEdgeRemovalStep) {
-            pag = ddpEdgeRemovalStep(pag, unshieldedColliders);
-        }
+            fciOrient.finalOrientation(pag);
+            removeExtraEdgesDdp(pag, extraSepsets);
 
-        GraphUtils.reorientWithCircles(pag, verbose);
-        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
-        GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+            pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
+        }
 
         // Final FCI orientation.
         if (verbose) {
@@ -416,40 +396,62 @@ public final class LvLite implements IGraphSearch {
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
-    private Graph ddpEdgeRemovalStep(Graph pag, Set<Triple> unshieldedColliders) {
-        Graph _pag = new EdgeListGraph(pag);
+    private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders, FciOrient fciOrient, List<Node> best) {
+        GraphUtils.reorientWithCircles(pag, verbose);
+        pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
+        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+        GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+        return pag;
+    }
+
+    private Graph adjustForExtraSepsets(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders) {
+        Graph _pag = pag;
+
+        extraSepsets.keySet().parallelStream().forEach(edge -> {
+                    if (unshieldedColliders.contains(edge)) {
+                        _pag.removeEdge(edge);
+                    }
+                }
+        );
+
+        extraSepsets.keySet().parallelStream().forEach(edge ->
+                orientCommonAdjacents(edge, _pag, unshieldedColliders, extraSepsets)
+        );
+        return _pag;
+    }
+
+    private void removeExtraEdgesDdp(Graph pag, Map<Edge, Set<Node>> extraSepsets) {
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         // Assuming 'unshieldedColliders' is a thread-safe list
-        _pag.getEdges().parallelStream().forEach(edge -> {
+        pag.getEdges().stream().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
+
+            List<Node> common = pag.getAdjacentNodes(x);
+            common.retainAll(pag.getAdjacentNodes(y));
 
             List<Node> perhapsNotFollowed = new ArrayList<>();
 
             // Process adjacent nodes of x
-            _pag.getAdjacentNodes(x).parallelStream().forEach(w -> {
-                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(_pag, w, x, maxDdpPathLength, false);
+            pag.getAdjacentNodes(x).stream().forEach(w -> {
+                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, x, maxDdpPathLength, false);
 
                 discriminatingPaths.forEach(path -> {
-                    if (path.getX() == y) {
-                        synchronized (perhapsNotFollowed) {
-                            perhapsNotFollowed.add(path.getV());
-                        }
+                    if (path.getX() == y && !pag.isDefCollider(path.getW(), path.getV(), path.getY())) {
+                        perhapsNotFollowed.add(path.getV());
                     }
                 });
             });
 
             // Process adjacent nodes of y
-            _pag.getAdjacentNodes(y).parallelStream().forEach(w -> {
-                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(_pag, w, y, maxDdpPathLength, false);
+            pag.getAdjacentNodes(y).stream().forEach(w -> {
+                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, y, maxDdpPathLength, false);
 
                 discriminatingPaths.forEach(path -> {
-                    if (path.getX() == x) {
-                        synchronized (perhapsNotFollowed) {
-                            perhapsNotFollowed.add(path.getV());
-                        }
+                    if (path.getX() == x && !pag.isDefCollider(path.getW(), path.getV(), path.getY())) {
+                        perhapsNotFollowed.add(path.getV());
                     }
                 });
             });
@@ -460,32 +462,45 @@ public final class LvLite implements IGraphSearch {
 
             while ((choice = gen.next()) != null) {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, perhapsNotFollowed);
-                Set<Node> blocking = SepsetFinder.blockPathsRecursively(_pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
+                Set<Node> b = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
 
-                if (test.checkIndependence(x, y, blocking).isIndependent()) {
-                    if (verbose) {
-                        TetradLogger.getInstance().log("Removed edge " + edge + " because of potential DDP collider orientations.");
+                SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
+                int[] choice2;
+
+                W:
+                while ((choice2 = gen2.next()) != null) {
+                    if (!pag.isAdjacentTo(x, y)) {
+                        break;
                     }
 
-                    _pag.removeEdge(x, y);
+                    Set<Node> c = GraphUtils.asSet(choice2, common);
 
-                    List<Node> common = _pag.getAdjacentNodes(x);
-                    common.retainAll(_pag.getAdjacentNodes(y));
-
-                    common.parallelStream().forEach(node -> {
-                        if (!blocking.contains(node)) {
-                            synchronized (unshieldedColliders) {
-                                unshieldedColliders.add(new Triple(x, node, y));
-                            }
-                            _pag.setEndpoint(x, node, Endpoint.ARROW);
-                            _pag.setEndpoint(y, node, Endpoint.ARROW);
+                    for (Node node : c) {
+                        if (pag.isDefCollider(x, node, y)) {
+                            continue W;
                         }
-                    });
+                    }
+
+                    b.removeAll(c);
+
+                    if (test.checkIndependence(x, y, b).isIndependent()) {
+                        if (verbose) {
+                            TetradLogger.getInstance().log("Removed edge " + edge + " because of potential DDP collider orientations.");
+                        }
+
+                        extraSepsets.put(pag.getEdge(x, y), b);
+                        pag.removeEdge(x, y);
+
+//                        for (Node z : c) {  // Orient common adjacents  s
+//                            if (!b.contains(z)) {
+//                                unshieldedColliders.add(new Triple(x, z, y));
+//
+//                            }
+//                        }
+                    }
                 }
             }
         });
-
-        return _pag;
     }
 
     /**
@@ -645,21 +660,17 @@ public final class LvLite implements IGraphSearch {
     /**
      * Tries removing extra edges from the PAG using a test with sepsets obtained by examining the BOSS/GRaSP DAG.
      *
-     * @param pag                 The graph in which to remove extra edges.
-     * @param unshieldedColliders A set to store the unshielded colliders found during the removal process.
+     * @param pag The graph in which to remove extra edges.
      * @return A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning sets used to
      * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
      * is not in this sepset.
      */
-    private Map<Edge, Set<Node>> removeExtraEdges(Graph pag, Set<Triple> unshieldedColliders) {
+    private void removeExtraEdgesCommonColliders(Graph pag, Map<Edge, Set<Node>> extraSepsets) {
         if (verbose) {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
         MsepTest msep = new MsepTest(pag);
-
-        // Note that we can use the MAG here instead of the DAG.
-        Map<Edge, Set<Node>> extraSepsets = new ConcurrentHashMap<>();
 
         List<Callable<Pair<Edge, Set<Node>>>> tasks = new ArrayList<>();
 
@@ -679,6 +690,13 @@ public final class LvLite implements IGraphSearch {
 
                 while ((choice = gen.next()) != null) {
                     Set<Node> e = GraphUtils.asSet(choice, common);
+
+                    for (Node z : e) {
+                        if (pag.isDefCollider(x, z, y)) {
+                            continue;
+                        }
+                    }
+
                     Set<Node> _blocking = new HashSet<>(blockers);
                     _blocking.removeAll(e);
 
@@ -717,8 +735,6 @@ public final class LvLite implements IGraphSearch {
         if (verbose) {
             TetradLogger.getInstance().log("Done checking for additional sepsets max length = " + maxBlockingPathLength + ".");
         }
-
-        return extraSepsets;
     }
 
     /**
@@ -842,8 +858,8 @@ public final class LvLite implements IGraphSearch {
 
     /**
      * Sets whether to perform DDP edge removal step. This step may be computationally expensive for large models and
-     * addresses a relatively rare condition in the search space. By default the step is done, since it is needed
-     * for correctness.
+     * addresses a relatively rare condition in the search space. By default the step is done, since it is needed for
+     * correctness.
      *
      * @param doDdpEdgeRemovalStep a boolean indicating if the DDP edge removal step should be executed
      */
