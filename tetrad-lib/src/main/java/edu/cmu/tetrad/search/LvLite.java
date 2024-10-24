@@ -421,6 +421,7 @@ public final class LvLite implements IGraphSearch {
         extraSepsets.keySet().parallelStream().forEach(edge ->
                 orientCommonAdjacents(edge, _pag, unshieldedColliders, extraSepsets)
         );
+
         return _pag;
     }
 
