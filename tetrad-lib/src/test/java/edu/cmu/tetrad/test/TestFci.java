@@ -274,6 +274,7 @@ public class TestFci {
 
         LvLite fci = new LvLite(independence, score);
 //        fci.setKnowledge(knowledge);
+        fci.setDoDdpEdgeRemovalStep(true);
         fci.setVerbose(true);
 
         // Run search

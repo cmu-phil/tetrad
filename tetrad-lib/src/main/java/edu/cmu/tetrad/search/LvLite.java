@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
@@ -33,7 +34,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -294,8 +294,8 @@ public final class LvLite implements IGraphSearch {
             scorer = new TeyssierScorer(test, score);
             scorer.score(best);
             scorer.setKnowledge(knowledge);
-            scorer.setUseScore(false);
-            scorer.setUseRaskuttiUhler(true);
+            scorer.setUseScore(!(this.score instanceof GraphScore));
+            scorer.setUseRaskuttiUhler(this.score instanceof GraphScore);
             scorer.bookmark();
         }
 
@@ -336,7 +336,11 @@ public final class LvLite implements IGraphSearch {
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
 
-        copyUnshieldedCollidersFromCpdag(best, pag, checked, cpdag, scorer, unshieldedColliders, extraSepsets, fciOrient);
+        if (verbose) {
+            TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
+        }
+
+        copyUnshieldedCollidersFromCpdag(best, pag, checked, cpdag, scorer, unshieldedColliders, fciOrient);
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
@@ -376,7 +380,7 @@ public final class LvLite implements IGraphSearch {
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
-    private void copyUnshieldedCollidersFromCpdag(List<Node> best, Graph pag, Set<Triple> checked, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient) {
+    private void copyUnshieldedCollidersFromCpdag(List<Node> best, Graph pag, Set<Triple> checked, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, FciOrient fciOrient) {
         // We're looking for unshielded colliders in these next steps that we can detect without using only
         // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
         // unshielded colliders from the BOSS graph into the estimated PAG. This step is justified in the
@@ -423,46 +427,62 @@ public final class LvLite implements IGraphSearch {
     private void removeExtraEdgesDdp(Graph pag, Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient) {
         fciOrient.finalOrientation(pag);
 
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
+
+        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
+
+        pag.getEdges().stream().forEach(edge -> {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            Set<DiscriminatingPath> paths = new HashSet<>();
+
+            for (DiscriminatingPath path : discriminatingPaths) {
+                if (path.getX() == x && path.getY() == y) {
+                    paths.add(path);
+                } else if (path.getX() == y && path.getY() == x) {
+                    paths.add(path);
+                }
+            }
+
+            pathsByEdge.put(Set.of(x, y), paths);
+        });
+
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         // Assuming 'unshieldedColliders' is a thread-safe list
         pag.getEdges().stream().forEach(edge -> {
+            if (verbose) {
+                TetradLogger.getInstance().log("Checking " + edge + " for potential DDP collider orientations.");
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
             List<Node> common = pag.getAdjacentNodes(x);
             common.retainAll(pag.getAdjacentNodes(y));
 
-            List<Node> perhapsNotFollowed = new ArrayList<>();
+            Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
+            Set<Node> perhapsNotFollowed = new HashSet<>();
 
-            // Process adjacent nodes of x
-            pag.getAdjacentNodes(x).stream().forEach(w -> {
-                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, x, maxDdpPathLength, false);
+            for (DiscriminatingPath path : paths) {
+                if (!pag.isDefCollider(path.getW(), path.getV(), path.getY())) {
+                    perhapsNotFollowed.add(path.getV());
+                }
+            }
 
-                discriminatingPaths.forEach(path -> {
-                    if (path.getX() == y && !pag.isDefCollider(path.getW(), path.getV(), path.getY())) {
-                        perhapsNotFollowed.add(path.getV());
-                    }
-                });
-            });
+            if (verbose) {
+                TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
+            }
 
-            // Process adjacent nodes of y
-            pag.getAdjacentNodes(y).stream().forEach(w -> {
-                Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, w, y, maxDdpPathLength, false);
-
-                discriminatingPaths.forEach(path -> {
-                    if (path.getX() == x && !pag.isDefCollider(path.getW(), path.getV(), path.getY())) {
-                        perhapsNotFollowed.add(path.getV());
-                    }
-                });
-            });
+            List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
 
             // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(perhapsNotFollowed.size(), perhapsNotFollowed.size());
+            SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), _perhapsNotFollowed.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                Set<Node> notFollowed = GraphUtils.asSet(choice, perhapsNotFollowed);
+                Set<Node> notFollowed = GraphUtils.asSet(choice, _perhapsNotFollowed);
                 Set<Node> b = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
 
                 SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
@@ -486,18 +506,11 @@ public final class LvLite implements IGraphSearch {
 
                     if (test.checkIndependence(x, y, b).isIndependent()) {
                         if (verbose) {
-                            TetradLogger.getInstance().log("Removed edge " + edge + " because of potential DDP collider orientations.");
+                            TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                         }
 
                         extraSepsets.put(pag.getEdge(x, y), b);
                         pag.removeEdge(x, y);
-
-//                        for (Node z : c) {  // Orient common adjacents  s
-//                            if (!b.contains(z)) {
-//                                unshieldedColliders.add(new Triple(x, z, y));
-//
-//                            }
-//                        }
                     }
                 }
             }
@@ -676,6 +689,10 @@ public final class LvLite implements IGraphSearch {
         List<Callable<Pair<Edge, Set<Node>>>> tasks = new ArrayList<>();
 
         for (Edge edge : pag.getEdges()) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Checking " + edge + " for additional sepsets.");
+            }
+
             tasks.add(() -> {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
@@ -730,6 +747,10 @@ public final class LvLite implements IGraphSearch {
         for (Pair<Edge, Set<Node>> _edge : results) {
             if (_edge != null && _edge.getRight() != null) {
                 extraSepsets.put(_edge.getLeft(), _edge.getRight());
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("Marking " + _edge.getLeft() + " for removal because of additional sepset.");
+                }
             }
         }
 

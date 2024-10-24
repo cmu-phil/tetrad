@@ -37,8 +37,7 @@ import java.util.*;
  * @author josephramsey
  * @version $Id: $Id
  */
-public final class IndependenceFact implements Comparable<IndependenceFact>,
-        TetradSerializable {
+public final class IndependenceFact implements TetradSerializable, Comparable<IndependenceFact> {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -218,35 +217,24 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
      * @return a int
      */
     public int compareTo(IndependenceFact fact) {
-        int c = getX().getName().compareTo(fact.getX().getName());
+        List<Node> thisNodes = new ArrayList<>();
+        thisNodes.add(this.x);
+        thisNodes.add(this.y);
+        thisNodes.addAll(this._z);
 
-        if (c != 0) return c;
+        List<Node> factNodes = new ArrayList<>();
+        factNodes.add(fact.x);
+        factNodes.add(fact.y);
+        factNodes.addAll(fact._z);
 
-        c = getY().getName().compareTo(fact.getY().getName());
-
-        if (c != 0) return c;
-
-        Set<Node> _z = getZ();
-        List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
-        Set<Node> _factZ = fact.getZ();
-        List<Node> factZ = new ArrayList<>(_factZ);
-        Collections.sort(factZ);
-
-        int max = FastMath.max(z.size(), factZ.size());
-
-        for (int i = 0; i < max; i++) {
-            if (z.size() <= i && factZ.size() > i) {
-                return -1;
-            }
-            if (factZ.size() <= i && z.size() > i) {
+        for (int i = 0; i < thisNodes.size(); i++) {
+            if (factNodes.size() <= i) {
                 return +1;
-            } else {
-                String s = z.get(i).getName();
-                String s2 = factZ.get(i).getName();
-                c = s.compareTo(s2);
+            }
 
-                if (c != 0) return c;
+            int c = thisNodes.get(i).getName().compareTo(factNodes.get(i).getName());
+            if (c != 0) {
+                return c;
             }
         }
 

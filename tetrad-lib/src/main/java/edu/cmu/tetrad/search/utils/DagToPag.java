@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
@@ -203,7 +204,12 @@ public final class DagToPag {
 //                    sepset = dsepc;
 //                }
 
-                Set<Node> sepset = mag.paths().anteriority(e, c);
+                Set<Node> sepset = mag.isAdjacentTo(e, c) ? null : mag.paths().anteriority(e, c);
+//                Set<Node> sepset = SepsetFinder.blockPathsRecursively(mag, e, c, new HashSet<>(discriminatingPath.getColliderPath()), new HashSet<>(), -1);
+//
+//                if (mag.isAdjacentTo(e, c)) {
+//                    sepset = null;
+//                }
 
 //                if (sepset == null) {
 //                    return Pair.of(discriminatingPath, false);
