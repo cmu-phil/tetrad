@@ -33,8 +33,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * The LV-Lite algorithm (Latent Variable "Lite") algorithm implements a search algorithm for learning the structure of
@@ -352,7 +351,7 @@ public final class LvLite implements IGraphSearch {
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
         if (doDdpEdgeRemovalStep) {
-            removeExtraEdgesDdp(pag, extraSepsets, fciOrient);
+            removeExtraEdgesDdp(pag, extraSepsets, fciOrient, maxBlockingPathLength);
             pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
         }
 
@@ -425,7 +424,7 @@ public final class LvLite implements IGraphSearch {
         return _pag;
     }
 
-    private void removeExtraEdgesDdp(Graph pag, Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient) {
+    private void removeExtraEdgesDdp(Graph pag, Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
@@ -478,41 +477,72 @@ public final class LvLite implements IGraphSearch {
 
             List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
 
+            int _depth = depth == -1 ? _perhapsNotFollowed.size() : depth;
+            _depth = Math.min(_depth, _perhapsNotFollowed.size());
+
             // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), _perhapsNotFollowed.size());
+            SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), depth);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, _perhapsNotFollowed);
-                Set<Node> b = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
 
-                SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
-                int[] choice2;
+                if (notFollowed.isEmpty()) continue;
 
-                W:
-                while ((choice2 = gen2.next()) != null) {
-                    if (!pag.isAdjacentTo(x, y)) {
-                        break;
-                    }
+                if (verbose) {
+                    TetradLogger.getInstance().log(" x: " + x + " y: " + y + " notFollowed: " + notFollowed
+                                                   + " maxBlockingPathLength: " + maxBlockingPathLength);
+                }
 
-                    Set<Node> c = GraphUtils.asSet(choice2, common);
+                ExecutorService executor = Executors.newSingleThreadExecutor();
 
-                    for (Node node : c) {
-                        if (pag.isDefCollider(x, node, y)) {
-                            continue W;
+                try {
+                    // Create a Callable task to call blockPathsRecursively
+                    Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
+
+                    // Submit the task to the executor
+                    Future<Set<Node>> future = executor.submit(task);
+
+                    // Try to get the result within the specified timeout (e.g., 5 seconds)
+                    Set<Node> b = future.get(testTimeout, TimeUnit.MILLISECONDS);
+
+                    int _depth2 = depth == -1 ? common.size() : depth;
+                    _depth2 = Math.min(_depth2, common.size());
+
+                    SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
+                    int[] choice2;
+
+                    W:
+                    while ((choice2 = gen2.next()) != null) {
+                        if (!pag.isAdjacentTo(x, y)) {
+                            break;
+                        }
+
+                        Set<Node> c = GraphUtils.asSet(choice2, common);
+
+                        for (Node node : c) {
+                            if (pag.isDefCollider(x, node, y)) {
+                                continue W;
+                            }
+                        }
+
+                        b.removeAll(c);
+
+                        if (test.checkIndependence(x, y, b).isIndependent()) {
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
+                            }
+
+                            extraSepsets.put(pag.getEdge(x, y), b);
+                            pag.removeEdge(x, y);
                         }
                     }
-
-                    b.removeAll(c);
-
-                    if (test.checkIndependence(x, y, b).isIndependent()) {
-                        if (verbose) {
-                            TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                        }
-
-                        extraSepsets.put(pag.getEdge(x, y), b);
-                        pag.removeEdge(x, y);
-                    }
+                } catch (TimeoutException e) {
+                    System.out.println("Timeout occurred while waiting for blockPathsRecursively");
+                } catch (Exception e) {
+                    e.printStackTrace(); // Handle other exceptions that might occur
+                } finally {
+                    executor.shutdown(); // Always shut down the executor
                 }
             }
         });
@@ -704,7 +734,10 @@ public final class LvLite implements IGraphSearch {
                 Set<Node> blockers = SepsetFinder.blockPathsRecursively(pag, x,
                         y, new HashSet<>(), Set.of(), maxBlockingPathLength);
 
-                SublistGenerator gen = new SublistGenerator(common.size(), common.size());
+                int _depth2 = depth == -1 ? common.size() : depth;
+                _depth2 = Math.min(_depth2, common.size());
+
+                SublistGenerator gen = new SublistGenerator(common.size(), _depth2);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
