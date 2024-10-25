@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -314,7 +313,8 @@ public final class LvLite implements IGraphSearch {
 
         if (ensureMarkov) {
             // Record the initial local Markov p-values for the BOSS graph.
-            System.out.println("Initial percent dependent = " + percentDependent(cpdag, pValues));
+            System.out.println("Initial percent dependent = " + GraphUtils.percentDependent(cpdag, ensureMarkov, test,
+                    pValues));
         }
 
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
@@ -396,120 +396,6 @@ public final class LvLite implements IGraphSearch {
         }
 
         return GraphUtils.replaceNodes(pag, nodes);
-    }
-
-    private double percentDependent(Graph cpdag, Map<Pair<Node, Node>, Set<Double>> pValues) {
-        if (this.test == null || test instanceof MsepTest) {
-            return Double.NaN;
-        }
-
-        for (Node x : cpdag.getNodes()) {
-            Set<Node> parentsX = new HashSet<>(cpdag.getParents(x));
-
-            for (Node y : cpdag.getNodes()) {
-                if (x.equals(y)) {
-                    continue;
-                }
-
-                if (!parentsX.contains(y) && !cpdag.paths().existsDirectedPath(x, y, null)) {
-                    IndependenceResult result = test.checkIndependence(x, y, parentsX);
-                    pValues.putIfAbsent(Pair.of(x, y), new HashSet<>());
-                    pValues.get(Pair.of(x, y)).add(result.getPValue());
-                }
-            }
-        }
-
-        // Calculate the percentage of p-values in the pValues map that are less than alpha
-        int numPValues = 0;
-        int numSignificant = 0;
-
-        for (Pair<Node, Node> pair : pValues.keySet()) {
-            numPValues += pValues.get(pair).size();
-
-            for (Double pValue : pValues.get(pair)) {
-                if (pValue < test.getAlpha()) {
-                    numSignificant++;
-                }
-            }
-        }
-
-        return (double) numSignificant / numPValues;
-    }
-
-    private double percentDependent(Graph cpdag, Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) {
-        if (!ensureMarkov) {
-            throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
-        }
-
-        if (this.test == null || test instanceof MsepTest) {
-            return Double.NaN;
-        }
-
-        Node x = withoutPair.getLeft();
-        Node y = withoutPair.getRight();
-
-        pValues = new HashMap<>(pValues);
-
-        Set<Node> parentsX = new HashSet<>(cpdag.getParents(x));
-
-        for (Node node : parentsX) {
-            if (node.equals(y)) {
-                parentsX.remove(node);
-                break;
-            }
-        }
-
-        Set<Node> parentsY = new HashSet<>(cpdag.getParents(y));
-
-        for (Node node : parentsY) {
-            if (node.equals(x)) {
-                parentsY.remove(node);
-                break;
-            }
-        }
-
-        pValues.remove(Pair.of(x, y));
-        pValues.remove(Pair.of(y, x));
-
-        for (Node _y : cpdag.getNodes()) {
-            if (x.equals(_y)) {
-                continue;
-            }
-
-            if (!parentsX.contains(_y) && !cpdag.paths().existsDirectedPath(x, _y, withoutPair)) {
-                IndependenceResult result = test.checkIndependence(x, _y, parentsX);
-                pValues.putIfAbsent(Pair.of(x, _y), new HashSet<>());
-                pValues.get(Pair.of(x, _y)).add(result.getPValue());
-            }
-        }
-
-        for (Node _x : cpdag.getNodes()) {
-            if (y.equals(_x)) {
-                continue;
-            }
-
-            if (!parentsY.contains(_x) && !cpdag.paths().existsDirectedPath(y, _x, withoutPair)) {
-                IndependenceResult result = test.checkIndependence(y, _x, parentsX);
-                pValues.putIfAbsent(Pair.of(y, _x), new HashSet<>());
-                pValues.get(Pair.of(y, _x)).add(result.getPValue());
-            }
-        }
-
-        // Calculate the percentage of p-values in the pValues map that are less than alpha
-        int numPValues = 0;
-        int numSignificant = 0;
-
-        for (Pair<Node, Node> pair : pValues.keySet()) {
-            numPValues += pValues.get(pair).size();
-
-            for (Double pValue : pValues.get(pair)) {
-                if (pValue < test.getAlpha()) {
-                    numSignificant++;
-                }
-            }
-        }
-
-        return (double) numSignificant / numPValues;
     }
 
     private void copyUnshieldedCollidersFromCpdag(List<Node> best, Graph pag, Set<Triple> checked, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, FciOrient fciOrient) {
@@ -663,7 +549,7 @@ public final class LvLite implements IGraphSearch {
 
                         if (test.checkIndependence(x, y, b).isIndependent()) {
                             if (ensureMarkov) {
-                                if (percentDependent(pag, pValues, Pair.of(x, y)) < test.getAlpha()) {
+                                if (GraphUtils.percentDependent(pag, ensureMarkov, test, pValues, Pair.of(x, y)) < test.getAlpha()) {
                                     if (verbose) {
                                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                                     }
@@ -898,7 +784,7 @@ public final class LvLite implements IGraphSearch {
 
                     if (test.checkIndependence(x, y, _blocking).isIndependent()) {
                         if (ensureMarkov) {
-                            if (percentDependent(pag, pValues, Pair.of(x, y)) < test.getAlpha()) {
+                            if (GraphUtils.percentDependent(pag, ensureMarkov, test, pValues, Pair.of(x, y)) < test.getAlpha()) {
                                 return Pair.of(edge, _blocking);
                             }
                         } else {

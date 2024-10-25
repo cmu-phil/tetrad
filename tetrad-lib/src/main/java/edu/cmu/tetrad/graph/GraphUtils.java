@@ -23,11 +23,15 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -3710,6 +3714,133 @@ public final class GraphUtils {
         }
 
         return true;
+    }
+
+    public static double percentDependent(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
+                                          Map<Pair<Node, Node>, Set<Double>> pValues) {
+        if (!ensureMarkov) {
+            throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
+        }
+
+        if (test == null || test instanceof MsepTest) {
+            return Double.NaN;
+        }
+
+        for (Node x : cpdag.getNodes()) {
+            Set<Node> parentsX = new HashSet<>(cpdag.getParents(x));
+
+            for (Node y : cpdag.getNodes()) {
+                if (x.equals(y)) {
+                    continue;
+                }
+
+                if (!parentsX.contains(y) && !cpdag.paths().existsDirectedPath(x, y, null)) {
+                    IndependenceResult result = test.checkIndependence(x, y, parentsX);
+                    pValues.putIfAbsent(Pair.of(x, y), new HashSet<>());
+                    pValues.get(Pair.of(x, y)).add(result.getPValue());
+                }
+            }
+        }
+
+        // Calculate the percentage of p-values in the pValues map that are less than alpha
+        int numPValues = 0;
+        int numSignificant = 0;
+
+        for (Pair<Node, Node> pair : pValues.keySet()) {
+            numPValues += pValues.get(pair).size();
+
+            for (Double pValue : pValues.get(pair)) {
+                if (pValue < test.getAlpha()) {
+                    numSignificant++;
+                }
+            }
+        }
+
+        return numPValues < 5 ? 0.0 : (double) numSignificant / numPValues;
+    }
+
+    public static double percentDependent(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
+                                          Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) {
+        if (!ensureMarkov) {
+            throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
+        }
+
+        if (test == null || test instanceof MsepTest) {
+            return Double.NaN;
+        }
+
+        Node x = withoutPair.getLeft();
+        Node y = withoutPair.getRight();
+
+        var _pValues = new HashMap<>(pValues);
+
+        Set<Node> parentsX = new HashSet<>(cpdag.getParents(x));
+
+        for (Node node : parentsX) {
+            if (node.equals(y)) {
+                parentsX.remove(node);
+                break;
+            }
+        }
+
+        Set<Node> parentsY = new HashSet<>(cpdag.getParents(y));
+
+        for (Node node : parentsY) {
+            if (node.equals(x)) {
+                parentsY.remove(node);
+                break;
+            }
+        }
+
+        _pValues.remove(Pair.of(x, y));
+        _pValues.remove(Pair.of(y, x));
+
+        for (Node _y : cpdag.getNodes()) {
+            if (x.equals(_y)) {
+                continue;
+            }
+
+            if (!parentsX.contains(_y) && !cpdag.paths().existsDirectedPath(x, _y, withoutPair)) {
+                IndependenceResult result = test.checkIndependence(x, _y, parentsX);
+                _pValues.putIfAbsent(Pair.of(x, _y), new HashSet<>());
+                _pValues.get(Pair.of(x, _y)).add(result.getPValue());
+            }
+        }
+
+        for (Node _x : cpdag.getNodes()) {
+            if (y.equals(_x)) {
+                continue;
+            }
+
+            if (!parentsY.contains(_x) && !cpdag.paths().existsDirectedPath(y, _x, withoutPair)) {
+                IndependenceResult result = test.checkIndependence(y, _x, parentsX);
+                _pValues.putIfAbsent(Pair.of(y, _x), new HashSet<>());
+                _pValues.get(Pair.of(y, _x)).add(result.getPValue());
+            }
+        }
+
+        // Calculate the percentage of p-values in the _pValues map that are less than alpha
+        int numPValues = 0;
+        int numSignificant = 0;
+
+        for (Pair<Node, Node> pair : _pValues.keySet()) {
+            numPValues += _pValues.get(pair).size();
+
+            for (Double pValue : _pValues.get(pair)) {
+                if (pValue < test.getAlpha()) {
+                    numSignificant++;
+                }
+            }
+        }
+
+        double v = numPValues < 5 ? 0.0 : (double) numSignificant / numPValues;
+
+        if (v > test.getAlpha()) {
+            pValues.put(Pair.of(x, y), _pValues.get(Pair.of(x, y)));
+            pValues.put(Pair.of(y, x), _pValues.get(Pair.of(y, x)));
+        }
+
+        return v;
     }
 
     /**
