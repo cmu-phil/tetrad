@@ -124,9 +124,18 @@ public final class LvLite implements IGraphSearch {
      * may be computationally expensive for large models and addresses a relatively rare condition in the search space.
      */
     private boolean doDdpEdgeRemovalStep = true;
-
+    /**
+     * A map that stores p-values for pairs of nodes.
+     *
+     * The map uses a pair of nodes as keys, represented by Pair<Node, Node>,
+     * and stores a set of p-values (doubles) associated with each pair.
+     * This structure is useful in statistical or graph-theoretical contexts
+     * where p-values need to be tracked between pairs of nodes.
+     */
     private Map<Pair<Node, Node>, Set<Double>> pValues = new HashMap<>();
-
+    /**
+     * True if local Markov should be ensured (if possible).
+     */
     private boolean ensureMarkov = false;
 
     /**
@@ -1062,6 +1071,10 @@ public final class LvLite implements IGraphSearch {
      */
     public void setDoDdpEdgeRemovalStep(boolean doDdpEdgeRemovalStep) {
         this.doDdpEdgeRemovalStep = doDdpEdgeRemovalStep;
+    }
+
+    public void setEnsureMarkov(boolean ensureMarkov) {
+        this.ensureMarkov = ensureMarkov;
     }
 
 

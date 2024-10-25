@@ -892,6 +892,10 @@ public final class Params {
      */
     public static final String DO_DDP_EDGE_REMOVAL_STEP = "doDdpEdgeRemovalStep";
     /**
+     * Constant <code>ENSURE_MARKOV="ensureMarkov"</code>
+     */
+    public static final String ENSURE_MARKOV = "ensureMarkov";
+    /**
      * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
      */
     public static String PC_HEURISTIC = "pcHeuristic";

@@ -6592,6 +6592,33 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="ensureMarkov">ensureMarkov</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="ensureMarkov_short_desc">
+                    Ensure the local Markov property holds (if possible)
+        </span></li>
+            <li>Long Description: <span
+                    id="ensureMarkov_long_desc">
+                    Local Markov says that if msep(x, y | parents(x)) then x _||_ y | parents(x).
+                    Checking true for this property will tell the algorithm to ensure
+                    this property to the extent possible. Not applicable when running
+                    the algorithm from Oracle, since there are no p-values to check.
+        </span></li>
+            <li>Default Value: <span
+                    id="ensureMarkov_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="ensureMarkov_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="ensureMarkov_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="ensureMarkov_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="removeAlmostCycles">removeAlmostCycles</h3>
         <ul
                 class="parameter_description_list">

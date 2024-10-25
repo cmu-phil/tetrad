@@ -150,6 +150,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setDoDdpEdgeRemovalStep(parameters.getBoolean(Params.DO_DDP_EDGE_REMOVAL_STEP));
+        search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
         if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
@@ -223,6 +224,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.GUARANTEE_PAG);
         params.add(Params.DO_DDP_EDGE_REMOVAL_STEP);
+        params.add(Params.ENSURE_MARKOV);
 
         // General
         params.add(Params.TIME_LAG);
