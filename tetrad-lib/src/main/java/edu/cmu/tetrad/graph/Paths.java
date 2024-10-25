@@ -8,6 +8,7 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -2154,6 +2155,52 @@ public class Paths implements TetradSerializable {
             Node t = Q.poll();
 
             for (Node c : graph.getChildren(t)) {
+                if (c == node2) return true;
+
+                if (!V.contains(c)) {
+                    V.add(c);
+                    Q.offer(c);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if a directed path exists between two nodes in a graph, ignoring a specified edge.
+     *
+     * @param node1 the starting node of the path
+     * @param node2 the target node of the path
+     * @param without the edge to ignore. If null, no edge is ignored.
+     * @return true if a directed path exists from node1 to node2, false otherwise
+     */
+    public boolean existsDirectedPath(Node node1, Node node2, Pair<Node, Node> without) {
+        Queue<Node> Q = new LinkedList<>();
+        Set<Node> V = new HashSet<>();
+
+        Q.add(node1);
+        V.add(node1);
+
+        while (!Q.isEmpty()) {
+            Node t = Q.poll();
+
+            List<Node> children = graph.getChildren(t);
+
+            for (Node c : children) {
+                if (c == node2) return true;
+
+                if (without != null && c == without.getLeft() && t == without.getRight()) {
+                    continue;
+                }
+
+                if (!V.contains(c)) {
+                    V.add(c);
+                    Q.offer(c);
+                }
+            }
+
+            for (Node c : children) {
                 if (c == node2) return true;
 
                 if (!V.contains(c)) {
