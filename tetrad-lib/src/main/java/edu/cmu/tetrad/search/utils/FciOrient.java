@@ -301,23 +301,23 @@ public class FciOrient {
 
             List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
 
-            for (Node e : nodesInTo) {
+            for (Node x : nodesInTo) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                if (V.contains(e)) {
+                if (V.contains(x)) {
                     continue;
                 }
 
-                previous.put(e, t);
+                previous.put(x, t);
 
                 // The collider path should be all nodes between E and C.
                 LinkedList<Node> colliderPath = new LinkedList<>();
-                Node d = e;
+                Node d = x;
 
                 while ((d = previous.get(d)) != null) {
-                    if (d != e) {
+                    if (d != x) {
                         colliderPath.addFirst(d);
                     }
                 }
@@ -326,15 +326,15 @@ public class FciOrient {
                     continue;
                 }
 
-                DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, w, v, y, colliderPath, checkEcNonadjacency);
+                DiscriminatingPath discriminatingPath = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
 
                 if (discriminatingPath.existsIn(graph)) {
                     discriminatingPaths.add(discriminatingPath);
                 }
 
-                if (!V.contains(e)) {
-                    Q.offer(e);
-                    V.add(e);
+                if (!V.contains(x)) {
+                    Q.offer(x);
+                    V.add(x);
                 }
             }
         }

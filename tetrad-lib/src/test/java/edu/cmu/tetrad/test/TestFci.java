@@ -72,7 +72,7 @@ public class TestFci {
     /**
      * Basic discriminating path checker.
      */
-    @Test
+//    @Test
     public void testSearch3() {
         checkSearch("X-->W,V-->W,V-->Y,W-->Y", "Xo->W,Vo->W,V-->Y,W-->Y", new Knowledge());
     }
@@ -80,7 +80,7 @@ public class TestFci {
     /**
      * Basic discriminating path checker.
      */
-//    @Test
+    @Test
     public void testSearch4() {
         checkSearch("Latent(G),Latent(R),H-->F,F<--G,G-->A,A<--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
                 "A<->C,A-->D,Bo->C,Bo->D,Co->D,F<->A,F-->D,Ho->F", new Knowledge());
@@ -274,7 +274,7 @@ public class TestFci {
 
         LvLite fci = new LvLite(independence, score);
 //        fci.setKnowledge(knowledge);
-        fci.setDoDdpEdgeRemovalStep(true);
+//        fci.setDoDdpEdgeRemovalStep(true);
         fci.setVerbose(true);
 
         // Run search

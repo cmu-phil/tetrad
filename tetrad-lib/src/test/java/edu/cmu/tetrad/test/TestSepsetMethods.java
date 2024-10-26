@@ -187,13 +187,12 @@ public class TestSepsetMethods {
     }
 
     /**
-     * This method is used to test the blockPathsRecursively method for finding a set of nodes that blocks all
-     * blockable paths between two nodes in a graph.
+     * This method is used to test the blockPathsRecursively method for finding a set of nodes that blocks all blockable
+     * paths between two nodes in a graph.
      */
     @Test
     public void test2() {
 
-        // Example 1
         Graph graph = GraphUtils.convert("X-->Y,X-->Z,X-->W,Y-->Z,W-->Z");
 
         System.out.println(graph);
@@ -209,7 +208,42 @@ public class TestSepsetMethods {
 
         assertTrue(new MsepTest(graph2, false).checkIndependence(graph2.getNode("X"), graph2.getNode("Z"), blocking).isIndependent());
 
-        // Example 2 -- let's try to make an induced edge.
+    }
 
+    /**
+     * This method is used to test the blockPathsRecursively method for finding a set of nodes that blocks all blockable
+     * paths between two nodes in a graph, for local Markov.
+     * <p>
+     * The blocking set returned by blockPathsRecursively should always be a sepset or x and y given parents(x) for
+     * non-descendants x.
+     */
+    @Test
+    public void test3() {
+
+        System.out.println("Checking to make sure blockPathsRecursively works for local Markov.");
+
+        Graph graph = RandomGraph.randomDag(10, 0, 20, 100,
+                100, 100, false);
+
+        for (Node x : graph.getNodes()) {
+            for (Node y : graph.getNodes()) {
+                if (x.equals(y)) {
+                    continue;
+                }
+
+                Set<Node> parents = new HashSet<>(graph.getParents(x));
+
+                if (parents.contains(y)) {
+                    continue;
+                }
+
+                if (graph.paths().isDescendentOf(y, x)) {
+                    continue;
+                }
+
+                Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1);
+                assertTrue(new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent());
+            }
+        }
     }
 }
