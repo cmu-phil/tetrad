@@ -3716,8 +3716,8 @@ public final class GraphUtils {
         return true;
     }
 
-    public static double percentDependent(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
-                                          Map<Pair<Node, Node>, Set<Double>> pValues) {
+    public static double initializePValuesLocalMarkov(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
+                                                      Map<Pair<Node, Node>, Set<Double>> pValues) {
         if (!ensureMarkov) {
             throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
         }
@@ -3759,14 +3759,14 @@ public final class GraphUtils {
         return numPValues < 5 ? 0.0 : (double) numSignificant / numPValues;
     }
 
-    public static double percentDependent(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
-                                          Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) {
+    public static Map<Pair<Node, Node>, Set<Double>> initializePValuesLocalMarkov(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
+                                                                                  Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) {
         if (!ensureMarkov) {
             throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
         }
 
         if (test == null || test instanceof MsepTest) {
-            return Double.NaN;
+            throw new IllegalArgumentException("This method should only be called when the test is not null and not an instance of MsepTest.");
         }
 
         Node x = withoutPair.getLeft();
@@ -3819,6 +3819,19 @@ public final class GraphUtils {
             }
         }
 
+        return _pValues;
+
+//        double v = calculatePercentDependent(test, _pValues);
+//
+//        if (v > test.getAlpha()) {
+//            pValues.put(Pair.of(x, y), _pValues.get(Pair.of(x, y)));
+//            pValues.put(Pair.of(y, x), _pValues.get(Pair.of(y, x)));
+//        }
+//
+//        return v;
+    }
+
+    public static double calculatePercentDependent(IndependenceTest test, Map<Pair<Node, Node>, Set<Double>> _pValues) {
         // Calculate the percentage of p-values in the _pValues map that are less than alpha
         int numPValues = 0;
         int numSignificant = 0;
@@ -3834,12 +3847,6 @@ public final class GraphUtils {
         }
 
         double v = numPValues < 5 ? 0.0 : (double) numSignificant / numPValues;
-
-        if (v > test.getAlpha()) {
-            pValues.put(Pair.of(x, y), _pValues.get(Pair.of(x, y)));
-            pValues.put(Pair.of(y, x), _pValues.get(Pair.of(y, x)));
-        }
-
         return v;
     }
 

@@ -312,9 +312,8 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (ensureMarkov) {
-            // Record the initial local Markov p-values for the BOSS graph.
-            System.out.println("Initial percent dependent = " + GraphUtils.percentDependent(cpdag, ensureMarkov, test,
-                    pValues));
+            System.out.println("Initial percent dependent = " + GraphUtils.initializePValuesLocalMarkov(
+                    cpdag, ensureMarkov, test, pValues));
         }
 
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
@@ -549,13 +548,18 @@ public final class LvLite implements IGraphSearch {
 
                         if (test.checkIndependence(x, y, b).isIndependent()) {
                             if (ensureMarkov) {
-                                if (GraphUtils.percentDependent(pag, ensureMarkov, test, pValues, Pair.of(x, y)) < test.getAlpha()) {
+                                Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.initializePValuesLocalMarkov(pag, ensureMarkov,
+                                        test, pValues, Pair.of(x, y));
+
+                                if (GraphUtils.calculatePercentDependent(test, _pValues) < test.getAlpha()) {
                                     if (verbose) {
-                                        TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
+                                        TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential " +
+                                                                       "DDP collider orientations.");
                                     }
 
                                     extraSepsets.put(edge, b);
                                     pag.removeEdge(x, y);
+                                    pValues = _pValues;
                                 }
                             } else {
                                 if (verbose) {
@@ -784,10 +788,33 @@ public final class LvLite implements IGraphSearch {
 
                     if (test.checkIndependence(x, y, _blocking).isIndependent()) {
                         if (ensureMarkov) {
-                            if (GraphUtils.percentDependent(pag, ensureMarkov, test, pValues, Pair.of(x, y)) < test.getAlpha()) {
+//                            if (GraphUtils.adjustPValueMap(pag, ensureMarkov, test, pValues, Pair.of(x, y)) < test.getAlpha()) {
+//                                return Pair.of(edge, _blocking);
+//                            }
+
+                            Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.initializePValuesLocalMarkov(pag, ensureMarkov,
+                                    test, pValues, Pair.of(x, y));
+
+                            if (GraphUtils.calculatePercentDependent(test, _pValues) < test.getAlpha()) {
+                                if (verbose) {
+                                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential " +
+                                                                   "DDP collider orientations.");
+                                }
+
+                                extraSepsets.put(edge, _blocking);
+                                pag.removeEdge(x, y);
+                                pValues = _pValues;
+
                                 return Pair.of(edge, _blocking);
                             }
                         } else {
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential " +
+                                                               "DDP collider orientations.");
+                            }
+
+                            extraSepsets.put(edge, _blocking);
+                            pag.removeEdge(x, y);
                             return Pair.of(edge, _blocking);
                         }
                     }

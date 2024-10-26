@@ -72,7 +72,7 @@ public class TestFci {
     /**
      * Basic discriminating path checker.
      */
-//    @Test
+    @Test
     public void testSearch3() {
         checkSearch("X-->W,V-->W,V-->Y,W-->Y", "Xo->W,Vo->W,V-->Y,W-->Y", new Knowledge());
     }
