@@ -1386,8 +1386,8 @@ public class Paths implements TetradSerializable {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y))
-                    || graph.paths().isAncestor(b, selectionVariables)) {
+                if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
+                    || graph.paths().isAncestor(b, selectionVariables))) {
                     continue;
                 }
             }

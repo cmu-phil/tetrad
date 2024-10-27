@@ -398,6 +398,11 @@ public class GraphTransforms {
         Map<Node, Set<Node>> ancestorMap = dag.paths().getAncestorMap();
         Graph graph = DagToPag.calcAdjacencyGraph(dag);
 
+        List<Node> allNodes = dag.getNodes();
+
+        Set<Node> selection = new HashSet<>(allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList());
+
         graph.reorientAllWith(Endpoint.TAIL);
 
         for (Edge edge : graph.getEdges()) {
@@ -405,11 +410,11 @@ public class GraphTransforms {
             Node y = edge.getNode2();
 
             // If not x ~~> y put an arrow at y. If not y ~~> x put an arrow at x.
-            if (!ancestorMap.get(y).contains(x)) {
+            if (!ancestorMap.get(y).contains(x) && !dag.paths().isAncestor(x, selection)) {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
             }
 
-            if (!ancestorMap.get(x).contains(y)) {
+            if (!ancestorMap.get(x).contains(y) && !dag.paths().isAncestor(y, selection)) {
                 graph.setEndpoint(y, x, Endpoint.ARROW);
             }
         }
