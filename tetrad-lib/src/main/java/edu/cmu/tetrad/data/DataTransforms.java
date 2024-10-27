@@ -326,7 +326,7 @@ public class DataTransforms {
         List<Node> latentVars = new ArrayList<>();
 
         for (Node node : fullDataSet.getVariables()) {
-            if (node.getNodeType() == NodeType.MEASURED) {
+            if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.SELECTION) {
                 measuredVars.add(node);
             } else {
                 latentVars.add(node);

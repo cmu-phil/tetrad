@@ -89,15 +89,15 @@ public final class DagToPag {
         List<Node> selection = allNodes.stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        List<Node> nonLatent = allNodes.stream()
-                .filter(node -> node.getNodeType() != NodeType.LATENT).toList();
+        List<Node> measured = allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
 
-        Graph graph = new EdgeListGraph(nonLatent);
+        Graph graph = new EdgeListGraph(measured);
 
-        IntStream.range(0, nonLatent.size()).parallel().forEach(i -> {
-            Node n1 = nonLatent.get(i);
-            IntStream.range(i + 1, nonLatent.size()).forEach(j -> {
-                Node n2 = nonLatent.get(j);
+        IntStream.range(0, measured.size()).parallel().forEach(i -> {
+            Node n1 = measured.get(i);
+            IntStream.range(i + 1, measured.size()).forEach(j -> {
+                Node n2 = measured.get(j);
                 if (!graph.isAdjacentTo(n1, n2)) {
                     List<Node> inducingPath = dag.paths().getInducingPath(n1, n2, new HashSet<>(selection));
                     if (inducingPath != null) {
