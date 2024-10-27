@@ -312,7 +312,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         if (ensureMarkov) {
-            System.out.println("Initial percent dependent = " + GraphUtils.initializePValuesLocalMarkov(
+            System.out.println("Initial percent dependent = " + GraphUtils.adjustPValuesLocalMarkov(
                     cpdag, ensureMarkov, test, pValues));
         }
 
@@ -548,7 +548,7 @@ public final class LvLite implements IGraphSearch {
 
                         if (test.checkIndependence(x, y, b).isIndependent()) {
                             if (ensureMarkov) {
-                                Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.initializePValuesLocalMarkov(pag, ensureMarkov,
+                                Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.adjustPValuesLocalMarkov(pag, ensureMarkov,
                                         test, pValues, Pair.of(x, y));
 
                                 if (GraphUtils.calculatePercentDependent(test, _pValues) < test.getAlpha()) {
@@ -788,11 +788,7 @@ public final class LvLite implements IGraphSearch {
 
                     if (test.checkIndependence(x, y, _blocking).isIndependent()) {
                         if (ensureMarkov) {
-//                            if (GraphUtils.adjustPValueMap(pag, ensureMarkov, test, pValues, Pair.of(x, y)) < test.getAlpha()) {
-//                                return Pair.of(edge, _blocking);
-//                            }
-
-                            Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.initializePValuesLocalMarkov(pag, ensureMarkov,
+                            Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.adjustPValuesLocalMarkov(pag, ensureMarkov,
                                     test, pValues, Pair.of(x, y));
 
                             if (GraphUtils.calculatePercentDependent(test, _pValues) < test.getAlpha()) {
