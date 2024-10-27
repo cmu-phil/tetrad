@@ -273,7 +273,7 @@ public class SemOptimizerEm implements SemOptimizer {
         for (Node node : nodes) {
             if (node.getNodeType() == NodeType.LATENT) {
                 this.numLatent++;
-            } else if (node.getNodeType() == NodeType.MEASURED) {
+            } else if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.SELECTION) {
                 this.numObserved++;
             }
         }
@@ -291,7 +291,7 @@ public class SemOptimizerEm implements SemOptimizer {
             Node node = nodes.get(i);
             if (node.getNodeType() == NodeType.LATENT) {
                 this.idxLatent[countLatent++] = i;
-            } else if (node.getNodeType() == NodeType.MEASURED) {
+            } else if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.SELECTION) {
                 this.idxObserved[countObserved++] = i;
             }
         }

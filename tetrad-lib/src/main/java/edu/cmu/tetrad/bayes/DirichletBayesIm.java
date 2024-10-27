@@ -865,7 +865,7 @@ public final class DirichletBayesIm implements BayesIm {
         List<Node> variables = new LinkedList<>();
 
         for (int j = 0; j < this.nodes.length; j++) {
-            if (!latentDataSaved && this.nodes[j].getNodeType() != NodeType.MEASURED) {
+            if (!latentDataSaved && this.nodes[j].getNodeType() != NodeType.MEASURED || this.nodes[j].getNodeType() == NodeType.SELECTION) {
                 continue;
             }
 

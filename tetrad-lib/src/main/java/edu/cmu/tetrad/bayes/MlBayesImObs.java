@@ -797,7 +797,9 @@ public final class MlBayesImObs implements BayesIm {
         List<Node> variables = new LinkedList<>();
 
         for (int j = 0; j < this.nodes.length; j++) {
-            if (!latentDataSaved && this.nodes[j].getNodeType() != NodeType.MEASURED) {
+            NodeType nodeType = this.nodes[j].getNodeType();
+
+            if (!latentDataSaved && (nodeType != NodeType.MEASURED && nodeType != NodeType.SELECTION)) {
                 continue;
             }
 
@@ -837,7 +839,8 @@ public final class MlBayesImObs implements BayesIm {
         List<Node> variables = new LinkedList<>();
 
         for (int j = 0; j < this.nodes.length; j++) {
-            if (!latentDataSaved && this.nodes[j].getNodeType() != NodeType.MEASURED) {
+            NodeType nodeType = this.nodes[j].getNodeType();
+            if (!latentDataSaved && nodeType != NodeType.MEASURED && nodeType != NodeType.SELECTION) {
                 continue;
             }
 
@@ -1095,7 +1098,7 @@ public final class MlBayesImObs implements BayesIm {
         List<Node> obsNodes = new ArrayList<>();
         for (Node node1 : this.nodes) {
             Node node = this.bayesPm.getVariable(node1);
-            if (node.getNodeType() == NodeType.MEASURED) {
+            if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.SELECTION) {
                 obsNodes.add(node);
             }
         }

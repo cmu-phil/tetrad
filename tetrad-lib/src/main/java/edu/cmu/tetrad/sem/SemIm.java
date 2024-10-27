@@ -2073,7 +2073,7 @@ public final class SemIm implements Im, ISemIm {
         for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 for (Node child : graph.getChildren(node)) {
-                    if (child.getNodeType() == NodeType.MEASURED) {
+                    if (child.getNodeType() == NodeType.MEASURED || child.getNodeType() == NodeType.SELECTION) {
                         continue NODES;
                     }
                 }

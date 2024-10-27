@@ -374,7 +374,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         // allowUnfaithfulness joint probability of all the measured variables
         int[] probTermV = new int[nNodes];
         for (int i = 0; i < nNodes; i++) {
-            if (this.bayesIm.getNode(i).getNodeType() == NodeType.MEASURED) {
+            NodeType nodeType = this.bayesIm.getNode(i).getNodeType();
+
+            if (nodeType == NodeType.MEASURED || nodeType == NodeType.SELECTION) {
                 probTermV[i] = 1;
             }
         }
@@ -772,8 +774,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             // index of node hj in the original graph
             int nodeHjIndex = graphWhole.getNodeIndex(nodeHj);
 
-            if (graphWhole.getNode(nodeHjIndex).getNodeType() ==
-                NodeType.MEASURED)  // skip latent variables
+            NodeType nodeType = graphWhole.getNode(nodeHjIndex).getNodeType();
+            if (nodeType == NodeType.MEASURED || nodeType == NodeType.SELECTION)  // skip latent variables
             {
                 // get index of node hj in the tier ordering of the nodes
                 //of the original graph
@@ -799,9 +801,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                     sumOverVariables[i] = 0;
                 }
                 for (int i = nodeHjTierIndex + 1; i < tierSize; i++) {
-                    if (graphWhole.getNode(tiers[i]).getNodeType() ==
-                        NodeType.MEASURED
-                    ) {
+                    NodeType nodeType1 = graphWhole.getNode(tiers[i]).getNodeType();
+
+                    if (nodeType1 == NodeType.MEASURED || nodeType1 == NodeType.SELECTION) {
                         sumOverVariables[tiers[i]] = 1;
                     }
                 }
@@ -845,7 +847,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         for (Node node1 : bigSet) {
             if (!smallSet.contains(node1) &&
-                node1.getNodeType() == NodeType.MEASURED) {
+                node1.getNodeType() == NodeType.MEASURED || node1.getNodeType() == NodeType.SELECTION) {
                 sumOverVariables[this.bayesIm.getNodeIndex(node1)] = 1;
             }
         }

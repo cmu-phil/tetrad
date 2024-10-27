@@ -148,7 +148,7 @@ public final class EmBayesEstimator {
         }
 
         for (Node node : this.nodes) {
-            if (node.getNodeType() == NodeType.MEASURED) {
+            if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.SELECTION) {
                 observedVars.add(bayesPm.getVariable(node));
             }
         }
