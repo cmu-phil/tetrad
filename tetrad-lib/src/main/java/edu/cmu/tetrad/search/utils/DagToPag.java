@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
@@ -80,12 +79,6 @@ public final class DagToPag {
     public static Graph calcAdjacencyGraph(Graph dag) {
         List<Node> allNodes = dag.getNodes();
 
-//        List<Node> latent = allNodes.stream()
-//                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
-//
-//        List<Node> measured = allNodes.stream()
-//                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
-
         List<Node> selection = allNodes.stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
@@ -107,23 +100,6 @@ public final class DagToPag {
             });
         });
 
-//        for (int i = 0; i < measured.size(); i++) {
-//            for (int j = i + 1; j < measured.size(); j++) {
-//                Node n1 = measured.get(i);
-//                Node n2 = measured.get(j);
-//
-//                if (graph.isAdjacentTo(n1, n2)) continue;
-//
-//                List<Node> inducingPath = dag.paths().getInducingPath(n1, n2);
-//
-//                boolean exists = inducingPath != null;
-//
-//                if (exists) {
-//                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
-//                }
-//            }
-//        }
-
         return graph;
     }
 
@@ -144,9 +120,6 @@ public final class DagToPag {
             public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
                 Graph mag1 = ((MsepTest) getTest()).getGraph();
 
-                // Could copy the unshielded colliders from the mag but we will use D-SEP.
-//                return mag.isDefCollider(i, j, k) && !mag.isAdjacentTo(i, k);
-
                 Set<Node> dsepi = mag1.paths().dsep(i, k);
                 Set<Node> dsepk = mag1.paths().dsep(k, i);
 
@@ -164,7 +137,7 @@ public final class DagToPag {
              *
              * @param discriminatingPath the discriminating path
              * @param graph              the graph representation
-             * @param vNodes
+             * @param vNodes            the set of nodes that are V-nodes
              * @return a pair of the discriminating path construct and a boolean indicating whether the
              * orientation was determined.
              * @throws IllegalArgumentException if 'e' is adjacent to 'c'
@@ -191,35 +164,13 @@ public final class DagToPag {
                     throw new IllegalArgumentException("e and c must not be adjacent");
                 }
 
-//                Graph mag1 = ((MsepTest) getTest()).getGraph();
-//
-//                Set<Node> dsepe = GraphUtils.dsep(e, c, mag1);
-//                Set<Node> dsepc = GraphUtils.dsep(c, e, mag1);
-//
-//                Set<Node> sepset = null;
-//
-//                if (getTest().checkIndependence(e, c, dsepe).isIndependent()) {
-//                    sepset = dsepe;
-//                } else if (getTest().checkIndependence(c, e, dsepc).isIndependent()) {
-//                    sepset = dsepc;
-//                }
-
                 Set<Node> sepset = mag.isAdjacentTo(e, c) ? null : mag.paths().anteriority(e, c);
-//                Set<Node> sepset = SepsetFinder.blockPathsRecursively(mag, e, c, new HashSet<>(discriminatingPath.getColliderPath()), new HashSet<>(), -1);
-//
-//                if (mag.isAdjacentTo(e, c)) {
-//                    sepset = null;
-//                }
-
-//                if (sepset == null) {
-//                    return Pair.of(discriminatingPath, false);
-//                }
 
                 if (verbose) {
                     TetradLogger.getInstance().log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
                 }
 
-                if (sepset.contains(b)) {
+                if (sepset != null && sepset.contains(b)) {
                     graph.setEndpoint(c, b, Endpoint.TAIL);
 
                     if (verbose) {
@@ -280,8 +231,6 @@ public final class DagToPag {
 
         fciOrient.ruleR0(pag, new HashSet<>());
         fciOrient.finalOrientation(pag);
-
-//        finalOrientation(mag, pag, knowledge, verbose);
 
         return pag;
     }
