@@ -124,18 +124,13 @@ public final class LvLite implements IGraphSearch {
      */
     private boolean doDdpEdgeRemovalStep = true;
     /**
-     * A map that stores p-values for pairs of nodes.
-     *
-     * The map uses a pair of nodes as keys, represented by Pair<Node, Node>,
-     * and stores a set of p-values (doubles) associated with each pair.
-     * This structure is useful in statistical or graph-theoretical contexts
-     * where p-values need to be tracked between pairs of nodes.
-     */
-    private Map<Pair<Node, Node>, Set<Double>> pValues = new HashMap<>();
-    /**
-     * True if local Markov should be ensured (if possible).
+     * True if the local Markov property should be ensured from an initial local Markov graph.
      */
     private boolean ensureMarkov = false;
+    /**
+     * A helper class to help perserve Markov.
+     */
+    private EnsureMarkov ensureMarkovHelper = null;
 
     /**
      * LV-Lite constructor. Initializes a new object of LV-Lite search algorithm with the given IndependenceTest and
@@ -311,10 +306,8 @@ public final class LvLite implements IGraphSearch {
             scorer.bookmark();
         }
 
-        if (ensureMarkov) {
-            System.out.println("Initial percent dependent = " + GraphUtils.adjustPValuesLocalMarkov(
-                    cpdag, ensureMarkov, test, pValues));
-        }
+        ensureMarkovHelper = new EnsureMarkov(cpdag, test);
+        ensureMarkovHelper.setEnsureMarkov(ensureMarkov);
 
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
         pag = new EdgeListGraph(cpdag);
@@ -329,7 +322,7 @@ public final class LvLite implements IGraphSearch {
         strategy.setDepth(depth);
         strategy.setMaxLength(maxBlockingPathLength);
         strategy.setPag(pag);
-        strategy.setPValues(pValues);
+        strategy.setEnsureMarkovHelper(ensureMarkovHelper);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
@@ -548,29 +541,13 @@ public final class LvLite implements IGraphSearch {
 
                         b.removeAll(c);
 
-                        if (test.checkIndependence(x, y, b).isIndependent()) {
-                            if (ensureMarkov) {
-                                Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.adjustPValuesLocalMarkov(pag, ensureMarkov,
-                                        test, pValues, Pair.of(x, y));
-
-                                if (GraphUtils.calculatePercentDependent(test, _pValues) < test.getAlpha()) {
-                                    if (verbose) {
-                                        TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential " +
-                                                                       "DDP collider orientations.");
-                                    }
-
-                                    extraSepsets.put(edge, b);
-                                    pag.removeEdge(x, y);
-                                    pValues = _pValues;
-                                }
-                            } else {
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                                }
-
-                                extraSepsets.put(pag.getEdge(x, y), b);
-                                pag.removeEdge(x, y);
+                        if (ensureMarkovHelper.markovIndependence(x, y, b)) {
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                             }
+
+                            extraSepsets.put(pag.getEdge(x, y), b);
+                            pag.removeEdge(x, y);
                         }
                     }
                 } catch (TimeoutException e) {
@@ -788,33 +765,15 @@ public final class LvLite implements IGraphSearch {
                     Set<Node> _blocking = new HashSet<>(blockers);
                     _blocking.removeAll(e);
 
-                    if (test.checkIndependence(x, y, _blocking).isIndependent()) {
-                        if (ensureMarkov) {
-                            Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.adjustPValuesLocalMarkov(pag, ensureMarkov,
-                                    test, pValues, Pair.of(x, y));
-
-                            if (GraphUtils.calculatePercentDependent(test, _pValues) < test.getAlpha()) {
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential " +
-                                                                   "DDP collider orientations.");
-                                }
-
-                                extraSepsets.put(edge, _blocking);
-                                pag.removeEdge(x, y);
-                                pValues = _pValues;
-
-                                return Pair.of(edge, _blocking);
-                            }
-                        } else {
-                            if (verbose) {
-                                TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential " +
-                                                               "DDP collider orientations.");
-                            }
-
-                            extraSepsets.put(edge, _blocking);
-                            pag.removeEdge(x, y);
-                            return Pair.of(edge, _blocking);
+                    if (ensureMarkovHelper.markovIndependence(x, y, _blocking)) {
+                        if (verbose) {
+                            TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential " +
+                                                           "DDP collider orientations.");
                         }
+
+                        extraSepsets.put(edge, _blocking);
+                        pag.removeEdge(x, y);
+                        return Pair.of(edge, _blocking);
                     }
                 }
 

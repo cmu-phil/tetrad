@@ -3716,7 +3716,7 @@ public final class GraphUtils {
         return true;
     }
 
-    public static double adjustPValuesLocalMarkov(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
+    public static double localMarkovInitializePValues(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
                                                   Map<Pair<Node, Node>, Set<Double>> pValues) {
         if (!ensureMarkov) {
             throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
@@ -3759,7 +3759,7 @@ public final class GraphUtils {
         return numPValues < 5 ? 0.0 : (double) numSignificant / numPValues;
     }
 
-    public static Map<Pair<Node, Node>, Set<Double>> adjustPValuesLocalMarkov(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
+    public static Map<Pair<Node, Node>, Set<Double>> localMarkovAdjustPValues(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
                                                                               Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) {
         if (!ensureMarkov) {
             throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");

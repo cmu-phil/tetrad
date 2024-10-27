@@ -83,6 +83,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     private int maxLength = -1;
     private Graph pag = null;
     private Map<Pair<Node, Node>, Set<Double>> pValues = null;
+    private EnsureMarkov ensureMarkovHelper = null;
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -310,9 +311,12 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             newBlocking.addAll(nonVs);
 
             // You didn't condition on any colliders. V is in the set. So V is a noncollider.
-            if (test.checkIndependence(x, y, newBlocking).isIndependent()) {
+            boolean independent = ensureMarkovHelper != null ? ensureMarkovHelper.markovIndependence(x, y, newBlocking)
+                    : test.checkIndependence(x, y, newBlocking).isIndependent();
+
+            if (independent) {
                 if (pValues != null) {
-                    var _pValues = GraphUtils.adjustPValuesLocalMarkov(pag, true, test, pValues, Pair.of(x, y));
+                    var _pValues = GraphUtils.localMarkovAdjustPValues(pag, true, test, pValues, Pair.of(x, y));
                     double percentDep = GraphUtils.calculatePercentDependent(test, _pValues);
 
                     if (percentDep > test.getAlpha()) {
@@ -441,6 +445,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
     public void setPValues(Map<Pair<Node, Node>, Set<Double>> pValues) {
         this.pValues = pValues;
+    }
+
+    public void setEnsureMarkovHelper(EnsureMarkov ensureMarkovHelper) {
+        this.ensureMarkovHelper = ensureMarkovHelper;
     }
 
     /**
