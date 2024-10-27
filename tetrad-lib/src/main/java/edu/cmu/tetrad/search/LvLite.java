@@ -328,6 +328,8 @@ public final class LvLite implements IGraphSearch {
         strategy.setVerbose(verbose);
         strategy.setDepth(depth);
         strategy.setMaxLength(maxBlockingPathLength);
+        strategy.setPag(pag);
+        strategy.setPValues(pValues);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);

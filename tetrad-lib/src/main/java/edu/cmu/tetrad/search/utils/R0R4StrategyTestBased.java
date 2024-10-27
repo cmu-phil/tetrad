@@ -9,10 +9,7 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The FciOrientDataExaminationStrategyTestBased class implements the FciOrientDataExaminationStrategy interface and
@@ -84,6 +81,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The maximum length of the path, for relevant paths.
      */
     private int maxLength = -1;
+    private Graph pag = null;
+    private Map<Pair<Node, Node>, Set<Double>> pValues = null;
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -312,7 +311,16 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             // You didn't condition on any colliders. V is in the set. So V is a noncollider.
             if (test.checkIndependence(x, y, newBlocking).isIndependent()) {
-                return true;
+                if (pValues != null) {
+                    var _pValues = GraphUtils.adjustPValuesLocalMarkov(pag, true, test, pValues, Pair.of(x, y));
+                    double percentDep = GraphUtils.calculatePercentDependent(test, _pValues);
+
+                    if (percentDep > test.getAlpha()) {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
             }
         }
 
@@ -425,6 +433,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public void setBlockingType(BlockingType blockingType) {
         this.blockingType = blockingType;
+    }
+
+    public void setPag(Graph pag) {
+        this.pag = pag;
+    }
+
+    public void setPValues(Map<Pair<Node, Node>, Set<Double>> pValues) {
+        this.pValues = pValues;
     }
 
     /**
