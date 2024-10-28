@@ -81,7 +81,7 @@ public class R0R4StrategyScoreBased implements R0R4Strategy {
      *
      * @param discriminatingPath the discriminating path
      * @param graph              the graph representation
-     * @param vNodes
+     * @param vNodes             the set of nodes that are v-structures in the graph
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'

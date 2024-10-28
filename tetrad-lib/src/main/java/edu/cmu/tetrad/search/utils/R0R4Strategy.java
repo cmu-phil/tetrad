@@ -41,7 +41,7 @@ public interface R0R4Strategy {
      *
      * @param discriminatingPath the discriminating path construct
      * @param graph              the graph to be oriented.
-     * @param vNodes
+     * @param vNodes             the set of nodes that are v-structures in the graph.
      * @return a pair of the discriminating path construct and a boolean indicating whether the orientation was
      * determined.
      * @see DiscriminatingPath

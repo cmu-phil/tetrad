@@ -3759,6 +3759,17 @@ public final class GraphUtils {
         return numPValues < 5 ? 0.0 : (double) numSignificant / numPValues;
     }
 
+    /**
+     * Adjusts the p-values for a local Markov condition in a given constraint-based partially directed acyclic graph (CPDAG).
+     *
+     * @param cpdag the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
+     * @param ensureMarkov a boolean flag indicating if the Markov condition should be ensured; should be true
+     * @param test the independence test to be used; must not be null and not an instance of MsepTest
+     * @param pValues a map of node pairs to sets of p-values used for adjustment
+     * @param withoutPair a pair of nodes for which adjustments are calculated without considering the edge between them
+     * @return a map of node pairs to sets of adjusted p-values
+     * @throws IllegalArgumentException if ensureMarkov is false or if the test is null or an instance of MsepTest
+     */
     public static Map<Pair<Node, Node>, Set<Double>> localMarkovAdjustPValues(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
                                                                               Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) {
         if (!ensureMarkov) {
@@ -3820,17 +3831,15 @@ public final class GraphUtils {
         }
 
         return _pValues;
-
-//        double v = calculatePercentDependent(test, _pValues);
-//
-//        if (v > test.getAlpha()) {
-//            pValues.put(Pair.of(x, y), _pValues.get(Pair.of(x, y)));
-//            pValues.put(Pair.of(y, x), _pValues.get(Pair.of(y, x)));
-//        }
-//
-//        return v;
     }
 
+    /**
+     * Calculates the percentage of p-values that are less than the alpha value in the given independence test.
+     *
+     * @param test The independence test providing the alpha value.
+     * @param _pValues A map containing pairs of nodes and their corresponding sets of p-values.
+     * @return The percentage of p-values that are less than the alpha value. If the total number of p-values is less than 5, returns 0.0.
+     */
     public static double calculatePercentDependent(IndependenceTest test, Map<Pair<Node, Node>, Set<Double>> _pValues) {
         // Calculate the percentage of p-values in the _pValues map that are less than alpha
         int numPValues = 0;

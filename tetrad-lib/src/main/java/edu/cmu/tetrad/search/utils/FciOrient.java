@@ -184,7 +184,7 @@ public class FciOrient {
      *
      * @param graph                       the graph to analyze
      * @param maxDiscriminatingPathLength the maximum length of a discriminating path
-     * @param checkEcNonadjacency
+     * @param checkEcNonadjacency         whether to check for EC nonadjacency
      * @return a set of discriminating paths found in the graph
      */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
@@ -211,7 +211,7 @@ public class FciOrient {
     }
 
     /**
-     * Lists the discriminating paths for <w, y> in the graph.
+     * Lists the discriminating paths for &lt;w, y&gt; in the graph.
      *
      * @param graph                       The graph.
      * @param w                           The first node.

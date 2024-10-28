@@ -76,7 +76,7 @@ public class DiscriminatingPath {
      * @param v                   the node V in the discriminating path
      * @param y                   the node Y in the discriminating path
      * @param colliderPath        the collider subpath of the discriminating path
-     * @param checkEcNonadjacency
+     * @param checkEcNonadjacency whether to check that E is not adjacent to C
      */
     public DiscriminatingPath(Node x, Node w, Node v, Node y, LinkedList<Node> colliderPath, boolean checkEcNonadjacency) {
         this.x = x;

@@ -943,10 +943,14 @@ public final class LvLite implements IGraphSearch {
         this.doDdpEdgeRemovalStep = doDdpEdgeRemovalStep;
     }
 
+    /**
+     * Sets the value indicating whether the process should ensure Markov property.
+     *
+     * @param ensureMarkov a boolean value, true to ensure Markov property, false otherwise.
+     */
     public void setEnsureMarkov(boolean ensureMarkov) {
         this.ensureMarkov = ensureMarkov;
     }
-
 
     /**
      * Enumeration representing different start options.

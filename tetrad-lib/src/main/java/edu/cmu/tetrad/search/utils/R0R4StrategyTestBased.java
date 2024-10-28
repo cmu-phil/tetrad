@@ -9,7 +9,10 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The FciOrientDataExaminationStrategyTestBased class implements the FciOrientDataExaminationStrategy interface and
@@ -31,7 +34,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     private final IndependenceTest test;
     /**
-     * Private variable representing the blocking type.
+     * The type of blocking strategy used in the R0R4StrategyTestBased class.
+     * This variable determines whether the strategy will be recursive or greedy.
      */
     private BlockingType blockingType = BlockingType.RECURSIVE;
     /**
@@ -81,8 +85,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The maximum length of the path, for relevant paths.
      */
     private int maxLength = -1;
+    /**
+     * The PAG (partial ancestral graph) for the strategy.
+     */
     private Graph pag = null;
-    private Map<Pair<Node, Node>, Set<Double>> pValues = null;
+    /**
+     * Helper variable of type EnsureMarkov used for ensuring Markov properties in the R0R4StrategyTestBased class.
+     * Initialized to null by default.
+     */
     private EnsureMarkov ensureMarkovHelper = null;
 
     /**
@@ -103,8 +113,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
-    public static R0R4Strategy specialConfiguration(IndependenceTest test, Knowledge knowledge,
-                                                    boolean verbose) {
+    public static R0R4Strategy specialConfiguration(IndependenceTest test, Knowledge knowledge, boolean verbose) {
         if (test == null) {
             throw new IllegalArgumentException("Test is null.");
         }
@@ -171,15 +180,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      *
      * @param discriminatingPath the discriminating path
      * @param graph              the graph representation
-     * @param vNodes
+     * @param vNodes             the set of v-nodes
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      * @see DiscriminatingPath
      */
     @Override
-    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
-                                                                             Graph graph, Set<Node> vNodes) {
+    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
         Node x = discriminatingPath.getX();
         Node w = discriminatingPath.getW();
         Node v = discriminatingPath.getV();
@@ -233,9 +241,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // can orient W<-*V*->Y as a non-collider, otherwise as a collider. For the greedy case, we need to know whether
         // blocking contains v. These are two ways to express the same idea, since for the recursive case blocking
         // must contain V by construction.
-        if ((blockingType == BlockingType.RECURSIVE && checkIndependenceRecursive(x, y, blocking, vNodes,
-                discriminatingPath, test))
-            || (blockingType == BlockingType.GREEDY && blocking.contains(v))) {
+        if ((blockingType == BlockingType.RECURSIVE && checkIndependenceRecursive(x, y, blocking, vNodes, discriminatingPath, test)) || (blockingType == BlockingType.GREEDY && blocking.contains(v))) {
             if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
                 return Pair.of(discriminatingPath, false);
             }
@@ -285,8 +291,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
     }
 
-    private boolean checkIndependenceRecursive(Node x, Node y, Set<Node> blocking, Set<Node> vNodes,
-                                               DiscriminatingPath discriminatingPath, IndependenceTest test) {
+    private boolean checkIndependenceRecursive(Node x, Node y, Set<Node> blocking, Set<Node> vNodes, DiscriminatingPath discriminatingPath, IndependenceTest test) {
 
         List<Node> vs = new ArrayList<>();
         List<Node> nonVs = new ArrayList<>();
@@ -311,20 +316,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             newBlocking.addAll(nonVs);
 
             // You didn't condition on any colliders. V is in the set. So V is a noncollider.
-            boolean independent = ensureMarkovHelper != null ? ensureMarkovHelper.markovIndependence(x, y, newBlocking)
-                    : test.checkIndependence(x, y, newBlocking).isIndependent();
+            boolean independent = ensureMarkovHelper != null ? ensureMarkovHelper.markovIndependence(x, y, newBlocking) : test.checkIndependence(x, y, newBlocking).isIndependent();
 
             if (independent) {
-                if (pValues != null) {
-                    var _pValues = GraphUtils.localMarkovAdjustPValues(pag, true, test, pValues, Pair.of(x, y));
-                    double percentDep = GraphUtils.calculatePercentDependent(test, _pValues);
-
-                    if (percentDep > test.getAlpha()) {
-                        return true;
-                    }
-                } else {
-                    return true;
-                }
+                return true;
             }
         }
 
@@ -431,24 +426,30 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     }
 
     /**
-     * Sets the blocking type to be used by the strategy.
+     * Sets the PAG (partial ancestral graph) for the strategy.
      *
-     * @param blockingType the blocking type to be set
+     * @param pag the PAG to be set
      */
-    public void setBlockingType(BlockingType blockingType) {
-        this.blockingType = blockingType;
-    }
-
     public void setPag(Graph pag) {
         this.pag = pag;
     }
 
-    public void setPValues(Map<Pair<Node, Node>, Set<Double>> pValues) {
-        this.pValues = pValues;
-    }
-
+    /**
+     * Sets the EnsureMarkov object used by the R0R4StrategyTestBased.
+     *
+     * @param ensureMarkovHelper the EnsureMarkov object to be set
+     */
     public void setEnsureMarkovHelper(EnsureMarkov ensureMarkovHelper) {
         this.ensureMarkovHelper = ensureMarkovHelper;
+    }
+
+    /**
+     * Sets the blocking type for the strategy.
+     *
+     * @param blockingType the blocking type to be set, which can be either RECURSIVE or GREEDY.
+     */
+    public void setBlockingType(BlockingType blockingType) {
+        this.blockingType = blockingType;
     }
 
     /**
