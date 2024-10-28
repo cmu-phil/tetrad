@@ -132,8 +132,6 @@ public class GraphCard extends JPanel {
         save.add(new SaveGraph(this.workbench, "amat.pag...", SaveGraph.Type.amatPag));
 //        save.add(new SaveGraph(editable, "PCALG...", SaveGraph.Type.pcalg));
         save.add(new SaveGraph(this.workbench, "lavaan...", SaveGraph.Type.lavaan));
-//        add(new SaveComponentImage(comp, "Save Graph Image..."));
-//        file.add(new SaveGraph(this.workbench, "Text...", SaveGraph.Type.text));
 
         file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
 
