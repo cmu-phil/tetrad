@@ -119,6 +119,22 @@ public class GraphCard extends JPanel {
     JMenuBar menuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
+
+        JMenu save = new JMenu("Save...");
+        file.add(save);
+
+        save.add(new SaveGraph(this.workbench, "Text...", SaveGraph.Type.text));
+        save.add(new SaveGraph(this.workbench, "XML...", SaveGraph.Type.xml));
+        save.add(new SaveGraph(this.workbench, "Json...", SaveGraph.Type.json));
+        save.add(new SaveGraph(this.workbench, "R...", SaveGraph.Type.r));
+        save.add(new SaveGraph(this.workbench, "Dot...", SaveGraph.Type.dot));
+        save.add(new SaveGraph(this.workbench, "amat.cpdag...", SaveGraph.Type.amatCpdag));
+        save.add(new SaveGraph(this.workbench, "amat.pag...", SaveGraph.Type.amatPag));
+//        save.add(new SaveGraph(editable, "PCALG...", SaveGraph.Type.pcalg));
+        save.add(new SaveGraph(this.workbench, "lavaan...", SaveGraph.Type.lavaan));
+//        add(new SaveComponentImage(comp, "Save Graph Image..."));
+//        file.add(new SaveGraph(this.workbench, "Text...", SaveGraph.Type.text));
+
         file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
 
         menuBar.add(file);
