@@ -41,6 +41,7 @@ public class EnsureMarkov {
      * A boolean that determines whether to ensure Markov property.
      */
     private boolean ensureMarkov = false;
+    private double initialFraction = Double.NaN;
 
     /**
      * Constructs an EnsureMarkov class for a given Markov graph.
@@ -62,8 +63,9 @@ public class EnsureMarkov {
         this.ensureMarkov = ensureMarkov;
 
         if (ensureMarkov) {
-            System.out.println("Initial percent dependent = " + GraphUtils.localMarkovInitializePValues(
-                    graph, ensureMarkov, test, pValues));
+            initialFraction = GraphUtils.localMarkovInitializePValues(
+                    graph, ensureMarkov, test, pValues);
+            System.out.println("Initial percent dependent = " + initialFraction);
         } else {
             pValues.clear();
         }
@@ -83,12 +85,14 @@ public class EnsureMarkov {
     public boolean markovIndependence(Node x, Node y, Set<Node> z) {
         IndependenceResult result = test.checkIndependence(x, y, z);
 
-        if (result.isIndependent()) {
+        if (result.isIndependent()  ) {
             if (ensureMarkov) {
                 Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.localMarkovAdjustPValues(graph, ensureMarkov,
                         test, pValues, Pair.of(x, y));
 
-                if (GraphUtils.calculatePercentDependent(test, _pValues) < test.getAlpha()) {
+                double baseline = GraphUtils.calculatePercentDependent(test, pValues);
+
+                if (GraphUtils.calculatePercentDependent(test, _pValues) <= test.getAlpha()) {
                     pValues = _pValues;
                     return true;
                 }
