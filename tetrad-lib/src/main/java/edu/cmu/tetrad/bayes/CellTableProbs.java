@@ -124,11 +124,10 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
-     * <p>getCellProb.</p>
+     * Calculates the probability of a cell corresponding to the given variable values.
      *
-     * @param variableValues an array of {@link int} objects
-     * @return the estimated probability for the given cell. The order of the variable values is the order of the
-     * variables in getVariable().
+     * @param variableValues an array of integers representing the values of the variables in the cell.
+     * @return the probability of the cell corresponding to the given variable values.
      */
     public double getCellProb(int[] variableValues) {
         int cellIndex = getCellIndex(variableValues);

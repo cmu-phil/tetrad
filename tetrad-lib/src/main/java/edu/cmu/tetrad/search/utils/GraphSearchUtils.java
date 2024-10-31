@@ -1126,7 +1126,7 @@ public final class GraphSearchUtils {
      * @param trueCpdag a {@link edu.cmu.tetrad.graph.Graph} object
      * @param estCpdag  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param out       a {@link java.io.PrintStream} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[][] graphComparison(Graph trueCpdag, Graph estCpdag, PrintStream out) {
         GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(estCpdag, trueCpdag);

@@ -215,7 +215,7 @@ public class Histogram {
      * A convenience method to return the data for a particular named continuous variable.
      *
      * @param variable The name of the variable.
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] getContinuousData(String variable) {
         int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));

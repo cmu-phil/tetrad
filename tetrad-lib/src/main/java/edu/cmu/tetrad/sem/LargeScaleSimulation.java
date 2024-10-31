@@ -104,7 +104,7 @@ public final class LargeScaleSimulation {
      *
      * @param graph       a {@link edu.cmu.tetrad.graph.Graph} object
      * @param nodes       a {@link java.util.List} object
-     * @param tierIndices an array of {@link int} objects
+     * @param tierIndices an array of  objects
      */
     public LargeScaleSimulation(Graph graph, List<Node> nodes, int[] tierIndices) {
         if (graph == null) {
@@ -669,7 +669,7 @@ public final class LargeScaleSimulation {
     /**
      * <p>getCoefficientMatrix.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] getCoefficientMatrix() {
         double[][] c = new double[this.coefs.length][this.coefs.length];
@@ -858,7 +858,7 @@ public final class LargeScaleSimulation {
      * <p>getUncorrelatedShocks.</p>
      *
      * @param sampleSize a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] getUncorrelatedShocks(int sampleSize) {
         AbstractRealDistribution distribution;
@@ -894,7 +894,7 @@ public final class LargeScaleSimulation {
      * <p>getSoCalledPoissonShocks.</p>
      *
      * @param sampleSize a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] getSoCalledPoissonShocks(int sampleSize) {
         int numVars = this.variableNodes.size();

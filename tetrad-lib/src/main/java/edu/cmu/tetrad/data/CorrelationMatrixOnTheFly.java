@@ -197,7 +197,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * <p>getSubmatrix.</p>
      *
-     * @param indices an array of {@link int} objects
+     * @param indices an array of  objects
      * @return a submatrix of the covariance matrix with variables in the given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {

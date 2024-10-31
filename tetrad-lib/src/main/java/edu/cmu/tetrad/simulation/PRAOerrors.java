@@ -21,7 +21,7 @@ public final class PRAOerrors {
     /**
      * <p>Constructor for PRAOerrors.</p>
      *
-     * @param input   an array of {@link double} objects
+     * @param input   an array of  objects
      * @param thename a {@link java.lang.String} object
      */
     public PRAOerrors(double[] input, String thename) {
@@ -160,7 +160,7 @@ public final class PRAOerrors {
     /**
      * <p>toArray.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] toArray() {
         double[] output = new double[4];

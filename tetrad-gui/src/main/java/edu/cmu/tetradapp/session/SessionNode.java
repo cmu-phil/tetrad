@@ -1554,7 +1554,7 @@ public class SessionNode implements Node {
      * <p>getValueCombination.</p>
      *
      * @param index     a int
-     * @param numValues an array of {@link int} objects
+     * @param numValues an array of  objects
      * @return an array with a combination of particular values for variables given an array indicating the number of
      * values for each variable.
      */
@@ -1573,7 +1573,7 @@ public class SessionNode implements Node {
     /**
      * <p>getProduct.</p>
      *
-     * @param arr an array of {@link int} objects
+     * @param arr an array of  objects
      * @return the product of the entries in the given array.
      */
     public int getProduct(int[] arr) {

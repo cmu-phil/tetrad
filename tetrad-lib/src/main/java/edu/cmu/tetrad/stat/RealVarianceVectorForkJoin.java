@@ -43,7 +43,7 @@ public class RealVarianceVectorForkJoin implements RealVariance {
     /**
      * <p>Constructor for RealVarianceVectorForkJoin.</p>
      *
-     * @param data         an array of {@link double} objects
+     * @param data         an array of  objects
      * @param numOfThreads a int
      */
     public RealVarianceVectorForkJoin(double[][] data, int numOfThreads) {

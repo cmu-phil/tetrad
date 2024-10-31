@@ -292,7 +292,7 @@ public final class UpdatedBayesIm implements BayesIm {
      * <p>getRowIndex.</p>
      *
      * @param nodeIndex a int
-     * @param values    an array of {@link int} objects
+     * @param values    an array of  objects
      * @return a int
      */
     public int getRowIndex(int nodeIndex, int[] values) {
@@ -324,7 +324,7 @@ public final class UpdatedBayesIm implements BayesIm {
      * <p>setProbability.</p>
      *
      * @param nodeIndex  a int
-     * @param probMatrix an array of {@link double} objects
+     * @param probMatrix an array of  objects
      */
     public void setProbability(int nodeIndex, double[][] probMatrix) {
         getBayesIm().setProbability(nodeIndex, probMatrix);

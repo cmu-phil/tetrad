@@ -202,7 +202,7 @@ public class BoolSearch {
      *
      * @param ind The integer to be converted to a byte vector.
      * @param n   The length of the byte vector.
-     * @return an array of {@link byte} objects
+     * @return The byte vector.
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

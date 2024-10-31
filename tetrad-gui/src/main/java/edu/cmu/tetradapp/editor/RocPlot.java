@@ -99,7 +99,7 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      * Constructs a power graph using the given model.  The argument points contains the coordinates of x and y for each
      * point.  I.e. points[i][0] is the x coordinate and points[i][1] is the y coordinate of the ith point.
      *
-     * @param points an array of {@link double} objects
+     * @param points an array of  objects
      * @param title  a {@link java.lang.String} object
      * @param info   a {@link java.lang.String} object
      */

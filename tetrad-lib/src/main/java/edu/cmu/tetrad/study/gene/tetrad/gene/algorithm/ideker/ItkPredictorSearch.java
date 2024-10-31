@@ -58,7 +58,7 @@ public class ItkPredictorSearch {
      * <p>Constructor for ItkPredictorSearch.</p>
      *
      * @param ngenes     a int
-     * @param expression an array of {@link int} objects
+     * @param expression an array of  objects
      * @param names      an array of {@link java.lang.String} objects
      */
     public ItkPredictorSearch(int ngenes, int[][] expression, String[] names) {
@@ -390,7 +390,7 @@ public class ItkPredictorSearch {
      *
      * @param ind a int
      * @param n   a int
-     * @return an array of {@link byte} objects
+     * @return an array of  objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

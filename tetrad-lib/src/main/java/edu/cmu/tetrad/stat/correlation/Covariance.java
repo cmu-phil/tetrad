@@ -32,7 +32,7 @@ public interface Covariance {
      * <p>computeLowerTriangle.</p>
      *
      * @param biasCorrected a boolean
-     * @return an array of {@link float} objects
+     * @return an array of  objects
      */
     float[] computeLowerTriangle(boolean biasCorrected);
 
@@ -40,7 +40,7 @@ public interface Covariance {
      * <p>compute.</p>
      *
      * @param biasCorrected a boolean
-     * @return an array of {@link float} objects
+     * @return an array of  objects
      */
     float[][] compute(boolean biasCorrected);
 

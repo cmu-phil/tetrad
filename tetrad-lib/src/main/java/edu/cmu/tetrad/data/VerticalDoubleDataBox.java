@@ -72,7 +72,7 @@ public class VerticalDoubleDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D double data array as data.
      *
-     * @param data an array of {@link double} objects
+     * @param data an array of  objects
      */
     public VerticalDoubleDataBox(double[][] data) {
         int length = data[0].length;
@@ -162,7 +162,7 @@ public class VerticalDoubleDataBox implements DataBox {
     /**
      * <p>getVariableVectors.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] getVariableVectors() {
         if (this.numCols == 0 || this.numRows == 0) {

@@ -122,7 +122,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
      * values they do in that cell. The returned value will be undefined (Double.NaN) if any of the conditional
      * probabilities being multiplied together is undefined.
      *
-     * @param variableValues an array of {@link int} objects
+     * @param variableValues the values of the variables in the cell
      * @return the cell probability, or NaN if this probability is undefined.
      */
     public double getCellProb(int[] variableValues) {

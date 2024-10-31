@@ -223,8 +223,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /**
      * <p>getJointMarginal.</p>
      *
-     * @param sVariables an array of {@link int} objects
-     * @param sValues    an array of {@link int} objects
+     * @param sVariables an array of  objects
+     * @param sValues    an array of  objects
      * @return a double
      */
     public double getJointMarginal(int[] sVariables, int[] sValues) {

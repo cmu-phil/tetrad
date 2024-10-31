@@ -3716,6 +3716,17 @@ public final class GraphUtils {
         return true;
     }
 
+    /**
+     * Initializes and evaluates p-values for local Markov properties in a given graph.
+     *
+     * @param cpdag The input graph, typically a CPDAG (Completed Partially Directed Acyclic Graph).
+     * @param ensureMarkov Flag indicating that the method should proceed only if set to true.
+     * @param test The statistical test instance used to check for conditional independence.
+     * @param pValues A map to store the p-values, indexed by pairs of nodes.
+     * @return The percentage of p-values that are less than the significance level (alpha) used in the test.
+     *         Returns 0.0 if the number of p-values is less than 5 or if ensureMarkov is false or test instance is invalid.
+     * @throws IllegalArgumentException if ensureMarkov is false.
+     */
     public static double localMarkovInitializePValues(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
                                                   Map<Pair<Node, Node>, Set<Double>> pValues) {
         if (!ensureMarkov) {

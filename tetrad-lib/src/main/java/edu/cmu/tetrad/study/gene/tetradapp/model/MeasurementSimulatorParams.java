@@ -346,7 +346,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
     /**
      * <p>getMeasuredData.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][][] getMeasuredData() {
         return getSimulator().getMeasuredData();
@@ -355,7 +355,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
     /**
      * <p>getTimeSteps.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] getTimeSteps() {
         return getSimulator().getTimeSteps();
@@ -364,7 +364,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
     /**
      * <p>getRawData.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][][] getRawData() {
         return getSimulator().getRawData();

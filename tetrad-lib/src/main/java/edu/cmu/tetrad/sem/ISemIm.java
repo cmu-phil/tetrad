@@ -49,14 +49,14 @@ public interface ISemIm extends Simulator {
     /**
      * <p>getFreeParamValues.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     double[] getFreeParamValues();
 
     /**
      * <p>setFreeParamValues.</p>
      *
-     * @param params an array of {@link double} objects
+     * @param params an array of  objects
      */
     void setFreeParamValues(double[] params);
 

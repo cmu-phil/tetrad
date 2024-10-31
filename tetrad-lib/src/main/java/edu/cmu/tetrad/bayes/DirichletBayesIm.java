@@ -453,7 +453,7 @@ public final class DirichletBayesIm implements BayesIm {
      * <p>getRowIndex.</p>
      *
      * @param nodeIndex a int
-     * @param values    an array of {@link int} objects
+     * @param values    an array of  objects
      * @return the row in the table for the given node and combination of parent values.
      * @see #getParentValues
      */

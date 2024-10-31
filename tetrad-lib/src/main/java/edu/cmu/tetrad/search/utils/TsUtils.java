@@ -235,7 +235,7 @@ public class TsUtils {
      * <p>createShiftedData.</p>
      *
      * @param data   a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param shifts an array of {@link int} objects
+     * @param shifts an array of  objects
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet createShiftedData(DataSet data, int[] shifts) {
@@ -281,7 +281,7 @@ public class TsUtils {
      * <p>getSelfLoopCoefs.</p>
      *
      * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] getSelfLoopCoefs(DataSet timeSeries) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, 1);

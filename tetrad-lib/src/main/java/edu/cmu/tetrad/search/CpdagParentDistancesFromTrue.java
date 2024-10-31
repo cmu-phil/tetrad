@@ -33,6 +33,12 @@ public class CpdagParentDistancesFromTrue {
     private double[][] maxCoef = null;
 
     /**
+     * Constructs a new instance of the class.
+     */
+    public CpdagParentDistancesFromTrue() {
+    }
+
+    /**
      * Calculates the distance matrix for the edges in the given CPDAG (outputCpdag). The nodes in the output CPDAG must
      * all be in the full list of nodes given. The distance for each edge u -> v is computed based on how far the true
      * edge strength (from trueEdgeStrengths) is from the estimated regression coefficients for u -&gt; v. The distances

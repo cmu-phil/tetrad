@@ -36,7 +36,7 @@ public class CovariancesDoubleForkJoin {
     /**
      * <p>Constructor for CovariancesDoubleForkJoin.</p>
      *
-     * @param data          an array of {@link double} objects
+     * @param data          an array of  objects
      * @param biasCorrected a boolean
      */
     public CovariancesDoubleForkJoin(double[][] data, boolean biasCorrected) {
@@ -76,7 +76,7 @@ public class CovariancesDoubleForkJoin {
     /**
      * <p>getMatrix.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] getMatrix() {
         int[] rows = new int[size()];
@@ -87,9 +87,9 @@ public class CovariancesDoubleForkJoin {
     /**
      * <p>getSubMatrix.</p>
      *
-     * @param rows an array of {@link int} objects
-     * @param cols an array of {@link int} objects
-     * @return an array of {@link double} objects
+     * @param rows an array of  objects
+     * @param cols an array of  objects
+     * @return an array of  objects
      */
     public double[][] getSubMatrix(int[] rows, int[] cols) {
         double[][] submatrix = new double[rows.length][cols.length];

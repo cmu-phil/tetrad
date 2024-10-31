@@ -248,11 +248,11 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * <p>getJointMarginal.</p>
+     * Computes the joint marginal probability for the specified variables and their corresponding values.
      *
-     * @param variables an array of {@link int} objects
-     * @param values    an array of {@link int} objects
-     * @return the joint marginal.
+     * @param variables an array of integers representing the indices of the variables for which the joint marginal is to be computed.
+     * @param values an array of integers representing the corresponding values of the variables for which the joint marginal is to be computed.
+     * @return the joint marginal probability for the specified variables and values.
      */
     public double getJointMarginal(int[] variables, int[] values) {
         throw new UnsupportedOperationException();
