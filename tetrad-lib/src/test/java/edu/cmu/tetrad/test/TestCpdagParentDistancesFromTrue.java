@@ -56,7 +56,7 @@ public class TestCpdagParentDistancesFromTrue {
 
         estCpdag = GraphUtils.replaceNodes(estCpdag, data.getVariables());
 
-        double[][] distances = CpdagParentDistancesFromTrue.getDistances(estCpdag, edgeCoef.toArray(), data, CpdagParentDistancesFromTrue.DistanceType.ABSOLUTE);
+        double[][] distances = new CpdagParentDistancesFromTrue().getDistances(estCpdag, edgeCoef.toArray(), data, CpdagParentDistancesFromTrue.DistanceType.ABSOLUTE);
 
         System.out.println("distances = ");
         System.out.println(new Matrix(distances));
