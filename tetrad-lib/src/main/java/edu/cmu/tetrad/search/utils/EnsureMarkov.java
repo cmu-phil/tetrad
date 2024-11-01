@@ -6,9 +6,11 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.MsepTest;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,6 +57,86 @@ public class EnsureMarkov {
     }
 
     /**
+     * Adjusts the p-values for a local Markov condition in a given constraint-based partially directed acyclic graph (CPDAG).
+     *
+     * @param cpdag the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
+     * @param ensureMarkov a boolean flag indicating if the Markov condition should be ensured; should be true
+     * @param test the independence test to be used; must not be null and not an instance of MsepTest
+     * @param pValues a map of node pairs to sets of p-values used for adjustment
+     * @param withoutPair a pair of nodes for which adjustments are calculated without considering the edge between them
+     * @return a map of node pairs to sets of adjusted p-values
+     * @throws IllegalArgumentException if ensureMarkov is false or if the test is null or an instance of MsepTest
+     */
+    public static Map<Pair<Node, Node>, Set<Double>> localMarkovAdjustPValues(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
+                                                                              Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) {
+        if (!ensureMarkov) {
+            throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
+        }
+
+        if (test == null || test instanceof MsepTest) {
+            throw new IllegalArgumentException("This method should only be called when the test is not null and not an instance of MsepTest.");
+        }
+
+        Node x = withoutPair.getLeft();
+        Node y = withoutPair.getRight();
+
+        var _pValues = new HashMap<>(pValues);
+
+//        MsepTest msep = new MsepTest(cpdag);
+
+        Set<Node> parentsX = new HashSet<>(cpdag.getParents(x));
+
+        for (Node node : parentsX) {
+            if (node.equals(y)) {
+                parentsX.remove(node);
+                break;
+            }
+        }
+
+        Set<Node> parentsY = new HashSet<>(cpdag.getParents(y));
+
+        for (Node node : parentsY) {
+            if (node.equals(x)) {
+                parentsY.remove(node);
+                break;
+            }
+        }
+
+        _pValues.remove(Pair.of(x, y));
+        _pValues.remove(Pair.of(y, x));
+
+        for (Node _y : cpdag.getNodes()) {
+            if (x.equals(_y)) {
+                continue;
+            }
+
+            if (!parentsX.contains(_y) && !cpdag.paths().existsDirectedPath(x, _y, withoutPair)) {
+                IndependenceResult result = test.checkIndependence(x, _y, parentsX);
+//                if (msep.checkIndependence(x, _y, parentsX).isIndependent()) {
+                    _pValues.putIfAbsent(Pair.of(x, _y), new HashSet<>());
+                    _pValues.get(Pair.of(x, _y)).add(result.getPValue());
+//                }
+            }
+        }
+
+        for (Node _x : cpdag.getNodes()) {
+            if (y.equals(_x)) {
+                continue;
+            }
+
+            if (!parentsY.contains(_x) && !cpdag.paths().existsDirectedPath(y, _x, withoutPair)) {
+                IndependenceResult result = test.checkIndependence(y, _x, parentsY);
+//                if (msep.checkIndependence(y, _x, parentsY).isIndependent()) {
+                    _pValues.putIfAbsent(Pair.of(y, _x), new HashSet<>());
+                    _pValues.get(Pair.of(y, _x)).add(result.getPValue());
+//                }
+            }
+        }
+
+        return _pValues;
+    }
+
+    /**
      * Sets whether to ensure Markov property. By default, false; this must be turned on.
      *
      * @param ensureMarkov True if the Markov property should be ensured.
@@ -87,10 +169,10 @@ public class EnsureMarkov {
 
         if (result.isIndependent()  ) {
             if (ensureMarkov) {
-                Map<Pair<Node, Node>, Set<Double>> _pValues = GraphUtils.localMarkovAdjustPValues(graph, ensureMarkov,
+                Map<Pair<Node, Node>, Set<Double>> _pValues = localMarkovAdjustPValues(graph, ensureMarkov,
                         test, pValues, Pair.of(x, y));
 
-                double baseline = GraphUtils.calculatePercentDependent(test, pValues);
+//                double baseline = GraphUtils.calculatePercentDependent(test, pValues);
 
                 if (GraphUtils.calculatePercentDependent(test, _pValues) <= test.getAlpha()) {
                     pValues = _pValues;
