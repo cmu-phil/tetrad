@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
@@ -2881,7 +2882,7 @@ public final class GraphUtils {
         pag = new EdgeListGraph(pag);
         fciOrient.setKnowledge(knowledge);
 
-        AtomicBoolean anyChange = removeAlmostCycles2(unshieldedColliders, fciOrient, pag, knowledge, verbose);
+        AtomicBoolean anyChange = removeAlmostCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
 
         if (checkCyclicity) {
             AtomicBoolean b = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
@@ -3374,10 +3375,10 @@ public final class GraphUtils {
      * @param pag                 the graph
      * @param knowledge           the knowledge base
      * @param verbose             a flag indicating whether to log verbose output
-     * @return true if any change was made to the graph, false otherwise
+     * @return AtomicBoolean(true) if any almost cycles were removed, AtomicBoolean(false) otherwise
      */
-    public static AtomicBoolean removeAlmostCycles2(Set<Triple> unshieldedColliders, FciOrient fciOrient,
-                                                    Graph pag, Knowledge knowledge, boolean verbose) {
+    public static AtomicBoolean removeAlmostCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
+                                                   Graph pag, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Removing almost cycles.");
         }
@@ -3484,6 +3485,7 @@ public final class GraphUtils {
 
             fciOrient.setVerbose(false);
             fciOrient.setAllowedColliders(unshieldedColliders);
+            fciOrient.setDoR4(false);
             fciOrient.finalOrientation(pag);
 
             if (verbose) {
@@ -3506,7 +3508,7 @@ public final class GraphUtils {
      * @param pag                 the graph to remove cycles from
      * @param knowledge           the knowledge base used by the FCI algorithm
      * @param verbose             a flag indicating whether to log verbose information
-     * @return true if any cycles were removed, false otherwise
+     * @return AtomicBoolean(true) if any cycles were removed, AtomicBoolean(false) otherwise
      */
     public static AtomicBoolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
                                              Graph pag, Knowledge knowledge, boolean verbose) {
@@ -3631,6 +3633,11 @@ public final class GraphUtils {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
+
+            if (!pag.isAdjacentTo(x, b) || !pag.isAdjacentTo(b, y)) {
+                unshieldedColliders.remove(triple);
+                continue;
+            }
 
             // We can avoid creating almost cycles here, but this does not solve the problem, as we can still
             // creat almost cycles in final orientation.
@@ -3801,6 +3808,24 @@ public final class GraphUtils {
 
         double v = numPValues < 5 ? 0.0 : (double) numSignificant / numPValues;
         return v;
+    }
+
+    public static double pValuesAdP(IndependenceTest test, Map<Pair<Node, Node>, Set<Double>> _pValues) {
+        // Calculate the percentage of p-values in the _pValues map that are less than alpha
+        List<Double> pValues = new ArrayList<>();
+
+        for (Pair<Node, Node> pair : _pValues.keySet()) {
+            pValues.addAll(_pValues.get(pair));
+        }
+
+        // convert the List of p-values to a double[] array.
+        double[] pValuesArray = new double[pValues.size()];
+        for (int i = 0; i < pValues.size(); i++) {
+            pValuesArray[i] = pValues.get(i);
+        }
+
+        AndersonDarlingTest _test = new AndersonDarlingTest(pValuesArray);
+        return _test.getP();
     }
 
     /**
