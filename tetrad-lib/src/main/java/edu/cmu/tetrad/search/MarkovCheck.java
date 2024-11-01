@@ -805,11 +805,17 @@ public class MarkovCheck implements SampleSizeSettable {
             List<Node> nodes = new ArrayList<>(variables);
 
             List<Node> order = null;
+            Graph dag = null;
 
-            try {
-                order = graph.paths().getValidOrder(graph.getNodes(), true);
-            } catch (Exception e) {
-                // Leave null. Not an error here. Just means we can't use the ordered local Markov check.
+            if (graph.paths().isLegalCpdag() || graph.paths().isLegalDag()) {
+                dag = GraphTransforms.dagFromCpdag(graph);
+                order = dag.paths().getValidOrder(dag.getNodes(), true);
+            } else {
+                try {
+                    order = graph.paths().getValidOrder(graph.getNodes(), true);
+                } catch (Exception e) {
+                    // Leave null. Not an error here. Just means we can't use the ordered local Markov check.
+                }
             }
 
             Set<IndependenceFact> allIndependenceFacts = new HashSet<>();
@@ -851,15 +857,24 @@ public class MarkovCheck implements SampleSizeSettable {
                             break;
                         case ORDERED_LOCAL_MARKOV:
                             if (order == null) throw new IllegalArgumentException("No valid order found.");
-                            z = new HashSet<>(graph.getParents(x));
 
-                            // Keep only the parents in Prefix(x).
-                            for (Node w : new ArrayList<>(z)) {
-                                int i1 = order.indexOf(x);
-                                int i2 = order.indexOf(w);
+                            if (dag != null) {
+                                if (dag.paths().isAncestorOf(x, y)) {
+                                    continue;
+                                }
 
-                                if (i2 >= i1) {
-                                    z.remove(w);
+                                z = new HashSet<>(dag.getParents(x));
+                            } else {
+                                z = new HashSet<>(graph.getAdjacentNodes(x));
+
+                                // Keep only the parents in Prefix(x).
+                                for (Node w : new ArrayList<>(z)) {
+                                    int i1 = order.indexOf(x);
+                                    int i2 = order.indexOf(w);
+
+                                    if (i2 >= i1) {
+                                        z.remove(w);
+                                    }
                                 }
                             }
 
@@ -1211,8 +1226,8 @@ public class MarkovCheck implements SampleSizeSettable {
      * Generates the results for the given set of independence facts as a single record.
      *
      * @return The Markov check record.
-     * @see MarkovCheckRecord
      * @throws InterruptedException if the thread is interrupted
+     * @see MarkovCheckRecord
      */
     public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
         setPercentResample(percentResample);
@@ -1232,8 +1247,8 @@ public class MarkovCheck implements SampleSizeSettable {
      * Returns the Markov check record as a string.
      *
      * @return The Markov check record as a string.
-     * @see MarkovCheckRecord
      * @throws InterruptedException if the thread is interrupted
+     * @see MarkovCheckRecord
      */
     public String getMarkovCheckRecordString() throws InterruptedException {
         NumberFormat nf = new DecimalFormat("0.000");
