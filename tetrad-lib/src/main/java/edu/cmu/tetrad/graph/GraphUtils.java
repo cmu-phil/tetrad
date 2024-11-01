@@ -3377,7 +3377,7 @@ public final class GraphUtils {
      * @return true if any change was made to the graph, false otherwise
      */
     public static AtomicBoolean removeAlmostCycles2(Set<Triple> unshieldedColliders, FciOrient fciOrient,
-                                              Graph pag, Knowledge knowledge, boolean verbose) {
+                                                    Graph pag, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Removing almost cycles.");
         }
@@ -3509,7 +3509,7 @@ public final class GraphUtils {
      * @return true if any cycles were removed, false otherwise
      */
     public static AtomicBoolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
-                                       Graph pag, Knowledge knowledge, boolean verbose) {
+                                             Graph pag, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Removing cycles.");
         }
@@ -3719,16 +3719,16 @@ public final class GraphUtils {
     /**
      * Initializes and evaluates p-values for local Markov properties in a given graph.
      *
-     * @param cpdag The input graph, typically a CPDAG (Completed Partially Directed Acyclic Graph).
+     * @param dag          The input graph, a DAG (Directed Acyclic Graph).
      * @param ensureMarkov Flag indicating that the method should proceed only if set to true.
-     * @param test The statistical test instance used to check for conditional independence.
-     * @param pValues A map to store the p-values, indexed by pairs of nodes.
-     * @return The percentage of p-values that are less than the significance level (alpha) used in the test.
-     *         Returns 0.0 if the number of p-values is less than 5 or if ensureMarkov is false or test instance is invalid.
+     * @param test         The statistical test instance used to check for conditional independence.
+     * @param pValues      A map to store the p-values, indexed by pairs of nodes.
+     * @return The percentage of p-values that are less than the significance level (alpha) used in the test. Returns
+     * 0.0 if the number of p-values is less than 5 or if ensureMarkov is false or test instance is invalid.
      * @throws IllegalArgumentException if ensureMarkov is false.
      */
-    public static double localMarkovInitializePValues(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
-                                                  Map<Pair<Node, Node>, Set<Double>> pValues) {
+    public static double localMarkovInitializePValues(Graph dag, boolean ensureMarkov, IndependenceTest test,
+                                                      Map<Pair<Node, Node>, Set<Double>> pValues) {
         if (!ensureMarkov) {
             throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
         }
@@ -3737,22 +3737,22 @@ public final class GraphUtils {
             return Double.NaN;
         }
 
-//        MsepTest msep = new MsepTest(cpdag);
+//        MsepTest msep = new MsepTest(dag);
 
-        for (Node x : cpdag.getNodes()) {
-            Set<Node> parentsX = new HashSet<>(cpdag.getParents(x));
+        for (Node x : dag.getNodes()) {
+            Set<Node> parentsX = new HashSet<>(dag.getParents(x));
 
-            for (Node y : cpdag.getNodes()) {
+            for (Node y : dag.getNodes()) {
                 if (x.equals(y)) {
                     continue;
                 }
 
-                if (!parentsX.contains(y) && !cpdag.paths().existsDirectedPath(x, y, null)) {
+                if (!parentsX.contains(y) && !dag.paths().existsDirectedPath(x, y, null)) {
                     IndependenceResult result = test.checkIndependence(x, y, parentsX);
                     if (result.isIndependent()) {
 //                        if (msep.isMSeparated(x, y, parentsX)) {
-                            pValues.putIfAbsent(Pair.of(x, y), new HashSet<>());
-                            pValues.get(Pair.of(x, y)).add(result.getPValue());
+                        pValues.putIfAbsent(Pair.of(x, y), new HashSet<>());
+                        pValues.get(Pair.of(x, y)).add(result.getPValue());
 //                        }
                     }
                 }
@@ -3779,9 +3779,10 @@ public final class GraphUtils {
     /**
      * Calculates the percentage of p-values that are less than the alpha value in the given independence test.
      *
-     * @param test The independence test providing the alpha value.
+     * @param test     The independence test providing the alpha value.
      * @param _pValues A map containing pairs of nodes and their corresponding sets of p-values.
-     * @return The percentage of p-values that are less than the alpha value. If the total number of p-values is less than 5, returns 0.0.
+     * @return The percentage of p-values that are less than the alpha value. If the total number of p-values is less
+     * than 5, returns 0.0.
      */
     public static double calculatePercentDependent(IndependenceTest test, Map<Pair<Node, Node>, Set<Double>> _pValues) {
         // Calculate the percentage of p-values in the _pValues map that are less than alpha

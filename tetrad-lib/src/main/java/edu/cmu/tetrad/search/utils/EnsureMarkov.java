@@ -26,7 +26,7 @@ public class EnsureMarkov {
     /**
      * The initial Markov graph
      */
-    private final Graph graph;
+    private final Graph dag;
     /**
      * The independence test to use.
      */
@@ -43,16 +43,15 @@ public class EnsureMarkov {
      * A boolean that determines whether to ensure Markov property.
      */
     private boolean ensureMarkov = false;
-    private double initialFraction = Double.NaN;
 
     /**
-     * Constructs an EnsureMarkov class for a given Markov graph.
+     * Constructs an EnsureMarkov class for a given Markov dag.
      *
-     * @param graph The initial Markov graph. This graph should pass a local Markov check.
+     * @param dag The initial Markov dag. This dag should pass a local Markov check.
      * @param test  The independence test to use.
      */
-    public EnsureMarkov(Graph graph, IndependenceTest test) {
-        this.graph = new EdgeListGraph(graph);
+    public EnsureMarkov(Graph dag, IndependenceTest test) {
+        this.dag = new EdgeListGraph(dag);
         this.test = test;
     }
 
@@ -145,8 +144,8 @@ public class EnsureMarkov {
         this.ensureMarkov = ensureMarkov;
 
         if (ensureMarkov) {
-            initialFraction = GraphUtils.localMarkovInitializePValues(
-                    graph, ensureMarkov, test, pValues);
+            double initialFraction = GraphUtils.localMarkovInitializePValues(
+                    dag, ensureMarkov, test, pValues);
             System.out.println("Initial percent dependent = " + initialFraction);
         } else {
             pValues.clear();
@@ -169,7 +168,7 @@ public class EnsureMarkov {
 
         if (result.isIndependent()  ) {
             if (ensureMarkov) {
-                Map<Pair<Node, Node>, Set<Double>> _pValues = localMarkovAdjustPValues(graph, ensureMarkov,
+                Map<Pair<Node, Node>, Set<Double>> _pValues = localMarkovAdjustPValues(dag, ensureMarkov,
                         test, pValues, Pair.of(x, y));
 
 //                double baseline = GraphUtils.calculatePercentDependent(test, pValues);

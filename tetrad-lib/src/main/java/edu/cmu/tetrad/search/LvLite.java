@@ -220,7 +220,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         Graph pag;
-        Graph cpdag;
+        Graph dag;
         List<Node> best;
 
         if (startWith == START_WITH.BOSS) {
@@ -239,8 +239,8 @@ public final class LvLite implements IGraphSearch {
             PermutationSearch alg = new PermutationSearch(subAlg);
             alg.setKnowledge(this.knowledge);
 
-            cpdag = alg.search(true);
-            best = cpdag.paths().getValidOrder(cpdag.getNodes(), true);
+            dag = alg.search(false);
+            best = dag.paths().getValidOrder(dag.getNodes(), true);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -263,7 +263,7 @@ public final class LvLite implements IGraphSearch {
 
             Grasp grasp = getGraspSearch();
             best = grasp.bestOrder(nodes);
-            cpdag = grasp.getGraph(false);
+            dag = grasp.getGraph(false);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -281,6 +281,7 @@ public final class LvLite implements IGraphSearch {
             }
 
             cpdag = GraphUtils.replaceNodes(this.cpdag, nodes);
+            dag = GraphTransforms.dagFromCpdag(cpdag);
             best = cpdag.paths().getValidOrder(cpdag.getNodes(), true);
 
             if (verbose) {
@@ -295,6 +296,8 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Best order: " + best);
         }
 
+        Graph cpdag = GraphTransforms.dagToCpdag(dag);
+
         TeyssierScorer scorer = null;
 
         if (this.score != null) {
@@ -306,7 +309,7 @@ public final class LvLite implements IGraphSearch {
             scorer.bookmark();
         }
 
-        ensureMarkovHelper = new EnsureMarkov(cpdag, test);
+        ensureMarkovHelper = new EnsureMarkov(dag, test);
         ensureMarkovHelper.setEnsureMarkov(ensureMarkov);
 
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.

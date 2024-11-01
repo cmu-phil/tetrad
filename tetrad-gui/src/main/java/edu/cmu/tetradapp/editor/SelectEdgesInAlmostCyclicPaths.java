@@ -56,7 +56,7 @@ public class SelectEdgesInAlmostCyclicPaths extends AbstractAction implements Cl
      * @param workbench the given workbench.
      */
     public SelectEdgesInAlmostCyclicPaths(GraphWorkbench workbench) {
-        super("Highlight Edges on Almost Cyclic Paths");
+        super("Highlight Almost Cyclic Paths");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
