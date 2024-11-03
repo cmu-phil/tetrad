@@ -503,8 +503,6 @@ public final class LvLite implements IGraphSearch {
             while ((choice = gen.next()) != null) {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, _perhapsNotFollowed);
 
-                if (notFollowed.isEmpty()) continue;
-
                 if (verbose) {
                     TetradLogger.getInstance().log(" x: " + x + " y: " + y + " notFollowed: " + notFollowed
                                                    + " maxBlockingPathLength: " + maxBlockingPathLength);
