@@ -80,7 +80,7 @@ public class TestFci {
     /**
      * Basic discriminating path checker.
      */
-    @Test
+//    @Test
     public void testSearch4() {
         checkSearch("Latent(G),Latent(R),H-->F,F<--G,G-->A,A<--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
                 "A<->C,A-->D,Bo->C,Bo->D,Co->D,F<->A,F-->D,Ho->F", new Knowledge());

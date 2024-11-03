@@ -807,7 +807,10 @@ public class MarkovCheck implements SampleSizeSettable {
             List<Node> order = null;
             Graph dag = null;
 
-            if (graph.paths().isLegalCpdag() || graph.paths().isLegalDag()) {
+            if (graph.paths().isLegalDag()) {
+                dag = graph;
+                order = dag.paths().getValidOrder(dag.getNodes(), true);
+            } else if (graph.paths().isLegalCpdag()) {
                 dag = GraphTransforms.dagFromCpdag(graph);
                 order = dag.paths().getValidOrder(dag.getNodes(), true);
             } else {

@@ -3629,7 +3629,7 @@ public final class GraphUtils {
      * @param knowledge           the knowledge object.
      */
     public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge) {
-        for (Triple triple : unshieldedColliders) {
+        for (Triple triple : new HashSet<>(unshieldedColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
