@@ -117,7 +117,7 @@ public final class LvLite implements IGraphSearch {
     /**
      * The timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
      */
-    private long testTimeout = 500;
+    private long testTimeout = -1;
     /**
      * Indicates whether the DDP (Definite Discriminating Path) edge removal algorithm should be performed. This step
      * may be computationally expensive for large models and addresses a relatively rare condition in the search space.
@@ -518,7 +518,13 @@ public final class LvLite implements IGraphSearch {
                     Future<Set<Node>> future = executor.submit(task);
 
                     // Try to get the result within the specified timeout (e.g., 5 seconds)
-                    Set<Node> b = future.get(testTimeout, TimeUnit.MILLISECONDS);
+                    Set<Node> b;
+
+                    if (testTimeout > 0) {
+                        b = future.get(testTimeout, TimeUnit.MILLISECONDS);
+                    } else {
+                        b = future.get();
+                    }
 
                     int _depth2 = depth == -1 ? common.size() : depth;
                     _depth2 = Math.min(_depth2, common.size());
