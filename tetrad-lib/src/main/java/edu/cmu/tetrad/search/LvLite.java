@@ -491,6 +491,10 @@ public final class LvLite implements IGraphSearch {
                 TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
             }
 
+            if (perhapsNotFollowed.isEmpty()) {
+                return;
+            }
+
             List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
 
             int _depth = depth == -1 ? _perhapsNotFollowed.size() : depth;
