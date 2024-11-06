@@ -1117,7 +1117,7 @@ public class FciOrient {
         setEndpoint(graph, c, a, Endpoint.TAIL);
 
         if (verbose) {
-            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
+            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)) + " path = " + GraphUtils.pathString(graph, path, false));
         }
 
         this.changeFlag = true;

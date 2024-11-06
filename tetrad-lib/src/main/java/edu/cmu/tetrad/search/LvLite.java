@@ -275,6 +275,31 @@ public final class LvLite implements IGraphSearch {
                 TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
                 TetradLogger.getInstance().log("Initializing scorer with GRaSP best order.");
             }
+        } else if (startWith == START_WITH.SP) {
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Running SP...");
+            }
+
+            long start = MillisecondTimes.wallTimeMillis();
+
+            Sp subAlg = new Sp(this.score);
+            PermutationSearch alg = new PermutationSearch(subAlg);
+            alg.setKnowledge(this.knowledge);
+
+            dag = alg.search(false);
+            best = dag.paths().getValidOrder(dag.getNodes(), true);
+
+            long stop = MillisecondTimes.wallTimeMillis();
+
+            if (verbose) {
+                TetradLogger.getInstance().log("SP took " + (stop - start) + " ms.");
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Initializing PAG to SP CPDAG.");
+                TetradLogger.getInstance().log("Initializing scorer with SP best order.");
+            }
         } else if (startWith == START_WITH.INITIAL_GRAPH) {
             if (verbose) {
                 TetradLogger.getInstance().log("Using initial graph.");
@@ -601,6 +626,21 @@ public final class LvLite implements IGraphSearch {
         suborderSearch.setUseDataOrder(useDataOrder);
         suborderSearch.setNumStarts(numStarts);
         suborderSearch.setVerbose(verbose);
+        var permutationSearch = new PermutationSearch(suborderSearch);
+        permutationSearch.setKnowledge(knowledge);
+        permutationSearch.search();
+        return permutationSearch;
+    }
+
+    private @NotNull PermutationSearch getSpSearch() {
+        var suborderSearch = new Sp(score);
+//        suborderSearch.setResetAfterBM(true);
+//        suborderSearch.setResetAfterRS(true);
+//        suborderSearch.setVerbose(false);
+//        suborderSearch.setUseBes(useBes);
+//        suborderSearch.setUseDataOrder(useDataOrder);
+//        suborderSearch.setNumStarts(numStarts);
+//        suborderSearch.setVerbose(verbose);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         permutationSearch.search();
@@ -975,6 +1015,10 @@ public final class LvLite implements IGraphSearch {
          * Start with GRaSP.
          */
         GRASP,
+        /**
+         * Start with SP.
+         */
+        SP,
         /**
          * Starts with an initial CPDAG over the variables of the independence test that is given in the constructor.
          */

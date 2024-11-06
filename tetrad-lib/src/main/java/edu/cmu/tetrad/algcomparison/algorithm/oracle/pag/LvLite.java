@@ -156,6 +156,8 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
         } else if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 2) {
             search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.GRASP);
+        } else if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 3) {
+            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.SP);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.LV_LITE_STARTS_WITH));
         }
