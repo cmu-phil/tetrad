@@ -861,25 +861,25 @@ public class MarkovCheck implements SampleSizeSettable {
                         case ORDERED_LOCAL_MARKOV:
                             if (order == null) throw new IllegalArgumentException("No valid order found.");
 
-                            if (dag != null) {
-                                if (dag.paths().isAncestorOf(x, y)) {
-                                    continue;
-                                }
+//                            if (dag != null) {
+//                                if (dag.paths().isAncestorOf(x, y)) {
+//                                    continue;
+//                                }
+//
+//                                z = new HashSet<>(dag.getParents(x));
+//                            } else {
+                            z = new HashSet<>(graph.getAdjacentNodes(x));
 
-                                z = new HashSet<>(dag.getParents(x));
-                            } else {
-                                z = new HashSet<>(graph.getAdjacentNodes(x));
+                            // Keep only the parents in Prefix(x).
+                            for (Node w : new ArrayList<>(z)) {
+                                int i1 = order.indexOf(x);
+                                int i2 = order.indexOf(w);
 
-                                // Keep only the parents in Prefix(x).
-                                for (Node w : new ArrayList<>(z)) {
-                                    int i1 = order.indexOf(x);
-                                    int i2 = order.indexOf(w);
-
-                                    if (i2 >= i1) {
-                                        z.remove(w);
-                                    }
+                                if (i2 >= i1) {
+                                    z.remove(w);
                                 }
                             }
+//                            }
 
                             break;
                         case MARKOV_BLANKET:
