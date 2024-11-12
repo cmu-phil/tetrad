@@ -64,10 +64,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
      */
     private final NormalDistribution normal = new NormalDistribution(0, 1);
     /**
-     * The variables of the covariance data, in order. (Unmodifiable list.)
-     */
-    private final Map<Node, Integer> nodesHash;
-    /**
      * A cache of results for independence facts.
      */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
@@ -134,14 +130,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);
             setAlpha(alpha);
-
-            Map<Node, Integer> nodesHash = new HashMap<>();
-
-            for (int j = 0; j < this.variables.size(); j++) {
-                nodesHash.put(this.variables.get(j), j);
-            }
-
-            this.nodesHash = nodesHash;
         } else {
             if (!(alpha >= 0 && alpha <= 1)) {
                 throw new IllegalArgumentException("Alpha mut be in [0, 1]");
@@ -153,14 +141,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);
             setAlpha(alpha);
-
-            Map<Node, Integer> nodesHash = new HashMap<>();
-
-            for (int j = 0; j < this.variables.size(); j++) {
-                nodesHash.put(this.variables.get(j), j);
-            }
-
-            this.nodesHash = nodesHash;
         }
     }
 
@@ -179,14 +159,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
         this.nameMap = nameMap(variables);
         this.sampleSize = data.getNumRows();
         setAlpha(alpha);
-
-        Map<Node, Integer> nodesHash = new HashMap<>();
-
-        for (int j = 0; j < variables.size(); j++) {
-            nodesHash.put(variables.get(j), j);
-        }
-
-        this.nodesHash = nodesHash;
     }
 
     /**
@@ -203,14 +175,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
         this.nameMap = nameMap(this.variables);
         this.sampleSize = covMatrix.getSampleSize();
         setAlpha(alpha);
-
-        Map<Node, Integer> nodesHash = new HashMap<>();
-
-        for (int j = 0; j < this.variables.size(); j++) {
-            nodesHash.put(this.variables.get(j), j);
-        }
-
-        this.nodesHash = nodesHash;
     }
 
     /**
@@ -336,7 +300,7 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
         allVars.add(yVar);
         allVars.addAll(_z);
 
-        List<Integer> _rows = getRows(allVars, this.nodesHash);
+        List<Integer> _rows = listRows();
 
         if (_rows == null) {
             _rows = new ArrayList<>();
@@ -436,11 +400,7 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
             r = partialCorrelation(x, y, z, rows);
             n = sampleSize();
         } else {
-            List<Node> allVars = new ArrayList<>(z);
-            allVars.add(x);
-            allVars.add(y);
-
-            List<Integer> rows = getRows(allVars, this.nodesHash);
+            List<Integer> rows = listRows();
 
             r = getR(x, y, z, rows);
             n = rows.size();
@@ -821,11 +781,9 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
     /**
      * Retrieves the rows from the dataSet that contain valid values for all variables.
      *
-     * @param allVars   the list of variables to check
-     * @param nodesHash the map of variables to their corresponding indices in the dataSet
      * @return a list of row indices that contain valid values for all variables
      */
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+    private List<Integer> listRows() {
         if (this.rows != null) {
             return this.rows;
         }
