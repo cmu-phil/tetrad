@@ -349,6 +349,17 @@ public class SemBicScore implements Score {
         return rows;
     }
 
+    /**
+     * Computes the covariance matrix for the given subset of rows and columns in the provided data set.
+     *
+     * @param rows A list of the row indices to consider for computing the covariance.
+     * @param cols An array of the column indices for which to compute the covariance matrix.
+     * @param all An array of all column indices to check for NaN values.
+     * @param dataSet The dataset containing the values to be used in computation. If null, the method returns a selection from the provided covariance matrix.
+     * @param cov If dataSet is null, this covariance matrix is used to return the selected covariances.
+     * @return A Matrix representing the covariance computed from the given rows and columns of the dataset or a selection from the provided covariance matrix.
+     * @throws IllegalArgumentException If both dataSet and cov are null.
+     */
     public static Matrix getCov(List<Integer> rows, int[] cols, int[] all, DataSet dataSet, Matrix cov) {
         if (dataSet == null && cov != null) {
             return cov.getSelection(cols, cols);

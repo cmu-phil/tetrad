@@ -65,6 +65,14 @@ public final class IGFci implements IGraphSearch {
     private long elapsedTime;
 
     //============================CONSTRUCTORS============================//
+
+    /**
+     * Constructs an instance of IGFci with the provided independence test and score.
+     *
+     * @param test the IndependenceTest instance to be used; must not be null.
+     * @param score the ISScore instance to be used; must not be null.
+     * @throws NullPointerException if the provided score is null.
+     */
     public IGFci(IndependenceTest test, ISScore score) {
         if (score == null) {
             throw new NullPointerException();
@@ -74,6 +82,15 @@ public final class IGFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
+    /**
+     * Constructs an instance of IGFci with the provided independence test,
+     * score, and population graph.
+     *
+     * @param test the IndependenceTest instance to be used; must not be null.
+     * @param score the ISScore instance to be used; must not be null.
+     * @param populationGraph the Graph representing the population.
+     * @throws NullPointerException if the provided score is null.
+     */
     public IGFci(IndependenceTest test, ISScore score, Graph populationGraph) {
         if (score == null) {
             throw new NullPointerException();
@@ -85,6 +102,16 @@ public final class IGFci implements IGraphSearch {
     }
 
     //========================PUBLIC METHODS==========================//
+
+    /**
+     * Executes the FCI algorithm using the provided independence test, score, and population graph,
+     * and returns the resulting graph with edges oriented according to the algorithm's rules.
+     * The algorithm first constructs an initial graph, prunes it based on separation sets,
+     * and further refines it using multiple phases of orientation rules.
+     * The time taken to complete the search is recorded and stored in the elapsedTime field.
+     *
+     * @return the final oriented graph obtained after applying the FCI algorithm.
+     */
     public Graph search() {
         long time1 = System.currentTimeMillis();
 
@@ -155,7 +182,10 @@ public final class IGFci implements IGraphSearch {
     }
 
     /**
-     * @param maxDegree The maximum indegree of the output graph.
+     * Sets the maximum degree for the graph.
+     *
+     * @param maxDegree the maximum degree, where -1 indicates unlimited. Must be -1 or a non-negative integer.
+     * @throws IllegalArgumentException if maxDegree is less than -1.
      */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) {
@@ -167,13 +197,22 @@ public final class IGFci implements IGraphSearch {
     }
 
     /**
-     * Returns The maximum indegree of the output graph.
+     * Retrieves the maximum degree for the graph.
+     *
+     * @return the maximum degree, or -1 if it is unlimited.
      */
     public int getMaxDegree() {
         return maxDegree;
     }
 
     // Due to Spirtes.
+
+    /**
+     * Modifies the given FGES graph based on the FCI algorithm rules, reorienting edges and
+     * potentially identifying and orienting definite colliders.
+     *
+     * @param fgesGraph the FGES Graph to be processed; must not be null.
+     */
     public void modifiedR0(Graph fgesGraph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
@@ -209,10 +248,21 @@ public final class IGFci implements IGraphSearch {
         }
     }
 
+    /**
+     * Returns the knowledge used in the IGFci algorithm.
+     *
+     * @return the Knowledge object currently used by the IGFci algorithm.
+     */
     public Knowledge getKnowledge() {
         return knowledge;
     }
 
+    /**
+     * Sets the knowledge for the IGFci algorithm.
+     *
+     * @param knowledge the Knowledge object to be set; must not be null.
+     * @throws NullPointerException if the provided knowledge is null.
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -222,34 +272,39 @@ public final class IGFci implements IGraphSearch {
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only
-     * R1-R4 (the rule set of the original FCI) should be used. False by
-     * default.
+     * Checks if the complete rule set is being used in the IGFci algorithm.
+     *
+     * @return true if the complete rule set is used, false otherwise.
      */
     public boolean isCompleteRuleSetUsed() {
         return completeRuleSetUsed;
     }
 
     /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     * should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
+     * Sets whether the complete rule set should be used in the IGFci algorithm.
+     *
+     * @param completeRuleSetUsed true if the complete rule set is to be used, false otherwise
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * @return the maximum length of any discriminating path, or -1 of
-     * unlimited.
+     * Retrieves the maximum length of any path, or -1 if unlimited.
+     *
+     * @return the maximum length of any path, or -1 if unlimited.
      */
     public int getMaxPathLength() {
         return maxPathLength;
     }
 
     /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1
-     * if unlimited.
+     * Sets the maximum length for any path in the graph. The value must be -1 to indicate
+     * unlimited length or a non-negative integer to specify the maximum path length.
+     *
+     * @param maxPathLength the maximum path length to be set, where -1 indicates unlimited.
+     *                      Must be -1 or a non-negative integer.
+     * @throws IllegalArgumentException if maxPathLength is less than -1.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -260,47 +315,91 @@ public final class IGFci implements IGraphSearch {
     }
 
     /**
-     * True iff verbose output should be printed.
+     * Checks if verbose output is enabled.
+     *
+     * @return true if verbose output is enabled, false otherwise.
      */
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose true if verbose output should be printed, false otherwise
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * The independence test.
+     * Retrieves the current independence test object being used.
+     *
+     * @return the IndependenceTest object currently set for this instance.
      */
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
     }
 
+    /**
+     * Retrieves the current covariance matrix object used by the IGFci algorithm.
+     *
+     * @return the ICovarianceMatrix object currently set for this instance.
+     */
     public ICovarianceMatrix getCovMatrix() {
         return covarianceMatrix;
     }
 
+    /**
+     * Retrieves the current covariance matrix object used by the IGFci algorithm.
+     *
+     * @return the ICovarianceMatrix object currently set for this instance.
+     */
     public ICovarianceMatrix getCovarianceMatrix() {
         return covarianceMatrix;
     }
 
+    /**
+     * Sets the covariance matrix to be used in the IGFci algorithm.
+     *
+     * @param covarianceMatrix the ICovarianceMatrix object to be set; must not be null.
+     */
     public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
         this.covarianceMatrix = covarianceMatrix;
     }
 
+    /**
+     * Retrieves the current PrintStream used for output by the IGFci algorithm.
+     *
+     * @return the PrintStream object currently set for this instance.
+     */
     public PrintStream getOut() {
         return out;
     }
 
+    /**
+     * Sets the PrintStream object used for output by the IGFci instance.
+     *
+     * @param out the PrintStream object to be used for output; must not be null.
+     */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
+    /**
+     * Sets the independence test for the IGFci algorithm.
+     *
+     * @param independenceTest the IndependenceTest object to be set; must not be null.
+     */
     public void setIndependenceTest(IndependenceTest independenceTest) {
         this.independenceTest = independenceTest;
     }
 
+    /**
+     * Sets whether faithfulness is assumed in the IGFci algorithm.
+     *
+     * @param faithfulnessAssumed true if faithfulness is assumed, false otherwise
+     */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }

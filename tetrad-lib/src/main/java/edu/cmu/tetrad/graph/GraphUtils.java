@@ -3810,6 +3810,13 @@ public final class GraphUtils {
         return v;
     }
 
+    /**
+     * Calculates the p-value using the Anderson-Darling test for a given set of p-values from an independence test.
+     *
+     * @param test An instance of IndependenceTest used for testing independence between nodes.
+     * @param _pValues A map where each key is a pair of nodes, and each value is a set of p-values associated with that node pair.
+     * @return The p-value calculated from the Anderson-Darling test.
+     */
     public static double pValuesAdP(IndependenceTest test, Map<Pair<Node, Node>, Set<Double>> _pValues) {
         // Calculate the percentage of p-values in the _pValues map that are less than alpha
         List<Double> pValues = new ArrayList<>();

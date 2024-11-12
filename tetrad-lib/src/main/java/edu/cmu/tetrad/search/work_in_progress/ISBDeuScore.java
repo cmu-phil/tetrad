@@ -26,6 +26,13 @@ public class ISBDeuScore implements ISScore {
     private double k_deletion = 0.1;
     private double k_reorient = 0.1;
 
+    /**
+     * Initializes the ISBDeuScore with the given dataset and test case.
+     *
+     * @param dataSet the dataset to be used for scoring. Must not be null.
+     * @param testCase the test case to evaluate. Must not be null.
+     * @throws NullPointerException if either dataSet or testCase is null.
+     */
     public ISBDeuScore(DataSet dataSet, DataSet testCase) {
 
         if (dataSet == null || testCase == null) {

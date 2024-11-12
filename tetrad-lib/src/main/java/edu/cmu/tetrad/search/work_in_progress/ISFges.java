@@ -113,6 +113,8 @@ public final class ISFges implements IGraphSearch {
      * Construct a Score and pass it in here. The totalScore should return a positive value in case of conditional
      * dependence and a negative values in case of conditional independence. See Chickering (2002), locally consistent
      * scoring criterion.
+     *
+     * @param score the ISScore object to be used for scoring
      */
     public ISFges(ISScore score) {
         if (score == null) throw new NullPointerException();
@@ -209,6 +211,8 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
+     * Returns the faithfulness assumption status for the current instance.
+     *
      * @return true if it is assumed that all path pairs with one length 1 path do not cancel.
      */
     public boolean isFaithfulnessAssumed() {
@@ -216,7 +220,9 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
-     * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
+     * Sets the faithfulness assumption status for the current instance.
+     *
+     * @param faithfulnessAssumed a boolean indicating whether faithfulness is assumed
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
@@ -283,9 +289,10 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
-     * @return the background knowledge.
+     * Retrieves the Knowledge instance associated with this object.
+     *
+     * @return the Knowledge instance associated with this object
      */
-
     public Knowledge getKnowledge() {
         return knowledge;
     }
@@ -300,26 +307,42 @@ public final class ISFges implements IGraphSearch {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Returns the elapsed time.
+     *
+     * @return the elapsed time in milliseconds.
+     */
     public long getElapsedTime() {
         return elapsedTime;
     }
 
     /**
-     * If the true graph is set, askterisks will be printed in log output for the true edges.
+     * Sets the true graph.
+     *
+     * @param trueGraph the Graph object to be set as the true graph
      */
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
     /**
-     * @return the totalScore of the given DAG, up to a constant.
+     * Calculates and returns the score of the provided Directed Acyclic Graph (DAG).
+     *
+     * @param dag the DAG for which the score needs to be calculated
+     * @return the score of the given DAG
      */
     public double getScore(Graph dag) {
         return scoreDag(dag);
     }
 
     /**
-     * Sets the initial graph.
+     * Sets the initial graph, ensuring the graph's nodes match the expected variables.
+     *
+     * @param initialGraph the initial graph to set. If null, does nothing. The method
+     *                     replaces the nodes of the graph with the expected variables
+     *                     and checks if they match.
+     * @throws IllegalArgumentException if the nodes of the initialGraph do not
+     *                                  match the expected variables.
      */
     public void setInitialGraph(Graph initialGraph) {
         if (initialGraph != null) {
@@ -339,7 +362,13 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
-     * Sets the initial graph.
+     * Sets the population graph for the current instance. The provided graph will replace the
+     * current population graph if it is not null. The method ensures that the nodes of the
+     * provided graph match the expected variables.
+     *
+     * @param populationGraph the graph to set as the population graph
+     * @throws IllegalArgumentException if the variables of the provided graph do not match the
+     *                                  expected variables
      */
     public void setPopulationGraph(Graph populationGraph) {
         if (populationGraph != null) {
@@ -359,42 +388,55 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
-     * Sets whether verbose output should be produced.
+     * Sets the verbosity level for the application.
+     *
+     * @param verbose a boolean indicating whether to enable verbose mode (true) or not (false)
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * @return the output stream that output (except for log output) should be sent to.
+     * Retrieves the current PrintStream used for standard output.
+     *
+     * @return the PrintStream object representing the standard output stream.
      */
     public PrintStream getOut() {
         return out;
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     * Sets the output stream for this instance.
+     *
+     * @param out the PrintStream to be used for output
      */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
     /**
-     * @return the set of preset adjacenies for the algorithm; edges not in this adjacency graph will not be added.
+     * Retrieves the preset adjacencies graph.
+     *
+     * @return the Graph of adjacencies.
      */
     public Graph getAdjacencies() {
         return adjacencies;
     }
 
     /**
-     * Sets the set of preset adjacenies for the algorithm; edges not in this adjacency graph will not be added.
+     * Sets the preset adjacency information for the graph.
+     *
+     * @param adjacencies the graph representing adjacency relationships to be set
      */
     public void setAdjacencies(Graph adjacencies) {
         this.adjacencies = adjacencies;
     }
 
     /**
-     * Creates a new processors pool with the specified number of threads.
+     * Sets the level of parallelism for the ForkJoinPool by specifying the number
+     * of processors to be used.
+     *
+     * @param numProcessors the number of processors to be used for parallel computations
      */
     public void setParallelism(int numProcessors) {
         this.pool = new ForkJoinPool(numProcessors);
@@ -421,15 +463,30 @@ public final class ISFges implements IGraphSearch {
         this.maxDegree = maxDegree;
     }
 
+    /**
+     * Checks if the first step of the algorithm is symmetric.
+     *
+     * @return true if the first step of the algorithm is symmetric, false otherwise.
+     */
     public boolean isSymmetricFirstStep() {
         return symmetricFirstStep;
     }
 
+    /**
+     * Sets whether the first step of the algorithm should be symmetric.
+     *
+     * @param symmetricFirstStep true to make the first step symmetric, false otherwise.
+     */
     public void setSymmetricFirstStep(boolean symmetricFirstStep) {
         this.symmetricFirstStep = symmetricFirstStep;
     }
 
-    //Sets the discrete scoring function to use.
+    /**
+     * Sets the total score, initializes the list of measured variables, builds indexing,
+     * and sets the maximum degree.
+     *
+     * @param totalScore The ISScore object containing the total score and variables.
+     */
     private void setScore(ISScore totalScore) {
         this.score = totalScore;
 
@@ -446,10 +503,26 @@ public final class ISFges implements IGraphSearch {
         this.maxDegree = score.getMaxDegree();
     }
 
+    /**
+     * Calculates the minimum chunk size for parallel processing.
+     *
+     * @param n the total number of tasks to be distributed
+     * @return the minimum chunk size which is either the result of dividing
+     *         the total number of tasks by the parallelism of the pool or 100,
+     *         whichever is larger
+     */
     public int getMinChunk(int n) {
         return Math.max(n / pool.getParallelism(), 100);
     }
 
+    /**
+     * Initializes the forward edges for the graph starting from an empty state.
+     * This method constructs an edge list graph based on the provided list of nodes
+     * and distributes the initialization tasks over multiple parallel tasks for efficiency.
+     *
+     * @param nodes The list of nodes from which the graph will be initialized.
+     *              Each node will be part of the resulting edge list graph.
+     */
     private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
 //        if (verbose) {
 //            System.out.println("heuristicSpeedup = true");
@@ -1674,7 +1747,10 @@ public final class ISFges implements IGraphSearch {
     }
 
     /**
-     * Scores the given DAG, up to a constant.
+     * Computes the score of a given directed acyclic graph (DAG).
+     *
+     * @param dag the directed acyclic graph to be scored
+     * @return the computed score of the DAG as a double
      */
     public double scoreDag(Graph dag) {
         buildIndexing(dag.getNodes());
@@ -1723,6 +1799,15 @@ public final class ISFges implements IGraphSearch {
 
     //===========================SCORING METHODS===================//
 
+    /**
+     * Computes the score of a Directed Acyclic Graph (DAG) based on a given population graph.
+     * This method evaluates each node in the DAG, considering its parents and the corresponding nodes
+     * and structure in the population graph.
+     *
+     * @param dag The directed acyclic graph whose score is to be calculated.
+     * @param pop The population graph used as a reference for scoring the DAG.
+     * @return The cumulative score of the DAG based on the population graph.
+     */
     public double scoreDag(Graph dag, Graph pop) {
         buildIndexing(pop.getNodes());
 
