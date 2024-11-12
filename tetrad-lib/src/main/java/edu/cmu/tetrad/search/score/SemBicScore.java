@@ -248,7 +248,7 @@ public class SemBicScore implements Score {
             b = covxx.inverse().times(covxy);
         }
 
-            return new CovAndCoefs(cov, b);
+        return new CovAndCoefs(cov, b);
     }
 
     @NotNull
@@ -347,6 +347,63 @@ public class SemBicScore implements Score {
         }
 
         return rows;
+    }
+
+    public static Matrix getCov(List<Integer> rows, int[] cols, int[] all, DataSet dataSet, Matrix cov) {
+        if (dataSet == null && cov != null) {
+            return cov.getSelection(cols, cols);
+        } else if (dataSet != null) {
+
+            Matrix _cov = new Matrix(cols.length, cols.length);
+
+            for (int i = 0; i < cols.length; i++) {
+                for (int j = i; j < cols.length; j++) {
+                    double mui = 0.0;
+                    double muj = 0.0;
+
+                    int sampleSize = rows.size();
+
+                    K1:
+                    for (int k : rows) {
+                        for (int c : all) {
+                            if (Double.isNaN(dataSet.getDouble(k, c))) {
+                                continue K1;
+                            }
+                        }
+
+                        mui += dataSet.getDouble(k, cols[i]);
+                        muj += dataSet.getDouble(k, cols[j]);
+                    }
+
+                    mui /= sampleSize - 1;
+                    muj /= sampleSize - 1;
+
+                    double __cov = 0.0;
+
+                    K2:
+                    for (int k : rows) {
+                        for (int c : all) {
+                            if (Double.isNaN(dataSet.getDouble(k, c))) {
+                                continue K2;
+                            }
+                        }
+
+                        double v = dataSet.getDouble(k, cols[i]);
+                        double w = dataSet.getDouble(k, cols[j]);
+
+                        __cov += (v - mui) * (w - muj);
+                    }
+
+                    __cov /= sampleSize;
+                    _cov.set(i, j, __cov);
+                    _cov.set(j, i, __cov);
+                }
+            }
+
+            return _cov;
+        } else {
+            throw new IllegalArgumentException("No data set or covariance matrix provided.");
+        }
     }
 
     /**
@@ -705,63 +762,6 @@ public class SemBicScore implements Score {
         indices[1] = this.indexMap.get(y);
         for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i));
         return indices;
-    }
-
-    public static Matrix getCov(List<Integer> rows, int[] cols, int[] all, DataSet dataSet, Matrix cov) {
-        if (dataSet == null && cov != null) {
-            return cov.getSelection(cols, cols);
-        } else if (dataSet != null) {
-
-            Matrix _cov = new Matrix(cols.length, cols.length);
-
-            for (int i = 0; i < cols.length; i++) {
-                for (int j = i; j < cols.length; j++) {
-                    double mui = 0.0;
-                    double muj = 0.0;
-
-                    int sampleSize = rows.size();
-
-                    K1:
-                    for (int k : rows) {
-                        for (int c : all) {
-                            if (Double.isNaN(dataSet.getDouble(k, c))) {
-                                continue K1;
-                            }
-                        }
-
-                        mui += dataSet.getDouble(k, cols[i]);
-                        muj += dataSet.getDouble(k, cols[j]);
-                    }
-
-                    mui /= sampleSize - 1;
-                    muj /= sampleSize - 1;
-
-                    double __cov = 0.0;
-
-                    K2:
-                    for (int k : rows) {
-                        for (int c : all) {
-                            if (Double.isNaN(dataSet.getDouble(k, c))) {
-                                continue K2;
-                            }
-                        }
-
-                        double v = dataSet.getDouble(k, cols[i]);
-                        double w = dataSet.getDouble(k, cols[j]);
-
-                        __cov += (v - mui) * (w - muj);
-                    }
-
-                    __cov /= sampleSize;
-                    _cov.set(i, j, __cov);
-                    _cov.set(j, i, __cov);
-                }
-            }
-
-            return _cov;
-        } else {
-            throw new IllegalArgumentException("No data set or covariance matrix provided.");
-        }
     }
 
     private ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
