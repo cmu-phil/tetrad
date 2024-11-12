@@ -58,7 +58,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * <p>
  * This score may be used anywhere though where a linear, Gaussian score is needed. Anecdotally, the score is fairly
  * robust to non-Gaussianity, though with some additional unfaithfulness over and above what the score would give for
- * Gaussian data, a detriment that can be overcome to an extent by use a permutation algorithm such as SP, GRaSP, or
+ * Gaussian data, a detriment that can be overcome to an extent by using a permutation algorithm such as SP, GRaSP, or
  * BOSS.
  * <p>
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
@@ -77,7 +77,7 @@ public class SemBicScore implements Score {
      */
     private final int sampleSize;
     /**
-     * A  map from variable names to their indices.
+     * A map from variable names to their indices.
      */
     private final Map<Node, Integer> indexMap;
     /**
@@ -105,7 +105,7 @@ public class SemBicScore implements Score {
      */
     private List<Node> variables;
     /**
-     * True if verbose output should be sent to out.
+     * True, if verbose output should be sent to out.
      */
     private boolean verbose;
     /**
@@ -215,7 +215,7 @@ public class SemBicScore implements Score {
      */
     @NotNull
     public static SemBicScore.CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets, boolean usePseudoInverse) {
-        List<Integer> rows = SemBicScore.getRows(i, parents, data, calculateRowSubsets);
+        List<Integer> rows = SemBicScore.getRows(data, calculateRowSubsets);
         return getCovAndCoefs(i, parents, data, covariances, usePseudoInverse, rows);
     }
 
@@ -335,7 +335,7 @@ public class SemBicScore implements Score {
         return cov;
     }
 
-    private static List<Integer> getRows(int i, int[] parents, Matrix data, boolean calculateRowSubsets) {
+    private static List<Integer> getRows(Matrix data, boolean calculateRowSubsets) {
         if (!calculateRowSubsets) {
             return null;
         }
@@ -372,12 +372,12 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * <p>nandyBic.</p>
+     * Calculates the BIC score of a partial correlation based on the specified variables.
      *
-     * @param x a int
-     * @param y a int
-     * @param z an array of  objects
-     * @return a double
+     * @param x the index of the first variable.
+     * @param y the index of the second variable.
+     * @param z an array of indices representing conditioning variables.
+     * @return the BIC score as a double.
      */
     public double nandyBic(int x, int y, int[] z) {
         double sp1 = getStructurePrior(z.length + 1);
@@ -526,7 +526,7 @@ public class SemBicScore implements Score {
     /**
      * Returns true if verbose output should be sent to out.
      *
-     * @return True if verbose output should be sent to out.
+     * @return True, if verbose output should be sent to out.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -535,15 +535,13 @@ public class SemBicScore implements Score {
     /**
      * Sets whether verbose output should be sent to out.
      *
-     * @param verbose True if verbose output should be sent to out.
+     * @param verbose True, if verbose output should be sent to out.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns the variables of the covariance matrix.
      */
     @Override
@@ -565,8 +563,6 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns the maximum degree of the score.
      */
     @Override
@@ -575,8 +571,6 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns true is the variables in z determine the variable y.
      */
     @Override
@@ -737,7 +731,6 @@ public class SemBicScore implements Score {
 
                         mui += dataSet.getDouble(k, cols[i]);
                         muj += dataSet.getDouble(k, cols[j]);
-//                    sampleSize++;
                     }
 
                     mui /= sampleSize - 1;
