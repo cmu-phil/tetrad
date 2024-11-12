@@ -31,7 +31,9 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Map;
 
 /**
  * Puts up a panel showing some graph properties, e.g., number of nodes and edges in the graph, etc.
@@ -178,6 +180,19 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
 
         textArea.append("\nNumber of latents: " + numLatents);
         textArea.append("\n" + (cyclic ? "Cyclic" : "Acyclic"));
+
+        Map<String, Object> values = getGraph().getAllAttributes();
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        for (String key : values.keySet()) {
+            Object value = values.get(key);
+
+            String _value;
+            if (value instanceof Double) _value = nf.format(value);
+            else _value = value.toString();
+
+            textArea.append("\n" + key + ": " + _value);
+        }
 
         Box b2 = Box.createHorizontalBox();
         b2.add(scroll);

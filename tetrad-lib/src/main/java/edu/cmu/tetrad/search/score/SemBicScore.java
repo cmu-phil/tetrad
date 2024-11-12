@@ -248,7 +248,7 @@ public class SemBicScore implements Score {
             b = covxx.inverse().times(covxy);
         }
 
-        return new CovAndCoefs(cov, b);
+            return new CovAndCoefs(cov, b);
     }
 
     @NotNull
@@ -272,34 +272,63 @@ public class SemBicScore implements Score {
         return all;
     }
 
-    private static Matrix getCov(List<Integer> rows, int[] _rows, int[] cols, Matrix data, ICovarianceMatrix covarianceMatrix) {
-        if (rows == null) {
-            return covarianceMatrix.getSelection(_rows, cols);
+    private static Matrix getCov(List<Integer> rowsInData, int[] rows, int[] cols, Matrix data, ICovarianceMatrix covarianceMatrix) {
+        if (rowsInData == null) {
+            return covarianceMatrix.getSelection(rows, cols);
         }
 
-        Matrix cov = new Matrix(_rows.length, cols.length);
+        Matrix cov = new Matrix(rows.length, cols.length);
 
-        for (int i = 0; i < _rows.length; i++) {
+        for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
                 double mui = 0.0;
                 double muj = 0.0;
+                double sampleSize = data.getNumRows();
 
-                for (int k : rows) {
-                    mui += data.get(k, _rows[i]);
+                K1:
+                for (int k : rowsInData) {
+                    for (int c : cols) {
+                        if (Double.isNaN(data.get(k, c))) {
+                            continue K1;
+                        }
+                    }
+
+                    for (int c : rows) {
+                        if (Double.isNaN(data.get(k, c))) {
+                            continue K1;
+                        }
+                    }
+
+                    mui += data.get(k, cols[i]);
                     muj += data.get(k, cols[j]);
+//                    sampleSize++;
                 }
 
-                mui /= rows.size() - 1;
-                muj /= rows.size() - 1;
+                mui /= sampleSize;
+                muj /= sampleSize;
 
                 double _cov = 0.0;
 
-                for (int k : rows) {
-                    _cov += (data.get(k, _rows[i]) - mui) * (data.get(k, cols[j]) - muj);
+                K2:
+                for (int k : rowsInData) {
+                    for (int c : cols) {
+                        if (Double.isNaN(data.get(k, c))) {
+                            continue K2;
+                        }
+                    }
+
+                    for (int c : rows) {
+                        if (Double.isNaN(data.get(k, c))) {
+                            continue K2;
+                        }
+                    }
+
+                    _cov += (data.get(k, cols[i]) - mui) * (data.get(k, cols[j]) - muj);
                 }
 
-                double mean = _cov / (rows.size());
+                double mean = _cov / (sampleSize - 1);
                 cov.set(i, j, mean);
+//                cov.set(j, i, mean);
             }
         }
 
@@ -313,14 +342,7 @@ public class SemBicScore implements Score {
 
         List<Integer> rows = new ArrayList<>();
 
-        K:
         for (int k = 0; k < data.getNumRows(); k++) {
-            if (Double.isNaN(data.get(k, i))) continue;
-
-            for (int p : parents) {
-                if (Double.isNaN(data.get(k, p))) continue K;
-            }
-
             rows.add(k);
         }
 
@@ -672,7 +694,12 @@ public class SemBicScore implements Score {
 
     private double partialCorrelation(Node x, Node y, List<Node> z, List<Integer> rows) {
         try {
-            return StatUtils.partialCorrelation(convertCovToCorr(getCov(rows, indices(x, y, z))));
+            int[] all = new int[z.size() + 2];
+            all[0] = this.indexMap.get(x);
+            all[1] = this.indexMap.get(y);
+            for (int i = 0; i < z.size(); i++) all[i + 2] = this.indexMap.get(z.get(i));
+
+            return StatUtils.partialCorrelation(convertCovToCorr(getCov(rows, indices(x, y, z), all, (DataSet) this.dataModel, this.matrix)));
         } catch (Exception e) {
             return NaN;
         }
@@ -686,60 +713,62 @@ public class SemBicScore implements Score {
         return indices;
     }
 
-    private Matrix getCov(List<Integer> rows, int[] cols) {
-        if (this.dataModel == null) {
-            return this.matrix.getSelection(cols, cols);
-        }
+    public static Matrix getCov(List<Integer> rows, int[] cols, int[] all, DataSet dataSet, Matrix cov) {
+        if (dataSet == null && cov != null) {
+            return cov.getSelection(cols, cols);
+        } else if (dataSet != null) {
 
-        DataSet dataSet = (DataSet) this.dataModel;
+            Matrix _cov = new Matrix(cols.length, cols.length);
 
-        Matrix cov = new Matrix(cols.length, cols.length);
+            for (int i = 0; i < cols.length; i++) {
+                for (int j = i; j < cols.length; j++) {
+                    double mui = 0.0;
+                    double muj = 0.0;
 
-        for (int i = 0; i < cols.length; i++) {
-            for (int j = i + 1; j < cols.length; j++) {
-                double mui = 0.0;
-                double muj = 0.0;
+                    int sampleSize = rows.size();
 
-                for (int k : rows) {
-                    mui += dataSet.getDouble(k, cols[i]);
-                    muj += dataSet.getDouble(k, cols[j]);
+                    K1:
+                    for (int k : rows) {
+                        for (int c : all) {
+                            if (Double.isNaN(dataSet.getDouble(k, c))) {
+                                continue K1;
+                            }
+                        }
+
+                        mui += dataSet.getDouble(k, cols[i]);
+                        muj += dataSet.getDouble(k, cols[j]);
+//                    sampleSize++;
+                    }
+
+                    mui /= sampleSize - 1;
+                    muj /= sampleSize - 1;
+
+                    double __cov = 0.0;
+
+                    K2:
+                    for (int k : rows) {
+                        for (int c : all) {
+                            if (Double.isNaN(dataSet.getDouble(k, c))) {
+                                continue K2;
+                            }
+                        }
+
+                        double v = dataSet.getDouble(k, cols[i]);
+                        double w = dataSet.getDouble(k, cols[j]);
+
+                        __cov += (v - mui) * (w - muj);
+                    }
+
+                    __cov /= sampleSize;
+                    _cov.set(i, j, __cov);
+                    _cov.set(j, i, __cov);
                 }
-
-                mui /= rows.size() - 1;
-                muj /= rows.size() - 1;
-
-                double _cov = 0.0;
-
-                for (int k : rows) {
-                    _cov += (dataSet.getDouble(k, cols[i]) - mui) * (dataSet.getDouble(k, cols[j]) - muj);
-                }
-
-                double mean = _cov / (rows.size());
-                cov.set(i, j, mean);
-                cov.set(j, i, mean);
             }
+
+            return _cov;
+        } else {
+            throw new IllegalArgumentException("No data set or covariance matrix provided.");
         }
-
-        for (int i = 0; i < cols.length; i++) {
-            double mui = 0.0;
-
-            for (int k : rows) {
-                mui += dataSet.getDouble(k, cols[i]);
-            }
-
-            mui /= rows.size();
-
-            double _cov = 0.0;
-
-            for (int k : rows) {
-                _cov += (dataSet.getDouble(k, cols[i]) - mui) * (dataSet.getDouble(k, cols[i]) - mui);
-            }
-
-            double mean = _cov / (rows.size());
-            cov.set(i, i, mean);
-        }
-
-        return cov;
     }
 
     private ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
