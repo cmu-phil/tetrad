@@ -400,7 +400,7 @@ public final class GraphUtils {
                         Set<Node> descendants = graph.paths().getDescendants(n1);
                         descendants.retainAll(conditioningVars);
                         if (!descendants.isEmpty()) {
-                            buf.append("{~~>").append(descendants.iterator().next()).append(conditioningSymbol + "}");
+                            buf.append("{~~>").append(descendants.iterator().next()).append(conditioningSymbol).append("}");
                         }
                     }
                 }
@@ -553,106 +553,6 @@ public final class GraphUtils {
     }
 
     /**
-     * Counts the arrowheads that are in graph1 but not in graph2.
-     *
-     * @param graph1 a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param graph2 a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a int
-     */
-    public static int countArrowptErrors(Graph graph1, Graph graph2) {
-        if (graph1 == null) {
-            throw new NullPointerException("The reference graph is missing.");
-        }
-
-        if (graph2 == null) {
-            throw new NullPointerException("The target graph is missing.");
-        }
-
-        graph2 = GraphUtils.replaceNodes(graph2, graph1.getNodes());
-
-        int count = 0;
-
-        for (Edge edge1 : graph1.getEdges()) {
-            Node node1 = edge1.getNode1();
-            Node node2 = edge1.getNode2();
-
-            Edge edge2 = graph2.getEdge(node1, node2);
-
-            if (edge1.getEndpoint1() == Endpoint.ARROW) {
-                if (edge2 == null) {
-                    count++;
-                } else if (edge2.getProximalEndpoint(edge1.getNode1()) != Endpoint.ARROW) {
-                    count++;
-                }
-            }
-
-            if (edge1.getEndpoint2() == Endpoint.ARROW) {
-                if (edge2 == null) {
-                    count++;
-                } else if (edge2.getProximalEndpoint(edge1.getNode2()) != Endpoint.ARROW) {
-                    count++;
-                }
-            }
-        }
-
-        for (Edge edge1 : graph2.getEdges()) {
-            Node node1 = edge1.getNode1();
-            Node node2 = edge1.getNode2();
-
-            Edge edge2 = graph1.getEdge(node1, node2);
-
-            if (edge1.getEndpoint1() == Endpoint.ARROW) {
-                if (edge2 == null) {
-                    count++;
-                } else if (edge2.getProximalEndpoint(edge1.getNode1()) != Endpoint.ARROW) {
-                    count++;
-                }
-            }
-
-            if (edge1.getEndpoint2() == Endpoint.ARROW) {
-                if (edge2 == null) {
-                    count++;
-                } else if (edge2.getProximalEndpoint(edge1.getNode2()) != Endpoint.ARROW) {
-                    count++;
-                }
-            }
-        }
-
-        return count;
-    }
-
-    /**
-     * <p>getNumCorrectArrowpts.</p>
-     *
-     * @param correct   a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param estimated a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a int
-     */
-    public static int getNumCorrectArrowpts(Graph correct, Graph estimated) {
-        correct = GraphUtils.replaceNodes(correct, estimated.getNodes());
-
-        Set<Edge> edges = estimated.getEdges();
-        int numCorrect = 0;
-
-        for (Edge estEdge : edges) {
-            Edge correctEdge = correct.getEdge(estEdge.getNode1(), estEdge.getNode2());
-            if (correctEdge == null) {
-                continue;
-            }
-
-            if (estEdge.getProximalEndpoint(estEdge.getNode1()) == Endpoint.ARROW && correctEdge.getProximalEndpoint(estEdge.getNode1()) == Endpoint.ARROW) {
-                numCorrect++;
-            }
-
-            if (estEdge.getProximalEndpoint(estEdge.getNode2()) == Endpoint.ARROW && correctEdge.getProximalEndpoint(estEdge.getNode2()) == Endpoint.ARROW) {
-                numCorrect++;
-            }
-        }
-
-        return numCorrect;
-    }
-
-    /**
      * Converts the given list of nodes, <code>originalNodes</code>, to use the replacement nodes for them by the same
      * name in the given
      * <code>graph</code>.
@@ -751,15 +651,6 @@ public final class GraphUtils {
     }
 
     /**
-     * <p>getUnderlinedTriplesFromGraph.</p>
-     *
-     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
-     * given graph.
-     */
-
-    /**
      * Retrieves the list of dotted and underlined triples from the given graph, with the specified node as the middle
      * node.
      *
@@ -790,15 +681,6 @@ public final class GraphUtils {
 
         return dottedUnderlinedTriples;
     }
-
-    /**
-     * <p>getDottedUnderlinedTriplesFromGraph.</p>
-     *
-     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
-     * given graph.
-     */
 
     /**
      * Checks if a given graph contains a bidirected edge.
@@ -1367,9 +1249,6 @@ public final class GraphUtils {
                 }
             }
 
-            public Counts getCounts() {
-                return this.counts;
-            }
         }
 
         Set<Edge> edgeSet = new HashSet<>();
@@ -1717,7 +1596,7 @@ public final class GraphUtils {
     public static String triplesToText(Set<Triple> triples, String title) {
         Formatter fmt = new Formatter();
 
-        if (title != null && title.length() > 0) {
+        if (title != null && !title.isEmpty()) {
             fmt.format("%s%n", title);
         }
 
@@ -2141,40 +2020,6 @@ public final class GraphUtils {
 
         // Get the Markov blanket for x in G2.
         Set<Node> mbX = markovBlanket(x, G2);
-        mbX.remove(x);
-        mbX.remove(y);
-        mbX.removeAll(G.paths().getDescendants(x));
-        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), mbX, x, y, numSmallestSizes);
-    }
-
-    /**
-     * Calculates visual-edge adjustments of a given graph G between two nodes x and y that are subsets of MB(Yma
-     *
-     * @param G                the input graph
-     * @param x                the source node
-     * @param y                the target node
-     * @param numSmallestSizes the number of smallest adjustment sets to return
-     * @param graphType        the type of the graph
-     * @return the adjustment sets as a set of sets of nodes
-     * @throws IllegalArgumentException if the input graph is not a legal MPDAG
-     */
-    public static Set<Set<Node>> visualEdgeAdjustments2(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
-        Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
-
-        if (G2 == null) {
-            return new HashSet<>();
-        }
-
-        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
-            System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
-            return new HashSet<>();
-        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
-            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
-            return new HashSet<>();
-        }
-
-        // Get the Markov blanket for x in G2.
-        Set<Node> mbX = markovBlanket(y, G2);
         mbX.remove(x);
         mbX.remove(y);
         mbX.removeAll(G.paths().getDescendants(x));
@@ -2803,9 +2648,7 @@ public final class GraphUtils {
      * @return The source node of the trek.
      */
     public static Node getTrekSource(Graph graph, List<Node> trek) {
-        Node y = trek.get(trek.size() - 1);
-
-        Node source = y;
+        Node source = trek.get(trek.size() - 1);
 
         // Find the first node where the direction is left to right.
         for (int i = 0; i < trek.size() - 1; i++) {
@@ -2929,83 +2772,6 @@ public final class GraphUtils {
         return pag;
     }
 
-    private static boolean resolveAlmostCycles1(Graph pag, Knowledge knowledge, Set<Triple> unshieldedColliders, boolean verbose) {
-        boolean changed;
-        boolean anyChange = false;
-
-        do {
-            changed = false;
-
-            for (Edge edge : pag.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    // If x ~~> y, this can't be x <-- y on pain of a cycle, and it can't be x <-> y because the
-                    // bidirected eedge semantics is wrong (the problem we're trying to fix), so it must actually
-                    // be x --> y. The basic issue here is that in order to know the edge is not bidirected, we
-                    // need to be able to "peer into the future" of the orientation process, which we can't do. As
-                    // it turns out, this edge can't have been bidirected in the first place, because it would have
-                    // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
-                    // about non-causality that can't be supported. So we just fix it in post-processing.
-                    if (pag.paths().isAncestorOf(x, y) && !knowledge.isForbidden(x.getName(), y.getName())) {
-                        pag.removeEdge(x, y);
-                        pag.addDirectedEdge(x, y);
-
-//                        List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
-//
-//                        for (Node _into : into) {
-////                          pag.setEndpoint(_into, x, Endpoint.CIRCLE);
-//
-//                            if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
-//                                pag.setEndpoint(_into, x, Endpoint.CIRCLE);
-//                                pag.addNondirectedEdge(_into, y);
-//                            }
-//
-//                            if (unshieldedColliders != null) {
-//                                unshieldedColliders.remove(new Triple(_into, x, y));
-//                            }
-//                        }
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
-                        }
-
-                        changed = true;
-                        anyChange = true;
-                    } else if (pag.paths().isAncestorOf(y, x)) {// && !knowledge.isForbidden(y.getName(), x.getName())) {
-                        pag.removeEdge(y, x);
-                        pag.addDirectedEdge(y, x);
-
-                        List<Node> into = pag.getNodesInTo(y, Endpoint.ARROW);
-
-                        for (Node _into : into) {
-//                            pag.setEndpoint(_into, y, Endpoint.CIRCLE);
-                            if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
-                                pag.setEndpoint(_into, y, Endpoint.CIRCLE);
-                                pag.addNondirectedEdge(_into, x);
-                            }
-
-                            if (unshieldedColliders != null) {
-                                unshieldedColliders.remove(new Triple(_into, y, x));
-                            }
-
-                        }
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + y + " ~~> " + x + ", oriented " + x + " <-> " + y + " as " + y + " -> " + x + ".");
-                        }
-
-                        changed = true;
-                        anyChange = true;
-                    }
-                }
-            }
-        } while (changed);
-
-        return anyChange;
-    }
-
     private static AtomicBoolean repairMaximality(Graph pag, boolean verbose, AtomicBoolean anyChange, Set<Node> selection) {
         // Repair maximality.
         for (Node x : pag.getNodes()) {
@@ -3032,26 +2798,6 @@ public final class GraphUtils {
             }
         }
         return anyChange;
-    }
-
-
-    private static void adjustAlmostCycle(Graph pag, Set<Triple> unshieldedColliders, Node x, Node y) {
-        pag.setEndpoint(y, x, Endpoint.CIRCLE);
-
-        for (Node z : pag.getNodesInTo(x, Endpoint.ARROW)) {
-            if (z == y) continue;
-            if (!pag.isAdjacentTo(z, y)) {// && pag.getEdge(z, x).pointsTowards(x)) {
-                pag.setEndpoint(z, x, Endpoint.CIRCLE);
-                unshieldedColliders.remove(new Triple(z, x, y));
-            }
-        }
-
-        for (Node w : pag.getNodesInTo(y, Endpoint.ARROW)) {
-            if (w == x) continue;
-            if (!pag.isAdjacentTo(w, x)) {
-                unshieldedColliders.add(new Triple(x, y, w));
-            }
-        }
     }
 
     /**
@@ -3181,36 +2927,6 @@ public final class GraphUtils {
         }
 
         return coveringAdjacency;
-    }
-
-    /**
-     * Returns an undirected path matrix based on the given graph and power. The undirected path matrix represents the
-     * existence of a path of a specific length between any two nodes in the graph.
-     *
-     * @param graph the graph from which to create the undirected path matrix
-     * @param power the power used to calculate the undirected path matrix
-     * @return the undirected path matrix
-     */
-    public static Matrix getUndirectedPathMatrix(Graph graph, int power) {
-        List<Node> nodes = graph.getNodes();
-        int numNodes = graph.getNumNodes();
-
-        Matrix m = new Matrix(numNodes, numNodes);
-
-        for (Edge e : new HashSet<>(graph.getEdges())) {
-            int i = nodes.indexOf(e.getNode1());
-            int j = nodes.indexOf(e.getNode2());
-            m.set(i, j, 1);
-            m.set(j, i, 1);
-        }
-
-        Matrix prod = new Matrix(m);
-
-        for (int i = 1; i <= power; i++) {
-            prod = prod.times(m);
-        }
-
-        return prod;
     }
 
     /**
@@ -3650,18 +3366,6 @@ public final class GraphUtils {
     }
 
     /**
-     * Checks if creating an almost cycle between nodes x, b, and y is possible in a given graph.
-     *
-     * @param pag The graph to check if the almost cycle can be created.
-     * @param x   The first node of the almost cycle.
-     * @param y   The third node of the almost cycle.
-     * @return True if creating the almost cycle is possible, false otherwise.
-     */
-    public static boolean couldCreateAlmostCycle(Graph pag, Node x, Node y) {
-        return pag.paths().isAncestorOf(x, y) || pag.paths().isAncestorOf(y, x);
-    }
-
-    /**
      * Checks if three nodes are connected in a graph.
      *
      * @param graph the graph to check for connectivity
@@ -3784,40 +3488,13 @@ public final class GraphUtils {
     }
 
     /**
-     * Calculates the percentage of p-values that are less than the alpha value in the given independence test.
-     *
-     * @param test     The independence test providing the alpha value.
-     * @param _pValues A map containing pairs of nodes and their corresponding sets of p-values.
-     * @return The percentage of p-values that are less than the alpha value. If the total number of p-values is less
-     * than 5, returns 0.0.
-     */
-    public static double calculatePercentDependent(IndependenceTest test, Map<Pair<Node, Node>, Set<Double>> _pValues) {
-        // Calculate the percentage of p-values in the _pValues map that are less than alpha
-        int numPValues = 0;
-        int numSignificant = 0;
-
-        for (Pair<Node, Node> pair : _pValues.keySet()) {
-            numPValues += _pValues.get(pair).size();
-
-            for (Double pValue : _pValues.get(pair)) {
-                if (pValue < test.getAlpha()) {
-                    numSignificant++;
-                }
-            }
-        }
-
-        double v = numPValues < 5 ? 0.0 : (double) numSignificant / numPValues;
-        return v;
-    }
-
-    /**
      * Calculates the p-value using the Anderson-Darling test for a given set of p-values from an independence test.
      *
-     * @param test An instance of IndependenceTest used for testing independence between nodes.
-     * @param _pValues A map where each key is a pair of nodes, and each value is a set of p-values associated with that node pair.
+     * @param _pValues A map where each key is a pair of nodes, and each value is a set of p-values associated with that
+     *                 node pair.
      * @return The p-value calculated from the Anderson-Darling test.
      */
-    public static double pValuesAdP(IndependenceTest test, Map<Pair<Node, Node>, Set<Double>> _pValues) {
+    public static double pValuesAdP(Map<Pair<Node, Node>, Set<Double>> _pValues) {
         // Calculate the percentage of p-values in the _pValues map that are less than alpha
         List<Double> pValues = new ArrayList<>();
 

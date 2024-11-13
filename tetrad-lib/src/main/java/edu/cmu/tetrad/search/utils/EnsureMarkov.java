@@ -173,7 +173,7 @@ public class EnsureMarkov {
 
 //                double baseline = GraphUtils.calculatePercentDependent(test, pValues);
 
-                if (GraphUtils.pValuesAdP(test, _pValues) > test.getAlpha()) {
+                if (GraphUtils.pValuesAdP(_pValues) > test.getAlpha()) {
 //                    if (GraphUtils.calculatePercentDependent(test, _pValues) <= test.getAlpha()) {
                     pValues = _pValues;
                     return true;

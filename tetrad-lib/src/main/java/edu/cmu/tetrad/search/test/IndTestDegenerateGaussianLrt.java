@@ -229,7 +229,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
-        List<Integer> rows = getRows(allNodes, this.nodeHash);
+        List<Integer> rows = listRows();
 
         if (rows.isEmpty()) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 true, NaN, NaN);
@@ -397,11 +397,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
     /**
      * Returns a list of row indices that satisfy the given conditions.
      *
-     * @param allVars   A list of nodes representing the variables to be checked.
-     * @param nodesHash A map that associates each node with its corresponding index.
      * @return A list of integers representing the row indices that satisfy the conditions.
      */
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+    private List<Integer> listRows() {
         if (this.rows != null) {
             return this.rows;
         }
