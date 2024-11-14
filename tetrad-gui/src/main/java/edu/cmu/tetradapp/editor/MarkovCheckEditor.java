@@ -881,15 +881,40 @@ public class MarkovCheckEditor extends JPanel {
             names.add(node.getName());
         }
 
-        names.sort((o1, o2) -> {
-            // If o1 ends with an integer, find that integer.
-            // If o2 ends with an integer, find that integer.
-            // If both end with an integer, compare the integers.
+//        names.sort((o1, o2) -> {
+//            // If o1 ends with an integer, find that integer.
+//            // If o2 ends with an integer, find that integer.
+//            // If both end with an integer, compare the integers.
+//
+//            String[] split1 = o1.split("(?<=\\D)(?=\\d)");
+//            String[] split2 = o2.split("(?<=\\D)(?=\\d)");
+//
+//            if (split1.length == 2 && split2.length == 2) {
+//                String prefix1 = split1[0];
+//                String prefix2 = split2[0];
+//
+//                if (prefix1.equals(prefix2)) {
+//                    return Integer.compare(Integer.parseInt(split1[1]), Integer.parseInt(split2[1]));
+//                } else {
+//                    return prefix1.compareTo(prefix2);
+//                }
+//            } else if (split1.length == 2) {
+//                return -1;
+//            } else if (split2.length == 2) {
+//                return 1;
+//            } else {
+//                return o1.compareTo(o2);
+//            }
+//        });
 
+        names.sort((o1, o2) -> {
             String[] split1 = o1.split("(?<=\\D)(?=\\d)");
             String[] split2 = o2.split("(?<=\\D)(?=\\d)");
 
-            if (split1.length == 2 && split2.length == 2) {
+            boolean o1HasIntegerSuffix = split1.length == 2 && split1[1].matches("\\d+");
+            boolean o2HasIntegerSuffix = split2.length == 2 && split2[1].matches("\\d+");
+
+            if (o1HasIntegerSuffix && o2HasIntegerSuffix) {
                 String prefix1 = split1[0];
                 String prefix2 = split2[0];
 
@@ -898,14 +923,15 @@ public class MarkovCheckEditor extends JPanel {
                 } else {
                     return prefix1.compareTo(prefix2);
                 }
-            } else if (split1.length == 2) {
+            } else if (o1HasIntegerSuffix) {
                 return -1;
-            } else if (split2.length == 2) {
+            } else if (o2HasIntegerSuffix) {
                 return 1;
             } else {
                 return o1.compareTo(o2);
             }
         });
+
 
         for (String name : names) {
             nodeSelection.addItem(name);

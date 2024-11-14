@@ -349,7 +349,11 @@ public class Discretizer {
                     int _col = newDataSet.getColumn(variable);
 
                     for (int j = 0; j < trimmedData.length; j++) {
-                        newDataSet.setInt(j, _col, remap[trimmedData[j]]);
+                        try {
+                            newDataSet.setInt(j, _col, remap[trimmedData[j]]);
+                        } catch (Exception e) {
+                            newDataSet.setInt(j, _col, DiscreteVariable.MISSING_VALUE);
+                        }
                     }
                 }
 
