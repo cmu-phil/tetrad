@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class MarkovCheck implements SampleSizeSettable {
+public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The graph.
      */
@@ -1788,12 +1788,12 @@ public class MarkovCheck implements SampleSizeSettable {
     }
 
     @Override
-    public void setSampleSize(int sampleSize) {
-        if (!(independenceTest instanceof SampleSizeSettable)) {
+    public void setEffectiveSampleSize(int sampleSize) {
+        if (!(independenceTest instanceof EffectiveSampleSizeSettable)) {
             throw new IllegalArgumentException("The independence test does not support setting the sample size.");
         }
 
-        ((SampleSizeSettable) independenceTest).setSampleSize(sampleSize);
+        ((EffectiveSampleSizeSettable) independenceTest).setEffectiveSampleSize(sampleSize);
     }
 
     /**

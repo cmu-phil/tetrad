@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SampleSizeSettable;
+import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Vector;
@@ -50,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Frank Wimberly
  * @version $Id: $Id
  */
-public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettable, RowsSettable {
+public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
      * A hash from variable names to indices.
      */
@@ -520,14 +520,14 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
      * Sets the sample size to use for the independence test, which may be different from the sample size of the data
      * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
      *
-     * @param sampleSize The sample size to use.
+     * @param effectiveSampleSize The sample size to use.
      */
-    public void setSampleSize(int sampleSize) {
-        if (sampleSize < 1) {
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        if (effectiveSampleSize < 1) {
             throw new IllegalArgumentException("Sample size must be positive.");
         }
 
-        this.sampleSize = sampleSize;
+        this.sampleSize = effectiveSampleSize;
     }
 
     /**
