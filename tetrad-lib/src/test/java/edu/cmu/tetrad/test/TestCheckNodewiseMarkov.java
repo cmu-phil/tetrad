@@ -2,6 +2,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -40,6 +41,7 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(10000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -74,6 +76,7 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(10000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -133,6 +136,7 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -166,6 +170,7 @@ public class TestCheckNodewiseMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -200,6 +205,7 @@ public class TestCheckNodewiseMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -229,6 +235,7 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -270,6 +277,7 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -313,6 +321,7 @@ public class TestCheckNodewiseMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -359,6 +368,7 @@ public class TestCheckNodewiseMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -401,6 +411,7 @@ public class TestCheckNodewiseMarkov {
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -434,6 +445,7 @@ public class TestCheckNodewiseMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
@@ -468,6 +480,7 @@ public class TestCheckNodewiseMarkov {
 
         SemIm im = new SemIm(pm, params);
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
