@@ -240,6 +240,16 @@ public class TestFci {
     }
 
     /**
+     * This checks to see whether the R4 rule can correctly orient multiple discriminating paths from X to Y in various
+     * configurations.
+     */
+    @Test
+    public void testSearch15() {
+        checkSearch("Latent(L),X-->Y,W-->Z,L-->Y,L-->Z",
+                "Xo->Y,Y<->Z,Wo->Z", new Knowledge());
+    }
+
+    /**
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */

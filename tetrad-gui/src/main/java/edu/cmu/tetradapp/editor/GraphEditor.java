@@ -272,7 +272,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                     // Update the graphWrapper
                     graphWrapper.setGraph(targetGraph);
                     // Also need to update the UI
-                    updateBootstrapTable(targetGraph);
+//                    updateBootstrapTable(targetGraph);
                 }
             } else if ("modelChanged".equals(propertyName)) {
                 firePropertyChange("modelChanged", null, null);
@@ -350,6 +350,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 //        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
 //        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
 
+        this.edgeTypeTable.update(graph);
+        updateBootstrapTable(graph);
+
         // Switching to tabbed pane because of resizing problems with the split pane... jdramsey 2021.08.25
         JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
         tabbedPane.addTab("Graph", new PaddingPanel(topBox));
@@ -358,8 +361,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
-
-        this.edgeTypeTable.update(graph);
 
         // Performs relayout.
         // It means invalid content is asked for all the sizes and
