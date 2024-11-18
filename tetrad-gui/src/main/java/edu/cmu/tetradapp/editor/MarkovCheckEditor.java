@@ -218,9 +218,9 @@ public class MarkovCheckEditor extends JPanel {
 
         setPreferredSize(new Dimension(1100, 600));
 
-        conditioningSetTypeJComboBox.addItem("Parents(X) (Local Markov)");
+        conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
+        conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
-        conditioningSetTypeJComboBox.addItem("Parents(X) for a Valid Order (Ordered Local Markov)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
         conditioningSetTypeJComboBox.addItem("Recursive M-Sep Conditioning Set");
         conditioningSetTypeJComboBox.addItem("Conditioning on Noncolliders Only");
@@ -228,13 +228,13 @@ public class MarkovCheckEditor extends JPanel {
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
-                case "Parents(X) (Local Markov)":
+                case "Parents(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.LOCAL_MARKOV);
                     break;
                 case "Parents(X) and Neighbors(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.PARENTS_AND_NEIGHBORS);
                     break;
-                case "Parents(X) for a Valid Order (Ordered Local Markov)":
+                case "Ordered Local Markov":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
                     break;
                 case "MarkovBlanket(X)":

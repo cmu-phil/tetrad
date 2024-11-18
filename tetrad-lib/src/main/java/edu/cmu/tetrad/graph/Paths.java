@@ -1331,7 +1331,7 @@ public class Paths implements TetradSerializable {
      * @param selectionVariables the set of selection variables.
      * @return true if an inducing path exists, false if not.
      */
-    public boolean existsInducingPath(Node x, Node y, Set<Node> selectionVariables) {
+    public boolean existsInducingPathDFS(Node x, Node y, Set<Node> selectionVariables) {
         if (x.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException();
         }
@@ -1400,6 +1400,79 @@ public class Paths implements TetradSerializable {
         path.removeLast();
         return false;
     }
+
+    public boolean existsInducingPath(Node x, Node y, Set<Node> selectionVariables) {
+        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
+            throw new IllegalArgumentException();
+        }
+
+        // Initialize the BFS queue
+        Queue<PathElement> queue = new LinkedList<>();
+        Set<Node> visited = new HashSet<>();
+        queue.add(new PathElement(x, null)); // Start with node x and no previous node
+
+        while (!queue.isEmpty()) {
+            PathElement current = queue.poll();
+            Node a = current.previous; // Previous node
+            Node b = current.current;  // Current node
+
+//            // Avoid revisiting nodes in the current path
+//            if (visited.contains(b)) {
+//                continue;
+//            }
+
+            if (visited.contains(b) && a != null) {
+                continue; // Skip fully processed nodes, but allow revisits under specific conditions
+            }
+
+            visited.add(b);
+
+            // If the target node is reached, an inducing path exists
+            if (b == y) {
+                return true;
+            }
+
+            // Explore neighbors of the current node
+            for (Node c : graph.getAdjacentNodes(b)) {
+                // Skip the node we just came from
+                if (c == a) {
+                    continue;
+                }
+
+                // Check conditions for the inducing path
+                if (b.getNodeType() == NodeType.MEASURED) {
+                    if (!graph.isDefCollider(a, b, c)) {
+                        continue;
+                    }
+                }
+
+                if (graph.isDefCollider(a, b, c)) {
+                    if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
+                          || graph.paths().isAncestor(b, selectionVariables))) {
+                        continue;
+                    }
+                }
+
+                // Enqueue the neighbor node for further exploration
+                queue.add(new PathElement(c, b));
+            }
+        }
+
+        // If the queue is exhausted, no inducing path exists
+        return false;
+    }
+
+    // Helper class to represent an element in the BFS queue
+    static class PathElement {
+        Node current;  // The current node
+        Node previous; // The previous node on the path
+
+        PathElement(Node current, Node previous) {
+            this.current = current;
+            this.previous = previous;
+        }
+    }
+
 
     /**
      * This method calculates the inducing path between two measured nodes in a graph.

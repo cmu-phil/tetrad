@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //i
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -215,13 +215,12 @@ public final class LvLite implements IGraphSearch {
             nodes = new ArrayList<>(this.test.getVariables());
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("===Starting LV-Lite===");
-        }
+        TetradLogger.getInstance().log("===Starting LV-Lite===");
 
         Graph pag;
         Graph dag;
         List<Node> best;
+        long start1 = System.currentTimeMillis();
 
         if (startWith == START_WITH.BOSS) {
 
@@ -321,6 +320,10 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Best order: " + best);
         }
 
+        long stop1 = System.currentTimeMillis();
+
+        long start2 = System.currentTimeMillis();
+
         Graph cpdag = GraphTransforms.dagToCpdag(dag);
 
         TeyssierScorer scorer = null;
@@ -381,6 +384,8 @@ public final class LvLite implements IGraphSearch {
         }
 
         copyUnshieldedCollidersFromCpdag(best, pag, checked, cpdag, scorer, unshieldedColliders, fciOrient);
+        Set<Triple> _unshieldedColliders = new HashSet<>(unshieldedColliders);
+
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
@@ -405,17 +410,27 @@ public final class LvLite implements IGraphSearch {
         fciOrient.setDoR4(true);
         fciOrient.finalOrientation(pag);
 
+        long stop2 = System.currentTimeMillis();
+
         if (verbose) {
             TetradLogger.getInstance().log("Finished implied orientation.");
         }
 
+        long start3 = System.currentTimeMillis();
+        Set<Triple> extraUnshieldedColliders = new HashSet<>(unshieldedColliders);
+        extraUnshieldedColliders.removeAll(_unshieldedColliders);
+
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, false, verbose, new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, extraUnshieldedColliders, false, verbose, new HashSet<>());
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("LV-Lite finished.");
-        }
+        long stop3 = System.currentTimeMillis();
+
+        TetradLogger.getInstance().log("LV-Lite finished.");
+        TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
+        TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
+        TetradLogger.getInstance().log("Guarantee PAG time: " + (stop3 - start3) + " ms.");
+        TetradLogger.getInstance().log("Total time: " + (stop3 - start1) + " ms.");
 
         return GraphUtils.replaceNodes(pag, nodes);
     }
@@ -440,7 +455,8 @@ public final class LvLite implements IGraphSearch {
         }
     }
 
-    private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders, FciOrient fciOrient, List<Node> best) {
+    private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders,
+                               FciOrient fciOrient, List<Node> best) {
         GraphUtils.reorientWithCircles(pag, verbose);
         pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
@@ -770,7 +786,7 @@ public final class LvLite implements IGraphSearch {
      * Tries removing extra edges from the PAG using a test with sepsets obtained by examining the BOSS/GRaSP DAG.
      *
      * @param pag The graph in which to remove extra edges.
-     * @return A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning sets used to
+     * @param extraSepsets A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning sets used to
      * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
      * is not in this sepset.
      */

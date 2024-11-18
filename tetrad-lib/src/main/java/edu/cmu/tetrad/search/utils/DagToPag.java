@@ -144,10 +144,10 @@ public final class DagToPag {
              * @see DiscriminatingPath
              */
             public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
-                Node e = discriminatingPath.getX();
-                Node a = discriminatingPath.getW();
-                Node b = discriminatingPath.getV();
-                Node c = discriminatingPath.getY();
+                Node x = discriminatingPath.getX();
+                Node w = discriminatingPath.getW();
+                Node v = discriminatingPath.getV();
+                Node y = discriminatingPath.getY();
 
                 // Check that the discriminating path construct still exists in the graph.
                 if (!discriminatingPath.existsIn(graph)) {
@@ -156,42 +156,42 @@ public final class DagToPag {
 
                 // Check that the discriminating path has not yet been oriented; we don't need to list the ones that have
                 // already been oriented.
-                if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
                     return Pair.of(discriminatingPath, false);
                 }
 
-                if (graph.isAdjacentTo(e, c)) {
-                    throw new IllegalArgumentException("e and c must not be adjacent");
+                if (graph.isAdjacentTo(x, y)) {
+                    throw new IllegalArgumentException("x and y must not be adjacent");
                 }
 
-                Set<Node> sepset = mag.isAdjacentTo(e, c) ? null : mag.paths().anteriority(e, c);
+                Set<Node> sepset = mag.isAdjacentTo(x, y) ? null : mag.paths().anteriority(x, y);
 
                 if (verbose) {
-                    TetradLogger.getInstance().log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
+                    TetradLogger.getInstance().log("Sepset for x = " + x + " and y = " + y + " = " + sepset);
                 }
 
-                if (sepset != null && sepset.contains(b)) {
-                    graph.setEndpoint(c, b, Endpoint.TAIL);
+                if (sepset != null && sepset.contains(v)) {
+                    graph.setEndpoint(y, v, Endpoint.TAIL);
 
                     if (verbose) {
-                        TetradLogger.getInstance().log("R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        TetradLogger.getInstance().log("R4: Definite discriminating path tail rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
                     }
 
                     return Pair.of(discriminatingPath, true);
                 } else {
-                    if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
+                    if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
                         return Pair.of(discriminatingPath, false);
                     }
 
-                    if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                    if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
                         return Pair.of(discriminatingPath, false);
                     }
 
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                    graph.setEndpoint(w, v, Endpoint.ARROW);
+                    graph.setEndpoint(y, v, Endpoint.ARROW);
 
                     if (verbose) {
-                        TetradLogger.getInstance().log("R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        TetradLogger.getInstance().log("R4: Definite discriminating path collider rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
                     }
 
                     return Pair.of(discriminatingPath, true);
