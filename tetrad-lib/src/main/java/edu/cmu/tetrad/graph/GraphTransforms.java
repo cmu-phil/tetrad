@@ -395,7 +395,7 @@ public class GraphTransforms {
      * @return The resulting MAG obtained from the input DAG.
      */
     public static @NotNull Graph dagToMag(Graph dag) {
-        Map<Node, Set<Node>> ancestorMap = dag.paths().getAncestorMap();
+        Map<Node, Set<Node>> ancestorMap = dag.paths().getDescendantsMap();
         Graph graph = DagToPag.calcAdjacencyGraph(dag);
 
         List<Node> allNodes = dag.getNodes();

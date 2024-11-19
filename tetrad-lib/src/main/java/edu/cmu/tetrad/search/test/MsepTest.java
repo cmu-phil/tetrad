@@ -130,7 +130,7 @@ public class MsepTest implements IndependenceTest {
 
         this.graph = graph;
 
-        this.ancestorMap = graph.paths().getAncestorMap();
+        this.ancestorMap = graph.paths().getDescendantsMap();
         this._observedVars = calcVars(graph.getNodes(), keepLatents);
         this.observedVars = new ArrayList<>(_observedVars);
         this.hasLatents = false;

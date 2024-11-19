@@ -226,7 +226,7 @@ public class SepsetFinder {
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) {
-        return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getAncestorMap(), maxPathLength);
+        return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
     private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
@@ -306,7 +306,7 @@ public class SepsetFinder {
      * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
      */
     public static Set<Node> getPathBlockingSetRecursive(Graph graph, Node x, Node y, Set<Node> containing, int maxPathLength, Set<Node> notFollowing) {
-        return getPathBlockingSetRecursiveVisit(graph, x, y, containing, notFollowing, graph.paths().getAncestorMap(), maxPathLength);
+        return getPathBlockingSetRecursiveVisit(graph, x, y, containing, notFollowing, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
     private static Set<Node> getPathBlockingSetRecursiveVisit(Graph graph, Node x, Node y, Set<Node> containing,

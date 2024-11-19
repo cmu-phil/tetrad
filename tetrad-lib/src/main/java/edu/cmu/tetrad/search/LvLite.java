@@ -523,7 +523,7 @@ public final class LvLite implements IGraphSearch {
             Set<Node> perhapsNotFollowed = new HashSet<>();
 
             for (DiscriminatingPath path : paths) {
-                if (!pag.isDefCollider(path.getW(), path.getV(), path.getY())) {
+                if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
                     perhapsNotFollowed.add(path.getV());
                 }
             }

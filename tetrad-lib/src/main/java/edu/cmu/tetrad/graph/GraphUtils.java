@@ -3121,6 +3121,77 @@ public final class GraphUtils {
     }
 
     /**
+     * Returns D-SEP(x, y) for a MAG G. Somewhat optimized version.
+     * <p>
+     * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
+     *
+     * @param x The one endpoint.
+     * @param y The other endpoint.
+     * @param G The MAG.
+     * @return D-SEP(x, y) for MAG G.
+     */
+    public static Set<Node> dsep2(Node x, Node y, Graph G) {
+        Set<Node> dsep = new HashSet<>();
+        Set<Node> visited = new HashSet<>();
+
+        // Precompute ancestors for efficiency
+        Set<Node> ancestorsOfX = new HashSet<>(G.paths().getAncestors(x));
+        Set<Node> ancestorsOfY = new HashSet<>(G.paths().getAncestors(y));
+
+        // Initialize stack for iterative DFS
+        Deque<Node> stack = new ArrayDeque<>();
+        stack.push(x);
+
+        while (!stack.isEmpty()) {
+            Node a = stack.pop();
+
+            if (visited.contains(a)) continue;
+            visited.add(a);
+
+            for (Node b : G.getAdjacentNodes(a)) {
+                if (visited.contains(b)) continue;
+
+                // Add to D-SEP if edge does not point away
+                if (G.getEdge(a, b).getDistalEndpoint(a) != Endpoint.ARROW) {
+                    dsep.add(b);
+                }
+
+                for (Node c : G.getAdjacentNodes(b)) {
+                    if (visited.contains(c)) continue;
+
+                    // Check for collider and ancestor condition
+                    if (G.isDefCollider(a, b, c)) {
+                        if (ancestorsOfX.contains(b) || ancestorsOfY.contains(b)) {
+                            dsep.add(b);
+                            dsep.add(c);
+                            stack.push(b); // Continue exploration from b
+                        }
+                    }
+                }
+            }
+        }
+
+        dsep.remove(x);
+        dsep.remove(y);
+        return dsep;
+    }
+
+
+    // Helper class for BFS path tracking
+    static class PathElement {
+        Node current;         // Current node
+        Node previous;        // Previous node on the path
+        Node beforePrevious;  // Two steps back in the path
+
+        PathElement(Node current, Node previous, Node beforePrevious) {
+            this.current = current;
+            this.previous = previous;
+            this.beforePrevious = beforePrevious;
+        }
+    }
+
+
+    /**
      * Removes almost cycles from a graph.
      *
      * @param unshieldedColliders a set of unshielded colliders

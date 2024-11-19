@@ -1262,11 +1262,34 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Return a map from each node to its ancestors.
+     * Return a map from each node to its collection of descendants.
      *
      * @return This map.
      */
-    public Map<Node, Set<Node>> getAncestorMap() {
+    public Map<Node, Set<Node>> getDescendantsMap() {
+        Map<Node, Set<Node>> decendantsMap = new HashMap<>();
+
+        for (Node node : graph.getNodes()) {
+            decendantsMap.put(node, new HashSet<>());
+        }
+
+        for (Node n1 : graph.getNodes()) {
+            for (Node n2 : graph.getNodes()) {
+                if (isAncestor(n1, Collections.singleton(n2))) {
+                    decendantsMap.get(n1).add(n2);
+                }
+            }
+        }
+
+        return decendantsMap;
+    }
+
+    /**
+     * Return a map from each node to its collection of ancestors.
+     *
+     * @return This map.
+     */
+    public Map<Node, Set<Node>> getAncestorsMap() {
         Map<Node, Set<Node>> ancestorsMap = new HashMap<>();
 
         for (Node node : graph.getNodes()) {
@@ -1276,7 +1299,7 @@ public class Paths implements TetradSerializable {
         for (Node n1 : graph.getNodes()) {
             for (Node n2 : graph.getNodes()) {
                 if (isAncestor(n1, Collections.singleton(n2))) {
-                    ancestorsMap.get(n1).add(n2);
+                    ancestorsMap.get(n2).add(n1);
                 }
             }
         }
@@ -1387,7 +1410,7 @@ public class Paths implements TetradSerializable {
 
             if (graph.isDefCollider(a, b, c)) {
                 if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
-                    || graph.paths().isAncestor(b, selectionVariables))) {
+                      || graph.paths().isAncestor(b, selectionVariables))) {
                     continue;
                 }
             }
@@ -1401,6 +1424,7 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    // BFS
     public boolean existsInducingPath(Node x, Node y, Set<Node> selectionVariables) {
         if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException();
@@ -1416,13 +1440,8 @@ public class Paths implements TetradSerializable {
             Node a = current.previous; // Previous node
             Node b = current.current;  // Current node
 
-//            // Avoid revisiting nodes in the current path
-//            if (visited.contains(b)) {
-//                continue;
-//            }
-
-            if (visited.contains(b) && a != null) {
-                continue; // Skip fully processed nodes, but allow revisits under specific conditions
+            if (visited.contains(b)) {
+                continue;
             }
 
             visited.add(b);
@@ -1441,12 +1460,12 @@ public class Paths implements TetradSerializable {
 
                 // Check conditions for the inducing path
                 if (b.getNodeType() == NodeType.MEASURED) {
-                    if (!graph.isDefCollider(a, b, c)) {
+                    if (a != null && !graph.isDefCollider(a, b, c)) {
                         continue;
                     }
                 }
 
-                if (graph.isDefCollider(a, b, c)) {
+                if (a != null && graph.isDefCollider(a, b, c)) {
                     if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
                           || graph.paths().isAncestor(b, selectionVariables))) {
                         continue;
@@ -1472,7 +1491,6 @@ public class Paths implements TetradSerializable {
             this.previous = previous;
         }
     }
-
 
     /**
      * This method calculates the inducing path between two measured nodes in a graph.

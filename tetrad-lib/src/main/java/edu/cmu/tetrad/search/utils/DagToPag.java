@@ -92,8 +92,7 @@ public final class DagToPag {
             IntStream.range(i + 1, measured.size()).forEach(j -> {
                 Node n2 = measured.get(j);
                 if (!graph.isAdjacentTo(n1, n2)) {
-                    List<Node> inducingPath = dag.paths().getInducingPath(n1, n2, new HashSet<>(selection));
-                    if (inducingPath != null) {
+                    if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
                         graph.addEdge(Edges.nondirectedEdge(n1, n2));
                     }
                 }
