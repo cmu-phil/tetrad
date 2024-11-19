@@ -1715,6 +1715,10 @@ public class Paths implements TetradSerializable {
         return GraphUtils.dsep(x, y, graph);
     }
 
+    public Set<Node> dsepReachability(Node x, Node y) {
+        return GraphUtils.dsepReachability(x, y, graph);
+    }
+
     /**
      * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y. (author
      * Kevin V. Bui (March 2020).
@@ -2380,7 +2384,8 @@ public class Paths implements TetradSerializable {
      * @return a boolean
      */
     public boolean isAncestorOf(Node node1, Node node2) {
-        return node1 == node2 || existsDirectedPath(node1, node2);
+        return graph.isAncestorOf(node1, node2);
+//        return node1 == node2 || existsDirectedPath(node1, node2);
     }
 
     /**

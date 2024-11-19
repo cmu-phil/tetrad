@@ -3176,6 +3176,52 @@ public final class GraphUtils {
         return dsep;
     }
 
+    public static Set<Node> dsepReachability(Node x, Node y, Graph G) {
+        Set<Node> dsep = new HashSet<>();
+        Set<Node> visited = new HashSet<>();
+        Queue<Node> queue = new LinkedList<>();
+
+        // Start the reachability exploration from x
+        queue.add(x);
+        visited.add(x);
+
+        while (!queue.isEmpty()) {
+            Node current = queue.poll();
+
+            for (Node neighbor : G.getAdjacentNodes(current)) {
+                if (visited.contains(neighbor)) continue;
+
+                // Check edge validity
+                if (G.getEdge(current, neighbor).getDistalEndpoint(current) != Endpoint.ARROW) {
+                    dsep.add(neighbor);
+                    queue.add(neighbor);
+                    visited.add(neighbor);
+                } else {
+                    // Check collider conditions
+                    for (Node next : G.getAdjacentNodes(neighbor)) {
+                        if (visited.contains(next)) continue;
+
+                        if (G.isDefCollider(current, neighbor, next) &&
+                            (G.paths().isAncestorOf(neighbor, x) || G.paths().isAncestorOf(neighbor, y))) {
+                            dsep.add(neighbor);
+                            dsep.add(next);
+                            queue.add(neighbor);
+                            queue.add(next);
+                            visited.add(neighbor);
+                            visited.add(next);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Remove x and y from the D-SEP set
+        dsep.remove(x);
+        dsep.remove(y);
+
+        return dsep;
+    }
+
 
     // Helper class for BFS path tracking
     static class PathElement {

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.search.IndependenceTest;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -65,38 +66,33 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * The attributes.
      */
     private final Map<String, Object> attributes = new HashMap<>();
-
+    private final Map<Pair<Node, Node>, Boolean> ancestorRecord = new HashMap<>();
     /**
      * Map from each node to the List of edges connected to that node.
      */
     Map<Node, Set<Edge>> edgeLists;
-
     /**
      * The property change support.
      */
     private transient PropertyChangeSupport pcs;
-
     /**
      * The underline triples.
      */
     private Set<Triple> underLineTriples = new HashSet<>();
-
     /**
      * The dotted underline triples.
      */
     private Set<Triple> dottedUnderLineTriples = new HashSet<>();
-
     /**
      * The ambiguous triples.
      */
     private Set<Triple> ambiguousTriples = new HashSet<>();
 
+    //==============================CONSTUCTORS===========================//
     /**
      * The parents hash.
      */
     private Map<Node, List<Node>> parentsHash = new HashMap<>();
-
-    //==============================CONSTUCTORS===========================//
 
     /**
      * Constructs a new (empty) EdgeListGraph.
@@ -429,6 +425,25 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * Determines whether one node is an ancestor of another.
+     * @param node1 The first node.
+     * @param node2 The second node.
+     * @return True if the first node is an ancestor of the second, false if not.
+     */
+    public boolean isAncestorOf(Node node1, Node node2) {
+        Boolean ancestor = ancestorRecord.get(Pair.of(node1, node2));
+
+        if (ancestor == null) {
+            ancestor = node1 == node2 || paths().existsDirectedPath(node1, node2);
+            ancestorRecord.put(Pair.of(node1, node2), ancestor);
+        }
+
+        return ancestor;
+
+//        return node1 == node2 || paths().existsDirectedPath(node1, node2);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -748,31 +763,34 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Map<Node, Set<Edge>> edgeListMap = this.edgeLists;
 
 //        synchronized (edgeListMap) {
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
+        Node node1 = edge.getNode1();
+        Node node2 = edge.getNode2();
 
-            // Someoone may have changed the name of one of these variables, in which
-            // case we need to reconstitute the edgeLists map, since the name of a
-            // node is used part of the definition of node equality.
-            if (!edgeLists.containsKey(node1) || !edgeLists.containsKey(node2)) {
-                this.edgeLists = new HashMap<>(this.edgeLists);
-            }
+        // Someoone may have changed the name of one of these variables, in which
+        // case we need to reconstitute the edgeLists map, since the name of a
+        // node is used part of the definition of node equality.
+        if (!edgeLists.containsKey(node1) || !edgeLists.containsKey(node2)) {
+            this.edgeLists = new HashMap<>(this.edgeLists);
+        }
 
-            // System.out.println("Missing node1 is not in edgeLists: " + node1);
-            edgeLists.computeIfAbsent(node1, k -> new HashSet<>());
-            // System.out.println("Missing node2 is not in edgeLists: " + node2);
-            edgeLists.computeIfAbsent(node2, k -> new HashSet<>());
+        // System.out.println("Missing node1 is not in edgeLists: " + node1);
+        edgeLists.computeIfAbsent(node1, k -> new HashSet<>());
+        // System.out.println("Missing node2 is not in edgeLists: " + node2);
+        edgeLists.computeIfAbsent(node2, k -> new HashSet<>());
 
-            Set<Edge> edges1 = new HashSet<>(this.edgeLists.get(node1));
-            Set<Edge> edges2 = new HashSet<>(this.edgeLists.get(node2));
-            edges1.add(edge);
-            edges2.add(edge);
-            this.edgeLists.put(node1, Collections.unmodifiableSet(edges1));
-            this.edgeLists.put(node2, Collections.unmodifiableSet(edges2));
-            this.edgesSet.add(edge);
+        Set<Edge> edges1 = new HashSet<>(this.edgeLists.get(node1));
+        Set<Edge> edges2 = new HashSet<>(this.edgeLists.get(node2));
+        edges1.add(edge);
+        edges2.add(edge);
+        this.edgeLists.put(node1, Collections.unmodifiableSet(edges1));
+        this.edgeLists.put(node2, Collections.unmodifiableSet(edges2));
+        this.edgesSet.add(edge);
 
-            this.parentsHash.remove(node1);
-            this.parentsHash.remove(node2);
+        this.parentsHash.remove(node1);
+        this.parentsHash.remove(node2);
+
+
+        ancestorRecord.clear();
 //        }
 
         if (Edges.isDirectedEdge(edge)) {
@@ -782,6 +800,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
                 getPcs().firePropertyChange("nodeAdded", null, node);
             }
         }
+
 
         getPcs().firePropertyChange("edgeAdded", null, edge);
         return true;
@@ -820,6 +839,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         if (node.getNodeType() != NodeType.ERROR) {
             getPcs().firePropertyChange("nodeAdded", null, node);
         }
+
+        ancestorRecord.clear();
 
         return true;
     }
@@ -1066,6 +1087,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
             this.parentsHash.remove(edge.getNode1());
             this.parentsHash.remove(edge.getNode2());
+
+            ancestorRecord.clear();
 
             getPcs().firePropertyChange("edgeRemoved", edge, null);
             return true;

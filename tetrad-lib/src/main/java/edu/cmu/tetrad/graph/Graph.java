@@ -684,6 +684,16 @@ public interface Graph extends TetradSerializable {
      * <p>removeTriplesNotInGraph.</p>
      */
     void removeTriplesNotInGraph();
+
+    /**
+     * Determines whether one node is an ancestor of another.
+     * @param node1 The first node.
+     * @param node2 The second node.
+     * @return True if the first node is an ancestor of the second, false if not.
+     */
+    default boolean isAncestorOf(Node node1, Node node2) {
+        return node1 == node2 || paths().existsDirectedPath(node1, node2);
+    }
 }
 
 
