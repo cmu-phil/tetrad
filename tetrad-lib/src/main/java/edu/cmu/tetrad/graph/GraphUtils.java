@@ -3067,7 +3067,7 @@ public final class GraphUtils {
         Set<Node> dsep = new HashSet<>();
         Set<Node> path = new HashSet<>();
 
-        dsepFollowPath2(x, x, y, dsep, path, G);
+        dsepFollowPath(x, x, y, dsep, path, G);
 
         dsep.remove(x);
         dsep.remove(y);
@@ -3086,7 +3086,7 @@ public final class GraphUtils {
      * @param path The current path.
      * @param G    The MAG.
      */
-    private static void dsepFollowPath2(Node a, Node x, Node y, Set<Node> dsep, Set<Node> path, Graph G) {
+    private static void dsepFollowPath(Node a, Node x, Node y, Set<Node> dsep, Set<Node> path, Graph G) {
 
         if (path.contains(a)) return;
         path.add(a);
@@ -3107,7 +3107,7 @@ public final class GraphUtils {
                     if (G.paths().isAncestorOf(b, x) || G.paths().isAncestorOf(b, y)) {
                         dsep.add(b);
                         dsep.add(c);
-                        dsepFollowPath2(b, x, y, dsep, path, G);
+                        dsepFollowPath(b, x, y, dsep, path, G);
                     }
                 }
 
