@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.AndersonDarlingTest;
@@ -2716,7 +2716,7 @@ public final class GraphUtils {
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                     Set<Triple> unshieldedColliders,Set<Triple> extraUnshieldedColliders , boolean checkCyclicity,
+                                     Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders, boolean checkCyclicity,
                                      boolean verbose, Set<Node> selection) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
@@ -3222,21 +3222,6 @@ public final class GraphUtils {
         return dsep;
     }
 
-
-    // Helper class for BFS path tracking
-    static class PathElement {
-        Node current;         // Current node
-        Node previous;        // Previous node on the path
-        Node beforePrevious;  // Two steps back in the path
-
-        PathElement(Node current, Node previous, Node beforePrevious) {
-            this.current = current;
-            this.previous = previous;
-            this.beforePrevious = beforePrevious;
-        }
-    }
-
-
     /**
      * Removes almost cycles from a graph.
      *
@@ -3260,7 +3245,12 @@ public final class GraphUtils {
         unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
         fciOrient.setInitialAllowedColliders(null);
 
-        while (true) {
+        Set<Edge> _almostCycles = new HashSet<>();
+
+        int round = 0;
+
+        while (!Thread.currentThread().isInterrupted()) {
+            round++;
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
             // Make a list of all <x, y> where x ↔ y and x ~~> y.
@@ -3278,13 +3268,16 @@ public final class GraphUtils {
                 }
             }
 
-            if (almostCyclesSet.isEmpty()) {
+            if (almostCyclesSet.equals(_almostCycles)) {
                 break;
             }
 
+            _almostCycles = new HashSet<>(almostCyclesSet);
+
             if (verbose) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("Almost cycles: ");
+
+                sb.append("Almost cycles round ").append(round).append(": ");
 
                 for (Edge _almostCycle : almostCyclesSet) {
                     sb.append(_almostCycle.getNode1()).append(" ~~> ").append(_almostCycle.getNode2()).append(" ");
@@ -3295,7 +3288,7 @@ public final class GraphUtils {
                 TetradLogger.getInstance().log("# almost cycles = " + almostCyclesSet.size());
             }
 
-            almostCyclesSet.parallelStream().forEach(almostCycle -> {
+            for (Edge almostCycle : almostCyclesSet) {
 
                 Node x = almostCycle.getNode1();
                 Node y = almostCycle.getNode2();
@@ -3304,34 +3297,28 @@ public final class GraphUtils {
                 Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
 
                 // Synchronize or use concurrent collections for `unshieldedColliders`
-                synchronized (extraUnshieldedColliders) {
-                    for (Triple triple : new HashSet<>(extraUnshieldedColliders)) {
-                        if (triple.getY().equals(x) && triple.getZ().equals(y)) {
-                            if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
-                                unshieldedColliders.remove(triple);
-                                unshieldedTriplesIntoX.add(triple);
-                                anyChange.set(true);
-                                break;
-                            }
-                        } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
-                            if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
-                                unshieldedColliders.remove(triple);
-                                unshieldedTriplesIntoX.add(triple);
-                                anyChange.set(true);
-                                break;
-                            }
+                for (Triple triple : new HashSet<>(extraUnshieldedColliders)) {
+                    if (triple.getY().equals(x) && triple.getZ().equals(y)) {
+                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
+                            unshieldedColliders.remove(triple);
+                            unshieldedTriplesIntoX.add(triple);
+                            anyChange.set(true);
+                        }
+                    } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
+                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
+                            unshieldedColliders.remove(triple);
+                            unshieldedTriplesIntoX.add(triple);
+                            anyChange.set(true);
                         }
                     }
                 }
 
                 // Synchronize or use concurrent collections for logging and other shared resources
                 if (!unshieldedColliders.isEmpty() && verbose) {
-                    synchronized (TetradLogger.getInstance()) {
-                        TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
-                        TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
-                    }
+                    TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
+                    TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
                 }
-            });
+            }
 
             if (verbose) {
                 TetradLogger.getInstance().log("Done removing almost cycles this round.");
@@ -3366,7 +3353,7 @@ public final class GraphUtils {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("All done removing almost cycles.");
+            TetradLogger.getInstance().log("All done removing almost cycles, round " + round + ".");
         }
 
         return anyChange;
@@ -3682,6 +3669,19 @@ public final class GraphUtils {
          * The PAG graph type.
          */
         PAG
+    }
+
+    // Helper class for BFS path tracking
+    static class PathElement {
+        Node current;         // Current node
+        Node previous;        // Previous node on the path
+        Node beforePrevious;  // Two steps back in the path
+
+        PathElement(Node current, Node previous, Node beforePrevious) {
+            this.current = current;
+            this.previous = previous;
+            this.beforePrevious = beforePrevious;
+        }
     }
 
     /**
