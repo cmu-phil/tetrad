@@ -2252,22 +2252,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                     text.append("</html>");
 
-                    setEdgeToolTip(edge, text.toString());
+                  setEdgeToolTip(edge, text.toString());
                 }
             }
         } else if (source instanceof DisplayNode displayNode) {
             Node node = displayNode.getModelNode();
             if (this.graph.containsNode(node)) {
                 Map<String, Object> attributes = node.getAllAttributes();
-                if (!attributes.isEmpty()) {
-                    StringBuilder attribute = new StringBuilder();
+                if (!attributes.isEmpty()) {                    StringBuilder attribute = new StringBuilder();
                     for (String key : attributes.keySet()) {
                         Object value = attributes.get(key);
                         attribute.append(key).append(": ").append(value).append("<br>");
                     }
 
                     String text = "<html>Node: " + node.getName() + "<br>" + attribute;
-
                     setNodeToolTip(node, text);
                 }
             }
