@@ -827,7 +827,7 @@ public class Paths implements TetradSerializable {
     }
 
     private void treks(Node node1, Node node2, LinkedList<Node> path, List<List<Node>> paths, int maxLength) {
-        if (maxLength != -1 && path.size() > maxLength - 2) {
+        if (maxLength != -1 && path.size() > maxLength - 1) {
             return;
         }
 

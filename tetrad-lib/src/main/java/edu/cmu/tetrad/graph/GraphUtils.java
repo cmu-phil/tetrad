@@ -2665,7 +2665,8 @@ public final class GraphUtils {
     }
 
     /**
-     * Determines if the given bidirected edge has a latent confounder in the true graph.
+     * Determines if the given bidirected edge has a latent confounder in the true graph--that is,
+     * whether for X &lt;-&gt; Y there is a latent node Z such that X &lt;- (Z) -&gt; Y.
      *
      * @param edge      The edge to check.
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
@@ -2680,7 +2681,7 @@ public final class GraphUtils {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
-        List<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+        List<List<Node>> treks = trueGraph.paths().treks(x, y, 3);
         boolean existsLatentConfounder = false;
 
         for (List<Node> trek : treks) {
