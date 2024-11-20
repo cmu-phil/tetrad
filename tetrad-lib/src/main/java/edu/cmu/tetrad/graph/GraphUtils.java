@@ -1142,7 +1142,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Adds markups for edge specializations for the edges in the given graph.
+     * Adds markups for edge specializations for the edges in the given graph. This used to be called PAG coloring.
      *
      * @param graph The graph to which PAG edge specialization markups will be added.
      */
@@ -1163,7 +1163,15 @@ public final class GraphUtils {
             Edge xyEdge = graph.getEdge(x, y);
             graph.removeEdge(xyEdge);
 
-            if (!new Paths(graph).existsSemiDirectedPath(x, y)) {
+            boolean existsSemidirectedPath = false;
+
+            if (graph instanceof EdgeListGraph) {
+                existsSemidirectedPath = graph.existsSemidirectedPath(x, y);
+            } else {
+                existsSemidirectedPath = new Paths(graph).existsSemiDirectedPath(x, y);
+            }
+
+            if (existsSemidirectedPath) {
                 edge.addProperty(Property.dd); // green.
             } else {
                 edge.addProperty(Property.pd); // blue
@@ -2766,7 +2774,7 @@ public final class GraphUtils {
 
         // This uses the discriminating path rule using DSEP.
         _fciOrient.setDoR4(true);
-        _fciOrient.finalOrientation(pag);
+//        _fciOrient.finalOrientation(pag);
 
         if (!anyChange.get()) {
             if (verbose) {

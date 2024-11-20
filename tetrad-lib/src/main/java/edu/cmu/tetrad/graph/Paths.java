@@ -2163,14 +2163,15 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * A helper method for the defVisible method.
+     * A helper method for the defVisible method. This implementation uses depth-first search and can be slow
+     * for large graphs.
      *
      * @param from the starting node of the path
      * @param to   the target node of the path
      * @param into the nodes that colliders along the path must all be parents of
      * @return true if a collider path exists from 'from' to 'to' that is into 'into'
      */
-    private boolean existsColliderPathInto(Node from, Node to, Node into) {
+    private boolean existsColliderPathIntoDfs(Node from, Node to, Node into) {
         Set<Node> visited = new HashSet<>();
         List<Node> currentPath = new ArrayList<>();
 
@@ -2214,6 +2215,57 @@ public class Paths implements TetradSerializable {
 
         return false;
     }
+
+    /**
+     * A helper method for the defVisible method, using BFS.
+     *
+     * @param from the starting node of the path
+     * @param to   the target node of the path
+     * @param into the nodes that colliders along the path must all be parents of
+     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
+     */
+    private boolean existsColliderPathInto(Node from, Node to, Node into) {
+        Set<Node> visited = new HashSet<>();
+        Queue<List<Node>> queue = new LinkedList<>(); // Queue to store paths as lists
+
+        // Initialize the queue with the starting node
+        List<Node> initialPath = new ArrayList<>();
+        initialPath.add(from);
+        queue.add(initialPath);
+
+        while (!queue.isEmpty()) {
+            List<Node> currentPath = queue.poll();
+            Node current = currentPath.get(currentPath.size() - 1);
+
+            if (current.equals(to)) {
+                // Check if the path ends in an arrow pointing to 'to'
+                if (currentPath.size() > 1 &&
+                    graph.getEndpoint(currentPath.get(currentPath.size() - 2), to) == Endpoint.ARROW) {
+                    return true;
+                }
+            }
+
+            if (!visited.contains(current)) {
+                visited.add(current);
+
+                for (Node next : graph.getAdjacentNodes(current)) {
+                    Node previous = currentPath.size() > 1 ? currentPath.get(currentPath.size() - 2) : null;
+
+                    if (!visited.contains(next) &&
+                        (previous == null || (graph.isDefCollider(previous, current, next)
+                                              && graph.isParentOf(current, into)))) {
+                        // Create a new path extending the current path
+                        List<Node> newPath = new ArrayList<>(currentPath);
+                        newPath.add(next);
+                        queue.add(newPath);
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      * <p>existsDirectedCycle.</p>
