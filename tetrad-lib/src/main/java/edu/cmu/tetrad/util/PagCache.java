@@ -2,6 +2,7 @@ package edu.cmu.tetrad.util;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.utils.DagToPag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +51,8 @@ public class PagCache {
         if (cache.containsKey(graph)) {
             return cache.get(graph);
         } else {
-            Graph pag = GraphTransforms.dagToPag(graph);
+            DagToPag dagToPag = new DagToPag(graph);
+            Graph pag = dagToPag.convert();
             cache.put(graph, pag);
             return pag;
         }

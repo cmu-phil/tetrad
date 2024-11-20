@@ -3,6 +3,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.CombinationGenerator;
+import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -371,7 +372,8 @@ public class GraphTransforms {
      */
     @NotNull
     public static Graph dagToPag(Graph trueGraph) {
-        return new DagToPag(trueGraph).convert();
+        return PagCache.getInstance().getPag(trueGraph);
+//        return new DagToPag(trueGraph).convert();
     }
 
     /**
