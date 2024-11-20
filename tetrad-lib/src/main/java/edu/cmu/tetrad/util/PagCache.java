@@ -13,6 +13,12 @@ import java.util.WeakHashMap;
 public class PagCache {
 
     /**
+     * Private constructor to prevent instantiation of the PagCache class.
+     */
+    private PagCache() {
+    }
+
+    /**
      * A singleton instance of the PagCache class. This ensures that only one instance of the cache exists at any given
      * time.
      */
@@ -64,6 +70,17 @@ public class PagCache {
         }
     }
 
+    /**
+     * Returns the PAG (Partial Ancestral Graph) corresponding to the given DAG (Directed Acyclic Graph). If the
+     * conversion has already been performed earlier, the cached result will be returned. Otherwise, the DAG will be
+     * converted to a PAG, cached, and then returned.
+     *
+     * @param graph     the input DAG to be transformed into a PAG
+     * @param knowledge the knowledge that should be used for the conversion
+     * @param verbose   whether to print verbose output
+     * @return the corresponding PAG of the input DAG
+     * @throws IllegalArgumentException if the input graph is not a DAG
+     */
     public Graph getPag(Graph graph, Knowledge knowledge, boolean verbose) {
         if (!graph.paths().isLegalDag()) {
             throw new IllegalArgumentException("Graph must be a DAG.");

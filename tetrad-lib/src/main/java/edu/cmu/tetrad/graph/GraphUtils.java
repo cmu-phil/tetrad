@@ -2673,8 +2673,8 @@ public final class GraphUtils {
     }
 
     /**
-     * Determines if the given bidirected edge has a latent confounder in the true graph--that is,
-     * whether for X &lt;-&gt; Y there is a latent node Z such that X &lt;- (Z) -&gt; Y.
+     * Determines if the given bidirected edge has a latent confounder in the true graph--that is, whether for X
+     * &lt;-&gt; Y there is a latent node Z such that X &lt;- (Z) -&gt; Y.
      *
      * @param edge      The edge to check.
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
@@ -2714,13 +2714,14 @@ public final class GraphUtils {
      * <p>
      * TODO: this method is in a bit of a state of flux as various ideas are tried for repairing PAGs
      *
-     * @param pag                 the faulty PAG to be repaired
-     * @param fciOrient           the FciOrient object used for final orientation
-     * @param knowledge           the knowledge object used for orientation
-     * @param unshieldedColliders the set of unshielded colliders to be updated
-     * @param checkCyclicity      indicates whether or not to check for cyclicity
-     * @param verbose             indicates whether or not to print verbose output
-     * @param selection           the set of nodes to consider for selection
+     * @param pag                      the faulty PAG to be repaired
+     * @param fciOrient                the FciOrient object used for final orientation
+     * @param knowledge                the knowledge object used for orientation
+     * @param unshieldedColliders      the set of unshielded colliders to be updated
+     * @param extraUnshieldedColliders the set of extra unshielded colliders oriented after the initial scoring step.
+     * @param checkCyclicity           indicates whether or not to check for cyclicity
+     * @param verbose                  indicates whether or not to print verbose output
+     * @param selection                the set of nodes to consider for selection
      * @return the repaired PAG
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
@@ -3185,6 +3186,16 @@ public final class GraphUtils {
         return dsep;
     }
 
+    /**
+     * Returns D-SEP(x, y) for a MAG G. This method implements a reachability style.
+     * <p>
+     * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
+     *
+     * @param x The one endpoint.
+     * @param y The other endpoint.
+     * @param G The MAG.
+     * @return D-SEP(x, y) for MAG G.
+     */
     public static Set<Node> dsepReachability(Node x, Node y, Graph G) {
         Set<Node> dsep = new HashSet<>();
         Set<Node> visited = new HashSet<>();
@@ -3234,11 +3245,12 @@ public final class GraphUtils {
     /**
      * Removes almost cycles from a graph.
      *
-     * @param unshieldedColliders a set of unshielded colliders
-     * @param fciOrient           the FciOrient object
-     * @param pag                 the graph
-     * @param knowledge           the knowledge base
-     * @param verbose             a flag indicating whether to log verbose output
+     * @param unshieldedColliders      a set of unshielded colliders
+     * @param extraUnshieldedColliders a set of unshielded colliders oriented after the initial scoring step.
+     * @param fciOrient                the FciOrient object
+     * @param pag                      the graph
+     * @param knowledge                the knowledge base
+     * @param verbose                  a flag indicating whether to log verbose output
      * @return AtomicBoolean(true) if any almost cycles were removed, AtomicBoolean(false) otherwise
      */
     public static AtomicBoolean removeAlmostCycles(Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders, FciOrient fciOrient,

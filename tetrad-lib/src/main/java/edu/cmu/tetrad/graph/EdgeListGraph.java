@@ -66,8 +66,14 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * The attributes.
      */
     private final Map<String, Object> attributes = new HashMap<>();
-    private final Map<Pair<Node, Node>, Boolean> ancestorRecord = new HashMap<>();
-    private final Map<Pair<Node, Node>, Boolean> semidirectedPathRecord = new HashMap<>();
+    /**
+     * The cache for the ancestor relationships
+     */
+    private final Map<Pair<Node, Node>, Boolean> ancestorCache = new HashMap<>();
+    /**
+     * The cache for the semidirected path relationships
+     */
+    private final Map<Pair<Node, Node>, Boolean> semidirectedPathCache = new HashMap<>();
     /**
      * Map from each node to the List of edges connected to that node.
      */
@@ -432,11 +438,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return True if the first node is an ancestor of the second, false if not.
      */
     public boolean isAncestorOf(Node node1, Node node2) {
-        Boolean ancestor = ancestorRecord.get(Pair.of(node1, node2));
+        Boolean ancestor = ancestorCache.get(Pair.of(node1, node2));
 
         if (ancestor == null) {
             ancestor = node1 == node2 || paths().existsDirectedPath(node1, node2);
-            ancestorRecord.put(Pair.of(node1, node2), ancestor);
+            ancestorCache.put(Pair.of(node1, node2), ancestor);
         }
 
         return ancestor;
@@ -449,11 +455,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return True if the first node is an ancestor of the second, false if not.
      */
     public boolean existsSemidirectedPath(Node node1, Node node2) {
-        Boolean pathExists = semidirectedPathRecord.get(Pair.of(node1, node2));
+        Boolean pathExists = semidirectedPathCache.get(Pair.of(node1, node2));
 
         if (pathExists == null) {
             pathExists = paths().existsSemiDirectedPath(node1, node2);
-            semidirectedPathRecord.put(Pair.of(node1, node2), pathExists);
+            semidirectedPathCache.put(Pair.of(node1, node2), pathExists);
         }
 
         return pathExists;
@@ -806,8 +812,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.parentsHash.remove(node2);
 
 
-        ancestorRecord.clear();
-        semidirectedPathRecord.clear();
+        ancestorCache.clear();
+        semidirectedPathCache.clear();
 //        }
 
         if (Edges.isDirectedEdge(edge)) {
@@ -857,8 +863,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             getPcs().firePropertyChange("nodeAdded", null, node);
         }
 
-        ancestorRecord.clear();
-        semidirectedPathRecord.clear();
+        ancestorCache.clear();
+        semidirectedPathCache.clear();
 
         return true;
     }
@@ -1106,8 +1112,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             this.parentsHash.remove(edge.getNode1());
             this.parentsHash.remove(edge.getNode2());
 
-            ancestorRecord.clear();
-            semidirectedPathRecord.clear();
+            ancestorCache.clear();
+            semidirectedPathCache.clear();
 
             getPcs().firePropertyChange("edgeRemoved", edge, null);
             return true;

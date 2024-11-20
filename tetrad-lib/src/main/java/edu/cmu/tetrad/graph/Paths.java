@@ -1422,7 +1422,14 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    // BFS
+    /**
+     * Determines whether an inducing path exists between two nodes in a graph. This is a breadth-first implementation.
+     *
+     * @param x                  the first node in the graph
+     * @param y                  the second node in the graph
+     * @param selectionVariables the set of selection variables
+     * @return true if an inducing path exists, false if not
+     */
     public boolean existsInducingPath(Node x, Node y, Set<Node> selectionVariables) {
         if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException();
@@ -1477,17 +1484,6 @@ public class Paths implements TetradSerializable {
 
         // If the queue is exhausted, no inducing path exists
         return false;
-    }
-
-    // Helper class to represent an element in the BFS queue
-    static class PathElement {
-        Node current;  // The current node
-        Node previous; // The previous node on the path
-
-        PathElement(Node current, Node previous) {
-            this.current = current;
-            this.previous = previous;
-        }
     }
 
     /**
@@ -1713,10 +1709,6 @@ public class Paths implements TetradSerializable {
         return GraphUtils.dsep(x, y, graph);
     }
 
-    public Set<Node> dsepReachability(Node x, Node y) {
-        return GraphUtils.dsepReachability(x, y, graph);
-    }
-
     /**
      * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y. (author
      * Kevin V. Bui (March 2020).
@@ -1783,7 +1775,6 @@ public class Paths implements TetradSerializable {
 
         return null;
     }
-
 
     private boolean separates(Node x, Node y, boolean allowSelectionBias, Set<Node> combination) {
         if (graph.getNumEdges(x) < graph.getNumEdges(y)) {
@@ -1939,7 +1930,6 @@ public class Paths implements TetradSerializable {
 
         return true;
     }
-
 
     /**
      * Checks if the given path is an m-connecting path.
@@ -2163,8 +2153,8 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * A helper method for the defVisible method. This implementation uses depth-first search and can be slow
-     * for large graphs.
+     * A helper method for the defVisible method. This implementation uses depth-first search and can be slow for large
+     * graphs.
      *
      * @param from the starting node of the path
      * @param to   the target node of the path
@@ -2266,7 +2256,6 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-
     /**
      * <p>existsDirectedCycle.</p>
      *
@@ -2315,8 +2304,8 @@ public class Paths implements TetradSerializable {
     /**
      * Checks if a directed path exists between two nodes in a graph, ignoring a specified edge.
      *
-     * @param node1 the starting node of the path
-     * @param node2 the target node of the path
+     * @param node1   the starting node of the path
+     * @param node2   the target node of the path
      * @param without the edge to ignore. If null, no edge is ignored.
      * @return true if a directed path exists from node1 to node2, false otherwise
      */
@@ -2835,6 +2824,17 @@ public class Paths implements TetradSerializable {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
                                            + ", " + e.getMessage());
             throw e;
+        }
+    }
+
+    // Helper class to represent an element in the BFS queue
+    static class PathElement {
+        Node current;  // The current node
+        Node previous; // The previous node on the path
+
+        PathElement(Node current, Node previous) {
+            this.current = current;
+            this.previous = previous;
         }
     }
 
