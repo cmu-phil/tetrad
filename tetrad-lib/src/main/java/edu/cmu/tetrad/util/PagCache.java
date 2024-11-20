@@ -1,11 +1,13 @@
 package edu.cmu.tetrad.util;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.DagToPag;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * A cache for storing PAGs so that the only need to be calculated once per DAG.
@@ -21,7 +23,7 @@ public class PagCache {
     /**
      * A map that stores the PAGs corresponding to the DAGs.
      */
-    private final Map<Graph, Graph> cache = new HashMap<>();
+    private final Map<Graph, Graph> cache = new WeakHashMap<>();
 
     /**
      * Returns the singleton instance of the PagCache.
@@ -42,6 +44,23 @@ public class PagCache {
      * @throws IllegalArgumentException if the input graph is not a DAG
      */
     public Graph getPag(Graph graph) {
+        if (!(graph.paths().isLegalDag() || graph.paths().isLegalMag())) {
+            throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
+        }
+
+        // If the graph is already in the cache, return it; otherwise, call GraphTransforms.dagToPag(graph)
+        // to get the PAG and put it into the cache.
+        if (cache.containsKey(graph)) {
+            return cache.get(graph);
+        } else {
+            DagToPag dagToPag = new DagToPag(graph);
+            Graph pag = dagToPag.convert();
+            cache.put(graph, pag);
+            return pag;
+        }
+    }
+
+    public Graph getPag(Graph graph, Knowledge knowledge, boolean verbose) {
         if (!graph.paths().isLegalDag()) {
             throw new IllegalArgumentException("Graph must be a DAG.");
         }
@@ -52,6 +71,8 @@ public class PagCache {
             return cache.get(graph);
         } else {
             DagToPag dagToPag = new DagToPag(graph);
+            dagToPag.setKnowledge(knowledge);
+            dagToPag.setVerbose(verbose);
             Graph pag = dagToPag.convert();
             cache.put(graph, pag);
             return pag;

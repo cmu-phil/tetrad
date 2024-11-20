@@ -4,10 +4,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.TaskManager;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.TetradSerializable;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
@@ -313,7 +310,8 @@ public class Paths implements TetradSerializable {
             Graph pag = GraphTransforms.dagToPag(g);
 
             if (pag.paths().isLegalPag()) {
-                Graph __g = new DagToPag(graph).convert();
+                Graph __g = PagCache.getInstance().getPag(graph);
+//                Graph __g = new DagToPag(graph).convert();
 
                 if (__g.paths().isLegalPag()) {
                     Graph _g = new EdgeListGraph(g);
