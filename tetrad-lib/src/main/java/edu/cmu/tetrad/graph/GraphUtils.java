@@ -3268,7 +3268,6 @@ public final class GraphUtils {
                 // Find all unshielded triples z *→ x ↔ y in subsequentUnshieldedColliders
                 Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
 
-                // Synchronize or use concurrent collections for `unshieldedColliders`
                 for (Triple triple : new HashSet<>(extraUnshieldedColliders)) {
                     if (triple.getY().equals(x) && triple.getZ().equals(y)) {
                         if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
@@ -3287,7 +3286,6 @@ public final class GraphUtils {
                     }
                 }
 
-                // Synchronize or use concurrent collections for logging and other shared resources
                 if (!unshieldedColliders.isEmpty() && verbose) {
                     TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
                     TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
