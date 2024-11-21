@@ -2741,45 +2741,8 @@ public final class GraphUtils {
         boolean changed = changed1 || changed2 || changed3;
 
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
-
-//        GraphSearchUtils.LegalMagRet ret = GraphSearchUtils.isLegalMag(mag, new HashSet<>(selection));
-//
-//        if (!ret.isLegalMag()) {
-//            throw new IllegalArgumentException("Not a legal MAG, reason = " + ret.getReason());
-//        }
-
         DagToPag dagToPag = new DagToPag(mag);
         Graph pag2 = dagToPag.convert();
-
-//        Graph pag2 = GraphTransforms.dagToPag(mag);
-
-//        if (true) return mag;
-//
-//        reorientWithCircles(pag, verbose);
-//        doRequiredOrientations(fciOrient, pag, pag.getNodes(), knowledge, verbose);
-//        recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-//
-//        fciOrient.setVerbose(true);
-//        fciOrient.setKnowledge(knowledge);
-//        fciOrient.setAllowedColliders(unshieldedColliders);
-//        fciOrient.setDoR4(true);
-//        fciOrient.finalOrientation(pag);
-//
-//        if (verbose) {
-//            TetradLogger.getInstance().log("Doing final DAG to PAG orientation...");
-//        }
-
-//        // Use the final R0R4 strategy from DAG to PAG, which does final orientation using DSEP for both R0 and
-//        // R4. This is the DAG to PAG strategy, which we repeat here for clarity. jdramsey 2024-8-13.
-//        FciOrient _fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
-//        _fciOrient.setVerbose(verbose);
-//
-//        // This is R0 using DSEP
-//        _fciOrient.ruleR0(pag, new HashSet<>());
-//
-//        // This uses the discriminating path rule using DSEP.
-//        _fciOrient.setDoR4(true);
-//        _fciOrient.finalOrientation(pag);
 
         if (!changed) {
             if (verbose) {
