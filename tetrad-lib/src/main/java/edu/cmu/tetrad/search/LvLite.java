@@ -421,7 +421,7 @@ public final class LvLite implements IGraphSearch {
         extraUnshieldedColliders.removeAll(_unshieldedColliders);
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, extraUnshieldedColliders, false, verbose, new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, extraUnshieldedColliders, verbose, new HashSet<>());
         }
 
         long stop3 = System.currentTimeMillis();
