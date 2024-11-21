@@ -2738,7 +2738,8 @@ public final class GraphUtils {
         boolean changed1 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
         boolean changed2 = repairMaximality(pag, fciOrient, verbose, selection);
         boolean changed3 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
-        boolean changed = changed1 || changed2 || changed3;
+        boolean changed4 = repairMaximality(pag, fciOrient, verbose, selection);
+        boolean changed = changed1 || changed2 || changed3 || changed4;
 
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
         DagToPag dagToPag = new DagToPag(mag);
@@ -3323,10 +3324,10 @@ public final class GraphUtils {
             if (verbose) {
                 TetradLogger.getInstance().log("Finished final orientation.");
             }
-        }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("All done removing almost cycles, round " + round + ".");
+            if (verbose) {
+                TetradLogger.getInstance().log("All done removing almost cycles, round " + round + ".");
+            }
         }
 
         return changed;
