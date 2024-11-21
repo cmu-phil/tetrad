@@ -47,8 +47,8 @@ public class EnsureMarkov {
     /**
      * Constructs an EnsureMarkov class for a given Markov dag.
      *
-     * @param dag The initial Markov dag. This dag should pass a local Markov check.
-     * @param test  The independence test to use.
+     * @param dag  The initial Markov dag. This dag should pass a local Markov check.
+     * @param test The independence test to use.
      */
     public EnsureMarkov(Graph dag, IndependenceTest test) {
         this.dag = new EdgeListGraph(dag);
@@ -56,13 +56,15 @@ public class EnsureMarkov {
     }
 
     /**
-     * Adjusts the p-values for a local Markov condition in a given constraint-based partially directed acyclic graph (CPDAG).
+     * Adjusts the p-values for a local Markov condition in a given constraint-based partially directed acyclic graph
+     * (CPDAG).
      *
-     * @param cpdag the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
+     * @param cpdag        the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
      * @param ensureMarkov a boolean flag indicating if the Markov condition should be ensured; should be true
-     * @param test the independence test to be used; must not be null and not an instance of MsepTest
-     * @param pValues a map of node pairs to sets of p-values used for adjustment
-     * @param withoutPair a pair of nodes for which adjustments are calculated without considering the edge between them
+     * @param test         the independence test to be used; must not be null and not an instance of MsepTest
+     * @param pValues      a map of node pairs to sets of p-values used for adjustment
+     * @param withoutPair  a pair of nodes for which adjustments are calculated without considering the edge between
+     *                     them
      * @return a map of node pairs to sets of adjusted p-values
      * @throws IllegalArgumentException if ensureMarkov is false or if the test is null or an instance of MsepTest
      */
@@ -112,8 +114,8 @@ public class EnsureMarkov {
             if (!parentsX.contains(_y) && !cpdag.paths().existsDirectedPath(x, _y, withoutPair)) {
                 IndependenceResult result = test.checkIndependence(x, _y, parentsX);
 //                if (msep.checkIndependence(x, _y, parentsX).isIndependent()) {
-                    _pValues.putIfAbsent(Pair.of(x, _y), new HashSet<>());
-                    _pValues.get(Pair.of(x, _y)).add(result.getPValue());
+                _pValues.putIfAbsent(Pair.of(x, _y), new HashSet<>());
+                _pValues.get(Pair.of(x, _y)).add(result.getPValue());
 //                }
             }
         }
@@ -126,8 +128,8 @@ public class EnsureMarkov {
             if (!parentsY.contains(_x) && !cpdag.paths().existsDirectedPath(y, _x, withoutPair)) {
                 IndependenceResult result = test.checkIndependence(y, _x, parentsY);
 //                if (msep.checkIndependence(y, _x, parentsY).isIndependent()) {
-                    _pValues.putIfAbsent(Pair.of(y, _x), new HashSet<>());
-                    _pValues.get(Pair.of(y, _x)).add(result.getPValue());
+                _pValues.putIfAbsent(Pair.of(y, _x), new HashSet<>());
+                _pValues.get(Pair.of(y, _x)).add(result.getPValue());
 //                }
             }
         }
@@ -166,7 +168,7 @@ public class EnsureMarkov {
     public boolean markovIndependence(Node x, Node y, Set<Node> z) {
         IndependenceResult result = test.checkIndependence(x, y, z);
 
-        if (result.isIndependent()  ) {
+        if (result.isIndependent()) {
             if (ensureMarkov) {
                 Map<Pair<Node, Node>, Set<Double>> _pValues = localMarkovAdjustPValues(dag, ensureMarkov,
                         test, pValues, Pair.of(x, y));

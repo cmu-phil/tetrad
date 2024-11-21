@@ -447,7 +447,6 @@ public class FciOrient {
                         continue;
                     }
 
-
                     setEndpoint(graph, a, b, Endpoint.ARROW);
                     setEndpoint(graph, c, b, Endpoint.ARROW);
 

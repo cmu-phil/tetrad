@@ -41,7 +41,6 @@ import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static edu.cmu.tetrad.search.utils.DagToPag.getFinalStrategyUsingDsep;
 
@@ -2732,33 +2731,23 @@ public final class GraphUtils {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
-        pag = new EdgeListGraph(pag);
+//        pag = new EdgeListGraph(pag);
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
         fciOrient.setKnowledge(knowledge);
 
-        AtomicBoolean anyChange = removeAlmostCycles(unshieldedColliders, extraUnshieldedColliders, fciOrient, pag, knowledge, verbose);
+        // Repair almost cycles and repair maximality. We assume here that there are no cycles in the graph.
+        boolean changed1 = removeAlmostCycles(unshieldedColliders, extraUnshieldedColliders, fciOrient, mag, knowledge, verbose);
+        boolean changed2 = repairMaximality(mag, verbose, selection);
+        boolean changed = changed1 || changed2;
 
-        if (checkCyclicity) {
-            AtomicBoolean b = removeCycles(extraUnshieldedColliders, fciOrient, pag, knowledge, verbose);
+        reorientWithCircles(pag, verbose);
+        doRequiredOrientations(fciOrient, pag, pag.getNodes(), knowledge, verbose);
+        recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
-            if (b.get()) {
-                anyChange.set(true);
-            }
-
-//            anyChange = b || anyChange;
-        }
-
-        AtomicBoolean anyChange1 = repairMaximality(pag, verbose, anyChange, selection);
-
-//        reorientWithCircles(pag, verbose);
-//        doRequiredOrientations(fciOrient, pag, pag.getNodes(), knowledge, verbose);
-//        recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-//
-        fciOrient.setVerbose(false);
+        fciOrient.setVerbose(true);
         fciOrient.setAllowedColliders(unshieldedColliders);
         fciOrient.setDoR4(true);
         fciOrient.finalOrientation(pag);
-
-        anyChange.set(anyChange1.get() || anyChange.get());
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing final DAG to PAG orientation...");
@@ -2766,18 +2755,17 @@ public final class GraphUtils {
 
         // Use the final R0R4 strategy from DAG to PAG, which does final orientation using DSEP for both R0 and
         // R4. This is the DAG to PAG strategy, which we repeat here for clarity. jdramsey 2024-8-13.
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
         FciOrient _fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
         _fciOrient.setVerbose(verbose);
 
-//        // This is R0 using DSEP
-//        _fciOrient.ruleR0(pag, new HashSet<>());
+        // This is R0 using DSEP
+        _fciOrient.ruleR0(pag, new HashSet<>());
 
         // This uses the discriminating path rule using DSEP.
         _fciOrient.setDoR4(true);
-//        _fciOrient.finalOrientation(pag);
+        _fciOrient.finalOrientation(pag);
 
-        if (!anyChange.get()) {
+        if (!changed) {
             if (verbose) {
                 TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
             }
@@ -2790,11 +2778,21 @@ public final class GraphUtils {
         return pag;
     }
 
-    private static AtomicBoolean repairMaximality(Graph pag, boolean verbose, AtomicBoolean anyChange,
-                                                  Set<Node> selection) {
+    /**
+     * Adds nondirected edges to the graph required for maximality. An edge x o-o y is added if there is an inducing
+     * path between x and y. These will be oriented later.
+     *
+     * @param pag      the graph to be repaired
+     * @param verbose  indicates whether to print verbose output
+     * @param selection the set of selection nodes to consider for selection
+     */
+    private static boolean repairMaximality(Graph pag, boolean verbose,
+                                            Set<Node> selection) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing maximality...");
         }
+
+        boolean changed = false;
 
         // Repair maximality.
         for (Node x : pag.getNodes()) {
@@ -2802,40 +2800,11 @@ public final class GraphUtils {
                 if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, selection)) {
                     pag.addNondirectedEdge(x, y);
 
-//                    if (!pag.paths().existsDirectedPath(x, y)) {
-//                        boolean b = true;
-//
-//                        for (Node z : pag.getNodesInTo(x, Endpoint.ARROW)) {
-//                            if (z != y && !pag.isAdjacentTo(z, y)) {
-//                                b = false;
-//                            }
-//                        }
-//
-//                        if (b) {
-//                            pag.setEndpoint(x, y, Endpoint.ARROW);
-//                        }
-//                    }
-//
-//                    if (!pag.paths().existsDirectedPath(y, x)) {
-//                        boolean b = true;
-//
-//                        for (Node z : pag.getNodesInTo(y, Endpoint.ARROW)) {
-//                            if (z != x && !pag.isAdjacentTo(z, x)) {
-//                                b = false;
-//                            }
-//                        }
-//
-//                        if (b) {
-//                            pag.setEndpoint(x, y, Endpoint.ARROW);
-//                        }
-//                    }
-
                     if (verbose) {
                         TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added nondirected edge " + x + " <-> " + y + ".");
                     }
 
-//                        changed = true;
-                    anyChange.set(true);
+                    changed = true;
                 }
             }
         }
@@ -2844,7 +2813,7 @@ public final class GraphUtils {
             TetradLogger.getInstance().log("All done repairing maximality.");
         }
 
-        return anyChange;
+        return changed;
     }
 
     /**
@@ -3253,13 +3222,13 @@ public final class GraphUtils {
      * @param verbose                  a flag indicating whether to log verbose output
      * @return AtomicBoolean(true) if any almost cycles were removed, AtomicBoolean(false) otherwise
      */
-    public static AtomicBoolean removeAlmostCycles(Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders, FciOrient fciOrient,
-                                                   Graph pag, Knowledge knowledge, boolean verbose) {
+    public static boolean removeAlmostCycles(Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders, FciOrient fciOrient,
+                                             Graph pag, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Removing almost cycles.");
         }
 
-        AtomicBoolean anyChange = new AtomicBoolean(false);
+        boolean changed = false;
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.finalOrientation(pag);
@@ -3323,13 +3292,13 @@ public final class GraphUtils {
                         if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
                             unshieldedColliders.remove(triple);
                             unshieldedTriplesIntoX.add(triple);
-                            anyChange.set(true);
+                            changed = true;
                         }
                     } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
                         if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
                             unshieldedColliders.remove(triple);
                             unshieldedTriplesIntoX.add(triple);
-                            anyChange.set(true);
+                            changed = true;
                         }
                     }
                 }
@@ -3377,7 +3346,7 @@ public final class GraphUtils {
             TetradLogger.getInstance().log("All done removing almost cycles, round " + round + ".");
         }
 
-        return anyChange;
+        return changed;
     }
 
     /**
@@ -3390,13 +3359,13 @@ public final class GraphUtils {
      * @param verbose             a flag indicating whether to log verbose information
      * @return AtomicBoolean(true) if any cycles were removed, AtomicBoolean(false) otherwise
      */
-    public static AtomicBoolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
-                                             Graph pag, Knowledge knowledge, boolean verbose) {
+    public static boolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
+                                       Graph pag, Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Removing cycles.");
         }
 
-        AtomicBoolean anyChange = new AtomicBoolean(false);
+        boolean changed = false;
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.finalOrientation(pag);
@@ -3418,7 +3387,7 @@ public final class GraphUtils {
                             if (pag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
                                 unshieldedColliders.remove(triple);
                                 unshieldedTriplesIntoX.add(triple);
-                                anyChange.set(true);
+                                changed = true;
                             }
                         }
                     }
@@ -3484,7 +3453,7 @@ public final class GraphUtils {
             TetradLogger.getInstance().log("All done removing cycles.");
         }
 
-        return anyChange;
+        return changed;
     }
 
     /**

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -117,18 +117,22 @@ public final class DagToPag {
         return new R0R4StrategyTestBased(new MsepTest(mag)) {
             @Override
             public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
+
+                // We assume the MAG already has the unshielded colliders oriented that the algorithm
+                // says should be oriented.
                 Graph mag1 = ((MsepTest) getTest()).getGraph();
+                return !mag1.isAdjacentTo(i, k) && mag1.isDefCollider(i, j, k);
 
-                Set<Node> dsepi = mag1.paths().dsep(i, k);
-                Set<Node> dsepk = mag1.paths().dsep(k, i);
-
-                if (getTest().checkIndependence(i, k, dsepi).isIndependent()) {
-                    return !dsepi.contains(j);
-                } else if (getTest().checkIndependence(k, i, dsepk).isIndependent()) {
-                    return !dsepk.contains(j);
-                }
-
-                return false;
+//                Set<Node> dsepi = mag1.paths().dsep(i, k);
+//                Set<Node> dsepk = mag1.paths().dsep(k, i);
+//
+//                if (getTest().checkIndependence(i, k, dsepi).isIndependent()) {
+//                    return !dsepi.contains(j);
+//                } else if (getTest().checkIndependence(k, i, dsepk).isIndependent()) {
+//                    return !dsepk.contains(j);
+//                }
+//
+//                return false;
             }
 
             /**
