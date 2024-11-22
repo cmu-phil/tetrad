@@ -7,15 +7,15 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
-//import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -25,7 +25,7 @@ import static edu.cmu.tetrad.util.StatUtils.median;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Gives an implementation of the Kernal Independence Test (KCI) by Kun Zhang, which is a general test of conditional
+ * Gives an implementation of the Kernel Independence Test (KCI) by Kun Zhang, which is a general test of conditional
  * independence. The reference is here:
  * <p>
  * Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence test and
@@ -187,8 +187,6 @@ public class Kci implements IndependenceTest {
 
                 return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
             } else {
-//                List<Integer> rows = getRows(this.data);
-
                 int[] _cols = new int[allVars.size()];
 
                 for (int i = 0; i < allVars.size(); i++) {
@@ -196,22 +194,11 @@ public class Kci implements IndependenceTest {
                     _cols[i] = this.hash.get(key);
                 }
 
-//                int[] _rows = new int[rows.size()];
-//                for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
-
                 DataSet data = this.data.subsetColumns(_cols);
                 Matrix _data = data.getDoubleData().transpose();
 
                 Map<Node, Integer> hash = new HashMap<>();
                 for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
-
-//                int N = data.getNumRows();
-//
-//                Matrix ones = new Matrix(N, 1);
-//                for (int j = 0; j < N; j++) ones.set(j, 0, 1);
-//
-//                Matrix I = Matrix.identity(N);
-//                Matrix H = I.minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
 
                 Vector h = new Vector(allVars.size());
                 int count = 0;
@@ -445,7 +432,7 @@ public class Kci implements IndependenceTest {
     /**
      * Returns the KCI independence result for the unconditional case. Uses Theorem 4 from the paper.
      *
-     * @return true just in case independence holds.
+     * @return true, just in case independence holds.
      */
     private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, Matrix _data,
                                                           Vector _h, int N,
@@ -508,7 +495,7 @@ public class Kci implements IndependenceTest {
         } catch (Exception e) {
             TetradLogger.getInstance().log(e.getMessage());
             boolean indep = false;
-            IndependenceResult result = new IndependenceResult(fact, indep, Double.NaN , Double.NaN);
+            IndependenceResult result = new IndependenceResult(fact, indep, Double.NaN, Double.NaN);
             this.facts.put(fact, result);
             return result;
         }
@@ -638,16 +625,6 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * Generates a series of integers from 0 to size-1.
-     *
-     * @param size The number of elements in the series.
-     * @return A list of integers representing the series.
-     */
-    private List<Integer> series(int size) {
-        return GraphSearchUtils.getAllRows(size);
-    }
-
-    /**
      * Calculates the centered matrix by performing matrix operations on the input matrices K and H.
      *
      * @param K The first matrix.
@@ -684,29 +661,6 @@ public class Kci implements IndependenceTest {
         for (int j = 0; j < xCol.size(); j++) g.set(j, abs(xCol.get(j) - median));
         double mad = median(g.toArray());
         return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.size(), 0.2);
-    }
-
-    /**
-     * Returns the top indices from the given array that have values greater than the threshold multiplied by the
-     * maximum value in the array.
-     *
-     * @param prod       The array to filter.
-     * @param allIndices The list of indices to consider.
-     * @param threshold  The threshold value.
-     * @return The list of top indices.
-     */
-    private List<Integer> getTopIndices(Vector prod, List<Integer> allIndices, double threshold) {
-        double maxEig = prod.get(allIndices.getFirst());
-
-        List<Integer> indices = new ArrayList<>();
-
-        for (int i : allIndices) {
-            if (prod.get(i) > maxEig * threshold) {
-                indices.add(i);
-            }
-        }
-
-        return indices;
     }
 
     /**
@@ -878,68 +832,35 @@ public class Kci implements IndependenceTest {
          * @return the Eigendecomposition object on which this method is invoked
          */
         public Eigendecomposition invoke(boolean storeV) {
-            List<Integer> topIndices;
-            List<Double> eigenValues = null;
+            List<Double> eigenValues;
             Matrix V = null;
 
-            if (false) {
-                EigenDecomposition ed = new EigenDecomposition(k.getApacheData());
+            SingularValueDecomposition svd = new SingularValueDecomposition(k.getApacheData());
 
-                Vector arr = new Vector(ed.getRealEigenvalues());
+            double[] _singularValues = svd.getSingularValues();
 
-                List<Integer> indx = series(arr.size()); // 1 2 3...
-                topIndices = getTopIndices(arr, indx, Kci.this.threshold);
+            // Convert to list, taking only the singular values greater than the threshold.
+            eigenValues = new ArrayList<>();
+            for (double _singularValue : _singularValues) {
+                if (_singularValue > Kci.this.threshold * _singularValues[0]) {
+                    eigenValues.add(sqrt(_singularValue));
+                }
+            }
 
-                topEigenvalues = new ArrayList<>();
+            if (storeV) {
+                D = new Matrix(eigenValues.size(), eigenValues.size());
 
-                for (int t : topIndices) {
-                    getTopEigenvalues().add(arr.get(t));
+                for (int i = 0; i < eigenValues.size(); i++) {
+                    D.set(i, i, eigenValues.get(i));
                 }
 
-                if (storeV) {
-                    this.D = new Matrix(topIndices.size(), topIndices.size());
+                RealMatrix V0 = svd.getV();
 
-                    for (int i = 0; i < topIndices.size(); i++) {
-                        this.D.set(i, i, sqrt(arr.get(topIndices.get(i))));
-                    }
+                V = new Matrix(V0.getRowDimension(), eigenValues.size());
 
-                    V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
-
-                    for (int i = 0; i < topIndices.size(); i++) {
-                        RealVector t = ed.getEigenvector(topIndices.get(i));
-                        V.assignColumn(i, new Vector(t));
-                    }
-                }
-            } else {
-                SingularValueDecomposition svd = new SingularValueDecomposition(k.getApacheData());
-
-                double[] _singularValues = svd.getSingularValues();
-
-                // Convert to list, taking only the singular values greater than the threshold.
-                eigenValues = new ArrayList<>();
-                for (double _singularValue : _singularValues) {
-                    if (_singularValue > Kci.this.threshold * _singularValues[0]) {
-                        eigenValues.add(sqrt(_singularValue));
-                    }
-                }
-
-                if (storeV) {
-                    D = new Matrix(eigenValues.size(), eigenValues.size());
-
-                    for (int i = 0; i < eigenValues.size(); i++) {
-                        D.set(i, i, eigenValues.get(i));
-                    }
-
-                    RealMatrix V0 = svd.getV();
-
-                    V = new Matrix(V0.getRowDimension(), eigenValues.size());
-
-                    for (int i = 0; i < eigenValues.size(); i++) {
-                        double[] t = V0.getColumn(i);
-                        V.assignColumn(i, new Vector(t));
-                    }
-
-                    this.V = V;
+                for (int i = 0; i < eigenValues.size(); i++) {
+                    double[] t = V0.getColumn(i);
+                    V.assignColumn(i, new Vector(t));
                 }
             }
 
@@ -948,6 +869,5 @@ public class Kci implements IndependenceTest {
 
             return this;
         }
-
     }
 }
