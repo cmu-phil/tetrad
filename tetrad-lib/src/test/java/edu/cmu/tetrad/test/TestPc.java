@@ -190,9 +190,8 @@ public class TestPc {
 
         // Set up search.
         pc.setKnowledge(knowledge);
-        pc.setGuaranteeCpdag(false);
+//        pc.setGuaranteeCpdag(false);
 //        pc.setVerbose(false);
-
         // Run search
         Graph resultGraph = pc.search();
 
