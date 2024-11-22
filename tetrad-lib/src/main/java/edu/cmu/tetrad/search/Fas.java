@@ -173,11 +173,6 @@ public class Fas implements IFas {
             }
         }
 
-//        for (Edge edge : edges) {
-//            IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
-//            scores.put(edge, result.getScore());
-//        }
-
         Map<Edge, Double> scores;
 
         if (stable) {
@@ -188,10 +183,9 @@ public class Fas implements IFas {
                 concurrentScores.put(edge, result.getScore());
             });
 
-            // If you need the result in the original `scores` map:
-            scores = new ConcurrentHashMap<>(concurrentScores);
+            scores = new HashMap<>(concurrentScores);
         } else {
-            scores = new ConcurrentHashMap<>();
+            scores = new HashMap<>();
 
             for (Edge edge : edges) {
                 IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
@@ -233,7 +227,7 @@ public class Fas implements IFas {
             boolean more;
 
             if (this.stable) {
-                Map<Node, Set<Node>> adjacenciesCopy = new ConcurrentHashMap<>();
+                Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
 
                 for (Node node : adjacencies.keySet()) {
                     adjacenciesCopy.put(node, new LinkedHashSet<>(adjacencies.get(node)));
@@ -472,7 +466,7 @@ public class Fas implements IFas {
 
         List<Node> ppx = possibleParents(x, _adjx, knowledge, y);
 
-        Map<Node, Double> scores2 = new ConcurrentHashMap<>();
+        Map<Node, Double> scores2 = new HashMap<>();
 
         for (Node node : ppx) {
             Double _score = scores.get(Edges.undirectedEdge(node, x));
