@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014 by Peter Spirtes, Richard Scheines, Joseph   //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a useful
@@ -165,7 +166,6 @@ public class Fas implements IFas {
         this.sepset = new SepsetMap();
 
         List<Edge> edges = new ArrayList<>();
-        Map<Edge, Double> scores = new HashMap<>();
 
         if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_1) {
             Collections.sort(nodes);
@@ -177,9 +177,30 @@ public class Fas implements IFas {
             }
         }
 
-        for (Edge edge : edges) {
-            IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
-            scores.put(edge, result.getScore());
+//        for (Edge edge : edges) {
+//            IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
+//            scores.put(edge, result.getScore());
+//        }
+
+        Map<Edge, Double> scores;
+
+        if (stable) {
+            ConcurrentHashMap<Edge, Double> concurrentScores = new ConcurrentHashMap<>();
+
+            edges.parallelStream().forEach(edge -> {
+                IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
+                concurrentScores.put(edge, result.getScore());
+            });
+
+            // If you need the result in the original `scores` map:
+            scores = new HashMap<>(concurrentScores);
+        } else {
+            scores = new HashMap<>();
+
+            for (Edge edge : edges) {
+                IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
+                scores.put(edge, result.getScore());
+            }
         }
 
         if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
@@ -407,17 +428,31 @@ public class Fas implements IFas {
      * @return true if there are adjacencies at the given depth, false otherwise.
      */
     private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
+        if (stable) {
+            edges.parallelStream().forEach(edge -> {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-        for (Edge edge : edges) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+                // Check for thread interruption
+                if (Thread.currentThread().isInterrupted()) {
+                    return; // Exit this iteration
+                }
 
-            if (Thread.currentThread().isInterrupted()) {
-                break;
+                boolean b = checkSide(scores, test, adjacencies, depth, x, y);
+                if (!b) checkSide(scores, test, adjacencies, depth, y, x);
+            });
+        } else {
+            for (Edge edge : edges) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                boolean b = checkSide(scores, test, adjacencies, depth, x, y);
+                if (!b) checkSide(scores, test, adjacencies, depth, y, x);
             }
-
-            boolean b = checkSide(scores, test, adjacencies, depth, x, y);
-            if (!b) checkSide(scores, test, adjacencies, depth, y, x);
         }
 
         return freeDegree(adjacencies) > depth;
