@@ -93,10 +93,6 @@ public class Pc implements IGraphSearch {
      */
     private long elapsedTime;
     /**
-     * The number of independence tests performed in the most recent search.
-     */
-    private int numIndependenceTests;
-    /**
      * Whether the search is verbose.
      */
     private boolean verbose = false;
@@ -203,8 +199,6 @@ public class Pc implements IGraphSearch {
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
-
-        this.numIndependenceTests = fas.getNumIndependenceTests();
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
@@ -356,15 +350,6 @@ public class Pc implements IGraphSearch {
         Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
-    }
-
-    /**
-     * Returns the number of independence tests performed in the search.
-     *
-     * @return This number.
-     */
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
     }
 
     /**

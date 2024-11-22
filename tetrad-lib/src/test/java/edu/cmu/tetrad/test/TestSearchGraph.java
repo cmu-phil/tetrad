@@ -348,9 +348,7 @@ public final class TestSearchGraph {
         stop = MillisecondTimes.timeMillis();
 
         System.out.println("MSEP RFCI");
-        System.out.println("# msep checks = " + fas.getNumIndependenceTests());
         System.out.println("Elapsed " + (stop - start));
-        System.out.println("Per " + fas.getNumIndependenceTests() / (double) (stop - start));
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -365,9 +363,7 @@ public final class TestSearchGraph {
         stop = MillisecondTimes.timeMillis();
 
         System.out.println("FISHER Z RFCI");
-        System.out.println("# indep checks = " + fas.getNumIndependenceTests());
         System.out.println("Elapsed " + (stop - start));
-        System.out.println("Per " + fas.getNumIndependenceTests() / (double) (stop - start));
     }
 
     private boolean mConnected(Graph graph, String x, String y, String... z) {
