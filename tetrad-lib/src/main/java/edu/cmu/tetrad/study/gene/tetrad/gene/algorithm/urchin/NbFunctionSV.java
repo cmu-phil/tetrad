@@ -38,7 +38,7 @@ public class NbFunctionSV extends AbstractNbComponent {
      * @param power         a double
      * @param parents       an array of {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.NbComponent}
      *                      objects
-     * @param inhibitExcite an array of {@link int} objects
+     * @param inhibitExcite an array of  objects
      * @param name          a {@link java.lang.String} object
      */
     public NbFunctionSV(double factor, double power, NbComponent[] parents,

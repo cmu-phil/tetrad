@@ -44,7 +44,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
     /**
      * <p>Constructor for RealCovarianceMatrixForkJoin.</p>
      *
-     * @param data         an array of {@link double} objects
+     * @param data         an array of  objects
      * @param numOfThreads a int
      */
     public RealCovarianceMatrixForkJoin(double[][] data, int numOfThreads) {

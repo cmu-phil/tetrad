@@ -195,7 +195,7 @@ public class LogUtilsSearch {
      * <p>getScoreFact.</p>
      *
      * @param i         a int
-     * @param parents   an array of {@link int} objects
+     * @param parents   an array of  objects
      * @param variables a {@link java.util.List} object
      * @return a {@link java.lang.String} object
      */

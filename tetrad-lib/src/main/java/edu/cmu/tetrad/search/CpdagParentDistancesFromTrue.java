@@ -29,6 +29,15 @@ import java.util.Set;
  */
 public class CpdagParentDistancesFromTrue {
 
+    private double[][] minCoef = null;
+    private double[][] maxCoef = null;
+
+    /**
+     * Constructs a new instance of the class.
+     */
+    public CpdagParentDistancesFromTrue() {
+    }
+
     /**
      * Calculates the distance matrix for the edges in the given CPDAG (outputCpdag). The nodes in the output CPDAG must
      * all be in the full list of nodes given. The distance for each edge u -> v is computed based on how far the true
@@ -51,8 +60,8 @@ public class CpdagParentDistancesFromTrue {
      * @return A matrix of distances between true edge strengths and estimated strengths. Here, dist[u][v] is the
      * distance for the edge u -&gt; v.
      */
-    public static double[][] getDistances(Graph outputCpdag, double[][] trueEdgeStrengths, DataSet dataSet,
-                                          DistanceType distanceType) {
+    public double[][] getDistances(Graph outputCpdag, double[][] trueEdgeStrengths, DataSet dataSet,
+                                   DistanceType distanceType) {
         int n = outputCpdag.getNumNodes(); // Number of nodes in the graph
 
         // Get the list of nodes in the outputCpdag
@@ -67,8 +76,8 @@ public class CpdagParentDistancesFromTrue {
         }
 
         // Initialize the min and max coefficient matrices
-        double[][] minCoef = new double[n][n];
-        double[][] maxCoef = new double[n][n];
+        minCoef = new double[n][n];
+        maxCoef = new double[n][n];
 
         // Initialize all values in minCoef to Double.POSITIVE_INFINITY and all values in maxCoef to
         // Double.NEGATIVE_INFINITY
@@ -116,9 +125,9 @@ public class CpdagParentDistancesFromTrue {
      * @param nodes             The list of nodes in the CPDAG.
      * @param regressionDataSet The dataset wrapper for regression.
      */
-    private static void calculateMinMaxCoefPerNode(int v, Graph outputCpdag,
-                                                   double[][] minCoef, double[][] maxCoef, List<Node> nodes,
-                                                   RegressionDataset regressionDataSet) {
+    private void calculateMinMaxCoefPerNode(int v, Graph outputCpdag,
+                                            double[][] minCoef, double[][] maxCoef, List<Node> nodes,
+                                            RegressionDataset regressionDataSet) {
 
         // Form all possible parent sets of v
         List<List<Node>> possibleParentSets = formAllPossibleParentSets(nodes.get(v), outputCpdag);
@@ -179,8 +188,8 @@ public class CpdagParentDistancesFromTrue {
      * @param distanceType      The type of distance to calculate.
      * @return The distance for the edge u -> v.
      */
-    private static double calculateDistancesForEdge(int u, int v, double[][] trueEdgeStrengths,
-                                                    double[][] minCoef, double[][] maxCoef, DistanceType distanceType) {
+    private double calculateDistancesForEdge(int u, int v, double[][] trueEdgeStrengths,
+                                             double[][] minCoef, double[][] maxCoef, DistanceType distanceType) {
 
         // Get the true edge strength for u -> v
         double trueStrength = trueEdgeStrengths[u][v];
@@ -217,7 +226,7 @@ public class CpdagParentDistancesFromTrue {
      * @param cpdag The CPDAG.
      * @return A list of all possible parent sets for node v.
      */
-    private static List<List<Node>> formAllPossibleParentSets(Node v, Graph cpdag) {
+    private List<List<Node>> formAllPossibleParentSets(Node v, Graph cpdag) {
         Set<Edge> edges = cpdag.getEdges(v); // Get all edges adjacent to v
 
         // Separate edges into parent edges and undirected edges
@@ -282,8 +291,26 @@ public class CpdagParentDistancesFromTrue {
      * @param regressionDataset The dataset wrapper for regression.
      * @return The result of the regression.
      */
-    private static RegressionResult regress(Node v, List<Node> parentSet, RegressionDataset regressionDataset) {
+    private RegressionResult regress(Node v, List<Node> parentSet, RegressionDataset regressionDataset) {
         return regressionDataset.regress(v, parentSet); // Perform regression and return the result
+    }
+
+    /**
+     * Returns the minimum estimated coefficients for each edge.
+     *
+     * @return The minimum estimated coefficients.
+     */
+    public double[][] getMinCoef() {
+        return minCoef;
+    }
+
+    /**
+     * Returns the maximum estimated coefficients for each edge.
+     *
+     * @return The maximum estimated coefficients.
+     */
+    public double[][] getMaxCoef() {
+        return maxCoef;
     }
 
     /**

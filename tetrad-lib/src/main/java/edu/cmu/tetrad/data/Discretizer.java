@@ -79,9 +79,9 @@ public class Discretizer {
     /**
      * <p>getEqualFrequencyBreakPoints.</p>
      *
-     * @param _data              an array of {@link double} objects
+     * @param _data              an array of  objects
      * @param numberOfCategories a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] getEqualFrequencyBreakPoints(double[] _data, int numberOfCategories) {
         double[] data = new double[_data.length];
@@ -113,7 +113,7 @@ public class Discretizer {
      *                     returned will use these category names. If this is non-null, it must have length c, where c
      *                     is the number of categories for the discretized data. If any category names are null, default
      *                     category names will be used for those.
-     * @param _data        an array of {@link double} objects
+     * @param _data        an array of  objects
      * @return The discretized column.
      */
     public static Discretization discretize(double[] _data, double[] cutoffs,
@@ -349,7 +349,11 @@ public class Discretizer {
                     int _col = newDataSet.getColumn(variable);
 
                     for (int j = 0; j < trimmedData.length; j++) {
-                        newDataSet.setInt(j, _col, remap[trimmedData[j]]);
+                        try {
+                            newDataSet.setInt(j, _col, remap[trimmedData[j]]);
+                        } catch (Exception e) {
+                            newDataSet.setInt(j, _col, DiscreteVariable.MISSING_VALUE);
+                        }
                     }
                 }
 

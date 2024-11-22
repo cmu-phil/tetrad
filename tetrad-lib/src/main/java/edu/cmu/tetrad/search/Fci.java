@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.PcCommon;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
-import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -211,7 +208,11 @@ public final class Fci implements IGraphSearch {
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-        FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose));
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
+                knowledge, verbose);
+        strategy.setDepth(-1);
+        strategy.setMaxLength(-1);
+        FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
@@ -260,7 +261,8 @@ public final class Fci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, unshieldedTriples, verbose,
+                    new HashSet<>());
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -338,7 +340,7 @@ public final class Fci implements IGraphSearch {
      *
      * @param possibleMsepSearchDone True, if so.
      */
-    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
+    public void setPossibleDsepSearchDone(boolean possibleMsepSearchDone) {
         this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 

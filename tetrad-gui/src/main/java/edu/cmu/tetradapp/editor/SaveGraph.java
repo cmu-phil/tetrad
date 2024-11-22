@@ -26,6 +26,7 @@ import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetradapp.model.EditorUtils;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,7 +47,7 @@ public class SaveGraph extends AbstractAction {
     /**
      * The component whose image is to be saved.
      */
-    private final GraphEditable graphEditable;
+    private final GraphWorkbench graphWorkbench;
     /**
      * True if the graph should be saved in XML, false if in text.
      */
@@ -59,22 +60,22 @@ public class SaveGraph extends AbstractAction {
     /**
      * <p>Constructor for SaveGraph.</p>
      *
-     * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param graphWorkbench The graph workbench.
      * @param title         a {@link java.lang.String} object
      * @param type          a {@link edu.cmu.tetradapp.editor.SaveGraph.Type} object
      */
-    public SaveGraph(GraphEditable graphEditable, String title, Type type) {
+    public SaveGraph(GraphWorkbench graphWorkbench, String title, Type type) {
         super(title);
         this.title = title;
         this.type = type;
 
         if (this.title == null) this.title = "Save";
 
-        if (graphEditable == null) {
+        if (graphWorkbench == null) {
             throw new NullPointerException("Component must not be null.");
         }
 
-        this.graphEditable = graphEditable;
+        this.graphWorkbench = graphWorkbench;
     }
 
     /**
@@ -83,8 +84,8 @@ public class SaveGraph extends AbstractAction {
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {
-        Graph graph = getGraphEditable().getGraph();
-        Component parent = (Component) getGraphEditable();
+        Graph graph = getGraphWorkbench().getGraph();
+        Component parent = (Component) getGraphWorkbench();
 
         if (this.type == Type.xml) {
             File file = EditorUtils.getSaveFile("graph", "xml", parent, false, this.title);
@@ -127,7 +128,7 @@ public class SaveGraph extends AbstractAction {
             } catch (IllegalArgumentException e1) {
 
                 // Probably not a directed graph.
-                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+                JOptionPane.showMessageDialog(getGraphWorkbench(), e1.getMessage());
             }
         } else if (this.type == Type.json) {
             File file = EditorUtils.getSaveFile("graph", "json", parent, false, this.title);
@@ -151,7 +152,7 @@ public class SaveGraph extends AbstractAction {
             } catch (IllegalArgumentException e1) {
 
                 // Probably not a directed graph.
-                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+                JOptionPane.showMessageDialog(getGraphWorkbench(), e1.getMessage());
             }
         } else if (this.type == Type.dot) {
             File file = EditorUtils.getSaveFile("graph", "dot", parent, false, this.title);
@@ -174,7 +175,7 @@ public class SaveGraph extends AbstractAction {
             } catch (IllegalArgumentException e1) {
 
                 // Probably not a directed graph.
-                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+                JOptionPane.showMessageDialog(getGraphWorkbench(), e1.getMessage());
             }
         }
 //        else if (this.type == Type.pcalg) {
@@ -219,7 +220,7 @@ public class SaveGraph extends AbstractAction {
             } catch (FileNotFoundException e1) {
                 throw new RuntimeException("Not a directed graph.", e1);
             } catch (IllegalArgumentException e1) {
-                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+                JOptionPane.showMessageDialog(getGraphWorkbench(), e1.getMessage());
             }
         } else if (this.type == Type.amatPag) {
             File file = EditorUtils.getSaveFile("graph", "amat.pag.txt", parent, false, this.title);
@@ -241,7 +242,7 @@ public class SaveGraph extends AbstractAction {
             } catch (IllegalArgumentException e1) {
 
                 // Probably not a directed graph.
-                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+                JOptionPane.showMessageDialog(getGraphWorkbench(), e1.getMessage());
             }
         } else if (this.type == Type.lavaan) {
             File file = EditorUtils.getSaveFile("graph", "lavaan.txt", parent, false, this.title);
@@ -264,13 +265,13 @@ public class SaveGraph extends AbstractAction {
             } catch (IllegalArgumentException e1) {
 
                 // Probably not a directed graph.
-                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+                JOptionPane.showMessageDialog(getGraphWorkbench(), e1.getMessage());
             }
         }
     }
 
-    private GraphEditable getGraphEditable() {
-        return this.graphEditable;
+    private GraphWorkbench getGraphWorkbench() {
+        return this.graphWorkbench;
     }
 
     /**

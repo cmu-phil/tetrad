@@ -71,7 +71,7 @@ public class DoubleDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D double data array as data.
      *
-     * @param data an array of {@link double} objects
+     * @param data an array of  objects
      */
     public DoubleDataBox(double[][] data) {
         int length = data[0].length;
@@ -196,7 +196,7 @@ public class DoubleDataBox implements DataBox {
     /**
      * <p>Getter for the field <code>data</code>.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] getData() {
         return this.data;

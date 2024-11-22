@@ -66,7 +66,7 @@ public class LongDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D long data array as data.
      *
-     * @param data an array of {@link long} objects
+     * @param data an array of  objects
      */
     public LongDataBox(long[][] data) {
         int length = data[0].length;

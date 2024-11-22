@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SampleSizeSettable;
+import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -46,7 +46,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
  * @version $Id: $Id
  * @see ChiSquareTest
  */
-public final class IndTestGSquare implements IndependenceTest, SampleSizeSettable, RowsSettable {
+public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
 
     /**
      * The standard number formatter for Tetrad.
@@ -412,7 +412,7 @@ public final class IndTestGSquare implements IndependenceTest, SampleSizeSettabl
      * @param sampleSize The sample size to use.
      */
     @Override
-    public void setSampleSize(int sampleSize) {
+    public void setEffectiveSampleSize(int sampleSize) {
         if (sampleSize < 1) {
             throw new IllegalArgumentException("Sample size must be at least 1.");
         }

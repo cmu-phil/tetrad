@@ -68,7 +68,7 @@ public class SepsetsMaxP implements SepsetProducer {
      * @return The sepset between the two nodes containing the specified set of nodes.
      */
     public Set<Node> getSepset(Node i, Node k, int depth) {
-        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, this.independenceTest, depth);
+        return SepsetFinder.getSepsetContainingMaxPHybrid(graph, i, k, null, this.independenceTest, depth);
     }
 
     /**
@@ -83,7 +83,7 @@ public class SepsetsMaxP implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
-        return SepsetFinder.getSepsetContainingMaxP(graph, i, k, s, this.independenceTest, depth);
+        return SepsetFinder.getSepsetContainingMaxPHybrid(graph, i, k, s, this.independenceTest, depth);
     }
 
     /**
@@ -96,7 +96,7 @@ public class SepsetsMaxP implements SepsetProducer {
      * @return true if the node j is an unshielded collider between nodes i and k, false otherwise.
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
-        Set<Node> set = SepsetFinder.getSepsetContainingMaxP(graph, i, k, null, this.independenceTest, depth);
+        Set<Node> set = SepsetFinder.getSepsetContainingMaxPHybrid(graph, i, k, null, this.independenceTest, depth);
         return set != null && !set.contains(j);
     }
 

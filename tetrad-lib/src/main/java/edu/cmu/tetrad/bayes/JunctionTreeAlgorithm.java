@@ -465,10 +465,10 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * Get the joint probability of the nodes given their parents. Example: given x &lt;-- z --&gt; y, we can find
      * P(x,y|z). Another example: given x &lt;-- z --&gt; y &lt;-- w, we can find P(x,y|z,w)
      *
-     * @param nodes        an array of {@link int} objects
-     * @param values       an array of {@link int} objects
-     * @param parents      an array of {@link int} objects
-     * @param parentValues an array of {@link int} objects
+     * @param nodes        an array of  objects
+     * @param values       an array of  objects
+     * @param parents      an array of  objects
+     * @param parentValues an array of  objects
      * @return a double
      */
     public double getConditionalProbabilities(int[] nodes, int[] values, int[] parents, int[] parentValues) {
@@ -500,9 +500,9 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * Get the conditional probability of a node for all of its values.
      *
      * @param iNode        a int
-     * @param parents      an array of {@link int} objects
-     * @param parentValues an array of {@link int} objects
-     * @return an array of {@link double} objects
+     * @param parents      an array of  objects
+     * @param parentValues an array of  objects
+     * @return an array of  objects
      */
     public double[] getConditionalProbabilities(int iNode, int[] parents, int[] parentValues) {
         validate(iNode);
@@ -531,8 +531,8 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      *
      * @param iNode        a int
      * @param value        a int
-     * @param parents      an array of {@link int} objects
-     * @param parentValues an array of {@link int} objects
+     * @param parents      an array of  objects
+     * @param parentValues an array of  objects
      * @return a double
      */
     public double getConditionalProbability(int iNode, int value, int[] parents, int[] parentValues) {
@@ -560,8 +560,8 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     /**
      * <p>getJointProbability.</p>
      *
-     * @param nodes  an array of {@link int} objects
-     * @param values an array of {@link int} objects
+     * @param nodes  an array of  objects
+     * @param values an array of  objects
      * @return a double
      */
     public double getJointProbability(int[] nodes, int[] values) {
@@ -596,7 +596,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * <p>getMarginalProbability.</p>
      *
      * @param iNode a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] getMarginalProbability(int iNode) {
         validate(iNode);

@@ -146,7 +146,7 @@ public class RocCalculator {
     /**
      * <p>getScaledRocPlot.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] getScaledRocPlot() {
         if (this.points == null) {

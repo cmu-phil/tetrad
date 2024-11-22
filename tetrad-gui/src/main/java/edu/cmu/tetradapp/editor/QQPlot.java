@@ -198,7 +198,7 @@ class QQPlot {
     /**
      * <p>Getter for the field <code>comparisonVariable</code>.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] getComparisonVariable() {
         return this.comparisonVariable;

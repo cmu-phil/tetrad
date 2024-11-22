@@ -40,6 +40,18 @@ public enum ConditioningSetType {
     MARKOV_BLANKET,
 
     /**
+     * Conditioning on variables in the recursive order of a depth-first M-separation search. Some independence facts
+     * obtained in this way may be for implied dependencies.
+     */
+    RECURSIVE_MSEP,
+
+    /**
+     * Conditioning on noncolliders only. Some independence facts obtained in this way may be for implied dependencies.
+     * This is equivalent to the "noncolliders only" option in the PC algorithm.
+     */
+    NONCOLLIDERS_ONLY,
+
+    /**
      * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph, in a
      * causal order of the graph. Some independence facts obtained in this way may be for implied dependencies.
      */

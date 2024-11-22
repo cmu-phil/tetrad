@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.PagCache;
 
 import java.io.Serial;
 import java.util.List;
@@ -39,7 +40,7 @@ public class BidirectedLatentPrecision implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Percent of bidirected edges for which a latent confounder exists";
+        return "Percent of bidirected edges for which a latent confounder exists (an latent L such that X <- (L) -> Y).";
     }
 
     /**
@@ -53,14 +54,20 @@ public class BidirectedLatentPrecision implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        Graph dag = PagCache.getInstance().getDag(trueGraph);
+
         int tp = 0;
         int pos = 0;
 
-        estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+        estGraph = GraphUtils.replaceNodes(estGraph, dag.getNodes());
+
+        if (dag == null) {
+            return -99;
+        }
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (GraphUtils.isCorrectBidirectedEdge(edge, trueGraph)) {
+                if (GraphUtils.isCorrectBidirectedEdge(edge, dag)) {
                     tp++;
                 }
 

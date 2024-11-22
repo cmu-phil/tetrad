@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -37,6 +38,7 @@ public interface ISemIm extends Simulator {
     /**
      * Constant <code>serialVersionUID=23L</code>
      */
+    @Serial
     long serialVersionUID = 23L;
 
     /**
@@ -49,14 +51,14 @@ public interface ISemIm extends Simulator {
     /**
      * <p>getFreeParamValues.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     double[] getFreeParamValues();
 
     /**
      * <p>setFreeParamValues.</p>
      *
-     * @param params an array of {@link double} objects
+     * @param params an array of  objects
      */
     void setFreeParamValues(double[] params);
 

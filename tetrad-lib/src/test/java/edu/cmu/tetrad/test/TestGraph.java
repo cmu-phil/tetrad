@@ -226,8 +226,8 @@ public final class TestGraph {
         Graph g4 = GraphUtils.convert("X1-->X2,X2---X3,X3<--X4");
         assertFalse(g4.paths().isLegalCpdag());
 
-        Graph g5 = GraphUtils.convert("X1---X2,X2---X3,X3---X4,X1---X4,X1--X3");
-        assertFalse(g5.paths().isLegalCpdag());
+        Graph g5 = GraphUtils.convert("X1---X2,X2---X3,X3---X4,X1---X4,X1---X3");
+        assertTrue(g5.paths().isLegalCpdag());
 
         Graph g6 = GraphUtils.convert("X1-->X2,X2<--X3");
         assertTrue(g6.paths().isLegalCpdag());

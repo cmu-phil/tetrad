@@ -59,15 +59,15 @@ public final class GraphFileMenu extends JMenu {
         JMenu save = new JMenu("Save...");
         add(save);
 
-        save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
-        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
-        save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
-        save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
-        save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
-        save.add(new SaveGraph(editable, "amat.cpdag...", SaveGraph.Type.amatCpdag));
-        save.add(new SaveGraph(editable, "amat.pag...", SaveGraph.Type.amatPag));
+        save.add(new SaveGraph(editable.getWorkbench(), "Text...", SaveGraph.Type.text));
+        save.add(new SaveGraph(editable.getWorkbench(), "XML...", SaveGraph.Type.xml));
+        save.add(new SaveGraph(editable.getWorkbench(), "Json...", SaveGraph.Type.json));
+        save.add(new SaveGraph(editable.getWorkbench(), "R...", SaveGraph.Type.r));
+        save.add(new SaveGraph(editable.getWorkbench(), "Dot...", SaveGraph.Type.dot));
+        save.add(new SaveGraph(editable.getWorkbench(), "amat.cpdag...", SaveGraph.Type.amatCpdag));
+        save.add(new SaveGraph(editable.getWorkbench(), "amat.pag...", SaveGraph.Type.amatPag));
 //        save.add(new SaveGraph(editable, "PCALG...", SaveGraph.Type.pcalg));
-        save.add(new SaveGraph(editable, "lavaan...", SaveGraph.Type.lavaan));
+        save.add(new SaveGraph(editable.getWorkbench(), "lavaan...", SaveGraph.Type.lavaan));
 
         addSeparator();
         add(new SaveComponentImage(comp, "Save Graph Image..."));

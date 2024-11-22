@@ -69,9 +69,14 @@ public class GraphNodeLatent extends DisplayNode {
     public void doDoubleClickAction(Graph graph) {
         String newName;
         List<Node> nodes = graph.getNodes();
-        JCheckBox latentCheckBox = new JCheckBox("Latent", true);
+        JComboBox<String> typeBox = new JComboBox<>();
+        typeBox.addItem("Measured");
+        typeBox.addItem("Latent");
+        typeBox.addItem("Selection");
 
-        newName = chooseNewVariableName(latentCheckBox, nodes);
+        typeBox.setSelectedItem("Latent");
+
+        newName = chooseNewVariableName(typeBox, nodes);
 
         boolean changed = false;
 
@@ -82,8 +87,20 @@ public class GraphNodeLatent extends DisplayNode {
             changed = true;
         }
 
-        if (!latentCheckBox.isSelected()) {
+        if (typeBox.getSelectedItem().equals("Measured")) {
             this.getModelNode().setNodeType(NodeType.MEASURED);
+            firePropertyChange("resetGraph", null, null);
+            changed = true;
+        }
+
+//        if (typeBox.getSelectedItem().equals("Latent")) {
+//            this.getModelNode().setNodeType(NodeType.LATENT);
+//            firePropertyChange("resetGraph", null, null);
+//            changed = true;
+//        }
+
+        if (typeBox.getSelectedItem().equals("Selection")) {
+            this.getModelNode().setNodeType(NodeType.SELECTION);
             firePropertyChange("resetGraph", null, null);
             changed = true;
         }
@@ -93,7 +110,7 @@ public class GraphNodeLatent extends DisplayNode {
         }
     }
 
-    private String chooseNewVariableName(JCheckBox latentCheckBox,
+    private String chooseNewVariableName(JComboBox<String> typeBox,
                                          List<Node> nodes) {
         String newName;
 
@@ -124,7 +141,7 @@ public class GraphNodeLatent extends DisplayNode {
             message.add(new JLabel("Name:"));
             message.add(nameField);
 
-            message.add(latentCheckBox);
+            message.add(typeBox);
 
             JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);

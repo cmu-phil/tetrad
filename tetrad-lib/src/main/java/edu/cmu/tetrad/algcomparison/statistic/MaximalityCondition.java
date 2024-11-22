@@ -4,8 +4,10 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 
 import java.io.Serial;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -48,6 +50,15 @@ public class MaximalityCondition implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = estGraph;
 
+        List<Node> latent = trueGraph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+
+        List<Node> measured = trueGraph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        List<Node> selection = trueGraph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
 
         List<Node> nodes = pag.getNodes();
@@ -58,7 +69,7 @@ public class MaximalityCondition implements Statistic {
                 Node y = nodes.get(j);
 
                 if (!mag.isAdjacentTo(x, y)) {
-                    if (mag.paths().existsInducingPath(x, y)) {
+                    if (mag.paths().existsInducingPath(x, y, new HashSet<>(selection))) {
                         return 0.0;
                     }
                 }

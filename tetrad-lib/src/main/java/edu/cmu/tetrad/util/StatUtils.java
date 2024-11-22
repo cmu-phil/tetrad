@@ -1052,8 +1052,8 @@ public final class StatUtils {
     /**
      * <p>rankCorrelation.</p>
      *
-     * @param arr1 an array of {@link double} objects
-     * @param arr2 an array of {@link double} objects
+     * @param arr1 an array of  objects
+     * @param arr2 an array of  objects
      * @return a double
      */
     public static double rankCorrelation(double[] arr1, double[] arr2) {
@@ -1070,8 +1070,8 @@ public final class StatUtils {
     /**
      * <p>kendallsTau.</p>
      *
-     * @param x an array of {@link double} objects
-     * @param y an array of {@link double} objects
+     * @param x an array of  objects
+     * @param y an array of  objects
      * @return a double
      */
     public static double kendallsTau(double[] x, double[] y) {
@@ -1094,8 +1094,8 @@ public final class StatUtils {
     /**
      * <p>getRanks.</p>
      *
-     * @param arr an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param arr an array of  objects
+     * @return an array of  objects
      */
     public static double[] getRanks(double[] arr) {
         double[] arr2 = new double[arr.length];
@@ -1458,8 +1458,8 @@ public final class StatUtils {
     /**
      * <p>removeNaN.</p>
      *
-     * @param x1 an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param x1 an array of  objects
+     * @return an array of  objects
      */
     public static double[] removeNaN(double[] x1) {
         int i;
@@ -1527,7 +1527,7 @@ public final class StatUtils {
     /**
      * <p>standardizedFifthMoment.</p>
      *
-     * @param array an array of {@link double} objects
+     * @param array an array of  objects
      * @return a double
      */
     public static double standardizedFifthMoment(double[] array) {
@@ -1537,7 +1537,7 @@ public final class StatUtils {
     /**
      * <p>standardizedFifthMoment.</p>
      *
-     * @param array an array of {@link double} objects
+     * @param array an array of  objects
      * @param N     a int
      * @return a double
      */
@@ -1564,7 +1564,7 @@ public final class StatUtils {
     /**
      * <p>standardizedSixthMoment.</p>
      *
-     * @param array an array of {@link double} objects
+     * @param array an array of  objects
      * @return a double
      */
     public static double standardizedSixthMoment(double[] array) {
@@ -1574,7 +1574,7 @@ public final class StatUtils {
     /**
      * <p>standardizedSixthMoment.</p>
      *
-     * @param array an array of {@link double} objects
+     * @param array an array of  objects
      * @param N     a int
      * @return a double
      */
@@ -1814,7 +1814,7 @@ public final class StatUtils {
      *
      * @param alpha                a double
      * @param pValues              a {@link java.util.List} object
-     * @param _k                   an array of {@link int} objects
+     * @param _k                   an array of  objects
      * @param negativelyCorrelated a boolean
      * @param pSorted              a boolean
      * @return a double
@@ -2072,7 +2072,7 @@ public final class StatUtils {
     /**
      * <p>logCoshScore.</p>
      *
-     * @param _f an array of {@link double} objects
+     * @param _f an array of  objects
      * @return a double
      */
     public static double logCoshScore(double[] _f) {
@@ -2093,7 +2093,7 @@ public final class StatUtils {
     /**
      * <p>meanAbsolute.</p>
      *
-     * @param _f an array of {@link double} objects
+     * @param _f an array of  objects
      * @return a double
      */
     public static double meanAbsolute(double[] _f) {
@@ -2127,7 +2127,7 @@ public final class StatUtils {
     /**
      * <p>expScore.</p>
      *
-     * @param _f an array of {@link double} objects
+     * @param _f an array of  objects
      * @return a double
      */
     public static double expScore(double[] _f) {
@@ -2158,7 +2158,7 @@ public final class StatUtils {
      * <p>entropy.</p>
      *
      * @param numBins a int
-     * @param _f      an array of {@link double} objects
+     * @param _f      an array of  objects
      * @return a double
      */
     public static double entropy(int numBins, double[] _f) {
@@ -2194,7 +2194,7 @@ public final class StatUtils {
     /**
      * <p>maxEntApprox.</p>
      *
-     * @param x an array of {@link double} objects
+     * @param x an array of  objects
      * @return a double
      */
     public static double maxEntApprox(double[] x) {
@@ -2231,8 +2231,8 @@ public final class StatUtils {
     /**
      * <p>standardizeData.</p>
      *
-     * @param data an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param data an array of  objects
+     * @return an array of  objects
      */
     public static double[] standardizeData(double[] data) {
         double[] data2 = new double[data.length];
@@ -2315,7 +2315,7 @@ public final class StatUtils {
     /**
      * <p>sum.</p>
      *
-     * @param x an array of {@link double} objects
+     * @param x an array of  objects
      * @return a double
      */
     public static double sum(double[] x) {
@@ -2327,12 +2327,12 @@ public final class StatUtils {
     /**
      * <p>cov.</p>
      *
-     * @param x         an array of {@link double} objects
-     * @param y         an array of {@link double} objects
-     * @param condition an array of {@link double} objects
+     * @param x         an array of  objects
+     * @param y         an array of  objects
+     * @param condition an array of  objects
      * @param threshold a double
      * @param direction a double
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] cov(double[] x, double[] y, double[] condition, double threshold, double direction) {
         double exy = 0.0;
@@ -2382,13 +2382,13 @@ public final class StatUtils {
     /**
      * <p>covMatrix.</p>
      *
-     * @param x         an array of {@link double} objects
-     * @param y         an array of {@link double} objects
-     * @param z         an array of {@link double} objects
-     * @param condition an array of {@link double} objects
+     * @param x         an array of  objects
+     * @param y         an array of  objects
+     * @param z         an array of  objects
+     * @param condition an array of  objects
      * @param threshold a double
      * @param direction a double
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[][] covMatrix(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) {
         List<Integer> rows = StatUtils.getRows(condition, threshold, direction);
@@ -2429,7 +2429,7 @@ public final class StatUtils {
     /**
      * <p>getRows.</p>
      *
-     * @param x         an array of {@link double} objects
+     * @param x         an array of  objects
      * @param threshold a double
      * @param direction a double
      * @return a {@link java.util.List} object
@@ -2459,8 +2459,8 @@ public final class StatUtils {
     /**
      * <p>getRows.</p>
      *
-     * @param x         an array of {@link double} objects
-     * @param condition an array of {@link double} objects
+     * @param x         an array of  objects
+     * @param condition an array of  objects
      * @param threshold a double
      * @param direction a double
      * @return a {@link java.util.List} object
@@ -2485,12 +2485,12 @@ public final class StatUtils {
     /**
      * <p>E.</p>
      *
-     * @param x         an array of {@link double} objects
-     * @param y         an array of {@link double} objects
-     * @param condition an array of {@link double} objects
+     * @param x         an array of  objects
+     * @param y         an array of  objects
+     * @param condition an array of  objects
      * @param threshold a double
      * @param direction a double
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] E(double[] x, double[] y, double[] condition, double threshold, double direction) {
         double exy = 0.0;

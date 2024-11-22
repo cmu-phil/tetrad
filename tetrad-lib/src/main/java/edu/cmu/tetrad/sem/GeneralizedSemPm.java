@@ -202,11 +202,13 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         for (Node variable : this.nodes) {
             if (variable.getNodeType() == NodeType.MEASURED ||
-                variable.getNodeType() == NodeType.LATENT) {
+                variable.getNodeType() == NodeType.LATENT ||
+                variable.getNodeType() == NodeType.SELECTION) {
                 this.variableNodes.add(variable);
             }
 
-            if (variable.getNodeType() == NodeType.MEASURED) {
+            if (variable.getNodeType() == NodeType.MEASURED ||
+                variable.getNodeType() == NodeType.SELECTION) {
                 this.measuredNodes.add(variable);
             }
         }

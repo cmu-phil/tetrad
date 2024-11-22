@@ -96,7 +96,7 @@ public class MnlrScore implements Score {
      *
      * @param x a int
      * @param y a int
-     * @param z an array of {@link int} objects
+     * @param z an array of  objects
      * @return a double
      */
     public double localScoreDiff(int x, int y, int[] z) {

@@ -122,6 +122,7 @@ public class Gdistance {
      * @param graph1 a {@link edu.cmu.tetrad.graph.Graph} object
      * @param graph2 a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link java.util.List} object
+     * @throws java.lang.InterruptedException if any.
      */
     public List<Double> distances(Graph graph1, Graph graph2) throws InterruptedException {
         // needs to calculate distances for non-cubic voxels.

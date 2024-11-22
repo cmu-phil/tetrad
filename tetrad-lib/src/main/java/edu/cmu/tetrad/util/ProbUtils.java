@@ -2080,7 +2080,7 @@ public class ProbUtils {
      *
      * @param a   lower bounds (use Double.NEGATIVE_INFINITY if necessary)
      * @param b   upper bounds (use Double.POSITIVE_INFINITY if necessary)
-     * @param cov an array of {@link double} objects
+     * @param cov an array of  objects
      * @return a double
      */
     public static double multinormalProb(double[] a, double[] b,

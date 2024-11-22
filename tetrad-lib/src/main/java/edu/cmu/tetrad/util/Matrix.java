@@ -60,7 +60,7 @@ public class Matrix implements TetradSerializable {
     /**
      * <p>Constructor for Matrix.</p>
      *
-     * @param data an array of {@link double} objects
+     * @param data an array of  objects
      */
     public Matrix(double[][] data) {
         if (data.length == 0) {
@@ -187,8 +187,8 @@ public class Matrix implements TetradSerializable {
     /**
      * <p>getSelection.</p>
      *
-     * @param rows an array of {@link int} objects
-     * @param cols an array of {@link int} objects
+     * @param rows an array of  objects
+     * @param cols an array of  objects
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix getSelection(int[] rows, int[] cols) {
@@ -277,7 +277,7 @@ public class Matrix implements TetradSerializable {
     /**
      * <p>toArray.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] toArray() {
         return this.apacheData.getData();

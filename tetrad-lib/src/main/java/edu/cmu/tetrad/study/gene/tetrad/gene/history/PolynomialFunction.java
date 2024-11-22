@@ -104,7 +104,7 @@ public class PolynomialFunction implements UpdateFunction {
      * Returns the value of the function.
      *
      * @param factorIndex a int
-     * @param history     an array of {@link double} objects
+     * @param history     an array of  objects
      * @return a double
      */
     public double getValue(int factorIndex, double[][] history) {

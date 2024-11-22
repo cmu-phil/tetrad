@@ -95,7 +95,7 @@ public class HsimUtils {
      *
      * @param estCPDAG    a {@link edu.cmu.tetrad.graph.Graph} object
      * @param truePattern a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] errorEval(Graph estCPDAG, Graph truePattern) {
         GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(estCPDAG, truePattern);
@@ -133,7 +133,7 @@ public class HsimUtils {
     /**
      * <p>correctnessRatio.</p>
      *
-     * @param counts an array of {@link int} objects
+     * @param counts an array of  objects
      * @return a double
      */
     public static double correctnessRatio(int[][] counts) {
@@ -242,7 +242,7 @@ public class HsimUtils {
     /**
      * <p>formatErrorsArray.</p>
      *
-     * @param inputArray an array of {@link double} objects
+     * @param inputArray an array of  objects
      * @param formatting a {@link java.lang.String} object
      * @return an array of {@link java.lang.String} objects
      */

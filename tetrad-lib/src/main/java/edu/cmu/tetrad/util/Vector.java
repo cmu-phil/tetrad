@@ -213,7 +213,7 @@ public class Vector implements TetradSerializable {
     /**
      * <p>toArray.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] toArray() {
         return this.data.toArray();
@@ -231,7 +231,7 @@ public class Vector implements TetradSerializable {
     /**
      * <p>viewSelection.</p>
      *
-     * @param selection an array of {@link int} objects
+     * @param selection an array of  objects
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public Vector viewSelection(int[] selection) {

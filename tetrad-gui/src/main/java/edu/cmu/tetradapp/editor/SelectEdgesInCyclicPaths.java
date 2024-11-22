@@ -54,7 +54,7 @@ public class SelectEdgesInCyclicPaths extends AbstractAction implements Clipboar
      * @param workbench the given workbench.
      */
     public SelectEdgesInCyclicPaths(GraphWorkbench workbench) {
-        super("Highlight Edges on Cyclic Paths");
+        super("Highlight Cycles");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");

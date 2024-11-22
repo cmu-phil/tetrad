@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SampleSizeSettable;
+import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -46,7 +46,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
  * @version $Id: $Id
  * @see ChiSquareTest
  */
-public final class IndTestChiSquare implements IndependenceTest, SampleSizeSettable, RowsSettable {
+public final class IndTestChiSquare implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
 
     /**
      * The variables in the discrete data sets for which conditional independence judgments are desired.
@@ -454,7 +454,7 @@ public final class IndTestChiSquare implements IndependenceTest, SampleSizeSetta
     }
 
     @Override
-    public void setSampleSize(int sampleSize) {
+    public void setEffectiveSampleSize(int sampleSize) {
         this.sampleSize = sampleSize;
     }
 

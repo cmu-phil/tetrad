@@ -62,6 +62,7 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      * Center y coordinate of this node variable
      */
     private int centerY;
+    private boolean selectionBias;
 
     //=============================CONSTRUCTORS=========================//
 
@@ -129,6 +130,16 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      */
     public void setNodeType(NodeType nodeType) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setSelectionBias(boolean selectionBias) {
+        this.selectionBias = selectionBias;
+    }
+
+    @Override
+    public boolean getSelectionBias() {
+        return selectionBias;
     }
 
     /**

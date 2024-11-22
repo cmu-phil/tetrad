@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -59,6 +60,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      * The data set.
      */
     private final BoxDataSet ddata;
+    private final Matrix dcov;
     /**
      * The data set.
      */
@@ -191,7 +193,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         // The continuous variables of the post-embedding dataset.
         RealMatrix D = MatrixUtils.createRealMatrix(B_);
         this.ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        this._ddata = this.ddata.getDoubleData().toArray();
+        this.dcov = new CovarianceMatrix(ddata).getMatrix();
+        this._ddata = ddata.getDoubleData().toArray();
     }
 
     /**
@@ -226,7 +229,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
-        List<Integer> rows = getRows(allNodes, this.nodeHash);
+        List<Integer> rows = listRows();
 
         if (rows.isEmpty()) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 true, NaN, NaN);
@@ -383,8 +386,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         }
 
         double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
-        double ldetA = log(abs(getCov(rows, A_).det()));
-        double ldetB = log(abs(getCov(rows, B_).det()));
+        double ldetA = log(abs(SemBicScore.getCov(rows, A_, A_, ddata, dcov).det()));
+        double ldetB = log(abs(SemBicScore.getCov(rows, B_, B_, ddata, dcov).det()));
 
         double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLrt.L2PE * (B_.length - A_.length);
 
@@ -394,27 +397,16 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
     /**
      * Returns a list of row indices that satisfy the given conditions.
      *
-     * @param allVars   A list of nodes representing the variables to be checked.
-     * @param nodesHash A map that associates each node with its corresponding index.
      * @return A list of integers representing the row indices that satisfy the conditions.
      */
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+    private List<Integer> listRows() {
         if (this.rows != null) {
             return this.rows;
         }
 
         List<Integer> rows = new ArrayList<>();
 
-        K:
         for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            for (Node node : allVars) {
-                List<Integer> A = new ArrayList<>(this.embedding.get(nodesHash.get(node)));
-
-                for (int i : A) {
-                    if (Double.isNaN(this.ddata.getDouble(k, i))) continue K;
-                }
-            }
-
             rows.add(k);
         }
 

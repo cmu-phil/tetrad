@@ -118,7 +118,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * <p>Constructor for CovarianceMatrix.</p>
      *
      * @param variables  a {@link java.util.List} object
-     * @param matrix     an array of {@link double} objects
+     * @param matrix     an array of  objects
      * @param sampleSize a int
      */
     public CovarianceMatrix(List<Node> variables, double[][] matrix,
@@ -296,7 +296,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * <p>getSubmatrix.</p>
      *
-     * @param indices an array of {@link int} objects
+     * @param indices an array of  objects
      * @return a submatrix of the covariance matrix with variables in the given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {

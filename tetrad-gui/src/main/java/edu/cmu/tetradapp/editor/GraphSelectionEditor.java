@@ -416,11 +416,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     private JMenu createSaveMenu(GraphEditable editable) {
         JMenu save = new JMenu("Save As");
 
-        save.add(new SaveGraph(editable, "Graph Text...", SaveGraph.Type.text));
-        save.add(new SaveGraph(editable, "Graph XML...", SaveGraph.Type.xml));
-        save.add(new SaveGraph(editable, "Graph Json...", SaveGraph.Type.json));
-        save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
-        save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
+        save.add(new SaveGraph(editable.getWorkbench(), "Graph Text...", SaveGraph.Type.text));
+        save.add(new SaveGraph(editable.getWorkbench(), "Graph XML...", SaveGraph.Type.xml));
+        save.add(new SaveGraph(editable.getWorkbench(), "Graph Json...", SaveGraph.Type.json));
+        save.add(new SaveGraph(editable.getWorkbench(), "R...", SaveGraph.Type.r));
+        save.add(new SaveGraph(editable.getWorkbench(), "Dot...", SaveGraph.Type.dot));
 
         return save;
     }

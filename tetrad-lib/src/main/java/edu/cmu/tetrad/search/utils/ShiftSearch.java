@@ -68,7 +68,7 @@ public class ShiftSearch {
     /**
      * <p>search.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] search() {
         if (this.maxShift < 1) {

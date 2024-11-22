@@ -887,7 +887,15 @@ public final class Params {
      * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
-   /**
+    /**
+     * Constant <code>DO_DDP_EDGE_REMOVAL_STEP="doDdpEdgeRemovalStep"</code>
+     */
+    public static final String DO_DDP_EDGE_REMOVAL_STEP = "doDdpEdgeRemovalStep";
+    /**
+     * Constant <code>ENSURE_MARKOV="ensureMarkov"</code>
+     */
+    public static final String ENSURE_MARKOV = "ensureMarkov";
+    /**
      * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
      */
     public static String PC_HEURISTIC = "pcHeuristic";
@@ -900,7 +908,7 @@ public final class Params {
      */
     public static String EXTRA_EDGE_REMOVAL_STEP = "extraEdgeRemovalStep";
     /**
-     * Constant <code>LV_LITE_MAX_PATH_LENGTH="lvLiteMaxPathLength"</code>
+     * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
     /**

@@ -63,7 +63,7 @@ public final class SplitCasesSpec implements TetradSerializable {
      * <p>Constructor for SplitCasesSpec.</p>
      *
      * @param sampleSize  a int
-     * @param breakpoints an array of {@link int} objects
+     * @param breakpoints an array of  objects
      * @param splits      a {@link java.util.List} object
      */
     public SplitCasesSpec(int sampleSize, int[] breakpoints,
@@ -94,7 +94,7 @@ public final class SplitCasesSpec implements TetradSerializable {
     /**
      * <p>Getter for the field <code>breakpoints</code>.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] getBreakpoints() {
         return this.breakpoints;

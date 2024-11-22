@@ -60,7 +60,7 @@ public final class MatrixUtils {
      * @param mat     matrix to copy
      * @param nRow    number of repeat copy of row
      * @param mColumn number of repeat copy of column
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[][] repmat(double[][] mat, int nRow, int mColumn) {
         int numOfRow = mat.length;
@@ -78,8 +78,8 @@ public final class MatrixUtils {
      * Make a n repeat copy of the rows and columns of the matrix mat.
      *
      * @param n   number of repeat copy
-     * @param mat an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param mat an array of  objects
+     * @return an array of  objects
      */
     public static double[][] repmat(double[][] mat, int n) {
         int numOfRow = mat.length;
@@ -235,9 +235,9 @@ public final class MatrixUtils {
     /**
      * A copy of the original (square) matrix with the stated index row/column removed
      *
-     * @param m   an array of {@link double} objects
+     * @param m   an array of  objects
      * @param rem a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[][] submatrix(double[][] m, int rem) {
         int[] indices = new int[m.length];
@@ -269,8 +269,8 @@ public final class MatrixUtils {
     /**
      * <p>product.</p>
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
      * @return the outerProduct of ma and mb. The dimensions of ma and mb must be compatible for multiplication.
      */
     public static double[][] product(double[][] ma, double[][] mb) {
@@ -282,9 +282,9 @@ public final class MatrixUtils {
     /**
      * <p>product.</p>
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
+     * @return an array of  objects
      */
     public static double[] product(double[] ma, double[][] mb) {
         return new Matrix(mb).transpose().times(new Vector(ma)).toArray();
@@ -304,9 +304,9 @@ public final class MatrixUtils {
     /**
      * <p>product.</p>
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
+     * @return an array of  objects
      */
     public static double[] product(double[][] ma, double[] mb) {
         return new Matrix(ma).times(new Vector(mb)).toArray();
@@ -315,9 +315,9 @@ public final class MatrixUtils {
     /**
      * <p>outerProduct.</p>
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
+     * @return an array of  objects
      */
     public static double[][] outerProduct(double[] ma, double[] mb) {
         return TetradAlgebra.multOuter(new Vector(ma), new Vector(mb)).toArray();
@@ -326,8 +326,8 @@ public final class MatrixUtils {
     /**
      * <p>innerProduct.</p>
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
      * @return a double
      */
     public static double innerProduct(double[] ma, double[] mb) {
@@ -337,7 +337,7 @@ public final class MatrixUtils {
     /**
      * <p>transpose.</p>
      *
-     * @param m an array of {@link double} objects
+     * @param m an array of  objects
      * @return the transpose of the given matrix.
      */
     public static double[][] transpose(double[][] m) {
@@ -347,7 +347,7 @@ public final class MatrixUtils {
     /**
      * <p>trace.</p>
      *
-     * @param m an array of {@link double} objects
+     * @param m an array of  objects
      * @return the trace of the given (square) m.
      */
     public static double trace(double[][] m) {
@@ -367,8 +367,8 @@ public final class MatrixUtils {
     /**
      * <p>sum.</p>
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
      * @return the sum of ma and mb.
      */
     public static double[][] sum(double[][] ma, double[][] mb) {
@@ -381,9 +381,9 @@ public final class MatrixUtils {
     /**
      * <p>sum.</p>
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
+     * @return an array of  objects
      */
     public static double[] sum(double[] ma, double[] mb) {
         Vector _ma = new Vector(ma);
@@ -395,9 +395,9 @@ public final class MatrixUtils {
     /**
      * <p>subtract.</p>
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
+     * @return an array of  objects
      */
     public static double[][] subtract(double[][] ma, double[][] mb) {
         Matrix _ma = new Matrix(ma);
@@ -409,9 +409,9 @@ public final class MatrixUtils {
     /**
      * <p>subtract.</p>
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
+     * @return an array of  objects
      */
     public static double[] subtract(double[] ma, double[] mb) {
         Vector _ma = new Vector(ma);
@@ -423,9 +423,9 @@ public final class MatrixUtils {
     /**
      * Computes the direct (Kronecker) outerProduct.
      *
-     * @param ma an array of {@link double} objects
-     * @param mb an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param ma an array of  objects
+     * @param mb an array of  objects
+     * @return an array of  objects
      */
     public static double[][] directProduct(double[][] ma, double[][] mb) {
         int arow = ma.length;
@@ -454,8 +454,8 @@ public final class MatrixUtils {
      * Multiplies the given matrix through by the given scalar.
      *
      * @param scalar a double
-     * @param m      an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param m      an array of  objects
+     * @return an array of  objects
      */
     public static double[][] scalarProduct(double scalar, double[][] m) {
         Matrix _m = new Matrix(m);
@@ -466,8 +466,8 @@ public final class MatrixUtils {
      * <p>scalarProduct.</p>
      *
      * @param scalar a double
-     * @param m      an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param m      an array of  objects
+     * @return an array of  objects
      */
     public static double[] scalarProduct(double scalar, double[] m) {
         Vector _m = new Vector(m);
@@ -478,8 +478,8 @@ public final class MatrixUtils {
     /**
      * Concatenates the vectors rows[i], i = 0...rows.length, into a single vector.
      *
-     * @param vectors an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param vectors an array of  objects
+     * @return an array of  objects
      */
     public static double[] concatenate(double[][] vectors) {
         int numVectors = vectors.length;
@@ -496,7 +496,7 @@ public final class MatrixUtils {
     /**
      * <p>asRow.</p>
      *
-     * @param v an array of {@link double} objects
+     * @param v an array of  objects
      * @return the vector as a 1 x n row matrix.
      */
     public static double[][] asRow(double[] v) {
@@ -614,7 +614,7 @@ public final class MatrixUtils {
     /**
      * <p>vech.</p>
      *
-     * @param m an array of {@link double} objects
+     * @param m an array of  objects
      * @return vech of the given array. (This is what you get when you stack all of the elements of m in the lower
      * triangular of m to form a vector. The elements are stacked in columns left to right, top to bottom.)
      */
@@ -640,7 +640,7 @@ public final class MatrixUtils {
     /**
      * <p>invVech.</p>
      *
-     * @param vech an array of {@link double} objects
+     * @param vech an array of  objects
      * @return the symmetric matrix for which the given array is the vech.
      */
     public static double[][] invVech(double[] vech) {
@@ -665,7 +665,7 @@ public final class MatrixUtils {
     /**
      * <p>vec.</p>
      *
-     * @param m an array of {@link double} objects
+     * @param m an array of  objects
      * @return vech of the given array. (This is what you get when you stack all of the elements of m to form a vector.
      * The elements are stacked in columns left to right, top to bottom.)
      */
@@ -704,7 +704,7 @@ public final class MatrixUtils {
      * The matrix which, when postmultiplied by vech, return vec.
      *
      * @param n the size of the square matrix that vec and vech come from.
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[][] vechToVecLeft(int n) {
         int row = n * n;
@@ -729,7 +729,7 @@ public final class MatrixUtils {
     /**
      * <p>hasDimensions.</p>
      *
-     * @param m an array of {@link double} objects
+     * @param m an array of  objects
      * @param i a int
      * @param j a int
      * @return true just in case the given matrix has the given dimensions --that is, just in case m.length == i and
@@ -745,7 +745,7 @@ public final class MatrixUtils {
      *
      * @param rows a int
      * @param cols a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[][] zeros(int rows, int cols) {
         return new Matrix(rows, cols).toArray();
@@ -821,8 +821,8 @@ public final class MatrixUtils {
      * Converts a matrix in lower triangular form to a symmetric matrix in square form. The lower triangular matrix need
      * not contain matrix elements to represent elements in the upper triangle.
      *
-     * @param arr an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param arr an array of  objects
+     * @return an array of  objects
      */
     public static double[][] convertLowerTriangleToSymmetric(double[][] arr) {
         int size = arr.length;
@@ -842,7 +842,7 @@ public final class MatrixUtils {
      * Copies the given array, using a standard scientific notation number formatter and beginning each line with a tab
      * character. The number format is DecimalFormat(" 0.0000;-0.0000").
      *
-     * @param m an array of {@link double} objects
+     * @param m an array of  objects
      * @return a {@link java.lang.String} object
      */
     public static String toString(double[][] m) {
@@ -853,7 +853,7 @@ public final class MatrixUtils {
     /**
      * <p>toString.</p>
      *
-     * @param m         an array of {@link double} objects
+     * @param m         an array of  objects
      * @param variables a {@link java.util.List} object
      * @return a {@link java.lang.String} object
      */
@@ -912,7 +912,7 @@ public final class MatrixUtils {
     /**
      * <p>toStringSquare.</p>
      *
-     * @param m         an array of {@link double} objects
+     * @param m         an array of  objects
      * @param variables a {@link java.util.List} object
      * @return a {@link java.lang.String} object
      */
@@ -924,7 +924,7 @@ public final class MatrixUtils {
     /**
      * <p>toStringSquare.</p>
      *
-     * @param m         an array of {@link double} objects
+     * @param m         an array of  objects
      * @param nf        a {@link java.text.NumberFormat} object
      * @param variables a {@link java.util.List} object
      * @return a {@link java.lang.String} object
@@ -968,7 +968,7 @@ public final class MatrixUtils {
     /**
      * <p>toString.</p>
      *
-     * @param m an array of {@link int} objects
+     * @param m an array of  objects
      * @return a {@link java.lang.String} object
      */
     public static String toString(int[] m) {
@@ -984,7 +984,7 @@ public final class MatrixUtils {
     /**
      * <p>toString.</p>
      *
-     * @param m         an array of {@link int} objects
+     * @param m         an array of  objects
      * @param variables a {@link java.util.List} object
      * @return a {@link java.lang.String} object
      */
@@ -1023,7 +1023,7 @@ public final class MatrixUtils {
     /**
      * <p>toStringSquare.</p>
      *
-     * @param m         an array of {@link int} objects
+     * @param m         an array of  objects
      * @param variables a {@link java.util.List} object
      * @return a {@link java.lang.String} object
      */
@@ -1063,7 +1063,7 @@ public final class MatrixUtils {
     /**
      * <p>toString.</p>
      *
-     * @param m an array of {@link double} objects
+     * @param m an array of  objects
      * @return a {@link java.lang.String} object
      */
     public static String toString(double[] m) {
@@ -1079,7 +1079,7 @@ public final class MatrixUtils {
     /**
      * <p>toString.</p>
      *
-     * @param m  an array of {@link double} objects
+     * @param m  an array of  objects
      * @param nf a {@link java.text.NumberFormat} object
      * @return a {@link java.lang.String} object
      */
@@ -1096,7 +1096,7 @@ public final class MatrixUtils {
     /**
      * <p>toString.</p>
      *
-     * @param m an array of {@link int} objects
+     * @param m an array of  objects
      * @return a {@link java.lang.String} object
      */
     public static String toString(int[][] m) {
@@ -1114,7 +1114,7 @@ public final class MatrixUtils {
     /**
      * Copies the given array, starting each line with a tab character..
      *
-     * @param m an array of {@link boolean} objects
+     * @param m an array of  objects
      * @return a {@link java.lang.String} object
      */
     public static String toString(boolean[][] m) {
@@ -1164,9 +1164,9 @@ public final class MatrixUtils {
     /**
      * <p>copyOf.</p>
      *
-     * @param arr    an array of {@link int} objects
+     * @param arr    an array of  objects
      * @param length a int
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[] copyOf(int[] arr, int length) {
         int[] copy = new int[arr.length];
@@ -1177,8 +1177,8 @@ public final class MatrixUtils {
     /**
      * <p>copyOf.</p>
      *
-     * @param arr an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param arr an array of  objects
+     * @return an array of  objects
      */
     public static double[][] copyOf(double[][] arr) {
         double[][] copy = new double[arr.length][arr[0].length];

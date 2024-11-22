@@ -608,6 +608,18 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
+            <model name="Select Cases with Positive Selection Variable Values"
+                   acronym="Selection Subset" help="data"
+                   category="Conversion of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>
+                    edu.cmu.tetradapp.model.datamanip.SubsetForSelectionVariablesWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+            </model>
             <model name="Remove Cases with Missing Values"
                    acronym="Remove Cases" help="data"
                    category="Missing Values">

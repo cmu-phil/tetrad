@@ -45,9 +45,9 @@ public class EstimateRank {
     /**
      * Compute canonical correlations from data.
      *
-     * @param A an array of {@link double} objects
-     * @param B an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param A an array of  objects
+     * @param B an array of  objects
+     * @return an array of  objects
      */
     public static double[] CanCor(double[][] A, double[][] B) {
         RealMatrix Ua = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(A)).getU();
@@ -59,10 +59,10 @@ public class EstimateRank {
     /**
      * Compute canonical correlations from covariance matrix.
      *
-     * @param iA  an array of {@link int} objects
-     * @param iB  an array of {@link int} objects
-     * @param cov an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param iA  an array of  objects
+     * @param iB  an array of  objects
+     * @param cov an array of  objects
+     * @return an array of  objects
      */
     public static double[] CanCor(int[] iA, int[] iB, double[][] cov) {
         RealMatrix covA = MatrixUtils.createRealMatrix(cov).getSubMatrix(iA, iA);
@@ -82,8 +82,8 @@ public class EstimateRank {
     /**
      * Estimate rank from data.
      *
-     * @param A     an array of {@link double} objects
-     * @param B     an array of {@link double} objects
+     * @param A     an array of  objects
+     * @param B     an array of  objects
      * @param alpha a double
      * @return a int
      */
@@ -112,9 +112,9 @@ public class EstimateRank {
     /**
      * Estimate rank from covariance matrix.
      *
-     * @param iA    an array of {@link int} objects
-     * @param iB    an array of {@link int} objects
-     * @param cov   an array of {@link double} objects
+     * @param iA    an array of  objects
+     * @param iB    an array of  objects
+     * @param cov   an array of  objects
      * @param N     a int
      * @param alpha a double
      * @return a int

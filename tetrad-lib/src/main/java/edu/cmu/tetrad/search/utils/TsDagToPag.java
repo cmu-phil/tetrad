@@ -26,10 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -190,7 +187,7 @@ public final class TsDagToPag {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
         }
 
-        Graph graph = calcAdjacencyGraph();
+        Graph graph = calcAdjacencyGraph(new HashSet<>());
 
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting collider orientation");
@@ -315,7 +312,7 @@ public final class TsDagToPag {
         this.truePag = truePag;
     }
 
-    private Graph calcAdjacencyGraph() {
+    private Graph calcAdjacencyGraph(Set<Node> selection) {
         List<Node> allNodes = this.dag.getNodes();
         List<Node> measured = new ArrayList<>();
 
@@ -332,7 +329,7 @@ public final class TsDagToPag {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
 
-                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2);
+                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2, selection);
 
                 boolean exists = inducingPath != null;
 

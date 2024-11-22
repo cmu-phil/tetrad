@@ -326,7 +326,7 @@ public class DataTransforms {
         List<Node> latentVars = new ArrayList<>();
 
         for (Node node : fullDataSet.getVariables()) {
-            if (node.getNodeType() == NodeType.MEASURED) {
+            if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.SELECTION) {
                 measuredVars.add(node);
             } else {
                 latentVars.add(node);
@@ -913,8 +913,8 @@ public class DataTransforms {
     /**
      * <p>standardizeData.</p>
      *
-     * @param data an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param data an array of  objects
+     * @return an array of  objects
      */
     public static double[] standardizeData(double[] data) {
         double[] data2 = new double[data.length];
@@ -986,8 +986,8 @@ public class DataTransforms {
     /**
      * <p>center.</p>
      *
-     * @param d an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param d an array of  objects
+     * @return an array of  objects
      */
     public static double[] center(double[] d) {
         double sum = 0.0;

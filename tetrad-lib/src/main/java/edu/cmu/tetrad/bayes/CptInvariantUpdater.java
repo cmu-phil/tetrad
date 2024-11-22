@@ -216,8 +216,8 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     /**
      * <p>getJointMarginal.</p>
      *
-     * @param variables an array of {@link int} objects
-     * @param values    an array of {@link int} objects
+     * @param variables an array of  objects
+     * @param values    an array of  objects
      * @return a double
      */
     public double getJointMarginal(int[] variables, int[] values) {

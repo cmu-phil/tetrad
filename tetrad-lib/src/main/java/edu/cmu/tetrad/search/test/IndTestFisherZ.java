@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SampleSizeSettable;
+import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Vector;
@@ -50,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Frank Wimberly
  * @version $Id: $Id
  */
-public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettable, RowsSettable {
+public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
      * A hash from variable names to indices.
      */
@@ -63,10 +63,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
      * The standard normal distribution.
      */
     private final NormalDistribution normal = new NormalDistribution(0, 1);
-    /**
-     * The variables of the covariance data, in order. (Unmodifiable list.)
-     */
-    private final Map<Node, Integer> nodesHash;
     /**
      * A cache of results for independence facts.
      */
@@ -134,14 +130,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);
             setAlpha(alpha);
-
-            Map<Node, Integer> nodesHash = new HashMap<>();
-
-            for (int j = 0; j < this.variables.size(); j++) {
-                nodesHash.put(this.variables.get(j), j);
-            }
-
-            this.nodesHash = nodesHash;
         } else {
             if (!(alpha >= 0 && alpha <= 1)) {
                 throw new IllegalArgumentException("Alpha mut be in [0, 1]");
@@ -153,14 +141,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);
             setAlpha(alpha);
-
-            Map<Node, Integer> nodesHash = new HashMap<>();
-
-            for (int j = 0; j < this.variables.size(); j++) {
-                nodesHash.put(this.variables.get(j), j);
-            }
-
-            this.nodesHash = nodesHash;
         }
     }
 
@@ -179,14 +159,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
         this.nameMap = nameMap(variables);
         this.sampleSize = data.getNumRows();
         setAlpha(alpha);
-
-        Map<Node, Integer> nodesHash = new HashMap<>();
-
-        for (int j = 0; j < variables.size(); j++) {
-            nodesHash.put(variables.get(j), j);
-        }
-
-        this.nodesHash = nodesHash;
     }
 
     /**
@@ -203,14 +175,6 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
         this.nameMap = nameMap(this.variables);
         this.sampleSize = covMatrix.getSampleSize();
         setAlpha(alpha);
-
-        Map<Node, Integer> nodesHash = new HashMap<>();
-
-        for (int j = 0; j < this.variables.size(); j++) {
-            nodesHash.put(this.variables.get(j), j);
-        }
-
-        this.nodesHash = nodesHash;
     }
 
     /**
@@ -274,20 +238,24 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
 
             boolean independent = p > this.alpha;
 
-            if (this.verbose) {
-                if (independent) {
-                    TetradLogger.getInstance().log(
-                            LogUtilsSearch.independenceFactMsg(x, y, z, p));
-                }
-            }
-
             if (Double.isNaN(p)) {
                 throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
             } else {
                 IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
                 facts.put(new IndependenceFact(x, y, z), result);
+
+                if (this.verbose) {
+                    if (independent) {
+                        TetradLogger.getInstance().log(
+                                LogUtilsSearch.independenceFactMsg(x, y, z, p));
+                    }
+                }
+
                 return result;
             }
+
+
+
         }
     }
 
@@ -327,33 +295,63 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
             zCols[i] = getVariables().indexOf(z.get(i));
         }
 
-        int[] rows;
+        List<Node> allVars = new ArrayList<>(z);
+        allVars.add(xVar);
+        allVars.add(yVar);
+        allVars.addAll(_z);
 
-        if (this.rows == null) {
-            rows = new int[this.data.getNumRows()];
-            for (int i = 0; i < rows.length; i++) {
-                rows[i] = i;
-            }
-        } else {
-            rows = new int[this.rows.size()];
-            for (int i = 0; i < rows.length; i++) {
-                rows[i] = this.rows.get(i);
+        List<Integer> _rows = listRows();
+
+        if (_rows == null) {
+            _rows = new ArrayList<>();
+            for (int i = 0; i < this.data.getNumRows(); i++) {
+                _rows.add(i);
             }
         }
 
-        Vector x = this.data.getSelection(rows, new int[]{xIndex}).getColumn(0);
-        Vector y = this.data.getSelection(rows, new int[]{yIndex}).getColumn(0);
+        for (Integer row : new ArrayList<>(_rows)) {
+            for (Node node : allVars) {
+                if (node instanceof ContinuousVariable) {
+                    if (Double.isNaN(dataSet.getDouble(row, dataSet.getColumn(node)))) {
+                        _rows.remove(row);
+                    }
+                }
 
-        CovarianceMatrix cov = new CovarianceMatrix(dataSet);
+                if (node instanceof DiscreteVariable) {
+                    if (dataSet.getInt(row, dataSet.getColumn(node)) == -99) {
+                        _rows.remove(row);
+                    }
+                }
+            }
+        }
+
+        int[] rows;
+
+        rows = new int[_rows.size()];
+        for (int i = 0; i < _rows.size(); i++) {
+            rows[i] = _rows.get(i);
+        }
+
+        int[] allCols = new int[allVars.size()];
+        for (int i = 0; i < allVars.size(); i++) {
+            allCols[i] = getVariables().indexOf(allVars.get(i));
+        }
+
+        Matrix cov = SemBicScore.getCov(_rows, allCols, allCols, this.dataSet, null);
+
+        ICovarianceMatrix covMatrix = new CovarianceMatrix(allVars, cov, _rows.size());
 
         SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                cov, true, this.rows);
+                covMatrix, true, usePseudoinverse);
         SemBicScore.CovAndCoefs covAndCoefsY = SemBicScore.getCovAndCoefs(yIndex, zCols, this.data,
-                cov, true, this.rows);
+                covMatrix, true, usePseudoinverse);
 
         Matrix selection = data.getSelection(rows, zCols);
         edu.cmu.tetrad.util.Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
         edu.cmu.tetrad.util.Vector yPred = selection.times(covAndCoefsY.b()).getColumn(0);
+
+        Vector x = this.data.getSelection(rows, new int[]{xIndex}).getColumn(0);
+        Vector y = this.data.getSelection(rows, new int[]{yIndex}).getColumn(0);
 
         Vector xRes = xPred.minus(x);
         Vector yRes = yPred.minus(y);
@@ -361,12 +359,15 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
         // Note that r will be NaN if either xRes or yRes is constant.
         double r = StatUtils.correlation(xRes.toArray(), yRes.toArray());
 
-        double fisherZ = FastMath.sqrt(rows.length - z.size() - 3.0) *
-                         0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+        double df = rows.length - z.size() - 3.0;
+        double fisherZ = FastMath.sqrt(df) * 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         double p = 2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ)));
 
-        if (Double.isNaN(fisherZ)) {
+        if (df < 0) {
+            throw new IllegalArgumentException("The degrees of freedom for independence fact " + xVar + " _||_ " + yVar +
+                                               " | " + z + " is negative.");
+        } else if (Double.isNaN(fisherZ)) {
             throw new IllegalArgumentException("The Fisher's Z " +
                                                "score for independence fact " + xVar + " _||_ " + yVar +
                                                " | " + z + " is undefined.");
@@ -396,21 +397,25 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
         int n;
 
         if (covMatrix() != null) {
-            r = partialCorrelation(x, y, z, null);
+            r = partialCorrelation(x, y, z, rows);
             n = sampleSize();
         } else {
-            List<Node> allVars = new ArrayList<>(z);
-            allVars.add(x);
-            allVars.add(y);
+            List<Integer> rows = listRows();
 
-            List<Integer> rows = getRows(allVars, this.nodesHash);
             r = getR(x, y, z, rows);
             n = rows.size();
         }
 
         this.r = r;
         double q = .5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
-        double fisherZ = sqrt(n - 3. - z.size()) * q;
+        double df = n - 3. - z.size();
+
+        if (df < 1) {
+            throw new IllegalArgumentException("The degrees of freedom for independence fact " + x + " _||_ " + y +
+                    " | " + z + " nonpositive.");
+        }
+
+        double fisherZ = sqrt(df) * q;
 
         return 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
     }
@@ -515,14 +520,14 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
      * Sets the sample size to use for the independence test, which may be different from the sample size of the data
      * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
      *
-     * @param sampleSize The sample size to use.
+     * @param effectiveSampleSize The sample size to use.
      */
-    public void setSampleSize(int sampleSize) {
-        if (sampleSize < 1) {
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        if (effectiveSampleSize < 1) {
             throw new IllegalArgumentException("Sample size must be positive.");
         }
 
-        this.sampleSize = sampleSize;
+        this.sampleSize = effectiveSampleSize;
     }
 
     /**
@@ -633,7 +638,7 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
         }
 
         SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                cov, true, this.rows);
+                cov, true, usePseudoinverse);
 
         Matrix selection = data.getSelection(rows, zCols);
         Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
@@ -688,7 +693,7 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
      */
     private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+//        Collections.sort(z);
 
         int[] indices = new int[z.size() + 2];
         indices[0] = this.indexMap.get(x.getName());
@@ -700,48 +705,11 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
         if (this.cor != null) {
             cor = this.cor.getSelection(indices, indices);
         } else {
-            Matrix cov = getCov(rows, indices);
+            Matrix cov = SemBicScore.getCov(rows, indices, indices, this.dataSet, null);
             cor = MatrixUtils.convertCovToCorr(cov);
         }
 
         return StatUtils.partialCorrelationPrecisionMatrix(cor);
-    }
-
-    /**
-     * Calculates the covariance matrix for a given list of rows and columns.
-     *
-     * @param rows The list of row indices to calculate the covariance matrix for.
-     * @param cols The array of column indices to calculate the covariance matrix for.
-     * @return The covariance matrix for the specified rows and columns.
-     */
-    private Matrix getCov(List<Integer> rows, int[] cols) {
-        Matrix cov = new Matrix(cols.length, cols.length);
-
-        for (int i = 0; i < cols.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                double mui = 0.0;
-                double muj = 0.0;
-
-                for (int k : rows) {
-                    mui += this.dataSet.getDouble(k, cols[i]);
-                    muj += this.dataSet.getDouble(k, cols[j]);
-                }
-
-                mui /= rows.size() - 1;
-                muj /= rows.size() - 1;
-
-                double _cov = 0.0;
-
-                for (int k : rows) {
-                    _cov += (this.dataSet.getDouble(k, cols[i]) - mui) * (this.dataSet.getDouble(k, cols[j]) - muj);
-                }
-
-                double mean = _cov / (rows.size());
-                cov.set(i, j, mean);
-            }
-        }
-
-        return cov;
     }
 
     /**
@@ -813,23 +781,16 @@ public final class IndTestFisherZ implements IndependenceTest, SampleSizeSettabl
     /**
      * Retrieves the rows from the dataSet that contain valid values for all variables.
      *
-     * @param allVars   the list of variables to check
-     * @param nodesHash the map of variables to their corresponding indices in the dataSet
      * @return a list of row indices that contain valid values for all variables
      */
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+    private List<Integer> listRows() {
         if (this.rows != null) {
             return this.rows;
         }
 
         List<Integer> rows = new ArrayList<>();
 
-        K:
         for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            for (Node node : allVars) {
-                if (Double.isNaN(this.dataSet.getDouble(k, nodesHash.get(node)))) continue K;
-            }
-
             rows.add(k);
         }
 

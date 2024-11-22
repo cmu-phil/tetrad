@@ -993,11 +993,10 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * <p>subsetColumns.</p>
+     * Creates a new DataSet object containing only the specified columns.
      *
-     * @param indices an array of {@link int} objects
-     * @return a new data set in which the the column at indices[i] is placed at index i, for i = 0 to indices.length -
-     * 1. (Moved over from Purify.)
+     * @param indices An array of integers representing the indices of the columns to include in the subset.
+     * @return A new DataSet containing only the specified columns.
      */
     public DataSet subsetColumns(int[] indices) {
         List<Node> variables = getVariables();
@@ -1028,10 +1027,10 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * <p>subsetRows.</p>
+     * Creates a subset of rows from the existing DataSet.
      *
-     * @param rows an array of {@link int} objects
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param rows An array of integers representing the indices of the rows to be included in the subset.
+     * @return A new DataSet object containing only the specified rows from the original DataSet.
      */
     public DataSet subsetRows(int[] rows) {
         int[] cols = new int[this.dataBox.numCols()];
@@ -1111,9 +1110,9 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Removes the given rows from the data set.
+     * Removes the specified rows from the dataBox, updates the selection, multipliers, and knowledge accordingly.
      *
-     * @param selectedRows an array of {@link int} objects
+     * @param selectedRows an array of integers representing the indices of the rows to be removed from the dataBox
      */
     public void removeRows(int[] selectedRows) {
 

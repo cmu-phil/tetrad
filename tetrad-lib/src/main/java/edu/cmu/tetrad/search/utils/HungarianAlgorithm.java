@@ -24,7 +24,7 @@ public class HungarianAlgorithm {
     /**
      * Trying to find lowest-cost assignment.
      *
-     * @param costMatrix an array of {@link double} objects
+     * @param costMatrix an array of  objects
      */
     public HungarianAlgorithm(double[][] costMatrix) {
         if (costMatrix.length != costMatrix[0].length) {

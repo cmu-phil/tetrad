@@ -398,10 +398,11 @@ public final class GraphSearchUtils {
     /**
      * Checks if the provided Directed Acyclic Graph (PAG) is a legal PAG.
      *
-     * @param pag The Directed Acyclic Graph (PAG) to be checked
+     * @param pag       The Directed Acyclic Graph (PAG) to be checked
+     * @param selection The set of nodes to be conditioned on
      * @return A LegalPagRet object indicating whether the PAG is legal or not, along with a reason if it is not legal.
      */
-    public static LegalPagRet isLegalPag(Graph pag) {
+    public static LegalPagRet isLegalPag(Graph pag, Set<Node> selection) {
 
         for (Node n : pag.getNodes()) {
             if (n.getNodeType() != NodeType.MEASURED) {
@@ -412,7 +413,7 @@ public final class GraphSearchUtils {
 
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
-        LegalMagRet legalMag = isLegalMag(mag);
+        LegalMagRet legalMag = isLegalMag(mag, selection);
 
         if (!legalMag.isLegalMag()) {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
@@ -457,10 +458,11 @@ public final class GraphSearchUtils {
     /**
      * Determines whether the given graph is a legal Mixed Ancestral Graph (MAG).
      *
-     * @param mag the graph to be checked
+     * @param mag       the graph to be checked
+     * @param selection the set of nodes to be conditioned on
      * @return a LegalMagRet object indicating whether the graph is legal and providing an error message if it is not
      */
-    public static LegalMagRet isLegalMag(Graph mag) {
+    public static LegalMagRet isLegalMag(Graph mag, Set<Node> selection) {
         for (Node n : mag.getNodes()) {
             if (n.getNodeType() == NodeType.LATENT)
                 return new LegalMagRet(false,
@@ -524,7 +526,7 @@ public final class GraphSearchUtils {
                 Node y = nodes.get(j);
 
                 if (!mag.isAdjacentTo(x, y)) {
-                    if (mag.paths().existsInducingPath(x, y))
+                    if (mag.paths().existsInducingPath(x, y, new HashSet<>(selection)))
                         return new LegalMagRet(false,
                                 "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y);
                 }
@@ -1124,7 +1126,7 @@ public final class GraphSearchUtils {
      * @param trueCpdag a {@link edu.cmu.tetrad.graph.Graph} object
      * @param estCpdag  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param out       a {@link java.io.PrintStream} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[][] graphComparison(Graph trueCpdag, Graph estCpdag, PrintStream out) {
         GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(estCpdag, trueCpdag);

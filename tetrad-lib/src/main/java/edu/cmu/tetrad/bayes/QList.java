@@ -80,7 +80,7 @@ final class QList {
      * <p>Constructor for QList.</p>
      *
      * @param nVariables a int
-     * @param probTerm   an array of {@link int} objects
+     * @param probTerm   an array of  objects
      */
     public QList(int nVariables, int[] probTerm) {
         this.nVariables = nVariables;
@@ -126,7 +126,7 @@ final class QList {
      * <p>add.</p>
      *
      * @param q                a {@link edu.cmu.tetrad.bayes.QList} object
-     * @param sumOverVariables an array of {@link int} objects
+     * @param sumOverVariables an array of  objects
      * @param inNumerator      a boolean
      */
     public void add(QList q, int[] sumOverVariables, boolean inNumerator) {
@@ -208,7 +208,7 @@ final class QList {
      * <p>computeValue.</p>
      *
      * @param bayesIm        a {@link edu.cmu.tetrad.bayes.BayesIm} object
-     * @param fixedVarValues an array of {@link int} objects
+     * @param fixedVarValues an array of  objects
      * @return a double
      */
     public double computeValue(BayesIm bayesIm, int[] fixedVarValues) {

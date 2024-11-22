@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -120,17 +121,11 @@ public final class LvDumb implements IGraphSearch {
             TetradLogger.getInstance().log("Finished BOSS.");
         }
 
-
         if (verbose) {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-        DagToPag dagToPag = new DagToPag(cpdag);
-        dagToPag.setKnowledge(knowledge);
-        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        dagToPag.setVerbose(verbose);
-
-        Graph pag = dagToPag.convert();
+        Graph pag = PagCache.getInstance().getPag(cpdag, knowledge, verbose);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");

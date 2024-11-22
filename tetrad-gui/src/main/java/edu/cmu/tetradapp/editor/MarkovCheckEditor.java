@@ -218,25 +218,33 @@ public class MarkovCheckEditor extends JPanel {
 
         setPreferredSize(new Dimension(1100, 600));
 
-        conditioningSetTypeJComboBox.addItem("Parents(X) (Local Markov)");
+        conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
+        conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
-        conditioningSetTypeJComboBox.addItem("Parents(X) for a Valid Order (Ordered Local Markov)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
+        conditioningSetTypeJComboBox.addItem("Recursive M-Sep Conditioning Set");
+        conditioningSetTypeJComboBox.addItem("Conditioning on Noncolliders Only");
         conditioningSetTypeJComboBox.addItem("All Subsets (Global Markov)");
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
-                case "Parents(X) (Local Markov)":
+                case "Parents(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.LOCAL_MARKOV);
                     break;
                 case "Parents(X) and Neighbors(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.PARENTS_AND_NEIGHBORS);
                     break;
-                case "Parents(X) for a Valid Order (Ordered Local Markov)":
+                case "Ordered Local Markov":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
                     break;
                 case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.MARKOV_BLANKET);
+                    break;
+                case "Recursive M-Sep Conditioning Set":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.RECURSIVE_MSEP);
+                    break;
+                case "Conditioning on Noncolliders Only":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.NONCOLLIDERS_ONLY);
                     break;
                 case "All Subsets (Global Markov)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.GLOBAL_MARKOV);
@@ -397,11 +405,11 @@ public class MarkovCheckEditor extends JPanel {
 
         JLabel conditioningSetsLabel = new JLabel("Conditioning Sets:");
 
-        JCheckBox removeExtraneousVariables = new JCheckBox("Remove Extraneous Variables");
+        JCheckBox removeExtraneousVariables = new JCheckBox("Smallest Subset Yielding M-Separation");
         removeExtraneousVariables.setSelected(false);
 
         removeExtraneousVariables.addActionListener(e -> {
-            model.getMarkovCheck().setRemoveExtraneousVariables(removeExtraneousVariables.isSelected());
+            model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
             refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, percent, true);
         });
 
@@ -873,15 +881,40 @@ public class MarkovCheckEditor extends JPanel {
             names.add(node.getName());
         }
 
-        names.sort((o1, o2) -> {
-            // If o1 ends with an integer, find that integer.
-            // If o2 ends with an integer, find that integer.
-            // If both end with an integer, compare the integers.
+//        names.sort((o1, o2) -> {
+//            // If o1 ends with an integer, find that integer.
+//            // If o2 ends with an integer, find that integer.
+//            // If both end with an integer, compare the integers.
+//
+//            String[] split1 = o1.split("(?<=\\D)(?=\\d)");
+//            String[] split2 = o2.split("(?<=\\D)(?=\\d)");
+//
+//            if (split1.length == 2 && split2.length == 2) {
+//                String prefix1 = split1[0];
+//                String prefix2 = split2[0];
+//
+//                if (prefix1.equals(prefix2)) {
+//                    return Integer.compare(Integer.parseInt(split1[1]), Integer.parseInt(split2[1]));
+//                } else {
+//                    return prefix1.compareTo(prefix2);
+//                }
+//            } else if (split1.length == 2) {
+//                return -1;
+//            } else if (split2.length == 2) {
+//                return 1;
+//            } else {
+//                return o1.compareTo(o2);
+//            }
+//        });
 
+        names.sort((o1, o2) -> {
             String[] split1 = o1.split("(?<=\\D)(?=\\d)");
             String[] split2 = o2.split("(?<=\\D)(?=\\d)");
 
-            if (split1.length == 2 && split2.length == 2) {
+            boolean o1HasIntegerSuffix = split1.length == 2 && split1[1].matches("\\d+");
+            boolean o2HasIntegerSuffix = split2.length == 2 && split2[1].matches("\\d+");
+
+            if (o1HasIntegerSuffix && o2HasIntegerSuffix) {
                 String prefix1 = split1[0];
                 String prefix2 = split2[0];
 
@@ -890,14 +923,15 @@ public class MarkovCheckEditor extends JPanel {
                 } else {
                     return prefix1.compareTo(prefix2);
                 }
-            } else if (split1.length == 2) {
+            } else if (o1HasIntegerSuffix) {
                 return -1;
-            } else if (split2.length == 2) {
+            } else if (o2HasIntegerSuffix) {
                 return 1;
             } else {
                 return o1.compareTo(o2);
             }
         });
+
 
         for (String name : names) {
             nodeSelection.addItem(name);

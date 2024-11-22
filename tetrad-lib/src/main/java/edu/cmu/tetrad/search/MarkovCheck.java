@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class MarkovCheck implements SampleSizeSettable {
+public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The graph.
      */
@@ -57,7 +57,7 @@ public class MarkovCheck implements SampleSizeSettable {
     /**
      * True, just in case the given graph is a CPDAG (completed partially directed acyclic graph).
      */
-    private final boolean isCpdag;
+    private final boolean isMpdag;
     /**
      * List of observers to be notified when changes are made to the model.
      */
@@ -147,13 +147,13 @@ public class MarkovCheck implements SampleSizeSettable {
      */
     private List<Node> conditioningNodes;
     /**
-     * Indicates whether extraneous variables should be removed when d-separation holds.
-     * <p>
-     * Extraneous variables are irrelevant or redundant variables that are not necessary for finding d-separation.
-     * <p>
-     * Default value is false, meaning that extraneous variables are not removed by default.
+     * True if a smallest subset of conditioning nodes should be found.
      */
-    private boolean removeExtraneousVariables = false;
+    private boolean findSmallestSubset = false;
+    /**
+     * The maximum length of paths to consider, for relevant methods.
+     */
+    private int maxLength = -1;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -164,7 +164,7 @@ public class MarkovCheck implements SampleSizeSettable {
      */
     public MarkovCheck(Graph graph, IndependenceTest independenceTest, ConditioningSetType setType) {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
-        this.isCpdag = graph.paths().isLegalCpdag();
+        this.isMpdag = graph.paths().isLegalMpdag();
         this.independenceTest = independenceTest;
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
@@ -805,11 +805,20 @@ public class MarkovCheck implements SampleSizeSettable {
             List<Node> nodes = new ArrayList<>(variables);
 
             List<Node> order = null;
+            Graph dag = null;
 
-            try {
-                order = graph.paths().getValidOrder(graph.getNodes(), true);
-            } catch (Exception e) {
-                // Leave null. Not an error here. Just means we can't use the ordered local Markov check.
+            if (graph.paths().isLegalDag()) {
+                dag = graph;
+                order = dag.paths().getValidOrder(dag.getNodes(), true);
+            } else if (graph.paths().isLegalCpdag()) {
+                dag = GraphTransforms.dagFromCpdag(graph);
+                order = dag.paths().getValidOrder(dag.getNodes(), true);
+            } else {
+                try {
+                    order = graph.paths().getValidOrder(graph.getNodes(), true);
+                } catch (Exception e) {
+                    // Leave null. Not an error here. Just means we can't use the ordered local Markov check.
+                }
             }
 
             Set<IndependenceFact> allIndependenceFacts = new HashSet<>();
@@ -851,7 +860,15 @@ public class MarkovCheck implements SampleSizeSettable {
                             break;
                         case ORDERED_LOCAL_MARKOV:
                             if (order == null) throw new IllegalArgumentException("No valid order found.");
-                            z = new HashSet<>(graph.getParents(x));
+
+//                            if (dag != null) {
+//                                if (dag.paths().isAncestorOf(x, y)) {
+//                                    continue;
+//                                }
+//
+//                                z = new HashSet<>(dag.getParents(x));
+//                            } else {
+                            z = new HashSet<>(graph.getAdjacentNodes(x));
 
                             // Keep only the parents in Prefix(x).
                             for (Node w : new ArrayList<>(z)) {
@@ -862,10 +879,17 @@ public class MarkovCheck implements SampleSizeSettable {
                                     z.remove(w);
                                 }
                             }
+//                            }
 
                             break;
                         case MARKOV_BLANKET:
                             z = GraphUtils.markovBlanket(x, graph);
+                            break;
+                        case RECURSIVE_MSEP:
+                            z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
+                            break;
+                        case NONCOLLIDERS_ONLY:
+                            z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, maxLength, true);
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown separation set type: " + setType);
@@ -873,8 +897,9 @@ public class MarkovCheck implements SampleSizeSettable {
 
                     if (x == y || z.contains(x) || z.contains(y)) continue;
 
-                    if (removeExtraneousVariables && graph.paths().isMSeparatedFrom(x, y, z, false)) {
-                        z = removeExtraneousVariables(z, x, y);
+                    if (findSmallestSubset && graph.paths().isMSeparatedFrom(x, y, z, false)) {
+//                        z = removeExtraneousVariables(z, x, y, !isMpdag);
+                        z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isMpdag);
                     }
 
                     if (!checkNodeIndependenceAndConditioning(x, y, z)) {
@@ -902,21 +927,21 @@ public class MarkovCheck implements SampleSizeSettable {
         calcStats(false);
     }
 
-    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y) {
-        Set<Node> _z = new HashSet<>(z);
-
-        do {
-            for (Node w : new HashSet<>(_z)) {
-                _z.remove(w);
-                if (!graph.paths().isMSeparatedFrom(x, y, _z, false)) {
-                    _z.add(w);
-                }
-            }
-
-            z = new HashSet<>(_z);
-        } while (!_z.equals(z));
-        return z;
-    }
+//    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y, boolean isMpdag) {
+//        Set<Node> _z = new HashSet<>(z);
+//
+//        do {
+//            for (Node w : new HashSet<>(_z)) {
+//                _z.remove(w);
+//                if (!graph.paths().isMSeparatedFrom(x, y, _z, !isMpdag)) {
+//                    _z.add(w);
+//                }
+//            }
+//
+//            z = new HashSet<>(_z);
+//        } while (!_z.equals(z));
+//        return z;
+//    }
 
     /**
      * Returns type of conditioning sets to use in the Markov check.
@@ -1204,6 +1229,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * Generates the results for the given set of independence facts as a single record.
      *
      * @return The Markov check record.
+     * @throws InterruptedException if the thread is interrupted
      * @see MarkovCheckRecord
      */
     public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
@@ -1224,6 +1250,7 @@ public class MarkovCheck implements SampleSizeSettable {
      * Returns the Markov check record as a string.
      *
      * @return The Markov check record as a string.
+     * @throws InterruptedException if the thread is interrupted
      * @see MarkovCheckRecord
      */
     public String getMarkovCheckRecordString() throws InterruptedException {
@@ -1669,8 +1696,8 @@ public class MarkovCheck implements SampleSizeSettable {
      *
      * @return true if the graph is a CPDAG, false otherwise
      */
-    public boolean isCpdag() {
-        return isCpdag;
+    public boolean isMpdag() {
+        return isMpdag;
     }
 
     /**
@@ -1750,22 +1777,32 @@ public class MarkovCheck implements SampleSizeSettable {
     }
 
     /**
-     * Sets the flag indicating whether to remove extraneous variables when d-separation holds, to form smaller
-     * conditioning sets.
+     * Sets the flag indicating whether a smallest subset of each conditioning set yielding independence should be
+     * reported.
      *
-     * @param removeExtraneousVariables {@code true} if extraneous variables should be removed, {@code false} otherwise
+     * @param findSmallestSubset {@code true} if a smallest subset of each conditoning set yielding independence should
+     *                           be reported, {@code false} otherwise
      */
-    public void setRemoveExtraneousVariables(boolean removeExtraneousVariables) {
-        this.removeExtraneousVariables = removeExtraneousVariables;
+    public void setFindSmallestSubset(boolean findSmallestSubset) {
+        this.findSmallestSubset = findSmallestSubset;
     }
 
     @Override
-    public void setSampleSize(int sampleSize) {
-        if (!(independenceTest instanceof SampleSizeSettable)) {
+    public void setEffectiveSampleSize(int sampleSize) {
+        if (!(independenceTest instanceof EffectiveSampleSizeSettable)) {
             throw new IllegalArgumentException("The independence test does not support setting the sample size.");
         }
 
-        ((SampleSizeSettable) independenceTest).setSampleSize(sampleSize);
+        ((EffectiveSampleSizeSettable) independenceTest).setEffectiveSampleSize(sampleSize);
+    }
+
+    /**
+     * Sets the maximum path length for relevant paths.
+     *
+     * @param maxLength the maximum path length for relevant paths
+     */
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
     }
 
     /**

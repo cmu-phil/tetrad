@@ -73,7 +73,7 @@ public class ShortDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D short data array as data.
      *
-     * @param data an array of {@link short} objects
+     * @param data an array of  objects
      */
     public ShortDataBox(short[][] data) {
         int length = data[0].length;

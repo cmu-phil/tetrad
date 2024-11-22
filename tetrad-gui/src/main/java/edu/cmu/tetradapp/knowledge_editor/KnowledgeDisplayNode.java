@@ -94,6 +94,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
         List<Node> nodes = graph.getNodes();
 
         JCheckBox latentCheckBox = new JCheckBox("Latent", false);
+        JCheckBox selectionBiasCheckBox = new JCheckBox("SelectionBias", false);
 
         loop:
         while (true) {
@@ -152,6 +153,12 @@ public class KnowledgeDisplayNode extends DisplayNode {
 
         if (latentCheckBox.isSelected()) {
             this.getModelNode().setNodeType(NodeType.LATENT);
+            firePropertyChange("resetGraph", null, null);
+            changed = true;
+        }
+
+        if (selectionBiasCheckBox.isSelected()) {
+            this.getModelNode().setSelectionBias(true);
             firePropertyChange("resetGraph", null, null);
             changed = true;
         }

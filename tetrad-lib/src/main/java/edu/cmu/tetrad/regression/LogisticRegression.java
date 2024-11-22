@@ -389,7 +389,7 @@ public class LogisticRegression implements TetradSerializable {
     /**
      * <p>Setter for the field <code>rows</code>.</p>
      *
-     * @param rows an array of {@link int} objects
+     * @param rows an array of  objects
      */
     public void setRows(int[] rows) {
         this.rows = rows;

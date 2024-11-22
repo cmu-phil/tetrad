@@ -67,7 +67,7 @@ public class MixedUtils {
      * <p>getDiscreteInds.</p>
      *
      * @param nodes a {@link java.util.List} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[] getDiscreteInds(List<Node> nodes) {
         List<Integer> indList = new ArrayList<>();
@@ -90,7 +90,7 @@ public class MixedUtils {
      * <p>getContinuousInds.</p>
      *
      * @param nodes a {@link java.util.List} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[] getContinuousInds(List<Node> nodes) {
         List<Integer> indList = new ArrayList<>();
@@ -239,7 +239,7 @@ public class MixedUtils {
      * <p>getDiscLevels.</p>
      *
      * @param ds a {@link edu.cmu.tetrad.data.DataSet} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[] getDiscLevels(DataSet ds) {
         //ArrayList<Integer> levels = new ArrayList<Integer>[];
@@ -257,7 +257,7 @@ public class MixedUtils {
      * return vector of the maximum of each column in m (as ints, i.e. for discrete data)
      *
      * @param m a {@link cern.colt.matrix.DoubleMatrix2D} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[] colMax(DoubleMatrix2D m) {
         int[] maxVec = new int[m.columns()];
@@ -669,8 +669,8 @@ public class MixedUtils {
     /**
      * <p>arrayPermute.</p>
      *
-     * @param a an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param a an array of  objects
+     * @return an array of  objects
      */
     public static double[] arrayPermute(double[] a) {
         double[] out = new double[a.length];
@@ -690,8 +690,8 @@ public class MixedUtils {
     /**
      * <p>arrayPermute.</p>
      *
-     * @param a an array of {@link int} objects
-     * @return an array of {@link int} objects
+     * @param a an array of  objects
+     * @return an array of  objects
      */
     public static int[] arrayPermute(int[] a) {
         int[] out = new int[a.length];
@@ -713,7 +713,7 @@ public class MixedUtils {
      *
      * @param w a double
      * @param L a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] evenSplitVector(double w, int L) {
         double[] vec = new double[L];
@@ -786,7 +786,7 @@ public class MixedUtils {
      *
      * @param w a double
      * @param L a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] generateMixedEdgeParams(double w, int L) {
         double[] vec = new double[L];
@@ -823,7 +823,7 @@ public class MixedUtils {
      *
      * @param pT a {@link edu.cmu.tetrad.graph.Graph} object
      * @param pE a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[][] allEdgeStats(Graph pT, Graph pE) {
         HashMap<String, String> nd = new HashMap<>();
@@ -849,7 +849,7 @@ public class MixedUtils {
      * @param pT        a {@link edu.cmu.tetrad.graph.Graph} object
      * @param pE        a {@link edu.cmu.tetrad.graph.Graph} object
      * @param nodeDists a {@link java.util.HashMap} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[][] allEdgeStats(Graph pT, Graph pE, HashMap<String, String> nodeDists) {
         int[][] stats = new int[3][10];
@@ -967,7 +967,7 @@ public class MixedUtils {
     /**
      * <p>stringFrom2dArray.</p>
      *
-     * @param arr an array of {@link int} objects
+     * @param arr an array of  objects
      * @return a {@link java.lang.String} object
      */
     public static String stringFrom2dArray(int[][] arr) {

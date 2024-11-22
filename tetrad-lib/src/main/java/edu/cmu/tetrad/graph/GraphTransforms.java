@@ -3,6 +3,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.CombinationGenerator;
+import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -99,8 +100,7 @@ public class GraphTransforms {
      *                          unshielded colliders in the graph.
      * @param verbose           Whether to print verbose output.
      */
-    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles,
-                                                   boolean verbose) {
+    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
         List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
@@ -199,7 +199,7 @@ public class GraphTransforms {
     }
 
     /**
-     * Transforms a partially ancestral graph (PAG) into a maximally ancestral graph (MAG) using Zhang's 2008 Theorem
+     * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem
      * 2.
      *
      * @param pag The partially ancestral graph to transform.
@@ -372,7 +372,8 @@ public class GraphTransforms {
      */
     @NotNull
     public static Graph dagToPag(Graph trueGraph) {
-        return new DagToPag(trueGraph).convert();
+        return PagCache.getInstance().getPag(trueGraph);
+//        return new DagToPag(trueGraph).convert();
     }
 
     /**
@@ -396,8 +397,13 @@ public class GraphTransforms {
      * @return The resulting MAG obtained from the input DAG.
      */
     public static @NotNull Graph dagToMag(Graph dag) {
-        Map<Node, Set<Node>> ancestorMap = dag.paths().getAncestorMap();
+        Map<Node, Set<Node>> ancestorMap = dag.paths().getDescendantsMap();
         Graph graph = DagToPag.calcAdjacencyGraph(dag);
+
+        List<Node> allNodes = dag.getNodes();
+
+        Set<Node> selection = new HashSet<>(allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList());
 
         graph.reorientAllWith(Endpoint.TAIL);
 
@@ -406,11 +412,11 @@ public class GraphTransforms {
             Node y = edge.getNode2();
 
             // If not x ~~> y put an arrow at y. If not y ~~> x put an arrow at x.
-            if (!ancestorMap.get(y).contains(x)) {
+            if (!ancestorMap.get(y).contains(x) && !dag.paths().isAncestor(x, selection)) {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
             }
 
-            if (!ancestorMap.get(x).contains(y)) {
+            if (!ancestorMap.get(x).contains(y) && !dag.paths().isAncestor(y, selection)) {
                 graph.setEndpoint(y, x, Endpoint.ARROW);
             }
         }

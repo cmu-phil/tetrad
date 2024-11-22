@@ -41,16 +41,16 @@ public interface Covariances {
     /**
      * Returns the underlying covariance matrix.
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     double[][] getMatrix();
 
     /**
      * Returns a submatrix of the covariance matrix for the given rows and columns.
      *
-     * @param rows an array of {@link int} objects
-     * @param cols an array of {@link int} objects
-     * @return an array of {@link double} objects
+     * @param rows an array of  objects
+     * @param cols an array of  objects
+     * @return an array of  objects
      */
     double[][] getSubMatrix(int[] rows, int[] cols);
 }

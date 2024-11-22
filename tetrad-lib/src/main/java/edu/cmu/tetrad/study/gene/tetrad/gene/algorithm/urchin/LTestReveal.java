@@ -138,7 +138,7 @@ public class LTestReveal {
      * <p>mutualInformation.</p>
      *
      * @param child   a int
-     * @param parents an array of {@link int} objects
+     * @param parents an array of  objects
      * @param lag     a int
      * @return a double
      */
@@ -198,7 +198,7 @@ public class LTestReveal {
     /**
      * <p>entropy.</p>
      *
-     * @param x an array of {@link int} objects
+     * @param x an array of  objects
      * @return a double
      */
     public static double entropy(int[] x) {
@@ -256,8 +256,8 @@ public class LTestReveal {
     /**
      * <p>jointEntropy.</p>
      *
-     * @param x an array of {@link int} objects
-     * @param y an array of {@link int} objects
+     * @param x an array of  objects
+     * @param y an array of  objects
      * @return a double
      */
     public static double jointEntropy(int[] x, int[] y) {
@@ -319,8 +319,8 @@ public class LTestReveal {
     /**
      * <p>jointEntropy.</p>
      *
-     * @param x an array of {@link int} objects
-     * @param y an array of {@link int} objects
+     * @param x an array of  objects
+     * @param y an array of  objects
      * @return a double
      */
     public static double jointEntropy(int[] x, int[][] y) {
@@ -383,7 +383,7 @@ public class LTestReveal {
      *
      * @param ind a int
      * @param n   a int
-     * @return an array of {@link byte} objects
+     * @return an array of  objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

@@ -298,7 +298,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * <p>demean.</p>
      *
-     * @param data  an array of {@link double} objects
+     * @param data  an array of  objects
      * @param means a {@link edu.cmu.tetrad.util.Vector} object
      */
     public static void demean(double[][] data, Vector means) {
@@ -439,7 +439,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * <p>getSubmatrix.</p>
      *
-     * @param indices an array of {@link int} objects
+     * @param indices an array of  objects
      * @return a submatrix of the covariance matrix with variables in the given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
@@ -465,8 +465,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * <p>getSubmatrix.</p>
      *
-     * @param indices  an array of {@link int} objects
-     * @param dataRows an array of {@link int} objects
+     * @param indices  an array of  objects
+     * @param dataRows an array of  objects
      * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices, int[] dataRows) {
@@ -542,7 +542,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      *
      * @param i    a int
      * @param j    a int
-     * @param rows an array of {@link int} objects
+     * @param rows an array of  objects
      * @return a double
      */
     public final double getValue(int i, int j, int[] rows) {
@@ -604,7 +604,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * <p>Getter for the field <code>matrix</code>.</p>
      *
-     * @param rows an array of {@link int} objects
+     * @param rows an array of  objects
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public final Matrix getMatrix(int[] rows) {
@@ -763,9 +763,9 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * <p>getSelection.</p>
      *
-     * @param rows     an array of {@link int} objects
-     * @param cols     an array of {@link int} objects
-     * @param dataRows an array of {@link int} objects
+     * @param rows     an array of  objects
+     * @param cols     an array of  objects
+     * @param dataRows an array of  objects
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix getSelection(int[] rows, int[] cols, int[] dataRows) {

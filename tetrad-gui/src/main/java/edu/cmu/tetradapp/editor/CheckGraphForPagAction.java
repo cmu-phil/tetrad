@@ -30,6 +30,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.HashSet;
 
 /**
  * CheckGraphForMpdagAction is an action class that checks if a given graph is a legal PAG (Mixed Ancesgral Graph) and
@@ -80,7 +81,7 @@ public class CheckGraphForPagAction extends AbstractAction {
             @Override
             public void watch() {
                 Graph _graph = new EdgeListGraph(workbench.getGraph());
-                legalPag = GraphSearchUtils.isLegalPag(_graph);
+                legalPag = GraphSearchUtils.isLegalPag(_graph, new HashSet<>());
             }
         }
 

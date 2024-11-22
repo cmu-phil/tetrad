@@ -34,194 +34,203 @@ import java.util.List;
  */
 public interface ICovarianceMatrix extends DataModel {
     /**
-     * <p>getVariables.</p>
+     * Retrieves the list of Node variables for the covariance matrix.
      *
-     * @return a {@link java.util.List} object
+     * @return a list of Node objects representing the variables in the covariance matrix.
      */
     List<Node> getVariables();
 
     /**
-     * <p>setVariables.</p>
+     * Sets the list of Node variables for the covariance matrix.
      *
-     * @param variables a {@link java.util.List} object
+     * @param variables a list of Node objects representing the variables to be set in the covariance matrix
      */
     void setVariables(List<Node> variables);
 
     /**
-     * <p>getVariableNames.</p>
+     * Retrieves the list of names of the variables in the covariance matrix.
      *
-     * @return a {@link java.util.List} object
+     * @return a list of strings representing the names of the variables.
      */
     List<String> getVariableNames();
 
     /**
-     * <p>getVariableName.</p>
+     * Retrieves the name of the variable at the specified index from the covariance matrix.
      *
-     * @param index a int
-     * @return a {@link java.lang.String} object
+     * @param index the index of the variable whose name is to be retrieved
+     * @return the name of the variable at the specified index
      */
     String getVariableName(int index);
 
     /**
-     * <p>getDimension.</p>
+     * Retrieves the dimension of the covariance matrix.
      *
-     * @return a int
+     * @return the dimension of the covariance matrix as an integer
      */
     int getDimension();
 
     /**
-     * <p>getSampleSize.</p>
+     * Retrieves the sample size used in the covariance matrix.
      *
-     * @return a int
+     * @return the sample size as an integer
      */
     int getSampleSize();
 
     /**
-     * <p>setSampleSize.</p>
+     * Sets the sample size used in the covariance matrix.
      *
-     * @param sampleSize a int
+     * @param sampleSize the sample size to be set
      */
     void setSampleSize(int sampleSize);
 
     /**
-     * <p>getName.</p>
+     * Gets the name of the covariance matrix.
      *
-     * @return a {@link java.lang.String} object
+     * @return the name of the covariance matrix as a String
      */
     String getName();
 
     /**
-     * {@inheritDoc}
+     * Sets the name of the covariance matrix.
+     *
+     * @param name the new name of the covariance matrix
      */
     void setName(String name);
 
     /**
-     * <p>getKnowledge.</p>
+     * Retrieves the knowledge associated with the ICovarianceMatrix.
      *
-     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return the Knowledge object representing the associated knowledge
      */
     Knowledge getKnowledge();
 
     /**
-     * {@inheritDoc}
+     * Sets the knowledge associated with the ICovarianceMatrix.
+     *
+     * @param knowledge the knowledge to set
      */
     void setKnowledge(Knowledge knowledge);
 
     /**
-     * <p>getSubmatrix.</p>
+     * Returns a submatrix of the covariance matrix, including only the specified variables.
      *
-     * @param indices an array of {@link int} objects
-     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param indices an array of integers specifying the indices of the variables to include in the submatrix
+     * @return a submatrix of the covariance matrix that includes only the specified variables
      */
     ICovarianceMatrix getSubmatrix(int[] indices);
 
     /**
-     * <p>getSubmatrix.</p>
+     * Returns a submatrix of the covariance matrix, including only the specified variables.
      *
-     * @param submatrixVarNames a {@link java.util.List} object
-     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param submatrixVarNames a list of strings specifying the variable names to include in the submatrix
+     * @return a submatrix of the covariance matrix that includes only the specified variables
      */
     ICovarianceMatrix getSubmatrix(List<String> submatrixVarNames);
 
     /**
-     * <p>getSubmatrix.</p>
+     * Returns a submatrix of the covariance matrix, including only the specified variables.
      *
-     * @param submatrixVarNames an array of {@link java.lang.String} objects
-     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param submatrixVarNames an array of strings specifying the variable names to include in the submatrix
+     * @return a submatrix of the covariance matrix that includes only the specified variables
      */
     ICovarianceMatrix getSubmatrix(String[] submatrixVarNames);
 
     /**
-     * <p>getValue.</p>
+     * Retrieves the value from the covariance matrix at the specified row and column indices.
      *
-     * @param i a int
-     * @param j a int
-     * @return a double
+     * @param i the row index
+     * @param j the column index
+     * @return the value at the specified indices in the matrix
      */
     double getValue(int i, int j);
 
     /**
-     * <p>getSize.</p>
+     * Retrieves the size of the matrix.
      *
-     * @return a int
+     * @return the size of the square matrix.
      */
     int getSize();
 
     /**
-     * <p>getMatrix.</p>
+     * Retrieves the covariance matrix.
      *
-     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a Matrix object representing the covariance matrix
      */
     Matrix getMatrix();
 
     /**
-     * <p>setMatrix.</p>
+     * Sets the covariance matrix.
      *
-     * @param matrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param matrix the matrix to set
      */
     void setMatrix(Matrix matrix);
 
     /**
-     * <p>select.</p>
+     * Selects a specified variable in the covariance matrix.
      *
-     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
+     * @param variable the node variable to be selected
      */
     void select(Node variable);
 
     /**
-     * <p>clearSelection.</p>
+     * Clears the current selection of variables in the covariance matrix.
+     * This method resets any selected variables to their default unselected state.
      */
     void clearSelection();
 
     /**
-     * <p>isSelected.</p>
+     * Checks if the specified node is selected in the covariance matrix.
      *
-     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a boolean
+     * @param variable the node to check for selection
+     * @return true if the node is selected, false otherwise
      */
     boolean isSelected(Node variable);
 
     /**
-     * <p>getSelectedVariableNames.</p>
+     * Retrieves a list of names of the currently selected variables.
      *
-     * @return a {@link java.util.List} object
+     * @return a list of selected variable names.
      */
     List<String> getSelectedVariableNames();
 
     /**
-     * <p>toString.</p>
+     * Renders the covariance matrix as a string representation.
      *
-     * @return a {@link java.lang.String} object
+     * @return a string representation of the covariance matrix.
      */
     String toString();
 
     /**
-     * {@inheritDoc}
+     * Retrieves a Node instance from the covariance matrix corresponding to the specified variable name.
+     *
+     * @param name the name of the variable to retrieve
+     * @return the Node associated with the specified variable name
      */
     Node getVariable(String name);
 
     /**
-     * <p>setValue.</p>
+     * Sets the value of the covariance matrix at the specified indices.
      *
-     * @param i a int
-     * @param j a int
-     * @param v a double
+     * @param i the row index
+     * @param j the column index
+     * @param v the value to set at the specified indices
      */
     void setValue(int i, int j, double v);
 
     /**
-     * <p>removeVariables.</p>
+     * Removes variables from the covariance matrix, retaining only the variables
+     * specified in the provided list.
      *
-     * @param remaining a {@link java.util.List} object
+     * @param remaining a list of variable names to retain in the covariance matrix.
      */
     void removeVariables(List<String> remaining);
 
     /**
-     * <p>getSelection.</p>
+     * Returns a submatrix based on the specified rows and columns.
      *
-     * @param rows an array of {@link int} objects
-     * @param cols an array of {@link int} objects
-     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param rows an array of integers representing the row indices to be included in the selection.
+     * @param cols an array of integers representing the column indices to be included in the selection.
+     * @return a {@link Matrix} object containing the selected rows and columns.
      */
     Matrix getSelection(int[] rows, int[] cols);
 }

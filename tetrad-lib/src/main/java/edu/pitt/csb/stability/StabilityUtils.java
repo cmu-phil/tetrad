@@ -179,7 +179,7 @@ public class StabilityUtils {
      *
      * @param xi   a {@link cern.colt.matrix.DoubleMatrix2D} object
      * @param vars a {@link java.util.List} object
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] totalInstabilityUndir(DoubleMatrix2D xi, List<Node> vars) {
         if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
@@ -215,7 +215,7 @@ public class StabilityUtils {
      *
      * @param xi   a {@link cern.colt.matrix.DoubleMatrix2D} object
      * @param vars a {@link java.util.List} object
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] totalInstabilityDir(DoubleMatrix2D xi, List<Node> vars) {
         if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
@@ -244,7 +244,7 @@ public class StabilityUtils {
      * @param sampSize a int
      * @param subSize  a int
      * @param numSub   a int
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[][] subSampleNoReplacement(int sampSize, int subSize, int numSub) {
 

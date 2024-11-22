@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,17 +17,19 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.utils.ClusterSignificance;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -36,8 +38,6 @@ import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
-
-import static edu.cmu.tetrad.search.utils.DagToPag.getFinalStrategyUsingDsep;
 
 /**
  * Utility class for working with graphs.
@@ -394,7 +394,7 @@ public final class GraphUtils {
                         Set<Node> descendants = graph.paths().getDescendants(n1);
                         descendants.retainAll(conditioningVars);
                         if (!descendants.isEmpty()) {
-                            buf.append("{~~>").append(descendants.iterator().next()).append(conditioningSymbol + "}");
+                            buf.append("{~~>").append(descendants.iterator().next()).append(conditioningSymbol).append("}");
                         }
                     }
                 }
@@ -547,106 +547,6 @@ public final class GraphUtils {
     }
 
     /**
-     * Counts the arrowheads that are in graph1 but not in graph2.
-     *
-     * @param graph1 a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param graph2 a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a int
-     */
-    public static int countArrowptErrors(Graph graph1, Graph graph2) {
-        if (graph1 == null) {
-            throw new NullPointerException("The reference graph is missing.");
-        }
-
-        if (graph2 == null) {
-            throw new NullPointerException("The target graph is missing.");
-        }
-
-        graph2 = GraphUtils.replaceNodes(graph2, graph1.getNodes());
-
-        int count = 0;
-
-        for (Edge edge1 : graph1.getEdges()) {
-            Node node1 = edge1.getNode1();
-            Node node2 = edge1.getNode2();
-
-            Edge edge2 = graph2.getEdge(node1, node2);
-
-            if (edge1.getEndpoint1() == Endpoint.ARROW) {
-                if (edge2 == null) {
-                    count++;
-                } else if (edge2.getProximalEndpoint(edge1.getNode1()) != Endpoint.ARROW) {
-                    count++;
-                }
-            }
-
-            if (edge1.getEndpoint2() == Endpoint.ARROW) {
-                if (edge2 == null) {
-                    count++;
-                } else if (edge2.getProximalEndpoint(edge1.getNode2()) != Endpoint.ARROW) {
-                    count++;
-                }
-            }
-        }
-
-        for (Edge edge1 : graph2.getEdges()) {
-            Node node1 = edge1.getNode1();
-            Node node2 = edge1.getNode2();
-
-            Edge edge2 = graph1.getEdge(node1, node2);
-
-            if (edge1.getEndpoint1() == Endpoint.ARROW) {
-                if (edge2 == null) {
-                    count++;
-                } else if (edge2.getProximalEndpoint(edge1.getNode1()) != Endpoint.ARROW) {
-                    count++;
-                }
-            }
-
-            if (edge1.getEndpoint2() == Endpoint.ARROW) {
-                if (edge2 == null) {
-                    count++;
-                } else if (edge2.getProximalEndpoint(edge1.getNode2()) != Endpoint.ARROW) {
-                    count++;
-                }
-            }
-        }
-
-        return count;
-    }
-
-    /**
-     * <p>getNumCorrectArrowpts.</p>
-     *
-     * @param correct   a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param estimated a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a int
-     */
-    public static int getNumCorrectArrowpts(Graph correct, Graph estimated) {
-        correct = GraphUtils.replaceNodes(correct, estimated.getNodes());
-
-        Set<Edge> edges = estimated.getEdges();
-        int numCorrect = 0;
-
-        for (Edge estEdge : edges) {
-            Edge correctEdge = correct.getEdge(estEdge.getNode1(), estEdge.getNode2());
-            if (correctEdge == null) {
-                continue;
-            }
-
-            if (estEdge.getProximalEndpoint(estEdge.getNode1()) == Endpoint.ARROW && correctEdge.getProximalEndpoint(estEdge.getNode1()) == Endpoint.ARROW) {
-                numCorrect++;
-            }
-
-            if (estEdge.getProximalEndpoint(estEdge.getNode2()) == Endpoint.ARROW && correctEdge.getProximalEndpoint(estEdge.getNode2()) == Endpoint.ARROW) {
-                numCorrect++;
-            }
-        }
-
-        return numCorrect;
-    }
-
-    /**
      * Converts the given list of nodes, <code>originalNodes</code>, to use the replacement nodes for them by the same
      * name in the given
      * <code>graph</code>.
@@ -745,15 +645,6 @@ public final class GraphUtils {
     }
 
     /**
-     * <p>getUnderlinedTriplesFromGraph.</p>
-     *
-     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
-     * given graph.
-     */
-
-    /**
      * Retrieves the list of dotted and underlined triples from the given graph, with the specified node as the middle
      * node.
      *
@@ -784,15 +675,6 @@ public final class GraphUtils {
 
         return dottedUnderlinedTriples;
     }
-
-    /**
-     * <p>getDottedUnderlinedTriplesFromGraph.</p>
-     *
-     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
-     * given graph.
-     */
 
     /**
      * Checks if a given graph contains a bidirected edge.
@@ -1254,7 +1136,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Adds markups for edge specilizations for the edges in the given graph.
+     * Adds markups for edge specializations for the edges in the given graph. This used to be called PAG coloring.
      *
      * @param graph The graph to which PAG edge specialization markups will be added.
      */
@@ -1275,7 +1157,15 @@ public final class GraphUtils {
             Edge xyEdge = graph.getEdge(x, y);
             graph.removeEdge(xyEdge);
 
-            if (!new Paths(graph).existsSemiDirectedPath(x, y)) {
+            boolean existsSemidirectedPath = false;
+
+            if (graph instanceof EdgeListGraph) {
+                existsSemidirectedPath = graph.existsSemidirectedPath(x, y);
+            } else {
+                existsSemidirectedPath = new Paths(graph).existsSemiDirectedPath(x, y);
+            }
+
+            if (existsSemidirectedPath) {
                 edge.addProperty(Property.dd); // green.
             } else {
                 edge.addProperty(Property.pd); // blue
@@ -1361,9 +1251,6 @@ public final class GraphUtils {
                 }
             }
 
-            public Counts getCounts() {
-                return this.counts;
-            }
         }
 
         Set<Edge> edgeSet = new HashSet<>();
@@ -1541,54 +1428,6 @@ public final class GraphUtils {
     }
 
     /**
-     * Converts a given graph to human-readable text format.
-     *
-     * @param graph                       the graph to be converted
-     * @param pagEdgeSpecializationMarked whether to add edge specialization markups to the graph before conversion
-     * @return the human-readable representation of the graph
-     */
-    public static String graphToText(Graph graph, boolean pagEdgeSpecializationMarked) {
-        if (pagEdgeSpecializationMarked) {
-            GraphUtils.addEdgeSpecializationMarkup(graph);
-        }
-
-        Formatter fmt = new Formatter();
-        fmt.format("%s%n%n", GraphUtils.graphNodesToText(graph, "Graph Nodes:", ';'));
-        fmt.format("%s%n", GraphUtils.graphEdgesToText(graph, "Graph Edges:"));
-
-        // Graph Attributes
-        String graphAttributes = GraphUtils.graphAttributesToText(graph, "Graph Attributes:");
-        if (graphAttributes != null) {
-            fmt.format("%s%n", graphAttributes);
-        }
-
-        // Nodes Attributes
-        if (graph.getNumNodes() < 50) {
-            String graphNodeAttributes = GraphUtils.graphNodeAttributesToText(graph, "Graph Node Attributes:", ';');
-            if (graphNodeAttributes != null) {
-                fmt.format("%s%n", graphNodeAttributes);
-            }
-        }
-
-        Set<Triple> ambiguousTriples = graph.getAmbiguousTriples();
-        if (!ambiguousTriples.isEmpty()) {
-            fmt.format("%n%n%s", GraphUtils.triplesToText(ambiguousTriples, "Ambiguous triples (i.e. list of triples for which there is ambiguous data about whether they are colliders or not):"));
-        }
-
-        Set<Triple> underLineTriples = graph.getUnderLines();
-        if (!underLineTriples.isEmpty()) {
-            fmt.format("%n%n%s", GraphUtils.triplesToText(underLineTriples, "Underline triples:"));
-        }
-
-        Set<Triple> dottedUnderLineTriples = graph.getDottedUnderlines();
-        if (!dottedUnderLineTriples.isEmpty()) {
-            fmt.format("%n%n%s", GraphUtils.triplesToText(dottedUnderLineTriples, "Dotted underline triples:"));
-        }
-
-        return fmt.toString();
-    }
-
-    /**
      * Converts the attributes of nodes in a graph to text format.
      *
      * @param graph     the graph containing nodes
@@ -1699,6 +1538,8 @@ public final class GraphUtils {
 
             if (node.getNodeType() == NodeType.LATENT) {
                 sb.append("(").append(node.getName()).append(")");
+            } else if (node.getNodeType() == NodeType.SELECTION) {
+                sb.append("[").append(node.getName()).append("]");
             } else {
                 sb.append(node.getName());
             }
@@ -1757,7 +1598,7 @@ public final class GraphUtils {
     public static String triplesToText(Set<Triple> triples, String title) {
         Formatter fmt = new Formatter();
 
-        if (title != null && title.length() > 0) {
+        if (title != null && !title.isEmpty()) {
             fmt.format("%s%n", title);
         }
 
@@ -2188,40 +2029,6 @@ public final class GraphUtils {
     }
 
     /**
-     * Calculates visual-edge adjustments of a given graph G between two nodes x and y that are subsets of MB(Yma
-     *
-     * @param G                the input graph
-     * @param x                the source node
-     * @param y                the target node
-     * @param numSmallestSizes the number of smallest adjustment sets to return
-     * @param graphType        the type of the graph
-     * @return the adjustment sets as a set of sets of nodes
-     * @throws IllegalArgumentException if the input graph is not a legal MPDAG
-     */
-    public static Set<Set<Node>> visualEdgeAdjustments2(Graph G, Node x, Node y, int numSmallestSizes, GraphType graphType) {
-        Graph G2 = getGraphWithoutXToY(G, x, y, graphType);
-
-        if (G2 == null) {
-            return new HashSet<>();
-        }
-
-        if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
-            System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
-            return new HashSet<>();
-        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
-            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
-            return new HashSet<>();
-        }
-
-        // Get the Markov blanket for x in G2.
-        Set<Node> mbX = markovBlanket(y, G2);
-        mbX.remove(x);
-        mbX.remove(y);
-        mbX.removeAll(G.paths().getDescendants(x));
-        return getNMinimalSubsets(getGraphWithoutXToY(G, x, y, graphType), mbX, x, y, numSmallestSizes);
-    }
-
-    /**
      * This method calculates visible-edge adjustments for a given graph, two nodes, a number of smallest sizes, and a
      * graph type.
      *
@@ -2371,7 +2178,7 @@ public final class GraphUtils {
         while ((choice = sublists.next()) != null) {
             List<Node> subset = GraphUtils.asList(choice, _S);
             HashSet<Node> s = new HashSet<>(subset);
-            if (G.paths().isMSeparatedFrom(X, Y, s, false)) {
+            if (G.paths().isMSeparatedFrom(X, Y, s, true)) {
 
                 if (choice.length > size) {
                     size = choice.length;
@@ -2400,7 +2207,6 @@ public final class GraphUtils {
     public static Set<Node> anteriority(Graph G, Node... x) {
         Set<Node> anteriority = new HashSet<>();
 
-        Z:
         for (Node z : G.getNodes()) {
             for (Node _x : x) {
                 if (G.paths().existsDirectedPath(z, _x)) {
@@ -2488,9 +2294,7 @@ public final class GraphUtils {
 
             if (edgeSpec.lastIndexOf("-->") != -1) {
                 graph.addDirectedEdge(nodeA, nodeB);
-            }
-
-            if (edgeSpec.lastIndexOf("<--") != -1) {
+            } else if (edgeSpec.lastIndexOf("<--") != -1) {
                 graph.addDirectedEdge(nodeB, nodeA);
             } else if (edgeSpec.lastIndexOf("---") != -1) {
                 graph.addUndirectedEdge(nodeA, nodeB);
@@ -2508,6 +2312,8 @@ public final class GraphUtils {
             } else if (edgeSpec.lastIndexOf("--o") != -1) {
                 Edge _edge = new Edge(nodeA, nodeB, Endpoint.TAIL, Endpoint.CIRCLE);
                 graph.addEdge(_edge);
+            } else {
+                throw new IllegalArgumentException("Unknown edge spec: " + edgeSpec);
             }
         }
 
@@ -2844,9 +2650,7 @@ public final class GraphUtils {
      * @return The source node of the trek.
      */
     public static Node getTrekSource(Graph graph, List<Node> trek) {
-        Node y = trek.get(trek.size() - 1);
-
-        Node source = y;
+        Node source = trek.get(trek.size() - 1);
 
         // Find the first node where the direction is left to right.
         for (int i = 0; i < trek.size() - 1; i++) {
@@ -2863,7 +2667,8 @@ public final class GraphUtils {
     }
 
     /**
-     * Determines if the given bidirected edge has a latent confounder in the true graph.
+     * Determines if the given bidirected edge has a latent confounder in the true graph--that is, whether for X
+     * &lt;-&gt; Y there is a latent node Z such that X &lt;- (Z) -&gt; Y.
      *
      * @param edge      The edge to check.
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
@@ -2878,7 +2683,7 @@ public final class GraphUtils {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
-        List<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+        List<List<Node>> treks = trueGraph.paths().treks(x, y, 3);
         boolean existsLatentConfounder = false;
 
         for (List<Node> trek : treks) {
@@ -2903,50 +2708,44 @@ public final class GraphUtils {
      * <p>
      * TODO: this method is in a bit of a state of flux as various ideas are tried for repairing PAGs
      *
-     * @param pag                 the faulty PAG to be repaired
-     * @param fciOrient           the FciOrient object used for final orientation
-     * @param knowledge           the knowledge object used for orientation
-     * @param unshieldedColliders the set of unshielded colliders to be updated
-     * @param checkCyclicity      indicates whether or not to check for cyclicity
-     * @param verbose             indicates whether or not to print verbose output
+     * @param pag                      the faulty PAG to be repaired
+     * @param fciOrient                the FciOrient object used for final orientation
+     * @param knowledge                the knowledge object used for orientation
+     * @param unshieldedColliders      the set of unshielded colliders to be updated
+     * @param extraUnshieldedColliders the set of extra unshielded colliders oriented after the initial scoring step.
+     * @param verbose                  indicates whether or not to print verbose output
+     * @param selection                the set of nodes to consider for selection
      * @return the repaired PAG
      * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                     Set<Triple> unshieldedColliders, boolean checkCyclicity, boolean verbose) {
+                                     Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders,
+                                     boolean verbose, Set<Node> selection) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
-        pag = new EdgeListGraph(pag);
+        fciOrient.setVerbose(true);
         fciOrient.setKnowledge(knowledge);
+        fciOrient.setAllowedColliders(unshieldedColliders);
+        fciOrient.setDoR4(true);
 
-//        boolean anyChange = resolveAlmostCycles1(pag, knowledge, unshieldedColliders, verbose);
-        boolean anyChange = removeAlmostCycles2(unshieldedColliders, fciOrient, pag, knowledge, verbose);
+//        pag = new EdgeListGraph(pag);
+//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
-        if (checkCyclicity) {
-            anyChange = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose) || anyChange;
-        }
+        // Repair almost cycles and repair maximality. We assume here that there are no cycles in the graph that cannot
+        // be fixed by removing almost cycles. jdramsey 2024-8-13.
+        boolean changed1 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
+        boolean changed2 = repairMaximality(pag, fciOrient, verbose, selection);
+        boolean changed3 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
+        boolean changed4 = repairMaximality(pag, fciOrient, verbose, selection);
+        boolean changed = changed1 || changed2 || changed3 || changed4;
 
-        anyChange = repairMaximality(pag, verbose, anyChange) || anyChange;
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Doing final orientation...");
-        }
-
-        // Use the final R0R4 strategy from DAG to PAG, which does final orientation using DSEP for both R0 and
-        // R4. This is the DAG to PAG strategy, which we repeat here for clarity. jdramsey 2024-8-13.
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
-        FciOrient _fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
-        _fciOrient.setVerbose(verbose);
+        DagToPag dagToPag = new DagToPag(mag);
+        Graph pag2 = dagToPag.convert();
 
-        // This is R0 using DSEP
-        _fciOrient.ruleR0(pag, new HashSet<>());
-
-        // This uses the discriminating pth rule using DSEP.
-        _fciOrient.finalOrientation(pag);
-
-        if (!anyChange) {
+        if (!changed) {
             if (verbose) {
                 TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
             }
@@ -2956,132 +2755,47 @@ public final class GraphUtils {
             }
         }
 
-        return pag;
+        return pag2;
     }
 
-    private static boolean resolveAlmostCycles1(Graph pag, Knowledge knowledge, Set<Triple> unshieldedColliders, boolean verbose) {
-        boolean changed;
-        boolean anyChange = false;
+    /**
+     * Adds nondirected edges to the graph required for maximality. An edge x o-o y is added if there is an inducing
+     * path between x and y. These will be oriented later.
+     *
+     * @param pag       the graph to be repaired
+     * @param verbose   indicates whether to print verbose output
+     * @param selection the set of selection nodes to consider for selection
+     */
+    private static boolean repairMaximality(Graph pag, FciOrient fciOrient, boolean verbose,
+                                            Set<Node> selection) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Repairing maximality...");
+        }
 
-        do {
-            changed = false;
+        boolean changed = false;
 
-            for (Edge edge : pag.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    Node x = edge.getNode1();
-                    Node y = edge.getNode2();
-
-                    // If x ~~> y, this can't be x <-- y on pain of a cycle, and it can't be x <-> y because the
-                    // bidirected eedge semantics is wrong (the problem we're trying to fix), so it must actually
-                    // be x --> y. The basic issue here is that in order to know the edge is not bidirected, we
-                    // need to be able to "peer into the future" of the orientation process, which we can't do. As
-                    // it turns out, this edge can't have been bidirected in the first place, because it would have
-                    // been oriented to x --> y in the first place had we known that x ~~> y. Sp it's making a claim
-                    // about non-causality that can't be supported. So we just fix it in post-processing.
-                    if (pag.paths().isAncestorOf(x, y) && !knowledge.isForbidden(x.getName(), y.getName())) {
-                        pag.removeEdge(x, y);
-                        pag.addDirectedEdge(x, y);
-
-//                        List<Node> into = pag.getNodesInTo(x, Endpoint.ARROW);
-//
-//                        for (Node _into : into) {
-////                          pag.setEndpoint(_into, x, Endpoint.CIRCLE);
-//
-//                            if (pag.isAdjacentTo(_into, x) && !pag.isAdjacentTo(_into, y)) {
-//                                pag.setEndpoint(_into, x, Endpoint.CIRCLE);
-//                                pag.addNondirectedEdge(_into, y);
-//                            }
-//
-//                            if (unshieldedColliders != null) {
-//                                unshieldedColliders.remove(new Triple(_into, x, y));
-//                            }
-//                        }
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + x + " ~~> " + y + ", oriented " + y + " <-> " + x + " as " + x + " -> " + y + ".");
-                        }
-
-                        changed = true;
-                        anyChange = true;
-                    } else if (pag.paths().isAncestorOf(y, x)) {// && !knowledge.isForbidden(y.getName(), x.getName())) {
-                        pag.removeEdge(y, x);
-                        pag.addDirectedEdge(y, x);
-
-                        List<Node> into = pag.getNodesInTo(y, Endpoint.ARROW);
-
-                        for (Node _into : into) {
-//                            pag.setEndpoint(_into, y, Endpoint.CIRCLE);
-                            if (pag.isAdjacentTo(_into, y) && !pag.isAdjacentTo(_into, x)) {
-                                pag.setEndpoint(_into, y, Endpoint.CIRCLE);
-                                pag.addNondirectedEdge(_into, x);
-                            }
-
-                            if (unshieldedColliders != null) {
-                                unshieldedColliders.remove(new Triple(_into, y, x));
-                            }
-
-                        }
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Because " + y + " ~~> " + x + ", oriented " + x + " <-> " + y + " as " + y + " -> " + x + ".");
-                        }
-
-                        changed = true;
-                        anyChange = true;
-                    }
-                }
-            }
-        } while (changed);
-
-        return anyChange;
-    }
-
-    private static boolean repairMaximality(Graph pag, boolean verbose, boolean anyChange) {
         // Repair maximality.
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
-                if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y)) {
-//                        pag.addNondirectedEdge(x, y);
-                    pag.addNondirectedEdge(x, y); // Zhang 2008
-
-                    if (!pag.paths().existsDirectedPath(x, y)) {
-                        pag.setEndpoint(y, x, Endpoint.ARROW);
-                    }
-
-                    if (!pag.paths().existsDirectedPath(y, x)) {
-                        pag.setEndpoint(x, y, Endpoint.ARROW);
-                    }
+                if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, selection)) {
+                    pag.addNondirectedEdge(x, y);
 
                     if (verbose) {
-                        TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added bidirected edge " + x + " <-> " + y + ".");
+                        TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added nondirected edge " + x + " <-> " + y + ".");
                     }
 
-//                        changed = true;
-                    anyChange = true;
+                    changed = true;
                 }
             }
         }
-        return anyChange;
-    }
 
+        fciOrient.finalOrientation(pag);
 
-    private static void adjustAlmostCycle(Graph pag, Set<Triple> unshieldedColliders, Node x, Node y) {
-        pag.setEndpoint(y, x, Endpoint.CIRCLE);
-
-        for (Node z : pag.getNodesInTo(x, Endpoint.ARROW)) {
-            if (z == y) continue;
-            if (!pag.isAdjacentTo(z, y)) {// && pag.getEdge(z, x).pointsTowards(x)) {
-                pag.setEndpoint(z, x, Endpoint.CIRCLE);
-                unshieldedColliders.remove(new Triple(z, x, y));
-            }
+        if (verbose) {
+            TetradLogger.getInstance().log("All done repairing maximality.");
         }
 
-        for (Node w : pag.getNodesInTo(y, Endpoint.ARROW)) {
-            if (w == x) continue;
-            if (!pag.isAdjacentTo(w, x)) {
-                unshieldedColliders.add(new Triple(x, y, w));
-            }
-        }
+        return changed;
     }
 
     /**
@@ -3214,36 +2928,6 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns an undirected path matrix based on the given graph and power. The undirected path matrix represents the
-     * existence of a path of a specific length between any two nodes in the graph.
-     *
-     * @param graph the graph from which to create the undirected path matrix
-     * @param power the power used to calculate the undirected path matrix
-     * @return the undirected path matrix
-     */
-    public static Matrix getUndirectedPathMatrix(Graph graph, int power) {
-        List<Node> nodes = graph.getNodes();
-        int numNodes = graph.getNumNodes();
-
-        Matrix m = new Matrix(numNodes, numNodes);
-
-        for (Edge e : new HashSet<>(graph.getEdges())) {
-            int i = nodes.indexOf(e.getNode1());
-            int j = nodes.indexOf(e.getNode2());
-            m.set(i, j, 1);
-            m.set(j, i, 1);
-        }
-
-        Matrix prod = new Matrix(m);
-
-        for (int i = 1; i <= power; i++) {
-            prod = prod.times(m);
-        }
-
-        return prod;
-    }
-
-    /**
      * Creates a new list containing the elements of the given array.
      *
      * @param choice the array of integers to be converted to a list
@@ -3344,7 +3028,7 @@ public final class GraphUtils {
         Set<Node> dsep = new HashSet<>();
         Set<Node> path = new HashSet<>();
 
-        dsepFollowPath2(x, x, y, dsep, path, G);
+        dsepFollowPath(x, x, y, dsep, path, G);
 
         dsep.remove(x);
         dsep.remove(y);
@@ -3363,7 +3047,7 @@ public final class GraphUtils {
      * @param path The current path.
      * @param G    The MAG.
      */
-    private static void dsepFollowPath2(Node a, Node x, Node y, Set<Node> dsep, Set<Node> path, Graph G) {
+    private static void dsepFollowPath(Node a, Node x, Node y, Set<Node> dsep, Set<Node> path, Graph G) {
 
         if (path.contains(a)) return;
         path.add(a);
@@ -3384,7 +3068,7 @@ public final class GraphUtils {
                     if (G.paths().isAncestorOf(b, x) || G.paths().isAncestorOf(b, y)) {
                         dsep.add(b);
                         dsep.add(c);
-                        dsepFollowPath2(b, x, y, dsep, path, G);
+                        dsepFollowPath(b, x, y, dsep, path, G);
                     }
                 }
 
@@ -3398,29 +3082,147 @@ public final class GraphUtils {
     }
 
     /**
+     * Returns D-SEP(x, y) for a MAG G. Somewhat optimized version.
+     * <p>
+     * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
+     *
+     * @param x The one endpoint.
+     * @param y The other endpoint.
+     * @param G The MAG.
+     * @return D-SEP(x, y) for MAG G.
+     */
+    public static Set<Node> dsep2(Node x, Node y, Graph G) {
+        Set<Node> dsep = new HashSet<>();
+        Set<Node> visited = new HashSet<>();
+
+        // Precompute ancestors for efficiency
+        Set<Node> ancestorsOfX = new HashSet<>(G.paths().getAncestors(x));
+        Set<Node> ancestorsOfY = new HashSet<>(G.paths().getAncestors(y));
+
+        // Initialize stack for iterative DFS
+        Deque<Node> stack = new ArrayDeque<>();
+        stack.push(x);
+
+        while (!stack.isEmpty()) {
+            Node a = stack.pop();
+
+            if (visited.contains(a)) continue;
+            visited.add(a);
+
+            for (Node b : G.getAdjacentNodes(a)) {
+                if (visited.contains(b)) continue;
+
+                // Add to D-SEP if edge does not point away
+                if (G.getEdge(a, b).getDistalEndpoint(a) != Endpoint.ARROW) {
+                    dsep.add(b);
+                }
+
+                for (Node c : G.getAdjacentNodes(b)) {
+                    if (visited.contains(c)) continue;
+
+                    // Check for collider and ancestor condition
+                    if (G.isDefCollider(a, b, c)) {
+                        if (ancestorsOfX.contains(b) || ancestorsOfY.contains(b)) {
+                            dsep.add(b);
+                            dsep.add(c);
+                            stack.push(b); // Continue exploration from b
+                        }
+                    }
+                }
+            }
+        }
+
+        dsep.remove(x);
+        dsep.remove(y);
+        return dsep;
+    }
+
+    /**
+     * Returns D-SEP(x, y) for a MAG G. This method implements a reachability style.
+     * <p>
+     * We trust the user to make sure the given graph is a MAG or IPG; we don't check this.
+     *
+     * @param x The one endpoint.
+     * @param y The other endpoint.
+     * @param G The MAG.
+     * @return D-SEP(x, y) for MAG G.
+     */
+    public static Set<Node> dsepReachability(Node x, Node y, Graph G) {
+        Set<Node> dsep = new HashSet<>();
+        Set<Node> visited = new HashSet<>();
+        Queue<Node> queue = new LinkedList<>();
+
+        // Start the reachability exploration from x
+        queue.add(x);
+        visited.add(x);
+
+        while (!queue.isEmpty()) {
+            Node current = queue.poll();
+
+            for (Node neighbor : G.getAdjacentNodes(current)) {
+                if (visited.contains(neighbor)) continue;
+
+                // Check edge validity
+                if (G.getEdge(current, neighbor).getDistalEndpoint(current) != Endpoint.ARROW) {
+                    dsep.add(neighbor);
+                    queue.add(neighbor);
+                    visited.add(neighbor);
+                } else {
+                    // Check collider conditions
+                    for (Node next : G.getAdjacentNodes(neighbor)) {
+                        if (visited.contains(next)) continue;
+
+                        if (G.isDefCollider(current, neighbor, next) &&
+                            (G.paths().isAncestorOf(neighbor, x) || G.paths().isAncestorOf(neighbor, y))) {
+                            dsep.add(neighbor);
+                            dsep.add(next);
+                            queue.add(neighbor);
+                            queue.add(next);
+                            visited.add(neighbor);
+                            visited.add(next);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Remove x and y from the D-SEP set
+        dsep.remove(x);
+        dsep.remove(y);
+
+        return dsep;
+    }
+
+    /**
      * Removes almost cycles from a graph.
      *
-     * @param unshieldedColliders a set of unshielded colliders
-     * @param fciOrient           the FciOrient object
-     * @param pag                 the graph
-     * @param knowledge           the knowledge base
-     * @param verbose             a flag indicating whether to log verbose output
-     * @return true if any change was made to the graph, false otherwise
+     * @param pag                      the graph
+     * @param unshieldedColliders      a set of unshielded colliders
+     * @param extraUnshieldedColliders a set of unshielded colliders oriented after the initial scoring step.
+     * @param fciOrient                the FciOrient object
+     * @param knowledge                the knowledge base
+     * @param verbose                  a flag indicating whether to log verbose output
+     * @return AtomicBoolean(true) if any almost cycles were removed, AtomicBoolean(false) otherwise
      */
-    public static boolean removeAlmostCycles2(Set<Triple> unshieldedColliders, FciOrient fciOrient,
-                                              Graph pag, Knowledge knowledge, boolean verbose) {
+    public static boolean removeAlmostCycles(Graph pag, Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders, FciOrient fciOrient,
+                                             Knowledge knowledge, boolean verbose) {
         if (verbose) {
             TetradLogger.getInstance().log("Removing almost cycles.");
         }
 
-        boolean anyChange = false;
+        boolean changed = false;
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.finalOrientation(pag);
         unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
         fciOrient.setInitialAllowedColliders(null);
 
-        while (true) {
+        Set<Edge> _almostCycles = new HashSet<>();
+
+        int round = 0;
+
+        while (!Thread.currentThread().isInterrupted()) {
+            round++;
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
             // Make a list of all <x, y> where x ↔ y and x ~~> y.
@@ -3438,13 +3240,16 @@ public final class GraphUtils {
                 }
             }
 
-            if (almostCyclesSet.isEmpty()) {
+            if (almostCyclesSet.equals(_almostCycles)) {
                 break;
             }
 
+            _almostCycles = new HashSet<>(almostCyclesSet);
+
             if (verbose) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("Almost cycles: ");
+
+                sb.append("Almost cycles round ").append(round).append(": ");
 
                 for (Edge _almostCycle : almostCyclesSet) {
                     sb.append(_almostCycle.getNode1()).append(" ~~> ").append(_almostCycle.getNode2()).append(" ");
@@ -3463,28 +3268,27 @@ public final class GraphUtils {
                 // Find all unshielded triples z *→ x ↔ y in subsequentUnshieldedColliders
                 Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
 
-                for (Triple triple : new HashSet<>(unshieldedColliders)) {
+                for (Triple triple : new HashSet<>(extraUnshieldedColliders)) {
                     if (triple.getY().equals(x) && triple.getZ().equals(y)) {
                         if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
                             unshieldedColliders.remove(triple);
+                            extraUnshieldedColliders.remove(triple);
                             unshieldedTriplesIntoX.add(triple);
-                            anyChange = true;
+                            changed = true;
                         }
                     } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
                         if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
                             unshieldedColliders.remove(triple);
+                            extraUnshieldedColliders.remove(triple);
                             unshieldedTriplesIntoX.add(triple);
-                            anyChange = true;
+                            changed = true;
                         }
                     }
                 }
 
-                // Remove any unshielded collider in unshieldedTriplesIntoX from the _unshieldedColliders.
-                if (!unshieldedColliders.isEmpty()) {
-                    if (verbose) {
-                        TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
-                        TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
-                    }
+                if (!unshieldedColliders.isEmpty() && verbose) {
+                    TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
+                    TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
                 }
             }
 
@@ -3512,18 +3316,19 @@ public final class GraphUtils {
 
             fciOrient.setVerbose(false);
             fciOrient.setAllowedColliders(unshieldedColliders);
+            fciOrient.setDoR4(false);
             fciOrient.finalOrientation(pag);
 
             if (verbose) {
                 TetradLogger.getInstance().log("Finished final orientation.");
             }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("All done removing almost cycles, round " + round + ".");
+            }
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("All done removing almost cycles.");
-        }
-
-        return anyChange;
+        return changed;
     }
 
     /**
@@ -3534,7 +3339,7 @@ public final class GraphUtils {
      * @param pag                 the graph to remove cycles from
      * @param knowledge           the knowledge base used by the FCI algorithm
      * @param verbose             a flag indicating whether to log verbose information
-     * @return true if any cycles were removed, false otherwise
+     * @return AtomicBoolean(true) if any cycles were removed, AtomicBoolean(false) otherwise
      */
     public static boolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
                                        Graph pag, Knowledge knowledge, boolean verbose) {
@@ -3542,7 +3347,7 @@ public final class GraphUtils {
             TetradLogger.getInstance().log("Removing cycles.");
         }
 
-        boolean anyChange = false;
+        boolean changed = false;
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.finalOrientation(pag);
@@ -3564,7 +3369,7 @@ public final class GraphUtils {
                             if (pag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
                                 unshieldedColliders.remove(triple);
                                 unshieldedTriplesIntoX.add(triple);
-                                anyChange = true;
+                                changed = true;
                             }
                         }
                     }
@@ -3630,7 +3435,7 @@ public final class GraphUtils {
             TetradLogger.getInstance().log("All done removing cycles.");
         }
 
-        return anyChange;
+        return changed;
     }
 
     /**
@@ -3655,31 +3460,24 @@ public final class GraphUtils {
      * @param knowledge           the knowledge object.
      */
     public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge) {
-        for (Triple triple : unshieldedColliders) {
+        for (Triple triple : new HashSet<>(unshieldedColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
 
+            if (!pag.isAdjacentTo(x, b) || !pag.isAdjacentTo(b, y)) {
+                unshieldedColliders.remove(triple);
+                continue;
+            }
+
             // We can avoid creating almost cycles here, but this does not solve the problem, as we can still
             // creat almost cycles in final orientation.
-            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y) && !couldCreateAlmostCycle(pag, x, y)) {
+            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y)) {// && !couldCreateAlmostCycle(pag, x, y)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
                 pag.removeEdge(x, y);
             }
         }
-    }
-
-    /**
-     * Checks if creating an almost cycle between nodes x, b, and y is possible in a given graph.
-     *
-     * @param pag The graph to check if the almost cycle can be created.
-     * @param x   The first node of the almost cycle.
-     * @param y   The third node of the almost cycle.
-     * @return True if creating the almost cycle is possible, false otherwise.
-     */
-    public static boolean couldCreateAlmostCycle(Graph pag, Node x, Node y) {
-        return pag.paths().isAncestorOf(x, y) || pag.paths().isAncestorOf(y, x);
     }
 
     /**
@@ -3732,7 +3530,7 @@ public final class GraphUtils {
      * @param n the nodes to check for distinctness
      * @return true if x, b, and y are distinct; false otherwise
      */
-    public static boolean distinct(Node ... n) {
+    public static boolean distinct(Node... n) {
         for (int i = 0; i < n.length; i++) {
             for (int j = i + 1; j < n.length; j++) {
                 if (n[i].equals(n[j])) {
@@ -3742,6 +3540,91 @@ public final class GraphUtils {
         }
 
         return true;
+    }
+
+    /**
+     * Initializes and evaluates p-values for local Markov properties in a given graph.
+     *
+     * @param dag          The input graph, a DAG (Directed Acyclic Graph).
+     * @param ensureMarkov Flag indicating that the method should proceed only if set to true.
+     * @param test         The statistical test instance used to check for conditional independence.
+     * @param pValues      A map to store the p-values, indexed by pairs of nodes.
+     * @return The percentage of p-values that are less than the significance level (alpha) used in the test. Returns
+     * 0.0 if the number of p-values is less than 5 or if ensureMarkov is false or test instance is invalid.
+     * @throws IllegalArgumentException if ensureMarkov is false.
+     */
+    public static double localMarkovInitializePValues(Graph dag, boolean ensureMarkov, IndependenceTest test,
+                                                      Map<Pair<Node, Node>, Set<Double>> pValues) {
+        if (!ensureMarkov) {
+            throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
+        }
+
+        if (test == null || test instanceof MsepTest) {
+            return Double.NaN;
+        }
+
+//        MsepTest msep = new MsepTest(dag);
+
+        for (Node x : dag.getNodes()) {
+            Set<Node> parentsX = new HashSet<>(dag.getParents(x));
+
+            for (Node y : dag.getNodes()) {
+                if (x.equals(y)) {
+                    continue;
+                }
+
+                if (!parentsX.contains(y) && !dag.paths().existsDirectedPath(x, y, null)) {
+                    IndependenceResult result = test.checkIndependence(x, y, parentsX);
+                    if (result.isIndependent()) {
+//                        if (msep.isMSeparated(x, y, parentsX)) {
+                        pValues.putIfAbsent(Pair.of(x, y), new HashSet<>());
+                        pValues.get(Pair.of(x, y)).add(result.getPValue());
+//                        }
+                    }
+                }
+            }
+        }
+
+        // Calculate the percentage of p-values in the pValues map that are less than alpha
+        int numPValues = 0;
+        int numSignificant = 0;
+
+        for (Pair<Node, Node> pair : pValues.keySet()) {
+            numPValues += pValues.get(pair).size();
+
+            for (Double pValue : pValues.get(pair)) {
+                if (pValue < test.getAlpha()) {
+                    numSignificant++;
+                }
+            }
+        }
+
+        return numPValues < 5 ? 0.0 : (double) numSignificant / numPValues;
+    }
+
+    /**
+     * Calculates the p-value using the Anderson-Darling test for a given set of p-values from an independence test.
+     *
+     * @param _pValues A map where each key is a pair of nodes, and each value is a set of p-values associated with that
+     *                 node pair.
+     * @return The p-value calculated from the Anderson-Darling test.
+     */
+    public static double pValuesAdP(Map<Pair<Node, Node>, Set<Double>> _pValues) {
+        // Calculate the percentage of p-values in the _pValues map that are less than alpha
+        List<Double> pValues = new ArrayList<>();
+
+        for (Pair<Node, Node> pair : _pValues.keySet()) {
+            pValues.addAll(_pValues.get(pair));
+        }
+
+        // convert the List of p-values to a double[] array.
+        double[] pValuesArray = new double[pValues.size()];
+        for (int i = 0; i < pValues.size(); i++) {
+            pValuesArray[i] = pValues.get(i);
+        }
+
+        AndersonDarlingTest _test = new AndersonDarlingTest(pValuesArray);
+        return _test.getP();
     }
 
     /**
@@ -3758,6 +3641,19 @@ public final class GraphUtils {
          * The PAG graph type.
          */
         PAG
+    }
+
+    // Helper class for BFS path tracking
+    static class PathElement {
+        Node current;         // Current node
+        Node previous;        // Previous node on the path
+        Node beforePrevious;  // Two steps back in the path
+
+        PathElement(Node current, Node previous, Node beforePrevious) {
+            this.current = current;
+            this.previous = previous;
+            this.beforePrevious = beforePrevious;
+        }
     }
 
     /**
@@ -3914,7 +3810,10 @@ public final class GraphUtils {
          * @param edgesRemoved a {@link java.util.List} object
          * @param counts       a int[][]
          */
-        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int ahdFn, int ahdFp, int ahdCorrect, double adjPrec, double adjRec, double ahdPrec, double ahdRec, int shd, List<Edge> edgesAdded, List<Edge> edgesRemoved, int[][] counts) {
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int ahdFn, int ahdFp,
+                               int ahdCorrect, double adjPrec, double adjRec, double ahdPrec,
+                               double ahdRec, int shd, List<Edge> edgesAdded, List<Edge> edgesRemoved,
+                               int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;

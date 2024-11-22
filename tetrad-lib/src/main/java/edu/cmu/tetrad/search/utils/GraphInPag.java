@@ -61,8 +61,7 @@ public final class GraphInPag {
             if (dag.getNode(pagNode.getName()) == null) {
                 return false;
             }
-            if (dag.getNode(pagNode.getName()).getNodeType() != NodeType
-                    .MEASURED) {
+            if (dag.getNode(pagNode.getName()).getNodeType() != NodeType.MEASURED) {
                 return false;
             }
         }

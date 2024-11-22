@@ -37,6 +37,10 @@ public enum NodeType {
      */
     LATENT,
     /**
+     * Constant <code>SELECTION</code>
+     */
+    SELECTION,
+    /**
      * Constant <code>ERROR</code>
      */
     ERROR,

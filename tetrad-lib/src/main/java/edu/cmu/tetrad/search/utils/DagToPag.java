@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -27,10 +27,10 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 
 /**
@@ -78,27 +78,26 @@ public final class DagToPag {
      */
     public static Graph calcAdjacencyGraph(Graph dag) {
         List<Node> allNodes = dag.getNodes();
-        List<Node> measured = new ArrayList<>(allNodes);
-        measured.removeIf(node -> node.getNodeType() != NodeType.MEASURED);
+
+        List<Node> selection = allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        List<Node> measured = allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
 
         Graph graph = new EdgeListGraph(measured);
 
-        for (int i = 0; i < measured.size(); i++) {
-            for (int j = i + 1; j < measured.size(); j++) {
-                Node n1 = measured.get(i);
+        IntStream.range(0, measured.size()).parallel().forEach(i -> {
+            Node n1 = measured.get(i);
+            IntStream.range(i + 1, measured.size()).forEach(j -> {
                 Node n2 = measured.get(j);
-
-                if (graph.isAdjacentTo(n1, n2)) continue;
-
-                List<Node> inducingPath = dag.paths().getInducingPath(n1, n2);
-
-                boolean exists = inducingPath != null;
-
-                if (exists) {
-                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                if (!graph.isAdjacentTo(n1, n2)) {
+                    if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
+                        graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                    }
                 }
-            }
-        }
+            });
+        });
 
         return graph;
     }
@@ -118,21 +117,22 @@ public final class DagToPag {
         return new R0R4StrategyTestBased(new MsepTest(mag)) {
             @Override
             public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
+
+                // We assume the MAG already has the unshielded colliders oriented that the algorithm
+                // says should be oriented.
                 Graph mag1 = ((MsepTest) getTest()).getGraph();
+                return !mag1.isAdjacentTo(i, k) && mag1.isDefCollider(i, j, k);
 
-                // Could copy the unshielded colliders from the mag but we will use D-SEP.
-//                return mag.isDefCollider(i, j, k) && !mag.isAdjacentTo(i, k);
-
-                Set<Node> dsepi = mag1.paths().dsep(i, k);
-                Set<Node> dsepk = mag1.paths().dsep(k, i);
-
-                if (getTest().checkIndependence(i, k, dsepi).isIndependent()) {
-                    return !dsepi.contains(j);
-                } else if (getTest().checkIndependence(k, i, dsepk).isIndependent()) {
-                    return !dsepk.contains(j);
-                }
-
-                return false;
+//                Set<Node> dsepi = mag1.paths().dsep(i, k);
+//                Set<Node> dsepk = mag1.paths().dsep(k, i);
+//
+//                if (getTest().checkIndependence(i, k, dsepi).isIndependent()) {
+//                    return !dsepi.contains(j);
+//                } else if (getTest().checkIndependence(k, i, dsepk).isIndependent()) {
+//                    return !dsepk.contains(j);
+//                }
+//
+//                return false;
             }
 
             /**
@@ -140,15 +140,17 @@ public final class DagToPag {
              *
              * @param discriminatingPath the discriminating path
              * @param graph              the graph representation
-             * @return a pair of the discriminating path construct and a boolean indicating whether the orientation was determined.
+             * @param vNodes            the set of nodes that are V-nodes
+             * @return a pair of the discriminating path construct and a boolean indicating whether the
+             * orientation was determined.
              * @throws IllegalArgumentException if 'e' is adjacent to 'c'
              * @see DiscriminatingPath
              */
-            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
-                Node e = discriminatingPath.getE();
-                Node a = discriminatingPath.getA();
-                Node b = discriminatingPath.getB();
-                Node c = discriminatingPath.getC();
+            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
+                Node x = discriminatingPath.getX();
+                Node w = discriminatingPath.getW();
+                Node v = discriminatingPath.getV();
+                Node y = discriminatingPath.getY();
 
                 // Check that the discriminating path construct still exists in the graph.
                 if (!discriminatingPath.existsIn(graph)) {
@@ -157,59 +159,42 @@ public final class DagToPag {
 
                 // Check that the discriminating path has not yet been oriented; we don't need to list the ones that have
                 // already been oriented.
-                if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+                if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
                     return Pair.of(discriminatingPath, false);
                 }
 
-                if (graph.isAdjacentTo(e, c)) {
-                    throw new IllegalArgumentException("e and c must not be adjacent");
+                if (graph.isAdjacentTo(x, y)) {
+                    throw new IllegalArgumentException("x and y must not be adjacent");
                 }
 
-                Graph mag1 = ((MsepTest) getTest()).getGraph();
-
-                Set<Node> dsepe = GraphUtils.dsep(e, c, mag1);
-                Set<Node> dsepc = GraphUtils.dsep(c, e, mag1);
-
-                Set<Node> sepset = null;
-
-                if (getTest().checkIndependence(e, c, dsepe).isIndependent()) {
-                    sepset = dsepe;
-                } else if (getTest().checkIndependence(c, e, dsepc).isIndependent()) {
-                    sepset = dsepc;
-                }
-
-                if (sepset == null) {
-                    return Pair.of(discriminatingPath, false);
-                }
+                Set<Node> sepset = mag.isAdjacentTo(x, y) ? null : mag.paths().anteriority(x, y);
 
                 if (verbose) {
-                    TetradLogger.getInstance().log("Sepset for e = " + e + " and c = " + c + " = " + sepset);
+                    TetradLogger.getInstance().log("Sepset for x = " + x + " and y = " + y + " = " + sepset);
                 }
 
-                boolean collider = !sepset.contains(b);
-
-                if (collider) {
-                    if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
-                        return Pair.of(discriminatingPath, false);
-                    }
-
-                    if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                        return Pair.of(discriminatingPath, false);
-                    }
-
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                if (sepset != null && sepset.contains(v)) {
+                    graph.setEndpoint(y, v, Endpoint.TAIL);
 
                     if (verbose) {
-                        TetradLogger.getInstance().log("R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        TetradLogger.getInstance().log("R4: Definite discriminating path tail rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
                     }
 
                     return Pair.of(discriminatingPath, true);
                 } else {
-                    graph.setEndpoint(c, b, Endpoint.TAIL);
+                    if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
+                        return Pair.of(discriminatingPath, false);
+                    }
+
+                    if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
+                        return Pair.of(discriminatingPath, false);
+                    }
+
+                    graph.setEndpoint(w, v, Endpoint.ARROW);
+                    graph.setEndpoint(y, v, Endpoint.ARROW);
 
                     if (verbose) {
-                        TetradLogger.getInstance().log("R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
+                        TetradLogger.getInstance().log("R4: Definite discriminating path collider rule x = " + x + " " + GraphUtils.pathString(graph, w, v, y));
                     }
 
                     return Pair.of(discriminatingPath, true);
@@ -229,7 +214,6 @@ public final class DagToPag {
      * @return Returns the converted PAG.
      */
     public Graph convert() {
-
         Graph mag;
 
         if (dag.paths().isLegalDag()) {
@@ -237,7 +221,8 @@ public final class DagToPag {
         } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
             mag = GraphTransforms.zhangMagFromPag(dag);
         } else {
-            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no latents" + "but possibly with circle endpoints.");
+            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no " +
+                                               "latents but possibly with circle endpoints.");
         }
 
         Graph pag = new EdgeListGraph(mag);
@@ -249,8 +234,6 @@ public final class DagToPag {
 
         fciOrient.ruleR0(pag, new HashSet<>());
         fciOrient.finalOrientation(pag);
-
-//        finalOrientation(mag, pag, knowledge, verbose);
 
         return pag;
     }

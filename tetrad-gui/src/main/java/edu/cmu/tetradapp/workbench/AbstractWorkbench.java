@@ -1154,18 +1154,18 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             setMaxY((int) getPreferredSize().getHeight());
         }
 
-        // Create a graph's legend
-        if (!graph.getAllAttributes().isEmpty()) {
-
-            final int margin = 5;
-
-            DisplayLegend legend = new DisplayLegend(graph.getAllAttributes());
-            legend.setLocation(margin, margin);
-
-            // add the display node
-            add(legend, 0);
-
-        }
+//        // Create a graph's legend
+//        if (!graph.getAllAttributes().isEmpty()) {
+//
+//            final int margin = 5;
+//
+//            DisplayLegend legend = new DisplayLegend(graph.getAllAttributes());
+//            legend.setLocation(margin, margin);
+//
+//            // add the display node
+//            add(legend, 0);
+//
+//        }
 
         revalidate();
 //        repaint();
@@ -2157,17 +2157,18 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Object source = e.getSource();
 
         if (source instanceof DisplayEdge) {
-            System.out.println("source = " + source);
-
             IDisplayEdge displayEdge = (DisplayEdge) source;
             Edge edge = displayEdge.getModelEdge();
 
-            if (this.graph.containsEdge(edge)) {
+            // Bootstrapping Distribution
+            List<EdgeTypeProbability> edgeProb = new ArrayList<>();
+            String endpoint1 = null;
+            String endpoint2 = null;
 
-                // Bootstrapping Distribution
-                List<EdgeTypeProbability> edgeProb = edge.getEdgeTypeProbabilities();
+            if (edge != null) {
+                edgeProb = edge.getEdgeTypeProbabilities();
 
-                String endpoint1 = switch (edge.getEndpoint1()) {
+                endpoint1 = switch (edge.getEndpoint1()) {
                     case TAIL -> "-";
                     case ARROW -> "<";
                     case CIRCLE -> "o";
@@ -2175,14 +2176,16 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     case NULL -> "Null";
                 };
 
-                String endpoint2 = switch (edge.getEndpoint2()) {
+                endpoint2 = switch (edge.getEndpoint2()) {
                     case TAIL -> "-";
                     case ARROW -> ">";
                     case CIRCLE -> "o";
                     case STAR -> "*";
                     case NULL -> "Null";
                 };
+            }
 
+            if (this.graph.containsEdge(edge)) {
                 if (edgeProb.isEmpty()) {
                     StringBuilder _properties = new StringBuilder();
                     if (edge.getProperties() != null && !edge.getProperties().isEmpty()) {
@@ -2248,7 +2251,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     }
 
                     text.append("</html>");
-                    setEdgeToolTip(edge, text.toString());
+
+                  setEdgeToolTip(edge, text.toString());
                 }
             }
         } else if (source instanceof DisplayNode displayNode) {

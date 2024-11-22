@@ -22,18 +22,19 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import static org.junit.Assert.*;
+import static edu.cmu.tetrad.search.SepsetFinder.blockPathsLocalMarkov;
+import static edu.cmu.tetrad.search.SepsetFinder.blockPathsRecursively;
+import static org.junit.Assert.assertTrue;
 
 /**
  * The TestSepsetMethods class  is responsible for testing various methods for finding a sepset of two nodes in a DAG.
@@ -46,11 +47,36 @@ public class TestSepsetMethods {
      */
     @Test
     public void test1() {
-        RandomUtil.getInstance().setSeed(384828384L);
-
         int numNodes = 20;
         int numEdges = 40;
-        int numReps = 10;
+        int numLatentsForPag = 5; // Ignored for the DAG or CPDAG cases.
+        int numReps = 100;
+
+        enum GraphType {
+            DAG, CPDAG, PAG
+        }
+
+        GraphType graphType = GraphType.DAG;
+
+        enum Method {
+            BLOCK_PATHS_WITH_MARKOV_BLANKET,
+            BLOCK_PATHS_LOCAL_MARKOV,
+            BLOCK_PATHS_GREEDY,
+            BLOCK_PATHS_MAX_P,
+            BLOCK_PATHS_MIN_P,
+            BLOCK_PATHS_RECURSIVELY,
+            BLOCK_PATHS_NONCOLLIDERS_ONLY
+        }
+
+        List<Method> methods = List.of(
+//                Method.BLOCK_PATHS_WITH_MARKOV_BLANKET,
+//                Method.BLOCK_PATHS_LOCAL_MARKOV,
+                Method.BLOCK_PATHS_RECURSIVELY
+//                Method.BLOCK_PATHS_NONCOLLIDERS_ONLY,
+//                Method.BLOCK_PATHS_GREEDY,
+//                Method.BLOCK_PATHS_MAX_P,
+//                Method.BLOCK_PATHS_MIN_P
+        );
 
         // Make a list of numNodes nodes.
         List<Node> nodes = new ArrayList<>();
@@ -59,13 +85,29 @@ public class TestSepsetMethods {
             nodes.add(new ContinuousVariable("X" + i));
         }
 
-        Graph dag = RandomGraph.randomDag(nodes, 0, numEdges, 100, 100, 100, false);
+        Graph graph;
 
-        long[] timeSums = new long[6];
+        switch (graphType) {
+            case DAG -> graph = RandomGraph.randomDag(nodes, 0, numEdges, 100, 100, 100, false);
+            case CPDAG -> {
+                graph = RandomGraph.randomDag(nodes, 0, numEdges, 100, 100, 100, false);
+                graph = GraphTransforms.dagToCpdag(graph);
+            }
+            case PAG -> {
+                graph = RandomGraph.randomDag(nodes, numLatentsForPag, numEdges, 100, 100, 100, false);
+                graph = GraphTransforms.dagToPag(graph);
+            }
+            default -> throw new IllegalArgumentException("Unknown graph type: " + graphType);
+        }
+
+        nodes = graph.getNodes();
+        numNodes = nodes.size();
+        numEdges = graph.getNumEdges();
+
+        long[] timeSums = new long[methods.size()];
+        int[] numPass = new int[methods.size()];
 
         for (int i = 0; i < numReps; i++) {
-
-            // Pick two distinct nodes x and y randomly from the list of nodes.
             Node x, y;
 
             do {
@@ -73,134 +115,135 @@ public class TestSepsetMethods {
                 y = nodes.get((int) (Math.random() * numNodes));
             } while (x.equals(y));
 
-            Edge e = dag.getEdge(x, y);
+            if (graph.isAdjacentTo(x, y)) {
+                i--;
+                continue;
+            }
+
+            Edge e = graph.getEdge(x, y);
             System.out.println("\n\n###Rep " + (i + 1) + " Checking nodes " + x + " and " + y + ". The edge is " + ((e != null) ? e : "absent"));
 
-            long[] times = checkNodePair(dag, x, y);
+            MsepTest msepTest = new MsepTest(graph, graphType == GraphType.PAG);
 
-            for (int j = 0; j < times.length; j++) {
-                timeSums[j] += times[j];
+            for (int k = 0; k < methods.size(); k++) {
+                Method method = methods.get(k);
+                Set<Node> blockingSet;
+                long start = System.currentTimeMillis();
+
+                switch (method) {
+                    case BLOCK_PATHS_WITH_MARKOV_BLANKET -> {
+                        blockingSet = SepsetFinder.blockPathsWithMarkovBlanket(x, graph);
+                    }
+                    case BLOCK_PATHS_RECURSIVELY -> {
+                        blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), -1);
+                    }
+                    case BLOCK_PATHS_LOCAL_MARKOV -> {
+                        blockingSet = blockPathsLocalMarkov(graph, x);
+                    }
+                    case BLOCK_PATHS_NONCOLLIDERS_ONLY -> {
+                        blockingSet = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, -1, graphType == GraphType.PAG);
+                    }
+                    case BLOCK_PATHS_GREEDY -> {
+                        blockingSet = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(), msepTest, -1);
+                    }
+                    case BLOCK_PATHS_MAX_P -> {
+                        blockingSet = SepsetFinder.getSepsetContainingMaxPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+                    }
+                    case BLOCK_PATHS_MIN_P -> {
+                        blockingSet = SepsetFinder.getSepsetContainingMinPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+                    }
+                    default -> throw new IllegalArgumentException("Unknown method: " + graphType);
+                }
+
+                long stop = System.currentTimeMillis();
+                timeSums[k] += stop - start;
+
+                System.out.println("Sepset " + method + ": " + blockingSet);
+                if (blockingSet != null) {
+                    System.out.println("M-sep = " + msepTest.checkIndependence(x, y, blockingSet).isIndependent());
+                    numPass[k] += msepTest.checkIndependence(x, y, blockingSet).isIndependent() ? 1 : 0;
+                }
             }
         }
 
-        System.out.println("Total times = " + Arrays.toString(timeSums));
-    }
+        System.out.println();
+        System.out.println("Graph type = " + graphType);
+        System.out.println();
+        System.out.println(numReps + " repetitions of the test were performed.");
+        System.out.println();
 
-    /**
-     * Checks the node pair in a directed acyclic graph (DAG) and returns the execution times of various sepset finding
-     * methods.
-     *
-     * @param dag The directed acyclic graph.
-     * @param x   The first node.
-     * @param y   The second node.
-     * @return An array containing the execution times of various sepset finding methods.
-     */
-    public long[] checkNodePair(Graph dag, Node x, Node y) {
+        System.out.println("Num nodes = " + numNodes + " Num edges = " + numEdges + " Num latents (for PAGS only) = " + numLatentsForPag);
+        System.out.println();
 
-        MsepTest msepTest = new MsepTest(dag);
-
-        Edge e = dag.getEdge(x, y);
-
-        long[] times = new long[6];
-
-        long start1 = System.currentTimeMillis();
-        Set<Node> sepset1 = SepsetFinder.getSepsetContainingRecursive(dag, x, y, new HashSet<>(), new MsepTest(dag));
-        long stop1 = System.currentTimeMillis();
-        System.out.println("Time taken by getSepsetContainingRecursive: " + (stop1 - start1) + " ms");
-        times[0] = stop1 - start1;
-
-        long start2 = System.currentTimeMillis();
-        Set<Node> sepset2 = SepsetFinder.getSepsetContainingGreedy(dag, x, y, new HashSet<>(), msepTest, -1);
-        long stop2 = System.currentTimeMillis();
-        times[1] = stop2 - start2;
-        System.out.println("Time taken by getSepsetContainingGreedy: " + (stop2 - start2) + " ms");
-
-        long start3 = System.currentTimeMillis();
-        Set<Node> sepset3 = SepsetFinder.getSepsetContainingMaxP(dag, x, y, new HashSet<>(), msepTest, -1);
-        long stop3 = System.currentTimeMillis();
-        times[2] = stop3 - start3;
-        System.out.println("Time taken by getSepsetContainingMaxP: " + (stop3 - start3) + " ms");
-
-        long start4 = System.currentTimeMillis();
-        Set<Node> sepset4 = SepsetFinder.getSepsetContainingMinP(dag, x, y, new HashSet<>(), msepTest, -1);
-        long stop4 = System.currentTimeMillis();
-        times[3] = stop4 - start4;
-        System.out.println("Time taken by getSepsetContainingMinP: " + (stop4 - start4) + " ms");
-
-        long start5 = System.currentTimeMillis();
-        Set<Node> sepset5 = SepsetFinder.getSepsetPathBlockingOutOfX(dag, x, y, msepTest, 50, -1,
-                false, new HashSet<>());
-        long stop5 = System.currentTimeMillis();
-        times[4] = stop5 - start5;
-        System.out.println("Time taken by getSepsetPathBlockingOutOfX: " + (stop5 - start5) + " ms");
-
-//        long start6 = System.currentTimeMillis();
-//        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOfXorY(dag, x, y, msepTest, -1, -1,
-//                false);
-//        long stop6 = System.currentTimeMillis();
-//        times[5] = stop6 - start6;
-//        System.out.println("Time taken by getSepsetPathBlockingOutOfXOrY: " + (stop6 - start6) + " ms");
-
-        System.out.println("Sepset 1: " + sepset1);
-        System.out.println("Sepset 2: " + sepset2);
-        System.out.println("Sepset 3: " + sepset3);
-        System.out.println("Sepset 4: " + sepset4);
-        System.out.println("Sepset 5: " + sepset5);
-//        System.out.println("Sepset 6: " + sepset6);
-
-        // Note that methods 3 and 4 cannot find null sepsets from Oracle. These need to be tested separately from data.
-
-        if (e == null) {
-            assertNotNull(sepset1);
-            assertNotNull(sepset2);
-            assertNotNull(sepset5);
-//            assertNotNull(sepset6);
-
-            assertTrue(msepTest.checkIndependence(x, y, sepset1).isIndependent());
-            assertTrue(msepTest.checkIndependence(x, y, sepset2).isIndependent());
-            assertTrue(msepTest.checkIndependence(x, y, sepset5).isIndependent());
-//            assertTrue(msepTest.checkIndependence(x, y, sepset6).isIndependent());
-        } else {
-            assertNull(sepset1);
-            assertNull(sepset2);
-            assertNull(sepset5);
-//            assertNull(sepset6);
+        for (int i = 0; i < methods.size(); i++) {
+            System.out.println("Number of times msep(x, y | set) with " + methods.get(i) + " = " + numPass[i]);
         }
 
-        return times;
+        System.out.println();
+
+        for (int i = 0; i < methods.size(); i++) {
+            System.out.println("The total time required for " + methods.get(i) + " = " + timeSums[i]);
+        }
     }
 
     /**
-     * This method is used to test the getSepsetPathBlockingOutOfX method.
+     * This method is used to test the blockPathsRecursively method for finding a set of nodes that blocks all blockable
+     * paths between two nodes in a graph.
      */
     @Test
-    public void test6() {
-        RandomUtil.getInstance().setSeed(384828384L);
+    public void test2() {
 
-        int numNodes = 20;
-        int numEdges = 40;
+        Graph graph = GraphUtils.convert("X-->Y,X-->Z,X-->W,Y-->Z,W-->Z");
 
-        // Make a list of numNodes nodes.
-        List<Node> nodes = new ArrayList<>();
+        System.out.println(graph);
 
-        for (int i = 0; i < numNodes; i++) {
-            nodes.add(new ContinuousVariable("X" + i));
+        Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, graph.getNode("X"), graph.getNode("Z"),
+                new HashSet<>(), Set.of(), -1);
+
+        System.out.println(blocking);
+
+        assertTrue(blocking.containsAll(Set.of(graph.getNode("Y"), graph.getNode("W"))));
+
+        Graph graph2 = GraphUtils.convert("X-->Y,X-->W,Y-->Z,W-->Z");
+
+        assertTrue(new MsepTest(graph2, false).checkIndependence(graph2.getNode("X"), graph2.getNode("Z"), blocking).isIndependent());
+
+    }
+
+    /**
+     * This method is used to test the blockPathsRecursively method for finding a set of nodes that blocks all blockable
+     * paths between two nodes in a graph, for local Markov.
+     * <p>
+     * The blocking set returned by blockPathsRecursively should always be a sepset or x and y given parents(x) for
+     * non-descendants x.
+     */
+    @Test
+    public void test3() {
+
+        System.out.println("Checking to make sure blockPathsRecursively works for local Markov.");
+
+        Graph graph = RandomGraph.randomDag(10, 0, 20, 100,
+                100, 100, false);
+
+        for (Node x : graph.getNodes()) {
+            for (Node y : graph.getNodes()) {
+                if (x.equals(y)) {
+                    continue;
+                }
+
+                Set<Node> parents = new HashSet<>(graph.getParents(x));
+
+                if (parents.contains(y)) {
+                    continue;
+                }
+
+                if (graph.paths().isDescendentOf(y, x)) {
+                    continue;
+                }
+
+                Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1);
+                assertTrue(new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent());
+            }
         }
-
-        Graph dag = RandomGraph.randomDag(nodes, 0, numEdges, 100, 100, 100, false);
-
-        Node x, y;
-
-        do {
-            x = nodes.get((int) (Math.random() * numNodes));
-            y = nodes.get((int) (Math.random() * numNodes));
-        } while (x.equals(y));
-
-        Set<Node> sepset6 = SepsetFinder.getSepsetPathBlockingOutOfX(dag, x, y, new MsepTest(dag), -1, -1,
-                false, new HashSet<>());
-
-        System.out.println((dag.isAdjacentTo(x, y) ? "adjacent" : "###NOT ADJACENT###") + " x = " + x + " y = " + y + " sepset = " + sepset6);
-
-        System.out.println(((!dag.isAdjacentTo(x, y)) == (sepset6 != null)) ? "###OK###" : "###ERROR###");
     }
 }

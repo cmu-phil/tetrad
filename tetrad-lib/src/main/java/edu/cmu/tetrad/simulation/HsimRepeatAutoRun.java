@@ -75,7 +75,7 @@ public class HsimRepeatAutoRun {
      *
      * @param resimSize a int
      * @param repeat    a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] run(int resimSize, int repeat) {
         //parameter: set of positive integers, which are resimSize values.

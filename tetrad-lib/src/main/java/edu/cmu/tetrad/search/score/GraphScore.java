@@ -91,7 +91,7 @@ public class GraphScore implements Score {
      * Calculates the sample likelihood and BIC score for y given its z in a simple SEM model.
      *
      * @param y a int
-     * @param z an array of {@link int} objects
+     * @param z an array of  objects
      * @return this score.
      */
     public double localScore(int y, int[] z) {

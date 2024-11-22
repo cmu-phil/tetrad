@@ -98,7 +98,7 @@ public class ImagesScore implements Score {
      * as undefined (which are left out of the average).
      *
      * @param i       The variable whose score is needed.
-     * @param parents an array of {@link int} objects
+     * @param parents an array of  objects
      * @return This score.
      */
     public double localScore(int i, int[] parents) {

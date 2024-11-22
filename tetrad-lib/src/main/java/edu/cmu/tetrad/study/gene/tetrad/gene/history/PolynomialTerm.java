@@ -61,7 +61,7 @@ public class PolynomialTerm implements TetradSerializable {
      * Constructs a term.
      *
      * @param coefficient a double
-     * @param variables   an array of {@link int} objects
+     * @param variables   an array of  objects
      */
     public PolynomialTerm(double coefficient, int[] variables) {
         if (variables == null) {
@@ -125,7 +125,7 @@ public class PolynomialTerm implements TetradSerializable {
     /**
      * Returns true iff the given variable list is equal to the variable list of this term.
      *
-     * @param variables an array of {@link int} objects
+     * @param variables an array of  objects
      * @return a boolean
      */
     public boolean isVariableListEqual(int[] variables) {
@@ -150,7 +150,7 @@ public class PolynomialTerm implements TetradSerializable {
     /**
      * Evaluates the term.
      *
-     * @param values an array of {@link double} objects
+     * @param values an array of  objects
      * @return a double
      */
     public double evaluate(double[] values) {

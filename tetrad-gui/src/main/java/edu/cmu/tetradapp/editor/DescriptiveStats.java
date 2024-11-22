@@ -146,8 +146,8 @@ class DescriptiveStats {
     /**
      * <p>median.</p>
      *
-     * @param data an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param data an array of  objects
+     * @return an array of  objects
      */
     public static double[] median(double[] data) {
         Arrays.sort(data);
@@ -183,7 +183,7 @@ class DescriptiveStats {
     /**
      * Given some variable, returns the mean, standard deviation, and variance.
      *
-     * @param data an array of {@link double} objects
+     * @param data an array of  objects
      * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      */
     public static double[] normalParams(double[] data) {

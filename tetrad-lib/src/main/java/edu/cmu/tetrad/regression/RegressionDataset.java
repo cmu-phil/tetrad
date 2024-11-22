@@ -96,8 +96,8 @@ public class RegressionDataset implements Regression {
     /**
      * <p>regress.</p>
      *
-     * @param target     an array of {@link double} objects
-     * @param regressors an array of {@link double} objects
+     * @param target     an array of  objects
+     * @param regressors an array of  objects
      * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
      */
     public static RegressionResult regress(double[] target, double[][] regressors) {
@@ -374,7 +374,7 @@ public class RegressionDataset implements Regression {
     /**
      * <p>Setter for the field <code>rows</code>.</p>
      *
-     * @param rows an array of {@link int} objects
+     * @param rows an array of  objects
      */
     public void setRows(int[] rows) {
         this.rows = rows;
