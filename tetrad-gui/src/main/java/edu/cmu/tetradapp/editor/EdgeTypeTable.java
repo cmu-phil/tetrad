@@ -61,14 +61,14 @@ public class EdgeTypeTable extends JPanel {
             "Node 2",
             "Ensemble",
             "Edge",
-            "No edge",
-            "\u2192",
-            "\u2190",
-            "---",
-            "\u2192", // -G> pd nl
-            "\u2190", // <G- pd nl
-            "\u2192", // =G> dd nl
-            "\u2190", // <G= dd nl
+            "No edge",  // 6
+            "--> dd pl",   // 7
+            "<-- dd pl",   // 8
+            "---",         // 9
+            "--> pd nl", // -G> pd nl 10  nl pd
+            "<-- pd nl", // <G- pd nl 11
+            "--> dd nl", // =G> dd nl 12  nl dd
+            "<-- dd nl", // <G= dd nl 13
             "o->",
             "<-o",
             "o-o",
@@ -126,19 +126,19 @@ public class EdgeTypeTable extends JPanel {
             tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES_AND_EDGE_TYPES);
 
             JTableHeader header = this.table.getTableHeader();
-            Font boldFont = new Font(header.getFont().getFontName(), Font.BOLD, 18);
-            TableCellRenderer headerRenderer = header.getDefaultRenderer();
-            header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
-                Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
-                if (column >= 10 && column <= 13) {
-                    comp.setForeground(Color.BLUE);
-                }
-                if (column >= 12 && column <= 13) {
-                    comp.setFont(boldFont);
-                }
-
-                return comp;
-            });
+//            Font boldFont = new Font(header.getFont().getFontName(), Font.BOLD, 18);
+//            TableCellRenderer headerRenderer = header.getDefaultRenderer();
+//            header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
+//                Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
+//                if (column >= 10 && column <= 13) {
+//                    comp.setForeground(Color.BLUE);
+//                }
+//                if (column >= 12 && column <= 13) {
+//                    comp.setFont(boldFont);
+//                }
+//
+//                return comp;
+//            });
 
             edges.forEach(edge -> {
                 String[] rowData = new String[EdgeTypeTable.EDGES_AND_EDGE_TYPES.length];
