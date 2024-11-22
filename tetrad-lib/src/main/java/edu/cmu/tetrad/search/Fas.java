@@ -77,10 +77,6 @@ public class Fas implements IFas {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * The number of independence tests that were done.
-     */
-    private int numIndependenceTests;
-    /**
      * The sepsets that were discovered in the search.
      */
     private SepsetMap sepset = new SepsetMap();
@@ -193,9 +189,9 @@ public class Fas implements IFas {
             });
 
             // If you need the result in the original `scores` map:
-            scores = new HashMap<>(concurrentScores);
+            scores = new ConcurrentHashMap<>(concurrentScores);
         } else {
-            scores = new HashMap<>();
+            scores = new ConcurrentHashMap<>();
 
             for (Edge edge : edges) {
                 IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
@@ -237,7 +233,7 @@ public class Fas implements IFas {
             boolean more;
 
             if (this.stable) {
-                Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
+                Map<Node, Set<Node>> adjacenciesCopy = new ConcurrentHashMap<>();
 
                 for (Node node : adjacencies.keySet()) {
                     adjacenciesCopy.put(node, new LinkedHashSet<>(adjacencies.get(node)));
@@ -298,15 +294,6 @@ public class Fas implements IFas {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Returns the number of independence tests that were done.
-     *
-     * @return This number.
-     */
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
     }
 
     /**
@@ -438,8 +425,8 @@ public class Fas implements IFas {
                     return; // Exit this iteration
                 }
 
-                boolean b = checkSide(scores, test, adjacencies, depth, x, y);
-                if (!b) checkSide(scores, test, adjacencies, depth, y, x);
+                boolean b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset);
+                if (!b) checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset);
             });
         } else {
             for (Edge edge : edges) {
@@ -450,8 +437,8 @@ public class Fas implements IFas {
                     break;
                 }
 
-                boolean b = checkSide(scores, test, adjacencies, depth, x, y);
-                if (!b) checkSide(scores, test, adjacencies, depth, y, x);
+                boolean b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset);
+                if (!b) checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset);
             }
         }
 
@@ -469,26 +456,30 @@ public class Fas implements IFas {
      * @param y           The second node.
      * @return True if there is an adjacency between x and y at the given depth, false otherwise.
      */
-    private boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Node x, Node y) {
+    private static boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies,
+                                     int depth, Node x, Node y,
+                                     PcCommon.PcHeuristicType heuristic,
+                                     Knowledge knowledge,
+                                     SepsetMap sepsets) {
         if (!adjacencies.get(x).contains(y)) return false;
 
         List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
         _adjx.remove(y);
 
-        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_1 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2) {
+        if (heuristic == PcCommon.PcHeuristicType.HEURISTIC_1 || heuristic == PcCommon.PcHeuristicType.HEURISTIC_2) {
             Collections.sort(_adjx);
         }
 
-        List<Node> ppx = possibleParents(x, _adjx, this.knowledge, y);
+        List<Node> ppx = possibleParents(x, _adjx, knowledge, y);
 
-        Map<Node, Double> scores2 = new HashMap<>();
+        Map<Node, Double> scores2 = new ConcurrentHashMap<>();
 
         for (Node node : ppx) {
             Double _score = scores.get(Edges.undirectedEdge(node, x));
             scores2.put(node, _score);
         }
 
-        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
+        if (heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
             ppx.sort(Comparator.comparing(scores2::get));
             Collections.reverse(ppx);
         }
@@ -504,17 +495,15 @@ public class Fas implements IFas {
 
                 Set<Node> Z = GraphUtils.asSet(choice, ppx);
 
-                this.numIndependenceTests++;
-
                 boolean independent = test.checkIndependence(x, y, Z).isIndependent();
 
-                boolean noEdgeRequired = this.knowledge.noEdgeRequired(x.getName(), y.getName());
+                boolean noEdgeRequired = knowledge.noEdgeRequired(x.getName(), y.getName());
 
                 if (independent && noEdgeRequired) {
                     adjacencies.get(x).remove(y);
                     adjacencies.get(y).remove(x);
 
-                    getSepsets().set(x, y, Z);
+                    sepsets.set(x, y, Z);
 
                     return true;
                 }
@@ -534,7 +523,7 @@ public class Fas implements IFas {
      * @param y         Another node in the graph.
      * @return A list of nodes that are possible parents of the node x.
      */
-    private List<Node> possibleParents(Node x, List<Node> adjx, Knowledge knowledge, Node y) {
+    private static List<Node> possibleParents(Node x, List<Node> adjx, Knowledge knowledge, Node y) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
@@ -559,7 +548,7 @@ public class Fas implements IFas {
      * @param knowledge The knowledge object that provides information about conditional independencies.
      * @return True if the node z is a possible parent of node x, false otherwise.
      */
-    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
+    private static boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 }

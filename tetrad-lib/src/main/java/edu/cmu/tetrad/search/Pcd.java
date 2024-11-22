@@ -283,8 +283,6 @@ public class Pcd implements IGraphSearch {
         }
         this.sepsets = fas.getSepsets();
 
-        this.numIndependenceTests = fas.getNumIndependenceTests();
-
         enumerateTriples();
 
         GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes, verbose);

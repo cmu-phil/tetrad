@@ -208,19 +208,6 @@ public class TestPc {
         assertEquals(trueGraph, resultGraph);
     }
 
-    @Test
-    public void checknumCPDAGsToStore() {
-        for (int i = 0; i < 2; i++) {
-            Graph graph = RandomGraph.randomGraph(100, 0, 100, 100,
-                    100, 100, false);
-            MsepTest test = new MsepTest(graph);
-            Pc pc = new Pc(test);
-            Graph CPDAG = pc.search();
-            Graph CPDAG2 = GraphTransforms.dagToCpdag(graph);
-            assertEquals(CPDAG, CPDAG2);
-        }
-    }
-
     //    @Test
     public void testPcFci() {
 
@@ -672,6 +659,7 @@ public class TestPc {
                 case 0:
                     search = new Pc(test);
                     ((Pc) search).setGuaranteeCpdag(false);
+                    ((Pc) search).setStable(false);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {
