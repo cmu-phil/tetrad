@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -104,7 +105,7 @@ public final class ConditionalCorrelationIndependence {
      */
     public ConditionalCorrelationIndependence(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException();
-        this.dataSet = dataSet;
+        this.dataSet = DataTransforms.center(dataSet);
 
         this.variables = dataSet.getVariables();
 
