@@ -40,12 +40,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * The idea of FAS is that at a given stage of the search, an edge X*-*Y is removed from the graph if X _||_ Y | S,
  * where S is a subset of size d either of adj(X) or of adj(Y), where d is the depth of the search. The fast adjacency
- * search performs this procedure for each pair of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1,
- * where d1 is either the maximum depth or else the first such depth at which no edges can be removed. The
- * interpretation of this adjacency search is different for different algorithm, depending on the assumptions of the
+ * search performs this procedure for each pair of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1.
+ * Here, d1 is either the maximum depth or else the first such depth at which no edges can be removed. The
+ * interpretation of this adjacency search is different for different algorithms, depending on the assumptions of the
  * algorithm. A mapping from {x, y} to S({x, y}) is returned for edges x *-* y that have been removed.
  * <p>
- * FAS may optionally use a heuristic from Causation, Prediction and Search, which (like PC-Stable) renders the output
+ * FAS may optionally use a heuristic from Causation, Prediction, and Search, which (like PC-Stable) renders the output
  * invariant to the order of the input variables.
  * <p>
  * This algorithm was described in the earlier edition of this book:
@@ -119,11 +119,11 @@ public class Fas implements IFas {
      * Performs a search to discover all adjacencies in the graph. The procedure is to remove edges in the graph which
      * connect pairs of variables that are independent, conditional on some other set of variables in the graph (the
      * "sepset"). These edges are removed in tiers. First, edges which are independent conditional on zero other
-     * variables are removed, then edges which are independent conditional on one other variable are removed, then two,
+     * variables are removed, then edges which are independent conditional on one other variable are removed. Then two,
      * then three, and so on, until no more edges can be removed from the graph. The edges which remain in the graph
      * after this procedure are the adjacencies in the data.
      *
-     * @return An undirected graph that summarizes the conditional independencies that obtain in the data.
+     * @return An undirected graph that summarizes the conditional independencies in the data.
      */
     @Override
     public Graph search() {
@@ -133,13 +133,13 @@ public class Fas implements IFas {
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
      * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These
-     * are removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then
+     * are removed in tiers.  First, edges which are independent, conditional on zero other variables are removed. Then
      * edges which are independent conditional on one other variable are removed, then two, then three, and so on, until
      * no more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
      * adjacencies in the data.
      *
      * @param nodes A list of nodes to search over.
-     * @return An undirected graph that summarizes the conditional independencies that obtain in the data.
+     * @return An undirected graph that summarizes the conditional independencies in the data.
      */
     public Graph search(List<Node> nodes) {
         long startTime = MillisecondTimes.timeMillis();
