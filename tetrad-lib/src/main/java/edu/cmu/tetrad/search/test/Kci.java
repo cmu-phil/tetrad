@@ -53,6 +53,9 @@ public class Kci implements IndependenceTest {
      * Variables in data
      */
     private final List<Node> variables;
+    /**
+     * The bandwidth vector.
+     */
     private final Vector h;
     /**
      * A normal distribution with 1 degree of freedom.
@@ -66,8 +69,17 @@ public class Kci implements IndependenceTest {
      * Record of independence facts
      */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    /**
+     * The identity matrix.
+     */
     private final Matrix I;
+    /**
+     * The centering matrix.
+     */
     private final Matrix H;
+    /**
+     * The sample size.
+     */
     private final int N;
     /**
      * The alpha level of the test.
