@@ -20,6 +20,7 @@ import org.apache.commons.math3.linear.SingularValueDecomposition;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static org.apache.commons.math3.util.FastMath.*;
@@ -148,7 +149,6 @@ public class Kci implements IndependenceTest {
 
         this.alpha = alpha;
     }
-
 
     /**
      * @throws UnsupportedOperationException since not implemneted.
@@ -701,35 +701,24 @@ public class Kci implements IndependenceTest {
                                 Map<Node, Integer> hash, int N, Vector _h) {
 
         List<Integer> _z = new ArrayList<>();
-
-        if (x != null) {
-            _z.add(hash.get(x));
-        }
-
-        if (z != null) {
-            for (Node z2 : z) {
-                _z.add(hash.get(z2));
-            }
-        }
+        if (x != null) _z.add(hash.get(x));
+        if (z != null) z.forEach(node -> _z.add(hash.get(node)));
 
         double h = getH(_z, _h);
+        double width = widthMultiplier * h;
 
         Matrix result = new Matrix(N, N);
 
-        for (int i = 0; i < N; i++) {
+        // Parallelize distance and kernel computation
+        IntStream.range(0, N).parallel().forEach(i -> {
             for (int j = i + 1; j < N; j++) {
                 double d = distance(_data, _z, i, j);
-                double k = kernelGaussian(d, widthMultiplier * h);
+                double k = kernelGaussian(d, width);
                 result.set(i, j, k);
                 result.set(j, i, k);
             }
-        }
-
-        double k = kernelGaussian(0, widthMultiplier * h);
-
-        for (int i = 0; i < N; i++) {
-            result.set(i, i, k);
-        }
+            result.set(i, i, kernelGaussian(0, width));
+        });
 
         return result;
     }
