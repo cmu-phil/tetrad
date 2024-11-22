@@ -73,7 +73,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * True if the checks should be parallelized. (Not always a good idea.)
      */
-    private boolean parallelized = false;
+    private boolean parallelized = true;
     /**
      * The fraction of dependent judgments for the independent case.
      */
