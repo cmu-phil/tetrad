@@ -528,6 +528,7 @@ public class Fas implements IFas {
         String _x = x.getName();
 
         for (Node z : adjx) {
+            if (z == null) continue;
             if (z == x) continue;
             if (z == y) continue;
             String _z = z.getName();
