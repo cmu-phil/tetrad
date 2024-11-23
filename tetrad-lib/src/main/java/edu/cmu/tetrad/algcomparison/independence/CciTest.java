@@ -48,14 +48,6 @@ public class CciTest implements IndependenceWrapper {
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
-        if (parameters.getInt(Params.KERNEL_TYPE) == 1) {
-            cci.setKernel(ConditionalCorrelationIndependence.Kernel.Gaussian);
-
-        } else if (parameters.getInt(Params.KERNEL_TYPE) == 2) {
-            cci.setKernel(ConditionalCorrelationIndependence.Kernel.Epinechnikov);
-        } else {
-            throw new IllegalStateException("Kernel not configured.");
-        }
 
         if (parameters.getInt(Params.BASIS_TYPE) == 1) {
             cci.setBasis(ConditionalCorrelationIndependence.Basis.Polynomial);
@@ -67,7 +59,6 @@ public class CciTest implements IndependenceWrapper {
 
         cci.setNumFunctions(parameters.getInt(Params.NUM_BASIS_FUNCTIONS));
         cci.setKernelMultiplier(parameters.getDouble(Params.KERNEL_MULTIPLIER));
-        cci.setKernelRegressionSampleSize(parameters.getInt(Params.KERNEL_REGRESSION_SAMPLE_SIZE));
 
         return cci;
     }
@@ -96,7 +87,6 @@ public class CciTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
         params.add(Params.NUM_BASIS_FUNCTIONS);
-        params.add(Params.KERNEL_TYPE);
         params.add(Params.KERNEL_MULTIPLIER);
         params.add(Params.BASIS_TYPE);
         params.add(Params.KERNEL_REGRESSION_SAMPLE_SIZE);

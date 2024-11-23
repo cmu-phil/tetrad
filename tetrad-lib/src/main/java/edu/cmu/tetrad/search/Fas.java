@@ -179,6 +179,8 @@ public class Fas implements IFas {
             ConcurrentHashMap<Edge, Double> concurrentScores = new ConcurrentHashMap<>();
 
             edges.parallelStream().forEach(edge -> {
+                if (Thread.currentThread().isInterrupted()) return;
+
                 IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
                 concurrentScores.put(edge, result.getScore());
             });
@@ -188,6 +190,8 @@ public class Fas implements IFas {
             scores = new HashMap<>();
 
             for (Edge edge : edges) {
+                if (Thread.currentThread().isInterrupted()) break;
+
                 IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
                 scores.put(edge, result.getScore());
             }
@@ -411,6 +415,8 @@ public class Fas implements IFas {
     private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
         if (stable) {
             edges.parallelStream().forEach(edge -> {
+                if (Thread.currentThread().isInterrupted()) return;
+
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
@@ -424,6 +430,8 @@ public class Fas implements IFas {
             });
         } else {
             for (Edge edge : edges) {
+                if (Thread.currentThread().isInterrupted()) break;
+
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
@@ -469,6 +477,8 @@ public class Fas implements IFas {
         Map<Node, Double> scores2 = new HashMap<>();
 
         for (Node node : ppx) {
+            if (Thread.currentThread().isInterrupted()) break;
+
             Double _score = scores.get(Edges.undirectedEdge(node, x));
             scores2.put(node, _score);
         }

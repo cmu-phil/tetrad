@@ -266,16 +266,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Sets the kernel to be used.
-     *
-     * @param kernel This kernel.
-     * @see ConditionalCorrelationIndependence.Kernel
-     */
-    public void setKernel(ConditionalCorrelationIndependence.Kernel kernel) {
-        this.cci.setKernelMultiplier(kernel);
-    }
-
-    /**
      * Sets the basis used for the calculation.
      *
      * @param basis This basis.
@@ -283,15 +273,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     public void setBasis(ConditionalCorrelationIndependence.Basis basis) {
         this.cci.setBasis(basis);
-    }
-
-    /**
-     * Sets the kernel regression sample size.
-     *
-     * @param size This size.
-     */
-    public void setKernelRegressionSampleSize(int size) {
-        this.cci.setKernelRegressionSampleSize(size);
     }
 }
 

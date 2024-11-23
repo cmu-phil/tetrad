@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -29,8 +29,8 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.util.*;
 
-import static edu.cmu.tetrad.util.StatUtils.*;
-import static org.apache.commons.math3.util.FastMath.pow;
+import static edu.cmu.tetrad.util.StatUtils.correlation;
+import static edu.cmu.tetrad.util.StatUtils.getZForAlpha;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -55,7 +55,6 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @version $Id: $Id
  */
 public final class ConditionalCorrelationIndependence {
-
     /**
      * The dataset supplied in the constructor.
      */
@@ -68,6 +67,11 @@ public final class ConditionalCorrelationIndependence {
      * Map from nodes to their indices.
      */
     private final HashMap<Node, Integer> nodesHash;
+    /**
+     * The data matrix representing the correlation data implied by the given data set. It is used in the independence
+     * test calculations.
+     */
+    private final double[][] __data;
     /**
      * The q value of the most recent test.
      */
@@ -85,17 +89,9 @@ public final class ConditionalCorrelationIndependence {
      */
     private double width = 1.0;
     /**
-     * Kernel
-     */
-    private Kernel kernelMultiplier = Kernel.Gaussian;
-    /**
      * Basis
      */
     private Basis basis = Basis.Polynomial;
-    /**
-     * The minimum sample size to use for the kernel regression.
-     */
-    private int kernelRegressionSampleSize = 100;
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
@@ -107,12 +103,35 @@ public final class ConditionalCorrelationIndependence {
         if (dataSet == null) throw new NullPointerException();
         this.dataSet = DataTransforms.center(dataSet);
 
+        __data = this.dataSet.getDoubleData().transpose().toArray();
+
+        if (dataSet.getNumColumns() < 2) {
+            throw new IllegalArgumentException("Data must have at least two columns");
+        }
+
         this.variables = dataSet.getVariables();
 
         this.nodesHash = new HashMap<>();
         for (int i = 0; i < this.variables.size(); i++) {
             this.nodesHash.put(this.variables.get(i), i);
         }
+    }
+
+    /**
+     * Computes the Gaussian kernel value between two vectors given a specific bandwidth.
+     *
+     * @param zi        The first input vector.
+     * @param zj        The second input vector.
+     * @param bandwidth The bandwidth parameter for the Gaussian kernel.
+     * @return The computed Gaussian kernel value.
+     */
+    private static double gaussianKernel(double[] zi, double[] zj, double bandwidth) {
+        double squaredDistance = 0.0;
+        for (int k = 0; k < zi.length; k++) {
+            double diff = zi[k] - zj[k];
+            squaredDistance += diff * diff;
+        }
+        return Math.exp(-squaredDistance / (2 * bandwidth * bandwidth));
     }
 
     /**
@@ -139,139 +158,76 @@ public final class ConditionalCorrelationIndependence {
 
             List<Integer> rows = getRows(this.dataSet, allNodes, nodesHash);
 
-            if (rows.isEmpty()) return 0;
+            if (rows.isEmpty()) return Double.NaN;
 
-            double[] rx = residuals(x, z, rows);
-            double[] ry = residuals(y, z, rows);
+            double[] rx = residuals(x, z);
+            double[] ry = residuals(y, z);
 
             // rx _||_ ry ?
-            double score = independent(rx, ry);
+            double score = independent(rx, ry, nodesHash.get(x), nodesHash.get(y));
             this.score = score;
 
             return score;
         } catch (Exception e) {
             TetradLogger.getInstance().log(e.getMessage());
-            return 0;
+            return Double.NaN;
         }
     }
-
 
     /**
-     * Calculates the residuals of x regressed nonparametrically onto z. Left public so it can be accessed separately.
+     * Computes the residuals of a kernel regression for the given data points.
      *
-     * @param x    a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z    a {@link java.util.List} object
-     * @param rows a {@link java.util.List} object
-     * @return a double[2][] array. The first double[] array contains the residuals for x, and the second double[] array
-     * contains the residuals for y.
+     * @param x         The array of response variable values.
+     * @param z         The array of predictor variable vectors.
+     * @param bandwidth The bandwidth parameter for the Gaussian kernel.
+     * @return An array of residuals from the kernel regression.
      */
-    public double[] residuals(Node x, List<Node> z, List<Integer> rows) {
-        int[] _rows = new int[rows.size()];
-        for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
+    private double[] kernelRegressionResiduals(double[] x, double[][] z, double bandwidth) {
+        int n = x.length;
+        double[] residuals = new double[n];
 
-        int[] _cols = new int[z.size() + 1];
-        _cols[0] = this.nodesHash.get(x);
-        for (int i = 0; i < z.size(); i++) _cols[1 + i] = this.nodesHash.get(z.get(i));
+        for (int i = 0; i < n; i++) {
+            double weightSum = 0.0;
+            double weightedXSum = 0.0;
 
-        DataSet _dataSet = (this.dataSet.subsetRowsColumns(_rows, _cols));
-
-        for (int j = 0; j < _dataSet.getNumColumns(); j++) {
-            scale(_dataSet, j);
-        }
-
-        double[][] _data = _dataSet.getDoubleData().transpose().toArray();
-
-        if (_data.length == 0) {
-            return new double[0];
-        }
-
-        if (z.isEmpty()) {
-            return _data[0];
-        }
-
-        List<List<Integer>> _sortedIndices = new ArrayList<>();
-
-        for (int z2 = 0; z2 < z.size(); z2++) {
-            double[] w = _data[z2 + 1];
-            List<Integer> sorted = new ArrayList<>();
-            for (int t = 0; t < w.length; t++) sorted.add(t);
-            sorted.sort(Comparator.comparingDouble(o -> w[o]));
-            _sortedIndices.add(sorted);
-        }
-
-        List<Map<Integer, Integer>> _reverseLookup = new ArrayList<>();
-
-        for (int z2 = 0; z2 < z.size(); z2++) {
-            Map<Integer, Integer> m = new HashMap<>();
-
-            for (int j = 0; j < _data[z2 + 1].length; j++) {
-                m.put(_sortedIndices.get(z2).get(j), j);
+            for (int j = 0; j < n; j++) {
+                double kernel = gaussianKernel(z[i], z[j], bandwidth);
+                weightSum += kernel;
+                weightedXSum += kernel * x[j];
             }
 
-            _reverseLookup.add(m);
+            double fittedValue = weightedXSum / weightSum;
+            residuals[i] = x[i] - fittedValue;
         }
 
-        int _N = _data[0].length;
-
-        double[] _residualsx = new double[_N];
-
-        double[] _xdata = _data[0];
-
-        double[] _sumx = new double[_N];
-
-        double[] _totalWeightx = new double[_N];
-
-        int[] _z = new int[z.size()];
-
-        for (int m = 0; m < z.size(); m++) {
-            _z[m] = m;
-        }
-
-        double _max = Double.NEGATIVE_INFINITY;
-
-        for (double[] datum : _data) {
-            double h = h(datum);
-            if (h > _max) _max = h;
-        }
-
-        double h = _max;
-
-        for (int i = 0; i < _N; i++) {
-            Set<Integer> js = getCloseZs(_data, _z, i, this.kernelRegressionSampleSize,
-                    _reverseLookup, _sortedIndices);
-
-            for (int j : js) {
-                double xj = _xdata[j];
-                double d = distance(_data, _z, i, j);
-
-                double k;
-
-                if (this.kernelMultiplier == Kernel.Epinechnikov) {
-                    k = kernelEpinechnikov(d, h);
-                } else if (this.kernelMultiplier == Kernel.Gaussian) {
-                    k = kernelGaussian(d, h);
-                } else {
-                    throw new IllegalStateException("Unsupported kernel type: " + this.kernelMultiplier);
-                }
-
-                _sumx[i] += k * xj;
-                _totalWeightx[i] += k;
-            }
-        }
-
-        for (int i = 0; i < _N; i++) {
-            if (_totalWeightx[i] == 0) _totalWeightx[i] = 1;
-
-            _residualsx[i] = _xdata[i] - _sumx[i] / _totalWeightx[i];
-
-            if (Double.isNaN(_residualsx[i])) {
-                _residualsx[i] = 0;
-            }
-        }
-
-        return _residualsx;
+        return residuals;
     }
 
+    /**
+     * Computes the residuals from a kernel regression of the response variable on the predictor variables.
+     *
+     * @param x The response variable represented as a Node.
+     * @param z A list of predictor variables represented as Nodes.
+     * @return An array of residuals from the kernel regression.
+     */
+    private double[] residuals(Node x, List<Node> z) {
+        double[] _x = __data[nodesHash.get(x)];
+
+        double[][] _z = new double[z.size()][];
+        for (int i = 0; i < z.size(); i++) {
+            _z[i] = __data[nodesHash.get(z.get(i))];
+        }
+
+        // Transpose _z
+        double[][] zt = new double[_x.length][z.size()];
+        for (int i = 0; i < z.size(); i++) {
+            for (int j = 0; j < _z[i].length; j++) {
+                zt[j][i] = _z[i][j];
+            }
+        }
+
+        return kernelRegressionResiduals(_x, zt, width);
+    }
 
     /**
      * Sets the number of functions to use in (truncated) basis
@@ -280,15 +236,6 @@ public final class ConditionalCorrelationIndependence {
      */
     public void setNumFunctions(int numFunctions) {
         this.numFunctions = numFunctions;
-    }
-
-    /**
-     * Sets the kernel multiplier.
-     *
-     * @param kernelMultiplier This multiplier.
-     */
-    public void setKernelMultiplier(Kernel kernelMultiplier) {
-        this.kernelMultiplier = kernelMultiplier;
     }
 
     /**
@@ -349,67 +296,41 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
-     * Sets the kernel regression sample size.
+     * Determines the maximum absolute value of the nonparametric Fisher Z test statistic between transformed versions
+     * of the given arrays `x` and `y` across different functions.
      *
-     * @param kernelRegressionSapleSize This sample size
+     * @param x      The first array of input values.
+     * @param y      The second array of input values.
+     * @param indexX The index of the variable from array `x` to be used in the calculation.
+     * @param indexY The index of the variable from array `y` to be used in the calculation.
+     * @return The maximum absolute value of the nonparametric Fisher Z test statistic.
      */
-    public void setKernelRegressionSampleSize(int kernelRegressionSapleSize) {
-        this.kernelRegressionSampleSize = kernelRegressionSapleSize;
-    }
-
-    /**
-     * @return True, just in case the x and y vectors are independent, once undefined values have been removed. Left
-     * public so it can be accessed separately.
-     */
-    private double independent(double[] x, double[] y) {
+    private double independent(double[] x, double[] y, int indexX, int indexY) {
         double[] _x = new double[x.length];
         double[] _y = new double[y.length];
 
-        double maxScore = Double.NEGATIVE_INFINITY;
+        double maxZ = 0.0;
 
-        for (int m = 1; m <= this.numFunctions; m++) {
-            for (int n = 1; n <= this.numFunctions; n++) {
+        for (int m = 0; m <= this.numFunctions; m++) {
+            for (int n = 0; n <= this.numFunctions; n++) {
                 for (int i = 0; i < x.length; i++) {
                     _x[i] = function(m, x[i]);
                     _y[i] = function(n, y[i]);
                 }
 
-                double score = abs(nonparametricFisherZ(_x, _y));
-                if (Double.isInfinite(score) || Double.isNaN(score)) continue;
+                double z = abs(nonparametricFisherZ(_x, _y, indexX, indexY));
 
-                if (score > maxScore) {
-                    maxScore = score;
+                if (Double.isNaN(z)) continue;
+
+                // Maximize dependency
+                if (z > maxZ) {
+                    maxZ = z;
                 }
             }
         }
 
-        return maxScore;
+        return maxZ;
     }
-
-    /**
-     * Scales the values in a specific column of a given DataSet.
-     *
-     * @param dataSet The DataSet containing the values to be scaled.
-     * @param col     The column index of the values to be scaled.
-     */
-    private void scale(DataSet dataSet, int col) {
-        double max = Double.MIN_VALUE;
-        double min = Double.MAX_VALUE;
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
-            if (Double.isNaN(d)) continue;
-            if (d > max) max = d;
-            if (d < min) min = d;
-        }
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
-            if (Double.isNaN(d)) continue;
-            dataSet.setDouble(i, col, min + (d - min) / (max - min));
-        }
-    }
-
 
     /**
      * Calculates the nonparametric Fisher Z test for the given arrays.
@@ -418,20 +339,22 @@ public final class ConditionalCorrelationIndependence {
      * @param _y An array of double values.
      * @return The nonparametric Fisher Z test statistic.
      */
-    private double nonparametricFisherZ(double[] _x, double[] _y) {
+    private double nonparametricFisherZ(double[] _x, double[] _y, int indexX, int indexY) {
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
-        double[] __x = standardize(_x);
-        double[] __y = standardize(_y);
+        double[] x = __data[indexX];
+        double[] y = __data[indexY];
 
-        double r = covariance(__x, __y); // correlation
-        int N = __x.length;
+        double r = correlation(_x, _y); // correlation
 
         // Non-parametric Fisher Z test.
-        double z = 0.5 * sqrt(N) * (log(1.0 + r) - log(1.0 - r));
+        double z = 0.5 * sqrt(_x.length) * (log(1.0 + r) - log(1.0 - r));
 
-        return z / (sqrt((moment22(__x, __y))));
+        System.out.println("|_x| = " + _x.length + " |x| = " + x.length + " m2x = " + m2(x) + " m2y = " + m2(y) +
+                           " sqrt(moment22) = " + (sqrt(m22(x, y))));
+
+        return z / (sqrt(m22(x, y)));
     }
 
     /**
@@ -441,15 +364,30 @@ public final class ConditionalCorrelationIndependence {
      * @param y An array of double values.
      * @return The moment22 value.
      */
-    private double moment22(double[] x, double[] y) {
-        int N = x.length;
+    private double m22(double[] x, double[] y) {
         double sum = 0.0;
 
-        for (int j = 0; j < x.length; j++) {
-            sum += x[j] * x[j] * y[j] * y[j];
+        for (int i = 0; i < x.length; i++) {
+            sum += x[i] * x[i] * y[i] * y[i];
         }
 
-        return sum / N;
+        return sum / x.length;
+    }
+
+    /**
+     * Calculates the moment2 value for the given arrays x and y.
+     *
+     * @param x The array of data
+     * @return The m2 statistic.
+     */
+    private double m2(double[] x) {
+        double sum = 0.0;
+
+        for (double v : x) {
+            sum += v * v;
+        }
+
+        return sum / x.length;
     }
 
     /**
@@ -480,144 +418,6 @@ public final class ConditionalCorrelationIndependence {
             }
         } else {
             throw new IllegalStateException("That basis is not configured: " + this.basis);
-        }
-    }
-
-    /**
-     * Optimal bandwidth suggested by Bowman and Bowman and Azzalini (1997) q.31, using MAD.
-     */
-    private double h(double[] xCol) {
-        double[] g = new double[xCol.length];
-        double median = median(xCol);
-        for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
-        double mad = median(g);
-        return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
-    }
-
-    /**
-     * Calculates the Epinechnikov kernel value for a given input and kernel width.
-     *
-     * @param z The input value to evaluate the kernel at.
-     * @param h The kernel width.
-     * @return The kernel value at the given input.
-     */
-    private double kernelEpinechnikov(double z, double h) {
-        z /= getWidth() * h;
-        if (abs(z) > 1) return 0.0;
-        else return (/*0.75 **/ (1.0 - z * z));
-    }
-
-    /**
-     * Calculates the Gaussian kernel value for a given input and kernel width.
-     *
-     * @param z The input value to evaluate the kernel at, which is divided by the product of the width and the current
-     *          width of the data set.
-     * @param h The kernel width.
-     * @return The Gaussian kernel value at the given input.
-     */
-    private double kernelGaussian(double z, double h) {
-        z /= getWidth() * h;
-        return exp(-z * z);
-    }
-
-    /**
-     * Calculates the Euclidean distance between two data points based on the given data and indices.
-     *
-     * @param data The data matrix.
-     * @param z    The array of indices to consider in the calculation.
-     * @param i    The index of the first data point.
-     * @param j    The index of the second data point.
-     * @return The Euclidean distance between the two data points.
-     */
-    private double distance(double[][] data, int[] z, int i, int j) {
-        double sum = 0.0;
-
-        for (int _z : z) {
-            double d = (data[_z][i] - data[_z][j]) / 2.0;
-
-            if (!Double.isNaN(d)) {
-                sum += d * d;
-            }
-        }
-
-        return sqrt(sum);
-    }
-
-    /**
-     * Standardizes the given data array. No need to make a copy here.
-     *
-     * @param data The data array to be standardized.
-     * @return The standardized data array.
-     */
-    private double[] standardize(double[] data) {
-        double sum = 0.0;
-
-        for (double d : data) {
-            sum += d;
-        }
-
-        double mean = sum / data.length;
-
-        for (int i = 0; i < data.length; i++) {
-            data[i] = data[i] - mean;
-        }
-
-        double var = 0.0;
-
-        for (double d : data) {
-            var += d * d;
-        }
-
-        var /= (data.length);
-        double sd = sqrt(var);
-
-        for (int i = 0; i < data.length; i++) {
-            data[i] /= sd;
-        }
-
-        return data;
-    }
-
-    /**
-     * Returns a set of indices for data points that are close to the given data point <code>i</code> based on the
-     * specified sample size and neighborhood information.
-     *
-     * @param _data         The data matrix.
-     * @param _z            The indices of the variables used to calculate the distance.
-     * @param i             The index of the data point for which close indices are calculated.
-     * @param sampleSize    The desired sample size of close indices.
-     * @param reverseLookup A list of maps containing the reverse lookup information for the variables used.
-     * @param sortedIndices A list of lists containing the sorted indices information for the variables used.
-     * @return A set of indices for data points that are close to the given data point i.
-     */
-    private Set<Integer> getCloseZs(double[][] _data, int[] _z, int i, int sampleSize,
-                                    List<Map<Integer, Integer>> reverseLookup,
-                                    List<List<Integer>> sortedIndices) {
-        Set<Integer> js = new HashSet<>();
-
-        if (sampleSize > _data[0].length) sampleSize = (int) ceil(0.8 * _data.length);
-        if (_z.length == 0) return new HashSet<>();
-
-        int radius = 0;
-
-        while (true) {
-            for (int z1 : _z) {
-                int q = reverseLookup.get(z1).get(i);
-
-                if (q - radius >= 0 && q - radius < _data[z1 + 1].length) {
-                    int r2 = sortedIndices.get(z1).get(q - radius);
-                    js.add(r2);
-                }
-
-                if (q + radius >= 0 && q + radius < _data[z1 + 1].length) {
-                    int r2 = sortedIndices.get(z1).get(q + radius);
-                    js.add(r2);
-                }
-            }
-
-            if (js.size() >= sampleSize) return js;
-
-            radius++;
         }
     }
 
