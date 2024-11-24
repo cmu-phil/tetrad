@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
@@ -48,13 +47,12 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * This all follows the original Daudin paper, which is this:
  * <p>
- * Daudin, J. J. (1980). Partial association measures and ann application to qualitative regression. Biometrika, 67(3),
+ * Daudin, J. J. (1980). Partial association measures and an application to qualitative regression. Biometrika, 67(3),
  * 581-590.
  * <p>
- * We use Nadaraya-Watson kernel regression, though we further restrict the sample size to nearby points.
+ * Updated 2024-11-24 josephramsey
  *
  * @author josephramsey
- * @version $Id: $Id
  */
 public final class ConditionalCorrelationIndependence {
     /**
@@ -109,18 +107,20 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Computes the Gaussian kernel value between two vectors given a specific bandwidth.
      *
+     * @param z         The data we're looking for the Gaussian kernal of.
+     * @param i         The index of the first vector.
+     * @param j         The index of the second vector.
      * @param bandwidth The bandwidth parameter for the Gaussian kernel.
      * @return The computed Gaussian kernel value.
      */
     private static double gaussianKernel(Matrix z, int i, int j, double bandwidth) {
         double squaredDistance = 0.0;
-        for (int k = 0; k < z.getNumRows(); k++) {
-            double diff = z.get(k, i) - z.get(k, j);// zi[k] - zj[k];
+        for (int k = 0; k < z.getNumColumns(); k++) {
+            double diff = z.get(i, k) - z.get(j, k);
             squaredDistance += diff * diff;
         }
         return Math.exp(-squaredDistance / (2 * bandwidth * bandwidth));
     }
-
 
     /**
      * Returns the p-value of the test, x _||_ y | z. Can be compared to alpha.
@@ -134,34 +134,29 @@ public final class ConditionalCorrelationIndependence {
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
-        try {
-            Map<Node, Integer> nodesHash = new HashMap<>();
-            for (int i = 0; i < this.variables.size(); i++) {
-                nodesHash.put(this.variables.get(i), i);
-            }
+        Map<Node, Integer> nodesHash = new HashMap<>();
+        for (int i = 0; i < this.variables.size(); i++) {
+            nodesHash.put(this.variables.get(i), i);
+        }
 
-            List<Node> allNodes = new ArrayList<>(z);
-            allNodes.add(x);
-            allNodes.add(y);
+        List<Node> allNodes = new ArrayList<>(z);
+        allNodes.add(x);
+        allNodes.add(y);
 
-            List<Integer> rows = getRows(this.data, allNodes, nodesHash);
+        List<Integer> rows = getRows(this.data, allNodes, nodesHash);
 
-            if (rows.isEmpty()) {
-                return Double.NaN;
-            }
-
-            Vector rx = residuals(x, z);
-            Vector ry = residuals(y, z);
-
-            // rx _||_ ry ?
-            double score = independent(rx, ry);
-            this.score = score;
-
-            return score;
-        } catch (Exception e) {
-            TetradLogger.getInstance().log(e.getMessage());
+        if (rows.isEmpty()) {
             return Double.NaN;
         }
+
+        Vector rx = residuals(x, z);
+        Vector ry = residuals(y, z);
+
+        // rx _||_ ry ?
+        double score = independent(rx, ry);
+        this.score = score;
+
+        return score;
     }
 
     /**
@@ -209,7 +204,7 @@ public final class ConditionalCorrelationIndependence {
             _z.assignColumn(i, data.getColumn(nodesHash.get(z.get(i))));
         }
 
-        return kernelRegressionResiduals(_x, _z.transpose(), bandwidth);
+        return kernelRegressionResiduals(_x, _z, bandwidth);
     }
 
     /**
@@ -308,13 +303,7 @@ public final class ConditionalCorrelationIndependence {
         }
 
         Collections.sort(zs);
-        Double last = zs.getLast();
-
-        if (Double.isNaN(last)) {
-            System.out.println();
-        }
-
-        return last;
+        return zs.getLast();
     }
 
     /**
@@ -326,7 +315,7 @@ public final class ConditionalCorrelationIndependence {
      */
     private double nonparametricFisherZ(Vector _x, Vector _y) {
         double r = correlation(_x, _y);
-        double z = 0.5 * sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
+        double z = 0.5 * sqrt(_x.size() - 3) * (log(1.0 + r) - log(1.0 - r));
         return z / (sqrt(m22(_x, _y)));
     }
 
@@ -378,6 +367,8 @@ public final class ConditionalCorrelationIndependence {
         K:
         for (int k = 0; k < data.getNumRows(); k++) {
             for (Node node : allVars) {
+
+                // Testwise deletion.
                 if (Double.isNaN(data.get(k, nodesHash.get(node)))) continue K;
             }
 

@@ -134,7 +134,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
-
         }
 
         boolean independent = p > this.alpha;
