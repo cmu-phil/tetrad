@@ -24,7 +24,9 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.util.*;
@@ -71,7 +73,7 @@ public final class ConditionalCorrelationIndependence {
      * The data matrix representing the correlation data implied by the given data set. It is used in the independence
      * test calculations.
      */
-    private final double[][] __data;
+    private final Matrix data;
     /**
      * The q value of the most recent test.
      */
@@ -88,10 +90,6 @@ public final class ConditionalCorrelationIndependence {
      * Bandwidth.
      */
     private double bandwidth = 1.0;
-    /**
-     * Basis
-     */
-    private Basis basis = Basis.Polynomial;
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
@@ -103,7 +101,7 @@ public final class ConditionalCorrelationIndependence {
         if (dataSet == null) throw new NullPointerException();
         this.dataSet = DataTransforms.standardizeData(dataSet);
 
-        __data = this.dataSet.getDoubleData().transpose().toArray();
+        data = this.dataSet.getDoubleData();
 
         if (dataSet.getNumColumns() < 2) {
             throw new IllegalArgumentException("Data must have at least two columns");
@@ -120,15 +118,13 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Computes the Gaussian kernel value between two vectors given a specific bandwidth.
      *
-     * @param zi        The first input vector.
-     * @param zj        The second input vector.
      * @param bandwidth The bandwidth parameter for the Gaussian kernel.
      * @return The computed Gaussian kernel value.
      */
-    private static double gaussianKernel(double[] zi, double[] zj, double bandwidth) {
+    private static double gaussianKernel(Matrix z, int i, int j, double bandwidth) {
         double squaredDistance = 0.0;
-        for (int k = 0; k < zi.length; k++) {
-            double diff = zi[k] - zj[k];
+        for (int k = 0; k < z.getNumRows(); k++) {
+            double diff = z.get(k, i) - z.get(k, j);// zi[k] - zj[k];
             squaredDistance += diff * diff;
         }
         return Math.exp(-squaredDistance / (2 * bandwidth * bandwidth));
@@ -161,8 +157,8 @@ public final class ConditionalCorrelationIndependence {
 
             if (rows.isEmpty()) return Double.NaN;
 
-            double[] rx = residuals(x, z);
-            double[] ry = residuals(y, z);
+            Vector rx = residuals(x, z);
+            Vector ry = residuals(y, z);
 
             // rx _||_ ry ?
             double score = independent(rx, ry, nodesHash.get(x), nodesHash.get(y));
@@ -183,22 +179,22 @@ public final class ConditionalCorrelationIndependence {
      * @param bandwidth The bandwidth parameter for the Gaussian kernel.
      * @return An array of residuals from the kernel regression.
      */
-    private double[] kernelRegressionResiduals(double[] x, double[][] z, double bandwidth) {
-        int n = x.length;
-        double[] residuals = new double[n];
+    private Vector kernelRegressionResiduals(Vector x, Matrix z, double bandwidth) {
+        int n = x.size();
+        Vector residuals = new Vector(n);
 
         for (int i = 0; i < n; i++) {
             double weightSum = 0.0;
             double weightedXSum = 0.0;
 
             for (int j = 0; j < n; j++) {
-                double kernel = gaussianKernel(z[i], z[j], bandwidth);
+                double kernel = gaussianKernel(z, i, j, bandwidth);
                 weightSum += kernel;
-                weightedXSum += kernel * x[j];
+                weightedXSum += kernel * x.get(j);
             }
 
             double fittedValue = weightedXSum / weightSum;
-            residuals[i] = x[i] - fittedValue;
+            residuals.set(i, x.get(i) - fittedValue);
         }
 
         return residuals;
@@ -211,23 +207,16 @@ public final class ConditionalCorrelationIndependence {
      * @param z A list of predictor variables represented as Nodes.
      * @return An array of residuals from the kernel regression.
      */
-    private double[] residuals(Node x, List<Node> z) {
-        double[] _x = __data[nodesHash.get(x)];
+    private Vector residuals(Node x, List<Node> z) {
+        Vector _x = data.getColumn(nodesHash.get(x));
 
-        double[][] _z = new double[z.size()][];
+        Matrix _z = new Matrix(data.getNumRows(), z.size());
+
         for (int i = 0; i < z.size(); i++) {
-            _z[i] = __data[nodesHash.get(z.get(i))];
+            _z.assignColumn(i, data.getColumn(nodesHash.get(z.get(i))));
         }
 
-        // Transpose _z
-        double[][] zt = new double[_x.length][z.size()];
-        for (int i = 0; i < z.size(); i++) {
-            for (int j = 0; j < _z[i].length; j++) {
-                zt[j][i] = _z[i][j];
-            }
-        }
-
-        return kernelRegressionResiduals(_x, zt, bandwidth);
+        return kernelRegressionResiduals(_x, _z.transpose(), bandwidth);
     }
 
     /**
@@ -237,16 +226,6 @@ public final class ConditionalCorrelationIndependence {
      */
     public void setNumFunctions(int numFunctions) {
         this.numFunctions = numFunctions;
-    }
-
-    /**
-     * Sets the basis.
-     *
-     * @param basis This basis.
-     * @see Basis
-     */
-    public void setBasis(Basis basis) {
-        this.basis = basis;
     }
 
     /**
@@ -306,17 +285,17 @@ public final class ConditionalCorrelationIndependence {
      * @param indexY The index of the variable from array `y` to be used in the calculation.
      * @return The maximum absolute value of the nonparametric Fisher Z test statistic.
      */
-    private double independent(double[] x, double[] y, int indexX, int indexY) {
-        double[] _x = new double[x.length];
-        double[] _y = new double[y.length];
+    private double independent(Vector x, Vector y, int indexX, int indexY) {
+        Vector _x = new Vector(x.size());
+        Vector _y = new Vector(y.size());
 
         double maxZ = 0.0;
 
         for (int m = 0; m <= this.numFunctions; m++) {
             for (int n = 0; n <= this.numFunctions; n++) {
-                for (int i = 0; i < x.length; i++) {
-                    _x[i] = function(m, x[i]);
-                    _y[i] = function(n, y[i]);
+                for (int i = 0; i < x.size(); i++) {
+                    _x.set(i, function(m, x.get(i)));
+                    _y.set(i, function(n, y.get(i)));
                 }
 
                 double z = abs(nonparametricFisherZ(_x, _y, indexX, indexY));
@@ -340,22 +319,19 @@ public final class ConditionalCorrelationIndependence {
      * @param _y An array of double values.
      * @return The nonparametric Fisher Z test statistic.
      */
-    private double nonparametricFisherZ(double[] _x, double[] _y, int indexX, int indexY) {
+    private double nonparametricFisherZ(Vector _x, Vector _y, int indexX, int indexY) {
 
         // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
         // are finite and that the sample is large.
-        double[] x = __data[indexX];
-        double[] y = __data[indexY];
+        Vector x = data.getColumn(indexX);
+        Vector y = data.getColumn(indexY);
 
-        double r = correlation(_x, _y); // correlation
+        double r = correlation(_x, _y);
 
         // Non-parametric Fisher Z test.
-        double z = 0.5 * sqrt(_x.length) * (log(1.0 + r) - log(1.0 - r));
+        double z = 0.5 * sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
 
-        System.out.println("|_x| = " + _x.length + " |x| = " + x.length + " m2x = " + m2(x) + " m2y = " + m2(y) +
-                           " sqrt(moment22) = " + (sqrt(m22(x, y))));
-
-        return z / (sqrt(m22(x, y)));
+        return z / (sqrt(m22(_x, _y)));
     }
 
     /**
@@ -365,30 +341,14 @@ public final class ConditionalCorrelationIndependence {
      * @param y An array of double values.
      * @return The moment22 value.
      */
-    private double m22(double[] x, double[] y) {
+    private double m22(Vector x, Vector y) {
         double sum = 0.0;
 
-        for (int i = 0; i < x.length; i++) {
-            sum += x[i] * x[i] * y[i] * y[i];
+        for (int i = 0; i < x.size(); i++) {
+            sum += x.get(i) * x.get(i) * y.get(i) * y.get(i);
         }
 
-        return sum / x.length;
-    }
-
-    /**
-     * Calculates the moment2 value for the given arrays x and y.
-     *
-     * @param x The array of data
-     * @return The m2 statistic.
-     */
-    private double m2(double[] x) {
-        double sum = 0.0;
-
-        for (double v : x) {
-            sum += v * v;
-        }
-
-        return sum / x.length;
+        return sum / x.size();
     }
 
     /**
@@ -399,27 +359,15 @@ public final class ConditionalCorrelationIndependence {
      * @return The basis function value.
      */
     private double function(int index, double x) {
-        if (this.basis == Basis.Polynomial) {
-            double g = 1.0;
+        double g = 1.0;
 
-            for (int i = 1; i <= index; i++) {
-                g *= x;
-            }
-
-            if (abs(g) == Double.POSITIVE_INFINITY) g = Double.NaN;
-
-            return g;
-        } else if (this.basis == Basis.Cosine) {
-            int i = (index + 1) / 2;
-
-            if (index % 2 == 1) {
-                return sin(i * x);
-            } else {
-                return cos(i * x);
-            }
-        } else {
-            throw new IllegalStateException("That basis is not configured: " + this.basis);
+        for (int i = 1; i <= index; i++) {
+            g *= x;
         }
+
+        if (abs(g) == Double.POSITIVE_INFINITY) g = Double.NaN;
+
+        return g;
     }
 
     /**
@@ -443,24 +391,6 @@ public final class ConditionalCorrelationIndependence {
         }
 
         return rows;
-    }
-
-    /**
-     * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.
-     *
-     * @see ConditionalCorrelationIndependence
-     */
-    public enum Basis {
-
-        /**
-         * Polynomial basis.
-         */
-        Polynomial,
-
-        /**
-         * Cosine basis.
-         */
-        Cosine
     }
 }
 

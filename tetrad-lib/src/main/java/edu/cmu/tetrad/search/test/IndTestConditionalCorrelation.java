@@ -255,16 +255,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     public void setBandwidth(double bandwidth) {
         this.cci.setBandwidth(bandwidth);
     }
-
-    /**
-     * Sets the basis used for the calculation.
-     *
-     * @param basis This basis.
-     * @see ConditionalCorrelationIndependence.Basis
-     */
-    public void setBasis(ConditionalCorrelationIndependence.Basis basis) {
-        this.cci.setBasis(basis);
-    }
 }
 
 
