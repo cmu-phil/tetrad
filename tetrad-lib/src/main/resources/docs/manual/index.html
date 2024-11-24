@@ -4351,7 +4351,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p><a href="#alpha">alpha</a>, <a
             href="#numBasisFunctions">numBasisFunctions</a>, <a
             href="#kernelType">kernelType</a>, <a
-            href="#kernelMultiplier">kernelMultiplier</a>, <a
+            href="#bandwidth">bandwidth</a>, <a
             href="#basisType">basisType</a>, <a
             href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a></p>
 
@@ -4437,7 +4437,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#alpha">alpha</a>, <a
             href="#kciUseApproximation">kciUseApproximation</a>, <a
-            href="#kernelMultiplier">kernelMultiplier</a>, <a
+            href="#bandwidth">bandwidth</a>, <a
             href="#kciNumBootstraps">kciNumBootstraps</a>, <a
             href="#thresholdForNumEigenvalues">thresholdForNumEigenvalues</a>, <a
             href="#kciEpsilon">kciEpsilon</a></p>
@@ -6834,26 +6834,23 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="kernelMultiplier">kernelMultiplier</h3>
+            id="bandwidth">bandwidth</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="kernelMultiplier_short_desc">Bowman and Azzalini (1997) default
-        kernel bandwidths should be multiplied by...</span></li>
+                    id="bandwidth_short_desc">Kernel bandwidth.</span></li>
             <li>Long
-                Description: <span id="kernelMultiplier_long_desc"> For the
-        conditional correlation algorithm. Bowman, A. W., & Azzalini, A.
-        (1997), give a formula for default optimal kernel widths. We allow
-        these defaults to be multiplied by this factor, to capture more or
-        less than this optimal signal.</span></li>
+                Description: <span id="bandwidth_long_desc">
+                    Kernel bandwidth.
+                </span></li>
             <li>Default Value: <span
-                    id="kernelMultiplier_default_value">1.0</span></li>
+                    id="bandwidth_default_value">1.0</span></li>
             <li>Lower Bound:
-                <span id="kernelMultiplier_lower_bound">4.9E-324</span></li>
+                <span id="bandwidth_lower_bound">4.9E-324</span></li>
             <li>Upper Bound: <span
-                    id="kernelMultiplier_upper_bound">Infinity</span></li>
+                    id="bandwidth_upper_bound">Infinity</span></li>
             <li>Value
-                Type: <span id="kernelMultiplier_value_type">Double</span></li>
+                Type: <span id="bandwidth_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"

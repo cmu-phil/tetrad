@@ -248,21 +248,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Returns the kernel width.
+     * Returns the kernel bandwidth.
      *
-     * @return This width.
+     * @param bandwidth This bandwidth.
      */
-    public double getWidth() {
-        return this.cci.getWidth();
-    }
-
-    /**
-     * Returns the kernel multiplier.
-     *
-     * @param multiplier This multiplier.
-     */
-    public void setKernelMultiplier(double multiplier) {
-        this.cci.setWidth(multiplier);
+    public void setBandwidth(double bandwidth) {
+        this.cci.setBandwidth(bandwidth);
     }
 
     /**

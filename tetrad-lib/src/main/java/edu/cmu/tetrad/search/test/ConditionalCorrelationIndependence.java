@@ -85,9 +85,9 @@ public final class ConditionalCorrelationIndependence {
      */
     private double cutoff;
     /**
-     * Azzalini kernel widths are multiplied by this.
+     * Bandwidth.
      */
-    private double width = 1.0;
+    private double bandwidth = 1.0;
     /**
      * Basis
      */
@@ -101,7 +101,7 @@ public final class ConditionalCorrelationIndependence {
      */
     public ConditionalCorrelationIndependence(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException();
-        this.dataSet = DataTransforms.center(dataSet);
+        this.dataSet = DataTransforms.standardizeData(dataSet);
 
         __data = this.dataSet.getDoubleData().transpose().toArray();
 
@@ -110,8 +110,8 @@ public final class ConditionalCorrelationIndependence {
         }
 
         this.variables = dataSet.getVariables();
-
         this.nodesHash = new HashMap<>();
+
         for (int i = 0; i < this.variables.size(); i++) {
             this.nodesHash.put(this.variables.get(i), i);
         }
@@ -133,6 +133,7 @@ public final class ConditionalCorrelationIndependence {
         }
         return Math.exp(-squaredDistance / (2 * bandwidth * bandwidth));
     }
+
 
     /**
      * Returns the p-value of the test, x _||_ y | z. Can be compared to alpha.
@@ -226,7 +227,7 @@ public final class ConditionalCorrelationIndependence {
             }
         }
 
-        return kernelRegressionResiduals(_x, zt, width);
+        return kernelRegressionResiduals(_x, zt, bandwidth);
     }
 
     /**
@@ -253,17 +254,17 @@ public final class ConditionalCorrelationIndependence {
      *
      * @return This width.
      */
-    public double getWidth() {
-        return this.width;
+    public double getBandwidth() {
+        return this.bandwidth;
     }
 
     /**
      * Sets the kernel width.
      *
-     * @param width This width.
+     * @param bandwidth This width.
      */
-    public void setWidth(double width) {
-        this.width = width;
+    public void setBandwidth(double bandwidth) {
+        this.bandwidth = bandwidth;
     }
 
     /**
@@ -442,24 +443,6 @@ public final class ConditionalCorrelationIndependence {
         }
 
         return rows;
-    }
-
-    /**
-     * Gives a choice of kernels to use for the independence judgments for conditional correlation independence.
-     *
-     * @see ConditionalCorrelationIndependence
-     */
-    public enum Kernel {
-
-        /**
-         * The Epinechnikov kernel.
-         */
-        Epinechnikov,
-
-        /**
-         * The Gaussian kernel.
-         */
-        Gaussian
     }
 
     /**

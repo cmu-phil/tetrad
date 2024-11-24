@@ -47,7 +47,7 @@ public class Kci implements IndependenceWrapper {
         edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
         kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROXIMATION));
-        kci.setWidthMultiplier(parameters.getDouble(Params.KERNEL_MULTIPLIER));
+        kci.setWidthMultiplier(parameters.getDouble(Params.BANDWIDTH));
         kci.setNumBootstraps(parameters.getInt(Params.KCI_NUM_BOOTSTRAPS));
         kci.setThreshold(parameters.getDouble(Params.THRESHOLD_FOR_NUM_EIGENVALUES));
         kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
@@ -86,7 +86,7 @@ public class Kci implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.KCI_USE_APPROXIMATION);
         params.add(Params.ALPHA);
-        params.add(Params.KERNEL_MULTIPLIER);
+        params.add(Params.BANDWIDTH);
         params.add(Params.KCI_NUM_BOOTSTRAPS);
         params.add(Params.THRESHOLD_FOR_NUM_EIGENVALUES);
         params.add(Params.KCI_EPSILON);
