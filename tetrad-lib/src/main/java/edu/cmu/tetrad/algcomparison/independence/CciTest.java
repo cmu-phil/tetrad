@@ -50,6 +50,7 @@ public class CciTest implements IndependenceWrapper {
                 parameters.getDouble(Params.ALPHA));
 
         cci.setNumFunctions(parameters.getInt(Params.NUM_BASIS_FUNCTIONS));
+        cci.setBandwidth(parameters.getDouble(Params.BANDWIDTH));
 
         return cci;
     }

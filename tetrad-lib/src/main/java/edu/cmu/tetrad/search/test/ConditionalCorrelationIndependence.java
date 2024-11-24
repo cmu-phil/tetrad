@@ -58,10 +58,6 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public final class ConditionalCorrelationIndependence {
     /**
-     * The dataset supplied in the constructor.
-     */
-    private final DataSet dataSet;
-    /**
      * The variables in datasSet.
      */
     private final List<Node> variables;
@@ -99,13 +95,8 @@ public final class ConditionalCorrelationIndependence {
      */
     public ConditionalCorrelationIndependence(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException();
-        this.dataSet = DataTransforms.standardizeData(dataSet);
-
-        data = this.dataSet.getDoubleData();
-
-        if (dataSet.getNumColumns() < 2) {
-            throw new IllegalArgumentException("Data must have at least two columns");
-        }
+        dataSet = DataTransforms.standardizeData(dataSet);
+        data = dataSet.getDoubleData();
 
         this.variables = dataSet.getVariables();
         this.nodesHash = new HashMap<>();
@@ -153,15 +144,17 @@ public final class ConditionalCorrelationIndependence {
             allNodes.add(x);
             allNodes.add(y);
 
-            List<Integer> rows = getRows(this.dataSet, allNodes, nodesHash);
+            List<Integer> rows = getRows(this.data, allNodes, nodesHash);
 
-            if (rows.isEmpty()) return Double.NaN;
+            if (rows.isEmpty()) {
+                return Double.NaN;
+            }
 
             Vector rx = residuals(x, z);
             Vector ry = residuals(y, z);
 
             // rx _||_ ry ?
-            double score = independent(rx, ry, nodesHash.get(x), nodesHash.get(y));
+            double score = independent(rx, ry);
             this.score = score;
 
             return score;
@@ -263,7 +256,7 @@ public final class ConditionalCorrelationIndependence {
      * @return This minimal score.
      */
     public double getScore() {
-        return abs(this.score) - this.cutoff;//  alpha - getPValue();
+        return abs(this.score) - this.cutoff;
     }
 
     /**
@@ -279,37 +272,49 @@ public final class ConditionalCorrelationIndependence {
      * Determines the maximum absolute value of the nonparametric Fisher Z test statistic between transformed versions
      * of the given arrays `x` and `y` across different functions.
      *
-     * @param x      The first array of input values.
-     * @param y      The second array of input values.
-     * @param indexX The index of the variable from array `x` to be used in the calculation.
-     * @param indexY The index of the variable from array `y` to be used in the calculation.
+     * @param x The first array of input values.
+     * @param y The second array of input values.
      * @return The maximum absolute value of the nonparametric Fisher Z test statistic.
      */
-    private double independent(Vector x, Vector y, int indexX, int indexY) {
+    private double independent(Vector x, Vector y) {
         Vector _x = new Vector(x.size());
         Vector _y = new Vector(y.size());
 
-        double maxZ = 0.0;
+        List<Double> zs = new ArrayList<>();
 
         for (int m = 0; m <= this.numFunctions; m++) {
+
+            N:
             for (int n = 0; n <= this.numFunctions; n++) {
                 for (int i = 0; i < x.size(); i++) {
-                    _x.set(i, function(m, x.get(i)));
-                    _y.set(i, function(n, y.get(i)));
+                    double fx = function(m, x.get(i));
+                    double fy = function(n, y.get(i));
+
+                    if (Double.isInfinite(fx) || Double.isInfinite(fy)
+                        || Double.isNaN(fx) || Double.isNaN(fy)) {
+                        continue N;
+                    }
+
+                    _x.set(i, fx);
+                    _y.set(i, fy);
                 }
 
-                double z = abs(nonparametricFisherZ(_x, _y, indexX, indexY));
+                double z = abs(nonparametricFisherZ(_x, _y));
 
-                if (Double.isNaN(z)) continue;
-
-                // Maximize dependency
-                if (z > maxZ) {
-                    maxZ = z;
+                if (!Double.isNaN(z)) {
+                    zs.add(z);
                 }
             }
         }
 
-        return maxZ;
+        Collections.sort(zs);
+        Double last = zs.getLast();
+
+        if (Double.isNaN(last)) {
+            System.out.println();
+        }
+
+        return last;
     }
 
     /**
@@ -319,18 +324,9 @@ public final class ConditionalCorrelationIndependence {
      * @param _y An array of double values.
      * @return The nonparametric Fisher Z test statistic.
      */
-    private double nonparametricFisherZ(Vector _x, Vector _y, int indexX, int indexY) {
-
-        // Testing the hypothesis that _x and _y are uncorrelated and assuming that 4th moments of _x and _y
-        // are finite and that the sample is large.
-        Vector x = data.getColumn(indexX);
-        Vector y = data.getColumn(indexY);
-
+    private double nonparametricFisherZ(Vector _x, Vector _y) {
         double r = correlation(_x, _y);
-
-        // Non-parametric Fisher Z test.
         double z = 0.5 * sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
-
         return z / (sqrt(m22(_x, _y)));
     }
 
@@ -362,10 +358,8 @@ public final class ConditionalCorrelationIndependence {
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
-            g *= x;
+            g *= 0.95 * x;
         }
-
-        if (abs(g) == Double.POSITIVE_INFINITY) g = Double.NaN;
 
         return g;
     }
@@ -373,18 +367,18 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Retrieves the list of row indices in the dataSet that have no NaN values for all variables in allVars.
      *
-     * @param dataSet   The DataSet containing the data values.
+     * @param data      The data matrix.
      * @param allVars   The list of variables to check for NaN values.
      * @param nodesHash The map containing the mapping of nodes to their corresponding column indices in the dataSet.
      * @return The list of row indices that have no NaN values for all variables in allVars.
      */
-    private List<Integer> getRows(DataSet dataSet, List<Node> allVars, Map<Node, Integer> nodesHash) {
+    private List<Integer> getRows(Matrix data, List<Node> allVars, Map<Node, Integer> nodesHash) {
         List<Integer> rows = new ArrayList<>();
 
         K:
-        for (int k = 0; k < dataSet.getNumRows(); k++) {
+        for (int k = 0; k < data.getNumRows(); k++) {
             for (Node node : allVars) {
-                if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
+                if (Double.isNaN(data.get(k, nodesHash.get(node)))) continue K;
             }
 
             rows.add(k);
