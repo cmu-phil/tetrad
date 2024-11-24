@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -101,6 +102,37 @@ public final class DataUtils {
         dataSet.setInt(1, 0, 1);
         return dataSet;
     }
+
+    /**
+     * ave DataSet object to a file
+     * @param data the Dataset object
+     * @param filePath
+     */
+    public static void saveDataSet(DataSet data, String filePath) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            out.writeObject(data);
+            System.out.println("DataSet saved successfully to " + filePath);
+        } catch (IOException e) {
+            System.err.println("Error saving DataSet: " + e.getMessage());
+        }
+    }
+
+    /**
+     *  Load DataSet object from a file
+     * @param filePath
+     */
+    public static DataSet loadDataSet(String filePath) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
+            DataSet data = (DataSet) in.readObject();
+            System.out.println("DataSet loaded successfully from " + filePath);
+            return data;
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error loading DataSet: " + e.getMessage());
+            return null;
+        }
+    }
+
+
 
     /**
      * <p>containsMissingValue.</p>
