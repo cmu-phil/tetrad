@@ -156,6 +156,10 @@ public final class ConditionalCorrelationIndependence {
         double score = independent(rx, ry);
         this.score = score;
 
+        if (Double.isNaN(score)) {
+            return Double.NaN;
+        }
+
         return score;
     }
 
@@ -303,7 +307,7 @@ public final class ConditionalCorrelationIndependence {
         }
 
         Collections.sort(zs);
-        return zs.getLast();
+        return zs.isEmpty() ? 0.0 : zs.getLast();
     }
 
     /**

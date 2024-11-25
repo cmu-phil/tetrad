@@ -882,28 +882,39 @@ public class DataTransforms {
 
         for (int j = 0; j < data2.getNumColumns(); j++) {
             double sum = 0.0;
+             int count = 0;
 
             for (int i = 0; i < data2.getNumRows(); i++) {
-                sum += data2.get(i, j);
+                if (!Double.isNaN(data2.get(i, j))) {
+                    sum += data2.get(i, j);
+                    count++;
+                }
             }
 
-            double mean = sum / data.getNumRows();
+            double mean = sum / count;
 
             for (int i = 0; i < data.getNumRows(); i++) {
-                data2.set(i, j, data.get(i, j) - mean);
+                if (!Double.isNaN(data2.get(i, j))) {
+                    data2.set(i, j, data.get(i, j) - mean);
+                }
             }
 
             double norm = 0.0;
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 double v = data2.get(i, j);
-                norm += v * v;
+
+                if (!Double.isNaN(v)) {
+                    norm += v * v;
+                }
             }
 
             norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
-                data2.set(i, j, data2.get(i, j) / norm);
+                if (!Double.isNaN(data2.get(i, j))) {
+                    data2.set(i, j, data2.get(i, j) / norm);
+                }
             }
         }
 
