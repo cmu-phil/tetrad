@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
