@@ -481,6 +481,10 @@ public final class Params {
      */
     public static final String PENALTY_DISCOUNT_ZS = "penaltyDiscountZs";
     /**
+     * Constant <code>TRUNCATION_LIMIT="truncationLimit"</code>
+     */
+    public static final String TRUNCATION_LIMIT = "truncationLimit";
+    /**
      * Constant <code>EBIC_GAMMA="ebicGamma"</code>
      */
     public static final String EBIC_GAMMA = "ebicGamma";
