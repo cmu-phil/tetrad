@@ -21,9 +21,11 @@
 
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -73,12 +75,37 @@ public final class ConditionalCorrelationIndependence {
     public ConditionalCorrelationIndependence(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException();
         dataSet = DataTransforms.standardizeData(dataSet);
+
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            if (dataSet.getVariables().get(j) instanceof ContinuousVariable) {
+                scale(dataSet, j);
+            }
+        }
+
         data = dataSet.getDoubleData();
 
         this.nodesHash = new ConcurrentHashMap<>();
 
         for (int i = 0; i < dataSet.getVariables().size(); i++) {
             this.nodesHash.put(dataSet.getVariables().get(i), i);
+        }
+    }
+
+    private void scale(DataSet dataSet, int col) {
+        double max = Double.MIN_VALUE;
+        double min = Double.MAX_VALUE;
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double d = dataSet.getDouble(i, col);
+            if (Double.isNaN(d)) continue;
+            if (d > max) max = d;
+            if (d < min) min = d;
+        }
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double d = dataSet.getDouble(i, col);
+            if (Double.isNaN(d)) continue;
+            dataSet.setDouble(i, col, min + (d - min) / (max - min));
         }
     }
 

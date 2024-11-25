@@ -1568,7 +1568,7 @@ public final class StatUtils {
      * @return a double
      */
     public static double standardizedSixthMoment(double[] array) {
-        return StatUtils.standardizedFifthMoment(array, array.length);
+        return StatUtils.standardizedSixthMoment(array, array.length);
     }
 
     /**

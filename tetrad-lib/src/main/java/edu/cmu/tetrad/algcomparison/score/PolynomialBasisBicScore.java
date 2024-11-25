@@ -40,6 +40,7 @@ import java.util.List;
  * Wrapper for degenerate Gaussian BIC score
  *
  * @author bandrews
+ * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
@@ -73,9 +74,9 @@ public class PolynomialBasisBicScore implements ScoreWrapper {
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
         PolynomialBasisScore score = new PolynomialBasisScore(SimpleDataLoader.getMixedDataSet(dataSet),
-                precomputeCovariances, parameters.getInt(Params.TRUNCATION_LIMIT));
+                precomputeCovariances, parameters.getInt(Params.TRUNCATION_LIMIT),
+                parameters.getBoolean(Params.USE_PSEUDOINVERSE));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
         return score;
     }
 
