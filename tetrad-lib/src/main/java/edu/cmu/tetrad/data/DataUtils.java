@@ -104,37 +104,6 @@ public final class DataUtils {
     }
 
     /**
-     * ave DataSet object to a file
-     * @param data the Dataset object
-     * @param filePath
-     */
-    public static void saveDataSet(DataSet data, String filePath) {
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
-            out.writeObject(data);
-            System.out.println("DataSet saved successfully to " + filePath);
-        } catch (IOException e) {
-            System.err.println("Error saving DataSet: " + e.getMessage());
-        }
-    }
-
-    /**
-     *  Load DataSet object from a file
-     * @param filePath
-     */
-    public static DataSet loadDataSet(String filePath) {
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
-            DataSet data = (DataSet) in.readObject();
-            System.out.println("DataSet loaded successfully from " + filePath);
-            return data;
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error loading DataSet: " + e.getMessage());
-            return null;
-        }
-    }
-
-
-
-    /**
      * <p>containsMissingValue.</p>
      *
      * @param data a {@link edu.cmu.tetrad.util.Matrix} object
