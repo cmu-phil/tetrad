@@ -20,7 +20,9 @@ import java.util.Map;
  * calculated as the sum of the scores of the first few powers of the variable. For discrete variables, the score is
  * calculated as the sum of the scores of the indicator variables for the levels of the discrete variable.
  *
+ * @author bandrews
  * @author josephramsey
+ * @see DegenerateGaussianScore
  */
 public class PolynomialBasisScore implements Score {
     /**
