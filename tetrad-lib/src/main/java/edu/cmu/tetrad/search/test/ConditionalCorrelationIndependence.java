@@ -279,7 +279,7 @@ public final class ConditionalCorrelationIndependence {
         Vector _x = new Vector(x.size());
         Vector _y = new Vector(y.size());
 
-        List<Double> zs = new ArrayList<>();
+        double max = 0.0;
 
         for (int m = 0; m <= this.numFunctions; m++) {
 
@@ -301,13 +301,14 @@ public final class ConditionalCorrelationIndependence {
                 double z = abs(nonparametricFisherZ(_x, _y));
 
                 if (!Double.isNaN(z)) {
-                    zs.add(z);
+                    if (z > max) {
+                        max = z;
+                    }
                 }
             }
         }
 
-        Collections.sort(zs);
-        return zs.isEmpty() ? 0.0 : zs.getLast();
+        return max;
     }
 
     /**
