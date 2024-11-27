@@ -46,10 +46,6 @@ public final class LvDumb implements IGraphSearch {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-    /**
      * The number of starts for GRaSP.
      */
     private int numStarts = 1;
@@ -145,16 +141,6 @@ public final class LvDumb implements IGraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether the complete rule set should be used during the search algorithm. By default, the complete rule set
-     * is not used.
-     *
-     * @param completeRuleSetUsed true if the complete rule set should be used, false otherwise
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
