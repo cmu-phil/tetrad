@@ -1348,8 +1348,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         if (parallelized) {
             int parallelism = Runtime.getRuntime().availableProcessors();
-            TetradLogger.getInstance().log("Parallelism: " + parallelism);
-
             ForkJoinPool pool = new ForkJoinPool(parallelism);
 
             List<Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> theseResults;
