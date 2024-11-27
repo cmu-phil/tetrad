@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static edu.cmu.tetrad.util.StatUtils.median;
+import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -100,6 +100,21 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
                     return diff * diff;
                 }).sum();
         return Math.exp(-squaredDistance / (2 * b * b));
+    }
+
+    /**
+     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
+     * and Azzalini (1997) q.31.
+     *
+     * @param xCol The data for the column.
+     * @return The optimal bandwidth for node x.
+     */
+    private static double h(Vector xCol) {
+        Vector g = new Vector(xCol.size());
+        double median = median(xCol.toArray());
+        for (int j = 0; j < xCol.size(); j++) g.set(j, abs(xCol.get(j) - median));
+        double mad = median(g.toArray());
+        return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.size(), 0.2);
     }
 
     /**
@@ -170,21 +185,6 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         });
 
         return residuals;
-    }
-
-    /**
-     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
-     * and Azzalini (1997) q.31.
-     *
-     * @param xCol     The data for the column.
-     * @return The optimal bandwidth for node x.
-     */
-    private static double h(Vector xCol) {
-        Vector g = new Vector(xCol.size());
-        double median = median(xCol.toArray());
-        for (int j = 0; j < xCol.size(); j++) g.set(j, abs(xCol.get(j) - median));
-        double mad = median(g.toArray());
-        return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.size(), 0.2);
     }
 
     /**
@@ -318,7 +318,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      */
     private double nonparametricFisherZ(Vector _x, Vector _y) {
         double r = correlation(_x, _y);
-        double z = 0.5 *  sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
+        double z = 0.5 * sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
         return z / (sqrt(m22(_x, _y) * bandwidth));
     }
 
@@ -333,7 +333,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         double m22 = 0.0;
 
         for (int i = 0; i < x.size(); i++) {
-            m22 +=  x.get(i) * x.get(i) * y.get(i) * y.get(i);
+            m22 += x.get(i) * x.get(i) * y.get(i) * y.get(i);
         }
 
         return m22 / x.size();
@@ -386,7 +386,8 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     }
 
     /**
-     * Retrieves the list of row indices currently set for the analysis. If no rows are set, returns a list of all row indices.
+     * Retrieves the list of row indices currently set for the analysis. If no rows are set, returns a list of all row
+     * indices.
      *
      * @return A list of row indices.
      */
@@ -413,4 +414,5 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     @Override
     public void setRows(List<Integer> rows) {
         this.rows = rows;
-    }}
+    }
+}
