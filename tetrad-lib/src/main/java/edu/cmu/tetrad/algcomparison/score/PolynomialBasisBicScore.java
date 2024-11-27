@@ -85,7 +85,7 @@ public class PolynomialBasisBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Degenerate Gaussian BIC Score";
+        return "Polynomial Basis BIC Score";
     }
 
     /**
@@ -105,7 +105,6 @@ public class PolynomialBasisBicScore implements ScoreWrapper {
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.STRUCTURE_PRIOR);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
-        parameters.add(Params.USE_PSEUDOINVERSE);
         parameters.add(Params.TRUNCATION_LIMIT);
         return parameters;
     }

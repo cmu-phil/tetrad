@@ -21,11 +21,9 @@
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -34,8 +32,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
-import static edu.cmu.tetrad.util.StatUtils.correlation;
-import static edu.cmu.tetrad.util.StatUtils.getZForAlpha;
+import static edu.cmu.tetrad.util.StatUtils.*;
+import static edu.cmu.tetrad.util.StatUtils.median;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -58,13 +56,14 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author josephramsey
  */
-public final class ConditionalCorrelationIndependence {
+public final class ConditionalCorrelationIndependence implements RowsSettable {
     private final Map<Node, Integer> nodesHash;
     private final Matrix data;
     private double score;
     private int numFunctions = 10;
     private double cutoff;
     private double bandwidth = 1.0;
+    private List<Integer> rows;
 
     /**
      * Initializes a new instance of the ConditionalCorrelationIndependence class using the provided DataSet.
@@ -75,37 +74,11 @@ public final class ConditionalCorrelationIndependence {
     public ConditionalCorrelationIndependence(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException();
         dataSet = DataTransforms.standardizeData(dataSet);
-
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            if (dataSet.getVariables().get(j) instanceof ContinuousVariable) {
-                scale(dataSet, j);
-            }
-        }
-
         data = dataSet.getDoubleData();
-
         this.nodesHash = new ConcurrentHashMap<>();
 
         for (int i = 0; i < dataSet.getVariables().size(); i++) {
             this.nodesHash.put(dataSet.getVariables().get(i), i);
-        }
-    }
-
-    private void scale(DataSet dataSet, int col) {
-        double max = Double.MIN_VALUE;
-        double min = Double.MAX_VALUE;
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
-            if (Double.isNaN(d)) continue;
-            if (d > max) max = d;
-            if (d < min) min = d;
-        }
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
-            if (Double.isNaN(d)) continue;
-            dataSet.setDouble(i, col, min + (d - min) / (max - min));
         }
     }
 
@@ -118,13 +91,15 @@ public final class ConditionalCorrelationIndependence {
      * @param bandwidth The bandwidth parameter for the Gaussian kernel.
      * @return The computed Gaussian kernel value between the two rows.
      */
-    private static double gaussianKernel(Matrix z, int i, int j, double bandwidth) {
+    private static double gaussianKernel(Matrix z, int i, int j, double bandwidth, double h) {
+        double b = bandwidth * h;
+
         double squaredDistance = IntStream.range(0, z.getNumColumns())
                 .mapToDouble(k -> {
                     double diff = z.get(i, k) - z.get(j, k);
                     return diff * diff;
                 }).sum();
-        return Math.exp(-squaredDistance / (2 * bandwidth * bandwidth));
+        return Math.exp(-squaredDistance / (2 * b * b));
     }
 
     /**
@@ -150,10 +125,11 @@ public final class ConditionalCorrelationIndependence {
             return Double.NaN;
         }
 
-        Vector rx = residuals(x, z);
-        Vector ry = residuals(y, z);
+        Vector rx = residuals(x, z, rows);
+        Vector ry = residuals(y, z, rows);
 
         double score = independent(rx, ry);
+
         this.score = score;
 
         if (Double.isNaN(score)) {
@@ -175,12 +151,16 @@ public final class ConditionalCorrelationIndependence {
         int n = x.size();
         Vector residuals = new Vector(n);
 
+        double h = h(x);
+
+        // Find the standard deviation of z.
+
         IntStream.range(0, n).parallel().forEach(i -> {
             double weightSum = 0.0;
             double weightedXSum = 0.0;
 
             for (int j = 0; j < n; j++) {
-                double kernel = gaussianKernel(z, i, j, bandwidth);
+                double kernel = gaussianKernel(z, i, j, bandwidth, h);
                 weightSum += kernel;
                 weightedXSum += kernel * x.get(j);
             }
@@ -193,22 +173,37 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
+     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
+     * and Azzalini (1997) q.31.
+     *
+     * @param xCol     The data for the column.
+     * @return The optimal bandwidth for node x.
+     */
+    private static double h(Vector xCol) {
+        Vector g = new Vector(xCol.size());
+        double median = median(xCol.toArray());
+        for (int j = 0; j < xCol.size(); j++) g.set(j, abs(xCol.get(j) - median));
+        double mad = median(g.toArray());
+        return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.size(), 0.2);
+    }
+
+    /**
      * Computes the residuals of a node x given a list of conditioning nodes z using kernel regression.
      *
      * @param x The node for which residuals need to be computed.
      * @param z The list of conditioning nodes.
      * @return A vector containing the residuals of node x after accounting for the conditioning nodes z.
      */
-    private Vector residuals(Node x, List<Node> z) {
+    private Vector residuals(Node x, List<Node> z, List<Integer> rows) {
         Vector _x = data.getColumn(nodesHash.get(x));
 
-        Matrix _z = new Matrix(data.getNumRows(), z.size());
+        // Restrict x and z to the given rows and restrict z to the columns in z.
+        int[] _rows = rows.stream().mapToInt(i -> i).toArray();
+        int[] _cols = z.stream().mapToInt(nodesHash::get).toArray();
 
-        for (int i = 0; i < z.size(); i++) {
-            _z.assignColumn(i, data.getColumn(nodesHash.get(z.get(i))));
-        }
-
-        return kernelRegressionResiduals(_x, _z, bandwidth);
+        Matrix _z = data.getSelection(_rows, _cols);
+        Vector __x = _x.getSelection(_rows);
+        return kernelRegressionResiduals(__x, _z, bandwidth);
     }
 
     /**
@@ -272,25 +267,25 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
-     * Computes the maximum absolute non-parametric Fisher's Z value between two vectors, x and y, based on a range of
+     * Computes the maximum absolute non-parametric Fisher's Z value between two vectors, rx and ry, based on a range of
      * functions applied to the elements of these vectors.
      *
-     * @param x The first vector containing data points.
-     * @param y The second vector containing data points.
+     * @param rx The first vector containing data points.
+     * @param ry The second vector containing data points.
      * @return The maximum absolute value of the non-parametric Fisher's Z calculated between the transformed versions
-     * of vectors x and y.
+     * of vectors rx and ry.
      */
-    private double independent(Vector x, Vector y) {
-        Vector _x = new Vector(x.size());
-        Vector _y = new Vector(y.size());
+    private double independent(Vector rx, Vector ry) {
+        Vector _x = new Vector(rx.size());
+        Vector _y = new Vector(ry.size());
 
         double max = 0.0;
 
-        for (int m = 0; m <= this.numFunctions; m++) {
-            for (int n = 0; n <= this.numFunctions; n++) {
-                for (int i = 0; i < x.size(); i++) {
-                    double fx = function(m, x.get(i));
-                    double fy = function(n, y.get(i));
+        for (int m = 1; m <= this.numFunctions; m++) {
+            for (int n = 1; n <= this.numFunctions; n++) {
+                for (int i = 0; i < rx.size(); i++) {
+                    double fx = function(m, rx.get(i));
+                    double fy = function(n, ry.get(i));
 
                     if (Double.isInfinite(fx) || Double.isInfinite(fy)
                         || Double.isNaN(fx) || Double.isNaN(fy)) {
@@ -323,8 +318,8 @@ public final class ConditionalCorrelationIndependence {
      */
     private double nonparametricFisherZ(Vector _x, Vector _y) {
         double r = correlation(_x, _y);
-        double z = 0.5 * sqrt(_x.size() - 3) * (log(1.0 + r) - log(1.0 - r));
-        return z / (sqrt(m22(_x, _y)));
+        double z = 0.5 *  sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
+        return z / (sqrt(m22(_x, _y) * bandwidth));
     }
 
     /**
@@ -335,9 +330,13 @@ public final class ConditionalCorrelationIndependence {
      * @return The normalized sum of the element-wise product of the squares of the two vectors.
      */
     private double m22(Vector x, Vector y) {
-        return IntStream.range(0, x.size())
-                       .mapToDouble(i -> x.get(i) * x.get(i) * y.get(i) * y.get(i))
-                       .sum() / x.size();
+        double m22 = 0.0;
+
+        for (int i = 0; i < x.size(); i++) {
+            m22 +=  x.get(i) * x.get(i) * y.get(i) * y.get(i);
+        }
+
+        return m22 / x.size();
     }
 
     /**
@@ -352,7 +351,7 @@ public final class ConditionalCorrelationIndependence {
         double g = 1.0;
 
         for (int i = 1; i <= index; i++) {
-            g *= 0.95 * x;
+            g *= x;
         }
 
         return g;
@@ -367,9 +366,10 @@ public final class ConditionalCorrelationIndependence {
      * @return A list of row indices where none of the specified nodes' values are NaN in the matrix.
      */
     private List<Integer> getRows(Matrix data, List<Node> allVars, Map<Node, Integer> nodesHash) {
+        List<Integer> _rows = getRows();
         List<Integer> rows = new ArrayList<>();
 
-        for (int k = 0; k < data.getNumRows(); k++) {
+        for (int k : _rows) {
             boolean hasNaN = false;
             for (Node node : allVars) {
                 if (Double.isNaN(data.get(k, nodesHash.get(node)))) {
@@ -383,5 +383,25 @@ public final class ConditionalCorrelationIndependence {
         }
 
         return rows;
+    }
+
+    @Override
+    public List<Integer> getRows() {
+        if (this.rows == null) {
+            List<Integer> allRows = new ArrayList<>();
+
+            for (int i = 0; i < this.data.getNumRows(); i++) {
+                allRows.add(i);
+            }
+
+            return allRows;
+        } else {
+            return this.rows;
+        }
+    }
+
+    @Override
+    public void setRows(List<Integer> rows) {
+        this.rows = rows;
     }
 }

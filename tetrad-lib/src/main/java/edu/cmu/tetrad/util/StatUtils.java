@@ -1375,6 +1375,50 @@ public final class StatUtils {
         return adev;
     }
 
+    public static double calculateMoment(double[] data, int i) {
+        double sum = 0.0;
+        for (double value : data) {
+            sum += Math.pow(value, i);
+        }
+        return sum / data.length; // Mean of powers
+    }
+
+    public static double calculateCentralMoment(double[] data, int i) {
+        double mean = calculateMoment(data, 1); // First moment is the mean
+        double sum = 0.0;
+        for (double value : data) {
+            sum += Math.pow(value - mean, i); // (x - mean)^i
+        }
+        return sum / data.length; // Average
+    }
+
+    public static double calculateCumulant(double[] data, int i) {
+        switch (i) {
+            case 1: // Mean
+                return calculateMoment(data, 1);
+            case 2: // Variance
+                return calculateCentralMoment(data, 2);
+            case 3: // Skewness-related cumulant
+                return calculateCentralMoment(data, 3);
+            case 4: // Kurtosis-related cumulant
+                double mu2 = calculateCentralMoment(data, 2);
+                double mu4 = calculateCentralMoment(data, 4);
+                return mu4 - 3 * Math.pow(mu2, 2);
+            case 5: // Fifth cumulant
+                double mu1 = calculateMoment(data, 1); // Mean
+                double mu2b = calculateCentralMoment(data, 2);
+                double mu3 = calculateCentralMoment(data, 3);
+                double mu5 = calculateCentralMoment(data, 5);
+                return mu5 - 10 * mu2b * mu3 - 15 * Math.pow(mu2b, 2) * mu1
+                       - 10 * mu3 * Math.pow(mu1, 2) + 30 * mu2b * Math.pow(mu1, 3);
+            default:
+                throw new IllegalArgumentException("Cumulant calculation for i > 5 is not implemented");
+        }
+    }
+
+
+
+
     /**
      * <p>skewness.</p>
      *

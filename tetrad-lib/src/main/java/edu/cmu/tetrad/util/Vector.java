@@ -234,7 +234,7 @@ public class Vector implements TetradSerializable {
      * @param selection an array of  objects
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
-    public Vector viewSelection(int[] selection) {
+    public Vector getSelection(int[] selection) {
         double[] _selection = new double[selection.length];
 
         for (int i = 0; i < selection.length; i++) {

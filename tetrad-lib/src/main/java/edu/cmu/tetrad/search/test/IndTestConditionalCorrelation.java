@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author josephramsey
  * @version $Id: $Id
  */
-public final class IndTestConditionalCorrelation implements IndependenceTest {
+public final class IndTestConditionalCorrelation implements IndependenceTest, RowsSettable {
 
     /**
      * The number format used for formatting numbers in the application. It is obtained from the application-wide
@@ -62,10 +62,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * Stores a reference to the data set passed in through the constructor.
      */
     private final DataSet dataSet;
-    /**
-     * A cache of results for independence facts.
-     */
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     /**
      * The significance level of the independence tests.
      */
@@ -124,10 +120,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        if (this.facts.containsKey(new IndependenceFact(x, y, z))) {
-            return facts.get(new IndependenceFact(x, y, z));
-        }
-
         double score = this.cci.isIndependent(x, y, z);
         this.score = score;
         double p = this.cci.getPValue(score);
@@ -145,9 +137,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
             }
         }
 
-        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, score);
-        facts.put(new IndependenceFact(x, y, z), result);
-        return result;
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, score);
     }
 
     /**
@@ -253,6 +243,16 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     public void setBandwidth(double bandwidth) {
         this.cci.setBandwidth(bandwidth);
+    }
+
+    @Override
+    public List<Integer> getRows() {
+        return cci.getRows();
+    }
+
+    @Override
+    public void setRows(List<Integer> rows) {
+        cci.setRows(rows);
     }
 }
 

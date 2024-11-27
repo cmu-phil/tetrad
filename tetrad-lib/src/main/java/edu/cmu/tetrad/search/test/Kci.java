@@ -527,11 +527,11 @@ public class Kci implements IndependenceTest {
         double T = (1.0 / N) * (kx.times(ky).trace());
 
         // Eigen decomposition of kx and ky.
-        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke(false);
-        List<Double> evx = eigendecompositionx.getTopEigenvalues();
+        EigenReturn eigendecompositionx = new Eigendecomposition(kx).invoke(false);
+        List<Double> evx = eigendecompositionx.topEigenvalues();
 
-        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke(false);
-        List<Double> evy = eigendecompositiony.getTopEigenvalues();
+        EigenReturn eigendecompositiony = new Eigendecomposition(ky).invoke(false);
+        List<Double> evy = eigendecompositiony.topEigenvalues();
 
         // Calculate formula (9).
         int sum = 0;
@@ -570,13 +570,13 @@ public class Kci implements IndependenceTest {
     private IndependenceResult proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
         double T = (1.0 / N) * kx.times(ky).trace();
 
-        Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke(true);
-        Matrix vx = eigendecompositionx.getV();
-        Matrix dx = eigendecompositionx.getD();
+        EigenReturn eigendecompositionx = new Eigendecomposition(kx).invoke(true);
+        Matrix vx = eigendecompositionx.V();
+        Matrix dx = eigendecompositionx. D();
 
-        Eigendecomposition eigendecompositiony = new Eigendecomposition(ky).invoke(true);
-        Matrix vy = eigendecompositiony.getV();
-        Matrix dy = eigendecompositiony.getD();
+        EigenReturn eigendecompositiony = new Eigendecomposition(ky).invoke(true);
+        Matrix vy = eigendecompositiony.V();
+        Matrix dy = eigendecompositiony.D();
 
         // VD
         Matrix vdx = vx.times(dx);
@@ -610,8 +610,8 @@ public class Kci implements IndependenceTest {
         } else {
 
             // Get top eigenvalues of that.
-            Eigendecomposition eigendecompositionu = new Eigendecomposition(uuprod).invoke(false);
-            List<Double> eigenu = eigendecompositionu.getTopEigenvalues();
+            EigenReturn eigendecompositionu = new Eigendecomposition(uuprod).invoke(false);
+            List<Double> top = eigendecompositionu.topEigenvalues();
 
             // Calculate formulas (13) and (14).
             int sum = 0;
@@ -619,12 +619,11 @@ public class Kci implements IndependenceTest {
             for (int j = 0; j < this.numBootstraps; j++) {
                 double s = 0.0;
 
-                for (double lambdaStar : eigenu) {
+                for (double lambdaStar : top) {
                     s += lambdaStar * getChisqSample();
                 }
 
                 s *= 1.0 / N;
-
                 if (s > T) sum++;
             }
 
@@ -781,9 +780,6 @@ public class Kci implements IndependenceTest {
      */
     private class Eigendecomposition {
         private final Matrix k;
-        private Matrix D;
-        private Matrix V;
-        private List<Double> topEigenvalues;
 
         /**
          * Construct a new Eigendecomposition object with the given matrix.
@@ -800,75 +796,49 @@ public class Kci implements IndependenceTest {
         }
 
         /**
-         * Returns the matrix D.
-         *
-         * @return the matrix D
-         */
-        public Matrix getD() {
-            return this.D;
-        }
-
-        /**
-         * Returns the matrix V.
-         *
-         * @return the matrix V
-         */
-        public Matrix getV() {
-            return this.V;
-        }
-
-        /**
-         * Returns the list of top eigenvalues.
-         *
-         * @return the list of top eigenvalues
-         */
-        public List<Double> getTopEigenvalues() {
-            return this.topEigenvalues;
-        }
-
-        /**
          * Performs eigendecomposition on a given matrix and optionally stores the eigenvectors.
          *
          * @param storeV a flag indicating whether to store the eigenvectors
          * @return the Eigendecomposition object on which this method is invoked
          */
-        public Eigendecomposition invoke(boolean storeV) {
-            List<Double> eigenValues;
+        public EigenReturn invoke(boolean storeV) {
+            List<Double> topEigenValues;
+            Matrix D  = null;
             Matrix V = null;
+            List<Double> topEigenvalues = new ArrayList<>();
 
             SingularValueDecomposition svd = new SingularValueDecomposition(k.getApacheData());
 
             double[] _singularValues = svd.getSingularValues();
 
             // Convert to list, taking only the singular values greater than the threshold.
-            eigenValues = new ArrayList<>();
+            topEigenValues = new ArrayList<>();
             for (double _singularValue : _singularValues) {
                 if (_singularValue > Kci.this.threshold * _singularValues[0]) {
-                    eigenValues.add(sqrt(_singularValue));
+                    topEigenValues.add(sqrt(_singularValue));
                 }
             }
 
             if (storeV) {
-                D = new Matrix(eigenValues.size(), eigenValues.size());
+                D = new Matrix(topEigenValues.size(), topEigenValues.size());
 
-                for (int i = 0; i < eigenValues.size(); i++) {
-                    D.set(i, i, eigenValues.get(i));
+                for (int i = 0; i < topEigenValues.size(); i++) {
+                    D.set(i, i, topEigenValues.get(i));
                 }
 
                 RealMatrix V0 = svd.getV();
 
-                V = new Matrix(V0.getRowDimension(), eigenValues.size());
+                V = new Matrix(V0.getRowDimension(), topEigenValues.size());
 
-                for (int i = 0; i < eigenValues.size(); i++) {
+                for (int i = 0; i < topEigenValues.size(); i++) {
                     double[] t = V0.getColumn(i);
                     V.assignColumn(i, new Vector(t));
                 }
             }
 
-            this.topEigenvalues = eigenValues;
-            this.V = V;
-
-            return this;
+            return new EigenReturn(D, V, topEigenvalues);
         }
     }
+
+    public record EigenReturn(Matrix D, Matrix V, List<Double> topEigenvalues) {}
 }

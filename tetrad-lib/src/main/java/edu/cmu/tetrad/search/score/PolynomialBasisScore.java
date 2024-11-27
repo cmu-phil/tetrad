@@ -85,13 +85,13 @@ public class PolynomialBasisScore implements Score {
 
             if (v instanceof DiscreteVariable) {
                 Map<List<Integer>, Integer> keys = new HashMap<>();
-                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
+//                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
                 for (int j = 0; j < n; j++) {
                     List<Integer> key = new ArrayList<>();
                     key.add(dataSet.getInt(j, i_));
                     if (!keys.containsKey(key)) {
                         keys.put(key, i);
-                        keysReverse.put(i, key);
+//                        keysReverse.put(i, key);
                         Node v_ = new ContinuousVariable("V__" + ++index);
                         A.add(v_);
                         B.add(new double[n]);
@@ -100,10 +100,10 @@ public class PolynomialBasisScore implements Score {
                     B.get(keys.get(key))[j] = 1;
                 }
 
-                i--;
-                keys.remove(keysReverse.get(i));
-                A.remove(i);
-                B.remove(i);
+//                i--;
+//                keys.remove(keysReverse.get(i));
+//                A.remove(i);
+//                B.remove(i);
 
                 this.embedding.put(i_, new ArrayList<>(keys.values()));
             } else {
@@ -134,7 +134,7 @@ public class PolynomialBasisScore implements Score {
         RealMatrix D = MatrixUtils.createRealMatrix(B_);
         BoxDataSet dataSet1 = new BoxDataSet(new DoubleDataBox(D.getData()), A);
         this.bic = new SemBicScore(dataSet1, precomputeCovariances);
-        this.bic.setUsePseudoInverse(usePseudoInverse);
+        this.bic.setUsePseudoInverse(true);
         this.bic.setStructurePrior(0);
     }
 
