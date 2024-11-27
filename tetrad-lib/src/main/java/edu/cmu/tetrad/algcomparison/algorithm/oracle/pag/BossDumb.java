@@ -70,7 +70,7 @@ public class BossDumb extends AbstractBootstrapAlgorithm implements Algorithm, U
      * @see Algorithm
      */
     public BossDumb() {
-        // Used for reflection; do not delete.
+        // Used for reflection; do not delete it.
     }
 
     /**
@@ -132,7 +132,7 @@ public class BossDumb extends AbstractBootstrapAlgorithm implements Algorithm, U
     /**
      * Retrieves a comparison graph by transforming a true directed graph into a partially directed graph (PAG).
      *
-     * @param graph The true directed graph, if there is one.
+     * @param graph The true, directed graph, if there is one.
      * @return The comparison graph.
      */
     @Override

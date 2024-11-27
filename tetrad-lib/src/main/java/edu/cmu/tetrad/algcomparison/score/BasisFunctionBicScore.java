@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -26,8 +26,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
-import edu.cmu.tetrad.search.score.PolynomialBasisScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -37,19 +35,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for degenerate Gaussian BIC score
+ * Wrapper for Basis Function BIC Score (Basis-BIC).
  *
  * @author bandrews
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "PB-BIC (Polynomial Basis BIC)",
-        command = "pb-bic-score",
+        name = "Basis-BIC (Basis Function BIC)",
+        command = "bf-bic-score",
         dataType = DataType.Mixed
 )
 @Mixed
-public class PolynomialBasisBicScore implements ScoreWrapper {
+public class BasisFunctionBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -60,9 +58,9 @@ public class PolynomialBasisBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
-     * Initializes a new instance of the PolynomialBasisBicScore class.
+     * Initializes a new instance of the BasisFunctionBicScore class.
      */
-    public PolynomialBasisBicScore() {
+    public BasisFunctionBicScore() {
 
     }
 
@@ -73,9 +71,10 @@ public class PolynomialBasisBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-        PolynomialBasisScore score = new PolynomialBasisScore(SimpleDataLoader.getMixedDataSet(dataSet),
-                precomputeCovariances, parameters.getInt(Params.TRUNCATION_LIMIT),
-                parameters.getBoolean(Params.USE_PSEUDOINVERSE));
+        edu.cmu.tetrad.search.score.BasisFunctionBicScore score
+                = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(SimpleDataLoader.getMixedDataSet(dataSet),
+                precomputeCovariances, parameters.getInt(Params.TRUNCATION_LIMIT)
+        );
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return score;
     }
@@ -85,7 +84,7 @@ public class PolynomialBasisBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Polynomial Basis BIC Score";
+        return "Basis Function BIC Score (Basis-BIC)";
     }
 
     /**
@@ -103,9 +102,10 @@ public class PolynomialBasisBicScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.STRUCTURE_PRIOR);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
-        parameters.add(Params.TRUNCATION_LIMIT);
+
         return parameters;
     }
 

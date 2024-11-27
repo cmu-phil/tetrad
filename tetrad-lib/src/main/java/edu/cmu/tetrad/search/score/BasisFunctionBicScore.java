@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -13,26 +14,23 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The PolynomialBasisScore class calculates the polynomial basis score for a given dataset. It implements the Score
- * interface and leverages the SemBicScore for its scoring mechanism.
- * <p>
- * This extends the functionality of the Degenerate Gaussian score so that for continuous variables, the score is
- * calculated as the sum of the scores of the first few powers of the variable. For discrete variables, the score is
- * calculated as the sum of the scores of the indicator variables for the levels of the discrete variable.
+ * Calculates the basis function BIC score for a given dataset. This is a modifiction of the Degenerate Gaussian score
+ * by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
+ * discrete variables by adding indicator variables per category.
  *
  * @author bandrews
  * @author josephramsey
  * @see DegenerateGaussianScore
  */
-public class PolynomialBasisScore implements Score {
+public class BasisFunctionBicScore implements Score {
     /**
-     * A list containing nodes that represent the variables in the polynomial basis score.
+     * A list containing nodes that represent the variables in the basis function score.
      */
     private final List<Node> variables;
     /**
-     * A mapping used to store the embeddings of polynomial basis functions. The key is an integer representing the
-     * index of the polynomial basis function. The value is a list of integers that represent the coefficients for the
-     * corresponding polynomial basis function.
+     * A mapping used to store the embeddings of basis functions for continuous variables and indicator variables per
+     * cagegory for discrete variables. The key is an integer representing the index of the basis function variable or
+     * indicator variable.
      */
     private final Map<Integer, List<Integer>> embedding;
     /**
@@ -41,29 +39,24 @@ public class PolynomialBasisScore implements Score {
      */
     private final SemBicScore bic;
     /**
-     * Specifies the truncation limit for the polynomial basis used in the score calculation.
-     * The truncation limit defines the degree up to which the polynomial terms are included
-     * in the basis, effectively controlling the complexity of the score model.
+     * Specifies the truncation limit for the basis functions used in the score calculation.
      */
     private final int truncationLimit;
 
     /**
-     * Constructs a PolynomialBasisScore object with the specified parameters.
+     * Constructs a BasisFunctionBicScore object with the specified parameters.
      *
      * @param dataSet               the data set on which the score is to be calculated.
      * @param precomputeCovariances flag indicating whether covariances should be precomputed.
-     * @param truncationLimit       the truncation limit of the polynomial basis.
-     * @param usePseudoInverse      flag indicating whether to use the pseudo-inverse for matrix operations.
+     * @param truncationLimit       the truncation limit of the basis.
      */
-    public PolynomialBasisScore(DataSet dataSet, boolean precomputeCovariances, int truncationLimit, boolean usePseudoInverse) {
+    public BasisFunctionBicScore(DataSet dataSet, boolean precomputeCovariances, int truncationLimit) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.truncationLimit = truncationLimit;
 
-//        dataSet = DataTransforms.standardizeData(dataSet);
-//
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             if (dataSet.getVariables().get(j) instanceof ContinuousVariable) {
                 scale(dataSet, j);
@@ -111,11 +104,12 @@ public class PolynomialBasisScore implements Score {
                 for (int p = 1; p <= truncationLimit; p++) {
                     Node vPower = new ContinuousVariable("V__" + ++index);
                     A.add(vPower);
-                    double[] bPower = new double[n];
+                    double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
-                        bPower[j] = Math.pow(dataSet.getDouble(j, i_), p);
+                        functional[j] = StatUtils.orthogonalFunctionValue(2, p, dataSet.getDouble(j, i_));
+//                        functional[j] = Math.pow(dataSet.getDouble(j, i_), p);
                     }
-                    B.add(bPower);
+                    B.add(functional);
                     indexList.add(i);
                     i++;
                 }
@@ -161,8 +155,18 @@ public class PolynomialBasisScore implements Score {
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             double d = dataSet.getDouble(i, col);
             if (Double.isNaN(d)) continue;
-//            dataSet.setDouble(i, col, min + (d - min) / (max - min));
             dataSet.setDouble(i, col, d / biggest);
+
+        }
+    }
+
+    private void standardize(DataSet dataSet, int col) {
+        if (dataSet.getVariable(col) instanceof ContinuousVariable) {
+            double[] data = new double[dataSet.getNumRows()];
+            double[] std = DataTransforms.standardizeData(data);
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                dataSet.setDouble(i, col, std[i]);
+            }
         }
     }
 
@@ -208,9 +212,9 @@ public class PolynomialBasisScore implements Score {
     }
 
     /**
-     * Retrieves the list of nodes representing the variables in the polynomial basis score.
+     * Retrieves the list of nodes representing the variables in the basis function score.
      *
-     * @return a list containing the nodes that represent the variables in the polynomial basis score.
+     * @return a list containing the nodes that represent the variables in the basis function score.
      */
     @Override
     public List<Node> getVariables() {
@@ -249,7 +253,7 @@ public class PolynomialBasisScore implements Score {
     }
 
     /**
-     * Returns a string representation of the PolynomialBasisScore object.
+     * Returns a string representation of the BasisFunctionBicScore object.
      *
      * @return A string detailing the degenerate Gaussian score penalty with the penalty discount formatted to two
      * decimal places.
@@ -257,8 +261,7 @@ public class PolynomialBasisScore implements Score {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "Polynomial Basis Score Penalty " + nf.format(this.bic.getPenaltyDiscount()
-            + " truncation = " + this.truncationLimit);
+        return "Basis Function BIC Score (Basis-BIC) Penalty " + nf.format(this.bic.getPenaltyDiscount() + " truncation = " + this.truncationLimit);
     }
 
     /**

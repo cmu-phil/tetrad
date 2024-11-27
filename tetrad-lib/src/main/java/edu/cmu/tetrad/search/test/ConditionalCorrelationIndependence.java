@@ -6,13 +6,14 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static org.apache.commons.math3.util.FastMath.pow;
+import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -52,6 +53,10 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      */
     public ConditionalCorrelationIndependence(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException();
+//        for (int i = 0; i < dataSet.getNumColumns(); i++) {
+//            scale(dataSet, i);
+//        }
+
         dataSet = DataTransforms.standardizeData(dataSet);
         data = dataSet.getDoubleData();
         this.nodesHash = new ConcurrentHashMap<>();
@@ -59,6 +64,45 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         for (int i = 0; i < dataSet.getVariables().size(); i++) {
             this.nodesHash.put(dataSet.getVariables().get(i), i);
         }
+    }
+
+    /**
+     * Computes the Gaussian kernel value between two rows in a given matrix.
+     *
+     * @param z         The matrix containing the data points.
+     * @param i         The index of the first row.
+     * @param j         The index of the second row.
+     * @param bandwidth The bandwidth parameter for the Gaussian kernel.
+     * @return The computed Gaussian kernel value between the two rows.
+     */
+    private static double gaussianKernel(Matrix z, int i, int j, double bandwidth, double h) {
+        double b = bandwidth * h;
+
+        double squaredDistance = 0.0;
+        int bound = z.getNumColumns();
+
+        for (int k1 = 0; k1 < bound; k1++) {
+            double diff = z.get(i, k1) - z.get(j, k1);
+            double v = diff * diff;
+            squaredDistance += v;
+        }
+
+        return Math.exp(-squaredDistance / (2 * b * b));
+    }
+
+    /**
+     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
+     * and Azzalini (1997) q.31.
+     *
+     * @param xCol The data for the column.
+     * @return The optimal bandwidth for node x.
+     */
+    private static double h(Vector xCol) {
+        Vector g = new Vector(xCol.size());
+        double median = median(xCol.toArray());
+        for (int j = 0; j < xCol.size(); j++) g.set(j, abs(xCol.get(j) - median));
+        double mad = median(g.toArray());
+        return (1.4826 * mad) * FastMath.pow((4.0 / 3.0) / xCol.size(), 0.2);
     }
 
     /**
@@ -190,45 +234,6 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     }
 
     /**
-     * Computes the Gaussian kernel value between two rows in a given matrix.
-     *
-     * @param z         The matrix containing the data points.
-     * @param i         The index of the first row.
-     * @param j         The index of the second row.
-     * @param bandwidth The bandwidth parameter for the Gaussian kernel.
-     * @return The computed Gaussian kernel value between the two rows.
-     */
-    private static double gaussianKernel(Matrix z, int i, int j, double bandwidth, double h) {
-        double b = bandwidth * h;
-
-        double squaredDistance = 0.0;
-        int bound = z.getNumColumns();
-
-        for (int k1 = 0; k1 < bound; k1++) {
-            double diff = z.get(i, k1) - z.get(j, k1);
-            double v = diff * diff;
-            squaredDistance += v;
-        }
-
-        return Math.exp(-squaredDistance / (2 * b * b));
-    }
-
-    /**
-     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
-     * and Azzalini (1997) q.31.
-     *
-     * @param xCol The data for the column.
-     * @return The optimal bandwidth for node x.
-     */
-    private static double h(Vector xCol) {
-        Vector g = new Vector(xCol.size());
-        double median = median(xCol.toArray());
-        for (int j = 0; j < xCol.size(); j++) g.set(j, abs(xCol.get(j) - median));
-        double mad = median(g.toArray());
-        return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.size(), 0.2);
-    }
-
-    /**
      * Calculates the residuals of a kernel regression using the Gaussian kernel.
      *
      * @param x         The vector containing the response variable data points.
@@ -292,12 +297,15 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         Vector _y = new Vector(ry.size());
 
         double max = 0.0;
+        int maxIndex = 0;
 
         for (int m = 1; m <= this.numFunctions; m++) {
             for (int n = 1; n <= this.numFunctions; n++) {
                 for (int i = 0; i < rx.size(); i++) {
-                    double fx = function(m, rx.get(i));
-                    double fy = function(n, ry.get(i));
+                    int type = 2;
+
+                    double fx = orthogonalFunctionValue(type, m, rx.get(i));
+                    double fy = orthogonalFunctionValue(type, n, ry.get(i));
 
                     if (Double.isInfinite(fx) || Double.isInfinite(fy)
                         || Double.isNaN(fx) || Double.isNaN(fy)) {
@@ -313,11 +321,13 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
                 if (!Double.isNaN(z)) {
                     if (z > max) {
                         max = z;
+                        maxIndex = max(m, n);
                     }
                 }
             }
         }
 
+        System.out.println("Max index: " + maxIndex);
         return max;
     }
 
@@ -331,7 +341,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     private double nonparametricFisherZ(Vector _x, Vector _y) {
         double r = correlation(_x, _y);
         double z = 0.5 * sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
-        return z / (sqrt(m22(_x, _y) * bandwidth));
+        return z / (bandwidth * (sqrt(m22(_x, _y))));
     }
 
     /**
@@ -349,24 +359,6 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         }
 
         return m22 / x.size();
-    }
-
-    /**
-     * Performs a calculation that involves repeatedly multiplying an initial value of `1.0` by the product of `0.95`
-     * and a given parameter `x`, iterating `index` times.
-     *
-     * @param index The number of iterations to perform the multiplication.
-     * @param x     The value to be multiplied by `0.95` in each iteration.
-     * @return The result of the iterative multiplication.
-     */
-    private double function(int index, double x) {
-        double g = 1.0;
-
-        for (int i = 1; i <= index; i++) {
-            g *= x;
-        }
-
-        return g;
     }
 
     /**
@@ -395,5 +387,33 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         }
 
         return rows;
+    }
+
+    /**
+     * Scales the specified column of the data set by normalizing the values. The scaling process normalizes values by
+     * the maximum absolute value observed.
+     *
+     * @param dataSet the data set containing the values to be scaled.
+     * @param col     the index of the column to be scaled in the data set.
+     */
+    private void scale(DataSet dataSet, int col) {
+        double max = Double.MIN_VALUE;
+        double min = Double.MAX_VALUE;
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double d = dataSet.getDouble(i, col);
+            if (Double.isNaN(d)) continue;
+            if (d > max) max = d;
+            if (d < min) min = d;
+        }
+
+        double biggest = Math.max(Math.abs(min), Math.abs(max));
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            double d = dataSet.getDouble(i, col);
+            if (Double.isNaN(d)) continue;
+//            dataSet.setDouble(i, col, min + (d - min) / (max - min));
+            dataSet.setDouble(i, col, d / biggest);
+        }
     }
 }

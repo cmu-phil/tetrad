@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
@@ -309,8 +309,7 @@ public final class StatUtils {
     public static double quartile(long[] array, int N, int quartileNumber) {
 
         if ((quartileNumber < 1) || (quartileNumber > 3)) {
-            throw new IllegalArgumentException("StatUtils.quartile:  " +
-                                               "Quartile number must be 1, 2, or 3.");
+            throw new IllegalArgumentException("StatUtils.quartile:  " + "Quartile number must be 1, 2, or 3.");
         }
 
         long[] a = new long[N + 1];
@@ -381,8 +380,7 @@ public final class StatUtils {
     public static double quartile(double[] array, int N, int quartileNumber) {
 
         if ((quartileNumber < 1) || (quartileNumber > 3)) {
-            throw new IllegalArgumentException("StatUtils.quartile:  " +
-                                               "Quartile number must be 1, 2, or 3.");
+            throw new IllegalArgumentException("StatUtils.quartile:  " + "Quartile number must be 1, 2, or 3.");
         }
 
         double[] a = new double[N + 1];
@@ -701,9 +699,7 @@ public final class StatUtils {
         int N2 = array2.length;
 
         if (N1 != N2) {
-            throw new IllegalArgumentException(
-                    "StatUtils.SXY: Arrays passed (or lengths specified) of " +
-                    "unequal lengths.");
+            throw new IllegalArgumentException("StatUtils.SXY: Arrays passed (or lengths specified) of " + "unequal lengths.");
         }
 
         return StatUtils.sxy(array1, array2, N1);
@@ -723,9 +719,7 @@ public final class StatUtils {
         int N2 = array2.length;
 
         if (N1 != N2) {
-            throw new IllegalArgumentException(
-                    "StatUtils.SXY: Arrays passed (or lengths specified) of " +
-                    "unequal lengths.");
+            throw new IllegalArgumentException("StatUtils.SXY: Arrays passed (or lengths specified) of " + "unequal lengths.");
         }
 
         return StatUtils.sxy(array1, array2, N1);
@@ -893,9 +887,7 @@ public final class StatUtils {
         int N2 = array2.length;
 
         if (N1 != N2) {
-            throw new IllegalArgumentException(
-                    "Arrays passed (or lengths specified) of " +
-                    "unequal lengths.");
+            throw new IllegalArgumentException("Arrays passed (or lengths specified) of " + "unequal lengths.");
         }
 
         return StatUtils.covariance(array1, array2, N1);
@@ -913,9 +905,7 @@ public final class StatUtils {
         int N2 = array2.length;
 
         if (N1 != N2) {
-            throw new IllegalArgumentException(
-                    "Arrays passed (or lengths specified) of " +
-                    "unequal lengths.");
+            throw new IllegalArgumentException("Arrays passed (or lengths specified) of " + "unequal lengths.");
         }
 
         return StatUtils.covariance(array1, array2, N1);
@@ -958,9 +948,7 @@ public final class StatUtils {
         int N2 = array2.length;
 
         if (N1 != N2) {
-            throw new IllegalArgumentException(
-                    "Arrays passed (or lengths specified) of " +
-                    "unequal lengths.");
+            throw new IllegalArgumentException("Arrays passed (or lengths specified) of " + "unequal lengths.");
         }
 
         return StatUtils.correlation(array1, array2, N1);
@@ -979,9 +967,7 @@ public final class StatUtils {
         int N2 = array2.length;
 
         if (N1 != N2) {
-            throw new IllegalArgumentException(
-                    "Arrays passed (or lengths specified) of " +
-                    "unequal lengths.");
+            throw new IllegalArgumentException("Arrays passed (or lengths specified) of " + "unequal lengths.");
         }
 
         return StatUtils.correlation(array1, array2, N1);
@@ -1409,14 +1395,11 @@ public final class StatUtils {
                 double mu2b = calculateCentralMoment(data, 2);
                 double mu3 = calculateCentralMoment(data, 3);
                 double mu5 = calculateCentralMoment(data, 5);
-                return mu5 - 10 * mu2b * mu3 - 15 * Math.pow(mu2b, 2) * mu1
-                       - 10 * mu3 * Math.pow(mu1, 2) + 30 * mu2b * Math.pow(mu1, 3);
+                return mu5 - 10 * mu2b * mu3 - 15 * Math.pow(mu2b, 2) * mu1 - 10 * mu3 * Math.pow(mu1, 2) + 30 * mu2b * Math.pow(mu1, 3);
             default:
                 throw new IllegalArgumentException("Cumulant calculation for i > 5 is not implemented");
         }
     }
-
-
 
 
     /**
@@ -1462,8 +1445,7 @@ public final class StatUtils {
         double esss = thirdMoment / (N);
 
         if (secondMoment == 0) {
-            throw new ArithmeticException("StatUtils.skew:  There is no skew " +
-                                          "when the variance is zero.");
+            throw new ArithmeticException("StatUtils.skew:  There is no skew " + "when the variance is zero.");
         }
 
         return esss / FastMath.pow(ess, 1.5);
@@ -1557,8 +1539,7 @@ public final class StatUtils {
         }
 
         if (variance == 0) {
-            throw new ArithmeticException(
-                    "Kurtosis is undefined when variance is zero.");
+            throw new ArithmeticException("Kurtosis is undefined when variance is zero.");
         }
 
         kurt = kurt / N;
@@ -1596,8 +1577,7 @@ public final class StatUtils {
         }
 
         if (variance == 0) {
-            throw new ArithmeticException(
-                    "Kurtosis is undefined when variance is zero.");
+            throw new ArithmeticException("Kurtosis is undefined when variance is zero.");
         }
 
         kurt = (kurt / (N * FastMath.pow(variance, 5 / 2.)));
@@ -1633,8 +1613,7 @@ public final class StatUtils {
         }
 
         if (variance == 0) {
-            throw new ArithmeticException(
-                    "Kurtosis is undefined when variance is zero.");
+            throw new ArithmeticException("Kurtosis is undefined when variance is zero.");
         }
 
         kurt = (kurt / (N * FastMath.pow(variance, 6 / 2.)));
@@ -1687,16 +1666,13 @@ public final class StatUtils {
             // Multiplication formula.
             double multiplier = floor(z / 1.2);
             double remainder = z / multiplier;
-            double coef1 =
-                    FastMath.pow(2.0 * PI, (0.5 * (1.0 - multiplier)));
-            double coef2 =
-                    FastMath.pow(multiplier, ((multiplier * remainder) - 0.5));
+            double coef1 = FastMath.pow(2.0 * PI, (0.5 * (1.0 - multiplier)));
+            double coef2 = FastMath.pow(multiplier, ((multiplier * remainder) - 0.5));
             int N = (int) multiplier;
             double prod = 1.0;
 
             for (int k = 0; k < N; k++) {
-                prod *= StatUtils.Internalgamma(
-                        remainder + ((double) k / multiplier));
+                prod *= StatUtils.Internalgamma(remainder + ((double) k / multiplier));
             }
 
             return coef1 * coef2 * prod;
@@ -1711,15 +1687,7 @@ public final class StatUtils {
      */
     private static double Internalgamma(double z) {
         double sum = 0.0;
-        double[] c = {1.0, 0.5772156649015329, -0.6558780715202538,
-                -0.0420026350340952, 0.1665386113822915, -0.0421977345555443,
-                -0.0096219715278770, 0.0072189432466630, -0.0011651675918591,
-                -0.0002152416741149, 0.0001280502823882, -0.0000201348547807,
-                -0.0000012504934821, 0.0000011330272320, -0.0000002056338417,
-                0.0000000061160950, 0.0000000050020075, -0.0000000011812746,
-                0.0000000001043427, 0.0000000000077823, -0.0000000000036968,
-                0.0000000000005100, -0.0000000000000206, -0.0000000000000054,
-                0.0000000000000014, 0.0000000000000001};
+        double[] c = {1.0, 0.5772156649015329, -0.6558780715202538, -0.0420026350340952, 0.1665386113822915, -0.0421977345555443, -0.0096219715278770, 0.0072189432466630, -0.0011651675918591, -0.0002152416741149, 0.0001280502823882, -0.0000201348547807, -0.0000012504934821, 0.0000011330272320, -0.0000002056338417, 0.0000000061160950, 0.0000000050020075, -0.0000000011812746, 0.0000000001043427, 0.0000000000077823, -0.0000000000036968, 0.0000000000005100, -0.0000000000000206, -0.0000000000000054, 0.0000000000000014, 0.0000000000000001};
 
         for (int i = 0; i < c.length; i++) {
             sum += c[i] * FastMath.pow(z, i + 1);
@@ -1751,8 +1719,7 @@ public final class StatUtils {
         double sum = 0.0;
 
         for (int i = 0; i < 100; i++) {
-            sum += (StatUtils.gamma(a) / StatUtils.gamma(a + 1.0 + (double) i)) *
-                   FastMath.pow(x, i);
+            sum += (StatUtils.gamma(a) / StatUtils.gamma(a + 1.0 + (double) i)) * FastMath.pow(x, i);
         }
 
         return (coef * sum);
@@ -1779,8 +1746,7 @@ public final class StatUtils {
      */
     public static double poisson(double k, double x, boolean cum) {
         if ((x < 0) || (k < 1)) {
-            throw new ArithmeticException(
-                    "The Poisson Distribution Function requires x>=0 and k >= 1");
+            throw new ArithmeticException("The Poisson Distribution Function requires x>=0 and k >= 1");
         }
 
         k = k + 1;    // algorithm uses k+1, not k
@@ -1801,8 +1767,7 @@ public final class StatUtils {
      */
     public static double chidist(double x, int degreesOfFreedom) {
         if ((x < 0.0) || (degreesOfFreedom < 0)) {
-            throw new ArithmeticException(
-                    "The Chi Distribution Function requires x > 0.0 and degrees of freedom > 0");
+            throw new ArithmeticException("The Chi Distribution Function requires x > 0.0 and degrees of freedom > 0");
         }
 
         return (1.0 - StatUtils.igamma((double) degreesOfFreedom / 2.0, x / 2.0));
@@ -2592,6 +2557,127 @@ public final class StatUtils {
         double exyv = sqrt(exye / sqrt(exxe * eyye)) / sqrt(n - 1);
 
         return new double[]{exy, exy / sqrt(exx * eyy), exx, eyy, (double) n, exyv};
+    }
+
+    /**
+     * Computes the (statitician's) Hermite polynomial of a given index and value. The Hermite polynomials are a
+     * sequence of orthogonal polynomials defined by the Rodrigues formula. They are orthogonal with respect to the
+     * weight function exp(-x^2). The Hermite polynomial of index n is denoted H_n(x).
+     * <p>
+     * These are coded up to index 20.
+     *
+     * @param index The index of the Hermite polynomial to be computed. This must be a non-negative integer less than or
+     *              equal to 20.
+     * @param x     The value at which the Hermite polynomial is to be evaluated.
+     * @return The computed value of the Hermite polynomial.
+     * @throws IllegalArgumentException if the index is negative or greater than 20.
+     */
+    public static double hermite1(int index, double x) {
+        return switch (index) {
+            case 0 -> 1;
+            case 1 -> x;
+            case 2 -> pow(x, 2) - 1;
+            case 3 -> pow(x, 3) - 3 * x;
+            case 4 -> pow(x, 4) - 6 * pow(x, 2) + 3;
+            case 5 -> pow(x, 5) - 10 * pow(x, 3) + 15 * x;
+            case 6 -> pow(x, 6) - 15 * pow(x, 4) + 45 * pow(x, 2) - 15;
+            case 7 -> pow(x, 7) - 21 * pow(x, 5) + 105 * pow(x, 3) - 105 * x;
+            case 8 -> pow(x, 8) - 28 * pow(x, 6) + 210 * pow(x, 4) - 420 * pow(x, 2) + 105;
+            case 9 -> pow(x, 9) - 36 * pow(x, 7) + 378 * pow(x, 5) - 1260 * pow(x, 3) + 945 * x;
+            case 10 -> pow(x, 10) - 45 * pow(x, 8) + 630 * pow(x, 6) - 3150 * pow(x, 4) + 4725 * pow(x, 2) - 945;
+            case 11 -> pow(x, 11) - 55 * pow(x, 9) + 990 * pow(x, 7) - 6930 * pow(x, 5) + 17325 * pow(x, 3) - 10395 * x;
+            case 12 ->
+                    pow(x, 12) - 66 * pow(x, 10) + 1485 * pow(x, 8) - 13860 * pow(x, 6) + 51975 * pow(x, 4) - 62370 * pow(x, 2) + 10395;
+            case 13 ->
+                    pow(x, 13) - 78 * pow(x, 11) + 2145 * pow(x, 9) - 25740 * pow(x, 7) + 135135 * pow(x, 5) - 270270 * pow(x, 3) + 135135 * x;
+            case 14 ->
+                    pow(x, 14) - 91 * pow(x, 12) + 3003 * pow(x, 10) - 45045 * pow(x, 8) + 315315 * pow(x, 6) - 945945 * pow(x, 4) + 945945 * pow(x, 2) - 135135;
+            case 15 ->
+                    pow(x, 15) - 105 * pow(x, 13) + 4095 * pow(x, 11) - 72072 * pow(x, 9) + 675675 * pow(x, 7) - 2702700 * pow(x, 5) + 4054050 * pow(x, 3) - 2027025 * x;
+            case 16 ->
+                    pow(x, 16) - 120 * pow(x, 14) + 5460 * pow(x, 12) - 120120 * pow(x, 10) + 1351350 * pow(x, 8) - 8108100 * pow(x, 6) + 24324300 * pow(x, 4) - 32432400 * pow(x, 2) + 2027025;
+            case 17 ->
+                    pow(x, 17) - 136 * pow(x, 15) + 7140 * pow(x, 13) - 185640 * pow(x, 11) + 2602600 * pow(x, 9) - 20420400 * pow(x, 7) + 81681600 * pow(x, 5) - 163363200 * pow(x, 3) + 81681600 * x;
+            case 18 ->
+                    pow(x, 18) - 153 * pow(x, 16) + 8855 * pow(x, 14) - 277134 * pow(x, 12) + 4849845 * pow(x, 10) - 48498450 * pow(x, 8) + 290990700 * pow(x, 6) - 970969000 * pow(x, 4) + 1456463500 * pow(x, 2) - 34459425;
+            case 19 ->
+                    pow(x, 19) - 171 * pow(x, 17) + 11628 * pow(x, 15) - 387600 * pow(x, 13) + 7759752 * pow(x, 11) - 96996900 * pow(x, 9) + 775975200 * pow(x, 7) - 3879876000L * pow(x, 5) + 9699690000L * pow(x, 3) - 4849845000L * x;
+            case 20 ->
+                    pow(x, 20) - 190 * pow(x, 18) + 14820 * pow(x, 16) - 530530 * pow(x, 14) + 11639628 * pow(x, 12) - 174594420 * pow(x, 10) + 1745944200 * pow(x, 8) - 11639628000L * pow(x, 6) + 46558512000L * pow(x, 4) - 93229224000L * pow(x, 2) + 4849845000L;
+            default ->
+                    throw new IllegalArgumentException("Sorry, I only coded up the Hermite polyomials up to number 20. You asked for index " + index + ".");
+        };
+    }
+
+    /**
+     * Computes the (physicis's) Hermite polynomial of a given index and value. The Hermite polynomials are a sequence
+     * of orthogonal polynomials defined by the Rodrigues formula. They are orthogonal with respect to the weight
+     * function exp(-x^2). The Hermite polynomial of index n is denoted H_n(x).
+     *
+     * @param index The index of the Hermite polynomial to be computed. This must be a non-negative integer.
+     * @param x     The value at which the Hermite polynomial is to be evaluated.
+     * @return The computed value of the Hermite polynomial.
+     */
+    public static double hermite(int index, double x) {
+        if (index < 0) {
+            throw new IllegalArgumentException("The index of a Hermite polynomial must be a non-negative integer.");
+        }
+
+        if (index == 0) {
+            return 1;
+        } else if (index == 1) {
+            return 2 * x;
+        } else {
+            return 2 * x * hermite(index - 1, x) - 2 * (index - 1) * hermite(index - 2, x);
+        }
+    }
+
+    private static double pow(double x, int power) {
+        double value = 1;
+
+        for (int i = 1; i <= power; i++) {
+            value *= x;
+        }
+
+        return value;
+    }
+
+    /**
+     * Performs a calculation that involves repeatedly multiplying an initial value of `1.0` by the product of `0.95`
+     * and a given parameter `x`, iterating `index` times. The type of function used in the calculation is determined by
+     * the `type` parameter. The function types are as follows:
+     * <ol>
+     *     <li> `g(x) = x^index`</li>
+     *     <li> `g(x) = hermite(index, x), up to index 20</li>
+     *     <li> `g(x) = sin(index * x / 2 + 1)` if `index` is even, `g(x) = cos(index * x / 2 + 1)` if `index` is odd.</li>
+     *  </ol>
+     *  Any other value of `type` will result in an `IllegalArgumentException`.
+     *
+     * @param type  The type of function to be used in the calculation.
+     * @param index The number of iterations to perform the multiplication.
+     * @param x     The value to be multiplied by `0.95` in each iteration.
+     * @return The result of the iterative multiplication.
+     */
+    public static double orthogonalFunctionValue(int type, int index, double x) {
+        if (type == 1) {
+            double g = 1.0;
+
+            for (int i = 1; i <= index; i++) {
+                g *= x;
+            }
+
+            return g;
+        } else if (type == 2) {
+            return hermite(index, x);
+        } else if (type == 3) {
+            if (index % 2 == 0) {
+                return sin(index * x / 2 + 1);
+            } else {
+                return cos(index * x / 2 + 1);
+            }
+        } else {
+            throw new IllegalArgumentException("Unrecognized type: " + type);
+        }
     }
 }
 
