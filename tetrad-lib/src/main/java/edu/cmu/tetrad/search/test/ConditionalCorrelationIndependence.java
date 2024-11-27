@@ -385,6 +385,11 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         return rows;
     }
 
+    /**
+     * Retrieves the list of row indices currently set for the analysis. If no rows are set, returns a list of all row indices.
+     *
+     * @return A list of row indices.
+     */
     @Override
     public List<Integer> getRows() {
         if (this.rows == null) {
@@ -400,8 +405,12 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         }
     }
 
+    /**
+     * Sets the list of row indices
+     *
+     * @param rows The list of row indices to set.
+     */
     @Override
     public void setRows(List<Integer> rows) {
         this.rows = rows;
-    }
-}
+    }}
