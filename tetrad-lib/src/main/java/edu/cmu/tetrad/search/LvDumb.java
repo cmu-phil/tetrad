@@ -121,7 +121,7 @@ public final class LvDumb implements IGraphSearch {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-        Graph pag = PagCache.getInstance().getPag(cpdag, knowledge, verbose);
+        Graph pag = PagCache.getInstance().getPag(GraphTransforms.dagFromCpdag(cpdag), knowledge, verbose);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");

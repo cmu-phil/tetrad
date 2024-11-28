@@ -32,9 +32,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Checks conditional independence of variable in a continuous data set using a conditional correlation test for the
@@ -62,6 +60,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * Stores a reference to the data set passed in through the constructor.
      */
     private final DataSet dataSet;
+    private double bandwidthAdjustment = 2.0;
     /**
      * The significance level of the independence tests.
      */
@@ -97,6 +96,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         this.variables = Collections.unmodifiableList(nodes);
 
         this.cci = new ConditionalCorrelationIndependence(dataSet);
+        this.cci.setBandwidthAdjustment(this.bandwidthAdjustment);
         this.alpha = alpha;
         this.dataSet = dataSet;
     }
@@ -168,7 +168,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         }
 
         this.alpha = alpha;
-        this.cci.setAlpha(alpha);
+        cci.setAlpha(alpha);
     }
 
     /**
@@ -179,18 +179,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      */
     public List<Node> getVariables() {
         return this.variables;
-    }
-
-    /**
-     * Determines whether the nodes z determine x.
-     *
-     * @param z A list of Node objects representing the conditioning set.
-     * @param x The Node object to check independence for.
-     * @return True if the nodes z determine x, false otherwise.
-     * @throws UnsupportedOperationException Always throws this exception as the method is not implemented.
-     */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("The 'determines' method is not implemented");
     }
 
     /**
@@ -236,15 +224,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         this.cci.setNumFunctions(numFunctions);
     }
 
-    /**
-     * Returns the kernel bandwidth.
-     *
-     * @param bandwidth This bandwidth.
-     */
-    public void setBandwidth(double bandwidth) {
-        this.cci.setBandwidth(bandwidth);
-    }
-
     @Override
     public List<Integer> getRows() {
         return cci.getRows();
@@ -253,6 +232,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     @Override
     public void setRows(List<Integer> rows) {
         cci.setRows(rows);
+    }
+
+    public void setBandwidthAdjustment(double bandwidthAdjustment) {
+        this.bandwidthAdjustment = bandwidthAdjustment;
     }
 }
 

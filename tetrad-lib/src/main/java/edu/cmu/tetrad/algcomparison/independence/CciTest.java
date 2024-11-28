@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.ConditionalCorrelationIndependence;
 import edu.cmu.tetrad.search.test.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -48,10 +47,8 @@ public class CciTest implements IndependenceWrapper {
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
-
         cci.setNumFunctions(parameters.getInt(Params.NUM_BASIS_FUNCTIONS));
-        cci.setBandwidth(parameters.getDouble(Params.BANDWIDTH));
-
+        cci.setBandwidthAdjustment(parameters.getDouble(Params.BANDWIDTH_ADJUSTMENT));
         return cci;
     }
 
@@ -79,7 +76,8 @@ public class CciTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
         params.add(Params.NUM_BASIS_FUNCTIONS);
-        params.add(Params.BANDWIDTH);
+        params.add(Params.PENALTY_DISCOUNT);
+        params.add(Params.BANDWIDTH_ADJUSTMENT);
         return params;
     }
 }

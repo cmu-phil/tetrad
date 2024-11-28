@@ -5265,7 +5265,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             	non-CPDAG; this parameter guarantees a CPDAG if set to 'Yes'.
             	</span></li>
             <li>Default Value: <span
-                    id="guaranteeCpdag_default_value">false</span></li>
+                    id="guaranteeCpdag_default_value">true</span></li>
             <li>Lower Bound: <span
                     id="guaranteeCpdag_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -6380,7 +6380,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                      exceptions
         </span></li>
             <li>Default Value: <span
-                    id="usePseudoinverse_default_value">false</span></li>
+                    id="usePseudoinverse_default_value">true</span></li>
             <li>Lower Bound: <span
                     id="usePseudoinverse_lower_bound"></span></li>
             <li>Upper
@@ -6834,23 +6834,23 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="bandwidth">bandwidth</h3>
+            id="bandwidthAdjustment">bandwidthAdjustment</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="bandwidth_short_desc">Kernel bandwidth.</span></li>
+                    id="bandwidthAdjustment_short_desc">Kernel bandwidth adjustment.</span></li>
             <li>Long
-                Description: <span id="bandwidth_long_desc">
-                    Kernel bandwidth.
+                Description: <span id="bandwidthAdjustment_long_desc">
+                    Kernel bandwidth adjustment.
                 </span></li>
             <li>Default Value: <span
-                    id="bandwidth_default_value">1.0</span></li>
+                    id="bandwidthAdjustment_default_value">2.0</span></li>
             <li>Lower Bound:
-                <span id="bandwidth_lower_bound">4.9E-324</span></li>
+                <span id="bandwidthAdjustment_lower_bound">4.9E-324</span></li>
             <li>Upper Bound: <span
-                    id="bandwidth_upper_bound">Infinity</span></li>
+                    id="bandwidthAdjustment_upper_bound">Infinity</span></li>
             <li>Value
-                Type: <span id="bandwidth_value_type">Double</span></li>
+                Type: <span id="bandwidthAdjustment_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7448,7 +7448,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         of the most significant basis functions to use as a basis.</span>
             </li>
             <li>Default Value: <span
-                    id="numBasisFunctions_default_value">20</span></li>
+                    id="numBasisFunctions_default_value">3</span></li>
             <li>Lower Bound:
                 <span id="numBasisFunctions_lower_bound">1</span></li>
             <li>Upper
@@ -8286,16 +8286,15 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="truncationLimit_short_desc">Truncation limit for truncated
-                    basis columns x, x^2, ..., x^p</span></li>
+                    id="truncationLimit_short_desc">Truncation limit for
+                    basis functions</span></li>
             <li>Long Description: <span
                     id="truncationLimit_long_desc">
-                    The Polynomial Basis score adds columns x, x^2,...,x^p under the hood
-                    to detect high order dependencies in the data. The Degenerate Gaussian
+                    Basis functions 1 though this number will be used.. The Degenerate Gaussian
                     category indicator variables for mixed data are also used.
          </span></li>
             <li>Default Value: <span
-                    id="truncationLimit_default_value">1</span></li>
+                    id="truncationLimit_default_value">3</span></li>
             <li>Lower Bound:
                 <span id="truncationLimit_lower_bound">1</span></li>
             <li>Upper

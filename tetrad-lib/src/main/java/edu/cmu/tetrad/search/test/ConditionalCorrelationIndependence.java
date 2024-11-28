@@ -10,10 +10,8 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -41,9 +39,9 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     private final Matrix data;
     private double score;
     private int numFunctions = 10;
-    private double cutoff;
-    private double bandwidth = 1.0;
     private List<Integer> rows;
+    private double alpha = 0.05;
+    private static double bandwidthAdjustment = 1.5;
 
     /**
      * Initializes a new instance of the ConditionalCorrelationIndependence class using the provided DataSet.
@@ -53,12 +51,8 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      */
     public ConditionalCorrelationIndependence(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException();
-//        for (int i = 0; i < dataSet.getNumColumns(); i++) {
-//            scale(dataSet, i);
-//        }
-
         dataSet = DataTransforms.standardizeData(dataSet);
-        data = dataSet.getDoubleData();
+        this.data = dataSet.getDoubleData();
         this.nodesHash = new ConcurrentHashMap<>();
 
         for (int i = 0; i < dataSet.getVariables().size(); i++) {
@@ -66,43 +60,8 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         }
     }
 
-    /**
-     * Computes the Gaussian kernel value between two rows in a given matrix.
-     *
-     * @param z         The matrix containing the data points.
-     * @param i         The index of the first row.
-     * @param j         The index of the second row.
-     * @param bandwidth The bandwidth parameter for the Gaussian kernel.
-     * @return The computed Gaussian kernel value between the two rows.
-     */
-    private static double gaussianKernel(Matrix z, int i, int j, double bandwidth, double h) {
-        double b = bandwidth * h;
-
-        double squaredDistance = 0.0;
-        int bound = z.getNumColumns();
-
-        for (int k1 = 0; k1 < bound; k1++) {
-            double diff = z.get(i, k1) - z.get(j, k1);
-            double v = diff * diff;
-            squaredDistance += v;
-        }
-
-        return Math.exp(-squaredDistance / (2 * b * b));
-    }
-
-    /**
-     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
-     * and Azzalini (1997) q.31.
-     *
-     * @param xCol The data for the column.
-     * @return The optimal bandwidth for node x.
-     */
-    private static double h(Vector xCol) {
-        Vector g = new Vector(xCol.size());
-        double median = median(xCol.toArray());
-        for (int j = 0; j < xCol.size(); j++) g.set(j, abs(xCol.get(j) - median));
-        double mad = median(g.toArray());
-        return (1.4826 * mad) * FastMath.pow((4.0 / 3.0) / xCol.size(), 0.2);
+    public void setBandwidthAdjustment(double bandwidthAdjustment) {
+        ConditionalCorrelationIndependence.bandwidthAdjustment = bandwidthAdjustment;
     }
 
     /**
@@ -152,25 +111,6 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     }
 
     /**
-     * Retrieves the current bandwidth parameter used in the ConditionalCorrelationIndependence analysis.
-     *
-     * @return The current value of the bandwidth parameter.
-     */
-    public double getBandwidth() {
-        return this.bandwidth;
-    }
-
-    /**
-     * Sets the bandwidth parameter for the ConditionalCorrelationIndependence analysis.
-     *
-     * @param bandwidth The bandwidth parameter to be set. This value is used in the Gaussian kernel calculation for
-     *                  various methods in the analysis.
-     */
-    public void setBandwidth(double bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
-    /**
      * Calculates the p-value for a given score using the cumulative distribution function (CDF) of a standard normal
      * distribution.
      *
@@ -189,17 +129,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * @return The modified score which is calculated as the absolute value of the current score minus the cutoff value.
      */
     public double getScore() {
-        return abs(this.score) - this.cutoff;
-    }
-
-    /**
-     * Sets the alpha value and updates the cutoff accordingly.
-     *
-     * @param alpha The alpha value to be set. This is used to determine the cutoff for statistical testing and
-     *              typically represents the significance level.
-     */
-    public void setAlpha(double alpha) {
-        this.cutoff = getZForAlpha(alpha);
+        return abs(this.score) - this.alpha;
     }
 
     /**
@@ -234,32 +164,78 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     }
 
     /**
-     * Calculates the residuals of a kernel regression using the Gaussian kernel.
+     * Sets the alpha value; this is only used to calculate scores.
+     */
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    /**
+     * Computes the Gaussian kernel value between two rows in a given matrix.
      *
-     * @param x         The vector containing the response variable data points.
-     * @param z         The matrix containing the predictor variable data points.
-     * @param bandwidth The bandwidth parameter for the Gaussian kernel.
+     * @param z The matrix containing the data points.
+     * @param i The index of the first row.
+     * @param j The index of the second row.
+     * @return The computed Gaussian kernel value between the two rows.
+     */
+    private static double gaussianKernel(Matrix z, int i, int j, double h) {
+        h *= bandwidthAdjustment;
+
+        double squaredDistance = 0.0;
+        int bound = z.getNumColumns();
+
+        for (int k1 = 0; k1 < bound; k1++) {
+            double diff = z.get(i, k1) - z.get(j, k1);
+            double v = diff * diff;
+            squaredDistance += v;
+        }
+
+        return Math.exp(-squaredDistance / (2 * h * h));
+    }
+
+    /**
+     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method.
+     *
+     * @param x The data for the column.
+     * @return The optimal bandwidth for node x.
+     */
+    private static double optimalBandwidth(Vector x) {
+        x = new Vector(standardizeData(x.toArray()));
+        int N = x.size();
+        Vector g = new Vector(N);
+        double central = median(x.toArray());
+        for (int j = 0; j < N; j++) g.set(j, abs(x.get(j) - central));
+        double mad = median(g.toArray());
+        double sigmaRobust = 1.4826 * mad;
+        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
+    }
+
+    /**
+     * Calculates the residuals of a nonlinear regression using a Gaussian kernel.
+     *
+     * @param x          The vector containing the response variable data points.
+     * @param z          The matrix containing the predictor variable data points.
      * @return A vector containing the residuals from the kernel regression for each data point.
      */
-    private Vector kernelRegressionResiduals(Vector x, Matrix z, double bandwidth) {
+    private Vector kernelRegressionResiduals(Vector x, Matrix z) {
         int n = x.size();
         Vector residuals = new Vector(n);
 
-        double h = h(x);
+        double h = optimalBandwidth(x);
 
-        IntStream.range(0, n).parallel().forEach(i -> {
+        for (int i = 0; i < n; i++) {
             double weightSum = 0.0;
             double weightedXSum = 0.0;
 
             for (int j = 0; j < n; j++) {
-                double kernel = gaussianKernel(z, i, j, bandwidth, h);
+                double kernel = gaussianKernel(z, i, j, h);
                 weightSum += kernel;
                 weightedXSum += kernel * x.get(j);
             }
 
             double fittedValue = weightedXSum / weightSum;
             residuals.set(i, x.get(i) - fittedValue);
-        });
+        }
 
         return residuals;
     }
@@ -280,7 +256,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
 
         Matrix _z = data.getSelection(_rows, _cols);
         Vector __x = _x.getSelection(_rows);
-        return kernelRegressionResiduals(__x, _z, bandwidth);
+        return kernelRegressionResiduals(__x, _z);
     }
 
     /**
@@ -293,42 +269,57 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * of vectors rx and ry.
      */
     private double independent(Vector rx, Vector ry) {
-        Vector _x = new Vector(rx.size());
-        Vector _y = new Vector(ry.size());
+        Map<Integer, Vector> x = new HashMap<>();
+        Map<Integer, Vector> y = new HashMap<>();
 
+        // Compute the orthogonal functions for x and y.
+        initializeResiduals(rx, x);
+        initializeResiduals(ry, y);
+
+        // Compute the maximum absolute non-parametric Fisher's Z value between the transformed vectors.
+        // (I.e., we want to maximize dependence.)
         double max = 0.0;
-        int maxIndex = 0;
 
         for (int m = 1; m <= this.numFunctions; m++) {
             for (int n = 1; n <= this.numFunctions; n++) {
-                for (int i = 0; i < rx.size(); i++) {
-                    int type = 2;
+                if (x.containsKey(m) && y.containsKey(n)) {
+                    double z = abs(nonparametricFisherZ(x.get(m), y.get(n)));
 
-                    double fx = orthogonalFunctionValue(type, m, rx.get(i));
-                    double fy = orthogonalFunctionValue(type, n, ry.get(i));
-
-                    if (Double.isInfinite(fx) || Double.isInfinite(fy)
-                        || Double.isNaN(fx) || Double.isNaN(fy)) {
-                        continue;
-                    }
-
-                    _x.set(i, fx);
-                    _y.set(i, fy);
-                }
-
-                double z = abs(nonparametricFisherZ(_x, _y));
-
-                if (!Double.isNaN(z)) {
-                    if (z > max) {
-                        max = z;
-                        maxIndex = max(m, n);
+                    if (!Double.isNaN(z)) {
+                        if (z >= max) {
+                            max = z;
+                        }
                     }
                 }
             }
         }
 
-        System.out.println("Max index: " + maxIndex);
         return max;
+    }
+
+    /**
+     * Initializes the residuals for a given vector by computing the orthogonal functions for each data point.
+     *
+     * @param rx The vector containing data points.
+     * @param x  A map associating each orthogonal function with its respective vector.
+     */
+    private void initializeResiduals(Vector rx, Map<Integer, Vector> x) {
+        M:
+        for (int m = 1; m <= this.numFunctions; m++) {
+            Vector _x = new Vector(rx.size());
+
+            for (int i = 0; i < rx.size(); i++) {
+                double fx = orthogonalFunctionValue(1, m, rx.get(i));
+
+                if (Double.isInfinite(fx) || Double.isNaN(fx)) {
+                    continue M;
+                }
+
+                _x.set(i, fx);
+            }
+
+            x.put(m, _x);
+        }
     }
 
     /**
@@ -341,7 +332,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     private double nonparametricFisherZ(Vector _x, Vector _y) {
         double r = correlation(_x, _y);
         double z = 0.5 * sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
-        return z / (bandwidth * (sqrt(m22(_x, _y))));
+        return z / (bandwidthAdjustment * (sqrt(m22(_x, _y))));
     }
 
     /**
@@ -381,39 +372,12 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
                     break;
                 }
             }
+
             if (!hasNaN) {
                 rows.add(k);
             }
         }
 
         return rows;
-    }
-
-    /**
-     * Scales the specified column of the data set by normalizing the values. The scaling process normalizes values by
-     * the maximum absolute value observed.
-     *
-     * @param dataSet the data set containing the values to be scaled.
-     * @param col     the index of the column to be scaled in the data set.
-     */
-    private void scale(DataSet dataSet, int col) {
-        double max = Double.MIN_VALUE;
-        double min = Double.MAX_VALUE;
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
-            if (Double.isNaN(d)) continue;
-            if (d > max) max = d;
-            if (d < min) min = d;
-        }
-
-        double biggest = Math.max(Math.abs(min), Math.abs(max));
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
-            if (Double.isNaN(d)) continue;
-//            dataSet.setDouble(i, col, min + (d - min) / (max - min));
-            dataSet.setDouble(i, col, d / biggest);
-        }
     }
 }

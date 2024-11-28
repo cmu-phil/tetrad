@@ -58,6 +58,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
+import java.util.prefs.Preferences;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
@@ -362,7 +363,7 @@ public class MarkovCheckEditor extends JPanel {
         JButton resample = new JButton("Resample");
         JButton addSample = new JButton("Add Sample");
 
-        this.percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0###"));
+        this.percent = new DoubleTextField(Preferences.userRoot().getDouble("PercentSample", 0.5), 4, new DecimalFormat("0.0###"));
 
         JLabel percentSampleLabel;
         if (model.getMarkovCheck().getIndependenceTest().getData() != null) {
@@ -382,6 +383,7 @@ public class MarkovCheckEditor extends JPanel {
             if (value < 0.0 || value > 1.0) {
                 return oldValue;
             } else {
+                Preferences.userRoot().put("PercentSample", value + "");
                 return value;
             }
         });

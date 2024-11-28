@@ -88,12 +88,7 @@ public class DataTransforms {
         List<DataSet> outList = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
-            if (!(dataSet.isContinuous())) {
-                throw new IllegalArgumentException("Sorry, detecting a non-continuous dataset.");
-            }
-
-            Matrix data2 = standardizeData(dataSet.getDoubleData());
-
+            Matrix data2 = standardizeData(dataSet.getDoubleData(), dataSet.getVariables());
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), dataSet.getVariables());
             outList.add(dataSet2);
         }
@@ -110,7 +105,7 @@ public class DataTransforms {
     public static DataSet standardizeData(DataSet dataSet) {
         List<DataSet> dataSets = Collections.singletonList(dataSet);
         List<DataSet> outList = standardizeData(dataSets);
-        return outList.get(0);
+        return outList.getFirst();
     }
 
     /**
@@ -883,6 +878,54 @@ public class DataTransforms {
         for (int j = 0; j < data2.getNumColumns(); j++) {
             double sum = 0.0;
              int count = 0;
+
+            for (int i = 0; i < data2.getNumRows(); i++) {
+                if (!Double.isNaN(data2.get(i, j))) {
+                    sum += data2.get(i, j);
+                    count++;
+                }
+            }
+
+            double mean = sum / count;
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                if (!Double.isNaN(data2.get(i, j))) {
+                    data2.set(i, j, data.get(i, j) - mean);
+                }
+            }
+
+            double norm = 0.0;
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                double v = data2.get(i, j);
+
+                if (!Double.isNaN(v)) {
+                    norm += v * v;
+                }
+            }
+
+            norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                if (!Double.isNaN(data2.get(i, j))) {
+                    data2.set(i, j, data2.get(i, j) / norm);
+                }
+            }
+        }
+
+        return data2;
+    }
+
+    public static Matrix standardizeData(Matrix data, List<Node> variables) {
+        Matrix data2 = data.copy();
+
+        for (int j = 0; j < data2.getNumColumns(); j++) {
+            if (variables.get(j) instanceof DiscreteVariable) {
+                continue;
+            }
+
+            double sum = 0.0;
+            int count = 0;
 
             for (int i = 0; i < data2.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {

@@ -42,6 +42,7 @@ public class BasisFunctionBicScore implements Score {
      * Specifies the truncation limit for the basis functions used in the score calculation.
      */
     private final int truncationLimit;
+    private final int basisType = 1;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
@@ -57,11 +58,20 @@ public class BasisFunctionBicScore implements Score {
 
         this.truncationLimit = truncationLimit;
 
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            if (dataSet.getVariables().get(j) instanceof ContinuousVariable) {
-                scale(dataSet, j);
-            }
-        }
+//        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+//            if (dataSet.getVariables().get(j) instanceof ContinuousVariable) {
+//                scale(dataSet, j);
+//            }
+//        }
+
+//        for (int i = 0; i < dataSet.getNumColumns(); i++) {
+//            if (dataSet.getVariable(i) instanceof ContinuousVariable) {
+//                scale(dataSet, i);
+////                standardize(dataSet, i);
+//            }
+//        }
+
+        dataSet = DataTransforms.standardizeData(dataSet);
 
         this.variables = dataSet.getVariables();
         int n = dataSet.getNumRows();
@@ -106,7 +116,7 @@ public class BasisFunctionBicScore implements Score {
                     A.add(vPower);
                     double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
-                        functional[j] = StatUtils.orthogonalFunctionValue(2, p, dataSet.getDouble(j, i_));
+                        functional[j] = StatUtils.orthogonalFunctionValue(basisType, p, dataSet.getDouble(j, i_));
 //                        functional[j] = Math.pow(dataSet.getDouble(j, i_), p);
                     }
                     B.add(functional);
@@ -155,8 +165,8 @@ public class BasisFunctionBicScore implements Score {
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             double d = dataSet.getDouble(i, col);
             if (Double.isNaN(d)) continue;
+//            dataSet.setDouble(i, col, min + (d - min) / (max - min));
             dataSet.setDouble(i, col, d / biggest);
-
         }
     }
 

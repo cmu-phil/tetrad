@@ -2572,7 +2572,7 @@ public final class StatUtils {
      * @return The computed value of the Hermite polynomial.
      * @throws IllegalArgumentException if the index is negative or greater than 20.
      */
-    public static double hermite1(int index, double x) {
+    public static double hermite(int index, double x) {
         return switch (index) {
             case 0 -> 1;
             case 1 -> x;
@@ -2618,7 +2618,7 @@ public final class StatUtils {
      * @param x     The value at which the Hermite polynomial is to be evaluated.
      * @return The computed value of the Hermite polynomial.
      */
-    public static double hermite(int index, double x) {
+    public static double hermite2(int index, double x) {
         if (index < 0) {
             throw new IllegalArgumentException("The index of a Hermite polynomial must be a non-negative integer.");
         }
@@ -2670,11 +2670,11 @@ public final class StatUtils {
         } else if (type == 2) {
             return hermite(index, x);
         } else if (type == 3) {
-            if (index % 2 == 0) {
-                return sin(index * x / 2 + 1);
-            } else {
-                return cos(index * x / 2 + 1);
-            }
+//            if (index % 2 == 0) {
+//                return sin(index * x / 2 + 1);
+//            } else {
+            return cos(index * x);
+//            }
         } else {
             throw new IllegalArgumentException("Unrecognized type: " + type);
         }
