@@ -76,7 +76,6 @@ public class CciTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
         params.add(Params.NUM_BASIS_FUNCTIONS);
-        params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.BANDWIDTH_ADJUSTMENT);
         return params;
     }

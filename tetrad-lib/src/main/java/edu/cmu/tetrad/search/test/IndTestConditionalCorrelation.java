@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -42,7 +42,6 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public final class IndTestConditionalCorrelation implements IndependenceTest, RowsSettable {
-
     /**
      * The number format used for formatting numbers in the application. It is obtained from the application-wide
      * NumberFormatUtil instance.
@@ -60,6 +59,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * Stores a reference to the data set passed in through the constructor.
      */
     private final DataSet dataSet;
+    /**
+     * The bandwidth adjustment factor.
+     */
     private double bandwidthAdjustment = 2.0;
     /**
      * The significance level of the independence tests.
@@ -132,8 +134,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, p));
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
         }
 
@@ -196,7 +197,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * @return This string.
      */
     public String toString() {
-        return "Conditional Correlation, q = " + IndTestConditionalCorrelation.nf.format(getAlpha());
+        var nf = NumberFormatUtil.getInstance().getNumberFormat();
+        return "Conditional Correlation, numFunctions=" + cci.getNumFunctions()
+               + ", bandwidthAdjustment=" + nf.format(cci.getBandwidthAdjustment());
     }
 
     /**
@@ -224,16 +227,33 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         this.cci.setNumFunctions(numFunctions);
     }
 
+    /**
+     * Returns the number of orthogonal functions used to do the calculations. The sets used is the polynomial basis
+     * functions, x, x^2, x^3, etc. This choice is made to allow for more flexible domains of the functions after
+     * standardization.
+     *
+     * @return This number.
+     */
     @Override
     public List<Integer> getRows() {
         return cci.getRows();
     }
 
+    /**
+     * Sets the rows to use for the test.
+     *
+     * @param rows The rows.
+     */
     @Override
     public void setRows(List<Integer> rows) {
         cci.setRows(rows);
     }
 
+    /**
+     * Sets the bandwidth adjustment factor.
+     *
+     * @param bandwidthAdjustment The bandwidth adjustment factor.
+     */
     public void setBandwidthAdjustment(double bandwidthAdjustment) {
         this.bandwidthAdjustment = bandwidthAdjustment;
     }
