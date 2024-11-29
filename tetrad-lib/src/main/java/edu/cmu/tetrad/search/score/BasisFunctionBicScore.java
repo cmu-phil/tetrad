@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -14,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Calculates the basis function BIC score for a given dataset. This is a modifiction of the Degenerate Gaussian score
+ * Calculates the basis function BIC score for a given dataset. This is a modification of the Degenerate Gaussian score
  * by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
  * discrete variables by adding indicator variables per category.
  *
@@ -29,7 +32,7 @@ public class BasisFunctionBicScore implements Score {
     private final List<Node> variables;
     /**
      * A mapping used to store the embeddings of basis functions for continuous variables and indicator variables per
-     * cagegory for discrete variables. The key is an integer representing the index of the basis function variable or
+     * category for discrete variables. The key is an integer representing the index of the basis function variable or
      * indicator variable.
      */
     private final Map<Integer, List<Integer>> embedding;
@@ -42,7 +45,12 @@ public class BasisFunctionBicScore implements Score {
      * Specifies the truncation limit for the basis functions used in the score calculation.
      */
     private final int truncationLimit;
+    /**
+     * Specifies the type of basis function used in the score calculation. We use the polynomial basis function
+     * by default (basisType = 1), since it handles the domains of the standardized continuous variables well.
+     */
     private final int basisType = 1;
+    private final BoxDataSet expandedDataSet;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
@@ -52,6 +60,7 @@ public class BasisFunctionBicScore implements Score {
      * @param truncationLimit       the truncation limit of the basis.
      */
     public BasisFunctionBicScore(DataSet dataSet, boolean precomputeCovariances, int truncationLimit) {
+        Map<Integer, List<Integer>> embedding;
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -62,7 +71,7 @@ public class BasisFunctionBicScore implements Score {
 
         this.variables = dataSet.getVariables();
         int n = dataSet.getNumRows();
-        this.embedding = new HashMap<>();
+        embedding = new HashMap<>();
 
         List<Node> A = new ArrayList<>();
         List<double[]> B = new ArrayList<>();
@@ -95,7 +104,7 @@ public class BasisFunctionBicScore implements Score {
 //                A.remove(i);
 //                B.remove(i);
 
-                this.embedding.put(i_, new ArrayList<>(keys.values()));
+                embedding.put(i_, new ArrayList<>(keys.values()));
             } else {
                 List<Integer> indexList = new ArrayList<>();
                 for (int p = 1; p <= truncationLimit; p++) {
@@ -109,7 +118,7 @@ public class BasisFunctionBicScore implements Score {
                     indexList.add(i);
                     i++;
                 }
-                this.embedding.put(i_, indexList);
+                embedding.put(i_, indexList);
             }
             i_++;
         }
@@ -126,13 +135,16 @@ public class BasisFunctionBicScore implements Score {
         this.bic = new SemBicScore(dataSet1, precomputeCovariances);
         this.bic.setUsePseudoInverse(true);
         this.bic.setStructurePrior(0);
+
+        this.expandedDataSet = dataSet1;
+        this.embedding = embedding;
     }
 
     /**
      * Calculates the local score for a given node and its parent nodes.
      *
      * @param i       The index of the node whose score is being calculated.
-     * @param parents The indices of the parent nodes of the given node.
+     * @param parents The indices for the parent nodes of the given node.
      * @return The calculated local score as a double value.
      */
     public double localScore(int i, int... parents) {
@@ -238,5 +250,37 @@ public class BasisFunctionBicScore implements Score {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
+    }
+
+    /**
+     * Returns the expanded dataset for the basis function score with the embedded columns.
+     */
+    public DataSet getExpandedDataSet() {
+        return this.expandedDataSet.copy();
+    }
+
+    public Graph getExpandedGraph(Graph graph) {
+        Graph expandedGraph = new EdgeListGraph();
+        for (Node node : graph.getNodes()) {
+            expandedGraph.addNode(node);
+        }
+        for (Edge edge : graph.getEdges()) {
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
+            int i = this.variables.indexOf(node1);
+            int j = this.variables.indexOf(node2);
+            if (i != -1 && j != -1) {
+                List<Integer> iEmbedding = this.embedding.get(i);
+                List<Integer> jEmbedding = this.embedding.get(j);
+                for (int i_ : iEmbedding) {
+                    for (int j_ : jEmbedding) {
+                        Node node1_ = this.expandedDataSet.getVariable(i_);
+                        Node node2_ = this.expandedDataSet.getVariable(j_);
+                        expandedGraph.addDirectedEdge(node1_, node2_);
+                    }
+                }
+            }
+        }
+        return expandedGraph;
     }
 }
