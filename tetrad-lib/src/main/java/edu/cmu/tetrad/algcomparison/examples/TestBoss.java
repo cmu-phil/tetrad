@@ -30,11 +30,26 @@ import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.score.BasisFunctionBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.junit.Test;
+
+import javax.help.resources.Constants_es;
 
 /**
  * Test the degenerate Gaussian score.
@@ -137,6 +152,55 @@ public class TestBoss {
 
         System.out.println((end - start) * 1e-3);
 
+    }
+
+//    @Test
+    public void testBasisFunctionMarkov() {
+
+        // Make a random 10 node 10 graph.
+        var graph = RandomGraph.randomGraph(20, 0, 30, 100, 100, 100, false);
+        System.out.println("True graph = " + graph);
+
+        // Simulate data from the graph.
+        SemPm semPm = new SemPm(graph);
+        SemIm semIm = new SemIm(semPm);
+        var data = semIm.simulateData(1000, false);
+
+        // Create a score object.
+        var score = new BasisFunctionBicScore(data, true, 4);
+        score.setPenaltyDiscount(1);
+
+        // Create a BOSS object.
+        var boss = new edu.cmu.tetrad.search.Boss(score);
+        boss.setNumStarts(1);
+        var search = new PermutationSearch(boss);
+
+        // Run the BOSS algorithm.
+        var result = search.search(false);
+
+        // Print the result.
+        System.out.println(result);
+
+        var dataSet = score.getExpandedDataSet();
+        var _score = new edu.cmu.tetrad.search.score.SemBicScore(dataSet, false);
+        _score.setPenaltyDiscount(1);
+        boss = new edu.cmu.tetrad.search.Boss(_score);
+        var _search = new PermutationSearch(boss);
+        var _result = _search.search(false);
+
+//        dataSet = DataTransforms.standardizeData(dataSet);
+        var _graph = score.getExpandedGraph(result);
+
+        _result = GraphUtils.replaceNodes(_result, dataSet.getVariables());
+
+        MarkovCheck markovCheck = new MarkovCheck(_result, new IndTestFisherZ(dataSet, 0.05), ConditioningSetType.MARKOV_BLANKET);
+        markovCheck.setPercentResample(1.0);
+        markovCheck.generateResults(true);
+
+        System.out.println(markovCheck.getResults(true));
+
+        System.out.println("KS p value = " + markovCheck.getKsPValue(true));
+        System.out.println("AD p value = " + markovCheck.getAndersonDarlingP(true));
     }
 }
 

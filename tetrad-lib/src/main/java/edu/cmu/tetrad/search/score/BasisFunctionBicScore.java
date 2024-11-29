@@ -1,10 +1,7 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -133,7 +130,7 @@ public class BasisFunctionBicScore implements Score {
         RealMatrix D = MatrixUtils.createRealMatrix(B_);
         BoxDataSet dataSet1 = new BoxDataSet(new DoubleDataBox(D.getData()), A);
         this.bic = new SemBicScore(dataSet1, precomputeCovariances);
-        this.bic.setUsePseudoInverse(true);
+        this.bic.setUsePseudoInverse(false);
         this.bic.setStructurePrior(0);
 
         this.expandedDataSet = dataSet1;
@@ -260,15 +257,15 @@ public class BasisFunctionBicScore implements Score {
     }
 
     public Graph getExpandedGraph(Graph graph) {
-        Graph expandedGraph = new EdgeListGraph();
-        for (Node node : graph.getNodes()) {
-            expandedGraph.addNode(node);
-        }
+        graph = GraphUtils.replaceNodes(graph, this.variables);
+        Graph expandedGraph = new EdgeListGraph(expandedDataSet.getVariables());
+
         for (Edge edge : graph.getEdges()) {
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
+            Node node1 = Edges.getDirectedEdgeTail(edge);
+            Node node2 = Edges.getDirectedEdgeHead(edge);
             int i = this.variables.indexOf(node1);
             int j = this.variables.indexOf(node2);
+
             if (i != -1 && j != -1) {
                 List<Integer> iEmbedding = this.embedding.get(i);
                 List<Integer> jEmbedding = this.embedding.get(j);
@@ -281,6 +278,7 @@ public class BasisFunctionBicScore implements Score {
                 }
             }
         }
+
         return expandedGraph;
     }
 }
