@@ -58,19 +58,6 @@ public class BasisFunctionBicScore implements Score {
 
         this.truncationLimit = truncationLimit;
 
-//        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-//            if (dataSet.getVariables().get(j) instanceof ContinuousVariable) {
-//                scale(dataSet, j);
-//            }
-//        }
-
-//        for (int i = 0; i < dataSet.getNumColumns(); i++) {
-//            if (dataSet.getVariable(i) instanceof ContinuousVariable) {
-//                scale(dataSet, i);
-////                standardize(dataSet, i);
-//            }
-//        }
-
         dataSet = DataTransforms.standardizeData(dataSet);
 
         this.variables = dataSet.getVariables();
@@ -117,7 +104,6 @@ public class BasisFunctionBicScore implements Score {
                     double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
                         functional[j] = StatUtils.orthogonalFunctionValue(basisType, p, dataSet.getDouble(j, i_));
-//                        functional[j] = Math.pow(dataSet.getDouble(j, i_), p);
                     }
                     B.add(functional);
                     indexList.add(i);
@@ -140,44 +126,6 @@ public class BasisFunctionBicScore implements Score {
         this.bic = new SemBicScore(dataSet1, precomputeCovariances);
         this.bic.setUsePseudoInverse(true);
         this.bic.setStructurePrior(0);
-    }
-
-    /**
-     * Scales the specified column of the data set by normalizing the values. The scaling process normalizes values by
-     * the maximum absolute value observed.
-     *
-     * @param dataSet the data set containing the values to be scaled.
-     * @param col     the index of the column to be scaled in the data set.
-     */
-    private void scale(DataSet dataSet, int col) {
-        double max = Double.MIN_VALUE;
-        double min = Double.MAX_VALUE;
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
-            if (Double.isNaN(d)) continue;
-            if (d > max) max = d;
-            if (d < min) min = d;
-        }
-
-        double biggest = Math.max(Math.abs(min), Math.abs(max));
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            double d = dataSet.getDouble(i, col);
-            if (Double.isNaN(d)) continue;
-//            dataSet.setDouble(i, col, min + (d - min) / (max - min));
-            dataSet.setDouble(i, col, d / biggest);
-        }
-    }
-
-    private void standardize(DataSet dataSet, int col) {
-        if (dataSet.getVariable(col) instanceof ContinuousVariable) {
-            double[] data = new double[dataSet.getNumRows()];
-            double[] std = DataTransforms.standardizeData(data);
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                dataSet.setDouble(i, col, std[i]);
-            }
-        }
     }
 
     /**
