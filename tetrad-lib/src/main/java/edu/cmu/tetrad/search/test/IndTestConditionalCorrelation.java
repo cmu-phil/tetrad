@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -42,11 +41,6 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public final class IndTestConditionalCorrelation implements IndependenceTest, RowsSettable {
-    /**
-     * The number format used for formatting numbers in the application. It is obtained from the application-wide
-     * NumberFormatUtil instance.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     /**
      * The instance of CCI that is wrapped.
      */
@@ -221,7 +215,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     }
 
     /**
-     * Returns the number of orthogonal functions used to do the calculations. The sets used is the polynomial basis
+     * Returns the number of orthogonal functions used to do the calculations. The sets used are the polynomial basis
      * functions, x, x^2, x^3, etc. This choice is made to allow for more flexible domains of the functions after
      * standardization.
      *
