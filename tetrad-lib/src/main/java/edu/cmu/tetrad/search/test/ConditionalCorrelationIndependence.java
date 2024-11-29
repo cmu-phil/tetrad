@@ -10,6 +10,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static org.apache.commons.math3.util.FastMath.*;
@@ -47,10 +48,6 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * The bandwidth adjustment factor.
      */
     private double bandwidthAdjustment = 2;
-    /**
-     * The Fisher Z score representing the level of independence between two nodes.
-     */
-    private double score;
     /**
      * The number of functions used in the analysis.
      */
@@ -102,20 +99,14 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * @param j The index of the second row.
      * @return The computed Gaussian kernel value between the two rows.
      */
-    private static double gaussianKernel(Matrix z, int i, int j, double h, double bandwidthAdjustment) {
-        h *= bandwidthAdjustment;
+private static double gaussianKernel(Matrix z, int i, int j, double h, double bandwidthAdjustment) {
+    h *= bandwidthAdjustment;
 
-        var squaredDistance = 0.0;
-        var bound = z.getNumColumns();
+    Vector difference = z.getRow(i).minus(z.getRow(j));
+    double squaredDistance = difference.dotProduct(difference);
 
-        for (var k1 = 0; k1 < bound; k1++) {
-            var diff = z.get(i, k1) - z.get(j, k1);
-            var v = diff * diff;
-            squaredDistance += v;
-        }
-
-        return Math.exp(-squaredDistance / (2 * h * h));
-    }
+    return FastMath.exp(-squaredDistance / (2 * h * h));
+}
 
     /**
      * Determines whether two given nodes are independent given a set of conditioning nodes, and calculates a score.
@@ -144,8 +135,6 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         var ry = residuals(y, z, rows);
 
         var score = independent(rx, ry);
-
-        this.score = score;
 
         if (Double.isNaN(score)) {
             return Double.NaN;
@@ -247,7 +236,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      */
     private Vector kernelRegressionResiduals(Vector x, Matrix z) {
         var n = x.size();
-        var residuals = new Vector(n);
+var residuals = new Vector(n);
 
         var h = optimalBandwidth(x);
 
@@ -331,24 +320,24 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * @param rx The vector containing data points.
      * @param x  A map associating each orthogonal function with its respective vector.
      */
-    private void initializeResiduals(Vector rx, Map<Integer, Vector> x) {
-        M:
-        for (var m = 1; m <= this.numFunctions; m++) {
-            var _x = new Vector(rx.size());
+private void initializeResiduals(Vector rx, Map<Integer, Vector> x) {
+    M:
+    IntStream.range(1, this.numFunctions + 1).parallel().forEach(m -> {
+        var _x = new Vector(rx.size());
 
-            for (var i = 0; i < rx.size(); i++) {
-                var fx = orthogonalFunctionValue(1, m, rx.get(i));
+        IntStream.range(0, rx.size()).forEach(i -> {
+            var fx = orthogonalFunctionValue(1, m, rx.get(i));
 
-                if (Double.isInfinite(fx) || Double.isNaN(fx)) {
-                    continue M;
-                }
-
+            if (!Double.isInfinite(fx) && !Double.isNaN(fx)) {
                 _x.set(i, fx);
             }
+        });
 
+        synchronized (x) {
             x.put(m, _x);
         }
-    }
+    });
+}
 
     /**
      * Computes the non-parametric Fisher's Z value for two vectors.
@@ -418,19 +407,20 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * @param numPermutations The number of permutations to perform.
      * @return The mean p-value for the given number of permutations.
      */
-    public double permutationTest(Node x, Node y, Set<Node> z, int numPermutations) {
-        double[] pValues = new double[numPermutations];
-        var originalRows = rows; // Create a copy of rows
-        List<Integer> rows = getRows();
+public double permutationTest(Node x, Node y, Set<Node> z, int numPermutations) {
+    double[] pValues = new double[numPermutations];
+    var originalRows = rows;
+    List<Integer> rows = getRows();
 
-        for (int i = 0; i < numPermutations; i++) {
-            Collections.shuffle(rows);
-            this.rows = rows;
-            double permutedScore = isIndependent(x, y, z);
-            pValues[i] = getPValue(permutedScore);
-        }
+    IntStream.range(0, numPermutations).parallel().forEach(i -> {
+        var shuffledRows = new ArrayList<>(rows);
+        Collections.shuffle(shuffledRows);
+        this.rows = shuffledRows;
+        double permutedScore = isIndependent(x, y, z);
+        pValues[i] = getPValue(permutedScore);
+    });
 
-        this.rows = originalRows; // Restore the original rows
-        return Arrays.stream(pValues).average().orElse(Double.NaN);
-    }
+    this.rows = originalRows;
+    return Arrays.stream(pValues).average().orElse(Double.NaN);
+}
 }

@@ -74,7 +74,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     /**
      * True if permutation test should be used.
      */
-    private boolean usePermutation;
+    private boolean usePermutation = false;
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
