@@ -72,10 +72,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      */
     private boolean verbose;
     /**
-     * The score of the last test.
+     * True if permutation test should be used.
      */
-    private double score = Double.NaN;
-
+    private boolean usePermutation;
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
@@ -103,7 +102,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         this.dataSet = dataSet;
     }
 
-
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
      * given data set (must be continuous). The given significance level is used.
@@ -122,9 +120,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        double score = this.cci.isIndependent(x, y, z);
-        this.score = score;
-        double p = this.cci.getPValue(score);
+        double p;
+
+        if (usePermutation) {
+            p = this.cci.permutationTest(x, y, z, 20);
+        } else {
+            double score = this.cci.isIndependent(x, y, z);
+            p = cci.getPValue(score);
+        }
 
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
@@ -138,16 +141,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, score);
-    }
-
-    /**
-     * Returns the p-value of the test.
-     *
-     * @return The p-value.
-     */
-    public double getPValue() {
-        return this.cci.getPValue(score);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
 
     /**
@@ -169,7 +163,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         }
 
         this.alpha = alpha;
-        cci.setAlpha(alpha);
     }
 
     /**
@@ -256,6 +249,15 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      */
     public void setBandwidthAdjustment(double bandwidthAdjustment) {
         this.bandwidthAdjustment = bandwidthAdjustment;
+    }
+
+    /**
+     * Sets whether to use permutation methods in the independence test.
+     *
+     * @param usePermutation A boolean flag indicating if permutation should be used (true) or not (false).
+     */
+    public void setUsePermutation(boolean usePermutation) {
+        this.usePermutation = usePermutation;
     }
 }
 

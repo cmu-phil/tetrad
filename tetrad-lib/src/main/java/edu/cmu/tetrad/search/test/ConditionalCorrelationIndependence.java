@@ -35,13 +35,30 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author josephramsey
  */
 public final class ConditionalCorrelationIndependence implements RowsSettable {
+    /**
+     * The map associating each node with its respective column index in the data matrix.
+     */
     private final Map<Node, Integer> nodesHash;
+    /**
+     * The data matrix used for the analysis.
+     */
     private final Matrix data;
+    /**
+     * The bandwidth adjustment factor.
+     */
     private double bandwidthAdjustment = 2;
+    /**
+     * The Fisher Z score representing the level of independence between two nodes.
+     */
     private double score;
+    /**
+     * The number of functions used in the analysis.
+     */
     private int numFunctions = 10;
+    /**
+     * The list of row indices to be used for the analysis. If no rows are set, all rows will be used.
+     */
     private List<Integer> rows;
-    private double alpha = 0.05;
 
     /**
      * Initializes a new instance of the ConditionalCorrelationIndependence class using the provided DataSet.
@@ -147,7 +164,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * extreme as the observed score under the null hypothesis.
      */
     public double getPValue(double score) {
-        return 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(score)));
+        return 2.0 * (new NormalDistribution(0, 1).cumulativeProbability(-abs(score)));
     }
 
     /**
@@ -179,22 +196,6 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     @Override
     public void setRows(List<Integer> rows) {
         this.rows = rows;
-    }
-
-    /**
-     * Retrieves the score modified by applying an absolute value and subtracting a cutoff value.
-     *
-     * @return The modified score which is calculated as the absolute value of the current score minus the cutoff value.
-     */
-    public double getScore() {
-        return abs(this.score) - this.alpha;
-    }
-
-    /**
-     * Sets the alpha value; this is only used to calculate scores.
-     */
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
     }
 
     /**
@@ -406,5 +407,30 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         }
 
         return rows;
+    }
+
+    /**
+     * Performs a permutation test to empirically determine the distribution of p-values under the null hypothesis.
+     *
+     * @param x               The first node.
+     * @param y               The second node.
+     * @param z               The set of conditioning nodes.
+     * @param numPermutations The number of permutations to perform.
+     * @return The mean p-value for the given number of permutations.
+     */
+    public double permutationTest(Node x, Node y, Set<Node> z, int numPermutations) {
+        double[] pValues = new double[numPermutations];
+        var originalRows = rows; // Create a copy of rows
+        List<Integer> rows = getRows();
+
+        for (int i = 0; i < numPermutations; i++) {
+            Collections.shuffle(rows);
+            this.rows = rows;
+            double permutedScore = isIndependent(x, y, z);
+            pValues[i] = getPValue(permutedScore);
+        }
+
+        this.rows = originalRows; // Restore the original rows
+        return Arrays.stream(pValues).average().orElse(Double.NaN);
     }
 }
