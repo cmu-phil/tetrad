@@ -48,7 +48,7 @@ public class CciTest implements IndependenceWrapper {
         IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
         cci.setNumFunctions(parameters.getInt(Params.NUM_BASIS_FUNCTIONS));
-        cci.setBandwidthAdjustment(parameters.getDouble(Params.BANDWIDTH_ADJUSTMENT));
+        cci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));
         return cci;
     }
 
@@ -76,7 +76,7 @@ public class CciTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
         params.add(Params.NUM_BASIS_FUNCTIONS);
-        params.add(Params.BANDWIDTH_ADJUSTMENT);
+        params.add(Params.SCALING_FACTOR);
         return params;
     }
 }

@@ -47,7 +47,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     /**
      * The bandwidth adjustment factor.
      */
-    private double bandwidthAdjustment = 2;
+    private double scalingFactor = 2;
     /**
      * The number of functions used in the analysis.
      */
@@ -81,11 +81,11 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * @return The optimal bandwidth for node x.
      */
     private static double optimalBandwidth(Vector x) {
-        x = new Vector(standardizeData(x.toArray()));
-        var N = x.size();
+        var _x = new Vector(standardizeData(x.toArray()));
+        var N = _x.size();
         var g = new Vector(N);
-        var central = median(x.toArray());
-        for (var j = 0; j < N; j++) g.set(j, abs(x.get(j) - central));
+        var central = median(_x.toArray());
+        for (var j = 0; j < N; j++) g.set(j, abs(_x.get(j) - central));
         var mad = median(g.toArray());
         var sigmaRobust = 1.4826 * mad;
         return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
@@ -99,13 +99,13 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * @param j The index of the second row.
      * @return The computed Gaussian kernel value between the two rows.
      */
-    private static double gaussianKernel(Matrix z, int i, int j, double h, double bandwidthAdjustment) {
-        h *= bandwidthAdjustment;
+    private static double gaussianKernel(Matrix z, int i, int j, double h, double scalingFactor) {
+        double _h = h * scalingFactor;
 
         Vector difference = z.getRow(i).minus(z.getRow(j));
         double squaredDistance = difference.dotProduct(difference);
 
-        return FastMath.exp(-squaredDistance / (2 * h * h));
+        return FastMath.exp(-squaredDistance / (2 * _h * _h));
     }
 
     /**
@@ -206,12 +206,12 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     }
 
     /**
-     * Retrieves the bandwidth adjustment value for the ConditionalCorrelationIndependence analysis.
+     * Retrieves the kernel scaling factor.
      *
-     * @return The bandwidth adjustment factor used in the analysis.
+     * @return The scaling factor used in the analysis.
      */
-    public double getBandwidthAdjustment() {
-        return this.bandwidthAdjustment;
+    public double getScalingFactor() {
+        return this.scalingFactor;
     }
 
     /**
@@ -219,12 +219,12 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * <p>
      * Default is 2.
      *
-     * @param bandwidthAdjustment The new bandwidth adjustment factor to be used. This value adjusts the bandwidth
+     * @param scalingFactor The new bandwidth adjustment factor to be used. This value adjusts the bandwidth
      *                            calculation for conditional independence tests and impacts the sensitivity of the
      *                            kernel-based analysis.
      */
-    public void setBandwidthAdjustment(double bandwidthAdjustment) {
-        this.bandwidthAdjustment = bandwidthAdjustment;
+    public void setScalingFactor(double scalingFactor) {
+        this.scalingFactor = scalingFactor;
     }
 
     /**
@@ -245,7 +245,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
             var weightedXSum = 0.0;
 
             for (var j = 0; j < n; j++) {
-                var kernel = gaussianKernel(z, i, j, h, bandwidthAdjustment);
+                var kernel = gaussianKernel(z, i, j, h, scalingFactor);
                 weightSum += kernel;
                 weightedXSum += kernel * x.get(j);
             }
@@ -349,7 +349,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     private double nonparametricFisherZ(Vector _x, Vector _y) {
         var r = correlation(_x, _y);
         var z = 0.5 * sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
-        return z / (bandwidthAdjustment * (sqrt(m22(_x, _y))));
+        return z / (scalingFactor * (sqrt(m22(_x, _y))));
     }
 
     /**

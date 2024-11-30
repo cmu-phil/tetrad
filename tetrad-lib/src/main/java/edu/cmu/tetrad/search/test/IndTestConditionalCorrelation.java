@@ -56,7 +56,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     /**
      * The bandwidth adjustment factor.
      */
-    private double bandwidthAdjustment = 2.0;
+    private double scalingFactor = 2.0;
     /**
      * The significance level of the independence tests.
      */
@@ -91,7 +91,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         this.variables = Collections.unmodifiableList(nodes);
 
         this.cci = new ConditionalCorrelationIndependence(dataSet);
-        this.cci.setBandwidthAdjustment(this.bandwidthAdjustment);
+        this.cci.setScalingFactor(this.scalingFactor);
         this.alpha = alpha;
         this.dataSet = dataSet;
     }
@@ -186,7 +186,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     public String toString() {
         var nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "Conditional Correlation, numFunctions=" + cci.getNumFunctions()
-               + ", bandwidthAdjustment=" + nf.format(cci.getBandwidthAdjustment());
+               + ", bandwidthAdjustment=" + nf.format(cci.getScalingFactor());
     }
 
     /**
@@ -239,10 +239,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     /**
      * Sets the bandwidth adjustment factor.
      *
-     * @param bandwidthAdjustment The bandwidth adjustment factor.
+     * @param scalingFactor The bandwidth adjustment factor.
      */
-    public void setBandwidthAdjustment(double bandwidthAdjustment) {
-        this.bandwidthAdjustment = bandwidthAdjustment;
+    public void setScalingFactor(double scalingFactor) {
+        this.scalingFactor = scalingFactor;
     }
 
     /**

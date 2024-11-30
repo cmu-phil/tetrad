@@ -532,6 +532,10 @@ public class DataTransforms {
         DataSet _data = data.copy();
 
         for (int j = 0; j < _data.getNumColumns(); j++) {
+            if (_data.getVariable(j) instanceof DiscreteVariable) {
+                continue;
+            }
+
             double sum = 0.0;
             int n = 0;
 
@@ -1274,6 +1278,72 @@ public class DataTransforms {
         }
 
         return outData;
+    }
+
+    /**
+     * Scales the continuous variables in the given DataSet to have values in the range [-1, 1].
+     *
+     * For each continuous column, the method computes the maximum of the absolute values of the minimum and maximum
+     * of the column, and divides all values in that column by this maximum value. Discrete columns are not affected.
+     *
+     * @param dataSet The DataSet containing variables to be scaled.
+     * @return A new DataSet with scaled continuous variables, while discrete variables remain unchanged.
+     */
+    public static DataSet scale(DataSet dataSet, double scale) {
+        dataSet = dataSet.copy();
+
+        // For each continuous column, find the min and max of the column, then max(abs(min, max)), then divide the column by that value.
+        // Ignore the discrete columns.
+
+        for (Node node : dataSet.getVariables()) {
+            if (node instanceof ContinuousVariable) {
+                int j = dataSet.getColumn(node);
+
+                double min = Double.POSITIVE_INFINITY;
+                double max = Double.NEGATIVE_INFINITY;
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    double value = dataSet.getDouble(i, j);
+                    if (value < min) {
+                        min = value;
+                    }
+                    if (value > max) {
+                        max = value;
+                    }
+                }
+
+                double _max = Math.max(Math.abs(min), Math.abs(max)) * scale;
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    double value = dataSet.getDouble(i, j);
+                    dataSet.setDouble(i, j, (value / _max) * scale);
+                }
+            }
+        }
+
+        return dataSet;
+    }
+
+    public static DataSet scale(DataSet dataSet, double[] scales) {
+        dataSet = dataSet.copy();
+
+        // For each continuous column, find the min and max of the column, then max(abs(min, max)), then divide the column by that value.
+        // Ignore the discrete columns.
+
+        for (Node node : dataSet.getVariables()) {
+            if (node instanceof ContinuousVariable) {
+                int j = dataSet.getColumn(node);
+
+                double scale = scales[j];
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    double value = dataSet.getDouble(i, j);
+                    dataSet.setDouble(i, j, value / scale);
+                }
+            }
+        }
+
+        return dataSet;
     }
 }
 

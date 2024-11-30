@@ -47,7 +47,6 @@ public class BasisFunctionBicScore implements Score {
      * by default (basisType = 1), since it handles the domains of the standardized continuous variables well.
      */
     private final int basisType = 1;
-    private final BoxDataSet expandedDataSet;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
@@ -64,7 +63,9 @@ public class BasisFunctionBicScore implements Score {
 
         this.truncationLimit = truncationLimit;
 
-        dataSet = DataTransforms.standardizeData(dataSet);
+        dataSet = DataTransforms.center(dataSet);
+        dataSet = DataTransforms.scale(dataSet, 1);
+//        dataSet = DataTransforms.standardizeData(dataSet);
 
         this.variables = dataSet.getVariables();
         int n = dataSet.getNumRows();
@@ -81,13 +82,13 @@ public class BasisFunctionBicScore implements Score {
 
             if (v instanceof DiscreteVariable) {
                 Map<List<Integer>, Integer> keys = new HashMap<>();
-//                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
+                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
                 for (int j = 0; j < n; j++) {
                     List<Integer> key = new ArrayList<>();
                     key.add(dataSet.getInt(j, i_));
                     if (!keys.containsKey(key)) {
                         keys.put(key, i);
-//                        keysReverse.put(i, key);
+                        keysReverse.put(i, key);
                         Node v_ = new ContinuousVariable("V__" + ++index);
                         A.add(v_);
                         B.add(new double[n]);
@@ -96,10 +97,10 @@ public class BasisFunctionBicScore implements Score {
                     B.get(keys.get(key))[j] = 1;
                 }
 
-//                i--;
-//                keys.remove(keysReverse.get(i));
-//                A.remove(i);
-//                B.remove(i);
+                i--;
+                keys.remove(keysReverse.get(i));
+                A.remove(i);
+                B.remove(i);
 
                 embedding.put(i_, new ArrayList<>(keys.values()));
             } else {
@@ -130,10 +131,8 @@ public class BasisFunctionBicScore implements Score {
         RealMatrix D = MatrixUtils.createRealMatrix(B_);
         BoxDataSet dataSet1 = new BoxDataSet(new DoubleDataBox(D.getData()), A);
         this.bic = new SemBicScore(dataSet1, precomputeCovariances);
-        this.bic.setUsePseudoInverse(false);
+        this.bic.setUsePseudoInverse(true);
         this.bic.setStructurePrior(0);
-
-        this.expandedDataSet = dataSet1;
         this.embedding = embedding;
     }
 
@@ -247,38 +246,5 @@ public class BasisFunctionBicScore implements Score {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
-    }
-
-    /**
-     * Returns the expanded dataset for the basis function score with the embedded columns.
-     */
-    public DataSet getExpandedDataSet() {
-        return this.expandedDataSet.copy();
-    }
-
-    public Graph getExpandedGraph(Graph graph) {
-        graph = GraphUtils.replaceNodes(graph, this.variables);
-        Graph expandedGraph = new EdgeListGraph(expandedDataSet.getVariables());
-
-        for (Edge edge : graph.getEdges()) {
-            Node node1 = Edges.getDirectedEdgeTail(edge);
-            Node node2 = Edges.getDirectedEdgeHead(edge);
-            int i = this.variables.indexOf(node1);
-            int j = this.variables.indexOf(node2);
-
-            if (i != -1 && j != -1) {
-                List<Integer> iEmbedding = this.embedding.get(i);
-                List<Integer> jEmbedding = this.embedding.get(j);
-                for (int i_ : iEmbedding) {
-                    for (int j_ : jEmbedding) {
-                        Node node1_ = this.expandedDataSet.getVariable(i_);
-                        Node node2_ = this.expandedDataSet.getVariable(j_);
-                        expandedGraph.addDirectedEdge(node1_, node2_);
-                    }
-                }
-            }
-        }
-
-        return expandedGraph;
     }
 }

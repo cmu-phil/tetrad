@@ -305,9 +305,9 @@ public final class Params {
      */
     public static final String KCI_USE_APPROXIMATION = "kciUseApproximation";
     /**
-     * Constant <code>BANDWIDTH_ADJUSTMENT="bandwidthAdjustment"</code>
+     * Constant <code>BANDWIDTH_ADJUSTMENT="scalingFactor"</code>
      */
-    public static final String BANDWIDTH_ADJUSTMENT = "bandwidthAdjustment";
+    public static final String SCALING_FACTOR = "scalingFactor";
     /**
      * Constant <code>KERNEL_REGRESSION_SAMPLE_SIZE="kernelRegressionSampleSize"</code>
      */
@@ -949,7 +949,7 @@ public final class Params {
             Params.INCLUDE_POSITIVE_SKEWS_FOR_BETA, Params.INCLUDE_STRUCTURE_MODEL,
             Params.INTERVAL_BETWEEN_RECORDINGS, Params.INTERVAL_BETWEEN_SHOCKS, Params.IPEN, Params.IS, Params.ITR,
             Params.KCI_ALPHA, Params.KCI_CUTOFF, Params.KCI_EPSILON, Params.KCI_NUM_BOOTSTRAPS, Params.KCI_USE_APPROXIMATION,
-            Params.BANDWIDTH_ADJUSTMENT, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
+            Params.SCALING_FACTOR, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
             Params.LATENT_MEASURED_IMPURE_PARENTS, Params.LOWER_BOUND, Params.MAX_CATEGORIES, Params.MAX_DEGREE,
             Params.MAX_DISTINCT_VALUES_DISCRETE, Params.MAX_INDEGREE, Params.MAX_ITERATIONS, Params.MAX_OUTDEGREE,
             Params.MEAN_LOW, Params.MEASURED_MEASURED_IMPURE_ASSOCIATIONS, Params.MEASURED_MEASURED_IMPURE_PARENTS,

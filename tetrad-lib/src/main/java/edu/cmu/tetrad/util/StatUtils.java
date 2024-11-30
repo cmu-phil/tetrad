@@ -2673,7 +2673,7 @@ public final class StatUtils {
 //            if (index % 2 == 0) {
 //                return sin(index * x / 2 + 1);
 //            } else {
-            return cos(index * x);
+            return cos(index * Math.PI * x);
 //            }
         } else {
             throw new IllegalArgumentException("Unrecognized type: " + type);
