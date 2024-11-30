@@ -56,6 +56,10 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * The list of row indices to be used for the analysis. If no rows are set, all rows will be used.
      */
     private List<Integer> rows;
+    /**
+     * The significance level of the independence tests.
+     */
+    private double alpha = 0.05;
 
     /**
      * Initializes a new instance of the ConditionalCorrelationIndependence class using the provided DataSet.
@@ -250,6 +254,11 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
                 weightedXSum += kernel * x.get(j);
             }
 
+            if (weightSum == 0.0) {
+                residuals.set(i, 0.0);
+                continue;
+            }
+
             var fittedValue = weightedXSum / weightSum;
             residuals.set(i, x.get(i) - fittedValue);
         }
@@ -286,32 +295,48 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * of vectors rx and ry.
      */
     private double independent(Vector rx, Vector ry) {
-        var x = new HashMap<Integer, Vector>();
-        var y = new HashMap<Integer, Vector>();
+        var rxBasis = new HashMap<Integer, Vector>();
+        var ryBasis = new HashMap<Integer, Vector>();
 
-        // Compute the orthogonal functions for x and y.
-        initializeResiduals(rx, x);
-        initializeResiduals(ry, y);
+        // Compute the orthogonal functions for rx and ry.
+        initializeResidualBasisVectors(rx, rxBasis);
+        initializeResidualBasisVectors(ry, ryBasis);
+
+        double sum = 0.0;
+
+        for (var m = 1; m <= this.numFunctions; m++) {
+            for (var n = 1; n <= this.numFunctions; n++) {
+                sum += (optimalBandwidth(rxBasis.get(m)) * optimalBandwidth(ryBasis.get(n)));
+            }
+        }
+
+        var avg = sum / this.numFunctions * this.numFunctions;
 
         // Compute the maximum absolute non-parametric Fisher's Z value between the transformed vectors.
         // (I.e., we want to maximize dependence.)
         var max = 0.0;
+        var min = Double.POSITIVE_INFINITY;
 
         for (var m = 1; m <= this.numFunctions; m++) {
             for (var n = 1; n <= this.numFunctions; n++) {
-                if (x.containsKey(m) && y.containsKey(n)) {
-                    var z = abs(nonparametricFisherZ(x.get(m), y.get(n)));
+                if (rxBasis.containsKey(m) && ryBasis.containsKey(n)) {
+                    double parameters = data.getNumRows() - 2 * this.numFunctions;
+                    var z = abs(nonparametricFisherZ(rxBasis.get(m), ryBasis.get(n), parameters));
 
-                    if (!Double.isNaN(z)) {
+                    if (Double.isFinite(z)) {
                         if (z >= max) {
                             max = z;
+
+                            if (getPValue(z) < min && getPValue(max) > this.alpha) {
+                                min = z;
+                            }
                         }
                     }
                 }
             }
         }
 
-        return max;
+        return Double.isInfinite(min) ? max : min;
     }
 
     /**
@@ -320,7 +345,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * @param rx The vector containing data points.
      * @param x  A map associating each orthogonal function with its respective vector.
      */
-    private void initializeResiduals(Vector rx, Map<Integer, Vector> x) {
+    private void initializeResidualBasisVectors(Vector rx, Map<Integer, Vector> x) {
         M:
         IntStream.range(1, this.numFunctions + 1).parallel().forEach(m -> {
             var _x = new Vector(rx.size());
@@ -346,9 +371,9 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      * @param _y The second vector containing data points.
      * @return The non-parametric Fisher's Z value between the two vectors.
      */
-    private double nonparametricFisherZ(Vector _x, Vector _y) {
+    private double nonparametricFisherZ(Vector _x, Vector _y, double parameters) {
         var r = correlation(_x, _y);
-        var z = 0.5 * sqrt(_x.size()) * (log(1.0 + r) - log(1.0 - r));
+        var z = 0.5 * sqrt(parameters) * (log(1.0 + r) - log(1.0 - r));
         return z / (scalingFactor * (sqrt(m22(_x, _y))));
     }
 
@@ -422,5 +447,18 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
 
         this.rows = originalRows;
         return Arrays.stream(pValues).average().orElse(Double.NaN);
+    }
+
+    /**
+     * Sets the significance level of the independence tests.
+     *
+     * @param alpha The new significance level to be used. This value must be in the range [0, 1].
+     */
+    public void setAlpha(double alpha) {
+        if (!(alpha >= 0 && alpha <= 1)) {
+            throw new IllegalArgumentException("Alpha must be in [0, 1]");
+        }
+
+        this.alpha = alpha;
     }
 }

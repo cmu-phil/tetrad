@@ -91,6 +91,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         this.variables = Collections.unmodifiableList(nodes);
 
         this.cci = new ConditionalCorrelationIndependence(dataSet);
+        this.cci.setAlpha(alpha);
         this.cci.setScalingFactor(this.scalingFactor);
         this.alpha = alpha;
         this.dataSet = dataSet;
@@ -157,6 +158,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         }
 
         this.alpha = alpha;
+        this.cci.setAlpha(alpha);
     }
 
     /**

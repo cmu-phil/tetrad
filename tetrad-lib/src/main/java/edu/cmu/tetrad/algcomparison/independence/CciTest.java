@@ -49,6 +49,7 @@ public class CciTest implements IndependenceWrapper {
                 parameters.getDouble(Params.ALPHA));
         cci.setNumFunctions(parameters.getInt(Params.NUM_BASIS_FUNCTIONS));
         cci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));
+        cci.setAlpha(parameters.getDouble(Params.ALPHA));
         return cci;
     }
 
