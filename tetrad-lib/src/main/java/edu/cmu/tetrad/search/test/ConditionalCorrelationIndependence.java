@@ -327,7 +327,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
                         if (z >= max) {
                             max = z;
 
-                            if (getPValue(z) < min && getPValue(max) > this.alpha) {
+                            if (z < min && getPValue(max) > this.alpha) {
                                 min = z;
                             }
                         }
