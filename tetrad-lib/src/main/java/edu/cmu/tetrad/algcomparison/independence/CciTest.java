@@ -46,7 +46,7 @@ public class CciTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(SimpleDataLoader.getContinuousDataSet(dataSet),
-                parameters.getDouble(Params.ALPHA));
+                parameters.getDouble(Params.ALPHA), parameters.getDouble(Params.SCALING_FACTOR));
         cci.setNumFunctions(parameters.getInt(Params.NUM_BASIS_FUNCTIONS));
         cci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));
         cci.setAlpha(parameters.getDouble(Params.ALPHA));

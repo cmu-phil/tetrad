@@ -32,6 +32,7 @@ import edu.cmu.tetrad.search.utils.ResolveSepsets;
 import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPercentIndependent;
 import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetradapp.util.IndTestType;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
@@ -140,7 +141,8 @@ final class IndTestChooser {
     private IndependenceTest getContinuousTest(DataSet dataSet,
                                                Parameters params, IndTestType testType) {
         if (IndTestType.CONDITIONAL_CORRELATION == testType) {
-            return new IndTestConditionalCorrelation(dataSet, params.getDouble("alpha", 0.001));
+            return new IndTestConditionalCorrelation(dataSet, params.getDouble(Params.ALPHA),
+                    params.getDouble(Params.SCALING_FACTOR));
         }
         if (IndTestType.FISHER_Z == testType) {
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));

@@ -21,6 +21,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 /**
@@ -125,7 +126,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The percentage of all samples to use when resampling for each conditional independence test.
      */
-    private double percentResample = 0.5;
+    private double percentResample = 1.0;
     /**
      * The number of tests for the independent case.
      */

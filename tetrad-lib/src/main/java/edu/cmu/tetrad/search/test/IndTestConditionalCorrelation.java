@@ -77,7 +77,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The q level of the test.
      */
-    public IndTestConditionalCorrelation(DataSet dataSet, double alpha) {
+    public IndTestConditionalCorrelation(DataSet dataSet, double alpha, double scalingFactor) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -91,9 +91,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         this.variables = Collections.unmodifiableList(nodes);
 
         this.cci = new ConditionalCorrelationIndependence(dataSet);
-        this.cci.setAlpha(alpha);
         this.cci.setScalingFactor(this.scalingFactor);
         this.alpha = alpha;
+        this.scalingFactor = scalingFactor;
         this.dataSet = dataSet;
     }
 
@@ -117,12 +117,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p;
 
-        if (usePermutation) {
-            p = this.cci.permutationTest(x, y, z, 20);
-        } else {
-            double score = this.cci.isIndependent(x, y, z);
-            p = cci.getPValue(score);
-        }
+//        if (usePermutation) {
+//            p = this.cci.permutationTest(x, y, z, 20);
+//        } else {
+        p = this.cci.isIndependent(x, y, z);
+//            p = cci.getPValue(score);
+//        }
 
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
@@ -158,7 +158,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         }
 
         this.alpha = alpha;
-        this.cci.setAlpha(alpha);
     }
 
     /**
