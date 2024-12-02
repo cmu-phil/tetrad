@@ -1,13 +1,11 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.LinearGaussian;
+import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -17,48 +15,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 ///**
-// * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on SEM
-// * BIC algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
+// * The BasisFunctionText class implements the IndependenceWrapper interface and represents a test for independence based
+// * on Basis Function BIC algorithm.
 // */
 //@TestOfIndependence(
-//        name = "SEM BIC Test",
-//        command = "sem-bic-test",
+//        name = "Basis Function BIC Test",
+//        command = "bf-bic-test",
 //        dataType = {DataType.Continuous, DataType.Covariance}
 //)
-//@LinearGaussian
-public class SemBicTest implements IndependenceWrapper {
+//@Mixed
+public class BasisFunctionBicTest implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * Constructs a new instance of the SEM BIC test.
+     * Constructs a new instance of the Basis Function BIC test.
      */
-    public SemBicTest() {
+    public BasisFunctionBicTest() {
     }
 
     /**
-     * Returns an instance of IndependenceTest for the SEM BIC test.
+     * Returns an instance of IndependenceTest for the Basis Function BIC test.
      *
      * @param dataSet    The data set to test independence against.
      * @param parameters The parameters of the test.
-     * @return An instance of IndependenceTest for the SEM BIC test.
+     * @return An instance of IndependenceTest for the Basis Function BIC test.
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-
-        SemBicScore score;
-
-        if (dataSet instanceof ICovarianceMatrix) {
-            score = new SemBicScore((ICovarianceMatrix) dataSet);
-        } else {
-            score = new SemBicScore((DataSet) dataSet, precomputeCovariances);
-        }
+        edu.cmu.tetrad.search.score.BasisFunctionBicScore score
+                = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(SimpleDataLoader.getMixedDataSet(dataSet),
+                precomputeCovariances, parameters.getInt(Params.TRUNCATION_LIMIT)
+        );
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
-
         return new ScoreIndTest(score, dataSet);
     }
 
@@ -69,7 +60,7 @@ public class SemBicTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "SEM BIC Test";
+        return "Basis Function BIC Test";
     }
 
     /**
@@ -83,17 +74,17 @@ public class SemBicTest implements IndependenceWrapper {
     }
 
     /**
-     * Retrieves the parameters required for the SEM BIC test.
+     * Retrieves the parameters required for the Basis Function BIC test.
      *
-     * @return A list of strings representing the parameters required for the SEM BIC test.
+     * @return A list of strings representing the parameters required for the Basis Function BIC test.
      */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.PENALTY_DISCOUNT);
+        params.add(Params.TRUNCATION_LIMIT);
         params.add(Params.STRUCTURE_PRIOR);
         params.add(Params.PRECOMPUTE_COVARIANCES);
-        params.add(Params.USE_PSEUDOINVERSE);
         return params;
     }
 }

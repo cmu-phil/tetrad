@@ -2668,7 +2668,7 @@ public final class StatUtils {
 
             return g;
         } else if (type == 2) {
-            return hermite(index, x);
+            return hermite2(index, x);
         } else if (type == 3) {
 //            if (index % 2 == 0) {
 //                return sin(index * x / 2 + 1);

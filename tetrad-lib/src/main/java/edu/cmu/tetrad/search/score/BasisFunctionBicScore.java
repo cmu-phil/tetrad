@@ -37,7 +37,7 @@ public class BasisFunctionBicScore implements Score {
      * An instance of SemBicScore used to compute the BIC (Bayesian Information Criterion) score for evaluating the fit
      * of a statistical model to a data set within the context of structural equation modeling (SEM).
      */
-    private final SemBicScore bic;
+    private final PoissonPriorScore bic;
     /**
      * Specifies the truncation limit for the basis functions used in the score calculation.
      */
@@ -46,7 +46,7 @@ public class BasisFunctionBicScore implements Score {
      * Specifies the type of basis function used in the score calculation. We use the polynomial basis function
      * by default (basisType = 1), since it handles the domains of the standardized continuous variables well.
      */
-    private final int basisType = 1;
+    private final int basisType = 2;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
@@ -64,7 +64,7 @@ public class BasisFunctionBicScore implements Score {
         this.truncationLimit = truncationLimit;
 
         dataSet = DataTransforms.center(dataSet);
-        dataSet = DataTransforms.scale(dataSet, 1);
+        dataSet = DataTransforms.scale(dataSet, .5);
 //        dataSet = DataTransforms.standardizeData(dataSet);
 
         this.variables = dataSet.getVariables();
@@ -110,7 +110,7 @@ public class BasisFunctionBicScore implements Score {
                     A.add(vPower);
                     double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
-                        functional[j] = StatUtils.orthogonalFunctionValue(basisType, p, dataSet.getDouble(j, i_));
+                        functional[j] = /*(1. / StatUtils.factorial(p)) **/ StatUtils.orthogonalFunctionValue(basisType, p, dataSet.getDouble(j, i_));
                     }
                     B.add(functional);
                     indexList.add(i);
@@ -130,9 +130,9 @@ public class BasisFunctionBicScore implements Score {
 
         RealMatrix D = MatrixUtils.createRealMatrix(B_);
         BoxDataSet dataSet1 = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        this.bic = new SemBicScore(dataSet1, precomputeCovariances);
+        this.bic = new PoissonPriorScore(new CorrelationMatrix(dataSet1));//, precomputeCovariances);
         this.bic.setUsePseudoInverse(true);
-        this.bic.setStructurePrior(0);
+//        this.bic.setStructurePrior(0);
         this.embedding = embedding;
     }
 
@@ -147,6 +147,7 @@ public class BasisFunctionBicScore implements Score {
         double score = 0;
 
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
+//        A = A.reversed();
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
@@ -157,7 +158,8 @@ public class BasisFunctionBicScore implements Score {
             for (int i__ = 0; i__ < B.size(); i__++) {
                 parents_[i__] = B.get(i__);
             }
-            score += this.bic.localScore(i_, parents_);
+            double score1 = this.bic.localScore(i_, parents_);
+            score += score1;
             B.add(i_);
         }
 
@@ -227,7 +229,7 @@ public class BasisFunctionBicScore implements Score {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "Basis Function BIC Score (Basis-BIC) Penalty " + nf.format(this.bic.getPenaltyDiscount() + " truncation = " + this.truncationLimit);
+        return "Basis Function BIC Score (Basis-BIC) Penalty " /*+ nf.format(this.bic.getPenaltyDiscount() */+ " truncation = " + this.truncationLimit;//);
     }
 
     /**
@@ -236,7 +238,8 @@ public class BasisFunctionBicScore implements Score {
      * @return the penalty discount as a double value.
      */
     public double getPenaltyDiscount() {
-        return this.bic.getPenaltyDiscount();
+//        return this.bic.getPenaltyDiscount();
+        return 2;//
     }
 
     /**
@@ -245,6 +248,6 @@ public class BasisFunctionBicScore implements Score {
      * @param penaltyDiscount The multiplier on the penalty term for this score.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
-        this.bic.setPenaltyDiscount(penaltyDiscount);
+//        this.bic.setPenaltyDiscount(penaltyDiscount);
     }
 }

@@ -7,7 +7,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.score.PoissonPriorScore;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -17,46 +17,45 @@ import java.util.ArrayList;
 import java.util.List;
 
 ///**
-// * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on SEM
-// * BIC algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
+// * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on
+// * Poisosn Prior algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
 // */
 //@TestOfIndependence(
-//        name = "SEM BIC Test",
-//        command = "sem-bic-test",
+//        name = "Poisson Prior Test",
+//        command = "poisson-test",
 //        dataType = {DataType.Continuous, DataType.Covariance}
 //)
 //@LinearGaussian
-public class SemBicTest implements IndependenceWrapper {
+public class PoissonPriorTest implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * Constructs a new instance of the SEM BIC test.
+     * Constructs a new instance of the Poisson Prior test.
      */
-    public SemBicTest() {
+    public PoissonPriorTest() {
     }
 
     /**
-     * Returns an instance of IndependenceTest for the SEM BIC test.
+     * Returns an instance of IndependenceTest for the Poisson Prior test.
      *
      * @param dataSet    The data set to test independence against.
      * @param parameters The parameters of the test.
-     * @return An instance of IndependenceTest for the SEM BIC test.
+     * @return An instance of IndependenceTest for the Poisson Prior test.
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
-        SemBicScore score;
+        PoissonPriorScore score;
 
         if (dataSet instanceof ICovarianceMatrix) {
-            score = new SemBicScore((ICovarianceMatrix) dataSet);
+            score = new PoissonPriorScore((ICovarianceMatrix) dataSet);
         } else {
-            score = new SemBicScore((DataSet) dataSet, precomputeCovariances);
+            score = new PoissonPriorScore((DataSet) dataSet, precomputeCovariances);
         }
-        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
+        score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
         score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
 
         return new ScoreIndTest(score, dataSet);
@@ -69,7 +68,7 @@ public class SemBicTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "SEM BIC Test";
+        return "Poisson Prior Test";
     }
 
     /**
@@ -83,16 +82,15 @@ public class SemBicTest implements IndependenceWrapper {
     }
 
     /**
-     * Retrieves the parameters required for the SEM BIC test.
+     * Retrieves the parameters required for the Poisson Prior test.
      *
-     * @return A list of strings representing the parameters required for the SEM BIC test.
+     * @return A list of strings representing the parameters required for the Poisson Prior test.
      */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add(Params.PENALTY_DISCOUNT);
-        params.add(Params.STRUCTURE_PRIOR);
         params.add(Params.PRECOMPUTE_COVARIANCES);
+        params.add(Params.POISSON_LAMBDA);
         params.add(Params.USE_PSEUDOINVERSE);
         return params;
     }
