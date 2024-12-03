@@ -57,6 +57,10 @@ public final class Params {
      */
     public static final String BASIS_TYPE = "basisType";
     /**
+     * Constant <code>BASIS_TYPE="basisType"</code>
+     */
+    public static final String BASIS_SCALE = "basisScale";
+    /**
      * Constant <code>CCI_SCORE_ALPHA="cciScoreAlpha"</code>
      */
     public static final String CCI_SCORE_ALPHA = "cciScoreAlpha";

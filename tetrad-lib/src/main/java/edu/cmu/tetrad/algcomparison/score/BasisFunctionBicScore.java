@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.algcomparison.score;
 
@@ -41,11 +41,7 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Basis-BIC (Basis Function BIC)",
-        command = "bf-bic-score",
-        dataType = DataType.Mixed
-)
+@edu.cmu.tetrad.annotation.Score(name = "Basis-BIC (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
 @Mixed
 public class BasisFunctionBicScore implements ScoreWrapper {
 
@@ -71,10 +67,10 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-        edu.cmu.tetrad.search.score.BasisFunctionBicScore score
-                = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(SimpleDataLoader.getMixedDataSet(dataSet),
-                precomputeCovariances, parameters.getInt(Params.TRUNCATION_LIMIT)
-        );
+        edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
+                SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances,
+                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
+                parameters.getDouble(Params.BASIS_SCALE));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return score;
     }
@@ -101,10 +97,12 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.PENALTY_DISCOUNT);
+
         parameters.add(Params.TRUNCATION_LIMIT);
-        parameters.add(Params.STRUCTURE_PRIOR);
+        parameters.add(Params.BASIS_TYPE);
+        parameters.add(Params.BASIS_SCALE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
+        parameters.add(Params.PENALTY_DISCOUNT);
 
         return parameters;
     }

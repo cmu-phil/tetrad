@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.Mixed;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
@@ -14,7 +12,7 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
+/// **
 // * The BasisFunctionText class implements the IndependenceWrapper interface and represents a test for independence based
 // * on Basis Function BIC algorithm.
 // */
@@ -47,8 +45,8 @@ public class BasisFunctionBicTest implements IndependenceWrapper {
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
         edu.cmu.tetrad.search.score.BasisFunctionBicScore score
                 = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(SimpleDataLoader.getMixedDataSet(dataSet),
-                precomputeCovariances, parameters.getInt(Params.TRUNCATION_LIMIT)
-        );
+                precomputeCovariances, parameters.getInt(Params.TRUNCATION_LIMIT),
+                parameters.getInt(Params.BASIS_TYPE), parameters.getDouble(Params.BASIS_SCALE));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return new ScoreIndTest(score, dataSet);
     }

@@ -2562,7 +2562,7 @@ public final class StatUtils {
     /**
      * Computes the (statitician's) Hermite polynomial of a given index and value. The Hermite polynomials are a
      * sequence of orthogonal polynomials defined by the Rodrigues formula. They are orthogonal with respect to the
-     * weight function exp(-x^2). The Hermite polynomial of index n is denoted H_n(x).
+     * weight function exp(-x^2). The Hermite polynomial of index index is denoted H_n(x).
      * <p>
      * These are coded up to index 20.
      *
@@ -2572,41 +2572,52 @@ public final class StatUtils {
      * @return The computed value of the Hermite polynomial.
      * @throws IllegalArgumentException if the index is negative or greater than 20.
      */
-    public static double hermite(int index, double x) {
-        return switch (index) {
-            case 0 -> 1;
-            case 1 -> x;
-            case 2 -> pow(x, 2) - 1;
-            case 3 -> pow(x, 3) - 3 * x;
-            case 4 -> pow(x, 4) - 6 * pow(x, 2) + 3;
-            case 5 -> pow(x, 5) - 10 * pow(x, 3) + 15 * x;
-            case 6 -> pow(x, 6) - 15 * pow(x, 4) + 45 * pow(x, 2) - 15;
-            case 7 -> pow(x, 7) - 21 * pow(x, 5) + 105 * pow(x, 3) - 105 * x;
-            case 8 -> pow(x, 8) - 28 * pow(x, 6) + 210 * pow(x, 4) - 420 * pow(x, 2) + 105;
-            case 9 -> pow(x, 9) - 36 * pow(x, 7) + 378 * pow(x, 5) - 1260 * pow(x, 3) + 945 * x;
-            case 10 -> pow(x, 10) - 45 * pow(x, 8) + 630 * pow(x, 6) - 3150 * pow(x, 4) + 4725 * pow(x, 2) - 945;
-            case 11 -> pow(x, 11) - 55 * pow(x, 9) + 990 * pow(x, 7) - 6930 * pow(x, 5) + 17325 * pow(x, 3) - 10395 * x;
-            case 12 ->
-                    pow(x, 12) - 66 * pow(x, 10) + 1485 * pow(x, 8) - 13860 * pow(x, 6) + 51975 * pow(x, 4) - 62370 * pow(x, 2) + 10395;
-            case 13 ->
-                    pow(x, 13) - 78 * pow(x, 11) + 2145 * pow(x, 9) - 25740 * pow(x, 7) + 135135 * pow(x, 5) - 270270 * pow(x, 3) + 135135 * x;
-            case 14 ->
-                    pow(x, 14) - 91 * pow(x, 12) + 3003 * pow(x, 10) - 45045 * pow(x, 8) + 315315 * pow(x, 6) - 945945 * pow(x, 4) + 945945 * pow(x, 2) - 135135;
-            case 15 ->
-                    pow(x, 15) - 105 * pow(x, 13) + 4095 * pow(x, 11) - 72072 * pow(x, 9) + 675675 * pow(x, 7) - 2702700 * pow(x, 5) + 4054050 * pow(x, 3) - 2027025 * x;
-            case 16 ->
-                    pow(x, 16) - 120 * pow(x, 14) + 5460 * pow(x, 12) - 120120 * pow(x, 10) + 1351350 * pow(x, 8) - 8108100 * pow(x, 6) + 24324300 * pow(x, 4) - 32432400 * pow(x, 2) + 2027025;
-            case 17 ->
-                    pow(x, 17) - 136 * pow(x, 15) + 7140 * pow(x, 13) - 185640 * pow(x, 11) + 2602600 * pow(x, 9) - 20420400 * pow(x, 7) + 81681600 * pow(x, 5) - 163363200 * pow(x, 3) + 81681600 * x;
-            case 18 ->
-                    pow(x, 18) - 153 * pow(x, 16) + 8855 * pow(x, 14) - 277134 * pow(x, 12) + 4849845 * pow(x, 10) - 48498450 * pow(x, 8) + 290990700 * pow(x, 6) - 970969000 * pow(x, 4) + 1456463500 * pow(x, 2) - 34459425;
-            case 19 ->
-                    pow(x, 19) - 171 * pow(x, 17) + 11628 * pow(x, 15) - 387600 * pow(x, 13) + 7759752 * pow(x, 11) - 96996900 * pow(x, 9) + 775975200 * pow(x, 7) - 3879876000L * pow(x, 5) + 9699690000L * pow(x, 3) - 4849845000L * x;
-            case 20 ->
-                    pow(x, 20) - 190 * pow(x, 18) + 14820 * pow(x, 16) - 530530 * pow(x, 14) + 11639628 * pow(x, 12) - 174594420 * pow(x, 10) + 1745944200 * pow(x, 8) - 11639628000L * pow(x, 6) + 46558512000L * pow(x, 4) - 93229224000L * pow(x, 2) + 4849845000L;
-            default ->
-                    throw new IllegalArgumentException("Sorry, I only coded up the Hermite polyomials up to number 20. You asked for index " + index + ".");
-        };
+//    public static double hermite1(int index, double x) {
+//        return switch (index) {
+//            case 0 -> 1;
+//            case 1 -> x;
+//            case 2 -> pow(x, 2) - 1;
+//            case 3 -> pow(x, 3) - 3 * x;
+//            case 4 -> pow(x, 4) - 6 * pow(x, 2) + 3;
+//            case 5 -> pow(x, 5) - 10 * pow(x, 3) + 15 * x;
+//            case 6 -> pow(x, 6) - 15 * pow(x, 4) + 45 * pow(x, 2) - 15;
+//            case 7 -> pow(x, 7) - 21 * pow(x, 5) + 105 * pow(x, 3) - 105 * x;
+//            case 8 -> pow(x, 8) - 28 * pow(x, 6) + 210 * pow(x, 4) - 420 * pow(x, 2) + 105;
+//            case 9 -> pow(x, 9) - 36 * pow(x, 7) + 378 * pow(x, 5) - 1260 * pow(x, 3) + 945 * x;
+//            case 10 -> pow(x, 10) - 45 * pow(x, 8) + 630 * pow(x, 6) - 3150 * pow(x, 4) + 4725 * pow(x, 2) - 945;
+//            case 11 -> pow(x, 11) - 55 * pow(x, 9) + 990 * pow(x, 7) - 6930 * pow(x, 5) + 17325 * pow(x, 3) - 10395 * x;
+//            case 12 ->
+//                    pow(x, 12) - 66 * pow(x, 10) + 1485 * pow(x, 8) - 13860 * pow(x, 6) + 51975 * pow(x, 4) - 62370 * pow(x, 2) + 10395;
+//            case 13 ->
+//                    pow(x, 13) - 78 * pow(x, 11) + 2145 * pow(x, 9) - 25740 * pow(x, 7) + 135135 * pow(x, 5) - 270270 * pow(x, 3) + 135135 * x;
+//            case 14 ->
+//                    pow(x, 14) - 91 * pow(x, 12) + 3003 * pow(x, 10) - 45045 * pow(x, 8) + 315315 * pow(x, 6) - 945945 * pow(x, 4) + 945945 * pow(x, 2) - 135135;
+//            case 15 ->
+//                    pow(x, 15) - 105 * pow(x, 13) + 4095 * pow(x, 11) - 72072 * pow(x, 9) + 675675 * pow(x, 7) - 2702700 * pow(x, 5) + 4054050 * pow(x, 3) - 2027025 * x;
+//            case 16 ->
+//                    pow(x, 16) - 120 * pow(x, 14) + 5460 * pow(x, 12) - 120120 * pow(x, 10) + 1351350 * pow(x, 8) - 8108100 * pow(x, 6) + 24324300 * pow(x, 4) - 32432400 * pow(x, 2) + 2027025;
+//            case 17 ->
+//                    pow(x, 17) - 136 * pow(x, 15) + 7140 * pow(x, 13) - 185640 * pow(x, 11) + 2602600 * pow(x, 9) - 20420400 * pow(x, 7) + 81681600 * pow(x, 5) - 163363200 * pow(x, 3) + 81681600 * x;
+//            case 18 ->
+//                    pow(x, 18) - 153 * pow(x, 16) + 8855 * pow(x, 14) - 277134 * pow(x, 12) + 4849845 * pow(x, 10) - 48498450 * pow(x, 8) + 290990700 * pow(x, 6) - 970969000 * pow(x, 4) + 1456463500 * pow(x, 2) - 34459425;
+//            case 19 ->
+//                    pow(x, 19) - 171 * pow(x, 17) + 11628 * pow(x, 15) - 387600 * pow(x, 13) + 7759752 * pow(x, 11) - 96996900 * pow(x, 9) + 775975200 * pow(x, 7) - 3879876000L * pow(x, 5) + 9699690000L * pow(x, 3) - 4849845000L * x;
+//            case 20 ->
+//                    pow(x, 20) - 190 * pow(x, 18) + 14820 * pow(x, 16) - 530530 * pow(x, 14) + 11639628 * pow(x, 12) - 174594420 * pow(x, 10) + 1745944200 * pow(x, 8) - 11639628000L * pow(x, 6) + 46558512000L * pow(x, 4) - 93229224000L * pow(x, 2) + 4849845000L;
+//            default ->
+//                    throw new IllegalArgumentException("Sorry, I only coded up the Hermite polyomials up to number 20. You asked for index " + index + ".");
+//        };
+//    }
+    public static double hermite1(int index, double x) {
+        if (index < 0) {
+            throw new IllegalArgumentException("The index of a Hermite polynomial must be a non-negative integer.");
+        }
+
+        if (index == 0) return 1; // Base case He_0(x) = 1
+        if (index == 1) return x; // Base case He_1(x) = x
+
+        // Recursive relation: He_{index+1}(x) = x * He_n(x) - index * He_{index-1}(x)
+        return x * hermite1(index - 1, x) - (index - 1) * hermite1(index - 2, x);
     }
 
     /**
@@ -2627,8 +2638,33 @@ public final class StatUtils {
             return 1;
         } else if (index == 1) {
             return 2 * x;
+        }
+
+        return 2 * x * hermite1(index - 1, x) - 2 * (index - 1) * hermite1(index - 2, x);
+    }
+
+    /**
+     * Computes the value of the Legendre polynomial of a given degree at a specified point x.
+     * <p>
+     * The Legendre polynomial is a solution to Legendre's differential equation and is used in physics and engineering,
+     * particularly in problems involving spherical coordinates.
+     *
+     * @param index the degree of the Legendre polynomial. Must be a non-negative integer.
+     * @param x     the point at which the Legendre polynomial is evaluated.
+     * @return the value of the Legendre polynomial of the given degree at the specified point x.
+     * @throws IllegalArgumentException if the index is negative.
+     */
+    public static double legendre(int index, double x) {
+        if (index < 0) {
+            throw new IllegalArgumentException("The index of a Legendre polynomial must be a non-negative integer.");
+        }
+
+        if (index == 0) {
+            return 1;
+        } else if (index == 1) {
+            return x;
         } else {
-            return 2 * x * hermite(index - 1, x) - 2 * (index - 1) * hermite(index - 2, x);
+            return ((2 * index - 1) * x * legendre(index - 1, x) - (index - 1) * legendre(index - 2, x)) / index;
         }
     }
 
@@ -2668,13 +2704,13 @@ public final class StatUtils {
 
             return g;
         } else if (type == 2) {
-            return hermite2(index, x);
+            return hermite1(index, x);
         } else if (type == 3) {
-//            if (index % 2 == 0) {
-//                return sin(index * x / 2 + 1);
-//            } else {
+            return hermite2(index, x);
+        } else if (type == 4) {
+            return legendre(index, x);
+        } else if (type == 5) {
             return cos(index * Math.PI * x);
-//            }
         } else {
             throw new IllegalArgumentException("Unrecognized type: " + type);
         }

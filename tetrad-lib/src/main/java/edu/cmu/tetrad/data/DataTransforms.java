@@ -1312,16 +1312,25 @@ public class DataTransforms {
                     }
                 }
 
-                double _max = Math.max(Math.abs(min), Math.abs(max)) * scale;
+//                double _max = Math.max(Math.abs(min), Math.abs(max)) * scale;
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     double value = dataSet.getDouble(i, j);
-                    dataSet.setDouble(i, j, (value / _max) * scale);
+                    dataSet.setDouble(i, j, scaleToMinusOneToOne(value, min, max, scale));
+
+//                    dataSet.setDouble(i, j, (value / _max) * scale);
                 }
             }
         }
 
         return dataSet;
+    }
+
+    private static double scaleToMinusOneToOne(double value, double a, double b, double scale) {
+        if (a == b) {
+            throw new IllegalArgumentException("Lower and upper bounds must not be the same.");
+        }
+        return 2 * scale * (value - a) / (b - a) - scale;
     }
 
     public static DataSet scale(DataSet dataSet, double[] scales) {

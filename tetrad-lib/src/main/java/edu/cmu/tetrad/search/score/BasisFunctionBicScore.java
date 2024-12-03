@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -37,16 +37,29 @@ public class BasisFunctionBicScore implements Score {
      * An instance of SemBicScore used to compute the BIC (Bayesian Information Criterion) score for evaluating the fit
      * of a statistical model to a data set within the context of structural equation modeling (SEM).
      */
-    private final PoissonPriorScore bic;
+    private final SemBicScore bic;
     /**
-     * Specifies the truncation limit for the basis functions used in the score calculation.
+     * Represents the truncation limit of the basis.
      */
     private final int truncationLimit;
     /**
-     * Specifies the type of basis function used in the score calculation. We use the polynomial basis function
-     * by default (basisType = 1), since it handles the domains of the standardized continuous variables well.
+     * Represents the scale factor used in the calculation of the BIC score for basis functions. All variables are
+     * scaled to [-scale, scale].
      */
-    private final int basisType = 2;
+    private double scale = 0.9;
+    /**
+     * Represents the type of basis function used in the BIC score computation within the BasisFunctionBicScore class.
+     * The integer value assigned to this variable defines the specific basis type that influences the score calculation
+     * process. This can affect how the basis functions are constructed or evaluated within the broader statistical
+     * model.
+     */
+    private int basisType = 4;
+    /**
+     * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
+     * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
+     * adjustments in the likelihood penalty term.
+     */
+    private double penaltyDiscount = 2;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
@@ -54,18 +67,22 @@ public class BasisFunctionBicScore implements Score {
      * @param dataSet               the data set on which the score is to be calculated.
      * @param precomputeCovariances flag indicating whether covariances should be precomputed.
      * @param truncationLimit       the truncation limit of the basis.
+     * @param basisType             the type of basis function used in the BIC score computation.
+     * @param scale                 the scale factor used in the calculation of the BIC score for basis functions.
+     *                              All variables are scaled to [-scale, scale].
      */
-    public BasisFunctionBicScore(DataSet dataSet, boolean precomputeCovariances, int truncationLimit) {
+    public BasisFunctionBicScore(DataSet dataSet, boolean precomputeCovariances, int truncationLimit,
+                                 int basisType, double scale) {
         Map<Integer, List<Integer>> embedding;
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.truncationLimit = truncationLimit;
+        this.basisType = basisType;
+        this.scale = scale;
 
-        dataSet = DataTransforms.center(dataSet);
-        dataSet = DataTransforms.scale(dataSet, .5);
-//        dataSet = DataTransforms.standardizeData(dataSet);
+        dataSet = DataTransforms.scale(dataSet, scale);
 
         this.variables = dataSet.getVariables();
         int n = dataSet.getNumRows();
@@ -110,7 +127,7 @@ public class BasisFunctionBicScore implements Score {
                     A.add(vPower);
                     double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
-                        functional[j] = /*(1. / StatUtils.factorial(p)) **/ StatUtils.orthogonalFunctionValue(basisType, p, dataSet.getDouble(j, i_));
+                        functional[j] = StatUtils.orthogonalFunctionValue(basisType, p, dataSet.getDouble(j, i_));
                     }
                     B.add(functional);
                     indexList.add(i);
@@ -130,10 +147,36 @@ public class BasisFunctionBicScore implements Score {
 
         RealMatrix D = MatrixUtils.createRealMatrix(B_);
         BoxDataSet dataSet1 = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        this.bic = new PoissonPriorScore(new CorrelationMatrix(dataSet1));//, precomputeCovariances);
+        this.bic = new SemBicScore(dataSet1, precomputeCovariances);
+        this.bic.setPenaltyDiscount(penaltyDiscount);
+
+        // We will be using the pseudo-inverse in the BIC score calculation so we don't get exceptions.
         this.bic.setUsePseudoInverse(true);
-//        this.bic.setStructurePrior(0);
+
+        // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
+        this.bic.setStructurePrior(0);
         this.embedding = embedding;
+    }
+
+    /**
+     * Calculates an additional penalty to the Bayesian Information Criterion (BIC) score for higher-degree terms based
+     * on provided weights.
+     *
+     * @param bic     The initial BIC score.
+     * @param n       The sample size on which the BIC score is computed.
+     * @param weights An array of weights associated with each term of the model.
+     * @return The BIC score adjusted by the extra penalty.
+     */
+    private static double extraPenalty(double bic, int n, double[] weights) {
+
+        // Extra penalty for higher-degree terms
+        double penalty = 0.0;
+        for (int j = 1; j <= weights.length; j++) {
+            penalty += (weights[j - 1] - 1) * Math.log(n);
+        }
+
+        // Return the modified BIC
+        return bic + penalty;
     }
 
     /**
@@ -147,20 +190,45 @@ public class BasisFunctionBicScore implements Score {
         double score = 0;
 
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
-//        A = A.reversed();
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
         }
+
+        int numAdditionalBs = 0;
 
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
             for (int i__ = 0; i__ < B.size(); i__++) {
                 parents_[i__] = B.get(i__);
             }
+
             double score1 = this.bic.localScore(i_, parents_);
+
+            double[] weights1 = new double[B.size()];
+
+            for (int i__ = 0; i__ < parents.length; i__++) {
+                for (int j = 0; j < truncationLimit; j++) {
+                    if (variables.get(parents[i__]) instanceof DiscreteVariable) {
+                        weights1[i__ * truncationLimit + j] = 0;
+                    } else {
+                        weights1[i__ * truncationLimit + j] = j;
+                    }
+                }
+            }
+
+            for (int j = 0; j < numAdditionalBs; j++) {
+                if (variables.get(i) instanceof DiscreteVariable) {
+                    weights1[parents.length * truncationLimit + j] = 0;
+                } else {
+                    weights1[parents.length * truncationLimit + j] = j;
+                }
+            }
+
+            score1 += extraPenalty(score1, this.bic.getSampleSize(), weights1);
             score += score1;
             B.add(i_);
+            numAdditionalBs++;
         }
 
         return score;
@@ -229,25 +297,16 @@ public class BasisFunctionBicScore implements Score {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "Basis Function BIC Score (Basis-BIC) Penalty " /*+ nf.format(this.bic.getPenaltyDiscount() */+ " truncation = " + this.truncationLimit;//);
+        return "Basis Function BIC Score (Basis-BIC) Penalty " + nf.format(this.bic.getPenaltyDiscount()) + " truncation = " + this.truncationLimit;
     }
 
     /**
-     * Retrieves the penalty discount value from the underlying BIC score component.
-     *
-     * @return the penalty discount as a double value.
-     */
-    public double getPenaltyDiscount() {
-//        return this.bic.getPenaltyDiscount();
-        return 2;//
-    }
-
-    /**
-     * Sets the penalty discount value.
+     * Sets the penalty discount value, which is used to adjust the penalty term in the BIC score calculation.
      *
      * @param penaltyDiscount The multiplier on the penalty term for this score.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
-//        this.bic.setPenaltyDiscount(penaltyDiscount);
+        this.penaltyDiscount = penaltyDiscount;
+        this.bic.setPenaltyDiscount(penaltyDiscount);
     }
 }
