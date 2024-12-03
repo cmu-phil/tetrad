@@ -190,7 +190,7 @@ public class BasisFunctionBicScore implements Score {
             // Extra penalty for higher-degree terms
             double penalty = 0.0;
             for (int j = 1; j <= weights1.length; j++) {
-                if (weights1[j - 1] > 1) {
+                if (weights1[j - 1] > .5) {
                     penalty += (weights1[j - 1]) * Math.log(n);
                 }
             }
