@@ -43,18 +43,6 @@ public class BasisFunctionBicScore implements Score {
      */
     private final int truncationLimit;
     /**
-     * Represents the scale factor used in the calculation of the BIC score for basis functions. All variables are
-     * scaled to [-scale, scale].
-     */
-    private double scale = 0.9;
-    /**
-     * Represents the type of basis function used in the BIC score computation within the BasisFunctionBicScore class.
-     * The integer value assigned to this variable defines the specific basis type that influences the score calculation
-     * process. This can affect how the basis functions are constructed or evaluated within the broader statistical
-     * model.
-     */
-    private int basisType = 4;
-    /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
      * adjustments in the likelihood penalty term.
@@ -79,8 +67,6 @@ public class BasisFunctionBicScore implements Score {
         }
 
         this.truncationLimit = truncationLimit;
-        this.basisType = basisType;
-        this.scale = scale;
 
         dataSet = DataTransforms.scale(dataSet, scale);
 
