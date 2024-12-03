@@ -145,27 +145,6 @@ public class BasisFunctionBicScore implements Score {
     }
 
     /**
-     * Calculates an additional penalty to the Bayesian Information Criterion (BIC) score for higher-degree terms based
-     * on provided weights.
-     *
-     * @param bic     The initial BIC score.
-     * @param n       The sample size on which the BIC score is computed.
-     * @param weights An array of weights associated with each term of the model.
-     * @return The BIC score adjusted by the extra penalty.
-     */
-    private static double extraPenalty(double bic, int n, double[] weights) {
-
-        // Extra penalty for higher-degree terms
-        double penalty = 0.0;
-        for (int j = 1; j <= weights.length; j++) {
-            penalty += (weights[j - 1] - 1) * Math.log(n);
-        }
-
-        // Return the modified BIC
-        return bic + penalty;
-    }
-
-    /**
      * Calculates the local score for a given node and its parent nodes.
      *
      * @param i       The index of the node whose score is being calculated.
@@ -294,5 +273,26 @@ public class BasisFunctionBicScore implements Score {
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
         this.bic.setPenaltyDiscount(penaltyDiscount);
+    }
+
+    /**
+     * Calculates an additional penalty to the Bayesian Information Criterion (BIC) score for higher-degree terms based
+     * on provided weights.
+     *
+     * @param bic     The initial BIC score.
+     * @param n       The sample size on which the BIC score is computed.
+     * @param weights An array of weights associated with each term of the model.
+     * @return The BIC score adjusted by the extra penalty.
+     */
+    private static double extraPenalty(double bic, int n, double[] weights) {
+
+        // Extra penalty for higher-degree terms
+        double penalty = 0.0;
+        for (int j = 1; j <= weights.length; j++) {
+            penalty += (weights[j - 1] - 1) * Math.log(n);
+        }
+
+        // Return the modified BIC
+        return bic + penalty;
     }
 }
