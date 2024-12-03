@@ -154,13 +154,20 @@ public class BasisFunctionBicScore implements Score {
     public double localScore(int i, int... parents) {
         double score = 0;
 
+        // Count the number of continuous and discrete parents
+        int numContinuousParents = 0;
+
+        for (int parent : parents) {
+            if (variables.get(parent) instanceof ContinuousVariable) {
+                numContinuousParents++;
+            }
+        }
+
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
         }
-
-        int numAdditionalBs = 0;
 
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
@@ -170,30 +177,28 @@ public class BasisFunctionBicScore implements Score {
 
             double score1 = this.bic.localScore(i_, parents_);
 
-            double[] weights1 = new double[B.size()];
+            double[] weights1 = new double[numContinuousParents * truncationLimit];
 
-            for (int i__ = 0; i__ < parents.length; i__++) {
+            for (int k = 0; k < numContinuousParents; k++) {
                 for (int j = 0; j < truncationLimit; j++) {
-                    if (variables.get(parents[i__]) instanceof DiscreteVariable) {
-                        weights1[i__ * truncationLimit + j] = 0;
-                    } else {
-                        weights1[i__ * truncationLimit + j] = j;
-                    }
+                    weights1[k * truncationLimit + j] = 0.5 * (1 + j);
                 }
             }
 
-            for (int j = 0; j < numAdditionalBs; j++) {
-                if (variables.get(i) instanceof DiscreteVariable) {
-                    weights1[parents.length * truncationLimit + j] = 0;
-                } else {
-                    weights1[parents.length * truncationLimit + j] = j;
+            int n = this.bic.getSampleSize();
+
+            // Extra penalty for higher-degree terms
+            double penalty = 0.0;
+            for (int j = 1; j <= weights1.length; j++) {
+                if (weights1[j - 1] > 1) {
+                    penalty += (weights1[j - 1]) * Math.log(n);
                 }
             }
 
-            score1 += extraPenalty(score1, this.bic.getSampleSize(), weights1);
+            // Return the modified BIC
+            score1 += score1 + penalty;
             score += score1;
             B.add(i_);
-            numAdditionalBs++;
         }
 
         return score;
@@ -275,24 +280,4 @@ public class BasisFunctionBicScore implements Score {
         this.bic.setPenaltyDiscount(penaltyDiscount);
     }
 
-    /**
-     * Calculates an additional penalty to the Bayesian Information Criterion (BIC) score for higher-degree terms based
-     * on provided weights.
-     *
-     * @param bic     The initial BIC score.
-     * @param n       The sample size on which the BIC score is computed.
-     * @param weights An array of weights associated with each term of the model.
-     * @return The BIC score adjusted by the extra penalty.
-     */
-    private static double extraPenalty(double bic, int n, double[] weights) {
-
-        // Extra penalty for higher-degree terms
-        double penalty = 0.0;
-        for (int j = 1; j <= weights.length; j++) {
-            penalty += (weights[j - 1] - 1) * Math.log(n);
-        }
-
-        // Return the modified BIC
-        return bic + penalty;
-    }
 }
