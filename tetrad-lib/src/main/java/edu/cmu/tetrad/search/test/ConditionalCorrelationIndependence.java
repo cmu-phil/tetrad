@@ -45,6 +45,10 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      */
     private final Matrix data;
     /**
+     * The type of basis function to be used in the analysis.
+     */
+    private int basisType = 4;
+    /**
      * The bandwidth adjustment factor.
      */
     private double scalingFactor = 1;
@@ -60,12 +64,27 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     /**
      * Initializes a new instance of the ConditionalCorrelationIndependence class using the provided DataSet.
      *
-     * @param dataSet The dataset to be used for the analysis. This dataset must not be null and will be standardized.
+     * @param dataSet    The dataset to be used for the analysis. This dataset must not be null and will be
+     *                   standardized.
+     * @param basisType  The type of basis function to be used in the analysis. This value must be a positive integer.
+     * @param basisScale The scaling factor used to adjust the bandwidth for the analysis, or 0.0 if the data should be
+     *                   standardized.
+     * @param numFunctions The number of functions to be used in the analysis. This value must be a positive integer.
      * @throws NullPointerException if the provided dataset is null.
      */
-    public ConditionalCorrelationIndependence(DataSet dataSet) {
+    public ConditionalCorrelationIndependence(DataSet dataSet, int basisType, double basisScale, int numFunctions) {
         if (dataSet == null) throw new NullPointerException();
-        dataSet = DataTransforms.standardizeData(dataSet);
+        this.numFunctions = numFunctions;
+        this.basisType = basisType;
+
+        if (basisScale == 0.0) {
+            dataSet = DataTransforms.standardizeData(dataSet);
+        } else if (basisScale > 0.0) {
+            dataSet = DataTransforms.scale(dataSet, basisScale);
+        } else {
+            throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be standardized.");
+        }
+
         this.data = dataSet.getDoubleData();
         this.nodesHash = new ConcurrentHashMap<>();
 
@@ -334,7 +353,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
             var _x = new Vector(rx.size());
 
             for (var i = 0; i < rx.size(); i++) {
-                var fx = orthogonalFunctionValue(1, m, rx.get(i));
+                var fx = orthogonalFunctionValue(basisType, m, rx.get(i));
                 _x.set(i, fx);
             }
 

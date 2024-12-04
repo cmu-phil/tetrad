@@ -56,11 +56,11 @@ public class BasisFunctionBicScore implements Score {
      * @param precomputeCovariances flag indicating whether covariances should be precomputed.
      * @param truncationLimit       the truncation limit of the basis.
      * @param basisType             the type of basis function used in the BIC score computation.
-     * @param scale                 the scale factor used in the calculation of the BIC score for basis functions.
-     *                              All variables are scaled to [-scale, scale].
+     * @param basisScale                 the basisScale factor used in the calculation of the BIC score for basis functions.
+     *                              All variables are scaled to [-basisScale, basisScale], or standardized if 0.
      */
     public BasisFunctionBicScore(DataSet dataSet, boolean precomputeCovariances, int truncationLimit,
-                                 int basisType, double scale) {
+                                 int basisType, double basisScale) {
         Map<Integer, List<Integer>> embedding;
         if (dataSet == null) {
             throw new NullPointerException();
@@ -68,7 +68,13 @@ public class BasisFunctionBicScore implements Score {
 
         this.truncationLimit = truncationLimit;
 
-        dataSet = DataTransforms.scale(dataSet, scale);
+        if (basisScale == 0.0) {
+            dataSet = DataTransforms.standardizeData(dataSet);
+        } else if (basisScale > 0.0) {
+            dataSet = DataTransforms.scale(dataSet, basisScale);
+        } else {
+            throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be standardized.");
+        }
 
         this.variables = dataSet.getVariables();
         int n = dataSet.getNumRows();

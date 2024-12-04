@@ -53,6 +53,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * Stores a reference to the data set passed in through the constructor.
      */
     private final DataSet dataSet;
+    private int basisType;
+    /**
+     * Represents the scaling factor applied to the basis functions in the independence test. This variable adjusts the
+     * influence of the basis functions, which can affect the flexibility and accuracy of the independence tests
+     * performed within the IndTestConditionalCorrelation class. The value is initialized to 0.0, indicating no
+     * standardization by default.
+     */
+    private double basisScale = 0.0;
     /**
      * The bandwidth adjustment factor.
      */
@@ -74,10 +82,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
      * given data set (must be continuous). The given significance level is used.
      *
-     * @param dataSet A data set containing only continuous columns.
-     * @param alpha   The q level of the test.
+     * @param dataSet    A data set containing only continuous columns.
+     * @param alpha      The q level of the test.
+     * @param basisScale
      */
-    public IndTestConditionalCorrelation(DataSet dataSet, double alpha, double scalingFactor) {
+    public IndTestConditionalCorrelation(DataSet dataSet, double alpha, double scalingFactor,
+                                         int basisType, int numFunctions, double basisScale) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -90,10 +100,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
 
         this.variables = Collections.unmodifiableList(nodes);
 
-        this.cci = new ConditionalCorrelationIndependence(dataSet);
+        this.cci = new ConditionalCorrelationIndependence(dataSet, basisType, basisScale, numFunctions);
         this.cci.setScalingFactor(this.scalingFactor);
         this.alpha = alpha;
         this.scalingFactor = scalingFactor;
+        this.basisType = basisType;
+        this.basisScale = basisScale;
         this.dataSet = dataSet;
     }
 
@@ -149,18 +161,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     }
 
     /**
-     * Sets the significance level at which independence judgments should be made. Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
-     */
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance out of range.");
-        }
-
-        this.alpha = alpha;
-    }
-
-    /**
      * Returns the list of variables over which this independence checker is capable of determining independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
@@ -207,15 +207,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     }
 
     /**
-     * Sets the number of orthogonal functions to use to do the calculations.
-     *
-     * @param numFunctions This number.
-     */
-    public void setNumFunctions(int numFunctions) {
-        this.cci.setNumFunctions(numFunctions);
-    }
-
-    /**
      * Returns the number of orthogonal functions used to do the calculations. The sets used are the polynomial basis
      * functions, x, x^2, x^3, etc. This choice is made to allow for more flexible domains of the functions after
      * standardization.
@@ -235,24 +226,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     @Override
     public void setRows(List<Integer> rows) {
         cci.setRows(rows);
-    }
-
-    /**
-     * Sets the bandwidth adjustment factor.
-     *
-     * @param scalingFactor The bandwidth adjustment factor.
-     */
-    public void setScalingFactor(double scalingFactor) {
-        this.scalingFactor = scalingFactor;
-    }
-
-    /**
-     * Sets whether to use permutation methods in the independence test.
-     *
-     * @param usePermutation A boolean flag indicating if permutation should be used (true) or not (false).
-     */
-    public void setUsePermutation(boolean usePermutation) {
-        this.usePermutation = usePermutation;
     }
 }
 

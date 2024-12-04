@@ -142,7 +142,8 @@ final class IndTestChooser {
                                                Parameters params, IndTestType testType) {
         if (IndTestType.CONDITIONAL_CORRELATION == testType) {
             return new IndTestConditionalCorrelation(dataSet, params.getDouble(Params.ALPHA),
-                    params.getDouble(Params.SCALING_FACTOR));
+                    params.getDouble(Params.SCALING_FACTOR), params.getInt(Params.BASIS_TYPE),
+                    params.getInt(Params.NUM_BASIS_FUNCTIONS), params.getDouble(Params.BASIS_SCALE));
         }
         if (IndTestType.FISHER_Z == testType) {
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
