@@ -58,6 +58,7 @@ public class BasisFunctionBicScore implements Score {
      * @param basisType             the type of basis function used in the BIC score computation.
      * @param basisScale                 the basisScale factor used in the calculation of the BIC score for basis functions.
      *                              All variables are scaled to [-basisScale, basisScale], or standardized if 0.
+     * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScore(DataSet dataSet, boolean precomputeCovariances, int truncationLimit,
                                  int basisType, double basisScale) {
@@ -119,7 +120,7 @@ public class BasisFunctionBicScore implements Score {
                     A.add(vPower);
                     double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
-                        functional[j] = StatUtils.orthogonalFunctionValue(basisType, p, dataSet.getDouble(j, i_));
+                        functional[j] = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
                     }
                     B.add(functional);
                     indexList.add(i);
@@ -160,7 +161,7 @@ public class BasisFunctionBicScore implements Score {
     public double localScore(int i, int... parents) {
         double score = 0;
 
-        // Count the number of continuous and discrete parents
+        // Count the number of continuous parents
         int numContinuousParents = 0;
 
         for (int parent : parents) {
@@ -183,6 +184,7 @@ public class BasisFunctionBicScore implements Score {
 
             double score1 = this.bic.localScore(i_, parents_);
 
+            // Extra penalty for higher-degree continuous parents
             double[] weights1 = new double[numContinuousParents * truncationLimit];
 
             for (int k = 0; k < numContinuousParents; k++) {
@@ -193,7 +195,6 @@ public class BasisFunctionBicScore implements Score {
 
             int n = this.bic.getSampleSize();
 
-            // Extra penalty for higher-degree terms
             double penalty = 0.0;
             for (int j = 1; j <= weights1.length; j++) {
                 if (weights1[j - 1] > .5) {
@@ -202,8 +203,7 @@ public class BasisFunctionBicScore implements Score {
             }
 
             // Return the modified BIC
-            score1 += score1 + penalty;
-            score += score1;
+            score += score1 + penalty;
             B.add(i_);
         }
 

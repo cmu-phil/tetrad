@@ -2683,9 +2683,11 @@ public final class StatUtils {
      * and a given parameter `x`, iterating `index` times. The type of function used in the calculation is determined by
      * the `type` parameter. The function types are as follows:
      * <ol>
-     *     <li> `g(x) = x^index`</li>
-     *     <li> `g(x) = hermite(index, x), up to index 20</li>
-     *     <li> `g(x) = sin(index * x / 2 + 1)` if `index` is even, `g(x) = cos(index * x / 2 + 1)` if `index` is odd.</li>
+     *     <li> `g(x) = x^index [Polynomial basis]</li>
+     *     <li> `g(x) = hermite1(index, x) [Statician's Hermite polynomial]</li>
+     *     <li> `g(x) = hermite2(index, x) [Physicist's Hermite polynomial]</li>
+     *     <li> `g(x) = legendre(index, x) [Legendre polynomial]</li>
+     *     <li> `g(x) = cos(index * PI * x)`[cosine basis]</li>
      *  </ol>
      *  Any other value of `type` will result in an `IllegalArgumentException`.
      *
@@ -2694,7 +2696,7 @@ public final class StatUtils {
      * @param x     The value to be multiplied by `0.95` in each iteration.
      * @return The result of the iterative multiplication.
      */
-    public static double orthogonalFunctionValue(int type, int index, double x) {
+    public static double basisFunctionValue(int type, int index, double x) {
         if (type == 1) {
             double g = 1.0;
 

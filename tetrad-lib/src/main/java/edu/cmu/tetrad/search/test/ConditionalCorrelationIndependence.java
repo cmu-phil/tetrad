@@ -347,13 +347,14 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
      *
      * @param rx The vector containing data points.
      * @param x  A map associating each orthogonal function with its respective vector.
+     * @see edu.cmu.tetrad.util.StatUtils#basisFunctionValue(int, int, double)
      */
     private void initializeResidualBasisVectors(Vector rx, Map<Integer, Vector> x) {
         for (int m = 1; m <= this.numFunctions; m++) {
             var _x = new Vector(rx.size());
 
             for (var i = 0; i < rx.size(); i++) {
-                var fx = orthogonalFunctionValue(basisType, m, rx.get(i));
+                var fx = basisFunctionValue(basisType, m, rx.get(i));
                 _x.set(i, fx);
             }
 

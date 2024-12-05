@@ -498,7 +498,7 @@ public class SemBicScore implements Score {
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
-            double _score = lik - c * (k / 2.0) * logN - getStructurePrior(k);
+            double _score = 2 * lik - c * (k) * logN - getStructurePrior(k);
 
             if (Double.isNaN(_score) || Double.isInfinite(_score)) {
                 return Double.NaN;
