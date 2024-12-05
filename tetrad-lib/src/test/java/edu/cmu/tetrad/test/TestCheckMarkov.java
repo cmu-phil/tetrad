@@ -16,7 +16,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +41,7 @@ public class TestCheckMarkov {
         Kci test = new Kci(data, alpha);
         test.setApproximate(true);
         test.setNumBootstraps(1000);
-        test.setWidthMultiplier(1.0);
+        test.setScalingFactor(1.0);
 //
 //        IndTestFisherZ test = new IndTestFisherZ(data, alpha);
 

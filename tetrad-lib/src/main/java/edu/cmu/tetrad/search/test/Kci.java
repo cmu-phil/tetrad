@@ -16,6 +16,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -23,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
+import static edu.cmu.tetrad.util.StatUtils.standardizeData;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -387,7 +389,7 @@ public class Kci implements IndependenceTest {
      *
      * @param widthMultiplier This multipler.
      */
-    public void setWidthMultiplier(double widthMultiplier) {
+    public void setScalingFactor(double widthMultiplier) {
         if (widthMultiplier <= 0) throw new IllegalStateException("Width must be > 0");
         this.widthMultiplier = widthMultiplier;
     }
@@ -665,13 +667,25 @@ public class Kci implements IndependenceTest {
      * @param hash  A map that maps each node in the dataset to its corresponding index.
      * @return The optimal bandwidth for node x.
      */
-    private double h(Node x, Matrix _data, Map<Node, Integer> hash) {
+//    private double h(Node x, Matrix _data, Map<Node, Integer> hash) {
+//        Vector xCol = _data.getColumn(hash.get(x));
+//        Vector g = new Vector(xCol.size());
+//        double median = median(xCol.toArray());
+//        for (int j = 0; j < xCol.size(); j++) g.set(j, abs(xCol.get(j) - median));
+//        double mad = median(g.toArray());
+//        return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.size(), 0.2);
+//    }
+
+    private static double h(Node x, Matrix _data, Map<Node, Integer> hash) {
         Vector xCol = _data.getColumn(hash.get(x));
-        Vector g = new Vector(xCol.size());
-        double median = median(xCol.toArray());
-        for (int j = 0; j < xCol.size(); j++) g.set(j, abs(xCol.get(j) - median));
-        double mad = median(g.toArray());
-        return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.size(), 0.2);
+        var _x = new Vector(standardizeData(xCol.toArray()));
+        var N = _x.size();
+        var g = new Vector(N);
+        var central = median(_x.toArray());
+        for (var j = 0; j < N; j++) g.set(j, abs(_x.get(j) - central));
+        var mad = median(g.toArray());
+        var sigmaRobust = 1.4826 * mad;
+        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
     }
 
     /**
