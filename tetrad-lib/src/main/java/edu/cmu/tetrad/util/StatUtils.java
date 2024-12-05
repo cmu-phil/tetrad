@@ -2668,6 +2668,26 @@ public final class StatUtils {
         }
     }
 
+    /**
+     * Computes the value of the Chebyshev polynomial of a given degree at a specified point x.
+     * @param index the degree of the Chebyshev polynomial. Must be a non-negative integer.
+     * @param x the point at which the Chebyshev polynomial is evaluated.
+     * @return the value of the Chebyshev polynomial of the given degree at the specified point x.
+     */
+    public static double chebyshev(int index, double x) {
+        if (index < 0) {
+            throw new IllegalArgumentException("The index of a Chebyhev polynomial must be a non-negative integer.");
+        }
+
+        if (index == 0) {
+            return 1;
+        } else if (index == 1) {
+            return x;
+        } else {
+            return 2 * x * chebyshev(index - 1, x) - chebyshev(index - 2, x);
+        }
+    }
+
     private static double pow(double x, int power) {
         double value = 1;
 
@@ -2687,7 +2707,7 @@ public final class StatUtils {
      *     <li> `g(x) = hermite1(index, x) [Statician's Hermite polynomial]</li>
      *     <li> `g(x) = hermite2(index, x) [Physicist's Hermite polynomial]</li>
      *     <li> `g(x) = legendre(index, x) [Legendre polynomial]</li>
-     *     <li> `g(x) = cos(index * PI * x)`[cosine basis]</li>
+     *     <li> `g(x) = chebyshev(index, x) [Chebyshev polynomial]</li>
      *  </ol>
      *  Any other value of `type` will result in an `IllegalArgumentException`.
      *
@@ -2712,7 +2732,7 @@ public final class StatUtils {
         } else if (type == 4) {
             return legendre(index, x);
         } else if (type == 5) {
-            return cos(index * Math.PI * x);
+            return chebyshev(index, x);
         } else {
             throw new IllegalArgumentException("Unrecognized type: " + type);
         }
