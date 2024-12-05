@@ -350,6 +350,16 @@ public class Kci implements IndependenceTest {
         this.verbose = verbose;
     }
 
+    private @NotNull IndependenceResult getIndependenceResultApproximate(Matrix kx, Matrix ky, double kx1, double kx2,
+                                                                         IndependenceFact fact) {
+        double sta = kx.times(ky).trace();
+        double k_appr = kx1 * kx1 / kx2;
+        double theta_appr = kx2 / kx1;
+        double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+        boolean indep = p > getAlpha();
+        return new IndependenceResult(fact, indep, p, getAlpha() - p);
+    }
+
     /**
      * Returns the KCI independence result for the unconditional case. Uses Theorem 4 from the paper.
      *
@@ -357,23 +367,16 @@ public class Kci implements IndependenceTest {
      */
     private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, Matrix _data,
                                                           Vector _h, int N, Map<Node, Integer> hash) {
-        Matrix Ones = getOnes(N);
+        Matrix ones = getOnes(N);
 
-        Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
+        Matrix H = Matrix.identity(N).minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
 
         Matrix kx = MatrixUtils.center(kernelMatrix(_data, x, null, this.widthMultiplier, hash, N, _h), H);
         Matrix ky = MatrixUtils.center(kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h), H);
 
         try {
             if (this.approximate) {
-                double sta = kx.times(ky).trace();
-                double mean_appr = kx.trace() * ky.trace() / N;
-                double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
-                double k_appr = mean_appr * mean_appr / var_appr;
-                double theta_appr = var_appr / mean_appr;
-                double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-                boolean indep = p > getAlpha();
-                return new IndependenceResult(fact, indep, p, getAlpha() - p);
+                return getIndependenceResultApproximate(kx, ky, kx.trace() * ky.trace() / N, 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N), fact);
             } else {
                 return theorem4(kx, ky, fact, N);
             }
@@ -390,9 +393,6 @@ public class Kci implements IndependenceTest {
      */
     private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, Matrix _data,
                                                         int N, Matrix H, Matrix I, Vector _h, Map<Node, Integer> hash) {
-        Matrix kx;
-        Matrix ky;
-
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
@@ -403,8 +403,8 @@ public class Kci implements IndependenceTest {
 
             Matrix Rz = (KZ.plus(I.scalarMult(this.epsilon)).inverse().scalarMult(this.epsilon));
 
-            kx = MatrixUtils.symmetrize(Rz.times(KXZ).times(Rz.transpose()));
-            ky = MatrixUtils.symmetrize(Rz.times(Ky).times(Rz.transpose()));
+            Matrix kx = MatrixUtils.symmetrize(Rz.times(KXZ).times(Rz.transpose()));
+            Matrix ky = MatrixUtils.symmetrize(Rz.times(Ky).times(Rz.transpose()));
 
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
@@ -496,14 +496,7 @@ public class Kci implements IndependenceTest {
         Matrix uuprod = prod > N ? UU.times(UU.transpose()) : UU.transpose().times(UU);
 
         if (this.approximate) {
-            double sta = kx.times(ky).trace();
-            double mean_appr = uuprod.trace();
-            double var_appr = 2.0 * uuprod.times(uuprod).trace();
-            double k_appr = mean_appr * mean_appr / var_appr;
-            double theta_appr = var_appr / mean_appr;
-            double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-            boolean indep = p > getAlpha();
-            return new IndependenceResult(fact, indep, p, getAlpha() - p);
+            return getIndependenceResultApproximate(kx, ky, uuprod.trace(), 2.0 * uuprod.times(uuprod).trace(), fact);
         } else {
 
             // Get top eigenvalues of that.
