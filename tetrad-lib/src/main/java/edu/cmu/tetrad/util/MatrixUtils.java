@@ -1230,4 +1230,17 @@ public final class MatrixUtils {
             }
         };
     }
+
+    public static Matrix center(Matrix K, Matrix H) {
+        return H.times(K).times(H);
+    }
+
+    public static Matrix symmetrize(Matrix K) {
+        return K.plus(K.transpose()).scalarMult(0.5);
+    }
+
+    public static double kernelGaussian(double z, double width) {
+        z /= width;
+        return Math.exp(-z);
+    }
 }
