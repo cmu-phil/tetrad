@@ -42,11 +42,10 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  *
  * @author kunzhang
  * @author Vineet Raghu on 7/3/2016
- * @author josephramsey refactoring 7/4/2018
+ * @author josephramsey refactoring 7/4/2018, 12/6/2024
  * @version $Id: $Id
  */
 public class Kci implements IndependenceTest {
-
     /**
      * The supplied data set, standardized
      */
@@ -128,27 +127,6 @@ public class Kci implements IndependenceTest {
         H = I.minus(ones.mult(ones.transpose()).scale(1.0 / N));
 
         this.alpha = alpha;
-    }
-
-    /**
-     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
-     * and Azzalini (1997) q.31.
-     *
-     * @param x     The node for which the optimal bandwidth is calculated.
-     * @param _data The dataset from which the node's values are extracted.
-     * @param hash  A map that maps each node in the dataset to its corresponding index.
-     * @return The optimal bandwidth for node x.
-     */
-    private static double h(Node x, SimpleMatrix _data, Map<Node, Integer> hash) {
-        SimpleMatrix xCol = _data.getColumn(hash.get(x));
-        var _x = standardizeData(xCol);
-        var N = _x.getNumRows();
-        var g = new Vector(N);
-        var central = median(convertTo1DArray(_x));
-        for (var j = 0; j < N; j++) g.set(j, abs(_x.get(j) - central));
-        var mad = median(g.toArray());
-        var sigmaRobust = 1.4826 * mad;
-        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
     }
 
     /**
@@ -446,6 +424,17 @@ public class Kci implements IndependenceTest {
         this.verbose = verbose;
     }
 
+    /**
+     * Calculates the approximate independence result using provided kernel matrices and parameters.
+     *
+     * @param kx  The kernel matrix for variable x.
+     * @param ky  The kernel matrix for variable y.
+     * @param kx1 A scaling factor related to the first dimension of kernel matrix kx.
+     * @param kx2 A scaling factor related to the second dimension of kernel matrix kx.
+     * @param fact The independence fact used to contextualize the test result.
+     * @return An IndependenceResult object that encapsulates the result of the independence test,
+     *         including whether the variables are considered independent and the associated p-value.
+     */
     private @NotNull IndependenceResult getIndependenceResultApproximate(SimpleMatrix kx, SimpleMatrix ky, double kx1, double kx2,
                                                                          IndependenceFact fact) {
         double sta = kx.mult(ky).trace();
@@ -707,12 +696,25 @@ public class Kci implements IndependenceTest {
         return sum;
     }
 
+    /**
+     * Creates a column vector of size n filled with ones.
+     *
+     * @param n the size of the column vector to be created
+     * @return a SimpleMatrix object representing the column vector of ones
+     */
     private @NotNull SimpleMatrix getOnes(int n) {
         SimpleMatrix ones = new SimpleMatrix(n, 1);
         for (int j = 0; j < n; j++) ones.set(j, 0, 1);
         return ones;
     }
 
+    /**
+     * Computes the vector h based on the given data columns from a SimpleMatrix object.
+     *
+     * @param dataCols the SimpleMatrix object containing data columns
+     *                 used to compute the vector h
+     * @return a Vector object representing the computed values
+     */
     private Vector getH(SimpleMatrix dataCols) {
         Vector h = new Vector(variables.size());
 
@@ -723,6 +725,13 @@ public class Kci implements IndependenceTest {
         return h;
     }
 
+    /**
+     * Constructs a map associating each Node in the variables list with its corresponding
+     * index in the list. Each entry in the map corresponds to a Node as the key and its
+     * index position as the value.
+     *
+     * @return a map where each Node from the variables list is mapped to its index.
+     */
     private Map<Node, Integer> getNodeIntegerMap() {
         Map<Node, Integer> hash = new HashMap<>();
 
@@ -733,6 +742,17 @@ public class Kci implements IndependenceTest {
         return hash;
     }
 
+    /**
+     * Computes and returns a SimpleMatrix object based on the provided list of nodes.
+     * Each node in the list corresponds to a row in the resulting matrix. If a node's
+     * value is zero, it is replaced with the average of non-zero values.
+     *
+     * @param allVars a list of Node objects representing variables that determine
+     *                the rows in the resulting SimpleMatrix. Each node is used to
+     *                retrieve a corresponding value from an internal structure.
+     * @return a SimpleMatrix object where each row corresponds to a node in the input
+     *         list and contains either its associated value or an averaged value.
+     */
     private @NotNull SimpleMatrix getH(List<Node> allVars) {
         SimpleMatrix h = new SimpleMatrix(allVars.size(), data.getNumRows());
         int count = 0;
@@ -755,6 +775,12 @@ public class Kci implements IndependenceTest {
         return h;
     }
 
+    /**
+     * Retrieves an array of column indices corresponding to the provided list of nodes.
+     *
+     * @param allVars a list of Node objects for which corresponding column indices are to be retrieved
+     * @return an array of integers representing the column indices associated with each Node in the list
+     */
     private int @NotNull [] getCols(List<Node> allVars) {
         int[] _cols = new int[allVars.size()];
 
@@ -765,11 +791,56 @@ public class Kci implements IndependenceTest {
         return _cols;
     }
 
+    /**
+     * Constructs and returns a simple matrix that is a subset of the original dataset,
+     * based on the given list of variables.
+     *
+     * @param allVars the list of nodes representing the variables to include in the subset matrix.
+     * @return a SimpleMatrix object containing the subset of data corresponding to the specified variables.
+     */
     private SimpleMatrix getSubsetMatrix(List<Node> allVars) {
         DataSet data = this.data.subsetColumns(getCols(allVars));
         return new SimpleMatrix(data.getDoubleData().transpose().toArray());
     }
 
+    /**
+     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
+     * and Azzalini (1997) q.31.
+     *
+     * @param x     The node for which the optimal bandwidth is calculated.
+     * @param _data The dataset from which the node's values are extracted.
+     * @param hash  A map that maps each node in the dataset to its corresponding index.
+     * @return The optimal bandwidth for node x.
+     */
+    private static double h(Node x, SimpleMatrix _data, Map<Node, Integer> hash) {
+        SimpleMatrix xCol = _data.getColumn(hash.get(x));
+        var _x = standardizeData(xCol);
+        var N = _x.getNumRows();
+        var g = new Vector(N);
+        var central = median(convertTo1DArray(_x));
+        for (var j = 0; j < N; j++) g.set(j, abs(_x.get(j) - central));
+        var mad = median(g.toArray());
+        var sigmaRobust = 1.4826 * mad;
+        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
+    }
+
+    /**
+     * A record representing the result of an eigenvalue decomposition.
+     *
+     * The EigenReturn record encapsulates the diagonal matrix of eigenvalues (D),
+     * the matrix of eigenvectors (V), and a list containing the top eigenvalues.
+     *
+     * @param D A SimpleMatrix containing the eigenvalues in its diagonal. The order
+     *          of the eigenvalues corresponds to the columns of the matrix V.
+     *
+     * @param V A SimpleMatrix where each column is an eigenvector of the original
+     *          matrix. The columns are ordered to match the eigenvalues in D.
+     *
+     * @param topEigenvalues A list of doubles representing the top eigenvalues. This
+     *                       might be a subset of the eigenvalues in D, typically
+     *                       those with the largest magnitude or the most significance
+     *                       for a particular application.
+     */
     public record EigenReturn(SimpleMatrix D, SimpleMatrix V, List<Double> topEigenvalues) {
     }
 }
