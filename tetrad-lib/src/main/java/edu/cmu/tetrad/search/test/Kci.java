@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
@@ -16,6 +15,7 @@ import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -23,8 +23,8 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
-import static edu.cmu.tetrad.util.StatUtils.standardizeData;
-import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Gives an implementation of the Kernel Independence Test (KCI) by Kun Zhang, which is a general test of conditional
@@ -70,11 +70,11 @@ public class Kci implements IndependenceTest {
     /**
      * The identity matrix.
      */
-    private final Matrix I;
+    private final SimpleMatrix I;
     /**
      * The centering matrix.
      */
-    private final Matrix H;
+    private final SimpleMatrix H;
     /**
      * The sample size.
      */
@@ -119,15 +119,107 @@ public class Kci implements IndependenceTest {
         this.variables = data.getVariables();
         hash = getNodeIntegerMap();
 
-        Matrix dataCols = this.data.getDoubleData().transpose();
+        SimpleMatrix dataCols = new SimpleMatrix(this.data.getDoubleData().transpose().toArray());
         h = getH(dataCols);
         N = data.getNumRows();
 
-        Matrix ones = getOnes(N);
-        I = Matrix.identity(N);
-        H = I.minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
+        SimpleMatrix ones = getOnes(N);
+        I = SimpleMatrix.identity(N);
+        H = I.minus(ones.mult(ones.transpose()).scale(1.0 / N));
 
         this.alpha = alpha;
+    }
+
+    /**
+     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
+     * and Azzalini (1997) q.31.
+     *
+     * @param x     The node for which the optimal bandwidth is calculated.
+     * @param _data The dataset from which the node's values are extracted.
+     * @param hash  A map that maps each node in the dataset to its corresponding index.
+     * @return The optimal bandwidth for node x.
+     */
+    private static double h(Node x, SimpleMatrix _data, Map<Node, Integer> hash) {
+        SimpleMatrix xCol = _data.getColumn(hash.get(x));
+        var _x = standardizeData(xCol);
+        var N = _x.getNumRows();
+        var g = new Vector(N);
+        var central = median(convertTo1DArray(_x));
+        for (var j = 0; j < N; j++) g.set(j, abs(_x.get(j) - central));
+        var mad = median(g.toArray());
+        var sigmaRobust = 1.4826 * mad;
+        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
+    }
+
+    public static double[] convertTo1DArray(SimpleMatrix matrix) {
+        // Check if the matrix has exactly one column
+        if (matrix.getNumCols() != 1) {
+            throw new IllegalArgumentException("The matrix must have exactly one column:" + matrix.getNumCols());
+        }
+
+        // Get the number of rows
+        int rows = matrix.getNumRows();
+
+        // Create a 1D array to hold the values
+        double[] result = new double[rows];
+
+        // Extract values from the matrix
+        for (int row = 0; row < rows; row++) {
+            result[row] = matrix.get(row, 0); // Access each row in the single column
+        }
+
+        return result;
+    }
+
+    public static SimpleMatrix standardizeData(SimpleMatrix data) {
+        SimpleMatrix data2 = data.createLike();
+
+        double sum = 0.0;
+
+        for (int j = 0; j < data.getNumCols(); j++) {
+
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                sum += data.get(i, j);
+            }
+
+            double mean = sum / data.getNumRows();
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                data2.set(i, j, data.get(i, j) - mean);
+            }
+
+            double norm = 0.0;
+
+            for (int i = 0; i < data2.getNumRows(); i++) {
+                double v = data2.get(i, j);
+                norm += v * v;
+            }
+
+            norm = sqrt(norm / (data2.getNumRows() - 1));
+
+            for (int i = 0; i < data2.getNumRows(); i++) {
+                data2.set(i, j, data2.get(i, j) / norm);
+            }
+
+
+        }
+
+        return data2;
+    }
+
+    private static @NotNull Map<Node, Integer> getHash(List<Node> allVars) {
+        Map<Node, Integer> hash = new HashMap<>();
+        for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
+        return hash;
+    }
+
+    private static @NotNull List<Node> getAllVars(Node x, Node y, Set<Node> z) {
+        List<Node> allVars = new ArrayList<>();
+        allVars.add(x);
+        allVars.add(y);
+        allVars.addAll(z);
+        return allVars;
     }
 
     /**
@@ -155,10 +247,10 @@ public class Kci implements IndependenceTest {
             List<Node> allVars = getAllVars(x, y, z);
             IndependenceFact fact = new IndependenceFact(x, y, z);
 
-            Matrix _data = getSubsetMatrix(allVars);
+            SimpleMatrix _data = getSubsetMatrix(allVars);
 
             Map<Node, Integer> hash = getHash(allVars);
-            Vector h = getH(allVars);
+            SimpleMatrix h = getH(allVars);
 
             IndependenceResult result;
 
@@ -184,6 +276,9 @@ public class Kci implements IndependenceTest {
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
                                        LogUtilsSearch.independenceFact(x, y, z));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 
@@ -350,9 +445,9 @@ public class Kci implements IndependenceTest {
         this.verbose = verbose;
     }
 
-    private @NotNull IndependenceResult getIndependenceResultApproximate(Matrix kx, Matrix ky, double kx1, double kx2,
+    private @NotNull IndependenceResult getIndependenceResultApproximate(SimpleMatrix kx, SimpleMatrix ky, double kx1, double kx2,
                                                                          IndependenceFact fact) {
-        double sta = kx.times(ky).trace();
+        double sta = kx.mult(ky).trace();
         double k_appr = kx1 * kx1 / kx2;
         double theta_appr = kx2 / kx1;
         double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
@@ -365,18 +460,18 @@ public class Kci implements IndependenceTest {
      *
      * @return true, just in case independence holds.
      */
-    private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, Matrix _data,
-                                                          Vector _h, int N, Map<Node, Integer> hash) {
-        Matrix ones = getOnes(N);
+    private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, SimpleMatrix _data,
+                                                          SimpleMatrix _h, int N, Map<Node, Integer> hash) {
+        SimpleMatrix ones = getOnes(N);
 
-        Matrix H = Matrix.identity(N).minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
+        SimpleMatrix H = SimpleMatrix.identity(N).minus(ones.mult(ones.transpose()).scale(1.0 / N));
 
-        Matrix kx = MatrixUtils.center(kernelMatrix(_data, x, null, this.widthMultiplier, hash, N, _h), H);
-        Matrix ky = MatrixUtils.center(kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h), H);
+        SimpleMatrix kx = MatrixUtils.center(kernelMatrix(_data, x, null, this.widthMultiplier, hash, N, _h), H);
+        SimpleMatrix ky = MatrixUtils.center(kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h), H);
 
         try {
             if (this.approximate) {
-                return getIndependenceResultApproximate(kx, ky, kx.trace() * ky.trace() / N, 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N), fact);
+                return getIndependenceResultApproximate(kx, ky, kx.trace() * ky.trace() / N, 2 * kx.mult(kx).trace() * ky.mult(ky).trace() / (N * N), fact);
             } else {
                 return theorem4(kx, ky, fact, N);
             }
@@ -391,20 +486,20 @@ public class Kci implements IndependenceTest {
      *
      * @return true just in case independence holds.
      */
-    private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, Matrix _data,
-                                                        int N, Matrix H, Matrix I, Vector _h, Map<Node, Integer> hash) {
+    private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, SimpleMatrix _data,
+                                                        int N, SimpleMatrix H, SimpleMatrix I, SimpleMatrix _h, Map<Node, Integer> hash) {
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
         try {
-            Matrix KXZ = MatrixUtils.center(kernelMatrix(_data, x, z, this.widthMultiplier, hash, N, _h), H);
-            Matrix Ky = MatrixUtils.center(kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h), H);
-            Matrix KZ = MatrixUtils.center(kernelMatrix(_data, null, z, this.widthMultiplier, hash, N, _h), H);
+            SimpleMatrix KXZ = MatrixUtils.center(kernelMatrix(_data, x, z, this.widthMultiplier, hash, N, _h), H);
+            SimpleMatrix Ky = MatrixUtils.center(kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h), H);
+            SimpleMatrix KZ = MatrixUtils.center(kernelMatrix(_data, null, z, this.widthMultiplier, hash, N, _h), H);
 
-            Matrix Rz = (KZ.plus(I.scalarMult(this.epsilon)).inverse().scalarMult(this.epsilon));
+            SimpleMatrix Rz = (KZ.plus(I.scale(this.epsilon)).invert().scale(this.epsilon));
 
-            Matrix kx = MatrixUtils.symmetrize(Rz.times(KXZ).times(Rz.transpose()));
-            Matrix ky = MatrixUtils.symmetrize(Rz.times(Ky).times(Rz.transpose()));
+            SimpleMatrix kx = MatrixUtils.symmetrize(Rz.mult(KXZ).mult(Rz.transpose()));
+            SimpleMatrix ky = MatrixUtils.symmetrize(Rz.mult(Ky).mult(Rz.transpose()));
 
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
@@ -423,15 +518,15 @@ public class Kci implements IndependenceTest {
      * @param N    The sample size.
      * @return The independence result.
      */
-    private IndependenceResult theorem4(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
+    private IndependenceResult theorem4(SimpleMatrix kx, SimpleMatrix ky, IndependenceFact fact, int N) {
 
-        double T = (1.0 / N) * (kx.times(ky).trace());
+        double T = (1.0 / N) * (kx.mult(ky).trace());
 
         // Eigen decomposition of kx and ky.
-        EigenReturn eigendecompositionx = new Eigendecomposition(kx).invoke(false, threshold);
+        EigenReturn eigendecompositionx = new TopEigenvalues(kx).invoke(false, threshold);
         List<Double> evx = eigendecompositionx.topEigenvalues();
 
-        EigenReturn eigendecompositiony = new Eigendecomposition(ky).invoke(false, threshold);
+        EigenReturn eigendecompositiony = new TopEigenvalues(ky).invoke(false, threshold);
         List<Double> evy = eigendecompositiony.topEigenvalues();
 
         // Calculate formula (9).
@@ -466,41 +561,41 @@ public class Kci implements IndependenceTest {
      * @param N    The size of the input dataset.
      * @return The independence result.
      */
-    private IndependenceResult proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
-        double T = (1.0 / N) * kx.times(ky).trace();
+    private IndependenceResult proposition5(SimpleMatrix kx, SimpleMatrix ky, IndependenceFact fact, int N) {
+        double T = (1.0 / N) * kx.mult(ky).trace();
 
-        EigenReturn eigendecompositionx = new Eigendecomposition(kx).invoke(true, threshold);
-        Matrix vx = eigendecompositionx.V();
-        Matrix dx = eigendecompositionx.D();
+        EigenReturn eigendecompositionx = new TopEigenvalues(kx).invoke(true, threshold);
+        SimpleMatrix vx = eigendecompositionx.V();
+        SimpleMatrix dx = eigendecompositionx.D();
 
-        EigenReturn eigendecompositiony = new Eigendecomposition(ky).invoke(true, threshold);
-        Matrix vy = eigendecompositiony.V();
-        Matrix dy = eigendecompositiony.D();
+        EigenReturn eigendecompositiony = new TopEigenvalues(ky).invoke(true, threshold);
+        SimpleMatrix vy = eigendecompositiony.V();
+        SimpleMatrix dy = eigendecompositiony.D();
 
         // VD
-        Matrix vdx = vx.times(dx);
-        Matrix vdy = vy.times(dy);
+        SimpleMatrix vdx = vx.mult(dx);
+        SimpleMatrix vdy = vy.mult(dy);
 
-        int prod = vx.getNumColumns() * vy.getNumColumns();
-        Matrix UU = new Matrix(N, prod);
+        int prod = vx.getNumCols() * vy.getNumCols();
+        SimpleMatrix UU = new SimpleMatrix(N, prod);
 
         // stack
-        for (int i = 0; i < vx.getNumColumns(); i++) {
-            for (int j = 0; j < vy.getNumColumns(); j++) {
+        for (int i = 0; i < vx.getNumCols(); i++) {
+            for (int j = 0; j < vy.getNumCols(); j++) {
                 for (int k = 0; k < N; k++) {
-                    UU.set(k, i * dy.getNumColumns() + j, vdx.get(k, i) * vdy.get(k, j));
+                    UU.set(k, i * dy.getNumCols() + j, vdx.get(k, i) * vdy.get(k, j));
                 }
             }
         }
 
-        Matrix uuprod = prod > N ? UU.times(UU.transpose()) : UU.transpose().times(UU);
+        SimpleMatrix uuprod = prod > N ? UU.mult(UU.transpose()) : UU.transpose().mult(UU);
 
         if (this.approximate) {
-            return getIndependenceResultApproximate(kx, ky, uuprod.trace(), 2.0 * uuprod.times(uuprod).trace(), fact);
+            return getIndependenceResultApproximate(kx, ky, uuprod.trace(), 2.0 * uuprod.mult(uuprod).trace(), fact);
         } else {
 
             // Get top eigenvalues of that.
-            EigenReturn eigendecompositionu = new Eigendecomposition(uuprod).invoke(false, threshold);
+            EigenReturn eigendecompositionu = new TopEigenvalues(uuprod).invoke(false, threshold);
             List<Double> top = eigendecompositionu.topEigenvalues();
 
             // Calculate formulas (13) and (14).
@@ -545,8 +640,8 @@ public class Kci implements IndependenceTest {
      * @param _h              the bandwidth vector
      * @return the calculated kernel matrix
      */
-    private Matrix kernelMatrix(Matrix _data, Node x, List<Node> z, double widthMultiplier,
-                                Map<Node, Integer> hash, int N, Vector _h) {
+    private SimpleMatrix kernelMatrix(SimpleMatrix _data, Node x, List<Node> z, double widthMultiplier,
+                                      Map<Node, Integer> hash, int N, SimpleMatrix _h) {
 
         List<Integer> _z = new ArrayList<>();
         if (x != null) _z.add(hash.get(x));
@@ -555,7 +650,7 @@ public class Kci implements IndependenceTest {
         double h = getH(_z, _h);
         double width = widthMultiplier * h;
 
-        Matrix result = new Matrix(N, N);
+        SimpleMatrix result = new SimpleMatrix(N, N);
 
         // Parallelize distance and kernel computation
         IntStream.range(0, N).parallel().forEach(i -> {
@@ -578,7 +673,7 @@ public class Kci implements IndependenceTest {
      * @param _h The bandwidth vector.
      * @return The calculated h value.
      */
-    private double getH(List<Integer> _z, Vector _h) {
+    private double getH(List<Integer> _z, SimpleMatrix _h) {
         double h = 0;
 
         for (int c : _z) {
@@ -600,7 +695,7 @@ public class Kci implements IndependenceTest {
      * @param j    The index of the second data point.
      * @return The Euclidean distance between the two data points.
      */
-    private double distance(Matrix data, List<Integer> cols, int i, int j) {
+    private double distance(SimpleMatrix data, List<Integer> cols, int i, int j) {
         double sum = 0.0;
 
         for (int col : cols) {
@@ -611,16 +706,13 @@ public class Kci implements IndependenceTest {
         return sum;
     }
 
-    public record EigenReturn(Matrix D, Matrix V, List<Double> topEigenvalues) {
-    }
-
-    private @NotNull Matrix getOnes(int n) {
-        Matrix ones = new Matrix(n, 1);
+    private @NotNull SimpleMatrix getOnes(int n) {
+        SimpleMatrix ones = new SimpleMatrix(n, 1);
         for (int j = 0; j < n; j++) ones.set(j, 0, 1);
         return ones;
     }
 
-    private Vector getH(Matrix dataCols) {
+    private Vector getH(SimpleMatrix dataCols) {
         Vector h = new Vector(variables.size());
 
         for (int i = 0; i < this.data.getNumColumns(); i++) {
@@ -640,35 +732,8 @@ public class Kci implements IndependenceTest {
         return hash;
     }
 
-    /**
-     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
-     * and Azzalini (1997) q.31.
-     *
-     * @param x     The node for which the optimal bandwidth is calculated.
-     * @param _data The dataset from which the node's values are extracted.
-     * @param hash  A map that maps each node in the dataset to its corresponding index.
-     * @return The optimal bandwidth for node x.
-     */
-    private static double h(Node x, Matrix _data, Map<Node, Integer> hash) {
-        Vector xCol = _data.getColumn(hash.get(x));
-        var _x = new Vector(standardizeData(xCol.toArray()));
-        var N = _x.size();
-        var g = new Vector(N);
-        var central = median(_x.toArray());
-        for (var j = 0; j < N; j++) g.set(j, abs(_x.get(j) - central));
-        var mad = median(g.toArray());
-        var sigmaRobust = 1.4826 * mad;
-        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
-    }
-
-    private static @NotNull Map<Node, Integer> getHash(List<Node> allVars) {
-        Map<Node, Integer> hash = new HashMap<>();
-        for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
-        return hash;
-    }
-
-    private @NotNull Vector getH(List<Node> allVars) {
-        Vector h = new Vector(allVars.size());
+    private @NotNull SimpleMatrix getH(List<Node> allVars) {
+        SimpleMatrix h = new SimpleMatrix(allVars.size(), data.getNumRows());
         int count = 0;
 
         double sum = 0.0;
@@ -683,7 +748,7 @@ public class Kci implements IndependenceTest {
 
         double avg = sum / count;
 
-        for (int i = 0; i < h.size(); i++) {
+        for (int i = 0; i < h.getNumRows(); i++) {
             if (h.get(i) == 0) h.set(i, avg);
         }
         return h;
@@ -699,16 +764,11 @@ public class Kci implements IndependenceTest {
         return _cols;
     }
 
-    private static @NotNull List<Node> getAllVars(Node x, Node y, Set<Node> z) {
-        List<Node> allVars = new ArrayList<>();
-        allVars.add(x);
-        allVars.add(y);
-        allVars.addAll(z);
-        return allVars;
+    private SimpleMatrix getSubsetMatrix(List<Node> allVars) {
+        DataSet data = this.data.subsetColumns(getCols(allVars));
+        return new SimpleMatrix(data.getDoubleData().transpose().toArray());
     }
 
-    private Matrix getSubsetMatrix(List<Node> allVars) {
-        DataSet data = this.data.subsetColumns(getCols(allVars));
-        return data.getDoubleData().transpose();
+    public record EigenReturn(SimpleMatrix D, SimpleMatrix V, List<Double> topEigenvalues) {
     }
 }

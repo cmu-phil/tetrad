@@ -130,6 +130,21 @@
             <version>24.0.1</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>ejml-ddense</artifactId>
+            <version>0.43</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>ejml-core</artifactId>
+            <version>0.43</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>ejml-all</artifactId>
+            <version>0.43</version>
+        </dependency>
     </dependencies>
 
     <properties>

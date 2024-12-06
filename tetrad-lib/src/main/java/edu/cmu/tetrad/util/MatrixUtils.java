@@ -26,6 +26,7 @@ import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -360,8 +361,8 @@ public final class MatrixUtils {
      * @param size a int
      * @return the identity matrix of the given order.
      */
-    public static double[][] identity(int size) {
-        return Matrix.identity(size).toArray();
+    public static SimpleMatrix identity(int size) {
+        return SimpleMatrix.identity(size);
     }
 
     /**
@@ -516,55 +517,6 @@ public final class MatrixUtils {
         return arr;
     }
 
-    /**
-     * <p>impliedCovar2.</p>
-     *
-     * @param edgeCoef The edge covariance matrix. edgeCoef(i, j) is a parameter in this matrix just in case i--&gt;j is
-     *                 an edge in the model. All other entries in the matrix are zero.
-     * @param errCovar The error covariance matrix. errCovar(i, i) is the variance of i; off-diagonal errCovar(i, j) are
-     *                 covariance parameters that are specified in the model. All other matrix entries are zero.
-     * @return The implied covariance matrix, which is the covariance matrix over the measured variables that is implied
-     * by all the given information.
-     * @throws java.lang.IllegalArgumentException if edgeCoef or errCovar contains an undefined value (Double.NaN).
-     */
-    public static Matrix impliedCovar2(Matrix edgeCoef, Matrix errCovar) {
-        if (MatrixUtils.containsNaN(edgeCoef)) {
-            throw new IllegalArgumentException("Edge coefficient matrix must not "
-                                               + "contain undefined values. Probably the search put them "
-                                               + "there.");
-        }
-
-        if (MatrixUtils.containsNaN(errCovar)) {
-            throw new IllegalArgumentException("Error covariance matrix must not "
-                                               + "contain undefined values. Probably the search put them "
-                                               + "there.");
-        }
-
-        final int sampleSize = 10000;
-
-        Matrix iMinusBInverse = Matrix.identity(edgeCoef.getNumRows()).minus(edgeCoef).inverse();
-
-        Matrix sample = new Matrix(sampleSize, edgeCoef.getNumColumns());
-        Vector e = new Vector((edgeCoef.getNumColumns()));
-
-        for (int i = 0; i < sampleSize; i++) {
-            for (int j = 0; j < e.size(); j++) {
-                e.set(j, RandomUtil.getInstance().nextNormal(0, errCovar.get(j, j)));
-            }
-
-            sample.assignRow(i, iMinusBInverse.times(e));
-        }
-
-        return sample.transpose().times(sample).scalarMult(1.0 / sampleSize);
-    }
-
-    /**
-     * <p>impliedCovar.</p>
-     *
-     * @param edgeCoef a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param errCovar a {@link edu.cmu.tetrad.util.Matrix} object
-     * @return a {@link edu.cmu.tetrad.util.Matrix} object
-     */
     public static Matrix impliedCovar(Matrix edgeCoef, Matrix errCovar) {
         if (MatrixUtils.containsNaN(edgeCoef)) {
             System.out.println(edgeCoef);
@@ -1231,16 +1183,28 @@ public final class MatrixUtils {
         };
     }
 
-    public static Matrix center(Matrix K, Matrix H) {
-        return H.times(K).times(H);
+    public static SimpleMatrix center(SimpleMatrix K, SimpleMatrix H) {
+        return H.mult(K).mult(H);
     }
 
-    public static Matrix symmetrize(Matrix K) {
-        return K.plus(K.transpose()).scalarMult(0.5);
+    public static SimpleMatrix symmetrize(SimpleMatrix K) {
+        return K.plus(K.transpose()).scale(0.5);
     }
 
     public static double kernelGaussian(double z, double width) {
         z /= width;
         return Math.exp(-z);
+    }
+
+    private static boolean containsNaN(SimpleMatrix m) {
+        for (int i = 0; i < m.getNumRows(); i++) {
+            for (int j = 0; j < m.getNumCols(); j++) {
+                if (Double.isNaN(m.get(i, j))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

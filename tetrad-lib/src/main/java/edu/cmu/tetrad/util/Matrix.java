@@ -24,6 +24,7 @@ package edu.cmu.tetrad.util;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
