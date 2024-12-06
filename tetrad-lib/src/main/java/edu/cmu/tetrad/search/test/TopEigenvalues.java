@@ -10,8 +10,7 @@ import java.util.List;
 import static java.lang.Math.sqrt;
 
 /**
- * The Eigendecomposition class represents the decomposition of a square matrix into its eigenvalues and eigenvectors.
- * It provides methods to retrieve the eigenvalues, eigenvectors, and the top eigenvalues.
+ * The class is used to find the top eigenvalues and eigenvectors of a given matrix.
  *
  * @author josephramsey
  */
@@ -32,6 +31,13 @@ public class TopEigenvalues {
         this.k = k;
     }
 
+    /**
+     * Perform eigenvalue decomposition on the given matrix and return the top eigenvalues and eigenvectors.
+     *
+     * @param data      the matrix to be decomposed
+     * @param threshold the threshold for the eigenvalues
+     * @return the top eigenvalues and eigenvectors
+     */
     private static @NotNull EigResult getTopEigen(SimpleMatrix data, double threshold) {
         // Perform eigenvalue decomposition
         SimpleMatrix matrix = new SimpleMatrix(data);
@@ -61,7 +67,8 @@ public class TopEigenvalues {
     }
 
     /**
-     * Performs eigendecomposition on a given matrix and optionally stores the eigenvectors.
+     * Performs eigendecomposition on a given matrix and optionally stores the top eigenvalues and (optionaly)
+     * eigenvectors.
      *
      * @param storeV a flag indicating whether to store the eigenvectors
      * @return the Eigendecomposition object on which this method is invoked
@@ -94,6 +101,12 @@ public class TopEigenvalues {
         return new Kci.EigenReturn(D, V, topEigenValues);
     }
 
+    /**
+     * The class is used to store the top eigenvalues and eigenvectors.
+     *
+     * @param realEigen    the top eigenvalues
+     * @param eigenVectors the top eigenvectors
+     */
     private record EigResult(List<Double> realEigen, List<SimpleMatrix> eigenVectors) {
     }
 }

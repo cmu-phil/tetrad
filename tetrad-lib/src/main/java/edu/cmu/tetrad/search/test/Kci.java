@@ -111,7 +111,7 @@ public class Kci implements IndependenceTest {
     /**
      * Constructor.
      *
-     * @param data  The dataset to analyse. Must be continuous.
+     * @param data  The dataset to analyze. Must be continuous.
      * @param alpha The alpha value of the test.
      */
     public Kci(DataSet data, double alpha) {
@@ -151,8 +151,12 @@ public class Kci implements IndependenceTest {
         return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
     }
 
+    /**
+     * Converts a SimpleMatrix to a 1D array.
+     * @param matrix The matrix to convert.
+     * @return The 1D array.
+     */
     public static double[] convertTo1DArray(SimpleMatrix matrix) {
-        // Check if the matrix has exactly one column
         if (matrix.getNumCols() != 1) {
             throw new IllegalArgumentException("The matrix must have exactly one column:" + matrix.getNumCols());
         }
@@ -223,7 +227,7 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException since not implemneted.
+     * @throws UnsupportedOperationException since not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("Method not implemented.");
@@ -276,9 +280,6 @@ public class Kci implements IndependenceTest {
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
                                        LogUtilsSearch.independenceFact(x, y, z));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
         }
     }
 
@@ -512,21 +513,21 @@ public class Kci implements IndependenceTest {
     /**
      * Calculates the independence result using Theorem 4 from the paper.
      *
-     * @param kx   The kernel matrix for node x.
-     * @param ky   The kernel matrix for node y.
+     * @param kernx   The kernel matrix for node x.
+     * @param kerny   The kernel matrix for node y.
      * @param fact The independence fact.
      * @param N    The sample size.
      * @return The independence result.
      */
-    private IndependenceResult theorem4(SimpleMatrix kx, SimpleMatrix ky, IndependenceFact fact, int N) {
+    private IndependenceResult theorem4(SimpleMatrix kernx, SimpleMatrix kerny, IndependenceFact fact, int N) {
 
-        double T = (1.0 / N) * (kx.mult(ky).trace());
+        double T = (1.0 / N) * (kernx.mult(kerny).trace());
 
-        // Eigen decomposition of kx and ky.
-        EigenReturn eigendecompositionx = new TopEigenvalues(kx).invoke(false, threshold);
+        // Eigen decomposition of kernx and kerny.
+        EigenReturn eigendecompositionx = new TopEigenvalues(kernx).invoke(false, threshold);
         List<Double> evx = eigendecompositionx.topEigenvalues();
 
-        EigenReturn eigendecompositiony = new TopEigenvalues(ky).invoke(false, threshold);
+        EigenReturn eigendecompositiony = new TopEigenvalues(kerny).invoke(false, threshold);
         List<Double> evy = eigendecompositiony.topEigenvalues();
 
         // Calculate formula (9).
