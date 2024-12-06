@@ -321,6 +321,14 @@ public final class Params {
      */
     public static final String KERNEL_TYPE = "kernelType";
     /**
+     * Constant <code>POLYNOMIAL_DEGREE="polynomialDegree"</code>
+     */
+    public static final String POLYNOMIAL_DEGREE = "polynomialDegree";
+    /**
+     * Constant <code>POLYNOMIAL_CONSTANT="polynomialConstant"</code>
+     */
+    public static final String POLYNOMIAL_CONSTANT = "polynomialConstant";
+    /**
      * Constant <code>KERNEL_WIDTH="kernelWidth"</code>
      */
     public static final String KERNEL_WIDTH = "kernelWidth";

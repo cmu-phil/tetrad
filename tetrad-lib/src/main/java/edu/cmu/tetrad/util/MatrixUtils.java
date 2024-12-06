@@ -1183,28 +1183,4 @@ public final class MatrixUtils {
         };
     }
 
-    public static SimpleMatrix center(SimpleMatrix K, SimpleMatrix H) {
-        return H.mult(K).mult(H);
-    }
-
-    public static SimpleMatrix symmetrize(SimpleMatrix K) {
-        return K.plus(K.transpose()).scale(0.5);
-    }
-
-    public static double kernelGaussian(double z, double width) {
-        z /= width;
-        return Math.exp(-z);
-    }
-
-    private static boolean containsNaN(SimpleMatrix m) {
-        for (int i = 0; i < m.getNumRows(); i++) {
-            for (int j = 0; j < m.getNumCols(); j++) {
-                if (Double.isNaN(m.get(i, j))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 }

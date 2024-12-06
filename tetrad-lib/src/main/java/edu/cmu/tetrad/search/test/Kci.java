@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.distribution.GammaDistribution;
@@ -20,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static org.apache.commons.math3.util.FastMath.abs;
@@ -106,6 +104,18 @@ public class Kci implements IndependenceTest {
      * True if verbose output is enabled.
      */
     private boolean verbose = true;
+    /**
+     * The kernel type.
+     */
+    private KernelType kernelType = KernelType.POLYNOMIAL;
+    /**
+     * Polynomial kernel degree.
+     */
+    private double polyDegree = 1.0;
+    /**
+     * Polynomial kernel constant.
+     */
+    private double polyConst = 1.0;
 
     /**
      * Constructor.
@@ -478,8 +488,10 @@ public class Kci implements IndependenceTest {
 
         SimpleMatrix H = SimpleMatrix.identity(N).minus(ones.mult(ones.transpose()).scale(1.0 / N));
 
-        SimpleMatrix kx = MatrixUtils.center(kernelMatrix(_data, x, null, this.widthMultiplier, hash, N, _h), H);
-        SimpleMatrix ky = MatrixUtils.center(kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h), H);
+        SimpleMatrix k1 = kernelMatrix(_data, x, null, this.widthMultiplier, hash, N, _h);
+        SimpleMatrix kx = H.mult(k1).mult(H);
+        SimpleMatrix k = kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h);
+        SimpleMatrix ky = H.mult(k).mult(H);
 
         try {
             if (this.approximate) {
@@ -504,14 +516,19 @@ public class Kci implements IndependenceTest {
         Collections.sort(z);
 
         try {
-            SimpleMatrix KXZ = MatrixUtils.center(kernelMatrix(_data, x, z, this.widthMultiplier, hash, N, _h), H);
-            SimpleMatrix Ky = MatrixUtils.center(kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h), H);
-            SimpleMatrix KZ = MatrixUtils.center(kernelMatrix(_data, null, z, this.widthMultiplier, hash, N, _h), H);
+            SimpleMatrix k4 = kernelMatrix(_data, x, z, this.widthMultiplier, hash, N, _h);
+            SimpleMatrix KXZ = H.mult(k4).mult(H);
+            SimpleMatrix k3 = kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h);
+            SimpleMatrix Ky = H.mult(k3).mult(H);
+            SimpleMatrix k2 = kernelMatrix(_data, null, z, this.widthMultiplier, hash, N, _h);
+            SimpleMatrix KZ = H.mult(k2).mult(H);
 
             SimpleMatrix Rz = (KZ.plus(I.scale(this.epsilon)).invert().scale(this.epsilon));
 
-            SimpleMatrix kx = MatrixUtils.symmetrize(Rz.mult(KXZ).mult(Rz.transpose()));
-            SimpleMatrix ky = MatrixUtils.symmetrize(Rz.mult(Ky).mult(Rz.transpose()));
+            SimpleMatrix k1 = Rz.mult(KXZ).mult(Rz.transpose());
+            SimpleMatrix kx = k1.plus(k1.transpose()).scale(0.5);
+            SimpleMatrix k = Rz.mult(Ky).mult(Rz.transpose());
+            SimpleMatrix ky = k.plus(k.transpose()).scale(0.5);
 
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
@@ -664,18 +681,58 @@ public class Kci implements IndependenceTest {
 
         SimpleMatrix result = new SimpleMatrix(N, N);
 
-        // Parallelize distance and kernel computation
-        IntStream.range(0, N).parallel().forEach(i -> {
-            for (int j = i + 1; j < N; j++) {
-                double d = distance(_data, _z, i, j);
-                double k = MatrixUtils.kernelGaussian(d, width);
-                result.set(i, j, k);
-                result.set(j, i, k);
+        for (int i = 0; i < N; i++) {
+            for (int j = i; j < N; j++) {
+                if (kernelType == KernelType.GAUSSIAN) {
+                    double k = getGaussianKernel(_data, _z, i, j, width);
+                    result.set(i, j, k);
+                    result.set(j, i, k);
+                } else if (kernelType == KernelType.POLYNOMIAL) {
+                    double k = getPolynomialKernel(_data, _z, i, j, polyDegree, polyConst);
+                    result.set(i, j, k);
+                    result.set(j, i, k);
+                } else {
+                    throw new IllegalStateException("Unknown kernel type: " + kernelType);
+                }
             }
-            result.set(i, i, MatrixUtils.kernelGaussian(0, width));
-        });
+        }
 
         return result;
+    }
+
+    /**
+     * Computes the Gaussian kernel value between the i-th and j-th elements using the provided data matrix
+     * and list of indices. The Gaussian kernel is a measure of similarity that decreases exponentially with
+     * the distance between the points, scaled by the specified width.
+     *
+     * @param _data The matrix containing the data points.
+     * @param _z The list of indices mapping to specific data points in the matrix.
+     * @param i The index of the first point.
+     * @param j The index of the second point.
+     * @param width The bandwidth parameter of the Gaussian kernel, controlling the spread.
+     * @return The computed Gaussian kernel value, a double representing the similarity.
+     */
+    private double getGaussianKernel(SimpleMatrix _data, List<Integer> _z, int i, int j, double width) {
+        double d = distance(_data, _z, i, j);
+        d /= 2 * width;
+        return Math.exp(-d);
+    }
+
+    /**
+     * Computes the polynomial kernel between two data points identified by their indices.
+     *
+     * @param _data The data matrix containing all data points.
+     * @param _z A list of indices representing a subset of data points.
+     * @param i Index of the first data point in the subset list.
+     * @param j Index of the second data point in the subset list.
+     * @param polyDegree The degree of the polynomial kernel.
+     * @param polyConstant The constant term added to the dot product before applying the power function.
+     * @return The polynomial kernel value between the two specified data points.
+     */
+    private double getPolynomialKernel(SimpleMatrix _data, List<Integer> _z, int i, int j,
+                                       double polyDegree, double polyConstant) {
+        double d = dot(_data, _z, i, j);
+        return Math.pow(d + polyConstant, polyDegree);
     }
 
     /**
@@ -713,6 +770,26 @@ public class Kci implements IndependenceTest {
         for (int col : cols) {
             double d = data.get(col, i) - data.get(col, j);
             sum += d * d;
+        }
+
+        return sum;
+    }
+
+    /**
+     * Calculate the dot product between two data points based on specified columns.
+     *
+     * @param data The data matrix containing the data points.
+     * @param cols The list of column indices to be used for dot product calculation.
+     * @param i    The index of the first data point.
+     * @param j    The index of the second data point.
+     * @return The dot product between the two data points.
+     */
+    private double dot(SimpleMatrix data, List<Integer> cols, int i, int j) {
+        double sum = 0.0;
+
+        for (int col : cols) {
+            double d = data.get(col, i) * data.get(col, j);
+            sum += d;
         }
 
         return sum;
@@ -819,6 +896,45 @@ public class Kci implements IndependenceTest {
     private SimpleMatrix getSubsetMatrix(List<Node> allVars) {
         DataSet data = this.data.subsetColumns(getCols(allVars));
         return new SimpleMatrix(data.getDoubleData().transpose().toArray());
+    }
+
+    /**
+     * Sets the type of kernel to be used in computations.
+     *
+     * @param kernelType the KernelType to set
+     */
+    public void setKernelType(KernelType kernelType) {
+        this.kernelType = kernelType;
+    }
+
+    /**
+     * Sets the degree of the polynomial kernel, if used
+     *
+     * @param polyDegree the degree of the polynomial kernel to set
+     */
+    public void setPolyDegree(double polyDegree) {
+        this.polyDegree = polyDegree;
+    }
+
+    /**
+     * Sets the constant of the polynomial kernel, if used
+     *
+     * @param polyConst the constant of the polynomial kernel to set
+     */
+    public void setPolyConst(double polyConst) {
+        this.polyConst = polyConst;
+    }
+
+    /**
+     * Represents the type of kernel to be used in a computation.
+     *
+     * <ul>
+     * <li>GAUSSIAN: Indicates the use of a Gaussian kernel, commonly used in various machine learning algorithms for its smooth and bell-shaped curve characteristics.</li>
+     * <li>POLYNOMIAL: Represents a polynomial kernel, which is useful for problems requiring the representation of the input data in a higher-dimensional space.</li>
+     * </ul>
+     */
+    public enum KernelType {
+        GAUSSIAN, POLYNOMIAL
     }
 
     /**

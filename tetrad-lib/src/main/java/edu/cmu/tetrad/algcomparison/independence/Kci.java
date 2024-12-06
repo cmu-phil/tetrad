@@ -45,8 +45,23 @@ public class Kci implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+
+
         edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
+
+        switch (parameters.getInt(Params.KERNEL_TYPE)) {
+            case 1:
+                kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.GAUSSIAN);
+                break;
+            case 2:
+                kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.POLYNOMIAL);
+                break;
+        }
+
+        kci.setPolyDegree(parameters.getInt(Params.POLYNOMIAL_DEGREE));
+        kci.setPolyConst(parameters.getDouble(Params.POLYNOMIAL_CONSTANT));
+
         kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROXIMATION));
         kci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));
         kci.setNumBootstraps(parameters.getInt(Params.KCI_NUM_BOOTSTRAPS));
@@ -91,6 +106,9 @@ public class Kci implements IndependenceWrapper {
         params.add(Params.KCI_NUM_BOOTSTRAPS);
         params.add(Params.THRESHOLD_FOR_NUM_EIGENVALUES);
         params.add(Params.KCI_EPSILON);
+        params.add(Params.KERNEL_TYPE);
+        params.add(Params.POLYNOMIAL_DEGREE);
+        params.add(Params.POLYNOMIAL_CONSTANT);
         return params;
     }
 

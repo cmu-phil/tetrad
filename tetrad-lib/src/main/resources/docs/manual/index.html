@@ -6947,14 +6947,47 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="kernelType_short_desc">Kernel type (1 = Gaussian, 2 =
-        Epinechnikov)</span></li>
+        Polynomial)</span></li>
             <li>Long Description: <span
-                    id="kernelType_long_desc"> For CCI, this determines which kernel type
-        will be used (1 = Gaussian, 2 = Epinechnikov).</span></li>
+                    id="kernelType_long_desc"> Determines which kernel type
+        will be used (1 = Gaussian, 2 = Polynomial).</span></li>
             <li>Default Value: <span id="kernelType_default_value">1</span></li>
             <li>Lower Bound: <span id="kernelType_lower_bound">1</span></li>
             <li>Upper Bound: <span id="kernelType_upper_bound">2</span></li>
             <li>Value Type: <span id="kernelType_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="polynomialDegree">polynomialDegree</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="polynomialDegree_short_desc">
+                    The degree of the polynomial kernel, if used
+                    </span></li>
+            <li>Long Description: <span
+                    id="polynomialDegree_long_desc">
+                    The degree of the polynomial kernel, if used
+        </span></li>
+            <li>Default Value: <span id="polynomialDegree_default_value">1</span></li>
+            <li>Lower Bound: <span id="polynomialDegree_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="polynomialDegree_upper_bound">5000</span></li>
+            <li>Value Type: <span id="polynomialDegree_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="polynomialConstant">polynomialConstant</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="polynomialConstant_short_desc">
+                    The constant of the polynomial kernel, if used
+                    </span></li>
+            <li>Long Description: <span
+                    id="polynomialConstant_long_desc">
+                    The constant of the polynomial kernel, if used, which
+                    determine tradeoff between higher and lower order terms
+        </span></li>
+            <li>Default Value: <span id="polynomialConstant_default_value">1</span></li>
+            <li>Lower Bound: <span id="polynomialConstant_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="polynomialConstant_upper_bound">5000</span></li>
+            <li>Value Type: <span id="polynomialConstant_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
