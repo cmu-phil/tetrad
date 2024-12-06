@@ -103,9 +103,9 @@ public class Kci implements IndependenceTest {
      */
     private double epsilon = 0.001;
     /**
-     * True if verbose output should be printed.
+     * True if verbose output is enabled.
      */
-    private boolean verbose;
+    private boolean verbose = true;
 
     /**
      * Constructor.
@@ -264,16 +264,16 @@ public class Kci implements IndependenceTest {
                 result = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
             }
 
-            if (verbose) {
-                double p = result.getPValue();
+//            if (verbose) {
+            double p = result.getPValue();
 
-                if (result.isIndependent()) {
-                    TetradLogger.getInstance().log(fact + " INDEPENDENT p = " + p);
+            if (result.isIndependent()) {
+                TetradLogger.getInstance().log(fact + " INDEPENDENT p = " + p);
 
-                } else {
-                    TetradLogger.getInstance().log(fact + " dependent p = " + p);
-                }
+            } else {
+                TetradLogger.getInstance().log(fact + " dependent p = " + p);
             }
+//            }
 
             return new IndependenceResult(fact, result.isIndependent(),
                     result.getPValue(), getAlpha() - result.getPValue());
