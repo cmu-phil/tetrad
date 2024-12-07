@@ -714,7 +714,7 @@ public class Kci implements IndependenceTest {
      */
     private double getGaussianKernel(SimpleMatrix _data, List<Integer> _z, int i, int j, double width) {
         double d = distance(_data, _z, i, j);
-        d /= 2 * width;
+        d /= 2 * width * width;
         return Math.exp(-d);
     }
 
