@@ -84,7 +84,7 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic {
 
         for (int i = 0; i < 11; i++) {
             MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
-            markovCheck.generateResults(true);
+            markovCheck.generateResults(true, true);
             double ksPValue = markovCheck.getKsPValue(true);
             if (ksPValue > max) {
                 max = ksPValue;

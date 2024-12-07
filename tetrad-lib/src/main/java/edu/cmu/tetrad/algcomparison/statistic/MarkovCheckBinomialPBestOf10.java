@@ -84,7 +84,7 @@ public class MarkovCheckBinomialPBestOf10 implements Statistic {
 
         for (int i = 0; i < 10; i++) {
             MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
-            markovCheck.generateResults(true);
+            markovCheck.generateResults(true, true);
             double p = markovCheck.getBinomialPValue(true);
             if (p > max) {
                 max = p;

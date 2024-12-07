@@ -271,7 +271,7 @@ public class MarkovCheckEditor extends JPanel {
                     }
 
                     setTest();
-                    model.getMarkovCheck().generateResults(true);
+                    model.getMarkovCheck().generateResults(true, true);
                     tableModelIndep.fireTableDataChanged();
                     tableModelDep.fireTableDataChanged();
 
@@ -298,7 +298,7 @@ public class MarkovCheckEditor extends JPanel {
 
                 public void watch() {
                     setTest();
-                    model.getMarkovCheck().generateResults(true);
+                    model.getMarkovCheck().generateResults(true, true);
                     tableModelIndep.fireTableDataChanged();
                     tableModelDep.fireTableDataChanged();
 
@@ -431,7 +431,7 @@ public class MarkovCheckEditor extends JPanel {
 
             public void watch() {
                 setTest();
-                model.getMarkovCheck().generateResults(true);
+                model.getMarkovCheck().generateResults(true, true);
                 tableModelIndep.fireTableDataChanged();
                 tableModelDep.fireTableDataChanged();
                 histogramPanelDep.removeAll();
@@ -647,7 +647,7 @@ public class MarkovCheckEditor extends JPanel {
             tableModelDep.fireTableDataChanged();
 
             model.getMarkovCheck().setPercentResample(percent.getValue());
-            model.getMarkovCheck().generateResults(clear);
+            model.getMarkovCheck().generateResults(true, clear);
             tableModelIndep.fireTableDataChanged();
             tableModelDep.fireTableDataChanged();
             updateTables(model, tableIndep, tableDep);
