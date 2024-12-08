@@ -55,6 +55,9 @@ public class Kci implements IndependenceWrapper {
                 kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.GAUSSIAN);
                 break;
             case 2:
+                kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.LINEAR);
+                break;
+            case 3:
                 kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.POLYNOMIAL);
                 break;
         }

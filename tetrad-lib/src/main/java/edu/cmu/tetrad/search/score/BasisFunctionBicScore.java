@@ -203,8 +203,14 @@ public class BasisFunctionBicScore implements Score {
             }
 
             // Return the modified BIC
-            score += score1 + penalty;
-            B.add(i_);
+            double score2 = score1 + penalty;
+
+            if (!Double.isNaN(score2)) {
+                score += score2;
+                B.add(i_);
+            }
+
+//            score += score2;
         }
 
         return score;

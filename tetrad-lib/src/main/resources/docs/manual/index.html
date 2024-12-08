@@ -5031,13 +5031,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Short Description: <span
                     id="basisType_short_desc">
                     Basis type (1 = Polynomial, 2 =
-        			Hermite1, 3=Hermite2, 4=Legendre, 5=Cosine)
+        			Hermite1, 3=Hermite2, 4=Legendre, 5=Chebyshev)
         </span></li>
             <li>Long Description: <span
                     id="basisType_long_desc">
                     id="basisType_short_desc">
                     Basis type (1 = Polynomial, 2 =
-        			Hermite1, 3=Hermite2, 4=Legendre, 5=Cosine)
+        			Hermite1, 3=Hermite2, 4=Legendre, 5=Chebyshev)
                     </span></li>
             <li>Default
                 Value: <span id="basisType_default_value">4</span></li>
@@ -6945,14 +6945,15 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="kernelType">kernelType</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="kernelType_short_desc">Kernel type (1 = Gaussian, 2 =
-        Polynomial)</span></li>
+                    id="kernelType_short_desc">
+                Kernel type (1 = Gaussian, 2 = Linear, 3 = Polynomial)
+            </span></li>
             <li>Long Description: <span
                     id="kernelType_long_desc"> Determines which kernel type
-        will be used (1 = Gaussian, 2 = Polynomial).</span></li>
+        will be used (1 = Gaussian, 2 = Linear, 3 = Polynomial).</span></li>
             <li>Default Value: <span id="kernelType_default_value">1</span></li>
             <li>Lower Bound: <span id="kernelType_lower_bound">1</span></li>
-            <li>Upper Bound: <span id="kernelType_upper_bound">2</span></li>
+            <li>Upper Bound: <span id="kernelType_upper_bound">3</span></li>
             <li>Value Type: <span id="kernelType_value_type">Integer</span></li>
         </ul>
 
@@ -6966,10 +6967,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="polynomialDegree_long_desc">
                     The degree of the polynomial kernel, if used
         </span></li>
-            <li>Default Value: <span id="polynomialDegree_default_value">1</span></li>
+            <li>Default Value: <span id="polynomialDegree_default_value">2</span></li>
             <li>Lower Bound: <span id="polynomialDegree_lower_bound">1</span></li>
-            <li>Upper Bound: <span id="polynomialDegree_upper_bound">5000</span></li>
-            <li>Value Type: <span id="polynomialDegree_value_type">Integer</span></li>
+            <li>Upper Bound: <span id="polynomialDegree_upper_bound">5000000</span></li>
+            <li>Value Type: <span id="polynomialDegree_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description" id="polynomialConstant">polynomialConstant</h3>

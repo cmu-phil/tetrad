@@ -106,7 +106,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         permutationSearch.setKnowledge(this.knowledge);
         permutationSearch.setSeed(seed);
         Graph graph = permutationSearch.search();
-        LogUtilsSearch.stampWithScore(graph, myScore);
+        LogUtilsSearch.stampWithScore(graph, boss.getScore());
         LogUtilsSearch.stampWithBic(graph, dataModel);
 
         return graph;

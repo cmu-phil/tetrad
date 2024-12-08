@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -43,11 +42,16 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author josephramsey refactoring 7/4/2018, 12/6/2024
  * @version $Id: $Id
  */
-public class Kci implements IndependenceTest {
+public class Kci implements IndependenceTest, RowsSettable {
+
     /**
-     * The supplied data set, standardized
+     * The dataset to analyze.
      */
-    private final DataSet data;
+    private final DataSet dataSet;
+    /**
+     * The supplied data set, standardized and as a SimpleMatrix.
+     */
+    private final SimpleMatrix data;
     /**
      * Variables in data
      */
@@ -64,18 +68,6 @@ public class Kci implements IndependenceTest {
      * Convenience map from nodes to their indices in the list of variables.
      */
     private final Map<Node, Integer> hash;
-    /**
-     * The identity matrix.
-     */
-    private final SimpleMatrix I;
-    /**
-     * The centering matrix.
-     */
-    private final SimpleMatrix H;
-    /**
-     * The sample size.
-     */
-    private final int N;
     /**
      * The alpha level of the test.
      */
@@ -116,6 +108,10 @@ public class Kci implements IndependenceTest {
      * Polynomial kernel constant.
      */
     private double polyConst = 1.0;
+    /**
+     * The rows used in the test.
+     */
+    private List<Integer> rows = null;
 
     /**
      * Constructor.
@@ -124,17 +120,13 @@ public class Kci implements IndependenceTest {
      * @param alpha The alpha value of the test.
      */
     public Kci(DataSet data, double alpha) {
-        this.data = DataTransforms.standardizeData(data);
+        this.dataSet = data;
+        this.data = standardizeData(new SimpleMatrix(dataSet.getDoubleData().toArray()));
+
         this.variables = data.getVariables();
-        hash = getNodeIntegerMap();
+        this.hash = getNodeIntegerMap();
 
-        SimpleMatrix dataCols = new SimpleMatrix(this.data.getDoubleData().transpose().toArray());
-        h = getH(dataCols);
-        N = data.getNumRows();
-
-        SimpleMatrix ones = getOnes(N);
-        I = SimpleMatrix.identity(N);
-        H = I.minus(ones.mult(ones.transpose()).scale(1.0 / N));
+        this.h = getH(this.data);
 
         this.alpha = alpha;
     }
@@ -165,21 +157,19 @@ public class Kci implements IndependenceTest {
     }
 
     public static SimpleMatrix standardizeData(SimpleMatrix data) {
-        SimpleMatrix data2 = data.createLike();
-
-        double sum = 0.0;
+        SimpleMatrix data2 = data.copy();
 
         for (int j = 0; j < data.getNumCols(); j++) {
-
+            double sum = 0.0;
 
             for (int i = 0; i < data.getNumRows(); i++) {
-                sum += data.get(i, j);
+                sum += data2.get(i, j);
             }
 
-            double mean = sum / data.getNumRows();
+            double mean = sum / data2.getNumRows();
 
-            for (int i = 0; i < data.getNumRows(); i++) {
-                data2.set(i, j, data.get(i, j) - mean);
+            for (int i = 0; i < data2.getNumRows(); i++) {
+                data2.set(i, j, data2.get(i, j) - mean);
             }
 
             double norm = 0.0;
@@ -194,19 +184,31 @@ public class Kci implements IndependenceTest {
             for (int i = 0; i < data2.getNumRows(); i++) {
                 data2.set(i, j, data2.get(i, j) / norm);
             }
-
-
         }
 
         return data2;
     }
 
+    /**
+     * Generates and returns a mapping of Node objects to their respective indices in the provided list.
+     *
+     * @param allVars a list of Node objects for which the hash map is to be created
+     * @return a map where each Node in the list is associated with its index position
+     */
     private static @NotNull Map<Node, Integer> getHash(List<Node> allVars) {
         Map<Node, Integer> hash = new HashMap<>();
         for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
         return hash;
     }
 
+    /**
+     * Collects and returns a list of all variables, including the provided nodes and all elements of a given set.
+     *
+     * @param x the first node to be added to the list
+     * @param y the second node to be added to the list
+     * @param z a set of nodes to be added to the list
+     * @return a list containing the nodes x, y, and all elements of the set z
+     */
     private static @NotNull List<Node> getAllVars(Node x, Node y, Set<Node> z) {
         List<Node> allVars = new ArrayList<>();
         allVars.add(x);
@@ -219,21 +221,23 @@ public class Kci implements IndependenceTest {
      * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
      * and Azzalini (1997) q.31.
      *
-     * @param x     The node for which the optimal bandwidth is calculated.
-     * @param _data The dataset from which the node's values are extracted.
-     * @param hash  A map that maps each node in the dataset to its corresponding index.
+     * @param x         The node for which the optimal bandwidth is calculated.
+     * @param data      The dataset from which the node's values are extracted.
+     * @param nodesHash A map that maps each node in the dataset to its corresponding index.
      * @return The optimal bandwidth for node x.
      */
-    private static double h(Node x, SimpleMatrix _data, Map<Node, Integer> hash) {
-        SimpleMatrix xCol = _data.getColumn(hash.get(x));
-        var _x = standardizeData(xCol);
+    private static double h(Node x, SimpleMatrix data, Map<Node, Integer> nodesHash) {
+        var _x = data.getColumn(nodesHash.get(x));
+//        var s = sd(_x.toArray2()[0]);
+//        _x = standardizeData(_x);
         var N = _x.getNumRows();
         var g = new Vector(N);
         var central = median(convertTo1DArray(_x));
         for (var j = 0; j < N; j++) g.set(j, abs(_x.get(j) - central));
         var mad = median(g.toArray());
-        var sigmaRobust = 1.4826 * mad;
-        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
+//        var sigmaRobust = 1.4826 * mad;
+//        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
+        return 1.5716 * mad * FastMath.pow(N, -0.2);
     }
 
     /**
@@ -252,6 +256,7 @@ public class Kci implements IndependenceTest {
      * @return The result of the independence test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+
         try {
             if (Thread.currentThread().isInterrupted()) {
                 return new IndependenceResult(new IndependenceFact(x, y, z),
@@ -260,21 +265,17 @@ public class Kci implements IndependenceTest {
 
             List<Node> allVars = getAllVars(x, y, z);
             IndependenceFact fact = new IndependenceFact(x, y, z);
-
             SimpleMatrix _data = getSubsetMatrix(allVars);
-
             Map<Node, Integer> hash = getHash(allVars);
             SimpleMatrix h = getH(allVars);
-
             IndependenceResult result;
 
             if (z.isEmpty()) {
-                result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
+                result = isIndependentUnconditional(x, y, fact, _data, h, hash);
             } else {
-                result = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+                result = isIndependentConditional(x, y, z, fact, _data, h, hash);
             }
 
-//            if (verbose) {
             double p = result.getPValue();
 
             if (result.isIndependent()) {
@@ -283,13 +284,16 @@ public class Kci implements IndependenceTest {
             } else {
                 TetradLogger.getInstance().log(fact + " dependent p = " + p);
             }
-//            }
 
             return new IndependenceResult(fact, result.isIndependent(),
                     result.getPValue(), getAlpha() - result.getPValue());
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
                                        LogUtilsSearch.independenceFact(x, y, z));
+        } catch (Exception e) {
+            TetradLogger.getInstance().log(e.getMessage());
+            return new IndependenceResult(new IndependenceFact(x, y, z),
+                    false, Double.NaN, Double.NaN);
         }
     }
 
@@ -310,7 +314,7 @@ public class Kci implements IndependenceTest {
      * @return the Node object representing the variable with the given name
      */
     public Node getVariable(String name) {
-        return this.data.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 
     /**
@@ -346,7 +350,7 @@ public class Kci implements IndependenceTest {
      * @return This data.
      */
     public DataModel getData() {
-        return this.data;
+        return this.dataSet;
     }
 
     /**
@@ -365,7 +369,7 @@ public class Kci implements IndependenceTest {
      */
     public List<DataSet> getDataSets() {
         LinkedList<DataSet> L = new LinkedList<>();
-        L.add(this.data);
+        L.add(this.dataSet);
         return L;
     }
 
@@ -483,14 +487,15 @@ public class Kci implements IndependenceTest {
      * @return true, just in case independence holds.
      */
     private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, SimpleMatrix _data,
-                                                          SimpleMatrix _h, int N, Map<Node, Integer> hash) {
+                                                          SimpleMatrix _h, Map<Node, Integer> hash) {
+        List<Integer> _rows = listRows();
+        int N = _rows.size();
         SimpleMatrix ones = getOnes(N);
-
-        SimpleMatrix H = SimpleMatrix.identity(N).minus(ones.mult(ones.transpose()).scale(1.0 / N));
-
-        SimpleMatrix k1 = kernelMatrix(_data, x, null, this.widthMultiplier, hash, N, _h);
+        SimpleMatrix I = SimpleMatrix.identity(N);
+        SimpleMatrix H = I.minus(ones.mult(ones.transpose()).scale(1.0 / N));
+        SimpleMatrix k1 = kernelMatrix(_data, x, null, this.widthMultiplier, hash, _h, _rows);
         SimpleMatrix kx = H.mult(k1).mult(H);
-        SimpleMatrix k = kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h);
+        SimpleMatrix k = kernelMatrix(_data, y, null, this.widthMultiplier, hash, _h, _rows);
         SimpleMatrix ky = H.mult(k).mult(H);
 
         try {
@@ -511,20 +516,23 @@ public class Kci implements IndependenceTest {
      * @return true just in case independence holds.
      */
     private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, SimpleMatrix _data,
-                                                        int N, SimpleMatrix H, SimpleMatrix I, SimpleMatrix _h, Map<Node, Integer> hash) {
+                                                        SimpleMatrix _h, Map<Node, Integer> hash) {
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
+        List<Integer> _rows = listRows();
+        int N = _rows.size();
+        SimpleMatrix ones = getOnes(N);
+        SimpleMatrix I = SimpleMatrix.identity(N);
+        SimpleMatrix H = I.minus(ones.mult(ones.transpose()).scale(1.0 / N));
 
         try {
-            SimpleMatrix k4 = kernelMatrix(_data, x, z, this.widthMultiplier, hash, N, _h);
+            SimpleMatrix k4 = kernelMatrix(_data, x, z, this.widthMultiplier, hash, _h, _rows);
             SimpleMatrix KXZ = H.mult(k4).mult(H);
-            SimpleMatrix k3 = kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h);
+            SimpleMatrix k3 = kernelMatrix(_data, y, null, this.widthMultiplier, hash, _h, _rows);
             SimpleMatrix Ky = H.mult(k3).mult(H);
-            SimpleMatrix k2 = kernelMatrix(_data, null, z, this.widthMultiplier, hash, N, _h);
+            SimpleMatrix k2 = kernelMatrix(_data, null, z, this.widthMultiplier, hash, _h, _rows);
             SimpleMatrix KZ = H.mult(k2).mult(H);
-
             SimpleMatrix Rz = (KZ.plus(I.scale(this.epsilon)).invert().scale(this.epsilon));
-
             SimpleMatrix k1 = Rz.mult(KXZ).mult(Rz.transpose());
             SimpleMatrix kx = k1.plus(k1.transpose()).scale(0.5);
             SimpleMatrix k = Rz.mult(Ky).mult(Rz.transpose());
@@ -665,30 +673,32 @@ public class Kci implements IndependenceTest {
      * @param z               the list of other nodes
      * @param widthMultiplier the width multiplier for the kernel
      * @param hash            the map of nodes to their indices
-     * @param N               the number of data points
      * @param _h              the bandwidth vector
+     * @param _rows           the list of rows to use
      * @return the calculated kernel matrix
      */
     private SimpleMatrix kernelMatrix(SimpleMatrix _data, Node x, List<Node> z, double widthMultiplier,
-                                      Map<Node, Integer> hash, int N, SimpleMatrix _h) {
+                                      Map<Node, Integer> hash, SimpleMatrix _h, List<Integer> _rows) {
 
         List<Integer> _z = new ArrayList<>();
         if (x != null) _z.add(hash.get(x));
         if (z != null) z.forEach(node -> _z.add(hash.get(node)));
-
         double h = getH(_z, _h);
         double width = widthMultiplier * h;
+        SimpleMatrix result = new SimpleMatrix(_rows.size(), _rows.size());
 
-        SimpleMatrix result = new SimpleMatrix(N, N);
-
-        for (int i = 0; i < N; i++) {
-            for (int j = i; j < N; j++) {
+        for (int i = 0; i < _rows.size(); i++) {
+            for (int j = 0; j < _rows.size(); j++) {
                 if (kernelType == KernelType.GAUSSIAN) {
-                    double k = getGaussianKernel(_data, _z, i, j, width);
+                    double k = getGaussianKernel(_data, _z, _rows.get(i), _rows.get(j), width);
+                    result.set(i, j, k);
+                    result.set(j, i, k);
+                } else if (kernelType == KernelType.LINEAR) {
+                    double k = getLinearKernel(_data, _z, _rows.get(i), _rows.get(j), polyDegree, polyConst);
                     result.set(i, j, k);
                     result.set(j, i, k);
                 } else if (kernelType == KernelType.POLYNOMIAL) {
-                    double k = getPolynomialKernel(_data, _z, i, j, polyDegree, polyConst);
+                    double k = getPolynomialKernel(_data, _z, _rows.get(i), _rows.get(j), polyDegree, polyConst);
                     result.set(i, j, k);
                     result.set(j, i, k);
                 } else {
@@ -701,31 +711,47 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * Computes the Gaussian kernel value between the i-th and j-th elements using the provided data matrix
-     * and list of indices. The Gaussian kernel is a measure of similarity that decreases exponentially with
-     * the distance between the points, scaled by the specified width.
+     * Computes the Gaussian kernel value between the i-th and j-th elements using the provided data matrix and list of
+     * indices. The Gaussian kernel is a measure of similarity that decreases exponentially with the distance between
+     * the points, scaled by the specified width.
      *
      * @param _data The matrix containing the data points.
-     * @param _z The list of indices mapping to specific data points in the matrix.
-     * @param i The index of the first point.
-     * @param j The index of the second point.
+     * @param _z    The list of indices mapping to specific data points in the matrix.
+     * @param i     The index of the first point.
+     * @param j     The index of the second point.
      * @param width The bandwidth parameter of the Gaussian kernel, controlling the spread.
      * @return The computed Gaussian kernel value, a double representing the similarity.
      */
     private double getGaussianKernel(SimpleMatrix _data, List<Integer> _z, int i, int j, double width) {
         double d = distance(_data, _z, i, j);
-        d /= 2 * width * width;
+        d /= 2 * width;
         return Math.exp(-d);
+    }
+
+    /**
+     * Computes the linear kernel between two data points from the input matrix.
+     *
+     * @param _data        The matrix containing the data points.
+     * @param _z           A list of integer indices corresponding to the data points.
+     * @param i            The index of the first data point.
+     * @param j            The index of the second data point.
+     * @param polyDegree   The degree of the polynomial, not used in this method.
+     * @param polyConstant The constant of the polynomial, not used in this method.
+     * @return The computed linear kernel value for the data points at indices i and j.
+     */
+    private double getLinearKernel(SimpleMatrix _data, List<Integer> _z, int i, int j,
+                                   double polyDegree, double polyConstant) {
+        return dot(_data, _z, i, j);
     }
 
     /**
      * Computes the polynomial kernel between two data points identified by their indices.
      *
-     * @param _data The data matrix containing all data points.
-     * @param _z A list of indices representing a subset of data points.
-     * @param i Index of the first data point in the subset list.
-     * @param j Index of the second data point in the subset list.
-     * @param polyDegree The degree of the polynomial kernel.
+     * @param _data        The data matrix containing all data points.
+     * @param _z           A list of indices representing a subset of data points.
+     * @param i            Index of the first data point in the subset list.
+     * @param j            Index of the second data point in the subset list.
+     * @param polyDegree   The degree of the polynomial kernel.
      * @param polyConstant The constant term added to the dot product before applying the power function.
      * @return The polynomial kernel value between the two specified data points.
      */
@@ -810,14 +836,14 @@ public class Kci implements IndependenceTest {
     /**
      * Computes the vector h based on the given data columns from a SimpleMatrix object.
      *
-     * @param dataCols the SimpleMatrix object containing data columns used to compute the vector h
+     * @param data the SimpleMatrix object containing data columns used to compute the vector h
      * @return a Vector object representing the computed values
      */
-    private Vector getH(SimpleMatrix dataCols) {
+    private Vector getH(SimpleMatrix data) {
         Vector h = new Vector(variables.size());
 
-        for (int i = 0; i < this.data.getNumColumns(); i++) {
-            h.set(i, h(variables.get(i), dataCols, hash));
+        for (int i = 0; i < this.data.getNumCols(); i++) {
+            h.set(i, h(variables.get(i), data, hash));
         }
 
         return h;
@@ -894,8 +920,58 @@ public class Kci implements IndependenceTest {
      * @return a SimpleMatrix object containing the subset of data corresponding to the specified variables.
      */
     private SimpleMatrix getSubsetMatrix(List<Node> allVars) {
-        DataSet data = this.data.subsetColumns(getCols(allVars));
+
+        // TODO See if this is a bottleneck and if so optimize
+        DataSet data = this.dataSet.subsetColumns(getCols(allVars));
         return new SimpleMatrix(data.getDoubleData().transpose().toArray());
+    }
+
+    /**
+     * Retrieves the list of row indices from a given matrix that do not contain NaN values for any specified nodes.
+     *
+     * @param data      The matrix containing the data.
+     * @param allVars   The list of nodes to be checked.
+     * @param nodesHash A map associating each node with its respective column index in the matrix.
+     * @return A list of row indices where none of the specified nodes' values are NaN in the matrix.
+     */
+    private List<Integer> getRows(SimpleMatrix data, List<Node> allVars, Map<Node, Integer> nodesHash) {
+        var _rows = getRows();
+        var rows = new ArrayList<Integer>();
+
+        for (var k : _rows) {
+            var hasNaN = false;
+            for (var node : allVars) {
+                if (Double.isNaN(data.get(k, nodesHash.get(node)))) {
+                    hasNaN = true;
+                    break;
+                }
+            }
+
+            if (!hasNaN) {
+                rows.add(k);
+            }
+        }
+
+        return rows;
+    }
+
+    /**
+     * Retrieves the rows from the dataSet that contain valid values for all variables.
+     *
+     * @return a list of row indices that contain valid values for all variables
+     */
+    private List<Integer> listRows() {
+        if (this.rows != null) {
+            return this.rows;
+        }
+
+        List<Integer> rows = new ArrayList<>();
+
+        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
+            rows.add(k);
+        }
+
+        return rows;
     }
 
     /**
@@ -926,6 +1002,35 @@ public class Kci implements IndependenceTest {
     }
 
     /**
+     * Returns the rows used in the test.
+     *
+     * @return The rows used in the test.
+     */
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    /**
+     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
+     * values.
+     */
+    public void setRows(List<Integer> rows) {
+        if (dataSet == null) {
+            return;
+        }
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            }
+
+            this.rows = rows;
+        }
+    }
+
+    /**
      * Represents the type of kernel to be used in a computation.
      *
      * <ul>
@@ -934,7 +1039,7 @@ public class Kci implements IndependenceTest {
      * </ul>
      */
     public enum KernelType {
-        GAUSSIAN, POLYNOMIAL
+        GAUSSIAN, LINEAR, POLYNOMIAL
     }
 
     /**
@@ -953,4 +1058,6 @@ public class Kci implements IndependenceTest {
      */
     public record EigenReturn(SimpleMatrix D, SimpleMatrix V, List<Double> topEigenvalues) {
     }
+
+
 }
