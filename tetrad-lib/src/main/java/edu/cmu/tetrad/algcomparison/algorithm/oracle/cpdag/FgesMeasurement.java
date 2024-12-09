@@ -52,7 +52,7 @@ public class FgesMeasurement extends AbstractBootstrapAlgorithm implements Algor
     }
 
     @Override
-    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (!(dataModel instanceof DataSet dataSet)) {
             throw new IllegalArgumentException("Expecting a dataset.");
         }

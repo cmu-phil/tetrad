@@ -159,7 +159,7 @@ public final class BFci implements IGraphSearch {
      *
      * @return The discovered graph.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         if (seed != -1) {
             RandomUtil.getInstance().setSeed(seed);
         }

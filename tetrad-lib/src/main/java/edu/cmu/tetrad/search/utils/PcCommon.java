@@ -271,7 +271,7 @@ public final class PcCommon implements IGraphSearch {
      *
      * @return This result graph.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         return search(getIndependenceTest().getVariables());
     }
 
@@ -281,7 +281,7 @@ public final class PcCommon implements IGraphSearch {
      * @param nodes The nodes to search over.
      * @return The result graph.
      */
-    public Graph search(List<Node> nodes) {
+    public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);
 
         if (verbose) {
@@ -552,7 +552,7 @@ public final class PcCommon implements IGraphSearch {
      *
      * @param knowledge the knowledge used for orientation
      */
-    private void orientUnshieldedTriplesConservative(Knowledge knowledge) {
+    private void orientUnshieldedTriplesConservative(Knowledge knowledge) throws InterruptedException {
         log("Starting Collider Orientation:", verbose);
 
         this.colliderTriples = new HashSet<>();
@@ -610,7 +610,7 @@ public final class PcCommon implements IGraphSearch {
      * @param g The graph
      * @return The set of separation sets between node i and node k
      */
-    private Set<Set<Node>> getSepsets(Node i, Node k, Graph g) {
+    private Set<Set<Node>> getSepsets(Node i, Node k, Graph g) throws InterruptedException {
         List<Node> adji = new ArrayList<>(g.getAdjacentNodes(i));
         List<Node> adjk = new ArrayList<>(g.getAdjacentNodes(k));
         Set<Set<Node>> sepsets = new HashSet<>();

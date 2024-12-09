@@ -106,11 +106,19 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, UsesScor
             PermutationSearch search = new PermutationSearch(new Boss(score));
             search.setSeed(parameters.getLong(Params.SEED));
             search.setKnowledge(this.knowledge);
-            return search.search();
+            try {
+                return search.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         } else if (meta == 2) {
             PermutationSearch search = new PermutationSearch(new Boss(score));
             search.setKnowledge(this.knowledge);
-            return search.search();
+            try {
+                return search.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             throw new IllegalArgumentException("Unrecognized meta option: " + meta);
         }

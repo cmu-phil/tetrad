@@ -232,7 +232,11 @@ public class PcRunner extends AbstractAlgorithmRunner
         pc.setKnowledge(knowledge);
         pc.setGuaranteeCpdag(isGuaranteeCpdag());
         pc.setDepth(depth);
-        graph = pc.search();
+        try {
+            graph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println(graph);
 

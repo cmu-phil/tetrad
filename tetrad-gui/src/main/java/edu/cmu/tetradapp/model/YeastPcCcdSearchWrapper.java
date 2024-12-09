@@ -240,7 +240,12 @@ public class YeastPcCcdSearchWrapper {
 
         IndTestCramerT indTestCramerT = new IndTestCramerT(cds, alpha);
         Ccd ccd = new Ccd(indTestCramerT);
-        Graph ccdModel = ccd.search();
+        Graph ccdModel = null;
+        try {
+            ccdModel = ccd.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         int falsePositives = 0;
         int falseNegatives = 0;
 
@@ -306,7 +311,12 @@ public class YeastPcCcdSearchWrapper {
         IndTestCramerT indTestCramerT = new IndTestCramerT(cds, alpha);
         Pc pcs = new Pc(indTestCramerT);
         pcs.setKnowledge(bk);
-        Graph pcModel = pcs.search();
+        Graph pcModel = null;
+        try {
+            pcModel = pcs.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         int falsePositives = 0;
         int falseNegatives = 0;
 

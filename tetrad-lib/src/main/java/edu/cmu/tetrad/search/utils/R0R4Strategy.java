@@ -46,7 +46,7 @@ public interface R0R4Strategy {
      * determined.
      * @see DiscriminatingPath
      */
-    Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes);
+    Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) throws InterruptedException;
 
     /**
      * Sets the knowledge object to be used by the strategy.

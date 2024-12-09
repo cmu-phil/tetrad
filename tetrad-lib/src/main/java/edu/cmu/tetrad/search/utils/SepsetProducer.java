@@ -44,7 +44,7 @@ public interface SepsetProducer {
      * @param depth the depth of the search
      * @return the set of common neighbors between nodes a and b
      */
-    Set<Node> getSepset(Node a, Node b, int depth);
+    Set<Node> getSepset(Node a, Node b, int depth) throws InterruptedException;
 
     /**
      * Retrieves a sepset containing nodes in s from the given set of nodes.
@@ -55,7 +55,7 @@ public interface SepsetProducer {
      * @param depth the depth of the search
      * @return the sepset containing nodes a and b from the given set of nodes
      */
-    Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth);
+    Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth) throws InterruptedException;
 
     /**
      * <p>isUnshieldedCollider.</p>
@@ -66,7 +66,7 @@ public interface SepsetProducer {
      * @param depth the depth of the search
      * @return a boolean
      */
-    boolean isUnshieldedCollider(Node i, Node j, Node k, int depth);
+    boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException;
 
     /**
      * Returns the score of the object.
@@ -97,7 +97,7 @@ public interface SepsetProducer {
      * @param sepset the set of common neighbors between d and c
      * @return true if d is independent of c, false otherwise
      */
-    boolean isIndependent(Node d, Node c, Set<Node> sepset);
+    boolean isIndependent(Node d, Node c, Set<Node> sepset) throws InterruptedException;
 
     /**
      * Calculates the p-value for a statistical test a _||_ b | sepset.
@@ -107,7 +107,7 @@ public interface SepsetProducer {
      * @param sepset the set of nodes
      * @return the p-value for the statistical test
      */
-    double getPValue(Node a, Node b, Set<Node> sepset);
+    double getPValue(Node a, Node b, Set<Node> sepset) throws InterruptedException;
 
     /**
      * Sets the graph for the SepsetProducer object.

@@ -33,6 +33,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a useful
@@ -114,6 +116,121 @@ public class Fas implements IFas {
         this.test = test;
     }
 
+    /**
+     * Checks if there is an adjacency between two nodes on a side.
+     *
+     * @param scores      The map of scores for each edge.
+     * @param test        The independence test to use.
+     * @param adjacencies The map of nodes and their adjacent nodes.
+     * @param depth       The maximum depth to search for adjacencies.
+     * @param x           The first node.
+     * @param y           The second node.
+     * @return True if there is an adjacency between x and y at the given depth, false otherwise.
+     */
+    private static boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies,
+                                     int depth, Node x, Node y,
+                                     PcCommon.PcHeuristicType heuristic,
+                                     Knowledge knowledge,
+                                     SepsetMap sepsets) throws InterruptedException {
+        if (!adjacencies.get(x).contains(y)) return false;
+
+        List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
+        _adjx.remove(y);
+
+        if (heuristic == PcCommon.PcHeuristicType.HEURISTIC_1 || heuristic == PcCommon.PcHeuristicType.HEURISTIC_2) {
+            Collections.sort(_adjx);
+        }
+
+        List<Node> ppx = possibleParents(x, _adjx, knowledge, y);
+
+        Map<Node, Double> scores2 = new HashMap<>();
+
+        for (Node node : ppx) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            Double _score = scores.get(Edges.undirectedEdge(node, x));
+            scores2.put(node, _score);
+        }
+
+        if (heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
+            ppx.sort(Comparator.comparing(scores2::get));
+            Collections.reverse(ppx);
+        }
+
+        if (ppx.size() >= depth) {
+            ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
+            int[] choice;
+
+            while ((choice = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
+                Set<Node> Z = GraphUtils.asSet(choice, ppx);
+
+                boolean independent = test.checkIndependence(x, y, Z).isIndependent();
+
+                boolean noEdgeRequired = knowledge.noEdgeRequired(x.getName(), y.getName());
+
+                if (independent && noEdgeRequired) {
+                    adjacencies.get(x).remove(y);
+                    adjacencies.get(y).remove(x);
+
+                    sepsets.set(x, y, Z);
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns a list of nodes that are possible parents of a given node, based on the adjacency list of the given node,
+     * the knowledge object, and another node.
+     *
+     * @param x         The node for which to find possible parents.
+     * @param adjx      The adjacency list of the node x.
+     * @param knowledge The knowledge object that provides information about conditional independencies.
+     * @param y         Another node in the graph.
+     * @return A list of nodes that are possible parents of the node x.
+     */
+    private static List<Node> possibleParents(Node x, List<Node> adjx, Knowledge knowledge, Node y) throws InterruptedException {
+        List<Node> possibleParents = new LinkedList<>();
+        String _x = x.getName();
+
+        for (Node z : adjx) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            if (z == null) continue;
+            if (z == x) continue;
+            if (z == y) continue;
+            String _z = z.getName();
+
+            if (possibleParentOf(_z, _x, knowledge)) {
+                possibleParents.add(z);
+            }
+        }
+
+        return possibleParents;
+    }
+
+    /**
+     * Determines if a given node is a possible parent of another node based on the provided knowledge.
+     *
+     * @param z         The first node.
+     * @param x         The second node.
+     * @param knowledge The knowledge object that provides information about conditional independencies.
+     * @return True if the node z is a possible parent of node x, false otherwise.
+     */
+    private static boolean possibleParentOf(String z, String x, Knowledge knowledge) {
+        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
+    }
 
     /**
      * Performs a search to discover all adjacencies in the graph. The procedure is to remove edges in the graph which
@@ -126,7 +243,7 @@ public class Fas implements IFas {
      * @return An undirected graph that summarizes the conditional independencies in the data.
      */
     @Override
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         return search(test.getVariables());
     }
 
@@ -141,7 +258,7 @@ public class Fas implements IFas {
      * @param nodes A list of nodes to search over.
      * @return An undirected graph that summarizes the conditional independencies in the data.
      */
-    public Graph search(List<Node> nodes) {
+    public Graph search(List<Node> nodes) throws InterruptedException {
         long startTime = MillisecondTimes.timeMillis();
         nodes = new ArrayList<>(nodes);
 
@@ -169,6 +286,10 @@ public class Fas implements IFas {
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
                 edges.add(Edges.undirectedEdge(nodes.get(i), nodes.get(j)));
             }
         }
@@ -178,19 +299,27 @@ public class Fas implements IFas {
         if (stable) {
             ConcurrentHashMap<Edge, Double> concurrentScores = new ConcurrentHashMap<>();
 
-            edges.parallelStream().forEach(edge -> {
-                if (Thread.currentThread().isInterrupted()) return;
-
-                IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
-                concurrentScores.put(edge, result.getScore());
-            });
+            try {
+                edges.parallelStream().forEach(edge -> {
+                    try {
+                        IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
+                        concurrentScores.put(edge, result.getScore());
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throw new InterruptedException();
+            }
 
             scores = new HashMap<>(concurrentScores);
         } else {
             scores = new HashMap<>();
 
             for (Edge edge : edges) {
-                if (Thread.currentThread().isInterrupted()) break;
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
 
                 IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
                 scores.put(edge, result.getScore());
@@ -343,6 +472,8 @@ public class Fas implements IFas {
         return new ArrayList<>();
     }
 
+    //==============================PRIVATE METHODS======================/
+
     /**
      * Sets the PrintStream to be used for output.
      *
@@ -374,8 +505,6 @@ public class Fas implements IFas {
     public void setStable(boolean stable) {
         this.stable = stable;
     }
-
-    //==============================PRIVATE METHODS======================/
 
     /**
      * Calculates the maximum free degree among the nodes in the given adjacency map.
@@ -412,32 +541,34 @@ public class Fas implements IFas {
      * @param depth       The maximum depth to search.
      * @return true if there are adjacencies at the given depth, false otherwise.
      */
-    private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
+    private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) throws InterruptedException {
         if (stable) {
             edges.parallelStream().forEach(edge -> {
-                if (Thread.currentThread().isInterrupted()) return;
-
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                // Check for thread interruption
-                if (Thread.currentThread().isInterrupted()) {
-                    return; // Exit this iteration
+                boolean b = false;
+                try {
+                    b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-
-                boolean b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset);
-                if (!b) checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset);
+                if (!b) {
+                    try {
+                        checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             });
         } else {
             for (Edge edge : edges) {
-                if (Thread.currentThread().isInterrupted()) break;
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                };
 
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
-
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
 
                 boolean b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset);
                 if (!b) checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset);
@@ -445,116 +576,6 @@ public class Fas implements IFas {
         }
 
         return freeDegree(adjacencies) > depth;
-    }
-
-    /**
-     * Checks if there is an adjacency between two nodes on a side.
-     *
-     * @param scores      The map of scores for each edge.
-     * @param test        The independence test to use.
-     * @param adjacencies The map of nodes and their adjacent nodes.
-     * @param depth       The maximum depth to search for adjacencies.
-     * @param x           The first node.
-     * @param y           The second node.
-     * @return True if there is an adjacency between x and y at the given depth, false otherwise.
-     */
-    private static boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies,
-                                     int depth, Node x, Node y,
-                                     PcCommon.PcHeuristicType heuristic,
-                                     Knowledge knowledge,
-                                     SepsetMap sepsets) {
-        if (!adjacencies.get(x).contains(y)) return false;
-
-        List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
-        _adjx.remove(y);
-
-        if (heuristic == PcCommon.PcHeuristicType.HEURISTIC_1 || heuristic == PcCommon.PcHeuristicType.HEURISTIC_2) {
-            Collections.sort(_adjx);
-        }
-
-        List<Node> ppx = possibleParents(x, _adjx, knowledge, y);
-
-        Map<Node, Double> scores2 = new HashMap<>();
-
-        for (Node node : ppx) {
-            if (Thread.currentThread().isInterrupted()) break;
-
-            Double _score = scores.get(Edges.undirectedEdge(node, x));
-            scores2.put(node, _score);
-        }
-
-        if (heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
-            ppx.sort(Comparator.comparing(scores2::get));
-            Collections.reverse(ppx);
-        }
-
-        if (ppx.size() >= depth) {
-            ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
-            int[] choice;
-
-            while ((choice = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Set<Node> Z = GraphUtils.asSet(choice, ppx);
-
-                boolean independent = test.checkIndependence(x, y, Z).isIndependent();
-
-                boolean noEdgeRequired = knowledge.noEdgeRequired(x.getName(), y.getName());
-
-                if (independent && noEdgeRequired) {
-                    adjacencies.get(x).remove(y);
-                    adjacencies.get(y).remove(x);
-
-                    sepsets.set(x, y, Z);
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns a list of nodes that are possible parents of a given node, based on the adjacency list of the given node,
-     * the knowledge object, and another node.
-     *
-     * @param x         The node for which to find possible parents.
-     * @param adjx      The adjacency list of the node x.
-     * @param knowledge The knowledge object that provides information about conditional independencies.
-     * @param y         Another node in the graph.
-     * @return A list of nodes that are possible parents of the node x.
-     */
-    private static List<Node> possibleParents(Node x, List<Node> adjx, Knowledge knowledge, Node y) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
-
-        for (Node z : adjx) {
-            if (z == null) continue;
-            if (z == x) continue;
-            if (z == y) continue;
-            String _z = z.getName();
-
-            if (possibleParentOf(_z, _x, knowledge)) {
-                possibleParents.add(z);
-            }
-        }
-
-        return possibleParents;
-    }
-
-    /**
-     * Determines if a given node is a possible parent of another node based on the provided knowledge.
-     *
-     * @param z         The first node.
-     * @param x         The second node.
-     * @param knowledge The knowledge object that provides information about conditional independencies.
-     * @return True if the node z is a possible parent of node x, false otherwise.
-     */
-    private static boolean possibleParentOf(String z, String x, Knowledge knowledge) {
-        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 }
 

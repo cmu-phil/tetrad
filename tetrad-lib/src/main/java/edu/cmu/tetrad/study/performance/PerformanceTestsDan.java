@@ -63,10 +63,14 @@ public class PerformanceTestsDan {
     public static void main(String... args) {
         System.out.println("Start ");
 
-        new PerformanceTestsDan().testIdaOutputForDan();
+        try {
+            new PerformanceTestsDan().testIdaOutputForDan();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void testIdaOutputForDan() {
+    private void testIdaOutputForDan() throws InterruptedException {
         final int numRuns = 100;
 
         for (int run = 0; run < numRuns; run++) {

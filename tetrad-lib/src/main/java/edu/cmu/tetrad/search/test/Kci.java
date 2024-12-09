@@ -258,14 +258,9 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param z The set of conditioning variables.
      * @return The result of the independence test.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
 
         try {
-            if (Thread.currentThread().isInterrupted()) {
-                return new IndependenceResult(new IndependenceFact(x, y, z),
-                        true, Double.NaN, Double.NaN);
-            }
-
             List<Node> allVars = getAllVars(x, y, z);
             IndependenceFact fact = new IndependenceFact(x, y, z);
             SimpleMatrix _data = getSubsetMatrix(allVars);
@@ -280,6 +275,10 @@ public class Kci implements IndependenceTest, RowsSettable {
             }
 
             double p = result.getPValue();
+
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
 
             if (result.isIndependent()) {
                 TetradLogger.getInstance().log(fact + " INDEPENDENT p = " + p);
@@ -491,6 +490,10 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, SimpleMatrix _data,
                                                           SimpleMatrix _h, Map<Node, Integer> hash) {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new RuntimeException("Interruption");
+        }
+
         List<Integer> _rows = listRows();
         int N = _rows.size();
         SimpleMatrix H = getH(N);
@@ -540,6 +543,10 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, SimpleMatrix _data,
                                                         SimpleMatrix _h, Map<Node, Integer> hash) {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new RuntimeException("Interruption");
+        }
+
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
         List<Integer> _rows = listRows();
@@ -562,6 +569,10 @@ public class Kci implements IndependenceTest, RowsSettable {
 
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new RuntimeException("Interruption");
+            }
+
             TetradLogger.getInstance().log(e.getMessage());
             boolean indep = false;
             return new IndependenceResult(fact, indep, Double.NaN, Double.NaN);
@@ -705,8 +716,8 @@ public class Kci implements IndependenceTest, RowsSettable {
         List<Integer> _z = new ArrayList<>();
         if (x != null) _z.add(hash.get(x));
         if (z != null) z.forEach(node -> _z.add(hash.get(node)));
-        double h = getH(_z, _h);
-        double width = widthMultiplier * h;
+        double h = getH(_z, _h); // For Gaussian.
+        double width = widthMultiplier * h; // For Gaussian.
         SimpleMatrix result = new SimpleMatrix(_rows.size(), _rows.size());
 
         for (int i = 0; i < _rows.size(); i++) {
@@ -716,7 +727,7 @@ public class Kci implements IndependenceTest, RowsSettable {
                     result.set(i, j, k);
                     result.set(j, i, k);
                 } else if (kernelType == KernelType.LINEAR) {
-                    double k = getLinearKernel(_data, _z, _rows.get(i), _rows.get(j), polyDegree, polyConst);
+                    double k = getLinearKernel(_data, _z, _rows.get(i), _rows.get(j));
                     result.set(i, j, k);
                     result.set(j, i, k);
                 } else if (kernelType == KernelType.POLYNOMIAL) {
@@ -761,8 +772,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param polyConstant The constant of the polynomial, not used in this method.
      * @return The computed linear kernel value for the data points at indices i and j.
      */
-    private double getLinearKernel(SimpleMatrix _data, List<Integer> _z, int i, int j,
-                                   double polyDegree, double polyConstant) {
+    private double getLinearKernel(SimpleMatrix _data, List<Integer> _z, int i, int j) {
         return dot(_data, _z, i, j);
     }
 

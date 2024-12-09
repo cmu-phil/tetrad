@@ -52,7 +52,7 @@ public interface IndependenceTest {
      * @return an IndependenceResult (see).
      * @see IndependenceResult
      */
-    IndependenceResult checkIndependence(Node x, Node y, Set<Node> z);
+    IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException;
 
     /**
      * <p>getVariables.</p>
@@ -113,7 +113,7 @@ public interface IndependenceTest {
      * @return The independence result.
      * @see IndependenceResult
      */
-    default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
+    default IndependenceResult checkIndependence(Node x, Node y, Node... z) throws InterruptedException {
         Set<Node> zList = GraphUtils.asSet(z);
         return checkIndependence(x, y, zList);
     }

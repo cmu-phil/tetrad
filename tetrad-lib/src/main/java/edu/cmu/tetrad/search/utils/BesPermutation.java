@@ -92,7 +92,7 @@ public class BesPermutation {
      * @param order    The order.
      * @param suborder The suborder.
      */
-    public void bes(Graph graph, List<Node> order, List<Node> suborder) {
+    public void bes(Graph graph, List<Node> order, List<Node> suborder) throws InterruptedException {
         Map<Node, Integer> hashIndices = new HashMap<>();
         SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
         Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
@@ -198,7 +198,7 @@ public class BesPermutation {
     }
 
     private double deleteEval(Node x, Node
-            y, Set<Node> complement, Set<Node> parents, Map<Node, Integer> hashIndices) {
+            y, Set<Node> complement, Set<Node> parents, Map<Node, Integer> hashIndices) throws InterruptedException {
         Set<Node> set = new HashSet<>(complement);
         set.addAll(parents);
         set.remove(x);
@@ -206,7 +206,7 @@ public class BesPermutation {
         return -scoreGraphChange(x, y, set, hashIndices);
     }
 
-    private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) {
+    private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) throws InterruptedException {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
 
@@ -389,13 +389,17 @@ public class BesPermutation {
                         Edge e = graph.getEdge(w, r);
 
                         if (e != null) {
-                            if (e.pointsTowards(r)) {
-                                calculateArrowsBackward(w, r, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
-                            } else if (e.pointsTowards(w)) {
-                                calculateArrowsBackward(r, w, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
-                            } else {
-                                calculateArrowsBackward(w, r, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
-                                calculateArrowsBackward(r, w, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
+                            try {
+                                if (e.pointsTowards(r)) {
+                                    calculateArrowsBackward(w, r, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
+                                } else if (e.pointsTowards(w)) {
+                                    calculateArrowsBackward(r, w, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
+                                } else {
+                                    calculateArrowsBackward(w, r, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
+                                    calculateArrowsBackward(r, w, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
+                                }
+                            } catch (InterruptedException ex) {
+                                throw new RuntimeException(ex);
                             }
                         }
                     }
@@ -447,7 +451,7 @@ public class BesPermutation {
 
     private void calculateArrowsBackward(Node a, Node b, Graph
             graph, Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node, Integer> hashIndices,
-                                         int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
+                                         int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) throws InterruptedException {
         if (existsKnowledge()) {
             if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
                 return;

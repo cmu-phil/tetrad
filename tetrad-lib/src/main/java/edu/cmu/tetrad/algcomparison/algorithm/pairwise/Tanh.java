@@ -59,7 +59,7 @@ public class Tanh extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      * @throws IllegalArgumentException if the data model is not a continuous dataset
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }

@@ -73,7 +73,7 @@ public class R3 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
      *                                  both data and a graph source as inputs but the graph is null.
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }

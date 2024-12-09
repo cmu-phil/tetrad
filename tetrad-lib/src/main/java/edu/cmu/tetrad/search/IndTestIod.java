@@ -123,7 +123,7 @@ public class IndTestIod implements IndependenceTest {
      * @param z The set of nodes.
      * @return The result of the independence test.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         List<IndependenceTest> tests = new ArrayList<>();
 
         for (IndependenceTest test : this.tests) {

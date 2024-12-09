@@ -212,7 +212,12 @@ public class TestFci {
 
         Fci fci = new Fci(test);
 
-        Graph graph = fci.search();
+        Graph graph = null;
+        try {
+            graph = fci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
 //        DagToPag dagToPag = new DagToPag(trueGraph);
 //        Graph truePag = dagToPag.convert();
@@ -288,7 +293,12 @@ public class TestFci {
         fci.setVerbose(true);
 
         // Run search
-        Graph resultGraph = fci.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = fci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         Graph pag = GraphUtils.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());

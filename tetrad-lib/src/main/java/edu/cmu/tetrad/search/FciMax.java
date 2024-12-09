@@ -137,7 +137,7 @@ public final class FciMax implements IGraphSearch {
      *
      * @return This PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
@@ -367,7 +367,11 @@ public final class FciMax implements IGraphSearch {
             protected Boolean compute() {
                 if (this.to - this.from <= this.chunk) {
                     for (int i = this.from; i < this.to; i++) {
-                        doNode(this.graph, scores, this.nodes.get(i));
+                        try {
+                            doNode(this.graph, scores, this.nodes.get(i));
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
 
                 } else {
@@ -414,7 +418,7 @@ public final class FciMax implements IGraphSearch {
      * @param scores The map of node triples to scores.
      * @param b      The node on which to perform the DO operation.
      */
-    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
+    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) throws InterruptedException {
         List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {

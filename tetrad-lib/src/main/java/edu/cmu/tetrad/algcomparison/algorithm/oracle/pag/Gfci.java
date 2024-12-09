@@ -80,7 +80,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * @param parameters The parameters to configure the search algorithm.
      * @return The inferred causal graph.
      */
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");

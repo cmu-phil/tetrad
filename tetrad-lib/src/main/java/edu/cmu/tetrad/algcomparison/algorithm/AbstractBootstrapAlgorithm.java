@@ -54,13 +54,13 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     protected AbstractBootstrapAlgorithm() {
     }
 
-    protected abstract Graph runSearch(DataModel dataSet, Parameters parameters);
+    protected abstract Graph runSearch(DataModel dataSet, Parameters parameters) throws InterruptedException;
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (dataModel instanceof CovarianceMatrix) {
             if (this instanceof TakesCovarianceMatrix) {
                 return runSearch(dataModel, parameters);

@@ -698,7 +698,7 @@ public class Cstar {
      * @param sample the dataset to use for the PC algorithm
      * @return the graph representing the stable pattern
      */
-    private Graph getPatternPcStable(DataSet sample) {
+    private Graph getPatternPcStable(DataSet sample) throws InterruptedException {
         IndependenceTest test = this.test.getTest(sample, parameters);
         test.setVerbose(false);
         Pc pc = new Pc(test);
@@ -717,7 +717,11 @@ public class Cstar {
         Score score = this.score.getScore(sample, parameters);
         Fges fges = new Fges(score);
         fges.setVerbose(false);
-        return fges.search();
+        try {
+            return fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -726,7 +730,7 @@ public class Cstar {
      * @param sample the dataset to use for the BOSS algorithm
      * @return the graph representing the pattern
      */
-    private Graph getPatternBoss(DataSet sample) {
+    private Graph getPatternBoss(DataSet sample) throws InterruptedException {
         Score score = this.score.getScore(sample, parameters);
         PermutationSearch boss = new PermutationSearch(new Boss(score));
         boss.setSeed(parameters.getLong(Params.SEED));
@@ -740,7 +744,7 @@ public class Cstar {
      * @param data   the dataset containing the variables for replacing the nodes in the resulting graph
      * @return the graph representing the pattern
      */
-    private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) {
+    private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) throws InterruptedException {
         RestrictedBoss restrictedBoss = new RestrictedBoss(score);
         parameters.set(Params.TRIMMING_STYLE, 1);
         Graph g = restrictedBoss.search(sample, parameters);

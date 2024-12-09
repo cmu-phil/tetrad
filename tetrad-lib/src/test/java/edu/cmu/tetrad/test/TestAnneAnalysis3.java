@@ -123,7 +123,7 @@ public class TestAnneAnalysis3 {
 
                     incor.close();
                     out.close();
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
             }

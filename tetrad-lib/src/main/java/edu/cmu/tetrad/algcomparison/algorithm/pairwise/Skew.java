@@ -73,7 +73,7 @@ public class Skew extends AbstractBootstrapAlgorithm implements Algorithm, Takes
      *                                  to produce a graph.
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }

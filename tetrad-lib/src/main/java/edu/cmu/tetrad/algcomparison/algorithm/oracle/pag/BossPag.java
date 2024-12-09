@@ -123,7 +123,11 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
 
-        return search.search();
+        try {
+            return search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

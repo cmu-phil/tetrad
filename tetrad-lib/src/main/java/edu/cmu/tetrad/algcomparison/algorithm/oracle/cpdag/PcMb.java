@@ -74,7 +74,7 @@ public class PcMb extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     @Override
-    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         IndependenceTest myTest = this.test.getTest(dataModel, parameters);
         edu.cmu.tetrad.search.PcMb search = new edu.cmu.tetrad.search.PcMb(myTest, parameters.getInt(Params.DEPTH));
         List<Node> myTargets = targets(myTest, parameters.getString(Params.TARGETS));

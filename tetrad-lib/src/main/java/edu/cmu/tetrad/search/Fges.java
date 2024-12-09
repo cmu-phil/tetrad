@@ -228,7 +228,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @return the resulting Pattern.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
         topGraphs.clear();
 
@@ -555,7 +555,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @see Bes
      */
-    private void bes() {
+    private void bes() throws InterruptedException {
         Bes bes = new Bes(score);
         bes.setDepth(depth);
         bes.setVerbose(verbose);
@@ -725,7 +725,7 @@ public final class Fges implements IGraphSearch, DagScorer {
             }
 
             @Override
-            public EvalPair call() {
+            public EvalPair call() throws InterruptedException {
                 for (int k = from; k < to; k++) {
                     if (Thread.currentThread().isInterrupted()) break;
                     double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
@@ -848,7 +848,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @param hashIndices The map of nodes to their corresponding indices.
      * @return The evaluation score after inserting the edge between 'x' and 'y'.
      */
-    private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents, Map<Node, Integer> hashIndices) {
+    private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents, Map<Node, Integer> hashIndices) throws InterruptedException {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(T);
         set.addAll(parents);
@@ -1205,7 +1205,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @return The score graph change between the two nodes.
      * @throws IllegalArgumentException If x is the same as y or y is one of x's parents.
      */
-    private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) {
+    private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) throws InterruptedException {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
 

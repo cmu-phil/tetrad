@@ -26,7 +26,7 @@ public class HsimCompareRepeat {
      *
      * @param args a {@link java.lang.String} object
      */
-    public static void main(String... args) {
+    public static void main(String... args) throws InterruptedException {
         final int count = 1;
 
         final int numVars = 20;

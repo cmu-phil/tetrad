@@ -141,7 +141,7 @@ public final class SvarFci implements IGraphSearch {
      *
      * @return This PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         getIndependenceTest().getVariables();
         return search(new SvarFas(getIndependenceTest()));
     }
@@ -153,7 +153,7 @@ public final class SvarFci implements IGraphSearch {
      * @return The PAG.
      * @see IFas
      */
-    public Graph search(IFas fas) {
+    public Graph search(IFas fas) throws InterruptedException {
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting SVar-FCI algorithm.");

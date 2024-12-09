@@ -105,7 +105,7 @@ public class MimbuildTrek {
      * @param measuresCov The covariance matrix over the measured variables, from the data.
      * @return A graph over the latents.
      */
-    public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) {
+    public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) throws InterruptedException {
         List<String> _latentNames = new ArrayList<>(latentNames);
 
         List<String> allVarNames = new ArrayList<>();

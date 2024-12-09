@@ -125,7 +125,12 @@ class BootstrapWorker extends Thread {
     @Override
     public void run() {
         this.start_time = MillisecondTimes.timeMillis();
-        Graph outGraph = DFC.learnBNRFCI(bootstrapSample, DFC.depth, truePag);
+        Graph outGraph = null;
+        try {
+            outGraph = DFC.learnBNRFCI(bootstrapSample, DFC.depth, truePag);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         addToList(outGraph);
         this.end_time = MillisecondTimes.timeMillis();
     }

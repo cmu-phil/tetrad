@@ -25,7 +25,12 @@ public class TestKnowledge {
 
     private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, HasKnowledge algorithm) {
         algorithm.setKnowledge(knowledge);
-        Graph _graph = ((Algorithm) algorithm).search(dataSet, parameters);
+        Graph _graph = null;
+        try {
+            _graph = ((Algorithm) algorithm).search(dataSet, parameters);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         _graph = GraphUtils.replaceNodes(_graph, dataSet.getVariables());
         Node x1 = _graph.getNode("X1");
         List<Node> innodes = _graph.getNodesOutTo(x1, Endpoint.ARROW);

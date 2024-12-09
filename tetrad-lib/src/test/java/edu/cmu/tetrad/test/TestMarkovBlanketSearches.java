@@ -49,7 +49,12 @@ public class TestMarkovBlanketSearches {
         MsepTest test = new MsepTest(graph);
 
         IMbSearch search = new GrowShrink(test);
-        Set<Node> blanket = search.findMb(test.getVariable("T"));
+        Set<Node> blanket = null;
+        try {
+            blanket = search.findMb(test.getVariable("T"));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         Set<Node> b = new HashSet<>();
         b.add(graph.getNode("X"));
@@ -69,7 +74,12 @@ public class TestMarkovBlanketSearches {
 
         MsepTest test = new MsepTest(graph);
         IMbSearch mbSearch = new GrowShrink(test);
-        Set<Node> blanket = mbSearch.findMb(test.getVariable("T"));
+        Set<Node> blanket = null;
+        try {
+            blanket = mbSearch.findMb(test.getVariable("T"));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         List<Node> mbd = GraphUtils.markovBlanketSubgraph(graph.getNode("T"), graph).getNodes();
         mbd.remove(graph.getNode("T"));
@@ -96,7 +106,11 @@ public class TestMarkovBlanketSearches {
         List<Node> nodes = dag.getNodes();
 
         for (Node node : nodes) {
-            Set<Node> resultNodes = search.findMb(node);
+            try {
+                Set<Node> resultNodes = search.findMb(node);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             Graph trueMb = GraphUtils.markovBlanketSubgraph(node, dag);
             Set<Node> trueNodes = new HashSet<>(trueMb.getNodes());

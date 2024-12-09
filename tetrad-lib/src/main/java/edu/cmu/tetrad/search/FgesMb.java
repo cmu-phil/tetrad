@@ -282,7 +282,7 @@ public final class FgesMb implements DagScorer {
      * @param targets a {@link java.util.List} object
      * @return the resulting Pattern.
      */
-    public Graph search(List<Node> targets) {
+    public Graph search(List<Node> targets) throws InterruptedException {
         if (targets == null || targets.isEmpty()) {
             throw new IllegalArgumentException("Target(s) weren't specified");
         }
@@ -352,7 +352,7 @@ public final class FgesMb implements DagScorer {
      * Sets the mode to coverNoncolliders. 7. Performs fes again. 8. Performs bes again. 9. If faithfulnessAssumed is
      * false, sets the mode to allowUnfaithfulness and performs fes and bes again.
      */
-    private void doLoop() {
+    private void doLoop() throws InterruptedException {
         addRequiredEdges(graph);
 
         initializeEffectEdges(getVariables());
@@ -682,7 +682,7 @@ public final class FgesMb implements DagScorer {
      *
      * @see Bes
      */
-    private void bes() {
+    private void bes() throws InterruptedException {
         Bes bes = new Bes(score);
         bes.setDepth(depth);
         bes.setVerbose(verbose);
@@ -855,7 +855,7 @@ public final class FgesMb implements DagScorer {
             }
 
             @Override
-            public EvalPair call() {
+            public EvalPair call() throws InterruptedException {
                 for (int k = from; k < to; k++) {
                     if (Thread.currentThread().isInterrupted()) break;
                     double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
@@ -987,7 +987,7 @@ public final class FgesMb implements DagScorer {
      * @return The evaluation score after inserting nodes into the graph.
      */
     private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents,
-                              Map<Node, Integer> hashIndices) {
+                              Map<Node, Integer> hashIndices) throws InterruptedException {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(T);
         set.addAll(parents);
@@ -1340,7 +1340,7 @@ public final class FgesMb implements DagScorer {
      * @throws IllegalArgumentException if x and y are the same node, or if y is already a parent of x
      */
     private double scoreGraphChange(Node x, Node y, Set<Node> parents,
-                                    Map<Node, Integer> hashIndices) {
+                                    Map<Node, Integer> hashIndices) throws InterruptedException {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
 

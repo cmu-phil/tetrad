@@ -109,7 +109,11 @@ public class FgesMb extends AbstractBootstrapAlgorithm implements Algorithm, Has
 
         this.targets = myTargets;
 
-        return search.search(myTargets);
+        try {
+            return search.search(myTargets);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

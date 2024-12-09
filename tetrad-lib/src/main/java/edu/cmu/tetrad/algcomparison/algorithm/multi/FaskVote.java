@@ -89,7 +89,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
      * {@inheritDoc}
      */
     @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+    public Graph search(List<DataModel> dataSets, Parameters parameters) throws InterruptedException {
         for (DataModel d : dataSets) {
             if (((DataSet) d).existsMissingValue()) {
                 throw new IllegalArgumentException("Please remove or impute missing values.");
@@ -111,7 +111,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
     }
 

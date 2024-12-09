@@ -57,8 +57,14 @@ public class TestFas {
 
         IndependenceTest test = new MsepTest(graph);
 
-        Graph fasGraph = new Fas(test).search();
-        Graph pcGraph = new Pc(test).search();
+        Graph fasGraph = null;
+        Graph pcGraph = null;
+        try {
+            fasGraph = new Fas(test).search();
+            pcGraph = new Pc(test).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         assertEquals(fasGraph, GraphUtils.undirectedGraph(pcGraph));
     }

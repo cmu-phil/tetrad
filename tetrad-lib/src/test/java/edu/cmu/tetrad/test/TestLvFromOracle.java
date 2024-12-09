@@ -94,7 +94,12 @@ public class TestLvFromOracle {
 
         LV_ALGORITHMS algorithm = LV_ALGORITHMS.LV_LITE;
 
-        Graph estimated = new LvLite(msepTest, score).search();
+        Graph estimated = null;
+        try {
+            estimated = new LvLite(msepTest, score).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 //
 //           Graph estimated = new GFci(msepTest, score).search();
 

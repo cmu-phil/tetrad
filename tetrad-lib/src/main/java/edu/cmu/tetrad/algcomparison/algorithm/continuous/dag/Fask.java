@@ -78,7 +78,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * @throws IllegalArgumentException if there are missing values in the data set
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (!(dataModel instanceof DataSet dataSet)) {
             throw new IllegalStateException("Expecting a dataset.");
         }

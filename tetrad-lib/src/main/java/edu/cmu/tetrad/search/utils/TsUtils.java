@@ -162,7 +162,7 @@ public class TsUtils {
      * @param numLags    a int
      * @return a {@link edu.cmu.tetrad.search.utils.TsUtils.VarResult} object
      */
-    public static VarResult structuralVar(DataSet timeSeries, int numLags) {
+    public static VarResult structuralVar(DataSet timeSeries, int numLags) throws InterruptedException {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
         Knowledge knowledge = timeLags.getKnowledge().copy();
 

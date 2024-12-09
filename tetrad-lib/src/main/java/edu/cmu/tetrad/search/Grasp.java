@@ -172,7 +172,7 @@ public class Grasp {
      * @param order The initial permutation.
      * @return The discovered permutation at the end of the procedure.
      */
-    public List<Node> bestOrder(@NotNull List<Node> order) {
+    public List<Node> bestOrder(@NotNull List<Node> order) throws InterruptedException {
         if (seed != -1) {
             RandomUtil.getInstance().setSeed(seed);
         }
@@ -414,7 +414,7 @@ public class Grasp {
      * @param scorer The scorer used to evaluate the permutations.
      * @return A list of Node objects representing the discovered permutation at the end of the procedure.
      */
-    private List<Node> grasp(@NotNull TeyssierScorer scorer) {
+    private List<Node> grasp(@NotNull TeyssierScorer scorer) throws InterruptedException {
         scorer.clearBookmarks();
         List<int[]> depths = new ArrayList<>();
 
@@ -508,7 +508,7 @@ public class Grasp {
      * @param dfsHistory   a set of sets of sets of nodes representing the DFS history
      */
     private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
-                          Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
+                          Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) throws InterruptedException {
         List<Node> vars = scorer.getPi();
 
         if (allowInternalRandomness) {

@@ -35,7 +35,7 @@ public interface ClassifierDiscrete {
      *
      * @return an array with a classification (estimated value) of a target variable for each case in a DataSet.
      */
-    int[] classify();
+    int[] classify() throws InterruptedException;
 
     /**
      * <p>crossTabulation.</p>

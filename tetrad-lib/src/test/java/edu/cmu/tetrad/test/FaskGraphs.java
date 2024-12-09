@@ -126,6 +126,8 @@ public class FaskGraphs {
                     System.out.println("Loaded " + name);
                 } catch (IOException e) {
                     System.out.println("File " + name + " could not be parsed.");
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }

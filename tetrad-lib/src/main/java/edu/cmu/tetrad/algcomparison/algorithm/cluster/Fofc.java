@@ -126,7 +126,12 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
                 latentNames.add(clusters.getClusterName(i));
             }
 
-            Graph structureGraph = mimbuild.search(partition, latentNames, cov);
+            Graph structureGraph = null;
+            try {
+                structureGraph = mimbuild.search(partition, latentNames, cov);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             LayoutUtil.defaultLayout(structureGraph);
             LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 

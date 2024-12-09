@@ -259,7 +259,7 @@ public class DMSearch {
      *
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
 
         int[] trueInputs = getTrueInputs();
 
@@ -750,7 +750,7 @@ public class DMSearch {
     }
 
     // Uses previous runs of GES as new knowledge for a additional runs of GES with lower penalty discounts.
-    private Graph recursiveGES(Graph previousGES, Knowledge knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) {
+    private Graph recursiveGES(Graph previousGES, Knowledge knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) throws InterruptedException {
 
         for (Edge edge : previousGES.getEdges()) {
             knowledge.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
@@ -813,6 +813,8 @@ public class DMSearch {
             System.out.println(outputsLatent.first());
             System.out.println("outputsLatentEffect.first()");
             System.out.println(outputsLatentEffect.first());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         if (testResult) {
             structure.latentEffects.get(latent).remove(latentEffect);

@@ -86,15 +86,22 @@ public class TestIndTestFisherZ {
         IndependenceTest test1 = new IndTestFisherZ(data1, 0.05);
         IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
 
-        IndependenceResult result1 = test1.checkIndependence(data1.getVariable(x.getName()), data1.getVariable(y.getName()));
-        double p1 = result1.getPValue();
+        double p1 = 0;
+        double p2 = 0;
+        double p3 = 0;
+        try {
+            IndependenceResult result1 = test1.checkIndependence(data1.getVariable(x.getName()), data1.getVariable(y.getName()));
+            p1 = result1.getPValue();
 
-        IndependenceResult result2 = test2.checkIndependence(data2.getVariable(x.getName()), data2.getVariable(z.getName()),
-                data2.getVariable(y.getName()));
-        double p2 = result2.getPValue();
+            IndependenceResult result2 = test2.checkIndependence(data2.getVariable(x.getName()), data2.getVariable(z.getName()),
+                    data2.getVariable(y.getName()));
+            p2 = result2.getPValue();
 
-        IndependenceResult result3 = test2.checkIndependence(data2.getVariable(x.getName()), data2.getVariable(z.getName()));
-        double p3 = result3.getPValue();
+            IndependenceResult result3 = test2.checkIndependence(data2.getVariable(x.getName()), data2.getVariable(z.getName()));
+            p3 = result3.getPValue();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         assertEquals(0.0, p1, 0.01);
         assertEquals(0.0, p2, 0.01);

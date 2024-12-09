@@ -76,7 +76,7 @@ public class ImagesScore implements Score {
      * methods. Score differences that are returned as undefined (NaN) are excluded from the average.
      */
     @Override
-    public double localScoreDiff(int x, int y, int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) throws InterruptedException {
         double sum = 0.0;
         int count = 0;
 

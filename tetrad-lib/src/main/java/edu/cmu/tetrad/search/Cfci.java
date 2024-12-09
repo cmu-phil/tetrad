@@ -121,7 +121,7 @@ public final class Cfci implements IGraphSearch {
      *
      * @return The search PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long beginTime = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
@@ -297,7 +297,7 @@ public final class Cfci implements IGraphSearch {
         return this.pag;
     }
 
-    private void ruleR0(IndependenceTest test, int depth, SepsetMap sepsets) {
+    private void ruleR0(IndependenceTest test, int depth, SepsetMap sepsets) throws InterruptedException {
         if (this.verbose) {
             TetradLogger.getInstance().log("Starting Collider Orientation:");
         }
@@ -355,7 +355,7 @@ public final class Cfci implements IGraphSearch {
     }
 
     private TripleType getTripleType(Node x, Node y, Node z,
-                                     IndependenceTest test, int depth) {
+                                     IndependenceTest test, int depth) throws InterruptedException {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 

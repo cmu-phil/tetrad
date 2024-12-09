@@ -23,7 +23,7 @@ public interface MultiDataSetAlgorithm extends Algorithm {
      * @param parameters The parameters.
      * @return The graph.
      */
-    Graph search(List<DataModel> dataSets, Parameters parameters);
+    Graph search(List<DataModel> dataSets, Parameters parameters) throws InterruptedException;
 
     /**
      * Sets a score wrapper if not null.

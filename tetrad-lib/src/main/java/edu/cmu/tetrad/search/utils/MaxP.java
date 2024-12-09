@@ -65,7 +65,7 @@ public final class MaxP {
      *
      * @param graph The graph to orient.
      */
-    public synchronized void orient(Graph graph) {
+    public synchronized void orient(Graph graph) throws InterruptedException {
         addColliders(graph);
     }
 
@@ -119,7 +119,7 @@ public final class MaxP {
         this.knowledge = knowledge;
     }
 
-    private void addColliders(Graph graph) {
+    private void addColliders(Graph graph) throws InterruptedException {
         Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
         List<Node> nodes = graph.getNodes();
@@ -146,7 +146,7 @@ public final class MaxP {
         }
     }
 
-    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
+    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) throws InterruptedException {
         List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
@@ -181,7 +181,7 @@ public final class MaxP {
         }
     }
 
-    private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
+    private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) throws InterruptedException {
         List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
         List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
         adja.remove(c);
@@ -238,7 +238,7 @@ public final class MaxP {
         }
     }
 
-    private void testColliderHeuristic(Graph graph, Map<Triple, Double> colliders, Node a, Node b, Node c) {
+    private void testColliderHeuristic(Graph graph, Map<Triple, Double> colliders, Node a, Node b, Node c) throws InterruptedException {
         if (this.knowledge.isForbidden(a.getName(), b.getName())) {
             return;
         }

@@ -201,7 +201,7 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
      *
      * @return The classifications.
      */
-    public int[] classify() {
+    public int[] classify() throws InterruptedException {
         IndependenceTest indTest = new IndTestChiSquare(this.train, this.alpha);
 
         PcMb search = new PcMb(indTest, this.depth);
@@ -216,7 +216,12 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
         System.out.println("subset vars = " + subset.getVariables());
 
         Pc cpdagSearch = new Pc(new IndTestChiSquare(subset, 0.05));
-        Graph mbCPDAG = cpdagSearch.search();
+        Graph mbCPDAG = null;
+        try {
+            mbCPDAG = cpdagSearch.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         TetradLogger.getInstance().log("CPDAG = " + mbCPDAG);
         MbUtils.trimToMbNodes(mbCPDAG, this.target, true);

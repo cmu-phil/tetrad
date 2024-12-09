@@ -85,7 +85,7 @@ public final class LvDumb implements IGraphSearch {
      *
      * @return The PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         List<Node> nodes = this.score.getVariables();
 
         if (nodes == null) {

@@ -97,7 +97,11 @@ public class Fges extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setOut(System.out);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        graph = search.search();
+        try {
+            graph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         LogUtilsSearch.stampWithScore(graph, myScore);
         LogUtilsSearch.stampWithBic(graph, dataModel);

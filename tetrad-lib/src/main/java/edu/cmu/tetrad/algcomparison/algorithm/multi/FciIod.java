@@ -74,7 +74,7 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
      * {@inheritDoc}
      */
     @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+    public Graph search(List<DataModel> dataSets, Parameters parameters) throws InterruptedException {
         List<DataModel> _dataSets = new ArrayList<>();
 
         if (parameters.getInt(Params.TIME_LAG) > 0) {
@@ -130,7 +130,7 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
 

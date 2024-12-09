@@ -72,7 +72,7 @@ public class R2 extends AbstractBootstrapAlgorithm implements Algorithm, TakesEx
      *                                  not find a graph result.
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }

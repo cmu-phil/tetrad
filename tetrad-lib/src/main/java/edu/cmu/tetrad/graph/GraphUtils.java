@@ -1778,7 +1778,7 @@ public final class GraphUtils {
      * @param verbose Whether to print verbose output.
      */
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes,
-                                                SepsetProducer sepsets, int depth, boolean verbose) {
+                                                SepsetProducer sepsets, int depth, boolean verbose) throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting extra-edge removal step.");
         }
@@ -2332,7 +2332,7 @@ public final class GraphUtils {
      * @param unshieldedTriples A set to store unshielded triples.
      */
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
-                              boolean verbose, Set<Triple> unshieldedTriples) {
+                              boolean verbose, Set<Triple> unshieldedTriples) throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting GFCI-R0.");
         }
@@ -3554,7 +3554,7 @@ public final class GraphUtils {
      * @throws IllegalArgumentException if ensureMarkov is false.
      */
     public static double localMarkovInitializePValues(Graph dag, boolean ensureMarkov, IndependenceTest test,
-                                                      Map<Pair<Node, Node>, Set<Double>> pValues) {
+                                                      Map<Pair<Node, Node>, Set<Double>> pValues) throws InterruptedException {
         if (!ensureMarkov) {
             throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
         }

@@ -1617,7 +1617,7 @@ public class Paths implements TetradSerializable {
      * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
      *                recorded.
      */
-    public void removeByPossibleMsep(IndependenceTest test, SepsetMap sepsets) {
+    public void removeByPossibleMsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
         for (Edge edge : graph.getEdges()) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();

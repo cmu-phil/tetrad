@@ -280,7 +280,7 @@ public final class VcPcAlt implements IGraphSearch {
      *
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting VCCPC algorithm");
@@ -569,7 +569,7 @@ public final class VcPcAlt implements IGraphSearch {
     }
 
     private void orientUnshieldedTriples(Knowledge knowledge,
-                                         IndependenceTest test, int depth) {
+                                         IndependenceTest test, int depth) throws InterruptedException {
         TetradLogger.getInstance().log("Starting Collider Orientation:");
 
         this.colliderTriples = new HashSet<>();

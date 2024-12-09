@@ -321,7 +321,12 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
             svcpc.setSemIm(this.semIm);
         }
 
-        Graph graph = svcpc.search();
+        Graph graph = null;
+        try {
+            graph = svcpc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());

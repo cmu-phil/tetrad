@@ -73,7 +73,7 @@ public interface Score {
      * @param z A set of nodes.
      * @return The score difference.
      */
-    default double localScoreDiff(int x, int y, int[] z) {
+    default double localScoreDiff(int x, int y, int[] z) throws InterruptedException {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 

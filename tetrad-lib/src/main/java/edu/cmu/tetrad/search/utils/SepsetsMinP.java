@@ -97,7 +97,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @param depth The depth of the search
      * @return The sepset between the two nodes
      */
-    public Set<Node> getSepset(Node i, Node k, int depth) {
+    public Set<Node> getSepset(Node i, Node k, int depth) throws InterruptedException {
         return SepsetFinder.getSepsetContainingMinPHybrid(graph, i, k, null, this.independenceTest, depth);
     }
 
@@ -112,7 +112,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @return The sepset between the two nodes
      */
     @Override
-    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) throws InterruptedException {
         return SepsetFinder.getSepsetContainingMinPHybrid(graph, i, k, s, this.independenceTest, depth);
     }
 
@@ -125,7 +125,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @param depth The depth of the search.
      * @return true if the collider node is unshielded between the two nodes, false otherwise.
      */
-    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException {
         Set<Node> set = SepsetFinder.getSepsetContainingMinPHybrid(graph, i, k, null, this.independenceTest, depth);
         return set != null && !set.contains(j);
     }
@@ -139,7 +139,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @return true if the two nodes are independent, false otherwise.
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         this.result = result;
         return result.isIndependent();
@@ -154,7 +154,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @return the p-value for the independence test
      */
     @Override
-    public double getPValue(Node a, Node b, Set<Node> sepset) {
+    public double getPValue(Node a, Node b, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         return result.getPValue();
     }

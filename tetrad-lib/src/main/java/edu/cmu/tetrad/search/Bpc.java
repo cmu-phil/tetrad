@@ -140,7 +140,7 @@ public final class Bpc {
      *
      * @return This graph.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
 
         TetradLogger.getInstance().log("BPC alpha = " + this.alpha + " test = " + this.sigTestType);
@@ -485,7 +485,7 @@ public final class Bpc {
      *
      * For the discrete test, we just use g-square.
      */
-    private boolean uncorrelated(int v1, int v2) {
+    private boolean uncorrelated(int v1, int v2) throws InterruptedException {
 
         if (getCovarianceMatrix() != null) {
             List<Node> variables = getCovarianceMatrix().getVariables();
@@ -1202,7 +1202,7 @@ public final class Bpc {
 
     /******************** MAIN ALGORITHM: INITIALIZATION************************************/
 
-    private List<int[]> initialMeasurementPattern(int[][] ng, int[][] cv, List<Node> variables) {
+    private List<int[]> initialMeasurementPattern(int[][] ng, int[][] cv, List<Node> variables) throws InterruptedException {
         boolean[][] notYellow = new boolean[numVariables()][numVariables()];
 
         /* Stage 1: identify (partially) uncorrelated and impure pairs */
@@ -1552,7 +1552,7 @@ public final class Bpc {
 
     /******************************* MAIN ALGORITHM: CORE ***************************************/
 
-    private List<int[]> findMeasurementPattern(List<Node> variables) {
+    private List<int[]> findMeasurementPattern(List<Node> variables) throws InterruptedException {
         int[][] ng = new int[numVariables()][numVariables()];
         int[][] cv = new int[numVariables()][numVariables()];
         boolean[] selected = new boolean[numVariables()];

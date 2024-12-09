@@ -67,7 +67,7 @@ public class SepsetsMaxP implements SepsetProducer {
      * @param depth The depth of the search.
      * @return The sepset between the two nodes containing the specified set of nodes.
      */
-    public Set<Node> getSepset(Node i, Node k, int depth) {
+    public Set<Node> getSepset(Node i, Node k, int depth) throws InterruptedException {
         return SepsetFinder.getSepsetContainingMaxPHybrid(graph, i, k, null, this.independenceTest, depth);
     }
 
@@ -82,7 +82,7 @@ public class SepsetsMaxP implements SepsetProducer {
      * @return The sepset between the two nodes containing the specified set of nodes
      */
     @Override
-    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) throws InterruptedException {
         return SepsetFinder.getSepsetContainingMaxPHybrid(graph, i, k, s, this.independenceTest, depth);
     }
 
@@ -95,7 +95,7 @@ public class SepsetsMaxP implements SepsetProducer {
      * @param depth The depth of the search.
      * @return true if the node j is an unshielded collider between nodes i and k, false otherwise.
      */
-    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException {
         Set<Node> set = SepsetFinder.getSepsetContainingMaxPHybrid(graph, i, k, null, this.independenceTest, depth);
         return set != null && !set.contains(j);
     }
@@ -109,7 +109,7 @@ public class SepsetsMaxP implements SepsetProducer {
      * @return true if the nodes a and b are independent, false otherwise
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         this.result = result;
         return result.isIndependent();
@@ -125,7 +125,7 @@ public class SepsetsMaxP implements SepsetProducer {
      * @return The p-value from the independence test result
      */
     @Override
-    public double getPValue(Node a, Node b, Set<Node> sepset) {
+    public double getPValue(Node a, Node b, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         return result.getPValue();
     }

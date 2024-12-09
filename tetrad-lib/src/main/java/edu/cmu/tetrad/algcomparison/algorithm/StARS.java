@@ -91,7 +91,12 @@ public class StARS implements Algorithm {
             protected void compute() {
                 if (this.to - this.from <= this.chunk) {
                     for (int s = this.from; s < this.to; s++) {
-                        Graph e = algorithm.search(samples.get(s), params);
+                        Graph e = null;
+                        try {
+                            e = algorithm.search(samples.get(s), params);
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
                         e = GraphUtils.replaceNodes(e, samples.get(0).getVariables());
                         graphs.add(e);
                     }
@@ -165,7 +170,7 @@ public class StARS implements Algorithm {
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         DataSet _dataSet;
 
         _dataSet = (DataSet) dataSet;//.subsetColumns(cols);

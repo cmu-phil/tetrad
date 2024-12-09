@@ -133,7 +133,7 @@ public final class SpFci implements IGraphSearch {
      *
      * @return This PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
