@@ -112,6 +112,9 @@ public class Kci implements IndependenceTest, RowsSettable {
      * The rows used in the test.
      */
     private List<Integer> rows = null;
+    private static final Map<Integer, SimpleMatrix> onesHash = new HashMap<>();
+    private static final Map<Integer, SimpleMatrix> identityMap = new HashMap<>();
+    private static final Map<Integer, SimpleMatrix> hMap = new HashMap<>();
 
     /**
      * Constructor.
@@ -490,9 +493,7 @@ public class Kci implements IndependenceTest, RowsSettable {
                                                           SimpleMatrix _h, Map<Node, Integer> hash) {
         List<Integer> _rows = listRows();
         int N = _rows.size();
-        SimpleMatrix ones = getOnes(N);
-        SimpleMatrix I = SimpleMatrix.identity(N);
-        SimpleMatrix H = I.minus(ones.mult(ones.transpose()).scale(1.0 / N));
+        SimpleMatrix H = getH(N);
         SimpleMatrix k1 = kernelMatrix(_data, x, null, this.widthMultiplier, hash, _h, _rows);
         SimpleMatrix kx = H.mult(k1).mult(H);
         SimpleMatrix k = kernelMatrix(_data, y, null, this.widthMultiplier, hash, _h, _rows);
@@ -510,6 +511,28 @@ public class Kci implements IndependenceTest, RowsSettable {
         }
     }
 
+    private static @NotNull SimpleMatrix getI(int N) {
+        SimpleMatrix I = identityMap.get(N);
+
+        if (I == null) {
+            I = SimpleMatrix.identity(N);
+            identityMap.put(N, I);
+        }
+
+        return I;
+    }
+
+    private static SimpleMatrix getH(int N) {
+        SimpleMatrix H = hMap.get(N);
+
+        if (H == null) {
+            H = getI(N).minus(getOnes(N).mult(getOnes(N).transpose()).scale(1.0 / N));
+            hMap.put(N, H);
+        }
+
+        return H;
+    }
+
     /*
      * Returns the KCI independence result for the conditional case. Uses Theorem 3 from the paper.
      *
@@ -521,9 +544,8 @@ public class Kci implements IndependenceTest, RowsSettable {
         Collections.sort(z);
         List<Integer> _rows = listRows();
         int N = _rows.size();
-        SimpleMatrix ones = getOnes(N);
-        SimpleMatrix I = SimpleMatrix.identity(N);
-        SimpleMatrix H = I.minus(ones.mult(ones.transpose()).scale(1.0 / N));
+        SimpleMatrix I = getI(N);
+        SimpleMatrix H = getH(N);
 
         try {
             SimpleMatrix k4 = kernelMatrix(_data, x, z, this.widthMultiplier, hash, _h, _rows);
@@ -688,7 +710,7 @@ public class Kci implements IndependenceTest, RowsSettable {
         SimpleMatrix result = new SimpleMatrix(_rows.size(), _rows.size());
 
         for (int i = 0; i < _rows.size(); i++) {
-            for (int j = 0; j < _rows.size(); j++) {
+            for (int j = i; j < _rows.size(); j++) {
                 if (kernelType == KernelType.GAUSSIAN) {
                     double k = getGaussianKernel(_data, _z, _rows.get(i), _rows.get(j), width);
                     result.set(i, j, k);
@@ -827,9 +849,15 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param n the size of the column vector to be created
      * @return a SimpleMatrix object representing the column vector of ones
      */
-    private @NotNull SimpleMatrix getOnes(int n) {
-        SimpleMatrix ones = new SimpleMatrix(n, 1);
-        for (int j = 0; j < n; j++) ones.set(j, 0, 1);
+    private @NotNull static SimpleMatrix getOnes(int n) {
+        SimpleMatrix ones = onesHash.get(n);
+
+        if (ones == null) {
+            ones = new SimpleMatrix(n, 1);
+            for (int j = 0; j < n; j++) ones.set(j, 0, 1);
+            onesHash.put(n, ones);
+        }
+
         return ones;
     }
 
@@ -924,35 +952,6 @@ public class Kci implements IndependenceTest, RowsSettable {
         // TODO See if this is a bottleneck and if so optimize
         DataSet data = this.dataSet.subsetColumns(getCols(allVars));
         return new SimpleMatrix(data.getDoubleData().transpose().toArray());
-    }
-
-    /**
-     * Retrieves the list of row indices from a given matrix that do not contain NaN values for any specified nodes.
-     *
-     * @param data      The matrix containing the data.
-     * @param allVars   The list of nodes to be checked.
-     * @param nodesHash A map associating each node with its respective column index in the matrix.
-     * @return A list of row indices where none of the specified nodes' values are NaN in the matrix.
-     */
-    private List<Integer> getRows(SimpleMatrix data, List<Node> allVars, Map<Node, Integer> nodesHash) {
-        var _rows = getRows();
-        var rows = new ArrayList<Integer>();
-
-        for (var k : _rows) {
-            var hasNaN = false;
-            for (var node : allVars) {
-                if (Double.isNaN(data.get(k, nodesHash.get(node)))) {
-                    hasNaN = true;
-                    break;
-                }
-            }
-
-            if (!hasNaN) {
-                rows.add(k);
-            }
-        }
-
-        return rows;
     }
 
     /**
