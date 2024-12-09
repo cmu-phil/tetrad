@@ -10,7 +10,8 @@ import java.util.List;
 import static java.lang.Math.sqrt;
 
 /**
- * The class is used to find the top eigenvalues and eigenvectors of a given matrix.
+ * The class is used to find the top eigenvalues and eigenvectors of a given matrix. The top eigenvalues are those that
+ * are greater than a given threshold times the largest eigenvalue.
  *
  * @author josephramsey
  */
