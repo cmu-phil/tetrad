@@ -44,6 +44,9 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public class Kci implements IndependenceTest, RowsSettable {
 
+    private static final Map<Integer, SimpleMatrix> onesHash = new HashMap<>();
+    private static final Map<Integer, SimpleMatrix> identityMap = new HashMap<>();
+    private static final Map<Integer, SimpleMatrix> hMap = new HashMap<>();
     /**
      * The dataset to analyze.
      */
@@ -112,9 +115,6 @@ public class Kci implements IndependenceTest, RowsSettable {
      * The rows used in the test.
      */
     private List<Integer> rows = null;
-    private static final Map<Integer, SimpleMatrix> onesHash = new HashMap<>();
-    private static final Map<Integer, SimpleMatrix> identityMap = new HashMap<>();
-    private static final Map<Integer, SimpleMatrix> hMap = new HashMap<>();
 
     /**
      * Constructor.
@@ -243,6 +243,47 @@ public class Kci implements IndependenceTest, RowsSettable {
         return 1.5716 * mad * FastMath.pow(N, -0.2);
     }
 
+    private static @NotNull SimpleMatrix getI(int N) {
+        SimpleMatrix I = identityMap.get(N);
+
+        if (I == null) {
+            I = SimpleMatrix.identity(N);
+            identityMap.put(N, I);
+        }
+
+        return I;
+    }
+
+    private static SimpleMatrix getH(int N) {
+        SimpleMatrix H = hMap.get(N);
+
+        if (H == null) {
+            H = getI(N).minus(getOnes(N).mult(getOnes(N).transpose()).scale(1.0 / N));
+            hMap.put(N, H);
+        }
+
+        return H;
+    }
+
+    /**
+     * Creates a column vector of size n filled with ones.
+     *
+     * @param n the size of the column vector to be created
+     * @return a SimpleMatrix object representing the column vector of ones
+     */
+    private @NotNull
+    static SimpleMatrix getOnes(int n) {
+        SimpleMatrix ones = onesHash.get(n);
+
+        if (ones == null) {
+            ones = new SimpleMatrix(n, 1);
+            for (int j = 0; j < n; j++) ones.set(j, 0, 1);
+            onesHash.put(n, ones);
+        }
+
+        return ones;
+    }
+
     /**
      * @throws UnsupportedOperationException since not implemented.
      */
@@ -259,6 +300,9 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @return The result of the independence test.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
 
         try {
             List<Node> allVars = getAllVars(x, y, z);
@@ -489,9 +533,9 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @return true, just in case independence holds.
      */
     private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, SimpleMatrix _data,
-                                                          SimpleMatrix _h, Map<Node, Integer> hash) {
+                                                          SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
-            throw new RuntimeException("Interruption");
+            throw new InterruptedException();
         }
 
         List<Integer> _rows = listRows();
@@ -514,37 +558,15 @@ public class Kci implements IndependenceTest, RowsSettable {
         }
     }
 
-    private static @NotNull SimpleMatrix getI(int N) {
-        SimpleMatrix I = identityMap.get(N);
-
-        if (I == null) {
-            I = SimpleMatrix.identity(N);
-            identityMap.put(N, I);
-        }
-
-        return I;
-    }
-
-    private static SimpleMatrix getH(int N) {
-        SimpleMatrix H = hMap.get(N);
-
-        if (H == null) {
-            H = getI(N).minus(getOnes(N).mult(getOnes(N).transpose()).scale(1.0 / N));
-            hMap.put(N, H);
-        }
-
-        return H;
-    }
-
     /*
      * Returns the KCI independence result for the conditional case. Uses Theorem 3 from the paper.
      *
      * @return true just in case independence holds.
      */
     private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, SimpleMatrix _data,
-                                                        SimpleMatrix _h, Map<Node, Integer> hash) {
+                                                        SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
-            throw new RuntimeException("Interruption");
+            throw new InterruptedException();
         }
 
         List<Node> z = new ArrayList<>(_z);
@@ -569,10 +591,6 @@ public class Kci implements IndependenceTest, RowsSettable {
 
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
-            if (Thread.currentThread().isInterrupted()) {
-                throw new RuntimeException("Interruption");
-            }
-
             TetradLogger.getInstance().log(e.getMessage());
             boolean indep = false;
             return new IndependenceResult(fact, indep, Double.NaN, Double.NaN);
@@ -588,7 +606,11 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param N     The sample size.
      * @return The independence result.
      */
-    private IndependenceResult theorem4(SimpleMatrix kernx, SimpleMatrix kerny, IndependenceFact fact, int N) {
+    private IndependenceResult theorem4(SimpleMatrix kernx, SimpleMatrix kerny, IndependenceFact fact, int N) throws InterruptedException {
+
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
 
         double T = (1.0 / N) * (kernx.mult(kerny).trace());
 
@@ -631,7 +653,11 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param N    The size of the input dataset.
      * @return The independence result.
      */
-    private IndependenceResult proposition5(SimpleMatrix kx, SimpleMatrix ky, IndependenceFact fact, int N) {
+    private IndependenceResult proposition5(SimpleMatrix kx, SimpleMatrix ky, IndependenceFact fact, int N) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
+
         double T = (1.0 / N) * kx.mult(ky).trace();
 
         EigenReturn eigendecompositionx = new TopEigenvalues(kx).invoke(true, threshold);
@@ -711,7 +737,11 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @return the calculated kernel matrix
      */
     private SimpleMatrix kernelMatrix(SimpleMatrix _data, Node x, List<Node> z, double widthMultiplier,
-                                      Map<Node, Integer> hash, SimpleMatrix _h, List<Integer> _rows) {
+                                      Map<Node, Integer> hash, SimpleMatrix _h, List<Integer> _rows) throws InterruptedException {
+
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
 
         List<Integer> _z = new ArrayList<>();
         if (x != null) _z.add(hash.get(x));
@@ -851,24 +881,6 @@ public class Kci implements IndependenceTest, RowsSettable {
         }
 
         return sum;
-    }
-
-    /**
-     * Creates a column vector of size n filled with ones.
-     *
-     * @param n the size of the column vector to be created
-     * @return a SimpleMatrix object representing the column vector of ones
-     */
-    private @NotNull static SimpleMatrix getOnes(int n) {
-        SimpleMatrix ones = onesHash.get(n);
-
-        if (ones == null) {
-            ones = new SimpleMatrix(n, 1);
-            for (int j = 0; j < n; j++) ones.set(j, 0, 1);
-            onesHash.put(n, ones);
-        }
-
-        return ones;
     }
 
     /**
