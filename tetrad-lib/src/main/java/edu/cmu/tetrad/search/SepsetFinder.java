@@ -224,8 +224,8 @@ public class SepsetFinder {
     }
 
     /**
-     * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
-     * to be conditioned on to render two nodes conditionally independent.
+     * Retrieves set that blocks all blockable paths between x and y in the given graph, where this set contains the
+     * given nodes.
      *
      * @param graph         the graph to analyze
      * @param x             the first node
@@ -321,6 +321,19 @@ public class SepsetFinder {
         return getPathBlockingSetRecursiveVisit(graph, x, y, containing, notFollowing, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
+    /**
+     * Helper method to find a set of nodes that blocks all paths from node x to node y in a graph, considering a
+     * maximum path length and a set of nodes that must be included in the blocking set.
+     *
+     * @param graph         The graph containing the nodes.
+     * @param x             The starting node of the path.
+     * @param y             The ending node of the path.
+     * @param containing    The set of nodes that must be included in the blocking set.
+     * @param notFollowed   The set of nodes that should not be followed along paths.
+     * @param ancestorMap   A map of ancestors for each node.
+     * @param maxPathLength The maximum length of the paths to consider.
+     * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
+     */
     private static Set<Node> getPathBlockingSetRecursiveVisit(Graph graph, Node x, Node y, Set<Node> containing,
                                                               Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength) {
         if (x == y) {
@@ -346,6 +359,27 @@ public class SepsetFinder {
         return z;
     }
 
+    /**
+     * Finds a path from node a to node b that can be blocked by conditioning on a set of nodes z. The method returns
+     * true if the path can be blocked, and false otherwise.
+     * <p>
+     * The side effects of this method are changes to z and colliders; this method is private, and the public methods
+     * that call it are responsible for handling these side effects.
+     *
+     * @param graph         The graph containing the nodes.
+     * @param a             The first node in the pair.
+     * @param b             The second node in the pair.
+     * @param y             The target node.
+     * @param path          The current path.
+     * @param z             The set of nodes that can block the path. This is a set of conditioning nodes that is being
+     *                      built.
+     * @param colliders     The set of colliders. These are kept track of so avoid conditioning on them or their
+     *                      descendants.
+     * @param maxPathLength The maximum length of the paths to consider.
+     * @param ancestorMap   A map of ancestors for each node.
+     * @param notFollowed   A set of nodes that should not be followed along paths.
+     * @return True if the path can be blocked, false otherwise.
+     */
     private static boolean findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
                                             Set<Triple> colliders, int maxPathLength, Map<Node, Set<Node>> ancestorMap, Set<Node> notFollowed) {
         if (b == y) {
