@@ -32,7 +32,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -124,7 +127,7 @@ public class Fas implements IFas {
      * @param depth       The maximum depth to search for adjacencies.
      * @param x           The first node.
      * @param y           The second node.
-     * @param mainThread
+     * @param mainThread  The main thread. Needed to try to interrupt the search if it takes too long.
      * @return True if there is an adjacency between x and y at the given depth, false otherwise.
      */
     private static boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies,
@@ -333,7 +336,7 @@ public class Fas implements IFas {
 
             @Override
             public Map<Edge, Double> call() {
-                IndependenceResult result = null;
+                IndependenceResult result;
                 try {
                     result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
                 } catch (InterruptedException e) {
@@ -383,55 +386,6 @@ public class Fas implements IFas {
                 }
             }
         }
-
-//        AtomicInteger count = new AtomicInteger(0);
-//        ConcurrentHashMap<Edge, Double> concurrentScores = new ConcurrentHashMap<>();
-//
-//        try {
-//            edges.parallelStream().forEach(edge -> {
-//
-//                // Check for main thread interruption
-//                if (mainThread.isInterrupted()) {
-//                    Thread.currentThread().interrupt(); // Propagate to current thread
-//                    return; // Stop processing
-//                }
-//
-//                // Check for current thread interruption
-//                if (Thread.currentThread().isInterrupted()) {
-//                    mainThread.interrupt(); // Propagate back to main thread
-//                    return; // Stop processing
-//                }
-//
-//                try {
-//                    IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
-//                    concurrentScores.put(edge, result.getScore());
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-//
-//                count.incrementAndGet();
-//            });
-//        } catch (Exception e) {
-//            System.out.println("Exception caught: " + e.getMessage());
-//            throw e;
-//        } finally {
-//            System.out.println("Finished processing: count = " + count.get());
-//        }
-
-//        scores = new HashMap<>(concurrentScores);
-//        }
-//        else {
-//            scores = new HashMap<>();
-//
-//            for (Edge edge : edges) {
-//                if (Thread.currentThread().isInterrupted()) {
-//                    throw new InterruptedException();
-//                }
-//
-//                IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
-//                scores.put(edge, result.getScore());
-//            }
-//        }
 
         if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
             edges.sort(Comparator.comparing(scores::get));
@@ -662,8 +616,6 @@ public class Fas implements IFas {
         // tests, this is not a big deal, because the overhead of the ForkJoinPool is not that great. For slow
         // independence tests, this is a big deal, because the overhead of the ForkJoinPool is significant.
         // josephramsey 2024-12-10
-        AtomicInteger count = new AtomicInteger(0);
-
         class Task implements Callable<Boolean> {
             private final Edge edge;
             private final Map<Edge, Double> scores;
@@ -692,21 +644,15 @@ public class Fas implements IFas {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                boolean b = false;
                 try {
-                    b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset, mainThread);
+                    boolean b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset, mainThread);
+
+                    if (!b) {
+                        checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset, mainThread);
+                    }
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                if (!b) {
-                    try {
-                        checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset, mainThread);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                count.incrementAndGet();
 
                 return true;
             }
