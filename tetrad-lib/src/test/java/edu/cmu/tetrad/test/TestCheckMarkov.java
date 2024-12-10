@@ -42,8 +42,6 @@ public class TestCheckMarkov {
         test.setApproximate(true);
         test.setNumBootstraps(1000);
         test.setScalingFactor(1.0);
-//
-//        IndTestFisherZ test = new IndTestFisherZ(data, alpha);
 
         test.setVerbose(false);
 

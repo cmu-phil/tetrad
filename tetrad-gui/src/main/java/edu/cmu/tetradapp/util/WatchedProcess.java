@@ -80,9 +80,11 @@ public abstract class WatchedProcess {
             try {
                 watch();
             } catch (InterruptedException e) {
+                longRunningThread.interrupt();
                 TetradLogger.getInstance().log("Thread was interrupted while watching. Stopping; see console for stack trace.");
                 e.printStackTrace();
             } catch (Exception e) {
+                longRunningThread.interrupt();
                 TetradLogger.getInstance().log("Exception while watching; see console for stack trace.");
                 e.printStackTrace();
             }

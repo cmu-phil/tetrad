@@ -32,9 +32,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a useful
@@ -125,13 +124,14 @@ public class Fas implements IFas {
      * @param depth       The maximum depth to search for adjacencies.
      * @param x           The first node.
      * @param y           The second node.
+     * @param mainThread
      * @return True if there is an adjacency between x and y at the given depth, false otherwise.
      */
     private static boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies,
                                      int depth, Node x, Node y,
                                      PcCommon.PcHeuristicType heuristic,
                                      Knowledge knowledge,
-                                     SepsetMap sepsets) throws InterruptedException {
+                                     SepsetMap sepsets, Thread mainThread) throws InterruptedException {
         if (!adjacencies.get(x).contains(y)) return false;
 
         List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
@@ -170,7 +170,31 @@ public class Fas implements IFas {
 
                 Set<Node> Z = GraphUtils.asSet(choice, ppx);
 
+                // Check for main thread interruption
+                if (mainThread.isInterrupted()) {
+                    Thread.currentThread().interrupt(); // Propagate to current thread
+                    throw new InterruptedException(); // Stop processing
+                }
+
+                // Check for current thread interruption
+                if (Thread.currentThread().isInterrupted()) {
+                    mainThread.interrupt(); // Propagate back to main thread
+                    throw new InterruptedException();
+                }
+
                 boolean independent = test.checkIndependence(x, y, Z).isIndependent();
+
+                // Check for main thread interruption
+                if (mainThread.isInterrupted()) {
+                    Thread.currentThread().interrupt(); // Propagate to current thread
+                    throw new InterruptedException(); // Stop processing
+                }
+
+                // Check for current thread interruption
+                if (Thread.currentThread().isInterrupted()) {
+                    mainThread.interrupt(); // Propagate back to main thread
+                    throw new InterruptedException();
+                }
 
                 boolean noEdgeRequired = knowledge.noEdgeRequired(x.getName(), y.getName());
 
@@ -259,6 +283,8 @@ public class Fas implements IFas {
      * @return An undirected graph that summarizes the conditional independencies in the data.
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
+        Thread mainThread = Thread.currentThread();
+
         long startTime = MillisecondTimes.timeMillis();
         nodes = new ArrayList<>(nodes);
 
@@ -294,37 +320,118 @@ public class Fas implements IFas {
             }
         }
 
-        Map<Edge, Double> scores;
+        Map<Edge, Double> scores = new HashMap<>();
 
-        if (stable) {
-            ConcurrentHashMap<Edge, Double> concurrentScores = new ConcurrentHashMap<>();
+        class Task implements Callable<Map<Edge, Double>> {
+            private final Edge edge;
+            private final IndependenceTest test;
 
-            try {
-                edges.parallelStream().forEach(edge -> {
-                    try {
-                        IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
-                        concurrentScores.put(edge, result.getScore());
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-            } catch (RuntimeException e) {
-                throw new InterruptedException();
+            public Task(Edge edge, IndependenceTest test) {
+                this.edge = edge;
+                this.test = test;
             }
 
-            scores = new HashMap<>(concurrentScores);
-        } else {
-            scores = new HashMap<>();
-
-            for (Edge edge : edges) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
+            @Override
+            public Map<Edge, Double> call() {
+                IndependenceResult result = null;
+                try {
+                    result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
 
-                IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
-                scores.put(edge, result.getScore());
+                Map<Edge, Double> map = new HashMap<>();
+                map.put(edge, result.getScore());
+
+                return map;
             }
         }
+
+        List<Task> tasks = new ArrayList<>();
+
+        for (Edge edge : edges) {
+            tasks.add(new Task(edge, test));
+        }
+
+        if (stable) {
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
+            List<Future<Map<Edge, Double>>> theseResults;
+            theseResults = pool.invokeAll(tasks);
+
+            for (Future<Map<Edge, Double>> future : theseResults) {
+                try {
+                    Map<Edge, Double> result = future.get();
+
+                    for (Edge edge : result.keySet()) {
+                        scores.put(edge, result.get(edge));
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    TetradLogger.getInstance().log(e.getMessage());
+                    pool.shutdown();
+                    return null;
+                }
+            }
+
+            pool.shutdown();
+        } else {
+            for (Task task : tasks) {
+                Map<Edge, Double> result = task.call();
+
+                for (Edge edge : result.keySet()) {
+                    scores.put(edge, result.get(edge));
+                }
+            }
+        }
+
+//        AtomicInteger count = new AtomicInteger(0);
+//        ConcurrentHashMap<Edge, Double> concurrentScores = new ConcurrentHashMap<>();
+//
+//        try {
+//            edges.parallelStream().forEach(edge -> {
+//
+//                // Check for main thread interruption
+//                if (mainThread.isInterrupted()) {
+//                    Thread.currentThread().interrupt(); // Propagate to current thread
+//                    return; // Stop processing
+//                }
+//
+//                // Check for current thread interruption
+//                if (Thread.currentThread().isInterrupted()) {
+//                    mainThread.interrupt(); // Propagate back to main thread
+//                    return; // Stop processing
+//                }
+//
+//                try {
+//                    IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
+//                    concurrentScores.put(edge, result.getScore());
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//
+//                count.incrementAndGet();
+//            });
+//        } catch (Exception e) {
+//            System.out.println("Exception caught: " + e.getMessage());
+//            throw e;
+//        } finally {
+//            System.out.println("Finished processing: count = " + count.get());
+//        }
+
+//        scores = new HashMap<>(concurrentScores);
+//        }
+//        else {
+//            scores = new HashMap<>();
+//
+//            for (Edge edge : edges) {
+//                if (Thread.currentThread().isInterrupted()) {
+//                    throw new InterruptedException();
+//                }
+//
+//                IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
+//                scores.put(edge, result.getScore());
+//            }
+//        }
 
         if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
             edges.sort(Comparator.comparing(scores::get));
@@ -369,7 +476,7 @@ public class Fas implements IFas {
                 adjacencies = adjacenciesCopy;
             }
 
-            more = searchAtDepth(scores, edges, this.test, adjacencies, d);
+            more = searchAtDepth(scores, edges, this.test, adjacencies, d, mainThread);
 
             if (!more) {
                 break;
@@ -539,39 +646,98 @@ public class Fas implements IFas {
      * @param test        The independence test to use.
      * @param adjacencies The map of nodes and their adjacent nodes.
      * @param depth       The maximum depth to search.
+     * @param mainThread  The main thread. Needed to try to interrupt the search if it takes too long.
      * @return true if there are adjacencies at the given depth, false otherwise.
      */
-    private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) throws InterruptedException {
-        if (stable) {
-            edges.parallelStream().forEach(edge -> {
+    private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Thread mainThread) throws InterruptedException {
+        if (mainThread.isInterrupted()) {
+            return false;
+        }
+
+        // We need to write out the threading longhand here and explicitly check for InterruptedExceptions on the
+        // Futures. This is because the ForkJoinPool doesn't allow checked exceptions to be thrown from the
+        // ForkJoinTask's compute() method. This is a design flaw in the ForkJoinPool, but it is what it is.
+        // This also means that we can't catch the InterruptedException in a try/catch block for a parallel stream
+        // or a parallel stream with a collector. We have to use the ForkJoinPool and Futures. For fast independence
+        // tests, this is not a big deal, because the overhead of the ForkJoinPool is not that great. For slow
+        // independence tests, this is a big deal, because the overhead of the ForkJoinPool is significant.
+        // josephramsey 2024-12-10
+        AtomicInteger count = new AtomicInteger(0);
+
+        class Task implements Callable<Boolean> {
+            private final Edge edge;
+            private final Map<Edge, Double> scores;
+            private final IndependenceTest test;
+            private final Map<Node, Set<Node>> adjacencies;
+            private final int depth;
+            private final PcCommon.PcHeuristicType heuristic;
+            private final Knowledge knowledge;
+            private final SepsetMap sepset;
+            private final Thread mainThread;
+
+            public Task(Edge edge, Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, PcCommon.PcHeuristicType heuristic, Knowledge knowledge, SepsetMap sepset, Thread mainThread) {
+                this.edge = edge;
+                this.scores = scores;
+                this.test = test;
+                this.adjacencies = adjacencies;
+                this.depth = depth;
+                this.heuristic = heuristic;
+                this.knowledge = knowledge;
+                this.sepset = sepset;
+                this.mainThread = mainThread;
+            }
+
+            @Override
+            public Boolean call() {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
                 boolean b = false;
                 try {
-                    b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset);
+                    b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset, mainThread);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
                 if (!b) {
                     try {
-                        checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset);
+                        checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset, mainThread);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
-            });
+
+                count.incrementAndGet();
+
+                return true;
+            }
+        }
+
+        List<Task> tasks = new ArrayList<>();
+
+        for (Edge edge : edges) {
+            tasks.add(new Task(edge, scores, test, adjacencies, depth, heuristic, knowledge, sepset, mainThread));
+        }
+
+        if (stable) {
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
+            List<Future<Boolean>> theseResults;
+            theseResults = pool.invokeAll(tasks);
+
+            for (Future<Boolean> future : theseResults) {
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    TetradLogger.getInstance().log(e.getMessage());
+                    pool.shutdown();
+                    return false;
+                }
+            }
+
+            pool.shutdown();
         } else {
-            for (Edge edge : edges) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
-                };
-
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                boolean b = checkSide(scores, test, adjacencies, depth, x, y, heuristic, knowledge, sepset);
-                if (!b) checkSide(scores, test, adjacencies, depth, y, x, heuristic, knowledge, sepset);
+            for (Task task : tasks) {
+                task.call();
             }
         }
 

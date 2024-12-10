@@ -20,8 +20,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Gives an implementation of the Kernel Independence Test (KCI) by Kun Zhang, which is a general test of conditional
@@ -72,6 +71,11 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     private final Map<Node, Integer> hash;
     /**
+     * The main thread. We are trying to paranoid about stopping FAS when the user wants to stop it. This is not
+     * foolproof, but it's better than nothing.
+     */
+    private final Thread mainThread;
+    /**
      * The alpha level of the test.
      */
     private double alpha;
@@ -119,8 +123,8 @@ public class Kci implements IndependenceTest, RowsSettable {
     /**
      * Constructor.
      *
-     * @param data  The dataset to analyze. Must be continuous.
-     * @param alpha The alpha value of the test.
+     * @param data       The dataset to analyze. Must be continuous.
+     * @param alpha      The alpha value of the test.
      */
     public Kci(DataSet data, double alpha) {
         this.dataSet = data;
@@ -132,6 +136,8 @@ public class Kci implements IndependenceTest, RowsSettable {
         this.h = getH(this.data);
 
         this.alpha = alpha;
+
+        this.mainThread = Thread.currentThread();
     }
 
     /**
@@ -301,6 +307,12 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
+            mainThread.interrupt();
+            throw new InterruptedException();
+        }
+
+        if (mainThread.isInterrupted()) {
+            Thread.currentThread().interrupt();
             throw new InterruptedException();
         }
 
@@ -321,6 +333,12 @@ public class Kci implements IndependenceTest, RowsSettable {
             double p = result.getPValue();
 
             if (Thread.currentThread().isInterrupted()) {
+                mainThread.interrupt();
+                throw new InterruptedException();
+            }
+
+            if (mainThread.isInterrupted()) {
+                Thread.currentThread().interrupt();
                 throw new InterruptedException();
             }
 
@@ -518,7 +536,17 @@ public class Kci implements IndependenceTest, RowsSettable {
      * variables are considered independent and the associated p-value.
      */
     private @NotNull IndependenceResult getIndependenceResultApproximate(SimpleMatrix kx, SimpleMatrix ky, double kx1, double kx2,
-                                                                         IndependenceFact fact) {
+                                                                         IndependenceFact fact) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            mainThread.interrupt();
+            throw new InterruptedException();
+        }
+
+        if (mainThread.isInterrupted()) {
+            Thread.currentThread().interrupt();
+            throw new InterruptedException();
+        }
+
         double sta = kx.mult(ky).trace();
         double k_appr = kx1 * kx1 / kx2;
         double theta_appr = kx2 / kx1;
@@ -535,6 +563,12 @@ public class Kci implements IndependenceTest, RowsSettable {
     private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, SimpleMatrix _data,
                                                           SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
+            mainThread.interrupt();
+            throw new InterruptedException();
+        }
+
+        if (mainThread.isInterrupted()) {
+            Thread.currentThread().interrupt();
             throw new InterruptedException();
         }
 
@@ -566,6 +600,12 @@ public class Kci implements IndependenceTest, RowsSettable {
     private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, SimpleMatrix _data,
                                                         SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
+            mainThread.interrupt();
+            throw new InterruptedException();
+        }
+
+        if (mainThread.isInterrupted()) {
+            Thread.currentThread().interrupt();
             throw new InterruptedException();
         }
 
@@ -609,6 +649,12 @@ public class Kci implements IndependenceTest, RowsSettable {
     private IndependenceResult theorem4(SimpleMatrix kernx, SimpleMatrix kerny, IndependenceFact fact, int N) throws InterruptedException {
 
         if (Thread.currentThread().isInterrupted()) {
+            mainThread.interrupt();
+            throw new InterruptedException();
+        }
+
+        if (mainThread.isInterrupted()) {
+            Thread.currentThread().interrupt();
             throw new InterruptedException();
         }
 
@@ -655,6 +701,12 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     private IndependenceResult proposition5(SimpleMatrix kx, SimpleMatrix ky, IndependenceFact fact, int N) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
+            mainThread.interrupt();
+            throw new InterruptedException();
+        }
+
+        if (mainThread.isInterrupted()) {
+            Thread.currentThread().interrupt();
             throw new InterruptedException();
         }
 
@@ -740,6 +792,12 @@ public class Kci implements IndependenceTest, RowsSettable {
                                       Map<Node, Integer> hash, SimpleMatrix _h, List<Integer> _rows) throws InterruptedException {
 
         if (Thread.currentThread().isInterrupted()) {
+            mainThread.interrupt();
+            throw new InterruptedException();
+        }
+
+        if (mainThread.isInterrupted()) {
+            Thread.currentThread().interrupt();
             throw new InterruptedException();
         }
 
@@ -798,8 +856,6 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param _z           A list of integer indices corresponding to the data points.
      * @param i            The index of the first data point.
      * @param j            The index of the second data point.
-     * @param polyDegree   The degree of the polynomial, not used in this method.
-     * @param polyConstant The constant of the polynomial, not used in this method.
      * @return The computed linear kernel value for the data points at indices i and j.
      */
     private double getLinearKernel(SimpleMatrix _data, List<Integer> _z, int i, int j) {
