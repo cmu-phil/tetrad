@@ -185,9 +185,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * @return This string.
      */
     public String toString() {
-        var nf = NumberFormatUtil.getInstance().getNumberFormat();
-        return "Conditional Correlation, numFunctions=" + cci.getNumFunctions()
-               + ", bandwidthAdjustment=" + nf.format(cci.getScalingFactor());
+        return "Conditional Correlation";
     }
 
     /**
