@@ -309,6 +309,7 @@ public final class PcCommon implements IGraphSearch {
         if (this.fasType == FasType.REGULAR) {
             fas = new Fas(getIndependenceTest());
             fas.setPcHeuristicType(this.pcHeuristicType);
+            fas.setStable(false);
         } else {
             fas = new Fas(getIndependenceTest());
             fas.setPcHeuristicType(this.pcHeuristicType);

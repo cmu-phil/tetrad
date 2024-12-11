@@ -67,7 +67,7 @@ public class Kci implements IndependenceWrapper {
         kci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));
         kci.setNumBootstraps(parameters.getInt(Params.KCI_NUM_BOOTSTRAPS));
         kci.setThreshold(parameters.getDouble(Params.THRESHOLD_FOR_NUM_EIGENVALUES));
-        kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
+//        kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
         return kci;
     }
 
@@ -106,7 +106,7 @@ public class Kci implements IndependenceWrapper {
         params.add(Params.SCALING_FACTOR);
         params.add(Params.KCI_NUM_BOOTSTRAPS);
         params.add(Params.THRESHOLD_FOR_NUM_EIGENVALUES);
-        params.add(Params.KCI_EPSILON);
+//        params.add(Params.KCI_EPSILON);
         params.add(Params.KERNEL_TYPE);
         params.add(Params.POLYNOMIAL_DEGREE);
         params.add(Params.POLYNOMIAL_CONSTANT);

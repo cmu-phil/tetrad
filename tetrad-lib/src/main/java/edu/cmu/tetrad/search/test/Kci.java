@@ -20,7 +20,8 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
-import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Gives an implementation of the Kernel Independence Test (KCI) by Kun Zhang, which is a general test of conditional
@@ -82,7 +83,7 @@ public class Kci implements IndependenceTest, RowsSettable {
     /**
      * True if the approximation algorithms should be used instead of Theorems 3 or 4.
      */
-    private boolean approximate;
+    private boolean approximate = true;
     /**
      * Eigenvalues greater than this time, the maximum will be kept.
      */
@@ -94,7 +95,7 @@ public class Kci implements IndependenceTest, RowsSettable {
     /**
      * Azzalini optimal kernel widths will be multiplied by this.
      */
-    private double widthMultiplier = 1.0;
+    private double scalingFactor = 1.0;
     /**
      * Epsilon for Proposition 5.
      */
@@ -123,8 +124,8 @@ public class Kci implements IndependenceTest, RowsSettable {
     /**
      * Constructor.
      *
-     * @param data       The dataset to analyze. Must be continuous.
-     * @param alpha      The alpha value of the test.
+     * @param data  The dataset to analyze. Must be continuous.
+     * @param alpha The alpha value of the test.
      */
     public Kci(DataSet data, double alpha) {
         this.dataSet = data;
@@ -468,11 +469,11 @@ public class Kci implements IndependenceTest, RowsSettable {
     /**
      * Sets the width multiplier.
      *
-     * @param widthMultiplier This multipler.
+     * @param scalingFactor This multipler.
      */
-    public void setScalingFactor(double widthMultiplier) {
-        if (widthMultiplier <= 0) throw new IllegalStateException("Width must be > 0");
-        this.widthMultiplier = widthMultiplier;
+    public void setScalingFactor(double scalingFactor) {
+        if (scalingFactor <= 0) throw new IllegalStateException("Scaling factor must be > 0");
+        this.scalingFactor = scalingFactor;
     }
 
     /**
@@ -495,14 +496,14 @@ public class Kci implements IndependenceTest, RowsSettable {
         this.threshold = threshold;
     }
 
-    /**
-     * Sets the epsilon.
-     *
-     * @param epsilon This number.
-     */
-    public void setEpsilon(double epsilon) {
-        this.epsilon = epsilon;
-    }
+//    /**
+//     * Sets the epsilon.
+//     *
+//     * @param epsilon This number.
+//     */
+//    public void setEpsilon(double epsilon) {
+//        this.epsilon = epsilon;
+//    }
 
     /**
      * Returns the value of the verbose flag.
@@ -575,9 +576,9 @@ public class Kci implements IndependenceTest, RowsSettable {
         List<Integer> _rows = listRows();
         int N = _rows.size();
         SimpleMatrix H = getH(N);
-        SimpleMatrix k1 = kernelMatrix(_data, x, null, this.widthMultiplier, hash, _h, _rows);
+        SimpleMatrix k1 = kernelMatrix(_data, x, null, this.scalingFactor, hash, _h, _rows);
         SimpleMatrix kx = H.mult(k1).mult(H);
-        SimpleMatrix k = kernelMatrix(_data, y, null, this.widthMultiplier, hash, _h, _rows);
+        SimpleMatrix k = kernelMatrix(_data, y, null, this.scalingFactor, hash, _h, _rows);
         SimpleMatrix ky = H.mult(k).mult(H);
 
         try {
@@ -617,11 +618,11 @@ public class Kci implements IndependenceTest, RowsSettable {
         SimpleMatrix H = getH(N);
 
         try {
-            SimpleMatrix k4 = kernelMatrix(_data, x, z, this.widthMultiplier, hash, _h, _rows);
+            SimpleMatrix k4 = kernelMatrix(_data, x, z, this.scalingFactor, hash, _h, _rows);
             SimpleMatrix KXZ = H.mult(k4).mult(H);
-            SimpleMatrix k3 = kernelMatrix(_data, y, null, this.widthMultiplier, hash, _h, _rows);
+            SimpleMatrix k3 = kernelMatrix(_data, y, null, this.scalingFactor, hash, _h, _rows);
             SimpleMatrix Ky = H.mult(k3).mult(H);
-            SimpleMatrix k2 = kernelMatrix(_data, null, z, this.widthMultiplier, hash, _h, _rows);
+            SimpleMatrix k2 = kernelMatrix(_data, null, z, this.scalingFactor, hash, _h, _rows);
             SimpleMatrix KZ = H.mult(k2).mult(H);
             SimpleMatrix Rz = (KZ.plus(I.scale(this.epsilon)).invert().scale(this.epsilon));
             SimpleMatrix k1 = Rz.mult(KXZ).mult(Rz.transpose());
@@ -779,16 +780,16 @@ public class Kci implements IndependenceTest, RowsSettable {
     /**
      * Calculates the kernel matrix based on the given parameters.
      *
-     * @param _data           the data matrix
-     * @param x               the target node
-     * @param z               the list of other nodes
-     * @param widthMultiplier the width multiplier for the kernel
-     * @param hash            the map of nodes to their indices
-     * @param _h              the bandwidth vector
-     * @param _rows           the list of rows to use
+     * @param _data         the data matrix
+     * @param x             the target node
+     * @param z             the list of other nodes
+     * @param scalingFactor the scaling factor for the kernel
+     * @param hash          the map of nodes to their indices
+     * @param _h            the bandwidth vector
+     * @param _rows         the list of rows to use
      * @return the calculated kernel matrix
      */
-    private SimpleMatrix kernelMatrix(SimpleMatrix _data, Node x, List<Node> z, double widthMultiplier,
+    private SimpleMatrix kernelMatrix(SimpleMatrix _data, Node x, List<Node> z, double scalingFactor,
                                       Map<Node, Integer> hash, SimpleMatrix _h, List<Integer> _rows) throws InterruptedException {
 
         if (Thread.currentThread().isInterrupted()) {
@@ -805,7 +806,7 @@ public class Kci implements IndependenceTest, RowsSettable {
         if (x != null) _z.add(hash.get(x));
         if (z != null) z.forEach(node -> _z.add(hash.get(node)));
         double h = getH(_z, _h); // For Gaussian.
-        double width = widthMultiplier * h; // For Gaussian.
+        double width = scalingFactor * h; // For Gaussian.
         SimpleMatrix result = new SimpleMatrix(_rows.size(), _rows.size());
 
         for (int i = 0; i < _rows.size(); i++) {
@@ -852,10 +853,10 @@ public class Kci implements IndependenceTest, RowsSettable {
     /**
      * Computes the linear kernel between two data points from the input matrix.
      *
-     * @param _data        The matrix containing the data points.
-     * @param _z           A list of integer indices corresponding to the data points.
-     * @param i            The index of the first data point.
-     * @param j            The index of the second data point.
+     * @param _data The matrix containing the data points.
+     * @param _z    A list of integer indices corresponding to the data points.
+     * @param i     The index of the first data point.
+     * @param j     The index of the second data point.
      * @return The computed linear kernel value for the data points at indices i and j.
      */
     private double getLinearKernel(SimpleMatrix _data, List<Integer> _z, int i, int j) {
