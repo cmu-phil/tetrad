@@ -45,7 +45,7 @@ public class HsimRobustCompare {
      * @return a {@link java.util.List} object
      */
     public static List<double[]> run(int numVars, double edgesPerNode, int numCases, double penaltyDiscount,
-                                     int resimSize, int repeat, boolean verbose) {
+                                     int resimSize, int repeat, boolean verbose) throws InterruptedException {
         //public static void main(String[] args) {
         //first generate the data
         RandomUtil.getInstance().setSeed(1450184147770L);

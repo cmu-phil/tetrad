@@ -125,7 +125,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The percentage of all samples to use when resampling for each conditional independence test.
      */
-    private double percentResample = 0.5;
+    private double percentResample = 1.0;
     /**
      * The number of tests for the independent case.
      */
@@ -792,6 +792,21 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @see #getResults(boolean)
      */
     public void generateResults(boolean clear) {
+        generateResults(true, true);
+        generateResults(false, false);
+    }
+
+    /**
+     * Generates results based on the specified independence and clearing conditions. The method assesses separation
+     * sets and independence facts using the current graph structure and the specified separation set type. Based on the
+     * results, it calculates statistical values and updates relevant member variables.
+     *
+     * @param indep A boolean indicating whether to generate results for independence (true) or dependence (false).
+     * @param clear A boolean indicating whether to clear existing results before generating new ones (true) or to
+     *              retain them (false).
+     * @see #getResults(boolean)
+     */
+    public void generateResults(boolean indep, boolean clear) {
         if (clear) {
             clear();
         }
@@ -913,8 +928,14 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
             try {
                 generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
-                generateResults(msep, true);
-                generateResults(mconn, false);
+
+                if (indep) {
+                    generateResults(msep, true);
+                } else {
+                    generateResults(mconn, false);
+                }
+//                generateResults(msep, true);
+//                generateResults(mconn, false);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -1234,7 +1255,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
         setPercentResample(percentResample);
-        generateResults(true);
+        generateResults(true, true);
         double adInd = getAndersonDarlingP(true);
         double adDep = getAndersonDarlingP(false);
         double binIndep = getBinomialPValue(true);
@@ -1348,8 +1369,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         if (parallelized) {
             int parallelism = Runtime.getRuntime().availableProcessors();
-            TetradLogger.getInstance().log("Parallelism: " + parallelism);
-
             ForkJoinPool pool = new ForkJoinPool(parallelism);
 
             List<Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> theseResults;
@@ -1430,14 +1449,14 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 boolean indep = result.isIndependent();
                 double pValue = result.getPValue();
 
-                double min = 0.0;
+//                double min = 0.0;
+//
+//                // Optionally, remove the p-values less than alpha. Hard-coding this for now.
+//                if (false) {
+//                    min = independenceTest.getAlpha();
+//                }
 
-                // Optionally, remove the p-values less than alpha. Hard-coding this for now.
-                if (false) {
-                    min = independenceTest.getAlpha();
-                }
-
-                if (pValue >= min) {
+                if (pValue >= 0.0) {
                     if (msep) {
                         resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                     } else {

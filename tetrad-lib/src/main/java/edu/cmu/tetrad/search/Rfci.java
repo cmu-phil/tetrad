@@ -140,7 +140,7 @@ public final class Rfci implements IGraphSearch {
      *
      * @return This PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         return search(getIndependenceTest().getVariables());
     }
 
@@ -150,7 +150,7 @@ public final class Rfci implements IGraphSearch {
      * @param nodes The sublist.
      * @return The RFCI PAG
      */
-    public Graph search(List<Node> nodes) {
+    public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);
 
         return search(new Fas(getIndependenceTest()), nodes);
@@ -163,7 +163,7 @@ public final class Rfci implements IGraphSearch {
      * @param nodes The nodes to search over.
      * @return The RFCI PAG.
      */
-    public Graph search(IFas fas, List<Node> nodes) {
+    public Graph search(IFas fas, List<Node> nodes) throws InterruptedException {
         long beginTime = MillisecondTimes.timeMillis();
         independenceTest.setVerbose(verbose);
 
@@ -323,7 +323,7 @@ public final class Rfci implements IGraphSearch {
     /**
      * RFCI Algorithm 4.4 (Colombo et al, 2012) Orient colliders
      */
-    private void ruleR0_RFCI(List<Node[]> rTuples) {
+    private void ruleR0_RFCI(List<Node[]> rTuples) throws InterruptedException {
         List<Node[]> lTuples = new ArrayList<>();
 
         List<Node> nodes = this.graph.getNodes();
@@ -504,7 +504,7 @@ public final class Rfci implements IGraphSearch {
      * set the sepSet of x and y to the minimal such subset of the given sepSet and remove the edge <x, y> if background
      * knowledge allows
      */
-    private void setMinSepSet(Set<Node> _sepSet, Node x, Node y) {
+    private void setMinSepSet(Set<Node> _sepSet, Node x, Node y) throws InterruptedException {
         Set<Node> empty = Collections.emptySet();
         boolean independent;
 

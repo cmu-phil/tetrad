@@ -57,6 +57,10 @@ public final class Params {
      */
     public static final String BASIS_TYPE = "basisType";
     /**
+     * Constant <code>BASIS_TYPE="basisType"</code>
+     */
+    public static final String BASIS_SCALE = "basisScale";
+    /**
      * Constant <code>CCI_SCORE_ALPHA="cciScoreAlpha"</code>
      */
     public static final String CCI_SCORE_ALPHA = "cciScoreAlpha";
@@ -305,9 +309,9 @@ public final class Params {
      */
     public static final String KCI_USE_APPROXIMATION = "kciUseApproximation";
     /**
-     * Constant <code>KERNEL_MULTIPLIER="kernelMultiplier"</code>
+     * Constant <code>BANDWIDTH_ADJUSTMENT="scalingFactor"</code>
      */
-    public static final String KERNEL_MULTIPLIER = "kernelMultiplier";
+    public static final String SCALING_FACTOR = "scalingFactor";
     /**
      * Constant <code>KERNEL_REGRESSION_SAMPLE_SIZE="kernelRegressionSampleSize"</code>
      */
@@ -316,6 +320,14 @@ public final class Params {
      * Constant <code>KERNEL_TYPE="kernelType"</code>
      */
     public static final String KERNEL_TYPE = "kernelType";
+    /**
+     * Constant <code>POLYNOMIAL_DEGREE="polynomialDegree"</code>
+     */
+    public static final String POLYNOMIAL_DEGREE = "polynomialDegree";
+    /**
+     * Constant <code>POLYNOMIAL_CONSTANT="polynomialConstant"</code>
+     */
+    public static final String POLYNOMIAL_CONSTANT = "polynomialConstant";
     /**
      * Constant <code>KERNEL_WIDTH="kernelWidth"</code>
      */
@@ -480,6 +492,10 @@ public final class Params {
      * Constant <code>PENALTY_DISCOUNT_ZS="penaltyDiscountZs"</code>
      */
     public static final String PENALTY_DISCOUNT_ZS = "penaltyDiscountZs";
+    /**
+     * Constant <code>TRUNCATION_LIMIT="truncationLimit"</code>
+     */
+    public static final String TRUNCATION_LIMIT = "truncationLimit";
     /**
      * Constant <code>EBIC_GAMMA="ebicGamma"</code>
      */
@@ -945,7 +961,7 @@ public final class Params {
             Params.INCLUDE_POSITIVE_SKEWS_FOR_BETA, Params.INCLUDE_STRUCTURE_MODEL,
             Params.INTERVAL_BETWEEN_RECORDINGS, Params.INTERVAL_BETWEEN_SHOCKS, Params.IPEN, Params.IS, Params.ITR,
             Params.KCI_ALPHA, Params.KCI_CUTOFF, Params.KCI_EPSILON, Params.KCI_NUM_BOOTSTRAPS, Params.KCI_USE_APPROXIMATION,
-            Params.KERNEL_MULTIPLIER, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
+            Params.SCALING_FACTOR, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
             Params.LATENT_MEASURED_IMPURE_PARENTS, Params.LOWER_BOUND, Params.MAX_CATEGORIES, Params.MAX_DEGREE,
             Params.MAX_DISTINCT_VALUES_DISCRETE, Params.MAX_INDEGREE, Params.MAX_ITERATIONS, Params.MAX_OUTDEGREE,
             Params.MEAN_LOW, Params.MEASURED_MEASURED_IMPURE_ASSOCIATIONS, Params.MEASURED_MEASURED_IMPURE_PARENTS,

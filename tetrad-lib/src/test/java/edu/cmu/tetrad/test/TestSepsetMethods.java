@@ -147,10 +147,18 @@ public class TestSepsetMethods {
                         blockingSet = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(), msepTest, -1);
                     }
                     case BLOCK_PATHS_MAX_P -> {
-                        blockingSet = SepsetFinder.getSepsetContainingMaxPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+                        try {
+                            blockingSet = SepsetFinder.getSepsetContainingMaxPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                     case BLOCK_PATHS_MIN_P -> {
-                        blockingSet = SepsetFinder.getSepsetContainingMinPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+                        try {
+                            blockingSet = SepsetFinder.getSepsetContainingMinPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                     default -> throw new IllegalArgumentException("Unknown method: " + graphType);
                 }

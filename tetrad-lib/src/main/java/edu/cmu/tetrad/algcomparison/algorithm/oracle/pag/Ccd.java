@@ -64,7 +64,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      * @return the resulting graph from the search
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
                 test.getTest(dataModel, parameters));
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));

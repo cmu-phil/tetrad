@@ -280,7 +280,12 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
         this.search.setC(1);
         this.search.setOut(out);
         this.search.setForwardSearch(this.params.getBoolean("forwardSearch", true));
-        int[] backshifts = this.search.search();
+        int[] backshifts = null;
+        try {
+            backshifts = this.search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         this.params.set("shifts", backshifts);
     }

@@ -82,7 +82,7 @@ public class GrowShrink implements IMbSearch {
      * @param target the target node for which the MB is to be found
      * @return the set of nodes that form the Markov blanket for the target node
      */
-    public Set<Node> findMb(Node target) {
+    public Set<Node> findMb(Node target) throws InterruptedException {
         Set<Node> blanket = new HashSet<>();
 
         List<Node> nodes = independenceTest.getVariables();

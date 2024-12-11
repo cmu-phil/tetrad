@@ -86,7 +86,7 @@ public class IndTestScore implements Score {
      * methods is implemented, since the other methods don't make sense here.
      */
     @Override
-    public double localScoreDiff(int x, int y, int[] z) {
+    public double localScoreDiff(int x, int y, int[] z) throws InterruptedException {
         IndependenceResult result = this.test.checkIndependence(this.variables.get(x), this.variables.get(y), new HashSet<>(getVariableList(z)));
         return result.getScore();
     }

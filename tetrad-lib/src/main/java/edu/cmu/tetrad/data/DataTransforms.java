@@ -88,12 +88,7 @@ public class DataTransforms {
         List<DataSet> outList = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
-            if (!(dataSet.isContinuous())) {
-                throw new IllegalArgumentException("Sorry, detecting a non-continuous dataset.");
-            }
-
-            Matrix data2 = standardizeData(dataSet.getDoubleData());
-
+            Matrix data2 = standardizeData(dataSet.getDoubleData(), dataSet.getVariables());
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), dataSet.getVariables());
             outList.add(dataSet2);
         }
@@ -110,7 +105,7 @@ public class DataTransforms {
     public static DataSet standardizeData(DataSet dataSet) {
         List<DataSet> dataSets = Collections.singletonList(dataSet);
         List<DataSet> outList = standardizeData(dataSets);
-        return outList.get(0);
+        return outList.getFirst();
     }
 
     /**
@@ -537,6 +532,10 @@ public class DataTransforms {
         DataSet _data = data.copy();
 
         for (int j = 0; j < _data.getNumColumns(); j++) {
+            if (_data.getVariable(j) instanceof DiscreteVariable) {
+                continue;
+            }
+
             double sum = 0.0;
             int n = 0;
 
@@ -882,28 +881,87 @@ public class DataTransforms {
 
         for (int j = 0; j < data2.getNumColumns(); j++) {
             double sum = 0.0;
+             int count = 0;
 
             for (int i = 0; i < data2.getNumRows(); i++) {
-                sum += data2.get(i, j);
+                if (!Double.isNaN(data2.get(i, j))) {
+                    sum += data2.get(i, j);
+                    count++;
+                }
             }
 
-            double mean = sum / data.getNumRows();
+            double mean = sum / count;
 
             for (int i = 0; i < data.getNumRows(); i++) {
-                data2.set(i, j, data.get(i, j) - mean);
+                if (!Double.isNaN(data2.get(i, j))) {
+                    data2.set(i, j, data.get(i, j) - mean);
+                }
             }
 
             double norm = 0.0;
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 double v = data2.get(i, j);
-                norm += v * v;
+
+                if (!Double.isNaN(v)) {
+                    norm += v * v;
+                }
             }
 
             norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
-                data2.set(i, j, data2.get(i, j) / norm);
+                if (!Double.isNaN(data2.get(i, j))) {
+                    data2.set(i, j, data2.get(i, j) / norm);
+                }
+            }
+        }
+
+        return data2;
+    }
+
+    public static Matrix standardizeData(Matrix data, List<Node> variables) {
+        Matrix data2 = data.copy();
+
+        for (int j = 0; j < data2.getNumColumns(); j++) {
+            if (variables.get(j) instanceof DiscreteVariable) {
+                continue;
+            }
+
+            double sum = 0.0;
+            int count = 0;
+
+            for (int i = 0; i < data2.getNumRows(); i++) {
+                if (!Double.isNaN(data2.get(i, j))) {
+                    sum += data2.get(i, j);
+                    count++;
+                }
+            }
+
+            double mean = sum / count;
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                if (!Double.isNaN(data2.get(i, j))) {
+                    data2.set(i, j, data.get(i, j) - mean);
+                }
+            }
+
+            double norm = 0.0;
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                double v = data2.get(i, j);
+
+                if (!Double.isNaN(v)) {
+                    norm += v * v;
+                }
+            }
+
+            norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                if (!Double.isNaN(data2.get(i, j))) {
+                    data2.set(i, j, data2.get(i, j) / norm);
+                }
             }
         }
 
@@ -1220,6 +1278,81 @@ public class DataTransforms {
         }
 
         return outData;
+    }
+
+    /**
+     * Scales the continuous variables in the given DataSet to have values in the range [-1, 1].
+     *
+     * For each continuous column, the method computes the maximum of the absolute values of the minimum and maximum
+     * of the column, and divides all values in that column by this maximum value. Discrete columns are not affected.
+     *
+     * @param dataSet The DataSet containing variables to be scaled.
+     * @return A new DataSet with scaled continuous variables, while discrete variables remain unchanged.
+     */
+    public static DataSet scale(DataSet dataSet, double scale) {
+        dataSet = dataSet.copy();
+
+        // For each continuous column, find the min and max of the column, then max(abs(min, max)), then divide the column by that value.
+        // Ignore the discrete columns.
+
+        for (Node node : dataSet.getVariables()) {
+            if (node instanceof ContinuousVariable) {
+                int j = dataSet.getColumn(node);
+
+                double min = Double.POSITIVE_INFINITY;
+                double max = Double.NEGATIVE_INFINITY;
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    double value = dataSet.getDouble(i, j);
+                    if (value < min) {
+                        min = value;
+                    }
+                    if (value > max) {
+                        max = value;
+                    }
+                }
+
+//                double _max = Math.max(Math.abs(min), Math.abs(max)) * scale;
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    double value = dataSet.getDouble(i, j);
+                    dataSet.setDouble(i, j, scaleToMinusOneToOne(value, min, max, scale));
+
+//                    dataSet.setDouble(i, j, (value / _max) * scale);
+                }
+            }
+        }
+
+        return dataSet;
+    }
+
+    private static double scaleToMinusOneToOne(double value, double a, double b, double scale) {
+        if (a == b) {
+            throw new IllegalArgumentException("Lower and upper bounds must not be the same.");
+        }
+        return 2 * scale * (value - a) / (b - a) - scale;
+    }
+
+    public static DataSet scale(DataSet dataSet, double[] scales) {
+        dataSet = dataSet.copy();
+
+        // For each continuous column, find the min and max of the column, then max(abs(min, max)), then divide the column by that value.
+        // Ignore the discrete columns.
+
+        for (Node node : dataSet.getVariables()) {
+            if (node instanceof ContinuousVariable) {
+                int j = dataSet.getColumn(node);
+
+                double scale = scales[j];
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    double value = dataSet.getDouble(i, j);
+                    dataSet.setDouble(i, j, value / scale);
+                }
+            }
+        }
+
+        return dataSet;
     }
 }
 

@@ -120,7 +120,12 @@ public class TestPc {
         pc.setKnowledge(knowledge);
         pc.setGuaranteeCpdag(true);
 
-        Graph CPDAG = pc.search();
+        Graph CPDAG = null;
+        try {
+            CPDAG = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         final String trueString = "Graph Nodes:\n" +
                                   "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
@@ -161,7 +166,12 @@ public class TestPc {
 
         // Run search
 //        Graph resultGraph = pc.search();
-        Graph resultGraph = pc.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
@@ -193,7 +203,12 @@ public class TestPc {
 //        pc.setGuaranteeCpdag(false);
 //        pc.setVerbose(false);
         // Run search
-        Graph resultGraph = pc.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");

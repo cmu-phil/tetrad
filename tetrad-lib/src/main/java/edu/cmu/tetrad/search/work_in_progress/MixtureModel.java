@@ -224,7 +224,7 @@ public class MixtureModel {
      *
      * @return the BIC scores of the graphs returned by searches.
      */
-    public double[] searchDemixedData() {
+    public double[] searchDemixedData() throws InterruptedException {
         DataSet[] dataSets = getDemixedData();
         SemBicScore score;
         edu.cmu.tetrad.search.Fges fges;

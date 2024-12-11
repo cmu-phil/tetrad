@@ -112,7 +112,7 @@ public final class IGFci implements IGraphSearch {
      *
      * @return the final oriented graph obtained after applying the FCI algorithm.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long time1 = System.currentTimeMillis();
 
         List<Node> nodes = getIndependenceTest().getVariables();
@@ -213,7 +213,7 @@ public final class IGFci implements IGraphSearch {
      *
      * @param fgesGraph the FGES Graph to be processed; must not be null.
      */
-    public void modifiedR0(Graph fgesGraph) {
+    public void modifiedR0(Graph fgesGraph) throws InterruptedException {
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 

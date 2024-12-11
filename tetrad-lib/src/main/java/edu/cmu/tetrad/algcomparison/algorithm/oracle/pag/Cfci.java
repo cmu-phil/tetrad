@@ -79,7 +79,7 @@ public class Cfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * @throws IllegalArgumentException if the data model is not an instance of DataSet when time lag is specified.
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");

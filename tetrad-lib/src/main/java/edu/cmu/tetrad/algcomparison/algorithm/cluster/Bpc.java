@@ -51,7 +51,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
      * @throws IllegalArgumentException If the check type is unexpected.
      */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) throws InterruptedException {
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
@@ -78,7 +78,12 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
             throw new IllegalArgumentException("Unexpected check type");
         }
 
-        Graph graph = bpc.search();
+        Graph graph = null;
+        try {
+            graph = bpc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
             return graph;

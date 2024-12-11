@@ -84,7 +84,7 @@ public class MarkovCheckAndersonDarlingPBestOf10 implements Statistic {
         double max = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < 10; i++) {
-            markovCheck.generateResults(true);
+            markovCheck.generateResults(true, true);
             double adp = markovCheck.getAndersonDarlingP(true);
             if (adp > max) {
                 max = adp;

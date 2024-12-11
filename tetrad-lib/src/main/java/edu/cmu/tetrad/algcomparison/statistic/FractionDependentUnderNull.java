@@ -63,7 +63,7 @@ public class FractionDependentUnderNull implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.LOCAL_MARKOV);
-        markovCheck.generateResults(true);
+        markovCheck.generateResults(true, true);
         return markovCheck.getFractionDependent(true);
     }
 

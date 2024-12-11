@@ -46,10 +46,6 @@ public final class LvDumb implements IGraphSearch {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-    /**
      * The number of starts for GRaSP.
      */
     private int numStarts = 1;
@@ -89,7 +85,7 @@ public final class LvDumb implements IGraphSearch {
      *
      * @return The PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         List<Node> nodes = this.score.getVariables();
 
         if (nodes == null) {
@@ -125,7 +121,7 @@ public final class LvDumb implements IGraphSearch {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-        Graph pag = PagCache.getInstance().getPag(cpdag, knowledge, verbose);
+        Graph pag = PagCache.getInstance().getPag(GraphTransforms.dagFromCpdag(cpdag), knowledge, verbose);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");
@@ -145,16 +141,6 @@ public final class LvDumb implements IGraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether the complete rule set should be used during the search algorithm. By default, the complete rule set
-     * is not used.
-     *
-     * @param completeRuleSetUsed true if the complete rule set should be used, false otherwise
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**

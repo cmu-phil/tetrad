@@ -22,7 +22,7 @@ public interface Algorithm extends HasParameters, TetradSerializable {
      * @param parameters The paramters of the search.
      * @return The result graph.
      */
-    Graph search(DataModel dataSet, Parameters parameters);
+    Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException;
 
     /**
      * Returns that graph that the result should be compared to.

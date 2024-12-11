@@ -84,7 +84,12 @@ public class TestPcd {
         Pcd pc = new Pcd(independence);
 
         // Run search
-        Graph resultGraph = pc.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
@@ -110,7 +115,12 @@ public class TestPcd {
         pc.setKnowledge(knowledge);
 
         // Run search
-        Graph resultGraph = pc.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert("A-->B,C-->B,D");

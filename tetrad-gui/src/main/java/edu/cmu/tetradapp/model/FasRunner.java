@@ -219,7 +219,11 @@ public class FasRunner extends AbstractAlgorithmRunner
         Fas fas = new Fas(getIndependenceTest());
         fas.setKnowledge(knowledge);
         fas.setDepth(depth);
-        graph = fas.search();
+        try {
+            graph = fas.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println(graph);
 

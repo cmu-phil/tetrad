@@ -56,7 +56,12 @@ public class TestCheckNodewiseMarkov {
         }
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 //        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -101,7 +106,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 //        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -171,7 +181,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -215,7 +230,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -260,7 +280,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -300,7 +325,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -352,7 +382,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -406,7 +441,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -463,7 +503,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -516,7 +561,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -560,7 +610,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -605,7 +660,12 @@ public class TestCheckNodewiseMarkov {
 
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 

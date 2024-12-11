@@ -72,7 +72,11 @@ public class SearchWrappers {
             IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, this.searchParams[0]);
             Pc pcs = new Pc(indTest);
             pcs.setStable(true);
-            return pcs.search();
+            try {
+                return pcs.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -134,7 +138,7 @@ public class SearchWrappers {
          * @param ds data set
          * @return a graph
          */
-        public Graph search(DataSet ds) {
+        public Graph search(DataSet ds) throws InterruptedException {
             SemBicScore score = new SemBicScore(new CovarianceMatrix(MixedUtils.makeContinuousData(ds)));
             score.setPenaltyDiscount(this.searchParams[0]);
             Fges fg = new Fges(score);

@@ -153,7 +153,7 @@ public final class GraspFci implements IGraphSearch {
      *
      * @return The PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         List<Node> nodes = this.independenceTest.getVariables();
 
         if (nodes == null) {

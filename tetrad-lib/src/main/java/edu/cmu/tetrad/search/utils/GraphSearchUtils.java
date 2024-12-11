@@ -130,7 +130,7 @@ public final class GraphSearchUtils {
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) {
+    public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) throws InterruptedException {
         TetradLogger.getInstance().log("Starting Collider Orientation:");
 
         List<Node> nodes = graph.getNodes();
@@ -201,7 +201,7 @@ public final class GraphSearchUtils {
         TetradLogger.getInstance().log("Finishing Collider Orientation.");
     }
 
-    private static Set<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, IndependenceTest independenceTest) {
+    private static Set<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, IndependenceTest independenceTest) throws InterruptedException {
         List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(a));
         adj.addAll(graph.getAdjacentNodes(c));
         adj.remove(c);
@@ -802,7 +802,7 @@ public final class GraphSearchUtils {
      */
     public static CpcTripleType getCpcTripleType(Node x, Node y, Node z,
                                                  IndependenceTest test, int depth,
-                                                 Graph graph) {
+                                                 Graph graph) throws InterruptedException {
         int numSepsetsContainingY = 0;
         int numSepsetsNotContainingY = 0;
 

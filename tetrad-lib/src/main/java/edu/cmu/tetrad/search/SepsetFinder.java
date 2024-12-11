@@ -46,7 +46,13 @@ public class SepsetFinder {
         Set<Node> sepset = choices.parallelStream()
                 .map(choice -> combination(choice, adjx)) // Generate combinations in parallel
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-                .filter(subset -> separates(x, y, subset, test)) // Further filter by separating sets
+                .filter(subset -> {
+                    try {
+                        return separates(x, y, subset, test);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }) // Further filter by separating sets
                 .findFirst() // Return the first matching subset
                 .orElse(null);
 
@@ -60,7 +66,13 @@ public class SepsetFinder {
         sepset = choices.parallelStream()
                 .map(choice -> combination(choice, adjy)) // Generate combinations in parallel
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-                .filter(subset -> separates(x, y, subset, test)) // Further filter by separating sets
+                .filter(subset -> {
+                    try {
+                        return separates(x, y, subset, test);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }) // Further filter by separating sets
                 .findFirst() // Return the first matching subset
                 .orElse(null);
 
@@ -81,7 +93,7 @@ public class SepsetFinder {
      * @param depth      the maximum depth to explore for each separating set
      * @return the set of nodes that act as a separating set, or null if such set is not found
      */
-    public static Set<Node> getSepsetContainingMaxPHybrid(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
+    public static Set<Node> getSepsetContainingMaxPHybrid(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) throws InterruptedException {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
         adjx.remove(y);
@@ -106,7 +118,7 @@ public class SepsetFinder {
         return findMaxPSepset(x, y, adjy, test, containing, depth);
     }
 
-    private static Set<Node> findMaxPSepset(Node x, Node y, List<Node> adj, IndependenceTest test, Set<Node> containing, int depth) {
+    private static Set<Node> findMaxPSepset(Node x, Node y, List<Node> adj, IndependenceTest test, Set<Node> containing, int depth) throws InterruptedException {
         List<List<Integer>> choices = getChoices(adj, depth);
         double maxPValue = -1.0;
         List<Integer> bestChoice = null;
@@ -147,7 +159,7 @@ public class SepsetFinder {
      * @param depth      the depth of the search for the sepset
      * @return the sepset containing the minimum p-value, or null if no sepset is found
      */
-    public static Set<Node> getSepsetContainingMinPHybrid(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
+    public static Set<Node> getSepsetContainingMinPHybrid(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) throws InterruptedException {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
         adjx.remove(y);
@@ -172,7 +184,7 @@ public class SepsetFinder {
         return findMinPSepset(x, y, adjy, test, depth);
     }
 
-    private static Set<Node> findMinPSepset(Node x, Node y, List<Node> adj, IndependenceTest test, int depth) {
+    private static Set<Node> findMinPSepset(Node x, Node y, List<Node> adj, IndependenceTest test, int depth) throws InterruptedException {
         List<List<Integer>> choices = getChoices(adj, depth);
         double minPValue = Double.MAX_VALUE;
         List<Integer> bestChoice = null;
@@ -212,8 +224,8 @@ public class SepsetFinder {
     }
 
     /**
-     * Retrieves the sepset (a set of nodes) between two given nodes. The sepset is the minimal set of nodes that need
-     * to be conditioned on to render two nodes conditionally independent.
+     * Retrieves set that blocks all blockable paths between x and y in the given graph, where this set contains the
+     * given nodes.
      *
      * @param graph         the graph to analyze
      * @param x             the first node
@@ -309,6 +321,19 @@ public class SepsetFinder {
         return getPathBlockingSetRecursiveVisit(graph, x, y, containing, notFollowing, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
+    /**
+     * Helper method to find a set of nodes that blocks all paths from node x to node y in a graph, considering a
+     * maximum path length and a set of nodes that must be included in the blocking set.
+     *
+     * @param graph         The graph containing the nodes.
+     * @param x             The starting node of the path.
+     * @param y             The ending node of the path.
+     * @param containing    The set of nodes that must be included in the blocking set.
+     * @param notFollowed   The set of nodes that should not be followed along paths.
+     * @param ancestorMap   A map of ancestors for each node.
+     * @param maxPathLength The maximum length of the paths to consider.
+     * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
+     */
     private static Set<Node> getPathBlockingSetRecursiveVisit(Graph graph, Node x, Node y, Set<Node> containing,
                                                               Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength) {
         if (x == y) {
@@ -334,6 +359,27 @@ public class SepsetFinder {
         return z;
     }
 
+    /**
+     * Finds a path from node a to node b that can be blocked by conditioning on a set of nodes z. The method returns
+     * true if the path can be blocked, and false otherwise.
+     * <p>
+     * The side effects of this method are changes to z and colliders; this method is private, and the public methods
+     * that call it are responsible for handling these side effects.
+     *
+     * @param graph         The graph containing the nodes.
+     * @param a             The first node in the pair.
+     * @param b             The second node in the pair.
+     * @param y             The target node.
+     * @param path          The current path.
+     * @param z             The set of nodes that can block the path. This is a set of conditioning nodes that is being
+     *                      built.
+     * @param colliders     The set of colliders. These are kept track of so avoid conditioning on them or their
+     *                      descendants.
+     * @param maxPathLength The maximum length of the paths to consider.
+     * @param ancestorMap   A map of ancestors for each node.
+     * @param notFollowed   A set of nodes that should not be followed along paths.
+     * @return True if the path can be blocked, false otherwise.
+     */
     private static boolean findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
                                             Set<Triple> colliders, int maxPathLength, Map<Node, Set<Node>> ancestorMap, Set<Node> notFollowed) {
         if (b == y) {
@@ -442,7 +488,7 @@ public class SepsetFinder {
         return combination;
     }
 
-    private static boolean separates(Node x, Node y, Set<Node> combination, IndependenceTest test) {
+    private static boolean separates(Node x, Node y, Set<Node> combination, IndependenceTest test) throws InterruptedException {
         return test.checkIndependence(x, y, combination).isIndependent();
     }
 
@@ -660,7 +706,7 @@ public class SepsetFinder {
      */
     public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
                                                         int maxLength, int depth, boolean allowSelectionBias,
-                                                        Set<Node> blacklist) {
+                                                        Set<Node> blacklist) throws InterruptedException {
         int maxLength1 = maxLength;
         if (maxLength1 < 0 || maxLength1 > mpdag.getNumNodes() - 1) {
             maxLength1 = mpdag.getNumNodes() - 1;

@@ -68,7 +68,7 @@ public class DataForCalibrationRfci {
      * @param args an array of {@link java.lang.String} objects
      * @throws java.io.IOException if any.
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
 
         String algorithm = "";
@@ -412,7 +412,7 @@ public class DataForCalibrationRfci {
      * @param truePag         a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public Graph learnBNRFCI(DataSet bootstrapSample, int depth, Graph truePag) {
+    public Graph learnBNRFCI(DataSet bootstrapSample, int depth, Graph truePag) throws InterruptedException {
         final IndTestFisherZ test = new IndTestFisherZ(bootstrapSample, 0.001);
         final SemBicScore score = new SemBicScore(bootstrapSample, precomputeCovariances);
         score.setPenaltyDiscount(2);

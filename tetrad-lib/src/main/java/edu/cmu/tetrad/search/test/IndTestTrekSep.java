@@ -286,7 +286,7 @@ public final class IndTestTrekSep implements IndependenceTest {
             }
 
             Vector Cyz = matrix2D.getColumn(i);
-            Cyz = Cyz.viewSelection(parents);
+            Cyz = Cyz.getSelection(parents);
             Vector b = inverse.times(Cyz);
 
             variance -= Cyz.dotProduct(b);

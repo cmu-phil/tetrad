@@ -110,7 +110,7 @@ public class ScoreIndTest implements IndependenceTest {
      * @param z The set of additional nodes
      * @return The result of the independence test
      */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         List<Node> z1 = new ArrayList<>(z);
         Collections.sort(z1);
 

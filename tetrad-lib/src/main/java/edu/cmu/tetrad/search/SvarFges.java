@@ -211,7 +211,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      *
      * @return the resulting CPDAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         this.topGraphs.clear();
 
         this.lookupArrows = new ConcurrentHashMap<>();
@@ -658,7 +658,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                                 continue;
                             }
 
-                            calculateArrowsForward(x, y);
+                            try {
+                                calculateArrowsForward(x, y);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
 
@@ -765,7 +769,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                                 continue;
                             }
 
-                            calculateArrowsForward(x, y);
+                            try {
+                                calculateArrowsForward(x, y);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
 
@@ -869,7 +877,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     /**
      * Performs the Backward Equivalence Search algorithm.
      */
-    private void bes() {
+    private void bes() throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("** BACKWARD EQUIVALENCE SEARCH");
         }
@@ -980,7 +988,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * calculate arrows backward from x to y and from y to x.) 6. Update the neighbors map with the neighbors of x and
      * y.
      */
-    private void initializeArrowsBackward() {
+    private void initializeArrowsBackward() throws InterruptedException {
         for (Edge edge : this.graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -1081,7 +1089,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
                             if (!SvarFges.this.graph.isAdjacentTo(w, x)) {
                                 clearArrow(w, x);
-                                calculateArrowsForward(w, x);
+                                try {
+                                    calculateArrowsForward(w, x);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
                             }
                         }
                     }
@@ -1121,7 +1133,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * @param a the Node representing the start node of the edge
      * @param b the Node representing the end node of the edge
      */
-    private void calculateArrowsForward(Node a, Node b) {
+    private void calculateArrowsForward(Node a, Node b) throws InterruptedException {
         if (this.mode == Mode.heuristicSpeedup && !this.effectEdgesGraph.isAdjacentTo(a, b)) return;
         if (this.adjacencies != null && !this.adjacencies.isAdjacentTo(a, b)) return;
         this.neighbors.put(b, getNeighbors(b));
@@ -1238,13 +1250,25 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                                 clearArrow(w, this.r);
                                 clearArrow(this.r, w);
 
-                                calculateArrowsBackward(w, this.r);
+                                try {
+                                    calculateArrowsBackward(w, this.r);
+                                } catch (InterruptedException ex) {
+                                    throw new RuntimeException(ex);
+                                }
                             } else if (Edges.isUndirectedEdge(SvarFges.this.graph.getEdge(w, this.r))) {
                                 clearArrow(w, this.r);
                                 clearArrow(this.r, w);
 
-                                calculateArrowsBackward(w, this.r);
-                                calculateArrowsBackward(this.r, w);
+                                try {
+                                    calculateArrowsBackward(w, this.r);
+                                } catch (InterruptedException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                                try {
+                                    calculateArrowsBackward(this.r, w);
+                                } catch (InterruptedException ex) {
+                                    throw new RuntimeException(ex);
+                                }
                             }
                         }
                     }
@@ -1288,7 +1312,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * @param a the starting node
      * @param b the ending node
      */
-    private void calculateArrowsBackward(Node a, Node b) {
+    private void calculateArrowsBackward(Node a, Node b) throws InterruptedException {
         if (existsKnowledge()) {
             if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
                 return;
@@ -1393,7 +1417,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * @param hashIndices The map of node-to-index associations
      * @return The score of the graph change caused by the node insertion
      */
-    private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX, Map<Node, Integer> hashIndices) {
+    private double insertEval(Node x, Node y, Set<Node> t, Set<Node> naYX, Map<Node, Integer> hashIndices) throws InterruptedException {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
         set.addAll(this.graph.getParents(y));
@@ -1410,7 +1434,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * @param hashIndices The map containing the indices of nodes in the hash table.
      * @return The score of the graph change after deleting the specified node.
      */
-    private double deleteEval(Node x, Node y, Set<Node> diff, Map<Node, Integer> hashIndices) {
+    private double deleteEval(Node x, Node y, Set<Node> diff, Map<Node, Integer> hashIndices) throws InterruptedException {
         Set<Node> set = new HashSet<>(diff);
         set.addAll(this.graph.getParents(y));
         set.remove(x);
@@ -1902,7 +1926,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * @param hashIndices the hash map containing node indices
      * @return the score graph change as a double value
      */
-    private double scoreGraphChange(Node y, Set<Node> parents, Node x, Map<Node, Integer> hashIndices) {
+    private double scoreGraphChange(Node y, Set<Node> parents, Node x, Map<Node, Integer> hashIndices) throws InterruptedException {
         int yIndex = hashIndices.get(y);
 
         if (parents.contains(x)) return Double.NaN;//throw new IllegalArgumentException();

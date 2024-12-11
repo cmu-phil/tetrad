@@ -81,7 +81,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
      * @throws IllegalArgumentException If the meta option is unrecognized.
      */
     @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+    public Graph search(List<DataModel> dataSets, Parameters parameters) throws InterruptedException {
         int meta = parameters.getInt(Params.IMAGES_META_ALG);
 
         List<DataModel> _dataSets = new ArrayList<>();
@@ -129,7 +129,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
      * @return The resulting graph.
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
 

@@ -157,7 +157,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
      * @param gsts     The GrowShrinkTree being used to do caching of scores.
      */
     @Override
-    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
+    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) throws InterruptedException {
         assert this.numStarts > 0;
         this.gsts = gsts;
         this.all = new HashSet<>(prefix);
@@ -516,7 +516,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
      * @param prefix   The list of nodes that must precede the suborder.
      * @param suborder The list of nodes to be ordered.
      */
-    private void bes(List<Node> prefix, List<Node> suborder) {
+    private void bes(List<Node> prefix, List<Node> suborder) throws InterruptedException {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
 

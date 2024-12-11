@@ -308,7 +308,12 @@ public class VcpcRunner extends AbstractAlgorithmRunner
         if (this.independenceFactsModel != null) {
             vcpc.setFacts(this.independenceFactsModel.getFacts());
         }
-        Graph graph = vcpc.search();
+        Graph graph = null;
+        try {
+            graph = vcpc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());

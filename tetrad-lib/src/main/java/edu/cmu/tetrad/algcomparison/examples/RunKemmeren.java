@@ -92,6 +92,8 @@ public class RunKemmeren {
 
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
 

@@ -103,7 +103,12 @@ public class TestGFci {
         gFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         gFci.setCompleteRuleSetUsed(false);
         gFci.setFaithfulnessAssumed(true);
-        Graph outGraph = gFci.search();
+        Graph outGraph = null;
+        try {
+            outGraph = gFci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
 //        DagToPag dagToPag = new DagToPag(dag);
 //        dagToPag.setCompleteRuleSetUsed(false);
@@ -157,7 +162,12 @@ public class TestGFci {
 
         GFci gfci = new GFci(new MsepTest(g1), new GraphScore(g1));
 
-        Graph pag = gfci.search();
+        Graph pag = null;
+        try {
+            pag = gfci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         Graph truePag = new EdgeListGraph();
 
@@ -191,7 +201,12 @@ public class TestGFci {
             GFci gfci = new GFci(new MsepTest(dag), new GraphScore(dag));
             gfci.setCompleteRuleSetUsed(true);
 //            gfci.setFaithfulnessAssumed(false);
-            Graph pag1 = gfci.search();
+            Graph pag1 = null;
+            try {
+                pag1 = gfci.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
 //            DagToPag dagToPag = new DagToPag(dag);
 //            dagToPag.setCompleteRuleSetUsed(false);
@@ -236,7 +251,11 @@ public class TestGFci {
 
         long start = MillisecondTimes.timeMillis();
 
-        gFci.search();
+        try {
+            gFci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -264,7 +283,11 @@ public class TestGFci {
 
         long start = MillisecondTimes.timeMillis();
 
-        gFci.search();
+        try {
+            gFci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -295,7 +318,11 @@ public class TestGFci {
 
         long start = MillisecondTimes.timeMillis();
 
-        gFci.search();
+        try {
+            gFci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         long stop = MillisecondTimes.timeMillis();
 

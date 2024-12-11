@@ -179,7 +179,11 @@ public class FciRunner extends AbstractAlgorithmRunner
             fci.setKnowledge(knowledge);
             fci.setMaxDiscriminatingPathLength(getParams().getInt("maxReachablePathLength", -1));
             fci.setDepth(getParams().getInt("depth", -1));
-            graph = fci.search();
+            try {
+                graph = fci.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             Fci fci = new Fci(getIndependenceTest());
             fci.setKnowledge(knowledge);
@@ -187,7 +191,11 @@ public class FciRunner extends AbstractAlgorithmRunner
             fci.setPossibleDsepSearchDone(getParams().getBoolean("possibleMsepDone", true));
             fci.setMaxDiscriminatingPathLength(getParams().getInt("maxReachablePathLength", -1));
             fci.setDepth(getParams().getInt("depth", -1));
-            graph = fci.search();
+            try {
+                graph = fci.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         if (getSourceGraph() != null) {

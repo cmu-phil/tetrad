@@ -142,7 +142,7 @@ public class Pc implements IGraphSearch {
      * @see Fci
      */
     @Override
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         return search(new HashSet<>(this.independenceTest.getVariables()));
     }
 
@@ -159,7 +159,7 @@ public class Pc implements IGraphSearch {
      * @return The search graph.
      * @see #search()
      */
-    public Graph search(Set<Node> nodes) {
+    public Graph search(Set<Node> nodes) throws InterruptedException {
         nodes = new HashSet<>(nodes);
 
         IFas fas = new Fas(getIndependenceTest());
@@ -177,7 +177,7 @@ public class Pc implements IGraphSearch {
      * @see #search()
      * @see IFas
      */
-    public Graph search(IFas fas, Set<Node> nodes) {
+    public Graph search(IFas fas, Set<Node> nodes) throws InterruptedException {
         if (verbose) {
             this.logger.log("Starting PC algorithm");
             this.logger.log("Independence test = " + getIndependenceTest() + ".");

@@ -142,7 +142,7 @@ public final class GFci implements IGraphSearch {
      *
      * @return This PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 

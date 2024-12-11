@@ -174,7 +174,7 @@ public final class Fci implements IGraphSearch {
      *
      * @return The resulting graph.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());

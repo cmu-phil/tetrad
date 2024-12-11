@@ -206,7 +206,7 @@ public final class LvLite implements IGraphSearch {
      *
      * @return The PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         List<Node> nodes;
 
         if (this.score != null) {
@@ -633,7 +633,7 @@ public final class LvLite implements IGraphSearch {
      *
      * @return A new BOSS search.
      */
-    private @NotNull PermutationSearch getBossSearch() {
+    private @NotNull PermutationSearch getBossSearch() throws InterruptedException {
         var suborderSearch = new Boss(score);
         suborderSearch.setResetAfterBM(true);
         suborderSearch.setResetAfterRS(true);
@@ -648,7 +648,7 @@ public final class LvLite implements IGraphSearch {
         return permutationSearch;
     }
 
-    private @NotNull PermutationSearch getSpSearch() {
+    private @NotNull PermutationSearch getSpSearch() throws InterruptedException {
         var suborderSearch = new Sp(score);
 //        suborderSearch.setResetAfterBM(true);
 //        suborderSearch.setResetAfterRS(true);

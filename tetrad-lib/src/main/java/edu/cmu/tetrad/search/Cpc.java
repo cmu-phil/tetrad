@@ -151,7 +151,7 @@ public final class Cpc implements IGraphSearch {
      *
      * @return The e-pattern for the search, which is a graphical representation of a set of possible CPDAGs.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting CPC algorithm");

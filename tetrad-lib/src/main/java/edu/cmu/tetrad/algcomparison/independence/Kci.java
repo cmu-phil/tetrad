@@ -29,6 +29,7 @@ public class Kci implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
+    private boolean verbose = true;
 
     /**
      * `Kci` constructor.
@@ -46,11 +47,27 @@ public class Kci implements IndependenceWrapper {
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
+
+        switch (parameters.getInt(Params.KERNEL_TYPE)) {
+            case 1:
+                kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.GAUSSIAN);
+                break;
+            case 2:
+                kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.LINEAR);
+                break;
+            case 3:
+                kci.setKernelType(edu.cmu.tetrad.search.test.Kci.KernelType.POLYNOMIAL);
+                break;
+        }
+
+        kci.setPolyDegree(parameters.getInt(Params.POLYNOMIAL_DEGREE));
+        kci.setPolyConst(parameters.getDouble(Params.POLYNOMIAL_CONSTANT));
+
         kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROXIMATION));
-        kci.setWidthMultiplier(parameters.getDouble(Params.KERNEL_MULTIPLIER));
+        kci.setScalingFactor(parameters.getDouble(Params.SCALING_FACTOR));
         kci.setNumBootstraps(parameters.getInt(Params.KCI_NUM_BOOTSTRAPS));
         kci.setThreshold(parameters.getDouble(Params.THRESHOLD_FOR_NUM_EIGENVALUES));
-        kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
+//        kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));
         return kci;
     }
 
@@ -86,10 +103,22 @@ public class Kci implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.KCI_USE_APPROXIMATION);
         params.add(Params.ALPHA);
-        params.add(Params.KERNEL_MULTIPLIER);
+        params.add(Params.SCALING_FACTOR);
         params.add(Params.KCI_NUM_BOOTSTRAPS);
         params.add(Params.THRESHOLD_FOR_NUM_EIGENVALUES);
-        params.add(Params.KCI_EPSILON);
+//        params.add(Params.KCI_EPSILON);
+        params.add(Params.KERNEL_TYPE);
+        params.add(Params.POLYNOMIAL_DEGREE);
+        params.add(Params.POLYNOMIAL_CONSTANT);
         return params;
+    }
+
+    /**
+     * Sets the verbosity level of the KCI test. By default true for this (slow) test.
+     *
+     * @param verbose a boolean indicating whether verbose output should be enabled (true) or disabled (false).
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }

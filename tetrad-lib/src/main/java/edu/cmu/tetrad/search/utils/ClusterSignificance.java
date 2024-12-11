@@ -176,11 +176,21 @@ public class ClusterSignificance {
 
         if (dataModel instanceof DataSet) {
             Fas fas = new Fas(new IndTestFisherZ((DataSet) dataModel, alpha));
-            Graph g = fas.search(_cluster);
+            Graph g = null;
+            try {
+                g = fas.search(_cluster);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             return GraphUtils.isClique(_cluster, g);
         } else if (dataModel instanceof ICovarianceMatrix) {
             Fas fas = new Fas(new IndTestFisherZ((ICovarianceMatrix) dataModel, alpha));
-            Graph g = fas.search(_cluster);
+            Graph g = null;
+            try {
+                g = fas.search(_cluster);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             return GraphUtils.isClique(_cluster, g);
         } else {
             throw new IllegalArgumentException("Expecting a data set or a covariance matrix.");

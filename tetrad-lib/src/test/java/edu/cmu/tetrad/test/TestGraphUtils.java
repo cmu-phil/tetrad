@@ -74,7 +74,7 @@
                     List<List<Node>> directedPaths = graph.paths().directedPaths(node1, node2, -1);
 
                     for (List<Node> path : directedPaths) {
-                        assertTrue(graph.paths().isAncestorOf(path.get(0), path.get(path.size() - 1)));
+                        assertTrue(graph.paths().isAncestorOf(path.getFirst(), path.getLast()));
                     }
                 }
             }
@@ -100,8 +100,8 @@
 
                     TREKS:
                     for (List<Node> trek : treks) {
-                        Node m0 = trek.get(0);
-                        Node m1 = trek.get(trek.size() - 1);
+                        Node m0 = trek.getFirst();
+                        Node m1 = trek.getLast();
 
                         for (Node n : trek) {
 

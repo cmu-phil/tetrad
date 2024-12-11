@@ -87,7 +87,7 @@ public class PossibleMsepFci {
      *
      * @return a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      */
-    public SepsetMap search() {
+    public SepsetMap search() throws InterruptedException {
 
         for (Edge edge : new ArrayList<>(this.graph.getEdges())) {
             Node x = edge.getNode1();
@@ -120,7 +120,7 @@ public class PossibleMsepFci {
      * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.util.Set} object
      */
-    public Set<Node> getSepset(IndependenceTest test, Node node1, Node node2) {
+    public Set<Node> getSepset(IndependenceTest test, Node node1, Node node2) throws InterruptedException {
         Set<Node> condSet = getCondSet(test, node1, node2, this.maxReachablePathLength);
 
         if (this.sepset == null) {
@@ -185,7 +185,7 @@ public class PossibleMsepFci {
         this.maxReachablePathLength = maxReachablePathLength == -1 ? Integer.MAX_VALUE : maxReachablePathLength;
     }
 
-    private Set<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPossibleDsepPathLength) {
+    private Set<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPossibleDsepPathLength) throws InterruptedException {
         List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPossibleDsepPathLength);
         List<Node> possibleMsep = new ArrayList<>(possibleMsepSet);
         boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());

@@ -42,7 +42,7 @@ public class Comparison {
      * @param params a {@link edu.cmu.tetrad.study.performance.ComparisonParameters} object
      * @return a {@link edu.cmu.tetrad.study.performance.ComparisonResult} object
      */
-    public static ComparisonResult compare(ComparisonParameters params) {
+    public static ComparisonResult compare(ComparisonParameters params) throws InterruptedException {
         DataSet dataSet;
         Graph trueDag;
         IndependenceTest test = null;

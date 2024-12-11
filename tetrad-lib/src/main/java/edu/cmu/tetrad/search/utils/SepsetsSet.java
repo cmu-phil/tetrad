@@ -117,7 +117,7 @@ public class SepsetsSet implements SepsetProducer {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.test.checkIndependence(a, b, sepset);
         this.result = result;
         return result.isIndependent();

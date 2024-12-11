@@ -70,7 +70,7 @@ public class IambnPc implements IMbSearch {
     /**
      * {@inheritDoc}
      */
-    public Set<Node> findMb(Node target) {
+    public Set<Node> findMb(Node target) throws InterruptedException {
         Set<Node> cmb = new HashSet<>();
         Pc pc = new Pc(this.independenceTest);
         boolean cont = true;
@@ -121,7 +121,7 @@ public class IambnPc implements IMbSearch {
         return cmb;
     }
 
-    private double associationStrength(Node v, Node target, Set<Node> cmb) {
+    private double associationStrength(Node v, Node target, Set<Node> cmb) throws InterruptedException {
         IndependenceResult result = this.independenceTest.checkIndependence(v, target, cmb);
         return 1.0 - result.getPValue();
     }

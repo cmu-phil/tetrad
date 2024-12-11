@@ -423,7 +423,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
 
 
-            Graph graph = algo.search(null, this.parameters);
+            Graph graph = null;
+            try {
+                graph = algo.search(null, this.parameters);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             LayoutUtil.defaultLayout(graph);
 
@@ -457,7 +462,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                     }
 
-                    graphList.add(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
+                    try {
+                        graphList.add(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             } else if (getAlgorithm() instanceof ClusterAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
@@ -472,7 +481,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                                 ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                             }
 
-                            Graph graph = this.algorithm.search(dataSet, this.parameters);
+                            Graph graph = null;
+                            try {
+                                graph = this.algorithm.search(dataSet, this.parameters);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
 
                             LayoutUtil.defaultLayout(graph);
 
@@ -491,7 +505,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                                 ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                             }
 
-                            Graph graph = this.algorithm.search(dataSet, this.parameters);
+                            Graph graph = null;
+                            try {
+                                graph = this.algorithm.search(dataSet, this.parameters);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                             LayoutUtil.defaultLayout(graph);
 
                             graphList.add(graph);
@@ -525,15 +544,30 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         }
 
                         if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
-                            Graph graph = algo.search(data, this.parameters);
+                            Graph graph = null;
+                            try {
+                                graph = algo.search(data, this.parameters);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                             LayoutUtil.defaultLayout(graph);
                             graphList.add(graph);
                         } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
-                            Graph graph = algo.search(data, this.parameters);
+                            Graph graph = null;
+                            try {
+                                graph = algo.search(data, this.parameters);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                             LayoutUtil.defaultLayout(graph);
                             graphList.add(graph);
                         } else if (data.isMixed() && algDataType == DataType.Mixed) {
-                            Graph graph = algo.search(data, this.parameters);
+                            Graph graph = null;
+                            try {
+                                graph = algo.search(data, this.parameters);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                             LayoutUtil.defaultLayout(graph);
                             graphList.add(graph);
                         } else {

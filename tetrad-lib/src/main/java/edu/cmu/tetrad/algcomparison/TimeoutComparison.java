@@ -1701,7 +1701,7 @@ public class TimeoutComparison {
         }
 
         @Override
-        public Graph search(DataModel DataModel, Parameters parameters) {
+        public Graph search(DataModel DataModel, Parameters parameters) throws InterruptedException {
             return this.algorithm.search(DataModel, this.parameters);
         }
 
@@ -1783,7 +1783,7 @@ public class TimeoutComparison {
         }
 
         @Override
-        public Graph search(DataModel DataModel, Parameters parameters) {
+        public Graph search(DataModel DataModel, Parameters parameters) throws InterruptedException {
             return this.algorithmWrapper.getAlgorithm().search(DataModel, parameters);
         }
 

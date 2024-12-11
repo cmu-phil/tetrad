@@ -119,14 +119,15 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
-        // FCI-ORIENT
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
 
-        return search.search();
+        try {
+            return search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -174,9 +175,6 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
         params.add(Params.USE_BES);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
-
-        // FCI-ORIENT
-        params.add(Params.COMPLETE_RULE_SET_USED);
 
         // General
         params.add(Params.TIME_LAG);

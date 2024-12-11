@@ -99,7 +99,7 @@ public final class IndTestMulti implements IndependenceTest {
      * @param z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         if (facts.containsKey(new IndependenceFact(x, y, z))) {
             return facts.get(new IndependenceFact(x, y, z));
         }

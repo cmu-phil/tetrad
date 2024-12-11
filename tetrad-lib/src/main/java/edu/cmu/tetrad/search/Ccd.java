@@ -86,7 +86,7 @@ public final class Ccd implements IGraphSearch {
      *
      * @return The CCD cyclic PAG for the data.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
         // Step A.
@@ -150,7 +150,7 @@ public final class Ccd implements IGraphSearch {
      *
      * @param graph The graph on which step B is performed.
      */
-    private void stepB(Graph graph) {
+    private void stepB(Graph graph) throws InterruptedException {
         Map<Triple, Double> colliders = new HashMap<>();
         Map<Triple, Double> noncolliders = new HashMap<>();
 
@@ -189,7 +189,7 @@ public final class Ccd implements IGraphSearch {
      * @param noncolliders The map to store the non-colliders and their scores.
      * @param b            The node to consider as the collider node.
      */
-    private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
+    private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) throws InterruptedException {
         List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
@@ -261,7 +261,7 @@ public final class Ccd implements IGraphSearch {
      * @param psi     The graph on which step C is performed.
      * @param sepsets The sepsets used for conditional independence tests.
      */
-    private void stepC(Graph psi, SepsetProducer sepsets) {
+    private void stepC(Graph psi, SepsetProducer sepsets) throws InterruptedException {
         TetradLogger.getInstance().log("\nStep C");
 
         EDGE:
@@ -322,7 +322,7 @@ public final class Ccd implements IGraphSearch {
      * @param sepsets    The sepsets used for conditional independence tests.
      * @param supSepsets The map of sepsets.
      */
-    private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
+    private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) throws InterruptedException {
         Map<Node, List<Node>> local = new HashMap<>();
 
         for (Node node : psi.getNodes()) {
@@ -344,7 +344,7 @@ public final class Ccd implements IGraphSearch {
      * @param b          The node to consider.
      */
     private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
-                             Map<Node, List<Node>> local, Node b) {
+                             Map<Node, List<Node>> local, Node b) throws InterruptedException {
         List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
 
         if (adj.size() < 2) {
@@ -459,7 +459,7 @@ public final class Ccd implements IGraphSearch {
      * @param sepsets    The sepsets used for conditional independence tests.
      * @param supSepsets The map of sepsets.
      */
-    private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
+    private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) throws InterruptedException {
         for (Triple triple : psi.getDottedUnderlines()) {
             Node a = triple.getX();
             Node b = triple.getY();

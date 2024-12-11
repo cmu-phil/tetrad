@@ -48,7 +48,12 @@ public class TestPcMb {
         MsepTest test = new MsepTest(graph);
         PcMb search = new PcMb(test, -1);
         Node t = test.getGraph().getNode("T");
-        Graph resultGraph = search.search(Collections.singletonList(t));
+        Graph resultGraph = null;
+        try {
+            resultGraph = search.search(Collections.singletonList(t));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         List<Graph> mbDags = MbUtils.generateMbDags(resultGraph, true,
                 search.getTest(), search.getDepth(), t);
@@ -79,7 +84,12 @@ public class TestPcMb {
         List<Node> nodes = dag.getNodes();
 
         for (Node node : nodes) {
-            Graph resultMb = search.search(Collections.singletonList(node));
+            Graph resultMb = null;
+            try {
+                resultMb = search.search(Collections.singletonList(node));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             if (dag.containsNode(node)) {
                 Graph trueMb = GraphUtils.markovBlanketSubgraph(node, dag);
 

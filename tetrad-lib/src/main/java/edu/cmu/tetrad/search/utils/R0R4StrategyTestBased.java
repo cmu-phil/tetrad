@@ -187,7 +187,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * @see DiscriminatingPath
      */
     @Override
-    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
+    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) throws InterruptedException {
         Node x = discriminatingPath.getX();
         Node w = discriminatingPath.getW();
         Node v = discriminatingPath.getV();
@@ -291,7 +291,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
     }
 
-    private boolean checkIndependenceRecursive(Node x, Node y, Set<Node> blocking, Set<Node> vNodes, DiscriminatingPath discriminatingPath, IndependenceTest test) {
+    private boolean checkIndependenceRecursive(Node x, Node y, Set<Node> blocking, Set<Node> vNodes, DiscriminatingPath discriminatingPath, IndependenceTest test) throws InterruptedException {
 
         List<Node> vs = new ArrayList<>();
         List<Node> nonVs = new ArrayList<>();

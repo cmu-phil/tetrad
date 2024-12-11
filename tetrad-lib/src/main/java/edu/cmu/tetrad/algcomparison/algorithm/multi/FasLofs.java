@@ -48,7 +48,7 @@ public class FasLofs implements Algorithm, HasKnowledge {
         this.rule = rule;
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.work_in_progress.FasLofs search) {
+    private Graph getGraph(edu.cmu.tetrad.search.work_in_progress.FasLofs search) throws InterruptedException {
         return search.search();
     }
 
@@ -56,7 +56,7 @@ public class FasLofs implements Algorithm, HasKnowledge {
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         edu.cmu.tetrad.search.work_in_progress.FasLofs search = new edu.cmu.tetrad.search.work_in_progress.FasLofs((DataSet) dataSet, this.rule);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));

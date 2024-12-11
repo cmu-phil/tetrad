@@ -104,7 +104,7 @@ public final class SvarGfci implements IGraphSearch {
      *
      * @return a PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         independenceTest.setVerbose(verbose);
 
         if (verbose) {
@@ -292,7 +292,7 @@ public final class SvarGfci implements IGraphSearch {
      *
      * @param fgesGraph The graph to modify.
      */
-    private void modifiedR0(Graph fgesGraph) {
+    private void modifiedR0(Graph fgesGraph) throws InterruptedException {
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
 

@@ -96,7 +96,7 @@ public class FasFdr implements IFas {
      *
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         TetradLogger.getInstance().log("Starting Fast Adjacency Search.");
         this.graph.removeEdges(this.graph.getEdges());
 
@@ -247,7 +247,7 @@ public class FasFdr implements IFas {
         return adjacencies;
     }
 
-    private void searchiCovAll(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
+    private void searchiCovAll(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) throws InterruptedException {
         boolean removed;
 
         do {
@@ -278,7 +278,7 @@ public class FasFdr implements IFas {
     }
 
     private boolean searchICov(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies,
-                               boolean addDependencies) {
+                               boolean addDependencies) throws InterruptedException {
         if (nodes.size() < 2) return false;
 
         boolean removed = false;

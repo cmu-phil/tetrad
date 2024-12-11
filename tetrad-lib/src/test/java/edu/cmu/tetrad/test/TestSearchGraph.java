@@ -344,7 +344,11 @@ public final class TestSearchGraph {
         start = MillisecondTimes.timeMillis();
         fci.setDepth(depth);
         fci.setVerbose(false);
-        fci.search(fas, fas.getNodes());
+        try {
+            fci.search(fas, fas.getNodes());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         stop = MillisecondTimes.timeMillis();
 
         System.out.println("MSEP RFCI");
@@ -359,7 +363,11 @@ public final class TestSearchGraph {
         Fas fas2 = new Fas(test2);
         start = MillisecondTimes.timeMillis();
         fci3.setDepth(depth);
-        fci3.search(fas2, fas2.getNodes());
+        try {
+            fci3.search(fas2, fas2.getNodes());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         stop = MillisecondTimes.timeMillis();
 
         System.out.println("FISHER Z RFCI");

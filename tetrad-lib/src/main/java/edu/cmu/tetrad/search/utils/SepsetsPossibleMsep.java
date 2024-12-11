@@ -78,7 +78,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * @param depth The depth of the search
      * @return The set of nodes that form the sepset between node i and node k, or null if no sepset exists
      */
-    public Set<Node> getSepset(Node i, Node k, int depth) {
+    public Set<Node> getSepset(Node i, Node k, int depth) throws InterruptedException {
         Set<Node> condSet = getCondSetContaining(i, k, null, this.maxDiscriminatingPathLength);
 
         if (condSet == null) {
@@ -100,7 +100,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * null if no sepset exists
      */
     @Override
-    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) throws InterruptedException {
         Set<Node> condSet = getCondSetContaining(i, k, s, this.maxDiscriminatingPathLength);
 
         if (condSet == null) {
@@ -113,7 +113,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     /**
      * {@inheritDoc}
      */
-    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException {
         Set<Node> sepset = getSepset(i, k, this.depth);
         return sepset != null && !sepset.contains(j);
     }
@@ -154,7 +154,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIndependent(Node d, Node c, Set<Node> sepset) {
+    public boolean isIndependent(Node d, Node c, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.test.checkIndependence(d, c, sepset);
         return result.isIndependent();
     }
@@ -168,7 +168,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * @return the p-value for the independence test
      */
     @Override
-    public double getPValue(Node a, Node b, Set<Node> sepset) {
+    public double getPValue(Node a, Node b, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.test.checkIndependence(a, b, sepset);
         return result.getPValue();
     }
@@ -178,7 +178,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
         // Ignored.
     }
 
-    private Set<Node> getCondSetContaining(Node node1, Node node2, Set<Node> s, int maxPathLength) {
+    private Set<Node> getCondSetContaining(Node node1, Node node2, Set<Node> s, int maxPathLength) throws InterruptedException {
         List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPathLength);
         List<Node> possibleMsep = new ArrayList<>(possibleMsepSet);
         boolean noEdgeRequired = this.knowledge.noEdgeRequired(node1.getName(), node2.getName());

@@ -4351,7 +4351,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p><a href="#alpha">alpha</a>, <a
             href="#numBasisFunctions">numBasisFunctions</a>, <a
             href="#kernelType">kernelType</a>, <a
-            href="#kernelMultiplier">kernelMultiplier</a>, <a
+            href="#bandwidth">bandwidth</a>, <a
             href="#basisType">basisType</a>, <a
             href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a></p>
 
@@ -4437,7 +4437,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#alpha">alpha</a>, <a
             href="#kciUseApproximation">kciUseApproximation</a>, <a
-            href="#kernelMultiplier">kernelMultiplier</a>, <a
+            href="#bandwidth">bandwidth</a>, <a
             href="#kciNumBootstraps">kciNumBootstraps</a>, <a
             href="#thresholdForNumEigenvalues">thresholdForNumEigenvalues</a>, <a
             href="#kciEpsilon">kciEpsilon</a></p>
@@ -5029,19 +5029,45 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="basisType">basisType</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="basisType_short_desc"> Basis type (1 = Polynomial, 2 =
-        Cosine)</span></li>
+                    id="basisType_short_desc">
+                    Basis type (1 = Polynomial, 2 =
+        			Hermite1, 3=Hermite2, 4=Legendre, 5=Chebyshev)
+        </span></li>
             <li>Long Description: <span
-                    id="basisType_long_desc"> For CCI, this determines which basis type
-        will be used (1 = Polynomial, 2 = Cosine)</span></li>
+                    id="basisType_long_desc">
+                    id="basisType_short_desc">
+                    Basis type (1 = Polynomial, 2 =
+        			Hermite1, 3=Hermite2, 4=Legendre, 5=Chebyshev)
+                    </span></li>
             <li>Default
-                Value: <span id="basisType_default_value">2</span></li>
+                Value: <span id="basisType_default_value">4</span></li>
             <li>Lower
                 Bound: <span id="basisType_lower_bound">1</span></li>
             <li>Upper
-                Bound: <span id="basisType_upper_bound">2</span></li>
+                Bound: <span id="basisType_upper_bound">5</span></li>
             <li>Value Type:
                 <span id="basisType_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="basisScale">basisScale</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="basisScale_short_desc">
+                    Variables are scaled to [-b, b] for this b (0 = standardized)
+        </span></li>
+            <li>Long Description: <span
+                    id="basisScale_long_desc">
+                    id="basisScale_short_desc">
+                    Variables are scaled to [-b, b] for this b (0 = standardized)
+                    </span></li>
+            <li>Default
+                Value: <span id="basisScale_default_value">0.9</span></li>
+            <li><Lower></Lower>
+                Bound: <span id="basisScale_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span id="basisScale_upper_bound">500000</span></li>
+            <li>Value Type:
+                <span id="basisScale_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -5265,7 +5291,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             	non-CPDAG; this parameter guarantees a CPDAG if set to 'Yes'.
             	</span></li>
             <li>Default Value: <span
-                    id="guaranteeCpdag_default_value">false</span></li>
+                    id="guaranteeCpdag_default_value">true</span></li>
             <li>Lower Bound: <span
                     id="guaranteeCpdag_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -6380,7 +6406,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                      exceptions
         </span></li>
             <li>Default Value: <span
-                    id="usePseudoinverse_default_value">false</span></li>
+                    id="usePseudoinverse_default_value">true</span></li>
             <li>Lower Bound: <span
                     id="usePseudoinverse_lower_bound"></span></li>
             <li>Upper
@@ -6802,7 +6828,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         Schölkopf, B. (2012) and Proposition 5, a positive integer.</span>
             </li>
             <li>Default Value: <span
-                    id="kciNumBootstraps_default_value">5000</span></li>
+                    id="kciNumBootstraps_default_value">1000</span></li>
             <li>Lower Bound:
                 <span id="kciNumBootstraps_lower_bound">1</span></li>
             <li>Upper
@@ -6834,26 +6860,22 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="kernelMultiplier">kernelMultiplier</h3>
+            id="scalingFactor">scalingFactor</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="kernelMultiplier_short_desc">Bowman and Azzalini (1997) default
-        kernel bandwidths should be multiplied by...</span></li>
+                    id="scalingFactor_short_desc">For Gaussian kernel: The scaling factor.</span></li>
             <li>Long
-                Description: <span id="kernelMultiplier_long_desc"> For the
-        conditional correlation algorithm. Bowman, A. W., & Azzalini, A.
-        (1997), give a formula for default optimal kernel widths. We allow
-        these defaults to be multiplied by this factor, to capture more or
-        less than this optimal signal.</span></li>
+                Description: <span id="scalingFactor_long_desc">
+                    Kernel scaling factor.                </span></li>
             <li>Default Value: <span
-                    id="kernelMultiplier_default_value">1.0</span></li>
+                    id="scalingFactor_default_value">1.0</span></li>
             <li>Lower Bound:
-                <span id="kernelMultiplier_lower_bound">4.9E-324</span></li>
+                <span id="scalingFactor_lower_bound">4.9E-324</span></li>
             <li>Upper Bound: <span
-                    id="kernelMultiplier_upper_bound">Infinity</span></li>
+                    id="scalingFactor_upper_bound">Infinity</span></li>
             <li>Value
-                Type: <span id="kernelMultiplier_value_type">Double</span></li>
+                Type: <span id="scalingFactor_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6923,15 +6945,49 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="kernelType">kernelType</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="kernelType_short_desc">Kernel type (1 = Gaussian, 2 =
-        Epinechnikov)</span></li>
+                    id="kernelType_short_desc">
+                Kernel type (1 = Gaussian, 2 = Linear, 3 = Polynomial)
+            </span></li>
             <li>Long Description: <span
-                    id="kernelType_long_desc"> For CCI, this determines which kernel type
-        will be used (1 = Gaussian, 2 = Epinechnikov).</span></li>
-            <li>Default Value: <span id="kernelType_default_value">2</span></li>
+                    id="kernelType_long_desc"> Determines which kernel type
+        will be used (1 = Gaussian, 2 = Linear, 3 = Polynomial).</span></li>
+            <li>Default Value: <span id="kernelType_default_value">1</span></li>
             <li>Lower Bound: <span id="kernelType_lower_bound">1</span></li>
-            <li>Upper Bound: <span id="kernelType_upper_bound">2</span></li>
+            <li>Upper Bound: <span id="kernelType_upper_bound">3</span></li>
             <li>Value Type: <span id="kernelType_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="polynomialDegree">polynomialDegree</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="polynomialDegree_short_desc">
+                    For polynomial kernel: The degree
+                    </span></li>
+            <li>Long Description: <span
+                    id="polynomialDegree_long_desc">
+                    The degree of the polynomial kernel, if used
+        </span></li>
+            <li>Default Value: <span id="polynomialDegree_default_value">2</span></li>
+            <li>Lower Bound: <span id="polynomialDegree_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="polynomialDegree_upper_bound">5000000</span></li>
+            <li>Value Type: <span id="polynomialDegree_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="polynomialConstant">polynomialConstant</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="polynomialConstant_short_desc">
+                    For polynomial kernel: The constant
+                    </span></li>
+            <li>Long Description: <span
+                    id="polynomialConstant_long_desc">
+                    The constant of the polynomial kernel, if used, which
+                    determine tradeoff between higher and lower order terms
+        </span></li>
+            <li>Default Value: <span id="polynomialConstant_default_value">1</span></li>
+            <li>Lower Bound: <span id="polynomialConstant_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="polynomialConstant_upper_bound">5000</span></li>
+            <li>Value Type: <span id="polynomialConstant_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7451,7 +7507,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         of the most significant basis functions to use as a basis.</span>
             </li>
             <li>Default Value: <span
-                    id="numBasisFunctions_default_value">30</span></li>
+                    id="numBasisFunctions_default_value">3</span></li>
             <li>Lower Bound:
                 <span id="numBasisFunctions_lower_bound">1</span></li>
             <li>Upper
@@ -8282,6 +8338,29 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                         id="penaltyDiscountZs_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span
                     id="penaltyDiscountZs_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="truncationLimit">truncationLimit</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="truncationLimit_short_desc">Truncation limit for
+                    basis functions</span></li>
+            <li>Long Description: <span
+                    id="truncationLimit_long_desc">
+                    Basis functions 1 though this number will be used.. The Degenerate Gaussian
+                    category indicator variables for mixed data are also used.
+         </span></li>
+            <li>Default Value: <span
+                    id="truncationLimit_default_value">3</span></li>
+            <li>Lower Bound:
+                <span id="truncationLimit_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="truncationLimit_upper_bound">1000</span></li>
+            <li>Value Type: <span
+                    id="truncationLimit_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="zSRiskBound">zSRiskBound</h3>

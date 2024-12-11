@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
+import edu.cmu.tetrad.search.test.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 
@@ -70,6 +71,11 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
 
         if (dataModel.isContinuous()) {
             independenceTest = new IndTestFisherZ((DataSet) dataModel, 0.01);
+//            independenceTest = new IndTestConditionalCorrelation(((DataSet) dataModel), 0.01);
+//
+//            ((IndTestConditionalCorrelation) independenceTest).setBandwidth(6);
+//            ((IndTestConditionalCorrelation) independenceTest).setNumFunctions(4);
+
         } else if (dataModel.isDiscrete()) {
             independenceTest = new IndTestChiSquare((DataSet) dataModel, 0.01);
         } else if (dataModel.isMixed()) {
@@ -80,7 +86,7 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
 
         MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
 
-        markovCheck.generateResults(true);
+        markovCheck.generateResults(true, true);
         return markovCheck.getAndersonDarlingP(true);
     }
 

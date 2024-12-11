@@ -49,7 +49,12 @@ public class TestJoeMarkovCheckExploration {
 //            IndTestFisherZ test = new IndTestFisherZ(dataSet, penalty);
 
             for (int i = 0; i < 10; i++) {
-                Graph cpdag = new PermutationSearch(new Boss(score)).search();
+                Graph cpdag = null;
+                try {
+                    cpdag = new PermutationSearch(new Boss(score)).search();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 //                Graph cpdag = new Fges(score).search();
 //                Graph cpdag = new Pc(test).search();
                 printLine(trueGraph, cpdag, dataSet, penalty, false);

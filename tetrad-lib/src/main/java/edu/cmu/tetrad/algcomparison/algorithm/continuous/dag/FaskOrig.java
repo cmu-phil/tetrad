@@ -88,7 +88,7 @@ public class FaskOrig extends AbstractBootstrapAlgorithm implements Algorithm, H
         this.score = score;
     }
 
-    private Graph getGraph(edu.cmu.tetrad.search.FaskOrig search) {
+    private Graph getGraph(edu.cmu.tetrad.search.FaskOrig search) throws InterruptedException {
         return search.search();
     }
 
@@ -102,7 +102,7 @@ public class FaskOrig extends AbstractBootstrapAlgorithm implements Algorithm, H
      * @throws IllegalArgumentException if there are missing values in the data set
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (!(dataModel instanceof DataSet dataSet)) {
             throw new IllegalStateException("Expecting a dataset.");
         }

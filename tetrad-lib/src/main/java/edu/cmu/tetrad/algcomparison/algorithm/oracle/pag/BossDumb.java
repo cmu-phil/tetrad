@@ -70,7 +70,7 @@ public class BossDumb extends AbstractBootstrapAlgorithm implements Algorithm, U
      * @see Algorithm
      */
     public BossDumb() {
-        // Used for reflection; do not delete.
+        // Used for reflection; do not delete it.
     }
 
     /**
@@ -122,20 +122,21 @@ public class BossDumb extends AbstractBootstrapAlgorithm implements Algorithm, U
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
-        // FCI-ORIENT
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
 
-        return search.search();
+        try {
+            return search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Retrieves a comparison graph by transforming a true directed graph into a partially directed graph (PAG).
      *
-     * @param graph The true directed graph, if there is one.
+     * @param graph The true, directed graph, if there is one.
      * @return The comparison graph.
      */
     @Override

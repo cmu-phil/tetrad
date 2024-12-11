@@ -63,7 +63,7 @@ public final class ResolveSepsets {
      * @return a boolean
      */
     public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests,
-                                              Node x, Node y, Set<Node> condSet) {
+                                              Node x, Node y, Set<Node> condSet) throws InterruptedException {
         if (method == Method.fisher) {
             return ResolveSepsets.isIndependentPooledFisher(independenceTests, x, y, condSet);
         } else if (method == Method.fisher2) {
@@ -105,7 +105,7 @@ public final class ResolveSepsets {
      * @return a boolean
      */
     public static boolean isIndependentPooledFisher(List<IndependenceTest> independenceTests, Node x, Node y,
-                                                    Set<Node> condSet) {
+                                                    Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
         double tf = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
@@ -162,7 +162,7 @@ public final class ResolveSepsets {
      * @return a boolean
      */
     public static boolean isIndependentPooledTippett(List<IndependenceTest> independenceTests, Node x, Node y,
-                                                     Set<Node> condSet) {
+                                                     Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
         double p = -1.0;
         for (IndependenceTest independenceTest : independenceTests) {
@@ -198,7 +198,7 @@ public final class ResolveSepsets {
      * @return a boolean
      */
     public static boolean isIndependentPooledWilkinson(List<IndependenceTest> independenceTests, Node x, Node y,
-                                                       Set<Node> condSet, int r) {
+                                                       Set<Node> condSet, int r) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         double[] p = new double[independenceTests.size()];
         int k = 0;
@@ -223,7 +223,7 @@ public final class ResolveSepsets {
      * @return a boolean
      */
     public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y,
-                                                            Set<Node> condSet) {
+                                                            Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
         double p = -1.0;
         for (IndependenceTest independenceTest : independenceTests) {
@@ -258,7 +258,7 @@ public final class ResolveSepsets {
      * @return a boolean
      */
     public static boolean isIndependentPooledStouffer(List<IndependenceTest> independenceTests, Node x, Node y,
-                                                      Set<Node> condSet) {
+                                                      Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
         double ts = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
@@ -286,7 +286,7 @@ public final class ResolveSepsets {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
         double c = FastMath.sqrt(3 * (5 * independenceTests.size() + 4) / (independenceTests.size() * FastMath.pow(FastMath.PI, 2) * (5 * independenceTests.size() + 2)));
         double tm = 0.0;
@@ -337,7 +337,7 @@ public final class ResolveSepsets {
      * @return a boolean
      */
     public static boolean isIndependentPooledAverage(List<IndependenceTest> independenceTests, Node x, Node y,
-                                                     Set<Node> condSet) {
+                                                     Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
         double sum = 0.0;
         int numTests = 0;
@@ -407,7 +407,7 @@ public final class ResolveSepsets {
      * @return a boolean
      */
     public static boolean isIndependentPooledAverageTest(List<IndependenceTest> independenceTests, Node x, Node y,
-                                                         Set<Node> condSet) {
+                                                         Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
         double ts = 0.0;
         int df = 0;
@@ -438,7 +438,7 @@ public final class ResolveSepsets {
      * @return a boolean
      */
     public static boolean isIndependentPooledRandom(List<IndependenceTest> independenceTests, Node x, Node y,
-                                                    Set<Node> condSet) {
+                                                    Set<Node> condSet) throws InterruptedException {
         List<IndependenceTest> _tests = new ArrayList<>(independenceTests);
 
         double alpha = independenceTests.iterator().next().getAlpha();

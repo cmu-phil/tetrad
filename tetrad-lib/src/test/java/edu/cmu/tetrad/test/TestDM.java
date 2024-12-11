@@ -78,7 +78,12 @@ public class TestDM {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        Graph foundGraph = search.search();
+        Graph foundGraph = null;
+        try {
+            foundGraph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("Test Case 1");
 //        System.out.println(search.getDmStructure());
@@ -139,7 +144,12 @@ public class TestDM {
         search.setData(data);
         search.setTrueInputs(search.getInputs());
 
-        Graph foundGraph = search.search();
+        Graph foundGraph = null;
+        try {
+            foundGraph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("Test Case 2");
         System.out.println(search.getDmStructure());
@@ -235,7 +245,12 @@ public class TestDM {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        Graph foundGraph = search.search();
+        Graph foundGraph = null;
+        try {
+            foundGraph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("Test Case 3");
         System.out.println(search.getDmStructure());
@@ -317,7 +332,12 @@ public class TestDM {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        Graph foundGraph = search.search();
+        Graph foundGraph = null;
+        try {
+            foundGraph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("Three Latent Fork Case");
         System.out.println(search.getDmStructure());
@@ -383,7 +403,12 @@ public class TestDM {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        Graph foundGraph = search.search();
+        Graph foundGraph = null;
+        try {
+            foundGraph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("Three Latent Collider Case");
         System.out.println(search.getDmStructure());
@@ -448,7 +473,12 @@ public class TestDM {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        Graph foundGraph = search.search();
+        Graph foundGraph = null;
+        try {
+            foundGraph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("Four Latent Case");
         System.out.println(search.getDmStructure());
@@ -673,7 +703,11 @@ public class TestDM {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        search.search();
+        try {
+            search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("Test Case 10");
         System.out.println(search.getDmStructure());
@@ -818,7 +852,11 @@ public class TestDM {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        search.search();
+        try {
+            search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println();
         System.out.println("" + search.getDmStructure());
@@ -911,7 +949,11 @@ public class TestDM {
 
         search.setData(data);
         search.setTrueInputs(search.getInputs());
-        search.search();
+        try {
+            search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println();
         System.out.println("" + search.getDmStructure());
@@ -1206,12 +1248,20 @@ public class TestDM {
 
             search.setData(data);
             search.setTrueInputs(trueInputs);
-            search.search();
+            try {
+                search.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
         } else {
             search.setData(data);
             search.setTrueInputs(trueInputs);
-            search.search();
+            try {
+                search.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
 //            search.search(data, trueInputs);
         }

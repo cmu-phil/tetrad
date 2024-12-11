@@ -84,6 +84,8 @@ public class TestRubenData {
                 System.out.println(index + ". AP = " + nf.format(ap) + " AR = " + nf.format(ar) + " OP = " + nf.format(op) + " OR = " + nf.format(or) + " BD = " + nf.format(bd) + " E = " + nf.format(elapsed));
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
 
