@@ -2907,12 +2907,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>All the parameters from FCI are below.</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
-
     <h3>The FCI-Max Algorithm</h3>
 
     <h4>Description</h4>
@@ -2940,12 +2934,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p>All the parameters from FCI are below.</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
-
     <h3>The CFCI Algorithm</h3>
 
     <h4>Description</h4>
@@ -2971,13 +2959,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         Spirtes et al., 2000. Also, see the CPC algorithm.</p>
 
     <h4>Parameters</h4>
-
-    <p>All the parameters from FCI are available for RFCI.
-        Additionally:</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
 
     <h3>The RFCI Algorithm</h3>
 
@@ -3006,19 +2987,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Output Format</h4>
 
     <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
-
-    <h4>Parameters</h4>
-
-    <p>All the parameters from FCI are available for RFCI.
-        Additionally:</p>
-
-    <p><a href="#depth">depth</a>, <a
-            href="#maxPathLength">maxPathLength</a>, <a
-            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
-
-    <h3>The PAG-Sampling RFCI Algorithm</h3>
-
-    <h4>Description</h4>
 
     <div id="pag-sampling-rfci">
 
@@ -3135,7 +3103,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Description</h4>
 
     <div id="lv-lite">
-        <p> LV-Lite starts with BOSS or GRaSP and get a valid order and a DAG/CPDAG. It sets the initial state of the
+        <p> LV-Lite starts with BOSS or GRaSP and gets a valid order and a DAG/CPDAG. It sets the initial state of the
             estimted PAG to this CPDAG and orients as o-o and then copy all of the unshielded colliders from the CPDAG
             to the PAG. It then performs a testing modified from the step in GFCI that is more efficient. In GFCI, an
             edge x *-* y is removed from the graph is there is a subset S of adj(x) \ {y} or adj(y) \ {x} such that x
@@ -4383,7 +4351,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p><a href="#alpha">alpha</a>, <a
             href="#numBasisFunctions">numBasisFunctions</a>, <a
             href="#kernelType">kernelType</a>, <a
-            href="#kernelMultiplier">kernelMultiplier</a>, <a
+            href="#bandwidth">bandwidth</a>, <a
             href="#basisType">basisType</a>, <a
             href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a></p>
 
@@ -4469,7 +4437,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#alpha">alpha</a>, <a
             href="#kciUseApproximation">kciUseApproximation</a>, <a
-            href="#kernelMultiplier">kernelMultiplier</a>, <a
+            href="#bandwidth">bandwidth</a>, <a
             href="#kciNumBootstraps">kciNumBootstraps</a>, <a
             href="#thresholdForNumEigenvalues">thresholdForNumEigenvalues</a>, <a
             href="#kciEpsilon">kciEpsilon</a></p>
@@ -4768,7 +4736,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="minSampleSizePerCell_short_desc">For conditional Gaussian, the minimum sample size per cell/span>
+                    id="minSampleSizePerCell_short_desc">For conditional Gaussian, the minimum sample size per cell</span>
             </li>
             <li>Long Description: <span
                     id="minSampleSizePerCell_long_desc">For conditional Gaussian, the minimum sample size per cell</span>
@@ -5061,19 +5029,45 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="basisType">basisType</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="basisType_short_desc"> Basis type (1 = Polynomial, 2 =
-        Cosine)</span></li>
+                    id="basisType_short_desc">
+                    Basis type (1 = Polynomial, 2 =
+        			Hermite1, 3=Hermite2, 4=Legendre, 5=Chebyshev)
+        </span></li>
             <li>Long Description: <span
-                    id="basisType_long_desc"> For CCI, this determines which basis type
-        will be used (1 = Polynomial, 2 = Cosine)</span></li>
+                    id="basisType_long_desc">
+                    id="basisType_short_desc">
+                    Basis type (1 = Polynomial, 2 =
+        			Hermite1, 3=Hermite2, 4=Legendre, 5=Chebyshev)
+                    </span></li>
             <li>Default
-                Value: <span id="basisType_default_value">2</span></li>
+                Value: <span id="basisType_default_value">4</span></li>
             <li>Lower
                 Bound: <span id="basisType_lower_bound">1</span></li>
             <li>Upper
-                Bound: <span id="basisType_upper_bound">2</span></li>
+                Bound: <span id="basisType_upper_bound">5</span></li>
             <li>Value Type:
                 <span id="basisType_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="basisScale">basisScale</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="basisScale_short_desc">
+                    Variables are scaled to [-b, b] for this b (0 = standardized)
+        </span></li>
+            <li>Long Description: <span
+                    id="basisScale_long_desc">
+                    id="basisScale_short_desc">
+                    Variables are scaled to [-b, b] for this b (0 = standardized)
+                    </span></li>
+            <li>Default
+                Value: <span id="basisScale_default_value">0.9</span></li>
+            <li><Lower></Lower>
+                Bound: <span id="basisScale_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span id="basisScale_upper_bound">500000</span></li>
+            <li>Value Type:
+                <span id="basisScale_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -5244,50 +5238,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="doDiscriminatingPathColliderRule">doDiscriminatingPathColliderRule</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="doDiscriminatingPathColliderRule_short_desc">Yes if the discriminating path collider rule
-                should be done, No if not</span></li>
-            <li>Long Description: <span
-                    id="doDiscriminatingPathColliderRule_long_desc">Yes if the discriminating path collider
-                    FCI rule (part of the final orientation, requiring an additional test)
-                    should be done, No if not </span>
-            </li>
-            <li>Default Value: <span
-                    id="doDiscriminatingPathColliderRule_default_value">true</span></li>
-            <li>Lower
-                Bound: <span id="doDiscriminatingPathColliderRule_lower_bound"></span></li>
-            <li>Upper Bound: <span
-                    id="doDiscriminatingPathColliderRule_upper_bound"></span></li>
-            <li>Value Type:
-                <span id="doDiscriminatingPathColliderRule_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="doDiscriminatingPathTailRule">doDiscriminatingPathTailRule</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="doDiscriminatingPathTailRule_short_desc">Yes if the discriminating path tail rule
-                should be done, No if not</span></li>
-            <li>Long Description: <span
-                    id="doDiscriminatingPathTailRule_long_desc">Yes if the discriminating path tail
-                    FCI rule (part of the final orientation, requiring an additional test)
-                    should be done, No if not </span>
-            </li>
-            <li>Default Value: <span
-                    id="doDiscriminatingPathTailRule_default_value">true</span></li>
-            <li>Lower
-                Bound: <span id="doDiscriminatingPathTailRule_lower_bound"></span></li>
-            <li>Upper Bound: <span
-                    id="doDiscriminatingPathTailRule_upper_bound"></span></li>
-            <li>Value Type:
-                <span id="doDiscriminatingPathTailRule_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
             id="concurrentFAS">concurrentFAS</h3>
         <ul
                 class="parameter_description_list">
@@ -5341,7 +5291,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             	non-CPDAG; this parameter guarantees a CPDAG if set to 'Yes'.
             	</span></li>
             <li>Default Value: <span
-                    id="guaranteeCpdag_default_value">false</span></li>
+                    id="guaranteeCpdag_default_value">true</span></li>
             <li>Lower Bound: <span
                     id="guaranteeCpdag_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -6456,7 +6406,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                      exceptions
         </span></li>
             <li>Default Value: <span
-                    id="usePseudoinverse_default_value">false</span></li>
+                    id="usePseudoinverse_default_value">true</span></li>
             <li>Lower Bound: <span
                     id="usePseudoinverse_lower_bound"></span></li>
             <li>Upper
@@ -6465,81 +6415,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value
                 Type: <span
                         id="usePseudoinverse_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="ablationLeaveOutTuckingStep">ablationLeaveOutTuckingStep</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="ablationLeaveOutTuckingStep_short_desc">
-                    ABLATION: Yes, if the tucking step should be left out for the LV-Lite procedure
-        </span></li>
-            <li>Long Description: <span
-                    id="ablationLeaveOutTuckingStep_long_desc">
-                    Allowing tucks can sometimes lead to lower arrowhead accuracies,
-                    even they are theoretically correct.
-        </span></li>
-            <li>Default Value: <span
-                    id="ablationLeaveOutTuckingStep_default_value">false</span></li>
-            <li>Lower Bound: <span
-                    id="ablationLeaveOutTuckingStep_lower_bound"></span></li>
-            <li>Upper
-                Bound: <span
-                        id="ablationLeaveOutTuckingStep_upper_bound"></span></li>
-            <li>Value
-                Type: <span
-                        id="ablationLeaveOutTuckingStep_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="ablationLeaveOutScoringStep">ablationLeaveOutScoringStep</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="ablationLeaveOutScoringStep_short_desc">
-                    ABLATION: Yes, if the scoring step should be left out for the LV-Lite procedure
-        </span></li>
-            <li>Long Description: <span
-                    id="ablationLeaveOutScoringStep_long_desc">
-                    If true, this leaves out the scoring steps and being the algorithm with
-                    a complete nondirected graph (which is Markov).
-        </span></li>
-            <li>Default Value: <span
-                    id="ablationLeaveOutScoringStep_default_value">false</span></li>
-            <li>Lower Bound: <span
-                    id="ablationLeaveOutScoringStep_lower_bound"></span></li>
-            <li>Upper
-                Bound: <span
-                        id="ablationLeaveOutScoringStep_upper_bound"></span></li>
-            <li>Value
-                Type: <span
-                        id="ablationLeaveOutScoringStep_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="ablationLeaveOutTestingSteps">ablationLeaveOutTestingSteps</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="ablationLeaveOutTestingSteps_short_desc">
-                    ABLATION: Yes, if the testing steps should be left out for the LV-Lite procedure
-        </span></li>
-            <li>Long Description: <span
-                    id="ablationLeaveOutTestingSteps_long_desc">
-                    If true, this leaves out all testing steps from the algorithm and bases
-                    the result on just the scoring steps.
-        </span></li>
-            <li>Default Value: <span
-                    id="ablationLeaveOutTestingSteps_default_value">false</span></li>
-            <li>Lower Bound: <span
-                    id="ablationLeaveOutTestingSteps_lower_bound"></span></li>
-            <li>Upper
-                Bound: <span
-                        id="ablationLeaveOutTestingSteps_upper_bound"></span></li>
-            <li>Value
-                Type: <span
-                        id="ablationLeaveOutTestingSteps_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6572,11 +6447,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 class="parameter_description_list">
             <li>Short Description: <span
                     id="lvLiteStartsWith_short_desc">
-                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP
+                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP, 3 = SP
         </span></li>
             <li>Long Description: <span
                     id="lvLiteStartsWith_long_desc">
-                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP
+                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP, 3 = SP
         </span></li>
             <li>Default Value: <span
                     id="lvLiteStartsWith_default_value">1</span></li>
@@ -6584,7 +6459,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="lvLiteStartsWith_lower_bound">1</span></li>
             <li>Upper
                 Bound: <span
-                        id="lvLiteStartsWith_upper_bound">2</span></li>
+                        id="lvLiteStartsWith_upper_bound">3</span></li>
             <li>Value
                 Type: <span
                         id="lvLiteStartsWith_value_type">Integer</span></li>
@@ -6618,19 +6493,19 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             id="maxBlockingPathLength">maxBlockingPathLength</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="maxBlockingPathLength_short_desc">Maximum path length to block in
-                    extra-edge removal step, >= 3</span></li>
+                    id="maxBlockingPathLength_short_desc">
+                Maximum path length for paths for searching for path blocking sets
+                (-1 = no limit)
+            </span></li>
             <li>Long Description: <span
                     id="maxBlockingPathLength_long_desc">
-                    In the extra edge removal step, we build conditioning sets based on the
-                    current PAG to attempt to remove adjacencies from the graph, by
-                    blocking paths from x to y of up to this length.
+                    The maximum length of paths to search for path blocking sets.
         </span></li>
             <li>Default
                 Value: <span
-                        id="maxBlockingPathLength_default_value">5</span></li>
+                        id="maxBlockingPathLength_default_value">-1</span></li>
             <li>Lower Bound: <span
-                    id="maxBlockingPathLength_lower_bound">3</span></li>
+                    id="maxBlockingPathLength_lower_bound">-1</span></li>
             <li>Upper
                 Bound: <span
                         id="maxBlockingPathLength_upper_bound">2147483647</span></li>
@@ -6694,7 +6569,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 class="parameter_description_list">
             <li>Short Description: <span
                     id="guaranteePag_short_desc">
-                    Guarantee that the output is a legal PAG
+                    Ensure the output is a legal PAG (where feasible)
         </span></li>
             <li>Long Description: <span
                     id="guaranteePag_long_desc">
@@ -6704,7 +6579,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     selecting this option.
         </span></li>
             <li>Default Value: <span
-                    id="guaranteePag_default_value">false</span></li>
+                    id="guaranteePag_default_value">true</span></li>
             <li>Lower Bound: <span
                     id="guaranteePag_lower_bound"></span></li>
             <li>Upper
@@ -6713,6 +6588,60 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value
                 Type: <span
                         id="guaranteePag_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="doDdpEdgeRemovalStep">doDdpEdgeRemovalStep</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="doDdpEdgeRemovalStep_short_desc">
+                    True if the definite discriminating path edge removal step should be done.
+        </span></li>
+            <li>Long Description: <span
+                    id="doDdpEdgeRemovalStep_long_desc">
+                    This step of LV-Lite can be expensive for large models and addresses
+                    a relatively rare condition in the search, so the user may opt to
+                    leave this out. The risk is that some edges may not be removed from
+                    the graph that could be.
+        </span></li>
+            <li>Default Value: <span
+                    id="doDdpEdgeRemovalStep_default_value">true</span></li>
+            <li>Lower Bound: <span
+                    id="doDdpEdgeRemovalStep_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="doDdpEdgeRemovalStep_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="doDdpEdgeRemovalStep_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="ensureMarkov">ensureMarkov</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="ensureMarkov_short_desc">
+                    Ensure the local Markov property holds (if feasible)
+        </span></li>
+            <li>Long Description: <span
+                    id="ensureMarkov_long_desc">
+                Local Markov says that if msep(x, y | parents(x)) then x _||_ y | parents(x).
+                Checking true for this property will tell the algorithm to ensure
+                this property if the scoring step produces a Markov graph. Not applicable
+                when running the algorithm from Oracle.
+        </span></li>
+            <li>Default Value: <span
+                    id="ensureMarkov_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="ensureMarkov_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="ensureMarkov_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="ensureMarkov_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6739,31 +6668,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 Type: <span
                         id="removeAlmostCycles_value_type">Boolean</span></li>
         </ul>
-
-        <h3 class="parameter_description"
-            id="ablationLeaveOutFinalOrientation">ablationLeaveOutFinalOrientation</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="ablationLeaveOutFinalOrientation_short_desc">
-                    ABLATION: Leave out final orientation step.
-        </span></li>
-            <li>Long Description: <span
-                    id="ablationLeaveOutFinalOrientation_long_desc">
-                    If true, the final orientation step of the algorithm is not performed.
-        </span></li>
-            <li>Default Value: <span
-                    id="ablationLeaveOutFinalOrientation_default_value">false</span></li>
-            <li>Lower Bound: <span
-                    id="ablationLeaveOutFinalOrientation_lower_bound"></span></li>
-            <li>Upper
-                Bound: <span
-                        id="ablationLeaveOutFinalOrientation_upper_bound"></span></li>
-            <li>Value
-                Type: <span
-                        id="ablationLeaveOutFinalOrientation_value_type">Boolean</span></li>
-        </ul>
-
 
         <h3 class="parameter_description"
             id="intervalBetweenRecordings">intervalBetweenRecordings</h3>
@@ -6924,7 +6828,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         Schölkopf, B. (2012) and Proposition 5, a positive integer.</span>
             </li>
             <li>Default Value: <span
-                    id="kciNumBootstraps_default_value">5000</span></li>
+                    id="kciNumBootstraps_default_value">1000</span></li>
             <li>Lower Bound:
                 <span id="kciNumBootstraps_lower_bound">1</span></li>
             <li>Upper
@@ -6956,26 +6860,22 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="kernelMultiplier">kernelMultiplier</h3>
+            id="scalingFactor">scalingFactor</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="kernelMultiplier_short_desc">Bowman and Azzalini (1997) default
-        kernel bandwidths should be multiplied by...</span></li>
+                    id="scalingFactor_short_desc">For Gaussian kernel: The scaling factor.</span></li>
             <li>Long
-                Description: <span id="kernelMultiplier_long_desc"> For the
-        conditional correlation algorithm. Bowman, A. W., & Azzalini, A.
-        (1997), give a formula for default optimal kernel widths. We allow
-        these defaults to be multiplied by this factor, to capture more or
-        less than this optimal signal.</span></li>
+                Description: <span id="scalingFactor_long_desc">
+                    Kernel scaling factor.                </span></li>
             <li>Default Value: <span
-                    id="kernelMultiplier_default_value">1.0</span></li>
+                    id="scalingFactor_default_value">1.0</span></li>
             <li>Lower Bound:
-                <span id="kernelMultiplier_lower_bound">4.9E-324</span></li>
+                <span id="scalingFactor_lower_bound">4.9E-324</span></li>
             <li>Upper Bound: <span
-                    id="kernelMultiplier_upper_bound">Infinity</span></li>
+                    id="scalingFactor_upper_bound">Infinity</span></li>
             <li>Value
-                Type: <span id="kernelMultiplier_value_type">Double</span></li>
+                Type: <span id="scalingFactor_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7000,39 +6900,94 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="cellTableType">cellTableType</h3>
+        <ul
+                class="cellTableType_list">
+            <li>Short Description: <span id="cellTableType_short_desc">
+            		The type of cell table to use (optimization), 1 = AD Tree, 2 = Count Sample
+            </span></li>
+            <li>Long Description: <span id="cellTableType_long_desc">
+                   This is just whether table counts are to be calculated using one method
+                   or another, for optimization. The AD tree option uses AD trees to do
+                   the calculation; the Count Samples option simply counts the samples
+                   for each independence question and builds a table that way.
+                    </span></li>
+            <li>Default Value: <span
+                    id="cellTableType_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="cellTableType_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="cellTableType_upper_bound">2</span></li>
+            <li>Value Type:
+                <span id="cellTableType_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="minCountPerCell">minCountPerCell</h3>
         <ul
                 class="minCountPerCell_list">
             <li>Short Description: <span id="minCountPerCell_short_desc">
-            		Minimum expected count per cell for nonempty Chi-Square tables.
+            		The minimum count per cell in a chi square table.
             </span></li>
             <li>Long Description: <span id="minCountPerCell_long_desc">
-                   The minimum count per cell in any nonempty conditional Chi-Square table
-                   This is real-valued and must be > 0.0; the default is 1.0. No matter
-                    what this value is, if a row is empty, it will be removed from the
-                    table.</span></li>
+                   Increasing this can improve accuracy of chi square estimates.
+                    </span></li>
             <li>Default Value: <span
-                    id="minCountPerCell_default_value">1.0</span></li>
+                    id="minCountPerCell_default_value">1</span></li>
             <li>Lower
-                Bound: <span id="minCountPerCell_lower_bound">0.0</span></li>
+                Bound: <span id="minCountPerCell_lower_bound">1</span></li>
             <li>Upper Bound: <span
-                    id="minCountPerCell_upper_bound">Infinity</span></li>
+                    id="minCountPerCell_upper_bound">1000000</span></li>
             <li>Value Type:
-                <span id="minCountPerCell_value_type">Double</span></li>
+                <span id="minCountPerCell_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="kernelType">kernelType</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="kernelType_short_desc">Kernel type (1 = Gaussian, 2 =
-        Epinechnikov)</span></li>
+                    id="kernelType_short_desc">
+                Kernel type (1 = Gaussian, 2 = Linear, 3 = Polynomial)
+            </span></li>
             <li>Long Description: <span
-                    id="kernelType_long_desc"> For CCI, this determines which kernel type
-        will be used (1 = Gaussian, 2 = Epinechnikov).</span></li>
-            <li>Default Value: <span id="kernelType_default_value">2</span></li>
+                    id="kernelType_long_desc"> Determines which kernel type
+        will be used (1 = Gaussian, 2 = Linear, 3 = Polynomial).</span></li>
+            <li>Default Value: <span id="kernelType_default_value">1</span></li>
             <li>Lower Bound: <span id="kernelType_lower_bound">1</span></li>
-            <li>Upper Bound: <span id="kernelType_upper_bound">2</span></li>
+            <li>Upper Bound: <span id="kernelType_upper_bound">3</span></li>
             <li>Value Type: <span id="kernelType_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="polynomialDegree">polynomialDegree</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="polynomialDegree_short_desc">
+                    For polynomial kernel: The degree
+                    </span></li>
+            <li>Long Description: <span
+                    id="polynomialDegree_long_desc">
+                    The degree of the polynomial kernel, if used
+        </span></li>
+            <li>Default Value: <span id="polynomialDegree_default_value">2</span></li>
+            <li>Lower Bound: <span id="polynomialDegree_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="polynomialDegree_upper_bound">5000000</span></li>
+            <li>Value Type: <span id="polynomialDegree_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="polynomialConstant">polynomialConstant</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="polynomialConstant_short_desc">
+                    For polynomial kernel: The constant
+                    </span></li>
+            <li>Long Description: <span
+                    id="polynomialConstant_long_desc">
+                    The constant of the polynomial kernel, if used, which
+                    determine tradeoff between higher and lower order terms
+        </span></li>
+            <li>Default Value: <span id="polynomialConstant_default_value">1</span></li>
+            <li>Lower Bound: <span id="polynomialConstant_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="polynomialConstant_upper_bound">5000</span></li>
+            <li>Value Type: <span id="polynomialConstant_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7279,26 +7234,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="maxPathLength">maxPathLength</h3>
+            id="maxDiscriminatingPathLength">maxDiscriminatingPathLength</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="maxPathLength_short_desc">The maximum length for any
+                    id="maxDiscriminatingPathLength_short_desc">The maximum length for any
         discriminating path. -1 if unlimited (min = -1)</span></li>
             <li>Long
-                Description: <span id="maxPathLength_long_desc"> See Spirtes,
+                Description: <span id="maxDiscriminatingPathLength_long_desc"> See Spirtes,
         Glymour, and Scheines (2000) for the definition of discrimination
         path. Finding discriminating paths can be expensive. This sets the
         maximum length of such paths that the algorithm tries to find.</span>
             </li>
             <li>Default Value: <span
-                    id="maxPathLength_default_value">-1</span></li>
+                    id="maxDiscriminatingPathLength_default_value">-1</span></li>
             <li>Lower Bound:
-                <span id="maxPathLength_lower_bound">-1</span></li>
+                <span id="maxDiscriminatingPathLength_lower_bound">-1</span></li>
             <li>Upper Bound:
-                <span id="maxPathLength_upper_bound">2147483647</span></li>
+                <span id="maxDiscriminatingPathLength_upper_bound">2147483647</span></li>
             <li>Value
-                Type: <span id="maxPathLength_value_type">Integer</span></li>
+                Type: <span id="maxDiscriminatingPathLength_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="maxit">maxit</h3>
@@ -7552,7 +7507,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         of the most significant basis functions to use as a basis.</span>
             </li>
             <li>Default Value: <span
-                    id="numBasisFunctions_default_value">30</span></li>
+                    id="numBasisFunctions_default_value">3</span></li>
             <li>Lower Bound:
                 <span id="numBasisFunctions_lower_bound">1</span></li>
             <li>Upper
@@ -8383,6 +8338,29 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                         id="penaltyDiscountZs_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span
                     id="penaltyDiscountZs_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="truncationLimit">truncationLimit</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="truncationLimit_short_desc">Truncation limit for
+                    basis functions</span></li>
+            <li>Long Description: <span
+                    id="truncationLimit_long_desc">
+                    Basis functions 1 though this number will be used.. The Degenerate Gaussian
+                    category indicator variables for mixed data are also used.
+         </span></li>
+            <li>Default Value: <span
+                    id="truncationLimit_default_value">3</span></li>
+            <li>Lower Bound:
+                <span id="truncationLimit_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="truncationLimit_upper_bound">1000</span></li>
+            <li>Value Type: <span
+                    id="truncationLimit_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="zSRiskBound">zSRiskBound</h3>
@@ -9656,27 +9634,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Lower Bound: <span id="verbose_lower_bound"></span></li>
             <li>Upper Bound: <span id="verbose_upper_bound"></span></li>
             <li>Value Type: <span id="verbose_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="meekVerbose">meekVerbose</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="meekVerbose_short_desc">Yes if verbose output for Meek rule
-        applications should be printed or logged</span></li>
-            <li>Long
-                Description: <span id="meekVerbose_long_desc"> If this parameter is
-        set to ‘Yes’, Meek rule applications will be printed out to the
-        log.</span></li>
-            <li>Default Value: <span
-                    id="meekVerbose_default_value">false</span></li>
-            <li>Lower Bound:
-                <span id="meekVerbose_lower_bound"></span></li>
-            <li>Upper Bound:
-                <span id="meekVerbose_upper_bound"></span></li>
-            <li>Value Type: <span
-                    id="meekVerbose_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="useScore">useScore</h3>

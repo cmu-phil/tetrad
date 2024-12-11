@@ -444,7 +444,7 @@ public final class FaskOrig implements IGraphSearch {
      * @return the graph. Some edges may be undirected (though it shouldn't be many in most cases) and some adjacencies
      * may be two-cycles.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
         NumberFormat nf = new DecimalFormat("0.000");
 
@@ -648,7 +648,7 @@ public final class FaskOrig implements IGraphSearch {
      *
      * @return This matrix as a double[][] array.
      */
-    public double[][] getB() {
+    public double[][] getB() throws InterruptedException {
         if (this.graph == null) search();
 
         List<Node> nodes = this.dataSet.getVariables();

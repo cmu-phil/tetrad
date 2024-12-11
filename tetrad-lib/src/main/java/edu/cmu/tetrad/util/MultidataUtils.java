@@ -133,7 +133,7 @@ public final class MultidataUtils {
      *
      * @param dataModels   a {@link java.util.List} object
      * @param variables    a {@link java.util.List} object
-     * @param combinedData an array of {@link int} objects
+     * @param combinedData an array of  objects
      * @param numOfRows    a int
      * @param numOfColumns a int
      */
@@ -191,7 +191,7 @@ public final class MultidataUtils {
      *
      * @param dataModels   a {@link java.util.List} object
      * @param variables    a {@link java.util.List} object
-     * @param combinedData an array of {@link double} objects
+     * @param combinedData an array of  objects
      * @param numOfRows    a int
      * @param numOfColumns a int
      */
@@ -208,7 +208,7 @@ public final class MultidataUtils {
      *
      * @param dataModels   a {@link java.util.List} object
      * @param variables    a {@link java.util.List} object
-     * @param combinedData an array of {@link int} objects
+     * @param combinedData an array of  objects
      * @param numOfRows    a int
      * @param numOfColumns a int
      */
@@ -243,7 +243,7 @@ public final class MultidataUtils {
      * <p>combineContinuousData.</p>
      *
      * @param dataModels   a {@link java.util.List} object
-     * @param combinedData an array of {@link double} objects
+     * @param combinedData an array of  objects
      */
     public static void combineContinuousData(List<DataModel> dataModels, double[][] combinedData) {
         List<DoubleDataBox> models = dataModels.stream()
@@ -385,7 +385,7 @@ public final class MultidataUtils {
      * <p>getRowCounts.</p>
      *
      * @param dataModels a {@link java.util.List} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[] getRowCounts(List<DataModel> dataModels) {
         int[] counts = new int[dataModels.size()];

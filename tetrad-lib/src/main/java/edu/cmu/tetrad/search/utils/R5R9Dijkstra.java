@@ -183,7 +183,7 @@ public class R5R9Dijkstra {
 
         boolean uncovered = true;
 
-        Graph _graph = new Graph(graph, false);
+        Graph _graph = new Graph(graph, R5R9Dijkstra.Rule.R5);
 
         Map<Node, Integer> distances = R5R9Dijkstra.distances(_graph, index.get("1"), index.get("3")).getLeft();
 
@@ -198,6 +198,22 @@ public class R5R9Dijkstra {
     }
 
     /**
+     * The rule that is being implemented, R5 or R9.
+     */
+    public enum Rule {
+
+        /**
+         * The R5 rule.
+         */
+        R5,
+
+        /**
+         * The R9 rule.
+         */
+        R9
+    }
+
+    /**
      * Represents a graph for Dijkstra's algorithm. This wraps a Tetrad graph and provides methods to get neighbors and
      * nodes. The nodes are just the nodes in the underlying Tetrad graph, and neighbors are determined dynamically
      * based on the edges in the graph. There are two modes of operation, one for potentially directed graphs and one
@@ -207,7 +223,13 @@ public class R5R9Dijkstra {
      * R5.
      */
     public static class Graph {
-        private final boolean potentiallyDirected;
+        /**
+         * The rule to implement, R5 or R9.
+         */
+        private final Rule rule;
+        /**
+         * The Tetrad graph to wrap.
+         */
         private final edu.cmu.tetrad.graph.Graph tetradGraph;
 
         /**
@@ -215,12 +237,12 @@ public class R5R9Dijkstra {
          * and nodes. The nodes are just the nodes in the underlying Tetrad graph, and neighbors are determined
          * dynamically based on the edges in the graph.
          *
-         * @param graph               The Tetrad graph to wrap.
-         * @param potentiallyDirected Whether the graph is potentially directed or not.
+         * @param graph The Tetrad graph to wrap.
+         * @param rule  The rule to implement, R5 or R9.
          */
-        public Graph(edu.cmu.tetrad.graph.Graph graph, boolean potentiallyDirected) {
+        public Graph(edu.cmu.tetrad.graph.Graph graph, Rule rule) {
             this.tetradGraph = graph;
-            this.potentiallyDirected = potentiallyDirected;
+            this.rule = rule;
         }
 
         /**
@@ -232,7 +254,12 @@ public class R5R9Dijkstra {
         public List<DijkstraEdge> getNeighbors(Node node) {
             List<DijkstraEdge> filteredNeighbors = new ArrayList<>();
 
-            if (potentiallyDirected) {
+            // Peter--here is the choice point between R5 and R9.
+            if (rule == Rule.R9) {
+
+                // For R9 we follow semidirected (potentially directed) paths.
+
+                // R9
                 Set<edu.cmu.tetrad.graph.Edge> edges = tetradGraph.getEdges(node);
 
                 // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
@@ -247,7 +274,11 @@ public class R5R9Dijkstra {
                 }
 
                 return filteredNeighbors;
-            } else {
+            } else if (rule == Rule.R5) {
+
+                // For R5 we follow nondirected paths.
+
+                // R5
                 Set<edu.cmu.tetrad.graph.Edge> edges = tetradGraph.getEdges(node);
 
                 // We need to filter these neighbors to allow only those that pass using TraverseSemidirected.
@@ -262,6 +293,8 @@ public class R5R9Dijkstra {
                 }
 
                 return filteredNeighbors;
+            } else {
+                throw new IllegalArgumentException("Rule must be R5 or R9.");
             }
         }
 
@@ -341,6 +374,7 @@ public class R5R9Dijkstra {
 
     /**
      * Represents a node in Dijkstra's algorithm. The distance of the nodes from the start is stored in the distance.
+     * <p>
      * Immutable.
      */
     private static class DijkstraNode {

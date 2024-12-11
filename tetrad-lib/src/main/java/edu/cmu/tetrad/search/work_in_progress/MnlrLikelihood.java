@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.AdLeafTree;
+import edu.cmu.tetrad.search.utils.AdTree;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.util.FastMath;
@@ -65,7 +65,7 @@ public class MnlrLikelihood {
     private final int[][] discreteData;
 
     // Partitions
-    private final AdLeafTree adTree;
+    private AdTree adTree;
 
     // Fix degree
     private final int fDegree;
@@ -124,7 +124,7 @@ public class MnlrLikelihood {
             this.nodesHash.put(v, j);
         }
 
-        this.adTree = new AdLeafTree(dataSet);
+        this.adTree = new AdTree(dataSet);
 
     }
 
@@ -152,16 +152,18 @@ public class MnlrLikelihood {
 
         int p = continuous_parents.size();
 
-        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
-        //List<List<Integer>> cells = partition(discrete_parents);
+        adTree = new AdTree(dataSet);
+
+        this.adTree.buildTable(discrete_parents);
 
         int[] continuousCols = new int[p];
         for (int j = 0; j < p; j++) continuousCols[j] = this.nodesHash.get(continuous_parents.get(j));
 
-        for (List<Integer> cell : cells) {
+        for (int k = 0; k < adTree.getNumCells(); k++) {
+            List<Integer> cell = adTree.getCell(k);
             int r = cell.size();
-            if (r > 1) {
 
+            if (r > 1) {
                 double[] mean = new double[p];
                 double[] var = new double[p];
                 for (int i = 0; i < p; i++) {
@@ -237,9 +239,10 @@ public class MnlrLikelihood {
             }
         }
 
-        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
+        this.adTree.buildTable(discrete_parents);
 
-        for (List<Integer> cell : cells) {
+        for (int k = 0; k < adTree.getNumCells(); k++) {
+            List<Integer> cell = adTree.getCell(k);
             int r = cell.size();
             if (r > 0) {
 

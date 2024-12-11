@@ -228,7 +228,7 @@ public class RegressionResult implements TetradSerializable {
     /**
      * <p>Getter for the field <code>se</code>.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] getSe() {
         return this.se;
@@ -247,7 +247,7 @@ public class RegressionResult implements TetradSerializable {
     /**
      * <p>getPredictedValue.</p>
      *
-     * @param x an array of {@link double} objects
+     * @param x an array of  objects
      * @return a double
      */
     public double getPredictedValue(double[] x) {

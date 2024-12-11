@@ -59,6 +59,6 @@ public abstract class DataGraphSearch {
      * @param data a {@link edu.cmu.tetrad.data.DataSet} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public abstract Graph search(DataSet data);
+    public abstract Graph search(DataSet data) throws InterruptedException;
 }
 

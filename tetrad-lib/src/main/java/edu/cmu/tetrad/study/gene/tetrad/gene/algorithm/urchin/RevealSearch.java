@@ -40,7 +40,7 @@ public class RevealSearch {
     /**
      * <p>Constructor for RevealSearch.</p>
      *
-     * @param cases an array of {@link int} objects
+     * @param cases an array of  objects
      * @param names an array of {@link java.lang.String} objects
      */
     public RevealSearch(int[][] cases, String[] names) {

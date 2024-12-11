@@ -224,7 +224,7 @@ public class Kpc implements IGraphSearch {
      *
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         return search(this.independenceTest.getVariables());
     }
 
@@ -240,7 +240,7 @@ public class Kpc implements IGraphSearch {
      * @param nodes a {@link java.util.List} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public Graph search(List<Node> nodes) {
+    public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);
 
         if (verbose) {
@@ -277,6 +277,7 @@ public class Kpc implements IGraphSearch {
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(this.guaranteeCpdag);
         rules.setKnowledge(this.knowledge);
+        rules.setVerbose(verbose);
         rules.orientImplied(this.graph);
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;

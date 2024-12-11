@@ -91,7 +91,7 @@ public final class FasLofs implements IGraphSearch {
      * @return the graph. Some of the edges may be undirected (though it shouldn't be many in most cases) and some of
      * the adjacencies may be two-cycles.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
 
         SemBicScore score = new SemBicScore(new CovarianceMatrix(this.dataSet));

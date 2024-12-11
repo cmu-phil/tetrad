@@ -400,6 +400,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     public MeekRules getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge((Knowledge) this.params.get("knowledge", new Knowledge()));
+        rules.setVerbose(false);
         return rules;
     }
 

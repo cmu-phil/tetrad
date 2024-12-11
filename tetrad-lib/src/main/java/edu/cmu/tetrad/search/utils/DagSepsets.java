@@ -73,7 +73,7 @@ public class DagSepsets implements SepsetProducer {
     @Override
     public Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth) {
 //        return dag.getSepset(a, b);
-        return ((EdgeListGraph) dag).getSepsetContaining(a, b, s, true);
+        return ((EdgeListGraph) dag).getSepsetContaining(a, b, s, -1);
 //        return LvLite.getSepset(a, b, getDag(), new MsepTest(getDag()), null, -1, -1, -1);
     }
 
@@ -84,7 +84,7 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
-        Set<Node> sepset = ((EdgeListGraph) this.dag).getSepset(i, k, false);
+        Set<Node> sepset = ((EdgeListGraph) this.dag).getSepset(i, k, -1);
         return sepset != null && !sepset.contains(j);
     }
 

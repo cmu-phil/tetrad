@@ -30,6 +30,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.HashSet;
 
 /**
  * CheckGraphForMpdagAction is an action class that checks if a given graph is a legal MPDAG (Mixed Ancestral Graph) and
@@ -80,7 +81,7 @@ public class CheckGraphForMagAction extends AbstractAction {
             @Override
             public void watch() {
                 Graph _graph = new EdgeListGraph(workbench.getGraph());
-                legalMag = GraphSearchUtils.isLegalMag(_graph);
+                legalMag = GraphSearchUtils.isLegalMag(_graph, new HashSet<>());
             }
         }
 

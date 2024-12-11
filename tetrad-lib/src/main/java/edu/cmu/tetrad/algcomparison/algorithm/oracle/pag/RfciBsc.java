@@ -90,7 +90,7 @@ public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, Ha
         edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataModel, parameters));
         search.setKnowledge(this.knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc RfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(search);
@@ -106,7 +106,11 @@ public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, Ha
         RfciBsc.setUpperBound(parameters.getDouble(Params.UPPER_BOUND));
         RfciBsc.setOutputRBD(parameters.getBoolean(Params.OUTPUT_RBD));
         RfciBsc.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        return RfciBsc.search();
+        try {
+            return RfciBsc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -151,7 +155,7 @@ public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, Ha
         List<String> parameters = new ArrayList<>();
         // RFCI
         parameters.add(Params.DEPTH);
-        parameters.add(Params.MAX_PATH_LENGTH);
+        parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         // RFCI-BSC
         parameters.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);

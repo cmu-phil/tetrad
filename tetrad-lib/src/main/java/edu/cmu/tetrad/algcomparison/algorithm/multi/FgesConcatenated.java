@@ -86,7 +86,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
      * {@inheritDoc}
      */
     @Override
-    public Graph search(List<DataModel> dataModels, Parameters parameters) {
+    public Graph search(List<DataModel> dataModels, Parameters parameters) throws InterruptedException {
         List<DataSet> dataSets = new ArrayList<>();
 
         for (DataModel dataModel : dataModels) {
@@ -138,7 +138,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
     }
 

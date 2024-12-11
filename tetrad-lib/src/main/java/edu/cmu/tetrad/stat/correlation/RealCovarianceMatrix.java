@@ -35,7 +35,7 @@ public class RealCovarianceMatrix implements RealCovariance {
     /**
      * <p>Constructor for RealCovarianceMatrix.</p>
      *
-     * @param data an array of {@link double} objects
+     * @param data an array of  objects
      */
     public RealCovarianceMatrix(double[][] data) {
         this.data = data;

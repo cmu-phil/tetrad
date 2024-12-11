@@ -57,7 +57,7 @@ public class FaskVote {
      * @return The composite graph.
      * @see Parameters
      */
-    public Graph search(Parameters parameters) {
+    public Graph search(Parameters parameters) throws InterruptedException {
         List<DataModel> _dataSets = new ArrayList<>();
 
         for (DataSet dataSet : this.dataSets) {

@@ -37,14 +37,6 @@ public class R0R4StrategyScoreBased implements R0R4Strategy {
      * A boolean value indicating whether the verbose mode is on or off.
      */
     private boolean verbose;
-    /**
-     * A boolean value indicating whether the Discriminating Path Collider Rule is to be used or not.
-     */
-    private boolean doDiscriminatingPathColliderRule;
-    /**
-     * A boolean value indicating whether the Discriminating Path Tail Rule is to be used or not.
-     */
-    private boolean doDiscriminatingPathTailRule;
 
     /**
      * Constructs a new FciOrientDataExaminationStrategyScoreBased object with the given TeyssierScorer object.
@@ -58,23 +50,15 @@ public class R0R4StrategyScoreBased implements R0R4Strategy {
     /**
      * Returns a special configuration of FciOrientDataExaminationStrategy.
      *
-     * @param scorer                           the TeyssierScorer object
-     * @param knowledge                        the Knowledge object
-     * @param completeRuleSetUsed              a boolean indicating if the complete rule set is used
-     * @param doDiscriminatingPathTailRule     a boolean indicating if the discriminating path tail rule is applied
-     * @param doDiscriminatingPathColliderRule a boolean indicating if the discriminating path collider rule is applied
-     * @param maxPathLength                    the maximum path length
-     * @param verbose                          a boolean indicating if verbose mode is enabled
-     * @param depth                            the depth
+     * @param scorer    the TeyssierScorer object
+     * @param knowledge the Knowledge object
+     * @param verbose   a boolean indicating if verbose mode is enabled
+     * @param depth     the depth
      * @return an instance of FciOrientDataExaminationStrategy with the specified configuration
      */
-    public static R0R4Strategy specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean completeRuleSetUsed,
-                                                    boolean doDiscriminatingPathTailRule, boolean doDiscriminatingPathColliderRule,
-                                                    int maxPathLength, boolean verbose, int depth) {
+    public static R0R4Strategy specialConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean verbose, int depth) {
         R0R4StrategyScoreBased strategy = new R0R4StrategyScoreBased(scorer);
         strategy.knowledge = knowledge;
-        strategy.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-        strategy.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
         strategy.verbose = verbose;
         strategy.depth = depth;
         return strategy;
@@ -89,27 +73,38 @@ public class R0R4StrategyScoreBased implements R0R4Strategy {
      * @return an instance of FciOrientDataExaminationStrategy with the default configuration
      */
     public static R0R4Strategy defaultConfiguration(TeyssierScorer scorer, Knowledge knowledge, boolean verbose) {
-        return R0R4StrategyScoreBased.specialConfiguration(scorer, knowledge, true,
-                true, true, -1, verbose, 5);
+        return R0R4StrategyScoreBased.specialConfiguration(scorer, knowledge, true, 5);
     }
 
     /**
      * Does a discriminating path orientation based on the Discriminating Path Rule.
      *
      * @param discriminatingPath the discriminating path
-     * @param graph the graph representation
+     * @param graph              the graph representation
+     * @param vNodes             the set of nodes that are v-structures in the graph
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      * @see DiscriminatingPath
      */
     @Override
-    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
-        Node e = discriminatingPath.getE();
-        Node a = discriminatingPath.getA();
-        Node b = discriminatingPath.getB();
-        Node c = discriminatingPath.getC();
+    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
+        Node e = discriminatingPath.getX();
+        Node a = discriminatingPath.getW();
+        Node b = discriminatingPath.getV();
+        Node c = discriminatingPath.getY();
         List<Node> path = discriminatingPath.getColliderPath();
+
+        // Check that the discriminating path construct still exists in the graph.
+        if (!discriminatingPath.existsIn(graph)) {
+            return Pair.of(discriminatingPath, false);
+        }
+
+        // Check that the discriminating path has not yet been oriented; we don't need to list the ones that have
+        // already been oriented.
+        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+            return Pair.of(discriminatingPath, false);
+        }
 
         System.out.println("For discriminating path rule, tucking");
         scorer.goToBookmark();
@@ -120,31 +115,25 @@ public class R0R4StrategyScoreBased implements R0R4Strategy {
         System.out.println("For discriminating path rule, found collider = " + collider);
 
         if (collider) {
-            if (doDiscriminatingPathColliderRule) {
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
+            graph.setEndpoint(a, b, Endpoint.ARROW);
+            graph.setEndpoint(c, b, Endpoint.ARROW);
 
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                return Pair.of(discriminatingPath, true);
+            if (verbose) {
+                TetradLogger.getInstance().log(
+                        "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
             }
+
+            return Pair.of(discriminatingPath, true);
         } else {
-            if (doDiscriminatingPathTailRule) {
-                graph.setEndpoint(c, b, Endpoint.TAIL);
+            graph.setEndpoint(c, b, Endpoint.TAIL);
 
-                if (verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                return Pair.of(discriminatingPath, true);
+            if (verbose) {
+                TetradLogger.getInstance().log(
+                        "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
             }
-        }
 
-        return Pair.of(discriminatingPath, false);
+            return Pair.of(discriminatingPath, true);
+        }
     }
 
     @Override

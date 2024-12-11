@@ -137,7 +137,11 @@ public final class TestGrasp {
 
         grasp.setNumStarts(1);
         grasp.setVerbose(true);
-        List<Node> perm = grasp.bestOrder(order);
+        try {
+            List<Node> perm = grasp.bestOrder(order);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         Graph dag = grasp.getGraph(false);
 
         printFailed(g, dag, order + " \n" + dag);
@@ -149,10 +153,14 @@ public final class TestGrasp {
     }
 
     private static void extractedWayne(Node x1, Node x2, Node x3, Node x4, IndependenceTest chiSq) {
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
+        try {
+            System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
+            System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
+            System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
+            System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @NotNull
@@ -223,12 +231,22 @@ public final class TestGrasp {
 
 
         edu.cmu.tetrad.search.Fges alg = new edu.cmu.tetrad.search.Fges(score);
-        Graph pat = alg.search();
+        Graph pat = null;
+        try {
+            pat = alg.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("FGES" + pat);
 
         edu.cmu.tetrad.search.Pc pc = new edu.cmu.tetrad.search.Pc(test);
-        Graph pat2 = alg.search();
+        Graph pat2 = null;
+        try {
+            pat2 = alg.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("PC" + pat2);
 
@@ -240,7 +258,11 @@ public final class TestGrasp {
         edu.cmu.tetrad.search.Grasp boss = new edu.cmu.tetrad.search.Grasp(test, score);
         boss.setUseDataOrder(true);
         boss.setNumStarts(1);
-        boss.bestOrder(score.getVariables());
+        try {
+            boss.bestOrder(score.getVariables());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         Graph pat3 = boss.getGraph(true);
 
         System.out.println("GRaSP" + pat3);
@@ -1206,11 +1228,19 @@ public final class TestGrasp {
             grasp.setVerbose(false);
 
             grasp.setDepth(3);
-            grasp.bestOrder(pi);
+            try {
+                grasp.bestOrder(pi);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             Graph estCpdagGasp = grasp.getGraph(true);
 
             grasp.setOrdered(true);
-            grasp.bestOrder(pi);
+            try {
+                grasp.bestOrder(pi);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             Graph estCpdagGrasp = grasp.getGraph(true);
 
             if (estCpdagGasp.getNumEdges() < estCpdagGrasp.getNumEdges()) {
@@ -1562,7 +1592,12 @@ public final class TestGrasp {
 //        boss.setUseScore(false);
 //        boss.setDepth(3);
 //        boss.setNumStarts(1);
-        Graph best = boss.search(null, parameters);
+        Graph best = null;
+        try {
+            best = boss.search(null, parameters);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("best = " + best);
 
 //        TeyssierScorer scorer = new TeyssierScorer(msep, score);
@@ -2450,10 +2485,9 @@ public final class TestGrasp {
 
         params.set(Params.BOSS_ALG, 1);
         params.set(Params.DEPTH, -1);
-        params.set(Params.MAX_PATH_LENGTH, 2);
+        params.set(Params.MAX_DISCRIMINATING_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_MSEP_DONE, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
 
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
@@ -2571,10 +2605,9 @@ public final class TestGrasp {
 
         params.set(Params.BOSS_ALG, 1);
         params.set(Params.DEPTH, -1);
-        params.set(Params.MAX_PATH_LENGTH, 2);
+        params.set(Params.MAX_DISCRIMINATING_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_MSEP_DONE, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
 
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
@@ -2668,7 +2701,12 @@ public final class TestGrasp {
             for (Algorithm algorithm : algorithms.getAlgorithms()) {
                 String algName = algNames.get(++j);
                 algNameMap.put(algName, new HashMap<>());
-                Graph estGraph = algorithm.search(null, params);
+                Graph estGraph = null;
+                try {
+                    estGraph = algorithm.search(null, params);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 for (Statistic statistic : dagStats.getStatistics()) {
                     double stat = statistic.getValue(trueGraph, estGraph, null);
@@ -2786,8 +2824,6 @@ public final class TestGrasp {
             params.set(Params.BOSS_ALG, 1, 2, 3);
             params.set(Params.DEPTH, 3);
             params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 4);
-            params.set(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE, false);
-            params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
 
             // default for GIC scores is gic = 4, pd = 1.
             params.set(Params.SEM_GIC_RULE, 2, 3, 4);
@@ -2852,8 +2888,6 @@ public final class TestGrasp {
             params.set(Params.BOSS_ALG, 1);
             params.set(Params.DEPTH, 3);
             params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 4);
-            params.set(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE, false);
-            params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
 
             // default for GIC scores is gic = 4, pd = 1.
             params.set(Params.SEM_GIC_RULE, 4);
@@ -2952,7 +2986,11 @@ public final class TestGrasp {
 
                 edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new MsepTest(facts.getFacts()));
                 search.setDepth(depth);
-                List<Node> order = search.bestOrder(p);
+                try {
+                    List<Node> order = search.bestOrder(p);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 //                System.out.println(p + " " + order + " truth = " + facts.getTruth() + " found = " + search.getNumEdges());// + " " + search.getGraph(false));
 
                 if (search.getNumEdges() != facts.getTruth()) {
@@ -3026,7 +3064,11 @@ public final class TestGrasp {
                 search.setUncoveredDepth(depth);
                 search.setNonSingularDepth(depth);
                 search.setUseRaskuttiUhler(false);
-                List<Node> order = search.bestOrder(p);
+                try {
+                    List<Node> order = search.bestOrder(p);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 //                    System.out.println(p + " " + order + " truth = " + facts.getTruth() + " found = " + search.getNumEdges());
 //                    System.out.println(search.getGraph(false));
 //
@@ -3116,7 +3158,11 @@ public final class TestGrasp {
                         TeyssierScorer scorer1 = new TeyssierScorer(msep,
                                 new GraphScore(graph));
                         scorer1.setUseRaskuttiUhler(true);
-                        scorer1.score(_perm0);
+                        try {
+                            scorer1.score(_perm0);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                         Graph g1 = scorer1.getGraph(true);
 
                         IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
@@ -3124,7 +3170,11 @@ public final class TestGrasp {
 
                         TeyssierScorer scorer2 = new TeyssierScorer(test, score);
                         scorer2.setUseRaskuttiUhler(true);
-                        scorer2.score(_perm);
+                        try {
+                            scorer2.score(_perm);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
 
                         Graph g2 = scorer2.getGraph(true);
                         g2 = GraphUtils.replaceNodes(g2, g1.getNodes());
@@ -3139,7 +3189,11 @@ public final class TestGrasp {
 
                             TeyssierScorer scorer3 = new TeyssierScorer(test, score);
                             scorer3.setUseRaskuttiUhler(true);
-                            scorer3.score(_perm);
+                            try {
+                                scorer3.score(_perm);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                             Graph g3 = scorer3.getGraph(true);
 
                             g3 = GraphUtils.replaceNodes(g3, g1.getNodes());
@@ -3181,7 +3235,12 @@ public final class TestGrasp {
             GraphScore score = new GraphScore(g);
 
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
-            Graph cpdag1 = fges.search();
+            Graph cpdag1 = null;
+            try {
+                cpdag1 = fges.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             Paths paths = cpdag1.paths();
             List<Node> initialOrder = cpdag1.getNodes();
@@ -3189,7 +3248,11 @@ public final class TestGrasp {
 
             TeyssierScorer scorer = new TeyssierScorer(test, score);
             scorer.setUseScore(false);
-            scorer.score(pi);
+            try {
+                scorer.score(pi);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             Graph cpdag2 = scorer.getGraph(true);
 
             System.out.println("Cpdag1 # edges = " + cpdag1.getNumEdges());
@@ -3219,7 +3282,12 @@ public final class TestGrasp {
             score.setPenaltyDiscount(2);
 
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
-            Graph cpdag = fges.search();
+            Graph cpdag = null;
+            try {
+                cpdag = fges.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             Paths paths = cpdag.paths();
             List<Node> initialOrder = cpdag.getNodes();
@@ -3230,10 +3298,18 @@ public final class TestGrasp {
 
             TeyssierScorer scorer = new TeyssierScorer(test, score);
             scorer.setUseScore(true);
-            scorer.score(pi1);
+            try {
+                scorer.score(pi1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             Graph cpdag1 = scorer.getGraph(false);
 
-            scorer.score(pi2);
+            try {
+                scorer.score(pi2);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             Graph cpdag2 = scorer.getGraph(false);
 
             System.out.println("Cpdag1 # edges = " + cpdag1.getNumEdges());
@@ -3319,10 +3395,18 @@ public final class TestGrasp {
             IndependenceTest test = new MsepTest(facts);
 
             edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test);
-            grasp.bestOrder(test.getVariables());
+            try {
+                grasp.bestOrder(test.getVariables());
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             Graph other = grasp.getGraph(false);
 
-            grasp.bestOrder(test.getVariables());
+            try {
+                grasp.bestOrder(test.getVariables());
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             Graph frugal = other;
             System.out.println("SP " + frugal);
 

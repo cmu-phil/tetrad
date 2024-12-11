@@ -86,9 +86,16 @@ public class TestFisherZCalibration {
                 z.add(variables.get(j + 2));
             }
 
-            boolean fzInd = test1.checkIndependence(x, y, z).isIndependent();
-            boolean sembInd = test2.checkIndependence(x, y, z).isIndependent();
-            boolean _msep = msep.checkIndependence(x, y, z).isIndependent();
+            boolean fzInd = false;
+            boolean sembInd = false;
+            boolean _msep = false;
+            try {
+                fzInd = test1.checkIndependence(x, y, z).isIndependent();
+                sembInd = test2.checkIndependence(x, y, z).isIndependent();
+                _msep = msep.checkIndependence(x, y, z).isIndependent();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             if (fzInd == sembInd) countSame++;
 
@@ -161,7 +168,7 @@ public class TestFisherZCalibration {
 
             IndependenceResult result = test.checkIndependence(_x1, _x2, Collections.singleton(_x4));
             return result.getScore();
-        } catch (AssertionError e) {
+        } catch (AssertionError | InterruptedException e) {
             return Double.NaN;
         }
     }

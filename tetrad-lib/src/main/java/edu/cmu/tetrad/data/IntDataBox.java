@@ -73,7 +73,7 @@ public class IntDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D short data array as data.
      *
-     * @param data an array of {@link int} objects
+     * @param data an array of  objects
      */
     public IntDataBox(int[][] data) {
         int length = data[0].length;
@@ -204,7 +204,7 @@ public class IntDataBox implements DataBox {
     /**
      * <p>Getter for the field <code>data</code>.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[][] getData() {
         return this.data;

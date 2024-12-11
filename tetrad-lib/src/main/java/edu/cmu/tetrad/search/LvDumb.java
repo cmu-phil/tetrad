@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -44,10 +45,6 @@ public final class LvDumb implements IGraphSearch {
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    /**
-     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
     /**
      * The number of starts for GRaSP.
      */
@@ -88,7 +85,7 @@ public final class LvDumb implements IGraphSearch {
      *
      * @return The PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         List<Node> nodes = this.score.getVariables();
 
         if (nodes == null) {
@@ -96,11 +93,11 @@ public final class LvDumb implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("===Starting LV-Lite===");
+            TetradLogger.getInstance().log("===Starting LV-Dumb===");
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Running BOSS to get CPDAG and best order.");
+            TetradLogger.getInstance().log("Starting BOSS.");
         }
 
         // BOSS seems to be doing better here.
@@ -111,14 +108,30 @@ public final class LvDumb implements IGraphSearch {
         suborderSearch.setUseBes(useBes);
         suborderSearch.setUseDataOrder(useDataOrder);
         suborderSearch.setNumStarts(numStarts);
+        suborderSearch.setVerbose(verbose);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         var cpdag = permutationSearch.search();
 
-        DagToPag dagToPag = new DagToPag(cpdag);
-        dagToPag.setKnowledge(knowledge);
-        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
-        return dagToPag.convert();
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished BOSS.");
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
+        }
+
+        Graph pag = PagCache.getInstance().getPag(GraphTransforms.dagFromCpdag(cpdag), knowledge, verbose);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("LV-Dumb finished.");
+        }
+
+        return pag;
     }
 
     /**
@@ -128,16 +141,6 @@ public final class LvDumb implements IGraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether the complete rule set should be used during the search algorithm. By default, the complete rule set
-     * is not used.
-     *
-     * @param completeRuleSetUsed true if the complete rule set should be used, false otherwise
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**

@@ -9,7 +9,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
@@ -86,7 +86,7 @@ public class NLSemSimulation implements Simulation {
             }
 
             this.graphs.add(graph);
-            RealMatrix data = new BlockRealMatrix(sampleSize, numVars);
+            RealMatrix data = MatrixUtils.createRealMatrix(sampleSize, numVars);
 
             int errorType = parameters.getInt(Params.SIMULATION_ERROR_TYPE);
 

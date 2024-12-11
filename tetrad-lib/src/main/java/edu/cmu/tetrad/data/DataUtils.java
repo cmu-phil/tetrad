@@ -24,7 +24,6 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 
@@ -364,7 +363,7 @@ public final class DataUtils {
     /**
      * Column major data.
      *
-     * @param data an array of {@link double} objects
+     * @param data an array of  objects
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public static Vector means(double[][] data) {
@@ -413,7 +412,7 @@ public final class DataUtils {
             }
         }
 
-        RealMatrix q = new BlockRealMatrix(data.toArray());
+        RealMatrix q = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(data.toArray());
 
         RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
         RealMatrix q2 = DataUtils.times(q1, q);
@@ -436,7 +435,7 @@ public final class DataUtils {
         int rowDimension = m.getRowDimension();
         int columnDimension = n.getColumnDimension();
 
-        RealMatrix out = new BlockRealMatrix(rowDimension, columnDimension);
+        RealMatrix out = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(rowDimension, columnDimension);
 
         int NTHREADS = Runtime.getRuntime().availableProcessors();
 
@@ -553,8 +552,8 @@ public final class DataUtils {
     /**
      * <p>ranks.</p>
      *
-     * @param x an array of {@link double} objects
-     * @return an array of {@link double} objects
+     * @param x an array of  objects
+     * @return an array of  objects
      */
     public static double[] ranks(double[] x) {
         int numRows = x.length;

@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import java.text.DecimalFormat;
@@ -38,7 +38,7 @@ import java.util.Map;
  * =This implements the degenerate Gaussian BIC score for FGES. The degenerate Gaussian score replaces each discrete
  * variable in the data with a list of 0/1 continuous indicator columns for each of the categories but one (the last one
  * implied). This data, now all continuous, is given to the SEM BIC score and methods used to help determine conditional
- * independence for the mixed continuous/discrete case from this information. The references is as follows:
+ * independence for the mixed continuous/discrete case from this information. The reference is as follows:
  * <p>
  * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2019, July). Learning high-dimensional directed acyclic graphs with
  * mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21). PMLR.
@@ -103,13 +103,12 @@ public class DegenerateGaussianScore implements Score {
                     B.get(keys.get(key))[j] = 1;
                 }
 
-                if (!usePseudoInverse) {
-                    // Remove a degenerate dimension.
-                    i--;
-                    keys.remove(keysReverse.get(i));
-                    A.remove(i);
-                    B.remove(i);
-                }
+                // Remove a degenerate dimension.
+                i--;
+                keys.remove(keysReverse.get(i));
+                A.remove(i);
+                B.remove(i);
+//                }
 
                 this.embedding.put(i_, new ArrayList<>(keys.values()));
 
@@ -137,14 +136,14 @@ public class DegenerateGaussianScore implements Score {
             }
         }
 
-        RealMatrix D = new BlockRealMatrix(B_);
+        RealMatrix D = MatrixUtils.createRealMatrix(B_);
         this.bic = new SemBicScore(new BoxDataSet(new DoubleDataBox(D.getData()), A), precomputeCovariances);
         this.bic.setUsePseudoInverse(usePseudoInverse);
         this.bic.setStructurePrior(0);
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model. s
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
      *
      * @param i       The child indes.
      * @param parents The indices of the parents.

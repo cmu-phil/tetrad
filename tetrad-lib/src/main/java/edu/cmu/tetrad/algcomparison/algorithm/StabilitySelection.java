@@ -79,7 +79,12 @@ public class StabilitySelection implements Algorithm {
                         BootstrapSampler sampler = new BootstrapSampler();
                         sampler.setWithoutReplacements(true);
                         DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
-                        Graph graph = StabilitySelection.this.algorithm.search(sample, parameters);
+                        Graph graph = null;
+                        try {
+                            graph = StabilitySelection.this.algorithm.search(sample, parameters);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                         graphs.add(graph);
                     }
                 } else {

@@ -166,7 +166,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param targets The targets variable.
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public Graph search(List<Node> targets) {
+    public Graph search(List<Node> targets) throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
@@ -298,6 +298,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         MeekRules meekRules = new MeekRules();
         meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.setKnowledge(this.knowledge);
+        meekRules.setVerbose(verbose);
         meekRules.orientImplied(graph);
 
         TetradLogger.getInstance().log("After step 4 (PC Orient)" + graph);
@@ -350,7 +351,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      *
      * @return The Markov blanket CPDAG as a Graph object.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
 
@@ -393,6 +394,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         MeekRules meekRules = new MeekRules();
         meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.setKnowledge(this.knowledge);
+        meekRules.setVerbose(verbose);
         meekRules.orientImplied(graph);
 
         return graph;
@@ -481,7 +483,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * <p>
      * Returns the Markov blanket variables (not the Markov blanket DAG).
      */
-    public Set<Node> findMb(Node target) {
+    public Set<Node> findMb(Node target) throws InterruptedException {
         Graph graph = search(Collections.singletonList(target));
         Set<Node> nodes = new HashSet<>(graph.getNodes());
         nodes.remove(target);
@@ -531,7 +533,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param target The variable whose Markov blanket is sought.
      * @param graph  The getModel search graph.
      */
-    private void constructFan(Node target, Graph graph) {
+    private void constructFan(Node target, Graph graph) throws InterruptedException {
         addAllowableAssociates(target, graph);
         prune(target, graph);
     }
@@ -542,7 +544,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param v     The node to add associates to.
      * @param graph The graph object to which the associates are added.
      */
-    private void addAllowableAssociates(Node v, Graph graph) {
+    private void addAllowableAssociates(Node v, Graph graph) throws InterruptedException {
         getA().add(v);
         int numAssociated = 0;
 
@@ -566,7 +568,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param node  The node about which pruning will take place.
      * @param graph The graph to be modified by pruning.
      */
-    private void prune(Node node, Graph graph) {
+    private void prune(Node node, Graph graph) throws InterruptedException {
         for (int depth = 1; depth <= getDepth(); depth++) {
             if (graph.getAdjacentNodes(node).size() < depth) {
                 return;
@@ -585,7 +587,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param graph The getModel search graph, to be modified by pruning.
      * @param depth The maximum number of conditioning variables.
      */
-    private void prune(Node node, Graph graph, int depth) {
+    private void prune(Node node, Graph graph, int depth) throws InterruptedException {
         TetradLogger.getInstance().log("Trying to remove edges adjacent to node " + node +
                                        ", depth = " + depth + ".");
 
@@ -659,7 +661,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param z The set of nodes to condition on.
      * @return True if the nodes are independent, false otherwise.
      */
-    private boolean independent(Node v, Node w, Set<Node> z) {
+    private boolean independent(Node v, Node w, Set<Node> z) throws InterruptedException {
         boolean independent = getTest().checkIndependence(v, w, z).isIndependent();
 
         this.numIndependenceTests++;
@@ -702,7 +704,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param depth     the depth of the orientation process
      * @param nodes     the specific nodes to orient triples for (if null, all nodes in the graph will be considered)
      */
-    private void orientUnshieldedTriples(Knowledge knowledge, Graph graph, int depth, List<Node> nodes) {
+    private void orientUnshieldedTriples(Knowledge knowledge, Graph graph, int depth, List<Node> nodes) throws InterruptedException {
         TetradLogger.getInstance().log("Starting Collider Orientation:");
 
         this.ambiguousTriples = new HashSet<>();
@@ -768,7 +770,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param depth the depth of the search for separating sets (-1 for unlimited depth)
      * @return the type of the triple (AMBIGUOUS, NONCOLLIDER, COLLIDER)
      */
-    private TripleType getTripleType(Graph graph, Node x, Node y, Node z, int depth) {
+    private TripleType getTripleType(Graph graph, Node x, Node y, Node z, int depth) throws InterruptedException {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 

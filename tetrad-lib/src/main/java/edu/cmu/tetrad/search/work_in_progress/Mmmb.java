@@ -106,7 +106,7 @@ public final class Mmmb implements IMbSearch {
      * <p>
      * Searches for the Markov blanket of the node by the given name.
      */
-    public Set<Node> findMb(Node target) {
+    public Set<Node> findMb(Node target) throws InterruptedException {
         TetradLogger.getInstance().log("target = " + target);
         this.numIndTests = 0;
         long time = MillisecondTimes.timeMillis();
@@ -127,7 +127,7 @@ public final class Mmmb implements IMbSearch {
 
     //===========================PRIVATE METHODS==========================//
 
-    private Set<Node> mmmb(Node t) {
+    private Set<Node> mmmb(Node t) throws InterruptedException {
         // MB <- {}
         Set<Node> mb = new HashSet<>();
 
@@ -206,7 +206,7 @@ public final class Mmmb implements IMbSearch {
         return new HashSet<>(mb);
     }
 
-    private List<Node> mmpc(Node t) {
+    private List<Node> mmpc(Node t) throws InterruptedException {
         List<Node> pc = new LinkedList<>();
         boolean pcIncreased = true;
 
@@ -249,7 +249,7 @@ public final class Mmmb implements IMbSearch {
      * @param t a {@link edu.cmu.tetrad.graph.Node} object
      * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
-    public List<Node> getPc(Node t) {
+    public List<Node> getPc(Node t) throws InterruptedException {
         if (!this.pc.containsKey(t)) {
             this.pc.put(t, mmpc(t));
         }
@@ -265,7 +265,7 @@ public final class Mmmb implements IMbSearch {
     /**
      * Trims away false positives from the given node. Used in the symmetric algorithm.
      */
-    private void trimPc(Node t) {
+    private void trimPc(Node t) throws InterruptedException {
         for (Node x : new LinkedList<>(this.pc.get(t))) {
             if (!this.pc.containsKey(x)) {
                 this.pc.put(x, mmpc(x));
@@ -278,7 +278,7 @@ public final class Mmmb implements IMbSearch {
     }
 
     private MaxMinAssocResult maxMinAssoc(Node t, List<Node> pc,
-                                          Set<Node> indepOfT) {
+                                          Set<Node> indepOfT) throws InterruptedException {
         Node f = null;
         Set<Node> maxAssocSet = null;
         double maxAssoc = 0.0;
@@ -311,7 +311,7 @@ public final class Mmmb implements IMbSearch {
         return new MaxMinAssocResult(f, maxAssocSet);
     }
 
-    private Set<Node> minAssoc(Node x, Node target, List<Node> pc) {
+    private Set<Node> minAssoc(Node x, Node target, List<Node> pc) throws InterruptedException {
         double assoc = 1.0;
         Set<Node> set = new HashSet<>();
 
@@ -347,7 +347,7 @@ public final class Mmmb implements IMbSearch {
         return set;
     }
 
-    private void backwardsConditioning(List<Node> pc, Node target) {
+    private void backwardsConditioning(List<Node> pc, Node target) throws InterruptedException {
         for (Node x : new LinkedList<>(pc)) {
             List<Node> _pc = new LinkedList<>(pc);
             _pc.remove(x);
@@ -363,7 +363,7 @@ public final class Mmmb implements IMbSearch {
         }
     }
 
-    private double association(Node x, Node target, Set<Node> s) {
+    private double association(Node x, Node target, Set<Node> s) throws InterruptedException {
         this.numIndTests++;
 
         IndependenceResult result = this.independenceTest.checkIndependence(x, target, s);

@@ -56,7 +56,7 @@ public class FloatDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D float data array as data.
      *
-     * @param data an array of {@link float} objects
+     * @param data an array of  objects
      */
     public FloatDataBox(float[][] data) {
         int length = data[0].length;

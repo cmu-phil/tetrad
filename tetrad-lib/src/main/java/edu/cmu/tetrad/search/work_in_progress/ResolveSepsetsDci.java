@@ -77,7 +77,7 @@ public final class ResolveSepsetsDci {
      * @return a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
      */
     public static SepsetMapDci resolveSepsets(List<SepsetMapDci> sepsets, List<IndependenceTest> independenceTests,
-                                              Method method, SepsetMapDci resolvedIndependent, SepsetMapDci resolvedDependent) {
+                                              Method method, SepsetMapDci resolvedIndependent, SepsetMapDci resolvedDependent) throws InterruptedException {
         SepsetMapDci resolvedSepset = new SepsetMapDci();
         // get all variables
         Set<Node> allVars = new HashSet<>();
@@ -255,7 +255,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         if (method == Method.fisher) {
             return ResolveSepsetsDci.isIndependentPooledFisher(independenceTests, x, y, condSet);
         } else if (method == Method.fisher2) {
@@ -296,7 +296,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooledFisher(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooledFisher(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         double tf = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
@@ -351,7 +351,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooledTippett(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooledTippett(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         double p = -1.0;
         for (IndependenceTest independenceTest : independenceTests) {
@@ -386,7 +386,7 @@ public final class ResolveSepsetsDci {
      * @param r                 a int
      * @return a boolean
      */
-    public static boolean isIndependentPooledWilkinson(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet, int r) {
+    public static boolean isIndependentPooledWilkinson(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet, int r) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         double[] p = new double[independenceTests.size()];
         int k = 0;
@@ -410,7 +410,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         double p = -1.0;
         for (IndependenceTest independenceTest : independenceTests) {
@@ -444,7 +444,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooledStouffer(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooledStouffer(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         double ts = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
@@ -471,7 +471,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         double c = FastMath.sqrt(3 * (5 * independenceTests.size() + 4) / (independenceTests.size() * FastMath.pow(FastMath.PI, 2) * (5 * independenceTests.size() + 2)));
         double tm = 0.0;
@@ -520,7 +520,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooledAverage(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooledAverage(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         double sum = 0.0;
         int numTests = 0;
@@ -589,7 +589,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooledAverageTest(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooledAverageTest(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         double ts = 0.0;
         int df = 0;
@@ -619,7 +619,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
-    public static boolean isIndependentPooledRandom(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
+    public static boolean isIndependentPooledRandom(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
         int r = RandomUtil.getInstance().nextInt(independenceTests.size());
         IndependenceTest independenceTest = independenceTests.get(r);

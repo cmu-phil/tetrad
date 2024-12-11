@@ -111,7 +111,7 @@ public class Mmhc implements IGraphSearch {
      *
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         List<Node> variables = this.independenceTest.getVariables();
         Mmmb mmmb = new Mmmb(this.independenceTest, getDepth(), true);
         Map<Node, List<Node>> pc = new HashMap<>();

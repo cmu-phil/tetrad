@@ -35,7 +35,7 @@ public class VarianceVector implements Variance {
     /**
      * <p>Constructor for VarianceVector.</p>
      *
-     * @param data an array of {@link float} objects
+     * @param data an array of  objects
      */
     public VarianceVector(float[][] data) {
         this.data = data;

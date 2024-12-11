@@ -415,7 +415,12 @@ public final class ExploreAutisticsNeurotypicals {
                 score.setPenaltyDiscount(10);
                 Fges search = new Fges(score);
                 search.setVerbose(false);
-                Graph graph = search.search();
+                Graph graph = null;
+                try {
+                    graph = search.search();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 GraphSaveLoadUtils.saveGraph(graph, file, false);
                 graphs.add(GraphUtils.undirectedGraph(GraphSaveLoadUtils.loadGraphTxt(file)));
             }

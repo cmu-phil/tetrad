@@ -58,13 +58,13 @@ import java.util.concurrent.TimeUnit;
  * Note: This class is a modified version of the original FciOrient class, in that we allow the R0 and R4 rules to be be
  * overridden by subclasses. This is useful for the TeyssierScorer class, which needs to override these rules in order
  * to calculate the score of the graph. It is also useful for DAG to PAG, which needs to override these rules in order
- * using D-SEP. The R0 and R4 rules are the only ones that cannot be carried out by an examination of the graph but
+ * to use D-SEP. The R0 and R4 rules are the only ones that cannot be carried out by an examination of the graph but
  * which require additional analysis of the underlying distribution or graph. In addition, several methods have been
  * optimized.
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
- * @author josephramsey
+ * @author josephramsey 2024-8-21
  * @author Choh-Man Teng
  * @version $Id: $Id
  * @see Fci
@@ -101,15 +101,7 @@ public class FciOrient {
      * <p>
      * This variable represents the maximum length of a discriminating path, or -1 if no maximum length is set.
      */
-    private int maxPathLength = -1;
-    /**
-     * Indicates whether the Discriminating Path Collider Rule should be applied or not.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
-     * Indicates whether the discriminating path tail rule should be applied.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * Stores knowledge.
      */
@@ -124,10 +116,6 @@ public class FciOrient {
      */
     private Set<Triple> allowedColliders;
     /**
-     * The graph used for R5 and R9 for the modified Dijkstra shortest path algorithm.
-     */
-    private R5R9Dijkstra.Graph fullDijkstraGraph = null;
-    /**
      * Indicates whether the discriminating path step should be run in parallel.
      */
     private boolean parallel = true;
@@ -135,6 +123,10 @@ public class FciOrient {
      * The endpoint strategy to use for setting endpoints.
      */
     private SetEndpointStrategy endpointStrategy = new DefaultSetEndpointStrategy();
+    /**
+     * Indicates whether to run R4 or not.
+     */
+    private boolean doR4 = true;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified R4Strategy.
@@ -185,6 +177,167 @@ public class FciOrient {
         }
 
         return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
+    }
+
+    /**
+     * Lists all the discriminating paths in the given graph.
+     *
+     * @param graph                       the graph to analyze
+     * @param maxDiscriminatingPathLength the maximum length of a discriminating path
+     * @param checkEcNonadjacency         whether to check for EC nonadjacency
+     * @return a set of discriminating paths found in the graph
+     */
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+
+        List<Node> nodes = graph.getNodes();
+
+        //  *         B
+        // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
+        // *        /  \
+        // *       v    *
+        // * E....A --> C
+        for (Node a : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            for (Node c : graph.getAdjacentNodes(a)) {
+                discriminatingPaths.addAll(listDiscriminatingPaths(graph, a, c, maxDiscriminatingPathLength, checkEcNonadjacency));
+            }
+        }
+
+        return discriminatingPaths;
+    }
+
+    /**
+     * Lists the discriminating paths for &lt;w, y&gt; in the graph.
+     *
+     * @param graph                       The graph.
+     * @param w                           The first node.
+     * @param y                           The second node.
+     * @param maxDiscriminatingPathLength The maximum length of w discriminating path.
+     * @param checkEcNonadjacency         Whether to check for EC nonadjacency.
+     * @return The set of discriminating paths for &lt;w, y&gt;.
+     */
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, Node w, Node y,
+                                                                  int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
+
+        if (checkEcNonadjacency) {
+            if (!graph.isParentOf(w, y)) {
+                return discriminatingPaths;
+            }
+        } else {
+            if (graph.getEndpoint(y, w) == Endpoint.ARROW) {
+                return discriminatingPaths;
+            }
+        }
+
+        List<Node> vnodes = graph.getAdjacentNodes(y);
+        vnodes.retainAll(graph.getAdjacentNodes(w));
+
+        for (Node v : vnodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            // Here we simply assert that W and Y are adjacent to V; we let the DiscriminatingPath class determine
+            // whether the path is valid.
+
+            if (w == y) continue;
+
+            if (checkEcNonadjacency) {
+                if (!graph.isParentOf(w, y)) continue;
+            } else {
+                if (graph.getEndpoint(y, w) == Endpoint.ARROW) continue;
+            }
+
+            // We ignore any discriminating paths that do not require orientation.
+            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
+                continue;
+            }
+
+            if (graph.getEndpoint(v, y) != Endpoint.ARROW) {
+                continue;
+            }
+
+            discriminatingPathBfs(w, v, y, graph, discriminatingPaths, maxDiscriminatingPathLength, checkEcNonadjacency);
+        }
+
+        return discriminatingPaths;
+    }
+
+    /**
+     * A method to search "back from w" to find w discriminating path. It is called with w reachability list (first
+     * consisting only of w). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990.
+     * The body of w discriminating path consists of colliders that are parents of y.
+     *
+     * @param w                   w {@link Node} object
+     * @param v                   w {@link Node} object
+     * @param y                   w {@link Node} object
+     * @param graph               w {@link Graph} object
+     * @param checkEcNonadjacency Whether to check for EC nonadjacency
+     */
+    private static void discriminatingPathBfs(Node w, Node v, Node y, Graph graph, Set<DiscriminatingPath> discriminatingPaths,
+                                              int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+        Queue<Node> Q = new ArrayDeque<>();
+        Set<Node> V = new HashSet<>();
+        Map<Node, Node> previous = new HashMap<>();
+
+        Q.offer(w);
+        V.add(w);
+        V.add(v);
+
+        previous.put(w, null);
+        previous.put(v, w);
+
+        while (!Q.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            Node t = Q.poll();
+
+            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
+
+            for (Node x : nodesInTo) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                if (V.contains(x)) {
+                    continue;
+                }
+
+                previous.put(x, t);
+
+                // The collider path should be all nodes between E and C.
+                LinkedList<Node> colliderPath = new LinkedList<>();
+                Node d = x;
+
+                while ((d = previous.get(d)) != null) {
+                    if (d != x) {
+                        colliderPath.addFirst(d);
+                    }
+                }
+
+                if (maxDiscriminatingPathLength != -1 && colliderPath.size() > maxDiscriminatingPathLength) {
+                    continue;
+                }
+
+                DiscriminatingPath discriminatingPath = new DiscriminatingPath(x, w, v, y, colliderPath, checkEcNonadjacency);
+
+                if (discriminatingPath.existsIn(graph)) {
+                    discriminatingPaths.add(discriminatingPath);
+                }
+
+                if (!V.contains(x)) {
+                    Q.offer(x);
+                    V.add(x);
+                }
+            }
+        }
     }
 
     /**
@@ -294,7 +447,6 @@ public class FciOrient {
                         continue;
                     }
 
-
                     setEndpoint(graph, a, b, Endpoint.ARROW);
                     setEndpoint(graph, c, b, Endpoint.ARROW);
 
@@ -318,8 +470,6 @@ public class FciOrient {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void finalOrientation(Graph graph) {
-        fullDijkstraGraph = null;
-
         if (this.completeRuleSetUsed) {
             zhangFinalOrientation(graph);
         } else {
@@ -557,6 +707,10 @@ public class FciOrient {
      */
     public void ruleR4(Graph graph) {
 
+        if (!doR4) {
+            return;
+        }
+
         if (verbose) {
             TetradLogger.getInstance().log("R4: Discriminating path orientation started.");
         }
@@ -570,7 +724,7 @@ public class FciOrient {
             while (true) {
                 List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
 
-                List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream()
+                List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream()
                         .map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
                         .toList();
 
@@ -623,16 +777,16 @@ public class FciOrient {
 
         for (Pair<DiscriminatingPath, Boolean> result : allResults) {
             if (result != null && result.getRight()) {
-                if (verbose) {
-                    DiscriminatingPath left = result.getLeft();
-                    TetradLogger.getInstance().log("R4: Discriminating path oriented: " + left);
-
-                    Node a = left.getA();
-                    Node b = left.getB();
-                    Node c = left.getC();
-
-                    TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
-                }
+//                if (verbose) {
+//                    DiscriminatingPath left = result.getLeft();
+//                    TetradLogger.getInstance().log("R4: Discriminating path oriented: " + left);
+//
+//                    Node a = left.getA();
+//                    Node b = left.getB();
+//                    Node c = left.getC();
+//
+//                    TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, a, b, c));
+//                }
 
                 this.changeFlag = true;
             }
@@ -651,143 +805,22 @@ public class FciOrient {
      * @return the list of tasks
      */
     private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedCollders) {
-        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph);
+        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
+
+        Set<Node> vNodes = new HashSet<>();
+
+        for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
+            vNodes.add(discriminatingPath.getV());
+        }
 
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
         strategy.setAllowedColliders(allowedCollders);
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, graph));
+            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, graph, vNodes));
         }
 
         return tasks;
-    }
-
-    /**
-     * Lists all the discriminating paths in the given graph.
-     *
-     * @param graph the graph to analyze
-     * @return a set of discriminating paths found in the graph
-     */
-    private Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph) {
-        Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
-
-        if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
-            List<Node> nodes = graph.getNodes();
-
-            for (Node b : nodes) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                // potential A and C candidate pairs are only those
-                // that look like this:   A<-*Bo-*C
-                List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
-                List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
-
-                for (Node a : possA) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    for (Node c : possC) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        if (a == c) continue;
-
-                        if (!graph.isParentOf(a, c)) {
-                            continue;
-                        }
-
-                        // Some discriminating path orientation may already have been made.
-                        if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                            continue;
-                        }
-
-                        if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-                            continue;
-                        }
-
-                        discriminatingPathBfs(a, b, c, graph, discriminatingPaths);
-                    }
-                }
-            }
-        }
-
-        return discriminatingPaths;
-    }
-
-    /**
-     * A method to search "back from a" to find a discriminating path. It is called with a reachability list (first
-     * consisting only of a). This is breadth-first, using "reachability" concept from Geiger, Verma, and Pearl 1990.
-     * The body of a discriminating path consists of colliders that are parents of c.
-     *
-     * @param a     a {@link Node} object
-     * @param b     a {@link Node} object
-     * @param c     a {@link Node} object
-     * @param graph a {@link Graph} object
-     */
-    private void discriminatingPathBfs(Node a, Node b, Node c, Graph graph, Set<DiscriminatingPath> discriminatingPaths) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
-        Map<Node, Node> previous = new HashMap<>();
-
-        Q.offer(a);
-        V.add(a);
-        V.add(b);
-
-        previous.put(a, null);
-        previous.put(b, a);
-
-        while (!Q.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            Node t = Q.poll();
-
-            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
-
-            D:
-            for (Node e : nodesInTo) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                if (V.contains(e)) {
-                    continue;
-                }
-
-                previous.put(e, t);
-
-                // The collider path should be all nodes between E and C.
-                LinkedList<Node> colliderPath = new LinkedList<>();
-                Node d = e;
-
-                while ((d = previous.get(d)) != null) {
-                    if (d != e) {
-                        colliderPath.addFirst(d);
-                    }
-                }
-
-                if (maxPathLength != -1 && colliderPath.size() > maxPathLength) {
-                    continue;
-                }
-
-                DiscriminatingPath discriminatingPath = new DiscriminatingPath(e, a, b, c, colliderPath);
-
-                if (discriminatingPath.existsAndUnorientedIn(graph)) {
-                    discriminatingPaths.add(discriminatingPath);
-                }
-
-                if (!V.contains(e)) {
-                    Q.offer(e);
-                    V.add(e);
-                }
-            }
-        }
     }
 
     /**
@@ -795,31 +828,36 @@ public class FciOrient {
      * s.t. α,θ are not adjacent and β,γ are not adjacent, then orient α o−−o β and every edge on p as undirected edges
      * (--).
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph the graph to orient.
      */
     public void ruleR5(Graph graph) {
 
-        // We do this by finding a shortest path using Dijkstra's shortest path algorithm. We constrain the algorithm
+        // We do this by finding a shortest o-o path using Dijkstra's shortest path algorithm. We constrain the algorithm
         // so that the path must be a circle path, there can be no length 1 or length 2 paths, and all nodes on the path
         // are uncovered. We add further constraints so that the path taken together with the x o-o y edge forms an
         // uncovered cyclic circle path.
-        if (fullDijkstraGraph == null) {
-            fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
-        }
+        R5R9Dijkstra.Graph fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, R5R9Dijkstra.Rule.R5);
 
         for (Edge edge : graph.getEdges()) {
             if (Edges.isNondirectedEdge(edge)) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
+                // Returns a map from each node to its predecessor in the shortest path. This is needed to reconstruct
+                // the path, since the Dijkstra algorithm proper does not pay attention to the path, only to the
+                // shortest distances. So we need to record this information.
                 Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+
+                // This reconstructs the path given the predecessor map.
                 List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
 
+                // If the result is null, there was no path.
                 if (path == null) {
                     continue;
                 }
 
-                // We know u is as required: R5 applies!
+                // At this point, we know the uncovered circle path is as required, so R5 applies! We now need to
+                // orient all the circles on the path as tails.
                 setEndpoint(graph, x, y, Endpoint.TAIL);
                 setEndpoint(graph, y, x, Endpoint.TAIL);
 
@@ -1034,8 +1072,8 @@ public class FciOrient {
      *
      * @param a     The node A.
      * @param c     The node C.
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return Whether R9 was succesfully applied.
+     * @param graph The graph being oriented.
+     * @return Whether R9 was successfully applied.
      */
     public boolean ruleR9(Node a, Node c, Graph graph) {
 
@@ -1054,26 +1092,31 @@ public class FciOrient {
         // We do this by finding a shortest path using Dijkstra's shortest path algorithm. We constrain the algorithm
         // so that the path must be potentially directed (i.e., semidirected), there can be no length 1 or length 2
         // paths, and all nodes on the path are uncovered. We add further constraints so that the path taken together
-        // with the x o-o y edge forms an uncovered cyclic path.
+        // with the x o-o y edge forms an uncovered cyclic path, and that the path is a potential directed path.
 
-        if (fullDijkstraGraph == null) {
-            fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, true);
-        }
+        R5R9Dijkstra.Graph fullDijkstraGraph = new R5R9Dijkstra.Graph(graph, R5R9Dijkstra.Rule.R9);
 
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
+        // This returns a map from each node to its predecessor on the path, so that we can reconstruct the path.
+        // (Dijkstra's algorithm proper doesn't specify that the paths be recorded, only that the shortest distances
+        // be recorded, but we can keep track of the paths as well.
         Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+
+        // This gets the path from the predecessor map.
         List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
 
+        // If the result is null, there was no path.
         if (path == null) {
             return false;
         }
 
+        // This is the whole point of the rule, to orient the cicle in α o→ γ as a tail.
         setEndpoint(graph, c, a, Endpoint.TAIL);
 
         if (verbose) {
-            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
+            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)) + " path = " + GraphUtils.pathString(graph, path, false));
         }
 
         this.changeFlag = true;
@@ -1085,71 +1128,72 @@ public class FciOrient {
      * an uncovered p.d. path from α to θ. Let μ be the vertex adjacent to α on p1 (μ could be β), and ω be the vertex
      * adjacent to α on p2 (ω could be θ). If μ and ω are distinct, and are not adjacent, then orient α o→ γ as α → γ.
      *
-     * @param a     α
-     * @param c     γ
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param alpha α
+     * @param gamma γ
+     * @param graph alpha {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public void ruleR10(Node a, Node c, Graph graph) {
+    public void ruleR10(Node alpha, Node gamma, Graph graph) {
 
-        // We are aiming to orient the tails on certain partially oriented edges a o-> c, so we first
+        // We are aiming to orient the tails on certain partially oriented edges alpha o-> gamma, so we first
         // need to make sure we have such an edge.
-        Edge edge = graph.getEdge(a, c);
+        Edge edge = graph.getEdge(alpha, gamma);
 
         if (edge == null) {
             return;
         }
 
-        if (!edge.equals(Edges.partiallyOrientedEdge(a, c))) {
+        if (!edge.equals(Edges.partiallyOrientedEdge(alpha, gamma))) {
             return;
         }
 
-        List<Node> adj1 = graph.getAdjacentNodes(a);
-        List<Node> filtered1 = new ArrayList<>();
+        // Now we are sure we have an alpha o-> gamma edge. Next, we need to find directed edges beta -> gamma <- theta.
 
-        for (Node n : adj1) {
-            Node other = Edges.traverseSemiDirected(a, graph.getEdge(a, n));
-            if (other != null && other.equals(n)) {
-                filtered1.add(n);
-            }
-        }
+        List<Node> into = graph.getNodesInTo(gamma, Endpoint.ARROW);
+        into.remove(alpha);
 
-        for (Node mu : filtered1) {
-            for (Node omega : filtered1) {
-                if (mu.equals(omega)) continue;
-                if (graph.isAdjacentTo(mu, omega)) continue;
+        for (int i = 0; i < into.size(); i++) {
+            for (int j = i + 1; j < into.size(); j++) {
+                Node beta = into.get(i);
+                Node theta = into.get(j);
 
-                List<Node> adj2 = graph.getNodesInTo(c, Endpoint.ARROW);
-                List<Node> filtered2 = new ArrayList<>();
+                if (graph.getEndpoint(gamma, beta) != Endpoint.TAIL || graph.getEndpoint(gamma, theta) != Endpoint.TAIL) {
+                    continue;
+                }
 
-                for (Node n : adj2) {
-                    if (graph.getEdges(n, c).equals(Edges.directedEdge(n, c))) {
-                        Node other = Edges.traverseSemiDirected(n, graph.getEdge(n, c));
-                        if (other != null && other.equals(n)) {
-                            filtered2.add(n);
+                // At this point we have beta -> gamma <- theta, with alpha o-> gamma. Next we need to find the
+                // a novel adjacent nu to alpha and a novel adjacent omega to alpha such that nu and omega are not
+                // adjacent.
+
+                List<Node> adj1 = graph.getAdjacentNodes(alpha);
+                adj1.remove(beta);
+                adj1.remove(theta);
+                adj1.remove(beta);
+
+                for (int k = 0; k < adj1.size(); k++) {
+                    for (int l = k + 1; l < adj1.size(); l++) {
+                        Node nu = adj1.get(k);
+                        Node omega = adj1.get(l);
+
+                        if (graph.isAdjacentTo(nu, omega)) {
+                            continue;
                         }
-                    }
 
-                    for (Node beta : filtered2) {
-                        for (Node theta : filtered2) {
-                            if (beta.equals(theta)) continue;
-                            if (graph.isAdjacentTo(mu, omega)) continue;
+                        // Now we have our beta, theta, nu, and omega for R10. Next we need to try to find
+                        // alpha semidirected path p1 starting with <alpha, nu>, and ending with beta, and alpha path
+                        // p2 starting with <alpha, omega> and ending with theta.
 
-                            // Now we have our beta, theta, mu, and omega for R10. Next we need to try to find
-                            // a semidirected path p1 starting with <a, mu>, and ending with beta, and a path
-                            // p2 starting with <a, omega> and ending with theta.
+                        if (graph.paths().existsSemiDirectedPath(nu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
 
-                            if (graph.paths().existsSemiDirectedPath(mu, beta) && graph.paths().existsSemiDirectedPath(omega, theta)) {
+                            // Now we know we have the paths p1 and p2 as required, so R10 applies! We now need to
+                            // orient the circle of the alpha o-> gamma edge as a tail.
+                            setEndpoint(graph, gamma, alpha, Endpoint.TAIL);
 
-                                // We know we have the paths p1 and p2 as required: R10 applies!
-                                setEndpoint(graph, c, a, Endpoint.TAIL);
-
-                                if (verbose) {
-                                    this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
-                                }
-
-                                this.changeFlag = true;
-                                return;
+                            if (verbose) {
+                                this.logger.log(LogUtilsSearch.edgeOrientedMsg("R10: ", graph.getEdge(gamma, alpha)));
                             }
+
+                            this.changeFlag = true;
+                            return;
                         }
                     }
                 }
@@ -1162,39 +1206,21 @@ public class FciOrient {
      *
      * @return the maximum path length
      */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
+    public int getMaxDiscriminatingPathLength() {
+        return this.maxDiscriminatingPathLength;
     }
 
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -1353,5 +1379,14 @@ public class FciOrient {
 
     private void setEndpoint(Graph graph, Node a, Node b, Endpoint endpoint) {
         endpointStrategy.setEndpoint(graph, a, b, endpoint);
+    }
+
+    /**
+     * Sets whether R4 should be run.
+     *
+     * @param doR4 True, if so.
+     */
+    public void setDoR4(boolean doR4) {
+        this.doR4 = doR4;
     }
 }

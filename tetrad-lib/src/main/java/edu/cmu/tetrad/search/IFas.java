@@ -67,13 +67,6 @@ public interface IFas extends IGraphSearch {
     long getElapsedTime();
 
     /**
-     * Returns the number of independence tests done in the search.
-     *
-     * @return This number.
-     */
-    int getNumIndependenceTests();
-
-    /**
      * Returns the nodes searched over.
      *
      * @return This list.

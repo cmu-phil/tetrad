@@ -70,7 +70,7 @@ public class StabilityUtils {
      * @param b    a int
      * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
      */
-    public static DoubleMatrix2D StabilitySearch(DataSet data, DataGraphSearch gs, int N, int b) {
+    public static DoubleMatrix2D StabilitySearch(DataSet data, DataGraphSearch gs, int N, int b) throws InterruptedException {
         int numVars = data.getNumColumns();
         DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
 
@@ -132,7 +132,12 @@ public class StabilityUtils {
                     for (int s = this.from; s < this.to; s++) {
                         DataSet dataSubSamp = data.subsetRows(samps[s]).copy();
                         DataGraphSearch curGs = gs.copy();
-                        Graph g = curGs.search(dataSubSamp);
+                        Graph g = null;
+                        try {
+                            g = curGs.search(dataSubSamp);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
 
                         DoubleMatrix2D curAdj = MixedUtils.skeletonToMatrix(g); //set weights so that undirected stability works
                         addToMat(thetaMat, curAdj);
@@ -179,7 +184,7 @@ public class StabilityUtils {
      *
      * @param xi   a {@link cern.colt.matrix.DoubleMatrix2D} object
      * @param vars a {@link java.util.List} object
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] totalInstabilityUndir(DoubleMatrix2D xi, List<Node> vars) {
         if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
@@ -215,7 +220,7 @@ public class StabilityUtils {
      *
      * @param xi   a {@link cern.colt.matrix.DoubleMatrix2D} object
      * @param vars a {@link java.util.List} object
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] totalInstabilityDir(DoubleMatrix2D xi, List<Node> vars) {
         if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
@@ -244,7 +249,7 @@ public class StabilityUtils {
      * @param sampSize a int
      * @param subSize  a int
      * @param numSub   a int
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[][] subSampleNoReplacement(int sampSize, int subSize, int numSub) {
 
@@ -300,7 +305,7 @@ public class StabilityUtils {
      *
      * @param args an array of {@link java.lang.String} objects
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         final String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";
         Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(new File(fn));
         DataSet ds = null;

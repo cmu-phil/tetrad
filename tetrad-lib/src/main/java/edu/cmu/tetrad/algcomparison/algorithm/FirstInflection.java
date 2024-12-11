@@ -80,7 +80,7 @@ public class FirstInflection implements Algorithm {
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
         Parameters _parameters = new Parameters(parameters);
 
         Graph _previous = null;

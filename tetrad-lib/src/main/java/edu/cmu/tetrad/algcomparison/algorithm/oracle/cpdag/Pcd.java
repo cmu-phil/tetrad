@@ -44,7 +44,7 @@ public class Pcd extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     }
 
     @Override
-    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         ScoreIndTest test;
 
         if (dataModel instanceof ICovarianceMatrix) {

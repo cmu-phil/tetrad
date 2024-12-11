@@ -145,10 +145,6 @@ public final class Fges implements IGraphSearch, DagScorer {
      */
     private boolean verbose = false;
     /**
-     * Whether Meek rules should be verbose.
-     */
-    private boolean meekVerbose = false;
-    /**
      * Map from variables to their column indices in the data set.
      */
     private ConcurrentMap<Node, Integer> hashIndices;
@@ -232,7 +228,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @return the resulting Pattern.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
         topGraphs.clear();
 
@@ -249,7 +245,11 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         addRequiredEdges(graph);
 
-        initializeEffectEdges(getVariables());
+        try {
+            initializeEffectEdges(getVariables());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         this.mode = Mode.heuristicSpeedup;
         fes();
@@ -333,19 +333,9 @@ public final class Fges implements IGraphSearch, DagScorer {
      * separately.
      *
      * @param verbose True iff the case.
-     * @see #setMeekVerbose(boolean)
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Sets whether verbose output should be produced for the Meek rules.
-     *
-     * @param meekVerbose True iff the case.
-     */
-    public void setMeekVerbose(boolean meekVerbose) {
-        this.meekVerbose = meekVerbose;
     }
 
     /**
@@ -450,7 +440,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @param nodes The list of nodes.
      */
-    private void initializeEffectEdges(final List<Node> nodes) {
+    private void initializeEffectEdges(final List<Node> nodes) throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
 
@@ -503,7 +493,11 @@ public final class Fges implements IGraphSearch, DagScorer {
     private void fes() {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
-        reevaluateForward(new HashSet<>(variables));
+        try {
+            reevaluateForward(new HashSet<>(variables));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         while (!sortedArrows.isEmpty()) {
             Arrow arrow = sortedArrows.first();
@@ -548,7 +542,11 @@ public final class Fges implements IGraphSearch, DagScorer {
             process.add(y);
             process.addAll(getCommonAdjacents(x, y));
 
-            reevaluateForward(new HashSet<>(process));
+            try {
+                reevaluateForward(new HashSet<>(process));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -557,7 +555,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @see Bes
      */
-    private void bes() {
+    private void bes() throws InterruptedException {
         Bes bes = new Bes(score);
         bes.setDepth(depth);
         bes.setVerbose(verbose);
@@ -579,7 +577,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      *
      * @param nodes the set of nodes for which to reevaluate arrows
      */
-    private void reevaluateForward(final Set<Node> nodes) {
+    private void reevaluateForward(final Set<Node> nodes) throws InterruptedException {
         class AdjTask implements Callable<Boolean> {
 
             private final List<Node> nodes;
@@ -632,7 +630,11 @@ public final class Fges implements IGraphSearch, DagScorer {
                             continue;
                         }
 
-                        calculateArrowsForward(x, y);
+                        try {
+                            calculateArrowsForward(x, y);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
 
@@ -668,7 +670,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @param a the starting node
      * @param b the ending node
      */
-    private void calculateArrowsForward(Node a, Node b) {
+    private void calculateArrowsForward(Node a, Node b) throws InterruptedException {
         if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
             return;
         }
@@ -723,7 +725,7 @@ public final class Fges implements IGraphSearch, DagScorer {
             }
 
             @Override
-            public EvalPair call() {
+            public EvalPair call() throws InterruptedException {
                 for (int k = from; k < to; k++) {
                     if (Thread.currentThread().isInterrupted()) break;
                     double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
@@ -756,7 +758,8 @@ public final class Fges implements IGraphSearch, DagScorer {
             tasks.add(task);
         }
 
-        List<Future<EvalPair>> futures = pool.invokeAll(tasks);
+        List<Future<EvalPair>> futures = null;
+        futures = pool.invokeAll(tasks);
 
         for (Future<EvalPair> future : futures) {
             try {
@@ -845,7 +848,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @param hashIndices The map of nodes to their corresponding indices.
      * @return The evaluation score after inserting the edge between 'x' and 'y'.
      */
-    private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents, Map<Node, Integer> hashIndices) {
+    private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents, Map<Node, Integer> hashIndices) throws InterruptedException {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(T);
         set.addAll(parents);
@@ -1134,7 +1137,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
         rules.setMeekPreventCycles(true);
-        rules.setVerbose(meekVerbose);
+        rules.setVerbose(verbose);
         return rules.orientImplied(graph);
     }
 
@@ -1202,7 +1205,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * @return The score graph change between the two nodes.
      * @throws IllegalArgumentException If x is the same as y or y is one of x's parents.
      */
-    private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) {
+    private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) throws InterruptedException {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
 

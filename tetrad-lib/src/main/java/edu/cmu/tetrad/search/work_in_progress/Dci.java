@@ -338,7 +338,7 @@ public class Dci {
      *
      * @return a {@link java.util.List} object
      */
-    public List<Graph> search() {
+    public List<Graph> search() throws InterruptedException {
         this.elapsedTime = MillisecondTimes.timeMillis();
 
         /*
@@ -428,7 +428,7 @@ public class Dci {
         return new ArrayList<>(this.output);
     }
 
-    private void findSepsets(List<IndependenceTest> independenceTests) {
+    private void findSepsets(List<IndependenceTest> independenceTests) throws InterruptedException {
         for (int k = 0; k < this.marginalVars.size(); k++) {
             IndependenceTest independenceTest = independenceTests.get(k);
             FasDci adj;
@@ -1741,7 +1741,7 @@ public class Dci {
      * Resolves possibly conflicting independence/dependence statements that result from a set of known independence
      * statements
      */
-    private void resolveResultingIndependencies() {
+    private void resolveResultingIndependencies() throws InterruptedException {
         List<SepsetMapDci> allSepsets = new ArrayList<>();
         Pc fci = new Pc(new IndTestSepsetDci(combineSepsets(this.sepsetMaps), this.variables));
         System.out.println("Starting pc...");
@@ -1785,7 +1785,7 @@ public class Dci {
      * Resolves possibly conflicting independence/dependence statements that result from a set of known independence
      * statements
      */
-    private void resolveResultingIndependenciesB() {
+    private void resolveResultingIndependenciesB() throws InterruptedException {
         SepsetMapDci combinedSepset = combineSepsets(this.sepsetMaps);
         Pc pc = new Pc(new IndTestSepsetDci(combinedSepset, this.variables));
         Graph allInd = pc.search();
@@ -1886,7 +1886,7 @@ public class Dci {
      * Resolves possibly conflicting independence/dependence statements that result from a set of known independence
      * statements
      */
-    private void resolveResultingIndependenciesC() {
+    private void resolveResultingIndependenciesC() throws InterruptedException {
         List<SepsetMapDci> allSepsets = new ArrayList<>();
         Pc fci = new Pc(new IndTestSepsetDci(combineSepsets(this.sepsetMaps), this.variables));
         System.out.println("Starting pc...");

@@ -92,7 +92,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
      * @return The inferred causal graph structure
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
@@ -109,10 +109,8 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         edu.cmu.tetrad.search.SpFci search = new edu.cmu.tetrad.search.SpFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
         search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setKnowledge(this.knowledge);
-        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
@@ -163,10 +161,8 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         List<String> params = new ArrayList<>();
 
         params.add(Params.SEPSET_FINDER_METHOD);
-        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.GUARANTEE_PAG);

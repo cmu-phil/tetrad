@@ -94,7 +94,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     /**
      * <p>getCellProb.</p>
      *
-     * @param variableValues an array of {@link int} objects
+     * @param variableValues an array of  objects
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
      */

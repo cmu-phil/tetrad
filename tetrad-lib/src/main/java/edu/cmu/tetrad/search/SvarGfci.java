@@ -66,7 +66,7 @@ public final class SvarGfci implements IGraphSearch {
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * True iff verbose output should be printed.
      */
@@ -104,7 +104,7 @@ public final class SvarGfci implements IGraphSearch {
      *
      * @return a PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         independenceTest.setVerbose(verbose);
 
         if (verbose) {
@@ -162,12 +162,17 @@ public final class SvarGfci implements IGraphSearch {
 
         modifiedR0(fgesGraph);
 
-        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(this.independenceTest));
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
+                knowledge, verbose);
+        strategy.setDepth(-1);
+        strategy.setMaxLength(-1);
+        FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.setEndpointStrategy(new SvarSetEndpointStrategy(this.independenceTest, this.knowledge));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(this.maxDiscriminatingPathLength);
+        fciOrient.setVerbose(this.verbose);
 
         fciOrient.finalOrientation(this.graph);
 
@@ -217,14 +222,14 @@ public final class SvarGfci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -287,7 +292,7 @@ public final class SvarGfci implements IGraphSearch {
      *
      * @param fgesGraph The graph to modify.
      */
-    private void modifiedR0(Graph fgesGraph) {
+    private void modifiedR0(Graph fgesGraph) throws InterruptedException {
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
 

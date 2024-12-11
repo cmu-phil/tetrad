@@ -42,7 +42,7 @@ public class RevealEvaluator {
     /**
      * <p>Constructor for RevealEvaluator.</p>
      *
-     * @param cases an array of {@link int} objects
+     * @param cases an array of  objects
      */
     public RevealEvaluator(int[][] cases) {
 
@@ -60,7 +60,7 @@ public class RevealEvaluator {
      * @param child  a int
      * @param parent a int
      * @param lag    a int
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[][] crossTab(int child, int parent, int lag) {
         int[][] ns = new int[2][2];
@@ -86,7 +86,7 @@ public class RevealEvaluator {
      * and the effect.  See Fig. 5 in the Liang et al. paper.
      *
      * @param child   a int
-     * @param parents an array of {@link int} objects
+     * @param parents an array of  objects
      * @param lag     a int
      * @return a double
      */
@@ -146,7 +146,7 @@ public class RevealEvaluator {
      * This method computes the entropy of a binary signal stored in an int array.  It assume that the values in the
      * array are 0's and 1's. (Actually 1's may be replaced by any nonzero value)  See page 20 of the Liang paper.
      *
-     * @param x an array of {@link int} objects
+     * @param x an array of  objects
      * @return a double
      */
     public double entropy(int[] x) {
@@ -208,8 +208,8 @@ public class RevealEvaluator {
      * This method computes the joint entropy of two arrays. The values stored in those arrays are assumed to be
      * restricted to {0,1}.
      *
-     * @param x an array of {@link int} objects
-     * @param y an array of {@link int} objects
+     * @param x an array of  objects
+     * @param y an array of  objects
      * @return a double
      */
     public double jointEntropy(int[] x, int[] y) {
@@ -269,8 +269,8 @@ public class RevealEvaluator {
     /**
      * <p>jointEntropy.</p>
      *
-     * @param x an array of {@link int} objects
-     * @param y an array of {@link int} objects
+     * @param x an array of  objects
+     * @param y an array of  objects
      * @return a double
      */
     public double jointEntropy(int[] x, int[][] y) {
@@ -333,7 +333,7 @@ public class RevealEvaluator {
      *
      * @param ind a int
      * @param n   a int
-     * @return an array of {@link byte} objects
+     * @return an array of  objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

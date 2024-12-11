@@ -80,7 +80,7 @@ public class HsimAutoRun {
      * <p>run.</p>
      *
      * @param resimSize a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] run(int resimSize) {
         //modify this so that verbose is a private data value, and so that data can be taken from either a dataset or a file.

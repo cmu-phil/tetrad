@@ -35,7 +35,7 @@ public class RealVarianceVector implements RealVariance {
     /**
      * <p>Constructor for RealVarianceVector.</p>
      *
-     * @param data an array of {@link double} objects
+     * @param data an array of  objects
      */
     public RealVarianceVector(double[][] data) {
         this.data = data;

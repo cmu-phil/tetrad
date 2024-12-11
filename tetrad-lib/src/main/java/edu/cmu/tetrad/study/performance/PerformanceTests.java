@@ -129,7 +129,7 @@ public class PerformanceTests {
      *
      * @param args a {@link java.lang.String} object
      */
-    public static void main(String... args) {
+    public static void main(String... args) throws InterruptedException {
         System.out.println("Start ");
 
         PerformanceTests performanceTests = new PerformanceTests();
@@ -240,7 +240,7 @@ public class PerformanceTests {
      * @param numCases   a int
      * @param alpha      a double
      */
-    public void testPc(int numVars, double edgeFactor, int numCases, double alpha) {
+    public void testPc(int numVars, double edgeFactor, int numCases, double alpha) throws InterruptedException {
         final int depth = -1;
 
         init(new File("long.pc." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC algorithm");
@@ -380,7 +380,7 @@ public class PerformanceTests {
      * @param numCases   a int
      * @param alpha      a double
      */
-    public void testPcStable(int numVars, double edgeFactor, int numCases, double alpha) {
+    public void testPcStable(int numVars, double edgeFactor, int numCases, double alpha) throws InterruptedException {
         final int depth = -1;
 
         init(new File("long.pcstable." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Stable algorithm");
@@ -495,7 +495,12 @@ public class PerformanceTests {
 
         Fges pcStable = new Fges(semBicScore);
 
-        Graph estCPDAG = pcStable.search();
+        Graph estCPDAG = null;
+        try {
+            estCPDAG = pcStable.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
 //        out.println(estCPDAG);
 
@@ -527,7 +532,7 @@ public class PerformanceTests {
      * @param edgeFactor a double
      * @param numCases   a int
      */
-    public void testCpc(int numVars, double edgeFactor, int numCases) {
+    public void testCpc(int numVars, double edgeFactor, int numCases) throws InterruptedException {
         final double alpha = 0.0001;
         final int depth = -1;
 
@@ -618,7 +623,7 @@ public class PerformanceTests {
      * @param numCases   a int
      * @param alpha      a double
      */
-    public void testCpcStable(int numVars, double edgeFactor, int numCases, double alpha) {
+    public void testCpcStable(int numVars, double edgeFactor, int numCases, double alpha) throws InterruptedException {
         final int depth = 3;
 
         init(new File("long.cpcstable." + numVars + ".txt"), "Tests performance of the CPC algorithm");
@@ -700,7 +705,7 @@ public class PerformanceTests {
      * @param edgeFactor a double
      * @param numCases   a int
      */
-    public void testFci(int numVars, double edgeFactor, int numCases) {
+    public void testFci(int numVars, double edgeFactor, int numCases) throws InterruptedException {
         final double alpha = 0.001;
         final int depth = 3;
 
@@ -758,7 +763,7 @@ public class PerformanceTests {
         Fci fci = new Fci(independenceTest);
         fci.setVerbose(false);
         fci.setDepth(depth);
-        fci.setMaxPathLength(2);
+        fci.setMaxDiscriminatingPathLength(2);
 //        fci.setTrueDag(truePag);
         Graph outGraph = fci.search();
 
@@ -787,7 +792,7 @@ public class PerformanceTests {
         final double alpha = .1;
         final int depth = -1;
         final double penaltyDiscount = 4.0;
-        final int maxPathLength = -1;
+        final int maxDiscriminatingPathLength = -1;
         final double coefLow = .3;
         final double coefHigh = 1.5;
         final int numLatentConfounders = 50;
@@ -853,11 +858,16 @@ public class PerformanceTests {
         GFci fci = new GFci(independenceTest, score);
 
         fci.setVerbose(false);
-        fci.setMaxPathLength(maxPathLength);
+        fci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fci.setMaxDegree(depth);
         fci.setFaithfulnessAssumed(true);
         fci.setCompleteRuleSetUsed(true);
-        Graph outGraph = fci.search();
+        Graph outGraph = null;
+        try {
+            outGraph = fci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         this.out.println(outGraph);
 
@@ -1013,7 +1023,11 @@ public class PerformanceTests {
 
                 long timeb = MillisecondTimes.timeMillis();
 
-                estCPDAG = fges.search();
+                try {
+                    estCPDAG = fges.search();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 long timec = MillisecondTimes.timeMillis();
 
@@ -1053,7 +1067,11 @@ public class PerformanceTests {
 
                 long timeb = MillisecondTimes.timeMillis();
 
-                estCPDAG = fges.search();
+                try {
+                    estCPDAG = fges.search();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 long timec = MillisecondTimes.timeMillis();
 
@@ -1304,7 +1322,11 @@ public class PerformanceTests {
             System.out.println("Target = " + target);
             long timea = MillisecondTimes.timeMillis();
 
-            estCPDAG = fges.search(Collections.singletonList(target));
+            try {
+                estCPDAG = fges.search(Collections.singletonList(target));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             long timed = MillisecondTimes.timeMillis();
 
@@ -1500,11 +1522,15 @@ public class PerformanceTests {
 //            FCI fci = new FCI(independenceTest);
             GFci fci = new GFci(independenceTest, score);
             fci.setMaxDegree(depth);
-            fci.setMaxPathLength(maxPathLength);
+            fci.setMaxDiscriminatingPathLength(maxPathLength);
 //            fci.setPossibleNsepSearchDone(possibleMsepDone);
             fci.setCompleteRuleSetUsed(completeRuleSetUsed);
             fci.setFaithfulnessAssumed(faithfulnessAssumed);
-            estPag = fci.search();
+            try {
+                estPag = fci.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             long ta2 = MillisecondTimes.timeMillis();
 
@@ -1560,7 +1586,7 @@ public class PerformanceTests {
      *
      * @param numLatents a int
      */
-    public void testCompareDagToCPDAG(int numLatents) {
+    public void testCompareDagToCPDAG(int numLatents) throws InterruptedException {
         System.out.println("Making list of vars");
 
         int numVars = 20;
@@ -1632,7 +1658,7 @@ public class PerformanceTests {
      * @param edgeFactor a double
      * @param numLatents a int
      */
-    public void testComparePcVersions(int numVars, double edgeFactor, int numLatents) {
+    public void testComparePcVersions(int numVars, double edgeFactor, int numLatents) throws InterruptedException {
         System.out.println("Making list of vars");
 
         List<Node> vars = new ArrayList<>();

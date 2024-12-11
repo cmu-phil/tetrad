@@ -295,7 +295,7 @@ public class MixedDataBox implements DataBox {
     /**
      * <p>Getter for the field <code>continuousData</code>.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] getContinuousData() {
         return this.continuousData;
@@ -304,7 +304,7 @@ public class MixedDataBox implements DataBox {
     /**
      * <p>Getter for the field <code>discreteData</code>.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[][] getDiscreteData() {
         return this.discreteData;

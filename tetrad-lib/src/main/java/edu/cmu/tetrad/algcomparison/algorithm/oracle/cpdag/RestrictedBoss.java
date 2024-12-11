@@ -113,7 +113,11 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm implements Algori
         PermutationSearch permutationSearch = new PermutationSearch(boss);
         permutationSearch.setSeed(parameters.getLong(Params.SEED));
         permutationSearch.setKnowledge(knowledge);
-        permutationSearch.search();
+        try {
+            permutationSearch.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         Set<Node> restrictedSet = new HashSet<>(targets);
 
@@ -147,7 +151,12 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm implements Algori
         permutationSearch = new PermutationSearch(boss);
         permutationSearch.setKnowledge(knowledge);
 
-        Graph graph = permutationSearch.search();
+        Graph graph = null;
+        try {
+            graph = permutationSearch.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         graph = GraphUtils.trimGraph(targets, graph, parameters.getInt(Params.TRIMMING_STYLE));
 
         return graph;

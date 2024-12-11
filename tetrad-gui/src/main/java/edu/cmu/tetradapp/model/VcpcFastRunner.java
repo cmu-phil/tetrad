@@ -308,7 +308,12 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         if (this.independenceFactsModel != null) {
             fvcpc.setFacts(this.independenceFactsModel.getFacts());
         }
-        Graph graph = fvcpc.search();
+        Graph graph = null;
+        try {
+            graph = fvcpc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
@@ -426,6 +431,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         MeekRules meekRules = new MeekRules();
         meekRules.setMeekPreventCycles(this.isMeekPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
+        meekRules.setVerbose(false);
         return meekRules;
     }
 

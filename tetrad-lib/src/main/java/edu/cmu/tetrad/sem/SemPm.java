@@ -188,7 +188,7 @@ public final class SemPm implements Pm, TetradSerializable {
             }
 
             for (Node y : this.graph.getAdjacentNodes(x)) {
-                if (y.getNodeType() != NodeType.MEASURED) {
+                if (y.getNodeType() != NodeType.MEASURED && y.getNodeType() != NodeType.SELECTION) {
                     continue;
                 }
 
@@ -248,7 +248,7 @@ public final class SemPm implements Pm, TetradSerializable {
         List<Node> measuredNodes = new ArrayList<>();
 
         for (Node variable : getVariableNodes()) {
-            if (variable.getNodeType() == NodeType.MEASURED) {
+            if (variable.getNodeType() == NodeType.MEASURED || variable.getNodeType() == NodeType.SELECTION) {
                 measuredNodes.add(variable);
             }
         }
@@ -423,7 +423,7 @@ public final class SemPm implements Pm, TetradSerializable {
         List<String> varNamesList = new ArrayList<>();
 
         for (Node semPmVar : semPmVars) {
-            if (semPmVar.getNodeType() == NodeType.MEASURED) {
+            if (semPmVar.getNodeType() == NodeType.MEASURED || semPmVar.getNodeType() == NodeType.SELECTION) {
                 varNamesList.add(semPmVar.toString());
             }
         }
@@ -548,7 +548,7 @@ public final class SemPm implements Pm, TetradSerializable {
 
         for (Node node : this.nodes) {
 
-            if (node.getNodeType() == NodeType.MEASURED ||
+            if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.SELECTION ||
                 node.getNodeType() == NodeType.LATENT) {
                 varNodes.add(node);
             }

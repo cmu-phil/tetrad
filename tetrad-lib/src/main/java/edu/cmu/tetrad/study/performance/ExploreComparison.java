@@ -43,7 +43,11 @@ public class ExploreComparison {
 
         for (int sampleSize = 1000; sampleSize <= 1000; sampleSize += 100) {
             params.setSampleSize(sampleSize);
-            results.add(Comparison.compare(params));
+            try {
+                results.add(Comparison.compare(params));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         ArrayList<Comparison.TableColumn> tableColumns = new ArrayList<>();

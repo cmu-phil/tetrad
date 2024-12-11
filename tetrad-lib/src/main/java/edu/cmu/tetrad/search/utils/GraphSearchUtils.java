@@ -130,7 +130,7 @@ public final class GraphSearchUtils {
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) {
+    public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) throws InterruptedException {
         TetradLogger.getInstance().log("Starting Collider Orientation:");
 
         List<Node> nodes = graph.getNodes();
@@ -201,7 +201,7 @@ public final class GraphSearchUtils {
         TetradLogger.getInstance().log("Finishing Collider Orientation.");
     }
 
-    private static Set<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, IndependenceTest independenceTest) {
+    private static Set<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, IndependenceTest independenceTest) throws InterruptedException {
         List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(a));
         adj.addAll(graph.getAdjacentNodes(c));
         adj.remove(c);
@@ -398,10 +398,11 @@ public final class GraphSearchUtils {
     /**
      * Checks if the provided Directed Acyclic Graph (PAG) is a legal PAG.
      *
-     * @param pag The Directed Acyclic Graph (PAG) to be checked
+     * @param pag       The Directed Acyclic Graph (PAG) to be checked
+     * @param selection The set of nodes to be conditioned on
      * @return A LegalPagRet object indicating whether the PAG is legal or not, along with a reason if it is not legal.
      */
-    public static LegalPagRet isLegalPag(Graph pag) {
+    public static LegalPagRet isLegalPag(Graph pag, Set<Node> selection) {
 
         for (Node n : pag.getNodes()) {
             if (n.getNodeType() != NodeType.MEASURED) {
@@ -412,7 +413,7 @@ public final class GraphSearchUtils {
 
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
-        LegalMagRet legalMag = isLegalMag(mag);
+        LegalMagRet legalMag = isLegalMag(mag, selection);
 
         if (!legalMag.isLegalMag()) {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
@@ -457,10 +458,11 @@ public final class GraphSearchUtils {
     /**
      * Determines whether the given graph is a legal Mixed Ancestral Graph (MAG).
      *
-     * @param mag the graph to be checked
+     * @param mag       the graph to be checked
+     * @param selection the set of nodes to be conditioned on
      * @return a LegalMagRet object indicating whether the graph is legal and providing an error message if it is not
      */
-    public static LegalMagRet isLegalMag(Graph mag) {
+    public static LegalMagRet isLegalMag(Graph mag, Set<Node> selection) {
         for (Node n : mag.getNodes()) {
             if (n.getNodeType() == NodeType.LATENT)
                 return new LegalMagRet(false,
@@ -524,7 +526,7 @@ public final class GraphSearchUtils {
                 Node y = nodes.get(j);
 
                 if (!mag.isAdjacentTo(x, y)) {
-                    if (mag.paths().existsInducingPath(x, y))
+                    if (mag.paths().existsInducingPath(x, y, new HashSet<>(selection)))
                         return new LegalMagRet(false,
                                 "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y);
                 }
@@ -684,7 +686,7 @@ public final class GraphSearchUtils {
      * @param d             a set of vertices (intuitively to be used in tests of legality, for example, the set of
      *                      ancestors of c).
      * @param graph         the graph with respect to which reachability is
-     * @param maxPathLength a int
+     * @param maxPathLength the maximum length of a path to be considered.
      * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
      * criteria in the given legal pairs object.
      * <p>
@@ -694,8 +696,8 @@ public final class GraphSearchUtils {
      * <p>
      * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, and Pearl (1990).
      */
-    public static Set<Node> getReachableNodes(List<Node> initialNodes,
-                                              LegalPairs legalPairs, List<Node> c, List<Node> d, Graph graph, int maxPathLength) {
+    public static Set<Node> getReachableNodes(List<Node> initialNodes, LegalPairs legalPairs, List<Node> c,
+                                              List<Node> d, Graph graph, int maxPathLength) {
         HashSet<Node> reachable = new HashSet<>();
         MultiKeyMap<Node, Boolean> visited = new MultiKeyMap<>();
         List<ReachabilityEdge> nextEdges = new LinkedList<>();
@@ -800,7 +802,7 @@ public final class GraphSearchUtils {
      */
     public static CpcTripleType getCpcTripleType(Node x, Node y, Node z,
                                                  IndependenceTest test, int depth,
-                                                 Graph graph) {
+                                                 Graph graph) throws InterruptedException {
         int numSepsetsContainingY = 0;
         int numSepsetsNotContainingY = 0;
 
@@ -1124,7 +1126,7 @@ public final class GraphSearchUtils {
      * @param trueCpdag a {@link edu.cmu.tetrad.graph.Graph} object
      * @param estCpdag  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param out       a {@link java.io.PrintStream} object
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public static int[][] graphComparison(Graph trueCpdag, Graph estCpdag, PrintStream out) {
         GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(estCpdag, trueCpdag);
@@ -1227,6 +1229,18 @@ public final class GraphSearchUtils {
         } finally {
             executor.shutdown();
         }
+    }
+
+    /**
+     * Returns a list of rows 1...sampleSize.
+     *
+     * @param sampleSize the number of rows in the dataset.
+     * @return a list of rows 1...sampleSize.
+     */
+    public static List<Integer> getAllRows(int sampleSize) {
+        List<Integer> rows = new ArrayList<>();
+        for (int i = 0; i < sampleSize; i++) rows.add(i);
+        return rows;
     }
 
     /**

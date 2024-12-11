@@ -2,9 +2,14 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.util.PagCache;
 
 import java.io.Serial;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Legal PAG
@@ -43,7 +48,16 @@ public class LegalPag implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(estGraph);
+        List<Node> latent = trueGraph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+
+        List<Node> measured = trueGraph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        List<Node> selection = trueGraph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(estGraph, new HashSet<>(selection));
 
         if (legalPag.isLegalPag()) {
             return 1.0;

@@ -42,7 +42,7 @@ public class BoolSearch {
     /**
      * <p>Constructor for BoolSearch.</p>
      *
-     * @param cases an array of {@link int} objects
+     * @param cases an array of  objects
      * @param names an array of {@link java.lang.String} objects
      */
     public BoolSearch(int[][] cases, String[] names) {
@@ -199,7 +199,7 @@ public class BoolSearch {
      *
      * @param ind a int
      * @param n   a int
-     * @return an array of {@link byte} objects
+     * @return an array of  objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];
@@ -223,7 +223,7 @@ public class BoolSearch {
     /**
      * <p>sumBits.</p>
      *
-     * @param b an array of {@link byte} objects
+     * @param b an array of  objects
      * @return a int
      */
     public int sumBits(byte[] b) {

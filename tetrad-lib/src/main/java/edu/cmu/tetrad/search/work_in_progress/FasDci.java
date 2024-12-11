@@ -154,7 +154,7 @@ public class FasDci {
      *
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
-    public SepsetMapDci search() {
+    public SepsetMapDci search() throws InterruptedException {
         TetradLogger.getInstance().log("Starting Fast Adjacency Search (DCI).");
         // Remove edges forbidden both ways.
         Set<Edge> edges = this.graph.getEdges();
@@ -283,7 +283,7 @@ public class FasDci {
      * @return true if there are more changes possible, false if not.
      */
     private boolean searchAtDepth(Graph graph, IndependenceTest independenceTest,
-                                  Knowledge knowledge, SepsetMapDci sepset, int depth) {
+                                  Knowledge knowledge, SepsetMapDci sepset, int depth) throws InterruptedException {
 
         boolean more = false;
 

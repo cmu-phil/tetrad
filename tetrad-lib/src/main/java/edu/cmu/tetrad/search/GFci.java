@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -88,7 +89,7 @@ public final class GFci implements IGraphSearch {
     /**
      * The maximum path length for the discriminating path rule.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The maximum degree of the output graph.
      */
@@ -114,21 +115,9 @@ public final class GFci implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * Whether the discriminating path tail rule should be used.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * Whether the discriminating path collider rule should be used.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
      * Whether to guarantee the output is a PAG by repairing a faulty PAG.
      */
     private boolean guaranteePag = false;
-    /**
-     * Whether to leave out the final orientation step in the ablation study.
-     */
-    private boolean ablationLeaveOutFinalOrientation;
     /**
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
@@ -153,17 +142,16 @@ public final class GFci implements IGraphSearch {
      *
      * @return This PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI algorithm.");
-            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("===Starting GFCI===");
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting FGES algorithm.");
+            TetradLogger.getInstance().log("Starting FGES.");
         }
 
         Fges fges = new Fges(this.score);
@@ -173,56 +161,70 @@ public final class GFci implements IGraphSearch {
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         fges.setNumThreads(numThreads);
-        Graph graph = fges.search();
+        Graph pag = fges.search();
 
         if (verbose) {
-            TetradLogger.getInstance().log("Finished FGES algorithm.");
+            TetradLogger.getInstance().log("Finished FGES.");
+        }
+
+        if (score instanceof MagSemBicScore) {
+            ((MagSemBicScore) score).setMag(pag);
         }
 
         if (verbose) {
             TetradLogger.getInstance().log("Making a copy of the FGES CPDAG for reference.");
         }
 
-        Graph cpdag = new EdgeListGraph(graph);
+        Graph cpdag = new EdgeListGraph(pag);
 
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
         } else if (sepsetFinderMethod == 1) {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 2) {
-            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 3) {
-            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
         } else {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        Set<Triple> unshieldedTriples = new HashSet<>();
+        Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStep(graph, cpdag, nodes, sepsets, depth, verbose);
-        GraphUtils.gfciR0(graph, cpdag, sepsets, knowledge, verbose, unshieldedTriples);
+        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
-                        doDiscriminatingPathColliderRule, verbose));
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
+                knowledge, verbose);
+        strategy.setDepth(-1);
+        strategy.setMaxLength(-1);
+        FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setVerbose(verbose);
 
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(graph);
+        fciOrient.finalOrientation(pag);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished implied orientation.");
         }
 
         if (guaranteePag) {
-            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose,
+                    new HashSet<>());
         }
 
-        return graph;
+        if (verbose) {
+            TetradLogger.getInstance().log("GFCI finished.");
+        }
+
+        return pag;
     }
 
     /**
@@ -274,14 +276,14 @@ public final class GFci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -343,7 +345,6 @@ public final class GFci implements IGraphSearch {
     }
 
 
-
     /**
      * Sets the flag indicating whether to guarantee the output is a legal PAG.
      *
@@ -354,42 +355,12 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets the flag indicating whether to leave out the final orientation during ablation.
-     *
-     * @param ablationLeaveOutFinalOrientation A boolean value indicating whether to leave out the final orientation during ablation.
-     */
-    public void setAblationLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
-    }
-
-    /**
      * Sets the method used to find the sepset in the GFci algorithm.
      *
-     * @param sepsetFinderMethod The method used to find the sepset.
-     *                           - 0: Default method
-     *                           - 1: Custom method 1
-     *                           - 2: Custom method 2
-     *                           - ...
+     * @param sepsetFinderMethod The method used to find the sepset. - 0: Default method - 1: Custom method 1 - 2:
+     *                           Custom method 2 - ...
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 }

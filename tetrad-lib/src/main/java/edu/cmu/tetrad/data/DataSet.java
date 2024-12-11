@@ -313,11 +313,11 @@ public interface DataSet extends DataModel {
     void setSelected(Node variable, boolean selected);
 
     /**
-     * <p>subsetRowsColumns.</p>
+     * Generates a subset of the current DataSet by selecting specified rows and columns.
      *
-     * @param rows    an array of {@link int} objects
-     * @param columns an array of {@link int} objects
-     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param rows an array of row indices to include in the subset
+     * @param columns an array of column indices to include in the subset
+     * @return a new DataSet object containing only the specified rows and columns
      */
     DataSet subsetRowsColumns(int[] rows, int[] columns);
 

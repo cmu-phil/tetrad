@@ -105,7 +105,7 @@ public class Mimbuild {
      * @param measuresCov The covariance matrix over the measured variables.
      * @return The inferred graph over the latent variables.
      */
-    public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) {
+    public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) throws InterruptedException {
         List<String> _latentNames = new ArrayList<>(latentNames);
 
         List<String> allVarNames = new ArrayList<>();

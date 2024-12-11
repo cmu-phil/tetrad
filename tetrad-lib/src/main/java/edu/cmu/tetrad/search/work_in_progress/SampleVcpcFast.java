@@ -367,7 +367,7 @@ public final class SampleVcpcFast implements IGraphSearch {
      *
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting VCCPC algorithm");
@@ -405,6 +405,7 @@ public final class SampleVcpcFast implements IGraphSearch {
 
             meekRules.setMeekPreventCycles(this.guaranteeCpdag);
             meekRules.setKnowledge(this.knowledge);
+            meekRules.setVerbose(verbose);
 
             meekRules.orientImplied(this.graph);
         }
@@ -514,6 +515,7 @@ public final class SampleVcpcFast implements IGraphSearch {
             }
 
             MeekRules rules = new MeekRules();
+            rules.setVerbose(verbose);
             rules.orientImplied(graph);
             if (graph.paths().existsDirectedCycle()) {
                 CPDAGs.remove(graph);
@@ -773,7 +775,7 @@ public final class SampleVcpcFast implements IGraphSearch {
     }
 
     private void orientUnshieldedTriples(Knowledge knowledge,
-                                         IndependenceTest test, int depth) {
+                                         IndependenceTest test, int depth) throws InterruptedException {
         TetradLogger.getInstance().log("Starting Collider Orientation:");
 
 //        System.out.println("orientUnshieldedTriples 1");

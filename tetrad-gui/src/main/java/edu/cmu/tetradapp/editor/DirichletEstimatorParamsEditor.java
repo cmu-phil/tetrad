@@ -94,8 +94,8 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
                           "<br>provide below as pseudocount for every cell. This Dirichlet" +
                           "<br>Bayes IM will be used as the prior for the estimation. If" +
                           "<br>you would like to have more control over how this prior is" +
-                          "<br>created, please remove the PM-->Estimator edge, add a new" +
-                          "<br>IM box, connect it as PM-->IM-->Estimator, and create the" +
+                          "<br>created, please remove the PM--&gt;Estimator edge, add a new" +
+                          "<br>IM box, connect it as PM--&gt;IM--&gt;Estimator, and create the" +
                           "<br>prior you want as a Dirichlet Bayes IM in the IM box." +
                           "</html>"));
 

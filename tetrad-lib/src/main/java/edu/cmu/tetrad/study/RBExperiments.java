@@ -448,7 +448,12 @@ public class RBExperiments {
         Fges fgs = new Fges(sd);
         fgs.setVerbose(false);
         fgs.setFaithfulnessAssumed(true);
-        Graph fgsCPDAG = fgs.search();
+        Graph fgsCPDAG = null;
+        try {
+            fgsCPDAG = fgs.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         fgsCPDAG = GraphUtils.replaceNodes(fgsCPDAG, data.getVariables());
         return fgsCPDAG;
     }
@@ -485,7 +490,12 @@ public class RBExperiments {
         BSCrfci.setDepth(this.depth);
 
         for (int i = 0; i < numModels; i++) {
-            Graph BSCPag = BSCrfci.search();
+            Graph BSCPag = null;
+            try {
+                BSCPag = BSCrfci.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             BSCPag = GraphUtils.replaceNodes(BSCPag, data.getVariables());
             pags.add(BSCPag);
 
@@ -499,7 +509,12 @@ public class RBExperiments {
         Rfci fci1 = new Rfci(test);
         fci1.setDepth(this.depth);
         fci1.setVerbose(false);
-        Graph PAG_CS = fci1.search();
+        Graph PAG_CS = null;
+        try {
+            PAG_CS = fci1.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         PAG_CS = GraphUtils.replaceNodes(PAG_CS, data.getVariables());
         return PAG_CS;
     }

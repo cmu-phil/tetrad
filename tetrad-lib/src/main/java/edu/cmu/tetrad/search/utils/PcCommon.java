@@ -99,9 +99,14 @@ public final class PcCommon implements IGraphSearch {
     private boolean verbose = false;
 
     /**
-     * The max path length for the max p collider orientation heuristic.
+     * The maximum length of a discriminating path.
+     * <p>
+     * This variable represents the maximum length of a discriminating path. It is used in the context of some algorithm
+     * or data structure where discriminating paths are relevant. The value of this variable is -1 by default and can be
+     * updated as necessary.
+     * </p>
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
 
     /**
      * The type of FAS to be used.
@@ -217,10 +222,10 @@ public final class PcCommon implements IGraphSearch {
     /**
      * <p>Setter for the field <code>maxPathLength</code>.</p>
      *
-     * @param maxPathLength The max path length for the max p collider orientation heuristic.
+     * @param maxDiscriminatingPathLength The max path length for the max p collider orientation heuristic.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        this.maxPathLength = maxPathLength;
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -266,7 +271,7 @@ public final class PcCommon implements IGraphSearch {
      *
      * @return This result graph.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         return search(getIndependenceTest().getVariables());
     }
 
@@ -276,7 +281,7 @@ public final class PcCommon implements IGraphSearch {
      * @param nodes The nodes to search over.
      * @return The result graph.
      */
-    public Graph search(List<Node> nodes) {
+    public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);
 
         if (verbose) {
@@ -304,6 +309,7 @@ public final class PcCommon implements IGraphSearch {
         if (this.fasType == FasType.REGULAR) {
             fas = new Fas(getIndependenceTest());
             fas.setPcHeuristicType(this.pcHeuristicType);
+            fas.setStable(false);
         } else {
             fas = new Fas(getIndependenceTest());
             fas.setPcHeuristicType(this.pcHeuristicType);
@@ -336,7 +342,7 @@ public final class PcCommon implements IGraphSearch {
 
             MaxP orientCollidersMaxP = new MaxP(this.independenceTest);
             orientCollidersMaxP.setConflictRule(this.conflictRule);
-            orientCollidersMaxP.setMaxPathLength(this.maxPathLength);
+            orientCollidersMaxP.setMaxDiscriminatingPathLength(this.maxDiscriminatingPathLength);
             orientCollidersMaxP.setDepth(this.depth);
             orientCollidersMaxP.setKnowledge(this.knowledge);
             orientCollidersMaxP.orient(this.graph);
@@ -531,7 +537,7 @@ public final class PcCommon implements IGraphSearch {
             }
 
             log("""
-
+                    
                     Ambiguous triples (i.e. list of triples for which\s
                     there is ambiguous data about whether they are colliderDiscovery or not):""", verbose);
 
@@ -547,7 +553,7 @@ public final class PcCommon implements IGraphSearch {
      *
      * @param knowledge the knowledge used for orientation
      */
-    private void orientUnshieldedTriplesConservative(Knowledge knowledge) {
+    private void orientUnshieldedTriplesConservative(Knowledge knowledge) throws InterruptedException {
         log("Starting Collider Orientation:", verbose);
 
         this.colliderTriples = new HashSet<>();
@@ -605,7 +611,7 @@ public final class PcCommon implements IGraphSearch {
      * @param g The graph
      * @return The set of separation sets between node i and node k
      */
-    private Set<Set<Node>> getSepsets(Node i, Node k, Graph g) {
+    private Set<Set<Node>> getSepsets(Node i, Node k, Graph g) throws InterruptedException {
         List<Node> adji = new ArrayList<>(g.getAdjacentNodes(i));
         List<Node> adjk = new ArrayList<>(g.getAdjacentNodes(k));
         Set<Set<Node>> sepsets = new HashSet<>();

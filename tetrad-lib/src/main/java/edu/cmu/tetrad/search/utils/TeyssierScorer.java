@@ -120,7 +120,7 @@ public class TeyssierScorer {
      * @param order The permutation to score.
      * @return The score of it.
      */
-    public double score(List<Node> order) {
+    public double score(List<Node> order) throws InterruptedException {
         this.pi = new ArrayList<>(order);
         this.scores = new ArrayList<>();
 
@@ -139,7 +139,7 @@ public class TeyssierScorer {
      *
      * @return The score of the current permutation.
      */
-    public double score() {
+    public double score() throws InterruptedException {
         return sum();
     }
 
@@ -396,6 +396,7 @@ public class TeyssierScorer {
         if (cpDag) {
             MeekRules rules = new MeekRules();
             rules.setKnowledge(this.knowledge);
+            rules.setVerbose(false);
             rules.orientImplied(graph);
         }
 
@@ -725,7 +726,7 @@ public class TeyssierScorer {
         }
     }
 
-    private void recalculate(int p) {
+    private void recalculate(int p) throws InterruptedException {
         if (this.prefixes.get(p) == null || !this.prefixes.get(p).containsAll(getPrefix(p))) {
             Pair p2 = getParentsInternal(p);
             if (scores.get(p) == null) {
@@ -737,7 +738,7 @@ public class TeyssierScorer {
         }
     }
 
-    private double sum() {
+    private double sum() throws InterruptedException {
         double score = 0;
 
         for (int i = 0; i < this.pi.size(); i++) {
@@ -785,7 +786,7 @@ public class TeyssierScorer {
         return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
     }
 
-    private Pair getGrowShrinkIndependent(int p) {
+    private Pair getGrowShrinkIndependent(int p) throws InterruptedException {
         Node n = this.pi.get(p);
         Set<Node> parents = new HashSet<>();
         Set<Node> prefix = getPrefix(p);
@@ -824,7 +825,7 @@ public class TeyssierScorer {
         return new Pair(parents, -parents.size());
     }
 
-    private Pair getParentsInternal(int p) {
+    private Pair getParentsInternal(int p) throws InterruptedException {
         if (this.useRaskuttiUhler) {
             return getRaskuttiUhlerParents(p);
         } else {
@@ -842,7 +843,7 @@ public class TeyssierScorer {
      * @param p The index.
      * @return The parents, as a Pair object (parents + score).
      */
-    private Pair getRaskuttiUhlerParents(int p) {
+    private Pair getRaskuttiUhlerParents(int p) throws InterruptedException {
         Node x = this.pi.get(p);
         Set<Node> parents = new HashSet<>();
         Set<Node> prefix = getPrefix(p);

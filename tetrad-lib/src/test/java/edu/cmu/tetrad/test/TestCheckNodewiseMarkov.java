@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
-import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -10,9 +10,13 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 
 
@@ -39,10 +43,25 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(10000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 //        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -73,10 +92,26 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(10000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 //        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -132,10 +167,26 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -165,10 +216,26 @@ public class TestCheckNodewiseMarkov {
         params.set(Params.SIMULATION_PARAM1, 1);
 
         SemIm im = new SemIm(pm, params);
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -199,10 +266,26 @@ public class TestCheckNodewiseMarkov {
         params.set(Params.SIMULATION_PARAM1, 1);
 
         SemIm im = new SemIm(pm, params);
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -228,10 +311,26 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -269,10 +368,26 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -312,10 +427,26 @@ public class TestCheckNodewiseMarkov {
         params.set(Params.SIMULATION_PARAM1, 1);
 
         SemIm im = new SemIm(pm, params);
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -358,10 +489,26 @@ public class TestCheckNodewiseMarkov {
         params.set(Params.SIMULATION_PARAM1, 1);
 
         SemIm im = new SemIm(pm, params);
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -400,10 +547,26 @@ public class TestCheckNodewiseMarkov {
         SemPm pm = new SemPm(trueGraph);
         // Parameters without additional setting default tobe Gaussian
         SemIm im = new SemIm(pm, new Parameters());
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -433,10 +596,26 @@ public class TestCheckNodewiseMarkov {
         params.set(Params.SIMULATION_PARAM1, 1);
 
         SemIm im = new SemIm(pm, params);
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
@@ -467,10 +646,26 @@ public class TestCheckNodewiseMarkov {
         params.set(Params.SIMULATION_PARAM1, 1);
 
         SemIm im = new SemIm(pm, params);
+        // Simulate permuted dataset and save a copy of it.
         DataSet data = im.simulateData(1000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 

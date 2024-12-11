@@ -20,10 +20,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -44,7 +41,7 @@ import java.util.stream.Collectors;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class MarkovCheck {
+public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The graph.
      */
@@ -60,7 +57,7 @@ public class MarkovCheck {
     /**
      * True, just in case the given graph is a CPDAG (completed partially directed acyclic graph).
      */
-    private final boolean isCpdag;
+    private final boolean isMpdag;
     /**
      * List of observers to be notified when changes are made to the model.
      */
@@ -76,7 +73,7 @@ public class MarkovCheck {
     /**
      * True if the checks should be parallelized. (Not always a good idea.)
      */
-    private boolean parallelized = false;
+    private boolean parallelized = true;
     /**
      * The fraction of dependent judgments for the independent case.
      */
@@ -128,7 +125,7 @@ public class MarkovCheck {
     /**
      * The percentage of all samples to use when resampling for each conditional independence test.
      */
-    private double percentResample = 0.5;
+    private double percentResample = 1.0;
     /**
      * The number of tests for the independent case.
      */
@@ -150,13 +147,13 @@ public class MarkovCheck {
      */
     private List<Node> conditioningNodes;
     /**
-     * Indicates whether extraneous variables should be removed when d-separation holds.
-     * <p>
-     * Extraneous variables are irrelevant or redundant variables that are not necessary for finding d-separation.
-     * <p>
-     * Default value is false, meaning that extraneous variables are not removed by default.
+     * True if a smallest subset of conditioning nodes should be found.
      */
-    private boolean removeExtraneousVariables = false;
+    private boolean findSmallestSubset = false;
+    /**
+     * The maximum length of paths to consider, for relevant methods.
+     */
+    private int maxLength = -1;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -167,7 +164,7 @@ public class MarkovCheck {
      */
     public MarkovCheck(Graph graph, IndependenceTest independenceTest, ConditioningSetType setType) {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
-        this.isCpdag = graph.paths().isLegalCpdag();
+        this.isMpdag = graph.paths().isLegalMpdag();
         this.independenceTest = independenceTest;
         this.setType = setType;
         this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
@@ -795,6 +792,21 @@ public class MarkovCheck {
      * @see #getResults(boolean)
      */
     public void generateResults(boolean clear) {
+        generateResults(true, true);
+        generateResults(false, false);
+    }
+
+    /**
+     * Generates results based on the specified independence and clearing conditions. The method assesses separation
+     * sets and independence facts using the current graph structure and the specified separation set type. Based on the
+     * results, it calculates statistical values and updates relevant member variables.
+     *
+     * @param indep A boolean indicating whether to generate results for independence (true) or dependence (false).
+     * @param clear A boolean indicating whether to clear existing results before generating new ones (true) or to
+     *              retain them (false).
+     * @see #getResults(boolean)
+     */
+    public void generateResults(boolean indep, boolean clear) {
         if (clear) {
             clear();
         }
@@ -808,11 +820,20 @@ public class MarkovCheck {
             List<Node> nodes = new ArrayList<>(variables);
 
             List<Node> order = null;
+            Graph dag = null;
 
-            try {
-                order = graph.paths().getValidOrder(graph.getNodes(), true);
-            } catch (Exception e) {
-                // Leave null. Not an error here. Just means we can't use the ordered local Markov check.
+            if (graph.paths().isLegalDag()) {
+                dag = graph;
+                order = dag.paths().getValidOrder(dag.getNodes(), true);
+            } else if (graph.paths().isLegalCpdag()) {
+                dag = GraphTransforms.dagFromCpdag(graph);
+                order = dag.paths().getValidOrder(dag.getNodes(), true);
+            } else {
+                try {
+                    order = graph.paths().getValidOrder(graph.getNodes(), true);
+                } catch (Exception e) {
+                    // Leave null. Not an error here. Just means we can't use the ordered local Markov check.
+                }
             }
 
             Set<IndependenceFact> allIndependenceFacts = new HashSet<>();
@@ -854,7 +875,15 @@ public class MarkovCheck {
                             break;
                         case ORDERED_LOCAL_MARKOV:
                             if (order == null) throw new IllegalArgumentException("No valid order found.");
-                            z = new HashSet<>(graph.getParents(x));
+
+//                            if (dag != null) {
+//                                if (dag.paths().isAncestorOf(x, y)) {
+//                                    continue;
+//                                }
+//
+//                                z = new HashSet<>(dag.getParents(x));
+//                            } else {
+                            z = new HashSet<>(graph.getAdjacentNodes(x));
 
                             // Keep only the parents in Prefix(x).
                             for (Node w : new ArrayList<>(z)) {
@@ -865,10 +894,17 @@ public class MarkovCheck {
                                     z.remove(w);
                                 }
                             }
+//                            }
 
                             break;
                         case MARKOV_BLANKET:
                             z = GraphUtils.markovBlanket(x, graph);
+                            break;
+                        case RECURSIVE_MSEP:
+                            z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
+                            break;
+                        case NONCOLLIDERS_ONLY:
+                            z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, maxLength, true);
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown separation set type: " + setType);
@@ -876,8 +912,9 @@ public class MarkovCheck {
 
                     if (x == y || z.contains(x) || z.contains(y)) continue;
 
-                    if (removeExtraneousVariables && graph.paths().isMSeparatedFrom(x, y, z, false)) {
-                        z = removeExtraneousVariables(z, x, y);
+                    if (findSmallestSubset && graph.paths().isMSeparatedFrom(x, y, z, false)) {
+//                        z = removeExtraneousVariables(z, x, y, !isMpdag);
+                        z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isMpdag);
                     }
 
                     if (!checkNodeIndependenceAndConditioning(x, y, z)) {
@@ -889,9 +926,19 @@ public class MarkovCheck {
                 }
             }
 
-            generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
-            generateResults(msep, true);
-            generateResults(mconn, false);
+            try {
+                generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
+
+                if (indep) {
+                    generateResults(msep, true);
+                } else {
+                    generateResults(mconn, false);
+                }
+//                generateResults(msep, true);
+//                generateResults(mconn, false);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             this.numTestsIndep = msep.size();
             this.numTestsDep = mconn.size();
@@ -901,21 +948,21 @@ public class MarkovCheck {
         calcStats(false);
     }
 
-    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y) {
-        Set<Node> _z = new HashSet<>(z);
-
-        do {
-            for (Node w : new HashSet<>(_z)) {
-                _z.remove(w);
-                if (!graph.paths().isMSeparatedFrom(x, y, _z, false)) {
-                    _z.add(w);
-                }
-            }
-
-            z = new HashSet<>(_z);
-        } while (!_z.equals(z));
-        return z;
-    }
+//    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y, boolean isMpdag) {
+//        Set<Node> _z = new HashSet<>(z);
+//
+//        do {
+//            for (Node w : new HashSet<>(_z)) {
+//                _z.remove(w);
+//                if (!graph.paths().isMSeparatedFrom(x, y, _z, !isMpdag)) {
+//                    _z.add(w);
+//                }
+//            }
+//
+//            z = new HashSet<>(_z);
+//        } while (!_z.equals(z));
+//        return z;
+//    }
 
     /**
      * Returns type of conditioning sets to use in the Markov check.
@@ -1203,11 +1250,12 @@ public class MarkovCheck {
      * Generates the results for the given set of independence facts as a single record.
      *
      * @return The Markov check record.
+     * @throws InterruptedException if the thread is interrupted
      * @see MarkovCheckRecord
      */
-    public MarkovCheckRecord getMarkovCheckRecord() {
+    public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
         setPercentResample(percentResample);
-        generateResults(true);
+        generateResults(true, true);
         double adInd = getAndersonDarlingP(true);
         double adDep = getAndersonDarlingP(false);
         double binIndep = getBinomialPValue(true);
@@ -1223,9 +1271,10 @@ public class MarkovCheck {
      * Returns the Markov check record as a string.
      *
      * @return The Markov check record as a string.
+     * @throws InterruptedException if the thread is interrupted
      * @see MarkovCheckRecord
      */
-    public String getMarkovCheckRecordString() {
+    public String getMarkovCheckRecordString() throws InterruptedException {
         NumberFormat nf = new DecimalFormat("0.000");
         MarkovCheckRecord record = getMarkovCheckRecord();
 
@@ -1267,7 +1316,7 @@ public class MarkovCheck {
      * @param msepTest             The m-separation test.
      */
     private void generateMseps(List<IndependenceFact> allIndependenceFacts, Set<IndependenceFact> msep, Set<IndependenceFact> mconn,
-                               MsepTest msepTest) {
+                               MsepTest msepTest) throws InterruptedException {
         class IndCheckTask implements Callable<Pair<Set<IndependenceFact>, Set<IndependenceFact>>> {
             private final int index;
             private final List<IndependenceFact> facts;
@@ -1320,8 +1369,6 @@ public class MarkovCheck {
 
         if (parallelized) {
             int parallelism = Runtime.getRuntime().availableProcessors();
-            TetradLogger.getInstance().log("Parallelism: " + parallelism);
-
             ForkJoinPool pool = new ForkJoinPool(parallelism);
 
             List<Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> theseResults;
@@ -1347,7 +1394,7 @@ public class MarkovCheck {
      * @param facts The set of independence facts.
      * @param msep  True if for implied independencies, false if for implied dependencies.
      */
-    private void generateResults(Set<IndependenceFact> facts, boolean msep) {
+    private void generateResults(Set<IndependenceFact> facts, boolean msep) throws InterruptedException {
         class IndCheckTask implements Callable<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> {
             private final int index;
             private final List<IndependenceFact> facts;
@@ -1372,36 +1419,44 @@ public class MarkovCheck {
                 Set<Node> z = fact.getZ();
 
                 if (independenceTest instanceof RowsSettable) {
-                    List<Integer> rows = getSubsampleRows(percentResample); // Default as 0.5
+                    List<Integer> rows = getSubsampleRows(percentResample);
+//                    List<Integer> rows = getBootstrapRows(1.0);
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
+
+//                    if (independenceTest instanceof SampleSizeSettable) {xk
+//                        ((SampleSizeSettable) independenceTest).setSampleSize(getBootstrapEffectiveSampleSize(rows));
+//                    }
                 }
 
-                addResults(resultsIndep, resultsDep, fact, x, y, z);
-
+                addResult(resultsIndep, resultsDep, fact, x, y, z);
                 return new Pair<>(resultsIndep, resultsDep);
             }
 
-            private void addResults(Set<IndependenceResult> resultsIndep, Set<IndependenceResult> resultsDep, IndependenceFact fact, Node x, Node y, Set<Node> z) {
-                boolean verbose = independenceTest.isVerbose();
-                // Temporarily turn off verbose
+            private void addResult(Set<IndependenceResult> resultsIndep, Set<IndependenceResult> resultsDep,
+                                   IndependenceFact fact, Node x, Node y, Set<Node> z) {
+
+                // Turn off verbose
                 independenceTest.setVerbose(false);
                 IndependenceResult result;
+
                 try {
                     result = independenceTest.checkIndependence(x, y, z);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    TetradLogger.getInstance().log("Error in independence test; not adding result: " + e.getMessage());
+                    return;
                 }
+
                 boolean indep = result.isIndependent();
                 double pValue = result.getPValue();
 
-                double min = 0.0;
+//                double min = 0.0;
+//
+//                // Optionally, remove the p-values less than alpha. Hard-coding this for now.
+//                if (false) {
+//                    min = independenceTest.getAlpha();
+//                }
 
-                // Optionally, remove the p-values less than alpha.
-                if (false) {
-                    min = independenceTest.getAlpha();
-                }
-
-                if (pValue >= min) {
+                if (pValue >= 0.0) {
                     if (msep) {
                         resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                     } else {
@@ -1446,6 +1501,36 @@ public class MarkovCheck {
 
             pool.shutdown();
         }
+    }
+
+    private int getBootstrapEffectiveSampleSize(List<Integer> rows) {
+        int[] ni = new int[rows.size()];
+
+        for (int i = 0; i < ni.length; i++) {
+
+            // Count the number of times the ith row appears in the bootstrap sample.
+            ni[i] = 0;
+
+            int rowi = rows.get(i);
+
+            for (Integer row : rows) {
+                if (row.equals(rowi)) {
+                    ni[i]++;
+                }
+            }
+        }
+
+        // Now the effective sample size is (SUM(ni^2)^2 / SUM(ni^2)).
+        double sum = 0.0;
+        double sumSquared = 0.0;
+
+        for (int j : ni) {
+            sum += j;
+            sumSquared += j * j;
+        }
+
+        double effectiveSampleSize = (sum * sum) / sumSquared;
+        return (int) FastMath.round(effectiveSampleSize);
     }
 
     /**
@@ -1538,6 +1623,24 @@ public class MarkovCheck {
         return rows.subList(0, subsampleSize);
     }
 
+    private List<Integer> getBootstrapRows(double v) {
+        int sampleSize = independenceTest.getSampleSize();
+        int subsampleSize = (int) FastMath.floor(sampleSize * v);
+
+        // Draw a sample of size subsampleSize with replacement from the set of all rows.
+        List<Integer> rows = new ArrayList<>(sampleSize);
+        for (int i = 0; i < sampleSize; i++) {
+            rows.add(i);
+        }
+
+        List<Integer> bootstrapRows = new ArrayList<>(subsampleSize);
+        for (int i = 0; i < subsampleSize; i++) {
+            bootstrapRows.add(rows.get(ThreadLocalRandom.current().nextInt(sampleSize)));
+        }
+
+        return bootstrapRows;
+    }
+
     /**
      * Generates the results for the given set of independence facts, for both the Markov and dependency checks.
      *
@@ -1545,8 +1648,12 @@ public class MarkovCheck {
      * @param mconn The set of m-connection facts.
      */
     private void generateResultsAllSubsets(Set<IndependenceFact> msep, Set<IndependenceFact> mconn) {
-        generateResults(msep, true);
-        generateResults(mconn, false);
+        try {
+            generateResults(msep, true);
+            generateResults(mconn, false);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -1608,8 +1715,8 @@ public class MarkovCheck {
      *
      * @return true if the graph is a CPDAG, false otherwise
      */
-    public boolean isCpdag() {
-        return isCpdag;
+    public boolean isMpdag() {
+        return isMpdag;
     }
 
     /**
@@ -1689,13 +1796,32 @@ public class MarkovCheck {
     }
 
     /**
-     * Sets the flag indicating whether to remove extraneous variables when d-separation holds, to form smaller
-     * conditioning sets.
+     * Sets the flag indicating whether a smallest subset of each conditioning set yielding independence should be
+     * reported.
      *
-     * @param removeExtraneousVariables {@code true} if extraneous variables should be removed, {@code false} otherwise
+     * @param findSmallestSubset {@code true} if a smallest subset of each conditoning set yielding independence should
+     *                           be reported, {@code false} otherwise
      */
-    public void setRemoveExtraneousVariables(boolean removeExtraneousVariables) {
-        this.removeExtraneousVariables = removeExtraneousVariables;
+    public void setFindSmallestSubset(boolean findSmallestSubset) {
+        this.findSmallestSubset = findSmallestSubset;
+    }
+
+    @Override
+    public void setEffectiveSampleSize(int sampleSize) {
+        if (!(independenceTest instanceof EffectiveSampleSizeSettable)) {
+            throw new IllegalArgumentException("The independence test does not support setting the sample size.");
+        }
+
+        ((EffectiveSampleSizeSettable) independenceTest).setEffectiveSampleSize(sampleSize);
+    }
+
+    /**
+     * Sets the maximum path length for relevant paths.
+     *
+     * @param maxLength the maximum path length for relevant paths
+     */
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
     }
 
     /**

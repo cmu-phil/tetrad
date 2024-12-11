@@ -57,7 +57,7 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
     /**
      * <p>Constructor for DiscreteDiscretizationSpec.</p>
      *
-     * @param remap      an array of {@link int} objects
+     * @param remap      an array of  objects
      * @param categories a {@link java.util.List} object
      */
     public DiscreteDiscretizationSpec(int[] remap, List<String> categories) {
@@ -95,7 +95,7 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
     /**
      * <p>Getter for the field <code>remap</code>.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] getRemap() {
         return this.remap;

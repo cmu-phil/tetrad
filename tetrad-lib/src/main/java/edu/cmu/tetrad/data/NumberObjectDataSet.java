@@ -1045,7 +1045,7 @@ public final class NumberObjectDataSet
     /**
      * <p>subsetColumns.</p>
      *
-     * @param indices an array of {@link int} objects
+     * @param indices an array of  objects
      * @return a new data set in which the the column at indices[i] is placed at index i, for i = 0 to indices.length -
      * 1. (Moved over from Purify.)
      */
@@ -1082,7 +1082,7 @@ public final class NumberObjectDataSet
     /**
      * <p>subsetRows.</p>
      *
-     * @param rows an array of {@link int} objects
+     * @param rows an array of  objects
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet subsetRows(int[] rows) {
@@ -1119,7 +1119,7 @@ public final class NumberObjectDataSet
     /**
      * Removes the given columns from the data set.
      *
-     * @param cols an array of {@link int} objects
+     * @param cols an array of  objects
      */
     public void removeCols(int[] cols) {
 
@@ -1154,7 +1154,7 @@ public final class NumberObjectDataSet
     /**
      * Removes the given rows from the data set.
      *
-     * @param selectedRows an array of {@link int} objects
+     * @param selectedRows an array of  objects
      */
     public void removeRows(int[] selectedRows) {
 

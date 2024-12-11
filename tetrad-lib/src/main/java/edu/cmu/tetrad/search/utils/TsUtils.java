@@ -33,8 +33,8 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
@@ -162,7 +162,7 @@ public class TsUtils {
      * @param numLags    a int
      * @return a {@link edu.cmu.tetrad.search.utils.TsUtils.VarResult} object
      */
-    public static VarResult structuralVar(DataSet timeSeries, int numLags) {
+    public static VarResult structuralVar(DataSet timeSeries, int numLags) throws InterruptedException {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
         Knowledge knowledge = timeLags.getKnowledge().copy();
 
@@ -235,7 +235,7 @@ public class TsUtils {
      * <p>createShiftedData.</p>
      *
      * @param data   a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param shifts an array of {@link int} objects
+     * @param shifts an array of  objects
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet createShiftedData(DataSet data, int[] shifts) {
@@ -281,7 +281,7 @@ public class TsUtils {
      * <p>getSelfLoopCoefs.</p>
      *
      * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public static double[] getSelfLoopCoefs(DataSet timeSeries) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, 1);
@@ -676,7 +676,7 @@ public class TsUtils {
         double[] realEigenvalues = new double[0];
         double[] imagEigenvalues = new double[0];
         try {
-            EigenDecomposition dec = new EigenDecomposition(new BlockRealMatrix(mat.toArray()));
+            EigenDecomposition dec = new EigenDecomposition(MatrixUtils.createRealMatrix(mat.toArray()));
             realEigenvalues = dec.getRealEigenvalues();
             imagEigenvalues = dec.getImagEigenvalues();
         } catch (MaxCountExceededException e) {

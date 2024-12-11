@@ -642,6 +642,7 @@ public final class HbsmsGes implements Hbsms {
     private void pdagWithBk(Graph graph, Knowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
+        rules.setVerbose(false);
         rules.orientImplied(graph);
     }
 

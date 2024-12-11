@@ -174,7 +174,7 @@ public class SimpleDataLoader {
      *                           new FileReader(file), " \t", "//");
      * </pre> The initial "/covariance" is optional.
      *
-     * @param chars              an array of {@link char} objects
+     * @param chars              an array of  objects
      * @param commentMarker      a {@link java.lang.String} object
      * @param delimiterType      a {@link edu.cmu.tetrad.data.DelimiterType} object
      * @param quoteChar          a char

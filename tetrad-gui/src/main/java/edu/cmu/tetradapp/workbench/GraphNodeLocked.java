@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.NamingProtocol;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.IOException;
@@ -69,8 +70,9 @@ public class GraphNodeLocked extends DisplayNode {
         String newName;
         List<Node> nodes = graph.getNodes();
         JCheckBox latentCheckBox = new JCheckBox("Latent", true);
+        JCheckBox selectionBiasCheckBox = new JCheckBox("SelectionBias", true);
 
-        newName = chooseNewVariableName(latentCheckBox, nodes);
+        newName = chooseNewVariableName(latentCheckBox, selectionBiasCheckBox, nodes);
 
         boolean changed = false;
 
@@ -92,7 +94,7 @@ public class GraphNodeLocked extends DisplayNode {
         }
     }
 
-    private String chooseNewVariableName(JCheckBox latentCheckBox,
+    private String chooseNewVariableName(JCheckBox latentCheckBox, JCheckBox selectionBiasCheckBox,
                                          List<Node> nodes) {
         String newName;
 
@@ -124,6 +126,7 @@ public class GraphNodeLocked extends DisplayNode {
             message.add(nameField);
 
             message.add(latentCheckBox);
+            message.add(selectionBiasCheckBox);
 
             JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);

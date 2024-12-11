@@ -207,6 +207,7 @@ public class PcRunner extends AbstractAlgorithmRunner
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(this.isGuaranteeCpdag());
         rules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
+        rules.setVerbose(false);
         return rules;
     }
 
@@ -231,7 +232,11 @@ public class PcRunner extends AbstractAlgorithmRunner
         pc.setKnowledge(knowledge);
         pc.setGuaranteeCpdag(isGuaranteeCpdag());
         pc.setDepth(depth);
-        graph = pc.search();
+        try {
+            graph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println(graph);
 

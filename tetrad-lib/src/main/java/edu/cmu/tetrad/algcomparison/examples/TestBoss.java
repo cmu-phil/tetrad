@@ -30,11 +30,26 @@ import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.score.BasisFunctionBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.junit.Test;
+
+import javax.help.resources.Constants_es;
 
 /**
  * Test the degenerate Gaussian score.
@@ -119,8 +134,8 @@ public class TestBoss {
 
         for (int i = 0; i < 200; i++) {
             int N = 1024;
-            RealMatrix A = new BlockRealMatrix(N, N);
-            RealMatrix B = new BlockRealMatrix(N, N);
+            RealMatrix A = MatrixUtils.createRealMatrix(N, N);
+            RealMatrix B = MatrixUtils.createRealMatrix(N, N);
 
             MillisecondTimes.type = MillisecondTimes.Type.CPU;
 
@@ -139,7 +154,3 @@ public class TestBoss {
 
     }
 }
-
-
-
-

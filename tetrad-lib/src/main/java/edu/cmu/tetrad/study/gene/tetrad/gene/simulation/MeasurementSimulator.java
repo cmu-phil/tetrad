@@ -704,7 +704,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * <code>interval</code>. Note that the time steps in this array are &gt;=
      * 1, are in increasing order, and (as explained above) are equally spaced.
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] getTimeSteps() {
         return this.timeSteps;

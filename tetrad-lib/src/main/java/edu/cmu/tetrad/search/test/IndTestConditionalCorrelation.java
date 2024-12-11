@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -29,12 +29,9 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Checks conditional independence of variable in a continuous data set using a conditional correlation test for the
@@ -43,13 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author josephramsey
  * @version $Id: $Id
  */
-public final class IndTestConditionalCorrelation implements IndependenceTest {
-
-    /**
-     * The number format used for formatting numbers in the application. It is obtained from the application-wide
-     * NumberFormatUtil instance.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+public final class IndTestConditionalCorrelation implements IndependenceTest, RowsSettable {
     /**
      * The instance of CCI that is wrapped.
      */
@@ -62,10 +53,18 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * Stores a reference to the data set passed in through the constructor.
      */
     private final DataSet dataSet;
+    private int basisType;
     /**
-     * A cache of results for independence facts.
+     * Represents the scaling factor applied to the basis functions in the independence test. This variable adjusts the
+     * influence of the basis functions, which can affect the flexibility and accuracy of the independence tests
+     * performed within the IndTestConditionalCorrelation class. The value is initialized to 0.0, indicating no
+     * standardization by default.
      */
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    private double basisScale = 0.0;
+    /**
+     * The bandwidth adjustment factor.
+     */
+    private double scalingFactor = 2.0;
     /**
      * The significance level of the independence tests.
      */
@@ -75,19 +74,20 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     private boolean verbose;
     /**
-     * The score of the last test.
+     * True if permutation test should be used.
      */
-    private double score = Double.NaN;
-
+    private boolean usePermutation = false;
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
      * given data set (must be continuous). The given significance level is used.
      *
-     * @param dataSet A data set containing only continuous columns.
-     * @param alpha   The q level of the test.
+     * @param dataSet    A data set containing only continuous columns.
+     * @param alpha      The q level of the test.
+     * @param basisScale
      */
-    public IndTestConditionalCorrelation(DataSet dataSet, double alpha) {
+    public IndTestConditionalCorrelation(DataSet dataSet, double alpha, double scalingFactor,
+                                         int basisType, int numFunctions, double basisScale) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -100,11 +100,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
         this.variables = Collections.unmodifiableList(nodes);
 
-        this.cci = new ConditionalCorrelationIndependence(dataSet);
+        this.cci = new ConditionalCorrelationIndependence(dataSet, basisType, basisScale, numFunctions);
+        this.cci.setScalingFactor(this.scalingFactor);
         this.alpha = alpha;
+        this.scalingFactor = scalingFactor;
+        this.basisType = basisType;
+        this.basisScale = basisScale;
         this.dataSet = dataSet;
     }
-
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
@@ -124,40 +127,28 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        if (this.facts.containsKey(new IndependenceFact(x, y, z))) {
-            return facts.get(new IndependenceFact(x, y, z));
-        }
+        double p;
 
-        double score = this.cci.isIndependent(x, y, z);
-        this.score = score;
-        double p = this.cci.getPValue(score);
+//        if (usePermutation) {
+//            p = this.cci.permutationTest(x, y, z, 20);
+//        } else {
+        p = this.cci.isIndependent(x, y, z);
+//            p = cci.getPValue(score);
+//        }
 
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
-
         }
 
         boolean independent = p > this.alpha;
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, p));
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
         }
 
-        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, score);
-        facts.put(new IndependenceFact(x, y, z), result);
-        return result;
-    }
-
-    /**
-     * Returns the p-value of the test.
-     *
-     * @return The p-value.
-     */
-    public double getPValue() {
-        return this.cci.getPValue(score);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
 
     /**
@@ -170,19 +161,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Sets the significance level at which independence judgments should be made. Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
-     */
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance out of range.");
-        }
-
-        this.alpha = alpha;
-        this.cci.setAlpha(alpha);
-    }
-
-    /**
      * Returns the list of variables over which this independence checker is capable of determining independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
@@ -190,18 +168,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     public List<Node> getVariables() {
         return this.variables;
-    }
-
-    /**
-     * Determines whether the nodes z determine x.
-     *
-     * @param z A list of Node objects representing the conditioning set.
-     * @param x The Node object to check independence for.
-     * @return True if the nodes z determine x, false otherwise.
-     * @throws UnsupportedOperationException Always throws this exception as the method is not implemented.
-     */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("The 'determines' method is not implemented");
     }
 
     /**
@@ -219,7 +185,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return This string.
      */
     public String toString() {
-        return "Conditional Correlation, q = " + IndTestConditionalCorrelation.nf.format(getAlpha());
+        return "Conditional Correlation";
     }
 
     /**
@@ -239,59 +205,25 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Sets the number of orthogonal functions to use to do the calculations.
+     * Returns the number of orthogonal functions used to do the calculations. The sets used are the polynomial basis
+     * functions, x, x^2, x^3, etc. This choice is made to allow for more flexible domains of the functions after
+     * standardization.
      *
-     * @param numFunctions This number.
+     * @return This number.
      */
-    public void setNumFunctions(int numFunctions) {
-        this.cci.setNumFunctions(numFunctions);
+    @Override
+    public List<Integer> getRows() {
+        return cci.getRows();
     }
 
     /**
-     * Returns the kernel width.
+     * Sets the rows to use for the test.
      *
-     * @return This width.
+     * @param rows The rows.
      */
-    public double getWidth() {
-        return this.cci.getWidth();
-    }
-
-    /**
-     * Returns the kernel multiplier.
-     *
-     * @param multiplier This multiplier.
-     */
-    public void setKernelMultiplier(double multiplier) {
-        this.cci.setWidth(multiplier);
-    }
-
-    /**
-     * Sets the kernel to be used.
-     *
-     * @param kernel This kernel.
-     * @see ConditionalCorrelationIndependence.Kernel
-     */
-    public void setKernel(ConditionalCorrelationIndependence.Kernel kernel) {
-        this.cci.setKernelMultiplier(kernel);
-    }
-
-    /**
-     * Sets the basis used for the calculation.
-     *
-     * @param basis This basis.
-     * @see ConditionalCorrelationIndependence.Basis
-     */
-    public void setBasis(ConditionalCorrelationIndependence.Basis basis) {
-        this.cci.setBasis(basis);
-    }
-
-    /**
-     * Sets the kernel regression sample size.
-     *
-     * @param size This size.
-     */
-    public void setKernelRegressionSampleSize(int size) {
-        this.cci.setKernelRegressionSampleSize(size);
+    @Override
+    public void setRows(List<Integer> rows) {
+        cci.setRows(rows);
     }
 }
 

@@ -198,6 +198,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             displayNode = nodeMeasured;
         } else if (nodeType == NodeType.LATENT) {
             displayNode = new GraphNodeLatent(modelNode);
+        }else if (nodeType == NodeType.SELECTION) {
+            displayNode = new GraphNodeSelection(modelNode);
         } else if (nodeType == NodeType.ERROR) {
             displayNode = new GraphNodeError(modelNode);
         } else {

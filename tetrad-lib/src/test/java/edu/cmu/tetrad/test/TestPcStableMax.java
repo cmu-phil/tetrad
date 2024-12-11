@@ -118,7 +118,12 @@ public class TestPcStableMax {
         pc.setUseMaxPHeuristic(true);
         pc.setKnowledge(knowledge);
 
-        Graph CPDAG = pc.search();
+        Graph CPDAG = null;
+        try {
+            CPDAG = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         Graph _true = new EdgeListGraph(CPDAG.getNodes());
 
@@ -153,7 +158,12 @@ public class TestPcStableMax {
 
         // Run search
 //        Graph resultGraph = pc.search();
-        Graph resultGraph = pc.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
@@ -183,7 +193,12 @@ public class TestPcStableMax {
         pc.setKnowledge(knowledge);
 
         // Run search
-        Graph resultGraph = pc.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");

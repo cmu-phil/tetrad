@@ -1976,7 +1976,7 @@ public class Comparison implements TetradSerializable {
         }
 
         @Override
-        public Graph search(DataModel data, Parameters parameters) {
+        public Graph search(DataModel data, Parameters parameters) throws InterruptedException {
             return this.algorithm.search(data, this.parameters);
         }
 
@@ -2055,7 +2055,7 @@ public class Comparison implements TetradSerializable {
          * @return a {@link edu.cmu.tetrad.graph.Graph} object
          */
         @Override
-        public Graph search(DataModel data, Parameters parameters) {
+        public Graph search(DataModel data, Parameters parameters) throws InterruptedException {
             return this.algorithmWrapper.getAlgorithm().search(data, parameters);
         }
 

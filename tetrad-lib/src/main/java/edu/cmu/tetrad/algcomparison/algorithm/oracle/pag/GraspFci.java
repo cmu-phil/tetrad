@@ -92,7 +92,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
      * @return the graph structure found by the search algorithm
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
@@ -125,10 +125,8 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
-        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -192,10 +190,8 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         // FCI
         params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.DEPTH);
-        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         params.add(Params.POSSIBLE_MSEP_DONE);
 
         // General

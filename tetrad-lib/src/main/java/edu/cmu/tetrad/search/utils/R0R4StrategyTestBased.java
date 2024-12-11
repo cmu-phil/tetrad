@@ -5,9 +5,11 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +33,11 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * class FciOrientDataExaminationStrategyTestBased.
      */
     private final IndependenceTest test;
-
+    /**
+     * The type of blocking strategy used in the R0R4StrategyTestBased class.
+     * This variable determines whether the strategy will be recursive or greedy.
+     */
+    private BlockingType blockingType = BlockingType.RECURSIVE;
     /**
      * Private variable representing the knowledge.
      * <p>
@@ -51,19 +57,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Determines whether verbose mode is enabled or not.
      */
     private boolean verbose = false;
-    /**
-     * Determines whether the Discriminating Path Collider Rule should be applied or not.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
-    /**
-     * Determines whether the Discriminating Path Tail Rule is enabled or not.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy. This variable is
-     * initially set to null. Use the setAllowedColliders method to set the allowed colliders. Use the
-     * getInitialAllowedColliders method to retrieve the initial set of allowed colliders.
-     */
     private Set<Triple> allowedColliders = null;
     /**
      * This variable represents the initial set of allowed colliders for the FciOrientDataExaminationStrategy. It is a
@@ -88,6 +81,19 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Note: This is an example and the actual values and implementation may vary depending on the context.
      */
     private HashSet<Triple> initialAllowedColliders = null;
+    /**
+     * The maximum length of the path, for relevant paths.
+     */
+    private int maxLength = -1;
+    /**
+     * The PAG (partial ancestral graph) for the strategy.
+     */
+    private Graph pag = null;
+    /**
+     * Helper variable of type EnsureMarkov used for ensuring Markov properties in the R0R4StrategyTestBased class.
+     * Initialized to null by default.
+     */
+    private EnsureMarkov ensureMarkovHelper = null;
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -101,18 +107,13 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     /**
      * Provides a special configuration for creating an instance of FciOrientDataExaminationStrategy.
      *
-     * @param test                             the IndependenceTest object used by the strategy
-     * @param knowledge                        the Knowledge object used by the strategy
-     * @param doDiscriminatingPathTailRule     boolean indicating whether to use the Discriminating Path Tail Rule
-     * @param doDiscriminatingPathColliderRule boolean indicating whether to use the Discriminating Path Collider Rule
-     * @param verbose                          boolean indicating whether to provide verbose output
+     * @param test      the IndependenceTest object used by the strategy
+     * @param knowledge the Knowledge object used by the strategy
+     * @param verbose   boolean indicating whether to provide verbose output
      * @return a configured FciOrientDataExaminationStrategy object
      * @throws IllegalArgumentException if test or knowledge is null
      */
-    public static R0R4Strategy specialConfiguration(IndependenceTest test, Knowledge knowledge,
-                                                    boolean doDiscriminatingPathTailRule,
-                                                    boolean doDiscriminatingPathColliderRule,
-                                                    boolean verbose) {
+    public static R0R4Strategy specialConfiguration(IndependenceTest test, Knowledge knowledge, boolean verbose) {
         if (test == null) {
             throw new IllegalArgumentException("Test is null.");
         }
@@ -122,12 +123,13 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         if (test instanceof MsepTest) {
-            return R0R4StrategyTestBased.defaultConfiguration(((MsepTest) test).getGraph(), knowledge);
+            R0R4Strategy r0R4Strategy = R0R4StrategyTestBased.defaultConfiguration(((MsepTest) test).getGraph(), knowledge);
+            R0R4StrategyTestBased _r0R4Strategy = (R0R4StrategyTestBased) r0R4Strategy;
+            _r0R4Strategy.setVerbose(verbose);
+            return _r0R4Strategy;
         } else {
             R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
             strategy.setKnowledge(knowledge);
-            strategy.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
-            strategy.setDoDiscriminatingPathColliderRule(doDiscriminatingPathColliderRule);
             strategy.setVerbose(verbose);
             return strategy;
         }
@@ -154,9 +156,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public static R0R4Strategy defaultConfiguration(IndependenceTest test, Knowledge knowledge) {
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
-        strategy.setDoDiscriminatingPathTailRule(true);
-        strategy.setDoDiscriminatingPathColliderRule(true);
-        strategy.setVerbose(false);
         strategy.setKnowledge(knowledge);
         return strategy;
     }
@@ -181,94 +180,150 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      *
      * @param discriminatingPath the discriminating path
      * @param graph              the graph representation
+     * @param vNodes             the set of v-nodes
      * @return The discriminating path is returned as the first element of the pair, and a boolean indicating whether
      * the orientation was done is returned as the second element of the pair.
      * @throws IllegalArgumentException if 'e' is adjacent to 'c'
      * @see DiscriminatingPath
      */
     @Override
-    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph) {
-        Node e = discriminatingPath.getE();
-        Node a = discriminatingPath.getA();
-        Node b = discriminatingPath.getB();
-        Node c = discriminatingPath.getC();
+    public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) throws InterruptedException {
+        Node x = discriminatingPath.getX();
+        Node w = discriminatingPath.getW();
+        Node v = discriminatingPath.getV();
+        Node y = discriminatingPath.getY();
         List<Node> path = discriminatingPath.getColliderPath();
 
-        if (!discriminatingPath.existsAndUnorientedIn(graph)) {
+        // Check that the discriminating path still exists in the graph. Note that at this point nothing is claimed
+        // about the orientation of W<-*V*->Y.
+        if (!discriminatingPath.existsIn(graph)) {
             return Pair.of(discriminatingPath, false);
         }
 
-        for (Node n : path) {
-            if (!graph.isParentOf(n, c)) {
-                throw new IllegalArgumentException("Node " + n + " is not a parent of " + c);
-            }
-        }
-
-        Set<Node> blacklist = new HashSet<>();
-        Set<Node> sepset = SepsetFinder.getSepsetPathBlockingOutOfX(graph, e, c, test, -1, -1,
-                true, blacklist);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Discriminating path check--sepset for e = " + e + " and c = "
-                                           + c + " = " + sepset + " path = " + path);
-        }
-
-        if (sepset == null) {
+        // Check that the discriminating path has not yet been oriented; we don't need to orient those. This also
+        // makes sure that W<-*V*->Y has not yet been oriented as a collider, which is necessary below.
+        if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
             return Pair.of(discriminatingPath, false);
         }
 
-        boolean collider = !sepset.contains(b);
+        Set<Node> blocking;
 
-        if (collider) {
-            if (doDiscriminatingPathColliderRule) {
-                if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (initialAllowedColliders != null) {
-                    initialAllowedColliders.add(new Triple(a, b, c));
-                } else {
-                    if (allowedColliders != null && !allowedColliders.contains(new Triple(a, b, c))) {
-                        return Pair.of(discriminatingPath, false);
-                    }
-                }
-
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path collider rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-
-                return Pair.of(discriminatingPath, true);
-            }
+        if (blockingType == BlockingType.RECURSIVE) {
+            blocking = SepsetFinder.getPathBlockingSetRecursive(graph, x, y, new HashSet<>(path), maxLength, Set.of());
+        } else if (blockingType == BlockingType.GREEDY) {
+            blocking = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(path), test, depth);
         } else {
-            if (doDiscriminatingPathTailRule) {
-                if (graph.getEndpoint(c, b) != Endpoint.CIRCLE) {
+            throw new IllegalArgumentException("Unknown blocking type.");
+        }
+
+        //  *         V
+        // *         **            * is either an arrowhead, a tail, or a circle
+        // *        /  \
+        // *       v    *
+        // * X....W --> Y
+
+
+        // This is needed for greedy and anteriority methods, which return sepsets, not recursive, which always
+        // returns a blocking set.
+        if (blockingType == BlockingType.GREEDY && blocking == null) {
+            throw new IllegalArgumentException("Sepset is null.");
+        }
+
+        if (blockingType == BlockingType.RECURSIVE && !(blocking.containsAll(path) && blocking.contains(w))) {
+            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
+        }
+
+        if (blockingType == BlockingType.GREEDY && !blocking.containsAll(path)) {
+            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path.");
+        }
+
+        // Now at this point, for the recursive case, we simply need to know whether X _||_ Y | blocking. If so, we
+        // can orient W<-*V*->Y as a non-collider, otherwise as a collider. For the greedy case, we need to know whether
+        // blocking contains v. These are two ways to express the same idea, since for the recursive case blocking
+        // must contain V by construction.
+        if ((blockingType == BlockingType.RECURSIVE && checkIndependenceRecursive(x, y, blocking, vNodes, discriminatingPath, test)) || (blockingType == BlockingType.GREEDY && blocking.contains(v))) {
+            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            graph.setEndpoint(y, v, Endpoint.TAIL);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
+                TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, w, v, y));
+                TetradLogger.getInstance().log("    Collider path = " + path);
+                TetradLogger.getInstance().log("    Blocking set for " + x + " and " + y + " is " + blocking);
+            }
+
+            return Pair.of(discriminatingPath, true);
+        } else {
+            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (initialAllowedColliders != null) {
+                initialAllowedColliders.add(new Triple(w, v, y));
+            } else {
+                if (allowedColliders != null && !allowedColliders.contains(new Triple(w, v, y))) {
                     return Pair.of(discriminatingPath, false);
                 }
+            }
 
-                graph.setEndpoint(c, b, Endpoint.TAIL);
+            graph.setEndpoint(w, v, Endpoint.ARROW);
+            graph.setEndpoint(y, v, Endpoint.ARROW);
 
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(
-                            "R4: Definite discriminating path tail rule e = " + e + " " + GraphUtils.pathString(graph, a, b, c));
-                }
+            if (verbose) {
+                TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
+                TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, w, v, y));
+                TetradLogger.getInstance().log("    Collider path = " + path);
+                TetradLogger.getInstance().log("    Blocking set for " + x + " and " + y + " is " + blocking);
+            }
 
-                return Pair.of(discriminatingPath, true);
+            return Pair.of(discriminatingPath, true);
+        }
+    }
+
+    private boolean checkIndependenceRecursive(Node x, Node y, Set<Node> blocking, Set<Node> vNodes, DiscriminatingPath discriminatingPath, IndependenceTest test) throws InterruptedException {
+
+        List<Node> vs = new ArrayList<>();
+        List<Node> nonVs = new ArrayList<>();
+
+        for (Node v : blocking) {
+            if (vNodes.contains(v)) {
+                vs.add(v);
+            } else {
+                nonVs.add(v);
             }
         }
 
-        return Pair.of(discriminatingPath, false);
+        Node v = discriminatingPath.getV();
+        vs.remove(v);
+
+        SublistGenerator generator = new SublistGenerator(vs.size(), vs.size());
+        int[] choice;
+
+        while ((choice = generator.next()) != null) {
+            Set<Node> newBlocking = GraphUtils.asSet(choice, vs);
+            newBlocking.add(v);
+            newBlocking.addAll(nonVs);
+
+            // You didn't condition on any colliders. V is in the set. So V is a noncollider.
+            boolean independent = ensureMarkovHelper != null ? ensureMarkovHelper.markovIndependence(x, y, newBlocking) : test.checkIndependence(x, y, newBlocking).isIndependent();
+
+            if (independent) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -289,16 +344,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     @Override
     public Knowledge getknowledge() {
         return knowledge;
-    }
-
-    /**
-     * Sets the allowed colliders for the FciOrientDataExaminationStrategy.
-     *
-     * @param allowedColliders the Set of Triples representing allowed colliders
-     */
-    @Override
-    public void setAllowedColliders(Set<Triple> allowedColliders) {
-        this.allowedColliders = allowedColliders;
     }
 
     /**
@@ -329,43 +374,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     }
 
     /**
-     * Determines whether the Discriminating Path Collider Rule is enabled or not.
-     *
-     * @return true if the Discriminating Path Collider Rule is enabled, false otherwise
-     */
-    public boolean isDoDiscriminatingPathColliderRule() {
-        return doDiscriminatingPathColliderRule;
-    }
-
-    /**
-     * Sets the value indicating whether to use the Discriminating Path Collider Rule.
-     *
-     * @param doDiscriminatingPathColliderRule boolean value indicating whether to use the Discriminating Path Collider
-     *                                         Rule
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    /**
-     * Returns the value indicating whether the Discriminating Path Tail Rule is enabled or not.
-     *
-     * @return true if the Discriminating Path Tail Rule is enabled, false otherwise
-     */
-    public boolean isDoDiscriminatingPathTailRule() {
-        return doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets the value indicating whether to use the Discriminating Path Tail Rule.
-     *
-     * @param doDiscriminatingPathTailRule boolean value indicating whether to use the Discriminating Path Tail Rule
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
      * Retrieves the initial set of allowed colliders.
      *
      * @return The initial set of allowed colliders.
@@ -381,5 +389,87 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
         this.initialAllowedColliders = initialAllowedColliders;
+    }
+
+    /**
+     * Sets the maximum length for relevant paths.
+     *
+     * @param maxLength the maximum length to be set. Set to -1 for no maximum length.
+     */
+    public void setMaxLength(int maxLength) {
+        if (maxLength < -1) {
+            throw new IllegalArgumentException("Maximum length must be -1 or greater.");
+        }
+
+        this.maxLength = maxLength;
+    }
+
+    /**
+     * The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy. This variable is
+     * initially set to null. Use the setAllowedColliders method to set the allowed colliders. Use the
+     * getInitialAllowedColliders method to retrieve the initial set of allowed colliders.
+     *
+     * @return The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy.
+     */
+    public Set<Triple> getAllowedColliders() {
+        return allowedColliders;
+    }
+
+    /**
+     * Sets the allowed colliders for the FciOrientDataExaminationStrategy.
+     *
+     * @param allowedColliders the Set of Triples representing allowed colliders
+     */
+    @Override
+    public void setAllowedColliders(Set<Triple> allowedColliders) {
+        this.allowedColliders = allowedColliders;
+    }
+
+    /**
+     * Sets the PAG (partial ancestral graph) for the strategy.
+     *
+     * @param pag the PAG to be set
+     */
+    public void setPag(Graph pag) {
+        this.pag = pag;
+    }
+
+    /**
+     * Sets the EnsureMarkov object used by the R0R4StrategyTestBased.
+     *
+     * @param ensureMarkovHelper the EnsureMarkov object to be set
+     */
+    public void setEnsureMarkovHelper(EnsureMarkov ensureMarkovHelper) {
+        this.ensureMarkovHelper = ensureMarkovHelper;
+    }
+
+    /**
+     * Sets the blocking type for the strategy.
+     *
+     * @param blockingType the blocking type to be set, which can be either RECURSIVE or GREEDY.
+     */
+    public void setBlockingType(BlockingType blockingType) {
+        this.blockingType = blockingType;
+    }
+
+    /**
+     * Enum representing the different types of blocking strategies.
+     * <p>
+     * The available blocking strategies are:
+     * <p>
+     * RECURSIVE - This strategy involves a recursive approach to blocking. GREEDY - This strategy involves a greedy
+     * approach to blocking.
+     */
+    public enum BlockingType {
+        /**
+         * Recursive blocking. This calculates the blocking set B recursively that must include V and then checks the
+         * independence of X and Y given B.
+         */
+        RECURSIVE,
+        /**
+         * Greedy blocking. This searches greedily, in the distribution, for a sepset B of X and Y and then looks to see
+         * if V is in B.
+         */
+        GREEDY,
     }
 }

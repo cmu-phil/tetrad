@@ -23,16 +23,19 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
 public final class TestCellTable {
-    private final int[] dims = {2, 2, 2, 2};
+    Random random = new Random();
+
     private final int[][] data = {{1, 1, 1, 0}, {0, 0, 1, 0},
             {1, 1, 1, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}, {1, 1, 1, 0},
             {1, 1, 1, 0}, {0, 1, 0, 1}, {0, 1, 1, 0}, {0, 0, 0, 1},
@@ -284,22 +287,21 @@ public final class TestCellTable {
             {0, 1, 0, 0}, {0, 0, 0, 1}, {0, 0, 0, 1}, {1, 1, 1, 0},
             {0, 0, 1, 0}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0, 1, 0, 1},
             {0, 1, 0, 1}, {0, 0, 0, 1}};
-    private CellTable table;
+    private CellTable table1, table2;
 
-    private static int[] pickRandomCell() {
+
+    private int[] pickRandomCell() {
 
         int[] cell = new int[4];
 
         for (int i = 0; i < 4; i++) {
-            cell[i] = RandomUtil.getInstance().nextInt(2);
+            cell[i] = random.nextInt(2);
         }
 
         return cell;
     }
 
     public void setUp() {
-
-        this.table = new CellTable(this.dims);
 
 //        // Add data to table.
         List<Node> variables = new LinkedList<>();
@@ -308,7 +310,8 @@ public final class TestCellTable {
         variables.add(new DiscreteVariable("X3", 2));
         variables.add(new DiscreteVariable("X4", 2));
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
+        BoxDataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
+        int[] indices = {0, 1, 2, 3};
 
         for (int i = 0; i < this.data.length; i++) {
             for (int j = 0; j < this.data[0].length; j++) {
@@ -316,21 +319,27 @@ public final class TestCellTable {
             }
         }
 
-        int[] indices = {0, 1, 2, 3};
-
-        this.table.addToTable(dataSet, indices);
+        this.table1 = new CellTableCountSample(dataSet, indices);
+        this.table2 = new CellTableAdTree(dataSet, indices);
     }
 
     @Test
     public void testCount() {
         setUp();
 
-        // Pick 8 random cells, count those cells, test the counts in
+        // Pick 2 random cells, count those cells, test the counts in
         // the cell count.
+        CombinationGenerator generator =new CombinationGenerator(new int[]{2, 2, 2, 2});
         int[] testCell;
 
-        for (int c = 0; c < 8; c++) {
-            testCell = TestCellTable.pickRandomCell();
+        while ((testCell = generator.next()) != null) {
+
+            // Print the test cell:
+            for (int i = 0; i < 4; i++) {
+                System.out.print(testCell[i] + " ");
+            }
+
+            System.out.println();
 
             int myCount = 0;
 
@@ -349,7 +358,13 @@ public final class TestCellTable {
                 }
             }
 
-            assertEquals(myCount, this.table.getValue(testCell));
+            System.out.println("myCount = " + myCount);
+
+            int table1Count = this.table1.getValue(testCell);
+            int table2Count = this.table2.getValue(testCell);
+
+            assertEquals(myCount, table1Count);
+            assertEquals(myCount, table2Count);
         }
     }
 
@@ -364,7 +379,7 @@ public final class TestCellTable {
             // array of variable indices to marginalize and (b) a
             // "wildcard" version of this cell with those indices
             // replaced by -1.
-            int[] cell = TestCellTable.pickRandomCell();
+            int[] cell = pickRandomCell();
 
             // The indices to marginalize. (No repeats.)
             int numMargin = RandomUtil.getInstance().nextInt(4);
@@ -389,17 +404,17 @@ public final class TestCellTable {
                 testCell[marginVars[i]] = -1;
             }
 
-            // Count the data, using the -1 as a wildcard.
+            // Count the data, using -1 as a wildcard.
             int myCount = 0;
 
             for (int[] aData : this.data) {
                 boolean inMargin = true;
 
                 for (int j = 0; j < this.data[0].length; j++) {
-                    if (testCell[j] == -1) {
-                        // Do nothing.
-                    } else if (aData[j] != testCell[j]) {
-                        inMargin = false;
+                    if (testCell[j] != -1) {
+                        if (aData[j] != testCell[j]) {
+                            inMargin = false;
+                        }
                     }
                 }
 
@@ -410,8 +425,11 @@ public final class TestCellTable {
 
             // Test using both the wildcard and the variable indices
             // version of the calcMargin method.
-            assertEquals(myCount, this.table.calcMargin(testCell));
-            assertEquals(myCount, this.table.calcMargin(cell, marginVars));
+            assertEquals(myCount, this.table1.calcMargin(testCell));
+            assertEquals(myCount, this.table1.calcMargin(cell, marginVars));
+
+            assertEquals(myCount, this.table2.calcMargin(testCell));
+            assertEquals(myCount, this.table2.calcMargin(cell, marginVars));
         }
     }
 }

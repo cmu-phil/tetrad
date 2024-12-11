@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -20,13 +21,14 @@ public interface ScoreWrapper extends HasParameters, TetradSerializable {
     /**
      * Constant <code>serialVersionUID=23L</code>
      */
+    @Serial
     long serialVersionUID = 23L;
 
     /**
-     * Returns true iff x and y are independent conditional on z for the given data set.
+     * Returns true, iff x and y are independent, conditional on z for the given data set.
      *
      * @param dataSet    The data set to test independence against.
-     * @param parameters The paramters of the test.
+     * @param parameters The parameters of the test.
      * @return True iff independence holds.
      */
     Score getScore(DataModel dataSet, Parameters parameters);
@@ -48,7 +50,7 @@ public interface ScoreWrapper extends HasParameters, TetradSerializable {
     /**
      * Returns the parameters that this search uses.
      *
-     * @return A list of String names of parameters.
+     * @return A list for String names of parameters.
      */
     List<String> getParameters();
 

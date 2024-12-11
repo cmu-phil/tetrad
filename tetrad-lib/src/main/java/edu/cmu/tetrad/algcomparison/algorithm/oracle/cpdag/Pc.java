@@ -71,7 +71,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
     }
 
     @Override
-    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");

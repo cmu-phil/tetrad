@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.PagCache;
 
 import java.io.Serial;
 import java.util.List;
@@ -42,7 +43,14 @@ public class NumCorrectVisibleEdges implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        Graph dag = PagCache.getInstance().getDag(trueGraph);
+
         GraphUtils.addEdgeSpecializationMarkup(estGraph);
+
+        if (dag == null) {
+            return -99;
+        }
+
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
@@ -52,11 +60,13 @@ public class NumCorrectVisibleEdges implements Statistic {
 
                 boolean existsLatentConfounder = false;
 
-                List<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+                // A latent confounder is a latent node z such that there is a trek x<~~(z)~~>y, so we can limit the
+                // length of these treks to 3.
+                List<List<Node>> treks = dag.paths().treks(x, y, 3);
 
                 // If there is a trek, x<~~z~~>y, where z is latent, then the edge is not semantically visible.
                 for (List<Node> trek : treks) {
-                    if (GraphUtils.isConfoundingTrek(trueGraph, trek, x, y)) {
+                    if (GraphUtils.isConfoundingTrek(dag, trek, x, y)) {
                         existsLatentConfounder = true;
                         break;
                     }

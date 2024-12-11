@@ -108,7 +108,11 @@ public class ComparisonScript {
                 List<ComparisonResult> resultsTrials = new ArrayList<>();
                 for (int trial = 1; trial <= numTrials; trial++) {
                     params.setTrial(trial);
-                    resultsTrials.add(Comparison2.compare(params));
+                    try {
+                        resultsTrials.add(Comparison2.compare(params));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 TextTable tempTable = new TextTable(numTrials + 2, tableColumns.size() + 1);
                 tempTable = Comparison2.summarize(resultsTrials, tableColumns);

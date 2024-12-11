@@ -223,6 +223,11 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         this.nodeType = nodeType;
     }
 
+    @Override
+    public boolean getSelectionBias() {
+        return false;
+    }
+
     /**
      * <p>Getter for the field <code>centerX</code>.</p>
      *

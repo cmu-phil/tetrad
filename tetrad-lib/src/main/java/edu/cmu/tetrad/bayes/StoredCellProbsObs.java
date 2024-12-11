@@ -200,7 +200,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     /**
      * <p>getCellProb.</p>
      *
-     * @param variableValues an array of {@link int} objects
+     * @param variableValues an array of  objects
      * @return the probability for the given cell, specified as a particular combination of variable values, for the
      * list of variables (in order) returned by get
      */
@@ -391,7 +391,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
      * <p>getVariableValues.</p>
      *
      * @param rowIndex a int
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] getVariableValues(int rowIndex) {
         int[] dims = getParentDims();
@@ -414,7 +414,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
     /**
      * <p>setCellProbability.</p>
      *
-     * @param variableValues an array of {@link int} objects
+     * @param variableValues an array of  objects
      * @param probability    a double
      */
     public void setCellProbability(int[] variableValues, double probability) {

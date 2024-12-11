@@ -84,7 +84,7 @@ public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, H
      * @return the resulting graph representing the discovered relationships
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
@@ -102,7 +102,6 @@ public class SvarGfci extends AbstractBootstrapAlgorithm implements Algorithm, H
         edu.cmu.tetrad.search.SvarGfci search = new edu.cmu.tetrad.search.SvarGfci(this.test.getTest(dataModel, parameters),
                 this.score.getScore(dataModel, parameters));
         search.setKnowledge(this.knowledge);
-
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return search.search();

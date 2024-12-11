@@ -77,9 +77,9 @@ public class HsimAutoC {
      * <p>run.</p>
      *
      * @param resimSize a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
-    public double[] run(int resimSize) {
+    public double[] run(int resimSize) throws InterruptedException {
 
         double[] output;
         output = new double[5];

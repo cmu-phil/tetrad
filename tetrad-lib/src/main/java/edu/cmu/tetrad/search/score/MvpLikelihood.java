@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.AdLeafTree;
+import edu.cmu.tetrad.search.utils.AdTree;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.util.FastMath;
@@ -59,7 +59,7 @@ public class MvpLikelihood {
     // Discrete data only.
     private final int[][] discreteData;
     // Partitions
-    private final AdLeafTree adTree;
+    private final AdTree adTree;
     // Fix degree
     private final int fDegree;
     // Structure Prior
@@ -124,7 +124,7 @@ public class MvpLikelihood {
         if (discretize) {
             DataSet discreteDataSet = useErsatzVariables();
             this.discreteVariables = discreteDataSet.getVariables();
-            this.adTree = new AdLeafTree(discreteDataSet);
+            this.adTree = new AdTree(discreteDataSet);
             // All discrete data
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
                 int[] col = new int[discreteDataSet.getNumRows()];
@@ -134,7 +134,7 @@ public class MvpLikelihood {
                 this.discreteData[j] = col;
             }
         } else {
-            this.adTree = new AdLeafTree(dataSet);
+            this.adTree = new AdTree(dataSet);
         }
 
     }
@@ -170,12 +170,13 @@ public class MvpLikelihood {
 
         int p = continuous_parents.size();
 
-        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
+        this.adTree.buildTable(discrete_parents);
 
         int[] continuousCols = new int[p];
         for (int j = 0; j < p; j++) continuousCols[j] = this.nodesHash.get(continuous_parents.get(j));
 
-        for (List<Integer> cell : cells) {
+        for (int k = 0; k < adTree.getNumCells(); k++) {
+            List<Integer> cell = adTree.getCell(k);
             int r = cell.size();
 
             if (r > 1) {
@@ -260,10 +261,11 @@ public class MvpLikelihood {
             }
         }
 
-        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
+        this.adTree.buildTable(discrete_parents);
 
-        for (List<Integer> cell : cells) {
-            int r = cell.size();
+        for (int k = 0; k < adTree.getNumCells(); k++) {
+            int r = adTree.getCount(k);
+
             if (r > 0) {
 
                 int degree = this.fDegree;

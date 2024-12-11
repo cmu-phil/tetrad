@@ -75,7 +75,7 @@ public class PossibleMsepFci {
         this.test = test;
         this.sepset = new SepsetMap();
 
-        setMaxPathLength(this.maxReachablePathLength);
+        setMaxReachablePathLength(this.maxReachablePathLength);
     }
 
     /**
@@ -87,7 +87,7 @@ public class PossibleMsepFci {
      *
      * @return a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      */
-    public SepsetMap search() {
+    public SepsetMap search() throws InterruptedException {
 
         for (Edge edge : new ArrayList<>(this.graph.getEdges())) {
             Node x = edge.getNode1();
@@ -120,7 +120,7 @@ public class PossibleMsepFci {
      * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.util.Set} object
      */
-    public Set<Node> getSepset(IndependenceTest test, Node node1, Node node2) {
+    public Set<Node> getSepset(IndependenceTest test, Node node1, Node node2) throws InterruptedException {
         Set<Node> condSet = getCondSet(test, node1, node2, this.maxReachablePathLength);
 
         if (this.sepset == null) {
@@ -172,11 +172,12 @@ public class PossibleMsepFci {
     }
 
     /**
-     * <p>setMaxPathLength.</p>
+     * Sets the maximum reachable path length for the search algorithm.
      *
-     * @param maxReachablePathLength a int
+     * @param maxReachablePathLength The maximum reachable path length. Must be -1 (unlimited) or >= 0.
+     * @throws IllegalArgumentException if maxReachablePathLength is less than -1.
      */
-    public void setMaxPathLength(int maxReachablePathLength) {
+    public void setMaxReachablePathLength(int maxReachablePathLength) {
         if (maxReachablePathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxReachablePathLength);
         }
@@ -184,8 +185,8 @@ public class PossibleMsepFci {
         this.maxReachablePathLength = maxReachablePathLength == -1 ? Integer.MAX_VALUE : maxReachablePathLength;
     }
 
-    private Set<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
-        List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPathLength);
+    private Set<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPossibleDsepPathLength) throws InterruptedException {
+        List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPossibleDsepPathLength);
         List<Node> possibleMsep = new ArrayList<>(possibleMsepSet);
         boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
 
@@ -244,7 +245,7 @@ public class PossibleMsepFci {
      * </pre>
      */
     private List<Node> getPossibleMsep(Node node1, Node node2, int maxPathLength) {
-        List<Node> msep = this.graph.paths().possibleMsep(node1, node2, maxPathLength);
+        List<Node> msep = this.graph.paths().possibleDsep(node1, node2, maxPathLength);
 
         msep.remove(node1);
         msep.remove(node2);

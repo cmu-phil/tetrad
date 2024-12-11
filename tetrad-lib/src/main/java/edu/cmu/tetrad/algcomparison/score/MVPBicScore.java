@@ -49,7 +49,7 @@ public class MVPBicScore implements ScoreWrapper {
         return new MvpScore(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getDouble("structurePrior", 0),
                 parameters.getInt("fDegree", -1),
-                parameters.getInt("discretize", 0) > 0);
+                parameters.getBoolean(Params.DISCRETIZE));
     }
 
     /**

@@ -26,10 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -59,10 +56,8 @@ public final class TsDagToPag {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     private Graph truePag;
-    private boolean doDiscriminatingPathTailRule = true;
-    private boolean doDiscriminatingPathColliderRule = true;
 
 
     /**
@@ -192,7 +187,7 @@ public final class TsDagToPag {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
         }
 
-        Graph graph = calcAdjacencyGraph();
+        Graph graph = calcAdjacencyGraph(new HashSet<>());
 
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting collider orientation");
@@ -207,7 +202,7 @@ public final class TsDagToPag {
         FciOrient fciOrient = new FciOrient(
                 R0R4StrategyTestBased.defaultConfiguration(dag, new Knowledge()));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.finalOrientation(graph);
 
         if (this.verbose) {
@@ -278,25 +273,25 @@ public final class TsDagToPag {
     }
 
     /**
-     * <p>Getter for the field <code>maxPathLength</code>.</p>
+     * Retrieves the maximum length of any discriminating path.
      *
-     * @return a int
+     * @return the maximum length of any discriminating path
      */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
+    public int getMaxDiscriminatingPathLength() {
+        return this.maxDiscriminatingPathLength;
     }
 
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -317,25 +312,7 @@ public final class TsDagToPag {
         this.truePag = truePag;
     }
 
-    /**
-     * /** Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True, if so.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True, if so.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    private Graph calcAdjacencyGraph() {
+    private Graph calcAdjacencyGraph(Set<Node> selection) {
         List<Node> allNodes = this.dag.getNodes();
         List<Node> measured = new ArrayList<>();
 
@@ -352,7 +329,7 @@ public final class TsDagToPag {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
 
-                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2);
+                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2, selection);
 
                 boolean exists = inducingPath != null;
 

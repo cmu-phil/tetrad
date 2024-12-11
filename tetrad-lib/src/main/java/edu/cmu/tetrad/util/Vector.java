@@ -45,18 +45,28 @@ public class Vector implements TetradSerializable {
     private final RealVector data;
 
     /**
-     * <p>Constructor for Vector.</p>
+     * Constructs a new Vector object from an array of double values.
      *
-     * @param data an array of {@link double} objects
+     * @param data the array of double values used to initialize the Vector object
      */
     public Vector(double[] data) {
         this.data = new ArrayRealVector(data);
     }
 
     /**
-     * <p>Constructor for Vector.</p>
+     * Creates a new Vector object from a RealVector object.
      *
-     * @param size a int
+     * @param v the RealVector object to be used for creating the Vector object
+     */
+    public Vector(RealVector v) {
+        this.data = v;
+    }
+
+    /**
+     * Constructs a new Vector object with the specified size.
+     *
+     * @param size the size of the vector
+     * @throws IllegalArgumentException if the size is negative
      */
     public Vector(int size) {
         this.data = new ArrayRealVector(size);
@@ -203,7 +213,7 @@ public class Vector implements TetradSerializable {
     /**
      * <p>toArray.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] toArray() {
         return this.data.toArray();
@@ -221,10 +231,10 @@ public class Vector implements TetradSerializable {
     /**
      * <p>viewSelection.</p>
      *
-     * @param selection an array of {@link int} objects
+     * @param selection an array of  objects
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
-    public Vector viewSelection(int[] selection) {
+    public Vector getSelection(int[] selection) {
         double[] _selection = new double[selection.length];
 
         for (int i = 0; i < selection.length; i++) {

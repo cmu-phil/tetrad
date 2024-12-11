@@ -42,7 +42,7 @@ public class VarianceVectorForkJoin implements Variance {
     /**
      * <p>Constructor for VarianceVectorForkJoin.</p>
      *
-     * @param data         an array of {@link float} objects
+     * @param data         an array of  objects
      * @param numOfThreads a int
      */
     public VarianceVectorForkJoin(float[][] data, int numOfThreads) {

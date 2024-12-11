@@ -272,6 +272,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
             displayNode = nodeMeasured;
         } else if (modelNode.getNodeType() == NodeType.LATENT) {
             displayNode = new GraphNodeLatent(modelNode);
+        }else if (modelNode.getNodeType() == NodeType.SELECTION) {
+            displayNode = new GraphNodeSelection(modelNode);
         } else if (modelNode.getNodeType() == NodeType.ERROR) {
             displayNode = new GraphNodeError(modelNode);
         } else {

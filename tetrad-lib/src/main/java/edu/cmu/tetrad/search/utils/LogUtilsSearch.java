@@ -31,7 +31,6 @@ import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -195,7 +194,7 @@ public class LogUtilsSearch {
      * <p>getScoreFact.</p>
      *
      * @param i         a int
-     * @param parents   an array of {@link int} objects
+     * @param parents   an array of  objects
      * @param variables a {@link java.util.List} object
      * @return a {@link java.lang.String} object
      */
@@ -259,11 +258,10 @@ public class LogUtilsSearch {
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
-    @NotNull
     public static void stampWithScore(Graph graph, Score score) {
         if (score instanceof GraphScore) return;
 
-        if (!graph.getAllAttributes().containsKey("Score")) {
+        if (true) {//!graph.getAllAttributes().containsKey("Score")) {
             Graph dag = GraphTransforms.dagFromCpdag(graph);
             Map<Node, Integer> hashIndices = buildIndexing(dag.getNodes());
 
@@ -279,7 +277,12 @@ public class LogUtilsSearch {
                     parentIndices[count++] = hashIndices.get(parent);
                 }
 
-                _score += score.localScore(hashIndices.get(node), parentIndices);
+                double score1 = score.localScore(hashIndices.get(node), parentIndices);
+
+                System.out.println("Node: " + node + " Score: " + score1);
+
+                if (!Double.isNaN(score1)) _score += score1;
+//                _score += score1;
             }
 
             graph.addAttribute("Score", _score);

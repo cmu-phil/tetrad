@@ -113,7 +113,7 @@ public class GrowShrinkTree {
     /**
      * <p>localScore.</p>
      *
-     * @param X an array of {@link int} objects
+     * @param X an array of  objects
      * @return a {@link java.lang.Double} object
      */
     public Double localScore(int[] X) {

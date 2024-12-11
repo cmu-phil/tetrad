@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Represents a measured (observed) variable in the workbench. Appears as an rectangle with the variable name in it.
  * Clicking on the rectangle pops up a dialog that lets the user modify the name of the variable and whether the
- * variable is latent.
+ * variable is measured.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -95,9 +95,14 @@ public class GraphNodeMeasured extends DisplayNode {
 
         String newName;
         List<Node> nodes = graph.getNodes();
-        JCheckBox latentCheckBox = new JCheckBox("Latent", false);
+        JComboBox<String> typeBox = new JComboBox<>();
+        typeBox.addItem("Measured");
+        typeBox.addItem("Latent");
+        typeBox.addItem("Selection");
 
-        newName = chooseNewVariableName(latentCheckBox, nodes);
+        typeBox.setSelectedItem("Measured");
+
+        newName = chooseNewVariableName(typeBox, nodes);
 
         boolean changed = false;
 
@@ -108,8 +113,20 @@ public class GraphNodeMeasured extends DisplayNode {
             changed = true;
         }
 
-        if (latentCheckBox.isSelected()) {
+//        if (typeBox.getSelectedItem().equals("Measured")) {
+//            this.getModelNode().setNodeType(NodeType.MEASURED);
+//            firePropertyChange("resetGraph", null, null);
+//            changed = true;
+//        }
+
+        if (typeBox.getSelectedItem().equals("Latent")) {
             this.getModelNode().setNodeType(NodeType.LATENT);
+            firePropertyChange("resetGraph", null, null);
+            changed = true;
+        }
+
+        if (typeBox.getSelectedItem().equals("Selection")) {
+            this.getModelNode().setNodeType(NodeType.SELECTION);
             firePropertyChange("resetGraph", null, null);
             changed = true;
         }
@@ -119,7 +136,7 @@ public class GraphNodeMeasured extends DisplayNode {
         }
     }
 
-    private String chooseNewVariableName(JCheckBox latentCheckBox,
+    private String chooseNewVariableName(JComboBox<String> typeBox,
                                          List<Node> nodes) {
         String newName;
 
@@ -150,7 +167,7 @@ public class GraphNodeMeasured extends DisplayNode {
             message.add(new JLabel("Name:"));
             message.add(nameField);
 
-            message.add(latentCheckBox);
+            message.add(typeBox);
 
             JOptionPane pane = new JOptionPane(message, JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
@@ -162,7 +179,7 @@ public class GraphNodeMeasured extends DisplayNode {
 
             newName = nameField.getText();
 
-            // Tests that newName is a well formed variable
+            // Tests that newName is a well-formed variable
             if (!NamingProtocol.isLegalName(newName)) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         NamingProtocol.getProtocolDescription());

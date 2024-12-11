@@ -129,6 +129,7 @@ public class PermutationSearch {
         if (cpDag) {
             MeekRules rules = new MeekRules();
             if (knowledge != null) rules.setKnowledge(knowledge);
+            rules.setVerbose(false);
             rules.orientImplied(graph);
         }
 
@@ -140,7 +141,7 @@ public class PermutationSearch {
      *
      * @return The constructed CPDAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         return search(true);
     }
 
@@ -150,7 +151,7 @@ public class PermutationSearch {
      * @param cpdag True a CPDAG is wanted, if false, a DAG.
      * @return The CPDAG.
      */
-    public Graph search(boolean cpdag) {
+    public Graph search(boolean cpdag) throws InterruptedException {
         if (this.seed != -1) {
             RandomUtil.getInstance().setSeed(this.seed);
         }

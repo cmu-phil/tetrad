@@ -386,7 +386,7 @@ public final class SemIm implements Im, ISemIm {
      * @param variableNodes       a {@link java.util.List} object
      * @param measuredNodes       a {@link java.util.List} object
      * @param edgeCoef            a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param variableMeansStdDev an array of {@link double} objects
+     * @param variableMeansStdDev an array of  objects
      */
     public SemIm(SemPm semPm, List<Node> variableNodes, List<Node> measuredNodes, Matrix edgeCoef, double[] variableMeansStdDev) {
         this.semPm = semPm;
@@ -526,7 +526,7 @@ public final class SemIm implements Im, ISemIm {
      * Sets the values of the free freeParameters (in the order in which they appear in getFreeParameters()) to the
      * values contained in the given array. That is, params[i] is the value for getFreeParameters()[i].
      *
-     * @param params an array of {@link double} objects
+     * @param params an array of  objects
      */
     public void setFreeParamValues(double[] params) {
         if (params.length != getNumFreeParams()) {
@@ -2073,7 +2073,7 @@ public final class SemIm implements Im, ISemIm {
         for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 for (Node child : graph.getChildren(node)) {
-                    if (child.getNodeType() == NodeType.MEASURED) {
+                    if (child.getNodeType() == NodeType.MEASURED || child.getNodeType() == NodeType.SELECTION) {
                         continue NODES;
                     }
                 }
@@ -2365,7 +2365,7 @@ public final class SemIm implements Im, ISemIm {
     /**
      * <p>Getter for the field <code>variableMeans</code>.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[] getVariableMeans() {
         return this.variableMeans;

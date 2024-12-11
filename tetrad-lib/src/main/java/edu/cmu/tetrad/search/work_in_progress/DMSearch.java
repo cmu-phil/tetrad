@@ -130,7 +130,7 @@ public class DMSearch {
     /**
      * <p>Getter for the field <code>trueInputs</code>.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] getTrueInputs() {
         return (this.trueInputs);
@@ -139,7 +139,7 @@ public class DMSearch {
     /**
      * <p>Setter for the field <code>trueInputs</code>.</p>
      *
-     * @param trueInputs an array of {@link int} objects
+     * @param trueInputs an array of  objects
      */
     public void setTrueInputs(int[] trueInputs) {
         this.trueInputs = trueInputs;
@@ -166,7 +166,7 @@ public class DMSearch {
     /**
      * <p>Getter for the field <code>inputs</code>.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] getInputs() {
         return (inputs);
@@ -175,7 +175,7 @@ public class DMSearch {
     /**
      * <p>Setter for the field <code>inputs</code>.</p>
      *
-     * @param inputs an array of {@link int} objects
+     * @param inputs an array of  objects
      */
     public void setInputs(int[] inputs) {
         this.inputs = inputs;
@@ -184,7 +184,7 @@ public class DMSearch {
     /**
      * <p>Getter for the field <code>outputs</code>.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] getOutputs() {
         return (outputs);
@@ -193,7 +193,7 @@ public class DMSearch {
     /**
      * <p>Setter for the field <code>outputs</code>.</p>
      *
-     * @param outputs an array of {@link int} objects
+     * @param outputs an array of  objects
      */
     public void setOutputs(int[] outputs) {
         this.outputs = outputs;
@@ -259,7 +259,7 @@ public class DMSearch {
      *
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
 
         int[] trueInputs = getTrueInputs();
 
@@ -750,7 +750,7 @@ public class DMSearch {
     }
 
     // Uses previous runs of GES as new knowledge for a additional runs of GES with lower penalty discounts.
-    private Graph recursiveGES(Graph previousGES, Knowledge knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) {
+    private Graph recursiveGES(Graph previousGES, Knowledge knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString) throws InterruptedException {
 
         for (Edge edge : previousGES.getEdges()) {
             knowledge.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
@@ -813,6 +813,8 @@ public class DMSearch {
             System.out.println(outputsLatent.first());
             System.out.println("outputsLatentEffect.first()");
             System.out.println(outputsLatentEffect.first());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
         if (testResult) {
             structure.latentEffects.get(latent).remove(latentEffect);

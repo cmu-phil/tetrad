@@ -30,7 +30,7 @@ public interface RealCovariance {
      * <p>computeLowerTriangle.</p>
      *
      * @param biasCorrected a boolean
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     double[] computeLowerTriangle(boolean biasCorrected);
 
@@ -38,7 +38,7 @@ public interface RealCovariance {
      * <p>compute.</p>
      *
      * @param biasCorrected a boolean
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     double[][] compute(boolean biasCorrected);
 

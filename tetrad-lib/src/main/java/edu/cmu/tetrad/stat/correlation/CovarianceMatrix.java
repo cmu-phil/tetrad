@@ -35,7 +35,7 @@ public class CovarianceMatrix implements Covariance {
     /**
      * <p>Constructor for CovarianceMatrix.</p>
      *
-     * @param data an array of {@link float} objects
+     * @param data an array of  objects
      */
     public CovarianceMatrix(float[][] data) {
         this.data = data;

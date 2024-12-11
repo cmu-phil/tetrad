@@ -96,7 +96,7 @@ public final class Polynomial implements TetradSerializable {
     /**
      * Finds the first term matching the given profile.
      *
-     * @param variables an array of {@link int} objects
+     * @param variables an array of  objects
      * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.PolynomialTerm} object
      */
     public PolynomialTerm findTerm(int[] variables) {
@@ -128,7 +128,7 @@ public final class Polynomial implements TetradSerializable {
     /**
      * Evaluates the term.
      *
-     * @param values an array of {@link double} objects
+     * @param values an array of  objects
      * @return a double
      */
     public double evaluate(double[] values) {

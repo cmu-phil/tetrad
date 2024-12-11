@@ -462,7 +462,12 @@ public class TestAutisticClassification {
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             Fas fas = new Fas(new ScoreIndTest(score));
-            Graph graph = fas.search();
+            Graph graph = null;
+            try {
+                graph = fas.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             System.out.println(graph);
             List<Node> nodes = graph.getNodes();

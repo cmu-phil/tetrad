@@ -93,10 +93,6 @@ public class Pc implements IGraphSearch {
      */
     private long elapsedTime;
     /**
-     * The number of independence tests performed in the most recent search.
-     */
-    private int numIndependenceTests;
-    /**
      * Whether the search is verbose.
      */
     private boolean verbose = false;
@@ -146,7 +142,7 @@ public class Pc implements IGraphSearch {
      * @see Fci
      */
     @Override
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         return search(new HashSet<>(this.independenceTest.getVariables()));
     }
 
@@ -163,7 +159,7 @@ public class Pc implements IGraphSearch {
      * @return The search graph.
      * @see #search()
      */
-    public Graph search(Set<Node> nodes) {
+    public Graph search(Set<Node> nodes) throws InterruptedException {
         nodes = new HashSet<>(nodes);
 
         IFas fas = new Fas(getIndependenceTest());
@@ -181,7 +177,7 @@ public class Pc implements IGraphSearch {
      * @see #search()
      * @see IFas
      */
-    public Graph search(IFas fas, Set<Node> nodes) {
+    public Graph search(IFas fas, Set<Node> nodes) throws InterruptedException {
         if (verbose) {
             this.logger.log("Starting PC algorithm");
             this.logger.log("Independence test = " + getIndependenceTest() + ".");
@@ -203,8 +199,6 @@ public class Pc implements IGraphSearch {
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
-
-        this.numIndependenceTests = fas.getNumIndependenceTests();
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
@@ -356,15 +350,6 @@ public class Pc implements IGraphSearch {
         Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
-    }
-
-    /**
-     * Returns the number of independence tests performed in the search.
-     *
-     * @return This number.
-     */
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
     }
 
     /**

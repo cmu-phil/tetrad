@@ -70,7 +70,7 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
      * {@inheritDoc}
      */
     @Override
-    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
             case 0 -> PcCommon.PcHeuristicType.NONE;
             case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;

@@ -68,9 +68,9 @@ public class ShiftSearch {
     /**
      * <p>search.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
-    public int[] search() {
+    public int[] search() throws InterruptedException {
         if (this.maxShift < 1) {
             throw new IllegalStateException("Max shift should be >= 1: " + this.maxShift);
         }
@@ -274,7 +274,7 @@ public class ShiftSearch {
         return truncatedData;
     }
 
-    private double getAvgBic(List<DataModel> dataSets) {
+    private double getAvgBic(List<DataModel> dataSets) throws InterruptedException {
         List<Score> scores = new ArrayList<>();
         for (DataModel dataSet : dataSets) {
             SemBicScore _score = new SemBicScore((DataSet) dataSet, precomputeCovariances);

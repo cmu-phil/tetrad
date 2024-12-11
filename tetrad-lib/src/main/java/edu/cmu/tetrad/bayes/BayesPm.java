@@ -404,7 +404,7 @@ public final class BayesPm implements Pm, VariableSource {
         List<Node> measuredNodes = new ArrayList<>();
 
         for (Node variable : getVariables()) {
-            if (variable.getNodeType() == NodeType.MEASURED) {
+            if (variable.getNodeType() == NodeType.MEASURED || variable.getNodeType() == NodeType.SELECTION) {
                 measuredNodes.add(variable);
             }
         }

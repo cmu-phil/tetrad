@@ -4,9 +4,11 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -48,12 +50,21 @@ public class Maximal implements Statistic {
         List<Node> nodes = estGraph.getNodes();
         boolean maximal = true;
 
+        List<Node> latent = nodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
+
+        List<Node> measured = nodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        List<Node> selection = nodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
                 Node n1 = nodes.get(i);
                 Node n2 = nodes.get(j);
                 if (!estGraph.isAdjacentTo(n1, n2)) {
-                    List<Node> inducingPath = estGraph.paths().getInducingPath(n1, n2);
+                    List<Node> inducingPath = estGraph.paths().getInducingPath(n1, n2, new HashSet<>(selection));
 
                     if (inducingPath != null) {
                         TetradLogger.getInstance().log("Maximality check: Found an inducing path for "

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -32,6 +33,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
@@ -43,24 +46,24 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id: $Id
  * @see ChiSquareTest
  */
-public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
-
-    /**
-     * The Chi Square tester.
-     */
-    private final ChiSquareTest chiSquareTest;
+public final class IndTestChiSquare implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
 
     /**
      * The variables in the discrete data sets for which conditional independence judgments are desired.
      */
     private final List<Node> variables;
-
     /**
      * The dataset of discrete variables.
      */
     private final DataSet dataSet;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, ChiSquareTest.Result> facts = new ConcurrentHashMap<>();
+    /**
+     * The Chi Square tester.
+     */
+    private ChiSquareTest chiSquareTest;
     /**
      * The G Square value associated with a particular call of isIndependent. Set in that method and not in the
      * constructor.
@@ -98,7 +101,15 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      * @see RowsSettable
      */
     private List<Integer> rows = null;
-
+    /**
+     * The sample size to use for the test. If not set, this is the sample size of the dataset.
+     */
+    private int sampleSize;
+    /**
+     * The lower bound of percentages of observation of some category in the data, given some particular combination of
+     * values of conditioning variables, that coefs as 'determining.'
+     */
+    private double determinationP = 0.99;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -123,8 +134,10 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
         this.dataSet = dataSet;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE);
+        this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE, rows);
         this.chiSquareTest.setMinCountPerCell(minCountPerCell);
+        this.rows = getAllRows(dataSet.getNumRows());
+        this.sampleSize = this.rows.size();
     }
 
     /**
@@ -227,7 +240,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
             }
         }
 
-        ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
+        ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices, sampleSize);
         this.facts.put(new IndependenceFact(x, y, _z), result);
 
         this.xSquare = result.getXSquare();
@@ -427,7 +440,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     public void setRows(List<Integer> rows) {
         if (rows == null) {
             this.rows = null;
-            chiSquareTest.setRows(null);
+            chiSquareTest = new ChiSquareTest(dataSet, chiSquareTest.getAlpha(), ChiSquareTest.TestType.CHI_SQUARE, rows);
         } else {
             for (int i : rows) {
                 if (i < 0 || i >= dataSet.getNumRows()) {
@@ -436,9 +449,99 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
             }
 
             this.rows = new ArrayList<>(rows);
-            chiSquareTest.setRows(this.rows);
+            chiSquareTest = new ChiSquareTest(dataSet, chiSquareTest.getAlpha(), ChiSquareTest.TestType.CHI_SQUARE, rows);
         }
     }
+
+    @Override
+    public void setEffectiveSampleSize(int sampleSize) {
+        this.sampleSize = sampleSize;
+    }
+
+    /**
+     * Sets the cell table type.
+     *
+     * @param cellTableType The cell table type.
+     */
+    public void setCellTableType(ChiSquareTest.CellTableType cellTableType) {
+        this.chiSquareTest.setCellTableType(cellTableType);
+    }
+
+    /**
+     * Sets the threshold for making judgments of determination.
+     *
+     * @param determinationP This threshold.
+     */
+    public void setDeterminationP(double determinationP) {
+        this.determinationP = determinationP;
+    }
+
+    /**
+     * Determines whether variable x is independent of a set of variables _z.
+     *
+     * @param _z a set of variables to condition on
+     * @param x  the variable to check for independence
+     * @return true if variable x is independent of _z, false otherwise
+     * @throws NullPointerException     if _z or any element in _z is null
+     * @throws IllegalArgumentException if any variable in _z or x was not used in the constructor
+     */
+    public boolean determines(Set<Node> _z, Node x) {
+        if (_z == null) {
+            throw new NullPointerException();
+        }
+
+        for (Node node : _z) {
+            if (node == null) {
+                throw new NullPointerException();
+            }
+        }
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
+        // For testing x, y given z1,...,zn, set up an array of length
+        // n + 2 containing the indices of these variables in order.
+        int[] testIndices = new int[1 + z.size()];
+        testIndices[0] = this.variables.indexOf(x);
+
+        for (int i = 0; i < z.size(); i++) {
+            testIndices[i + 1] = this.variables.indexOf(z.get(i));
+        }
+
+        // the following is lame code--need a better test
+        for (int i = 0; i < testIndices.length; i++) {
+            if (testIndices[i] < 0) {
+                throw new IllegalArgumentException(
+                        "Variable " + i + "was not used in the constructor.");
+            }
+        }
+
+        //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
+
+        boolean determined =
+                this.chiSquareTest.isDetermined(testIndices, this.determinationP);
+
+        if (determined) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Determination found: ").append(x).append(
+                    " is determined by {");
+
+            for (int i = 0; i < z.size(); i++) {
+                sb.append(z.get(i));
+
+                if (i < z.size() - 1) {
+                    sb.append(", ");
+                }
+            }
+
+            sb.append("}");
+
+            TetradLogger.getInstance().log(sb.toString());
+        }
+
+        return determined;
+    }
+
 }
 
 

@@ -74,7 +74,7 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, UsesSco
     }
 
     @Override
-    protected Graph runSearch(DataModel dataModel, Parameters parameters) {
+    protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
@@ -89,7 +89,8 @@ public class Sp extends AbstractBootstrapAlgorithm implements Algorithm, UsesSco
         }
 
         Score myScore = this.score.getScore(dataModel, parameters);
-        PermutationSearch permutationSearch = new PermutationSearch(new edu.cmu.tetrad.search.Sp(myScore));
+        edu.cmu.tetrad.search.Sp suborderSearch = new edu.cmu.tetrad.search.Sp(myScore);
+        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(this.knowledge);
         Graph graph = permutationSearch.search();
         LogUtilsSearch.stampWithScore(graph, myScore);

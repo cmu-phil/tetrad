@@ -824,7 +824,7 @@ public final class MlBayesIm implements BayesIm {
      *
      * @param sampleSize      the sample size.
      * @param latentDataSaved a boolean
-     * @param tiers           an array of {@link int} objects
+     * @param tiers           an array of  objects
      * @return the simulated sample as a DataSet.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved, int[] tiers) {
@@ -872,7 +872,7 @@ public final class MlBayesIm implements BayesIm {
      *
      * @param dataSet         a {@link edu.cmu.tetrad.data.DataSet} object
      * @param latentDataSaved a boolean
-     * @param tiers           an array of {@link int} objects
+     * @param tiers           an array of  objects
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved, int[] tiers) {

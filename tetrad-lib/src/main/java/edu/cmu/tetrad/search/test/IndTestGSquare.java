@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -32,6 +33,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.getAllRows;
 
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
@@ -43,16 +46,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id: $Id
  * @see ChiSquareTest
  */
-public final class IndTestGSquare implements IndependenceTest, RowsSettable {
+public final class IndTestGSquare implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
 
     /**
      * The standard number formatter for Tetrad.
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    /**
-     * The G Square tester.
-     */
-    private final ChiSquareTest gSquareTest;
     /**
      * The variables in the discrete data sets or which conditional independence judgements are desired.
      */
@@ -69,6 +68,10 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
      * A cache of results for independence facts.
      */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    /**
+     * The G Square tester.
+     */
+    private ChiSquareTest gSquareTest;
     /**
      * The p value associated with the most recent call of isIndependent.
      */
@@ -92,6 +95,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
      * The rows to use for the test. If null, all rows are used.
      */
     private List<Integer> rows = null;
+    private int sampleSize;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -115,9 +119,16 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
         // variables themselves in a List.
         this.dataSet = dataSet;
         this.alpha = alpha;
+        this.sampleSize = dataSet.getNumRows();
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE);
+        setup(dataSet, alpha, null);
+    }
+
+    private void setup(DataSet dataSet, double alpha, List<Integer> rows) {
+        this.rows = rows == null ? getAllRows(dataSet.getNumRows()) : rows;
+        this.sampleSize = this.rows.size();
+        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE, this.rows);
         this.gSquareTest.setMinCountPerCell(minCountPerCell);
     }
 
@@ -194,23 +205,20 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
         // the following is lame code--need a better test
         for (int i = 0; i < testIndices.length; i++) {
             if (testIndices[i] < 0) {
-                throw new IllegalArgumentException(
-                        "Variable " + i + " was not used in the constructor.");
+                throw new IllegalArgumentException("Variable " + i + " was not used in the constructor.");
             }
         }
 
-        ChiSquareTest.Result result = this.gSquareTest.calcChiSquare(testIndices);
+        ChiSquareTest.Result result = this.gSquareTest.calcChiSquare(testIndices, sampleSize);
         this.pValue = result.getPValue();
 
         if (this.verbose) {
             if (result.isIndep()) {
-                TetradLogger.getInstance().log(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
+                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
             }
         }
 
-        IndependenceResult result1 = new IndependenceResult(new IndependenceFact(x, y, _z),
-                result.isIndep(), result.getPValue(), alpha - result.getPValue());
+        IndependenceResult result1 = new IndependenceResult(new IndependenceFact(x, y, _z), result.isIndep(), result.getPValue(), alpha - result.getPValue());
         facts.put(new IndependenceFact(x, y, _z), result1);
         return result1;
     }
@@ -286,20 +294,17 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
         // the following is lame code--need a better test
         for (int i = 0; i < testIndices.length; i++) {
             if (testIndices[i] < 0) {
-                throw new IllegalArgumentException(
-                        "Variable " + i + "was not used in the constructor.");
+                throw new IllegalArgumentException("Variable " + i + "was not used in the constructor.");
             }
         }
 
         //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
-        boolean determined =
-                this.gSquareTest.isDetermined(testIndices, this.determinationP);
+        boolean determined = this.gSquareTest.isDetermined(testIndices, this.determinationP);
 
         if (determined) {
             StringBuilder sb = new StringBuilder();
-            sb.append("Determination found: ").append(x).append(
-                    " is determined by {");
+            sb.append("Determination found: ").append(x).append(" is determined by {");
 
             for (int i = 0; i < z.size(); i++) {
                 sb.append(z.get(i));
@@ -387,7 +392,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     public void setRows(List<Integer> rows) {
         if (rows == null) {
             this.rows = null;
-            gSquareTest.setRows(null);
+            setup(dataSet, alpha, rows);
         } else {
             for (int i : rows) {
                 if (i < 0 || i >= dataSet.getNumRows()) {
@@ -396,8 +401,32 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
             }
 
             this.rows = new ArrayList<>(rows);
-            gSquareTest.setRows(this.rows);
+            setup(dataSet, alpha, rows);
         }
+    }
+
+    /**
+     * Sets the sample size if the sample size of the data or covariance matrix is not the sample size that the test
+     * should use.
+     *
+     * @param sampleSize The sample size to use.
+     */
+    @Override
+    public void setEffectiveSampleSize(int sampleSize) {
+        if (sampleSize < 1) {
+            throw new IllegalArgumentException("Sample size must be at least 1.");
+        }
+
+        this.sampleSize = sampleSize;
+    }
+
+    /**
+     * Sets the cell table type.
+     *
+     * @param cellTableType The cell table type.
+     */
+    public void setCellTableType(ChiSquareTest.CellTableType cellTableType) {
+        this.gSquareTest.setCellTableType(cellTableType);
     }
 }
 

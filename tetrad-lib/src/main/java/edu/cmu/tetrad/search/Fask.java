@@ -330,7 +330,7 @@ public final class Fask {
      *
      * @return the graph. Some edges may be undirected; some adjacencies may be two-cycles.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         setCutoff(alpha);
 
         DataSet dataSet = DataTransforms.standardizeData(this.dataSet);

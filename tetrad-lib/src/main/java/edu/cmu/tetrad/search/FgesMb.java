@@ -177,10 +177,6 @@ public final class FgesMb implements DagScorer {
      */
     private boolean verbose = false;
     /**
-     * Whether verbose output should be produced for the Meek rules.
-     */
-    private boolean meekVerbose = false;
-    /**
      * Map from variables to their column indices in the data set.
      */
     private ConcurrentMap<Node, Integer> hashIndices;
@@ -286,7 +282,7 @@ public final class FgesMb implements DagScorer {
      * @param targets a {@link java.util.List} object
      * @return the resulting Pattern.
      */
-    public Graph search(List<Node> targets) {
+    public Graph search(List<Node> targets) throws InterruptedException {
         if (targets == null || targets.isEmpty()) {
             throw new IllegalArgumentException("Target(s) weren't specified");
         }
@@ -356,25 +352,37 @@ public final class FgesMb implements DagScorer {
      * Sets the mode to coverNoncolliders. 7. Performs fes again. 8. Performs bes again. 9. If faithfulnessAssumed is
      * false, sets the mode to allowUnfaithfulness and performs fes and bes again.
      */
-    private void doLoop() {
+    private void doLoop() throws InterruptedException {
         addRequiredEdges(graph);
 
         initializeEffectEdges(getVariables());
 
         this.mode = Mode.heuristicSpeedup;
 
-        fes();
+        try {
+            fes();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         bes();
 
         this.mode = Mode.coverNoncolliders;
 
-        fes();
+        try {
+            fes();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         bes();
 
         if (!faithfulnessAssumed) {
             this.mode = Mode.allowUnfaithfulness;
 
-            fes();
+            try {
+                fes();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             bes();
         }
     }
@@ -435,19 +443,9 @@ public final class FgesMb implements DagScorer {
      * separately.
      *
      * @param verbose True iff the case.
-     * @see #setMeekVerbose(boolean)
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Sets whether verbose output should be produced for the Meek rules.
-     *
-     * @param meekVerbose True iff the case.
-     */
-    public void setMeekVerbose(boolean meekVerbose) {
-        this.meekVerbose = meekVerbose;
     }
 
     /**
@@ -620,7 +618,7 @@ public final class FgesMb implements DagScorer {
      * This method does not return any values. It updates the graph by inserting new arrows and updating the set of
      * arrows to be processed.
      */
-    private void fes() {
+    private void fes() throws InterruptedException {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
         reevaluateForward(new HashSet<>(variables));
@@ -684,7 +682,7 @@ public final class FgesMb implements DagScorer {
      *
      * @see Bes
      */
-    private void bes() {
+    private void bes() throws InterruptedException {
         Bes bes = new Bes(score);
         bes.setDepth(depth);
         bes.setVerbose(verbose);
@@ -706,7 +704,7 @@ public final class FgesMb implements DagScorer {
      *
      * @param nodes the set of nodes for which to reevaluate the forward arrows
      */
-    private void reevaluateForward(final Set<Node> nodes) {
+    private void reevaluateForward(final Set<Node> nodes) throws InterruptedException {
         class AdjTask implements Callable<Boolean> {
 
             private final List<Node> nodes;
@@ -720,7 +718,7 @@ public final class FgesMb implements DagScorer {
             }
 
             @Override
-            public Boolean call() {
+            public Boolean call() throws InterruptedException {
                 for (int _y = from; _y < to; _y++) {
                     if (Thread.currentThread().isInterrupted()) break;
 
@@ -802,7 +800,7 @@ public final class FgesMb implements DagScorer {
      * @param a The source node.
      * @param b The target node.
      */
-    private void calculateArrowsForward(Node a, Node b) {
+    private void calculateArrowsForward(Node a, Node b) throws InterruptedException {
         if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
             return;
         }
@@ -857,7 +855,7 @@ public final class FgesMb implements DagScorer {
             }
 
             @Override
-            public EvalPair call() {
+            public EvalPair call() throws InterruptedException {
                 for (int k = from; k < to; k++) {
                     if (Thread.currentThread().isInterrupted()) break;
                     double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
@@ -897,7 +895,8 @@ public final class FgesMb implements DagScorer {
         if (this.parallelized) {
             int parallelism = Runtime.getRuntime().availableProcessors();
             ForkJoinPool pool = new ForkJoinPool(parallelism);
-            List<Future<EvalPair>> futures = pool.invokeAll(tasks);
+            List<Future<EvalPair>> futures = null;
+            futures = pool.invokeAll(tasks);
 
             for (Future<EvalPair> future : futures) {
                 try {
@@ -988,7 +987,7 @@ public final class FgesMb implements DagScorer {
      * @return The evaluation score after inserting nodes into the graph.
      */
     private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents,
-                              Map<Node, Integer> hashIndices) {
+                              Map<Node, Integer> hashIndices) throws InterruptedException {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(T);
         set.addAll(parents);
@@ -1272,7 +1271,7 @@ public final class FgesMb implements DagScorer {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
         rules.setMeekPreventCycles(true);
-        rules.setVerbose(meekVerbose);
+        rules.setVerbose(verbose);
         return rules.orientImplied(graph);
     }
 
@@ -1341,7 +1340,7 @@ public final class FgesMb implements DagScorer {
      * @throws IllegalArgumentException if x and y are the same node, or if y is already a parent of x
      */
     private double scoreGraphChange(Node x, Node y, Set<Node> parents,
-                                    Map<Node, Integer> hashIndices) {
+                                    Map<Node, Integer> hashIndices) throws InterruptedException {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
 

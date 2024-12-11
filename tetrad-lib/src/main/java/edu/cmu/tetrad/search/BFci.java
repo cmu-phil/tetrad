@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -84,7 +85,7 @@ public final class BFci implements IGraphSearch {
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The number of times to restart the search.
      * <p>
@@ -101,14 +102,6 @@ public final class BFci implements IGraphSearch {
      * Represents the depth of the search for the constraint-based step.
      */
     private int depth = -1;
-    /**
-     * Whether to apply the discriminating path tail rule during the search.
-     */
-    private boolean doDiscriminatingPathTailRule = true;
-    /**
-     * Whether to apply the discriminating path collider rule during the search.
-     */
-    private boolean doDiscriminatingPathColliderRule = true;
     /**
      * Determines whether the Boss search algorithm should use the BES (Backward elimination of shadows) method as a
      * final step.
@@ -137,10 +130,6 @@ public final class BFci implements IGraphSearch {
      */
     private boolean guaranteePag;
     /**
-     * Whether to leave out the final orientation step.
-     */
-    private boolean ablationLeaveOutFinalOrientation;
-    /**
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod = 2;
@@ -154,8 +143,12 @@ public final class BFci implements IGraphSearch {
      * @see Score
      */
     public BFci(IndependenceTest test, Score score) {
+        if (test == null) {
+            throw new NullPointerException("Test is null");
+        }
+
         if (score == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Score is null");
         }
         this.score = score;
         this.independenceTest = test;
@@ -166,7 +159,7 @@ public final class BFci implements IGraphSearch {
      *
      * @return The discovered graph.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         if (seed != -1) {
             RandomUtil.getInstance().setSeed(seed);
         }
@@ -176,8 +169,11 @@ public final class BFci implements IGraphSearch {
         List<Node> nodes = getIndependenceTest().getVariables();
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting BFCI algorithm.");
-            TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
+            TetradLogger.getInstance().log("===Starting BFCI===");
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting BOSS.");
         }
 
         Boss subAlg = new Boss(this.score);
@@ -188,45 +184,65 @@ public final class BFci implements IGraphSearch {
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
 
-        Graph graph = alg.search();
+        Graph pag = alg.search();
 
-        Graph referenceDag = new EdgeListGraph(graph);
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished BOSS.");
+        }
+
+        if (score instanceof MagSemBicScore) {
+            ((MagSemBicScore) score).setMag(pag);
+        }
+
+        Graph cpdag = new EdgeListGraph(pag);
         SepsetProducer sepsets;
 
         if (independenceTest instanceof MsepTest) {
             sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
         } else if (sepsetFinderMethod == 1) {
-            sepsets = new SepsetsGreedy(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 2) {
-            sepsets = new SepsetsMinP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
         } else if (sepsetFinderMethod == 3) {
-            sepsets = new SepsetsMaxP(graph, this.independenceTest, this.depth);
+            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
         } else {
             throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
         }
 
-        Set<Triple> unshieldedTriples = new HashSet<>();
+        Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets, depth, verbose);
-        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge, verbose, unshieldedTriples);
+        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, verbose);
+        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
 
-        FciOrient fciOrient = new FciOrient(
-                R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, doDiscriminatingPathTailRule,
-                        doDiscriminatingPathColliderRule, verbose));
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
-
-        if (!ablationLeaveOutFinalOrientation) {
-            fciOrient.finalOrientation(graph);
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
+                knowledge, verbose);
+        strategy.setDepth(-1);
+        strategy.setMaxLength(-1);
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setVerbose(verbose);
+
+        fciOrient.finalOrientation(pag);
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished implied orientation.");
+        }
 
         if (guaranteePag) {
-            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, false, verbose);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose,
+                    new HashSet<>());
         }
 
-        return graph;
+        if (verbose) {
+            TetradLogger.getInstance().log("BFCI finished.");
+        }
+
+        return pag;
     }
 
     /**
@@ -251,14 +267,14 @@ public final class BFci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -298,24 +314,6 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the discriminating path tail rule should be used.
-     *
-     * @param doDiscriminatingPathTailRule True if the discriminating path tail rule should be used, false otherwise.
-     */
-    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
-        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
-    }
-
-    /**
-     * Sets whether the discriminating path collider rule should be used.
-     *
-     * @param doDiscriminatingPathColliderRule True if the discriminating path collider rule should be used, false.
-     */
-    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
-        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
-    }
-
-    /**
      * Sets whether the BES should be used.
      *
      * @param useBes True if the BES should be used, false otherwise.
@@ -352,15 +350,6 @@ public final class BFci implements IGraphSearch {
      */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets whether the final orientation should be left out during the search process.
-     *
-     * @param ablationLeaveOutFinalOrientation True to leave out the final orientation, false otherwise.
-     */
-    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 
     /**

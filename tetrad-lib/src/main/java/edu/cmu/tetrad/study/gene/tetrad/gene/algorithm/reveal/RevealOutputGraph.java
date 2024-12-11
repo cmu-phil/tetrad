@@ -40,8 +40,8 @@ public class RevealOutputGraph implements OutputGraph {
      * <p>Constructor for RevealOutputGraph.</p>
      *
      * @param ngenes    a int
-     * @param parents   an array of {@link int} objects
-     * @param lags      an array of {@link int} objects
+     * @param parents   an array of  objects
+     * @param lags      an array of  objects
      * @param names     an array of {@link java.lang.String} objects
      * @param graphName a {@link java.lang.String} object
      */

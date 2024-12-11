@@ -60,7 +60,7 @@ public class SepsetsGreedy implements SepsetProducer {
         this.independenceTest = independenceTest;
     }
 
-    private static double getPValue(Node x, Node y, Set<Node> combination, IndependenceTest test) {
+    private static double getPValue(Node x, Node y, Set<Node> combination, IndependenceTest test) throws InterruptedException {
         return test.checkIndependence(x, y, combination).getPValue();
     }
 
@@ -103,7 +103,7 @@ public class SepsetsGreedy implements SepsetProducer {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIndependent(Node a, Node b, Set<Node> sepset) {
+    public boolean isIndependent(Node a, Node b, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         this.result = result;
         return result.isIndependent();
@@ -118,7 +118,7 @@ public class SepsetsGreedy implements SepsetProducer {
      * @return the p-value for the independence test
      */
     @Override
-    public double getPValue(Node a, Node b, Set<Node> sepset) {
+    public double getPValue(Node a, Node b, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, sepset);
         return result.getPValue();
     }

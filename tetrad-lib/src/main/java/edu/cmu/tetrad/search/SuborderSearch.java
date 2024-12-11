@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+    package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
@@ -36,7 +36,7 @@ public interface SuborderSearch {
      * @param gsts     The GrowShrinkTree being used to do caching of scores.
      * @see GrowShrinkTree
      */
-    void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts);
+    void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) throws InterruptedException;
 
     /**
      * The knowledge being used.

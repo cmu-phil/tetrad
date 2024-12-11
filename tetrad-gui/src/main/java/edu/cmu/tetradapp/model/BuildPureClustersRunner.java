@@ -180,7 +180,11 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                     throw new IllegalArgumentException();
                 }
 
-                searchGraph = bpc.search();
+                try {
+                    searchGraph = bpc.search();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
             }
 //            else if (algorithm == BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS) {

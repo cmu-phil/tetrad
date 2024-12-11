@@ -182,7 +182,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     /**
      * <p>getCellProb.</p>
      *
-     * @param variableValues an array of {@link int} objects
+     * @param variableValues an array of  objects
      * @return the probability for the given cell, specified as a particular combination of variable values, for the
      * list of variables (in order) returned by get
      */

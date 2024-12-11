@@ -57,6 +57,10 @@ public final class Params {
      */
     public static final String BASIS_TYPE = "basisType";
     /**
+     * Constant <code>BASIS_TYPE="basisType"</code>
+     */
+    public static final String BASIS_SCALE = "basisScale";
+    /**
      * Constant <code>CCI_SCORE_ALPHA="cciScoreAlpha"</code>
      */
     public static final String CCI_SCORE_ALPHA = "cciScoreAlpha";
@@ -88,14 +92,6 @@ public final class Params {
      * Constant <code>SEPSET_FINDER_METHOD="sepsetFinderMethod"</code>
      */
     public static final String SEPSET_FINDER_METHOD = "sepsetFinderMethod";
-    /**
-     * Constant <code>DO_DISCRIMINATING_PATH_COLLIDER_RULE="doDiscriminatingPathColliderRule"</code>
-     */
-    public static final String DO_DISCRIMINATING_PATH_COLLIDER_RULE = "doDiscriminatingPathColliderRule";
-    /**
-     * Constant <code>DO_DISCRIMINATING_PATH_TAIL_RULE="doDiscriminatingPathTailRule"</code>
-     */
-    public static final String DO_DISCRIMINATING_PATH_TAIL_RULE = "doDiscriminatingPathTailRule";
     /**
      * Constant <code>CONCURRENT_FAS="concurrentFAS"</code>
      */
@@ -313,9 +309,9 @@ public final class Params {
      */
     public static final String KCI_USE_APPROXIMATION = "kciUseApproximation";
     /**
-     * Constant <code>KERNEL_MULTIPLIER="kernelMultiplier"</code>
+     * Constant <code>BANDWIDTH_ADJUSTMENT="scalingFactor"</code>
      */
-    public static final String KERNEL_MULTIPLIER = "kernelMultiplier";
+    public static final String SCALING_FACTOR = "scalingFactor";
     /**
      * Constant <code>KERNEL_REGRESSION_SAMPLE_SIZE="kernelRegressionSampleSize"</code>
      */
@@ -324,6 +320,14 @@ public final class Params {
      * Constant <code>KERNEL_TYPE="kernelType"</code>
      */
     public static final String KERNEL_TYPE = "kernelType";
+    /**
+     * Constant <code>POLYNOMIAL_DEGREE="polynomialDegree"</code>
+     */
+    public static final String POLYNOMIAL_DEGREE = "polynomialDegree";
+    /**
+     * Constant <code>POLYNOMIAL_CONSTANT="polynomialConstant"</code>
+     */
+    public static final String POLYNOMIAL_CONSTANT = "polynomialConstant";
     /**
      * Constant <code>KERNEL_WIDTH="kernelWidth"</code>
      */
@@ -363,7 +367,7 @@ public final class Params {
     /**
      * Constant <code>MAX_PATH_LENGTH="maxPathLength"</code>
      */
-    public static final String MAX_PATH_LENGTH = "maxPathLength";
+    public static final String MAX_DISCRIMINATING_PATH_LENGTH = "maxDiscriminatingPathLength";
     /**
      * Constant <code>MAXIT="maxit"</code>
      */
@@ -488,6 +492,10 @@ public final class Params {
      * Constant <code>PENALTY_DISCOUNT_ZS="penaltyDiscountZs"</code>
      */
     public static final String PENALTY_DISCOUNT_ZS = "penaltyDiscountZs";
+    /**
+     * Constant <code>TRUNCATION_LIMIT="truncationLimit"</code>
+     */
+    public static final String TRUNCATION_LIMIT = "truncationLimit";
     /**
      * Constant <code>EBIC_GAMMA="ebicGamma"</code>
      */
@@ -656,10 +664,6 @@ public final class Params {
      * Constant <code>VERBOSE="verbose"</code>
      */
     public static final String VERBOSE = "verbose";
-    /**
-     * Constant <code>MEEK_VERBOSE="meekVerbose"</code>
-     */
-    public static final String MEEK_VERBOSE = "meekVerbose";
     /**
      * Constant <code>SEM_BIC_RULE="semBicRule"</code>
      */
@@ -888,18 +892,6 @@ public final class Params {
      */
     public static final String MIN_SAMPLE_SIZE_PER_CELL = "minSampleSizePerCell";
     /**
-     * Constant <code>ABLATION_LEAVE_OUT_TUCKING_STEP="ablationLeaveOutTuckingStep"</code>
-     */
-    public static final String ABLATION_LEAVE_OUT_TUCKING_STEP = "ablationLeaveOutTuckingStep";
-    /**
-     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep""</code>
-     */
-    public static final String ABLATION_LEAVE_OUT_SCORING_STEP = "ablationLeaveOutScoringStep";
-    /**
-     * Constant <code>ALLOW_TESTING="ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps""</code>
-     */
-    public static final String ABLATION_LEAVE_OUT_TESTING_STEPS = "ablationLeaveOutTestingSteps";
-    /**
      * Constant <code>MAX_SCORE_DROP="maxScoreDrop"</code>
      */
     public static final String MAX_SCORE_DROP = "maxScoreDrop";
@@ -912,9 +904,13 @@ public final class Params {
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
     /**
-     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
+     * Constant <code>DO_DDP_EDGE_REMOVAL_STEP="doDdpEdgeRemovalStep"</code>
      */
-    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
+    public static final String DO_DDP_EDGE_REMOVAL_STEP = "doDdpEdgeRemovalStep";
+    /**
+     * Constant <code>ENSURE_MARKOV="ensureMarkov"</code>
+     */
+    public static final String ENSURE_MARKOV = "ensureMarkov";
     /**
      * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
      */
@@ -928,13 +924,21 @@ public final class Params {
      */
     public static String EXTRA_EDGE_REMOVAL_STEP = "extraEdgeRemovalStep";
     /**
-     * Constant <code>LV_LITE_MAX_PATH_LENGTH="lvLiteMaxPathLength"</code>
+     * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
     /**
      * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
+    /**
+     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
+     */
+    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
+    /**
+     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
+     */
+    public static String CELL_TABLE_TYPE = "cellTableType";
 
 
     private Params() {
@@ -957,7 +961,7 @@ public final class Params {
             Params.INCLUDE_POSITIVE_SKEWS_FOR_BETA, Params.INCLUDE_STRUCTURE_MODEL,
             Params.INTERVAL_BETWEEN_RECORDINGS, Params.INTERVAL_BETWEEN_SHOCKS, Params.IPEN, Params.IS, Params.ITR,
             Params.KCI_ALPHA, Params.KCI_CUTOFF, Params.KCI_EPSILON, Params.KCI_NUM_BOOTSTRAPS, Params.KCI_USE_APPROXIMATION,
-            Params.KERNEL_MULTIPLIER, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
+            Params.SCALING_FACTOR, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
             Params.LATENT_MEASURED_IMPURE_PARENTS, Params.LOWER_BOUND, Params.MAX_CATEGORIES, Params.MAX_DEGREE,
             Params.MAX_DISTINCT_VALUES_DISCRETE, Params.MAX_INDEGREE, Params.MAX_ITERATIONS, Params.MAX_OUTDEGREE,
             Params.MEAN_LOW, Params.MEASURED_MEASURED_IMPURE_ASSOCIATIONS, Params.MEASURED_MEASURED_IMPURE_PARENTS,

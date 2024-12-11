@@ -78,7 +78,12 @@ public class FaskForbiddenGraphModel extends KnowledgeBoxModel {
         Score score = new SemBicScore(new CovarianceMatrix(dataSet));
 
         Fask fask = new Fask(dataSet, score);
-        Graph graph = fask.search();
+        Graph graph = null;
+        try {
+            graph = fask.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         List<Node> nodes = dataSet.getVariables();
 

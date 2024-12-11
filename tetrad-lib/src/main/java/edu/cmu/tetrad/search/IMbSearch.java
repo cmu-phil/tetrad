@@ -39,7 +39,7 @@ public interface IMbSearch {
      * @param target a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.util.Set} object
      */
-    Set<Node> findMb(Node target);
+    Set<Node> findMb(Node target) throws InterruptedException;
 
     /**
      * The name of the algorithm.

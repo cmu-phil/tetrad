@@ -66,9 +66,9 @@ public class HsimRepeatAC {
      *
      * @param resimSize a int
      * @param repeat    a int
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
-    public double[] run(int resimSize, int repeat) {
+    public double[] run(int resimSize, int repeat) throws InterruptedException {
         //parameter: set of positive integers, which are resimSize values.
         List<Integer> schedule = new ArrayList<>();
 

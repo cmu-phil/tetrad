@@ -24,6 +24,7 @@ package edu.cmu.tetrad.util;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -32,8 +33,8 @@ import java.io.Serial;
 
 /**
  * Wraps the Apache math3 linear algebra library for most uses in Tetrad. Specialized uses will still have to use the
- * library directly. One issue this fixes is that a BlockRealMatrix cannot represent a matrix with zero rows; this uses
- * an Array2DRowRealMatrix to represent that case.
+ * library directly. One issue is that we need to be able to represent empty matrices gracefully; this case is handled
+ * separately and incorporated into the class.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -60,13 +61,13 @@ public class Matrix implements TetradSerializable {
     /**
      * <p>Constructor for Matrix.</p>
      *
-     * @param data an array of {@link double} objects
+     * @param data an array of  objects
      */
     public Matrix(double[][] data) {
         if (data.length == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-            this.apacheData = new BlockRealMatrix(data);
+            this.apacheData = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(data);
         }
 
         this.m = data.length;
@@ -95,7 +96,7 @@ public class Matrix implements TetradSerializable {
         if (m == 0 || n == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-            this.apacheData = new BlockRealMatrix(m, n);
+            this.apacheData = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(m, n);
         }
 
         this.m = m;
@@ -187,8 +188,8 @@ public class Matrix implements TetradSerializable {
     /**
      * <p>getSelection.</p>
      *
-     * @param rows an array of {@link int} objects
-     * @param cols an array of {@link int} objects
+     * @param rows an array of  objects
+     * @param cols an array of  objects
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix getSelection(int[] rows, int[] cols) {
@@ -277,7 +278,7 @@ public class Matrix implements TetradSerializable {
     /**
      * <p>toArray.</p>
      *
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     public double[][] toArray() {
         return this.apacheData.getData();
@@ -351,46 +352,32 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * <p>inverse.</p>
+     * Returns the inverse of the matrix. If the matrix is not square, an exception is thrown. If the matrix is singular,
+     * an exception is thrown.
      *
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
     public Matrix inverse() throws SingularMatrixException {
-        if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
+        if (!isSquare()) throw new IllegalArgumentException("This matrix is not square; cannot invert.");
 
         if (getNumRows() == 0) {
             return new Matrix(0, 0);
         }
 
-        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
+        return new Matrix(org.apache.commons.math3.linear.MatrixUtils.inverse(this.apacheData, 1e-10));
     }
 
     /**
-     * <p>symmetricInverse.</p>
+     * Returns the Moore-Penrose pseudoinverse of the matrix.
      *
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
-    public Matrix symmetricInverse() {
-        if (!isSquare()) throw new IllegalArgumentException();
-        if (getNumRows() == 0) return new Matrix(0, 0);
-
-        return new Matrix(new CholeskyDecomposition(this.apacheData).getSolver().getInverse());
-    }
-
-    /**
-     * <p>ginverse.</p>
-     *
-     * @return a {@link edu.cmu.tetrad.util.Matrix} object
-     */
-    public Matrix ginverse() {
-        double[][] data = this.apacheData.getData();
-
-        if (data.length == 0 || data[0].length == 0) {
-            return new Matrix(data);
-        }
-
-        return new Matrix(MatrixUtils.pseudoInverse(data));
+    public Matrix pseudoinverse() {
+        if (zeroDimension()) return new Matrix(getNumColumns(), getNumRows());
+        SingularValueDecomposition svd = new SingularValueDecomposition(this.apacheData);
+        RealMatrix pseudoinverse = svd.getSolver().getInverse();
+        return new Matrix(pseudoinverse);
     }
 
     /**
@@ -557,7 +544,7 @@ public class Matrix implements TetradSerializable {
         RealMatrix V = svd.getV();
         double[] s = svd.getSingularValues();
         for (int i = 0; i < s.length; i++) s[i] = 1.0 / s[i];
-        RealMatrix S = new BlockRealMatrix(s.length, s.length);
+        RealMatrix S = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(s.length, s.length);
         for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
         RealMatrix sqrt = U.multiply(S).multiply(V);
         return new Matrix(sqrt);
@@ -647,8 +634,8 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
      *
      * @param in The ObjectInputStream to read the object from.
      * @throws IOException            If an I/O error occurs.

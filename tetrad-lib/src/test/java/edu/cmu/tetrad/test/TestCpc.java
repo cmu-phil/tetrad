@@ -102,7 +102,11 @@ public class TestCpc {
         IndependenceTest test = new IndTestFisherZ(_dataSet, 0.05);
 
         Cpc search = new Cpc(test);
-        Graph resultGraph = search.search();
+        try {
+            Graph resultGraph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -120,7 +124,12 @@ public class TestCpc {
         IGraphSearch search = new Cpc(independence);
 
         // Run search
-        Graph resultGraph = search.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
@@ -151,7 +160,12 @@ public class TestCpc {
         cpc.setKnowledge(knowledge);
 
         // Run search
-        Graph resultGraph = cpc.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = cpc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");

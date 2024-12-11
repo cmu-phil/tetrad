@@ -95,7 +95,7 @@ public class GraspTol {
      * @param order a {@link java.util.List} object
      * @return a {@link java.util.List} object
      */
-    public List<Node> bestOrder(@NotNull List<Node> order) {
+    public List<Node> bestOrder(@NotNull List<Node> order) throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
@@ -159,7 +159,7 @@ public class GraspTol {
      *
      * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
      */
-    public void betterMutation(@NotNull TeyssierScorer scorer) {
+    public void betterMutation(@NotNull TeyssierScorer scorer) throws InterruptedException {
         List<Node> pi = scorer.getPi();
         double s;
         double sp = scorer.score(pi);
@@ -278,7 +278,7 @@ public class GraspTol {
      * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
      * @return a {@link java.util.List} object
      */
-    public List<Node> grasp(@NotNull TeyssierScorer scorer) {
+    public List<Node> grasp(@NotNull TeyssierScorer scorer) throws InterruptedException {
         scorer.clearBookmarks();
         List<int[]> depths = new ArrayList<>();
 
@@ -322,7 +322,7 @@ public class GraspTol {
 
     private void graspDfsTol(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
                              int tol, int tolCur,
-                             Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
+                             Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) throws InterruptedException {
         List<Node> variables;
 
         if (this.allowRandomnessInsideAlgorithm) {

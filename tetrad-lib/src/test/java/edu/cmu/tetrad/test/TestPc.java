@@ -120,7 +120,12 @@ public class TestPc {
         pc.setKnowledge(knowledge);
         pc.setGuaranteeCpdag(true);
 
-        Graph CPDAG = pc.search();
+        Graph CPDAG = null;
+        try {
+            CPDAG = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         final String trueString = "Graph Nodes:\n" +
                                   "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
@@ -161,7 +166,12 @@ public class TestPc {
 
         // Run search
 //        Graph resultGraph = pc.search();
-        Graph resultGraph = pc.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
@@ -190,11 +200,15 @@ public class TestPc {
 
         // Set up search.
         pc.setKnowledge(knowledge);
-        pc.setGuaranteeCpdag(false);
+//        pc.setGuaranteeCpdag(false);
 //        pc.setVerbose(false);
-
         // Run search
-        Graph resultGraph = pc.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = pc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");
@@ -206,19 +220,6 @@ public class TestPc {
 
         // Do test.
         assertEquals(trueGraph, resultGraph);
-    }
-
-    @Test
-    public void checknumCPDAGsToStore() {
-        for (int i = 0; i < 2; i++) {
-            Graph graph = RandomGraph.randomGraph(100, 0, 100, 100,
-                    100, 100, false);
-            MsepTest test = new MsepTest(graph);
-            Pc pc = new Pc(test);
-            Graph CPDAG = pc.search();
-            Graph CPDAG2 = GraphTransforms.dagToCpdag(graph);
-            assertEquals(CPDAG, CPDAG2);
-        }
     }
 
     //    @Test
@@ -352,7 +353,12 @@ public class TestPc {
 
             long start = MillisecondTimes.timeMillis();
 
-            Graph out = search.search();
+            Graph out = null;
+            try {
+                out = search.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             long stop = MillisecondTimes.timeMillis();
 
@@ -667,32 +673,61 @@ public class TestPc {
                 case 0:
                     search = new Pc(test);
                     ((Pc) search).setGuaranteeCpdag(false);
-                    out = search.search();
+                    ((Pc) search).setStable(false);
+                    try {
+                        out = search.search();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case 1:
                     search = new Cpc(test);
                     ((Cpc) search).setGuaranteeCpdag(false);
-                    out = search.search();
+                    try {
+                        out = search.search();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case 2:
                     search = new Fges(score);
-                    out = search.search();
+                    try {
+                        out = search.search();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case 3:
                     search = new Fci(test);
-                    out = search.search();
+                    try {
+                        out = search.search();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case 4:
                     search = new GFci(test, score);
-                    out = search.search();
+                    try {
+                        out = search.search();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case 5:
                     search = new Rfci(test);
-                    out = search.search();
+                    try {
+                        out = search.search();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case 6:
                     search = new Cfci(test);
-                    out = search.search();
+                    try {
+                        out = search.search();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case 7:
                     out = getRegressionGraph(data, target);

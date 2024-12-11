@@ -484,7 +484,7 @@ public final class MlBayesImObs implements BayesIm {
      * <p>getRowIndex.</p>
      *
      * @param nodeIndex a int
-     * @param values    an array of {@link int} objects
+     * @param values    an array of  objects
      * @return the row in the table for the given node and combination of parent values.
      * @see #getParentValues
      */
@@ -797,7 +797,9 @@ public final class MlBayesImObs implements BayesIm {
         List<Node> variables = new LinkedList<>();
 
         for (int j = 0; j < this.nodes.length; j++) {
-            if (!latentDataSaved && this.nodes[j].getNodeType() != NodeType.MEASURED) {
+            NodeType nodeType = this.nodes[j].getNodeType();
+
+            if (!latentDataSaved && (nodeType != NodeType.MEASURED && nodeType != NodeType.SELECTION)) {
                 continue;
             }
 
@@ -837,7 +839,8 @@ public final class MlBayesImObs implements BayesIm {
         List<Node> variables = new LinkedList<>();
 
         for (int j = 0; j < this.nodes.length; j++) {
-            if (!latentDataSaved && this.nodes[j].getNodeType() != NodeType.MEASURED) {
+            NodeType nodeType = this.nodes[j].getNodeType();
+            if (!latentDataSaved && nodeType != NodeType.MEASURED && nodeType != NodeType.SELECTION) {
                 continue;
             }
 
@@ -1016,7 +1019,7 @@ public final class MlBayesImObs implements BayesIm {
      * <p>getRowValues.</p>
      *
      * @param rowIndex a int
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[] getRowValues(int rowIndex) {
         return this.jpd.getVariableValues(rowIndex);
@@ -1095,7 +1098,7 @@ public final class MlBayesImObs implements BayesIm {
         List<Node> obsNodes = new ArrayList<>();
         for (Node node1 : this.nodes) {
             Node node = this.bayesPm.getVariable(node1);
-            if (node.getNodeType() == NodeType.MEASURED) {
+            if (node.getNodeType() == NodeType.MEASURED || node.getNodeType() == NodeType.SELECTION) {
                 obsNodes.add(node);
             }
         }

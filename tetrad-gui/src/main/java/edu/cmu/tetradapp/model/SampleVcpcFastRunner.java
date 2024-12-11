@@ -256,7 +256,12 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         sfvcpc.setDepth(params.getInt("depth", -1));
 
         sfvcpc.setSemIm(this.semIm);
-        Graph graph = sfvcpc.search();
+        Graph graph = null;
+        try {
+            graph = sfvcpc.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
@@ -364,6 +369,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         MeekRules meekRules = new MeekRules();
         meekRules.setMeekPreventCycles(this.isMeekPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
+        meekRules.setVerbose(false);
         return meekRules;
     }
 

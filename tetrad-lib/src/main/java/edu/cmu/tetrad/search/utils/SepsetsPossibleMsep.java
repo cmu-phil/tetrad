@@ -45,7 +45,7 @@ import java.util.Set;
  */
 public class SepsetsPossibleMsep implements SepsetProducer {
     private final Graph graph;
-    private final int maxPathLength;
+    private final int maxDiscriminatingPathLength;
     private final Knowledge knowledge;
     private final int depth;
     private final IndependenceTest test;
@@ -55,17 +55,17 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     /**
      * <p>Constructor for SepsetsPossibleMsep.</p>
      *
-     * @param graph         a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param test          a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param knowledge     a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param depth         a int
-     * @param maxPathLength a int
+     * @param graph                       a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param test                        a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param knowledge                   a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param depth                       the depth of the search
+     * @param maxDiscriminatingPathLength the maximum length of discriminating paths
      */
     public SepsetsPossibleMsep(Graph graph, IndependenceTest test, Knowledge knowledge,
-                               int depth, int maxPathLength) {
+                               int depth, int maxDiscriminatingPathLength) {
         this.graph = graph;
         this.test = test;
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
         this.knowledge = knowledge;
         this.depth = depth;
     }
@@ -78,11 +78,11 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * @param depth The depth of the search
      * @return The set of nodes that form the sepset between node i and node k, or null if no sepset exists
      */
-    public Set<Node> getSepset(Node i, Node k, int depth) {
-        Set<Node> condSet = getCondSetContaining(i, k, null, this.maxPathLength);
+    public Set<Node> getSepset(Node i, Node k, int depth) throws InterruptedException {
+        Set<Node> condSet = getCondSetContaining(i, k, null, this.maxDiscriminatingPathLength);
 
         if (condSet == null) {
-            condSet = getCondSetContaining(k, i, null, this.maxPathLength);
+            condSet = getCondSetContaining(k, i, null, this.maxDiscriminatingPathLength);
         }
 
         return condSet;
@@ -100,11 +100,11 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * null if no sepset exists
      */
     @Override
-    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
-        Set<Node> condSet = getCondSetContaining(i, k, s, this.maxPathLength);
+    public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) throws InterruptedException {
+        Set<Node> condSet = getCondSetContaining(i, k, s, this.maxDiscriminatingPathLength);
 
         if (condSet == null) {
-            condSet = getCondSetContaining(k, i, s, this.maxPathLength);
+            condSet = getCondSetContaining(k, i, s, this.maxDiscriminatingPathLength);
         }
 
         return condSet;
@@ -113,7 +113,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     /**
      * {@inheritDoc}
      */
-    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException {
         Set<Node> sepset = getSepset(i, k, this.depth);
         return sepset != null && !sepset.contains(j);
     }
@@ -154,7 +154,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIndependent(Node d, Node c, Set<Node> sepset) {
+    public boolean isIndependent(Node d, Node c, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.test.checkIndependence(d, c, sepset);
         return result.isIndependent();
     }
@@ -168,7 +168,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * @return the p-value for the independence test
      */
     @Override
-    public double getPValue(Node a, Node b, Set<Node> sepset) {
+    public double getPValue(Node a, Node b, Set<Node> sepset) throws InterruptedException {
         IndependenceResult result = this.test.checkIndependence(a, b, sepset);
         return result.getPValue();
     }
@@ -178,7 +178,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
         // Ignored.
     }
 
-    private Set<Node> getCondSetContaining(Node node1, Node node2, Set<Node> s, int maxPathLength) {
+    private Set<Node> getCondSetContaining(Node node1, Node node2, Set<Node> s, int maxPathLength) throws InterruptedException {
         List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPathLength);
         List<Node> possibleMsep = new ArrayList<>(possibleMsepSet);
         boolean noEdgeRequired = this.knowledge.noEdgeRequired(node1.getName(), node2.getName());
@@ -225,11 +225,11 @@ public class SepsetsPossibleMsep implements SepsetProducer {
         return null;
     }
 
-    private List<Node> getPossibleMsep(Node x, Node y, int maxPathLength) {
-        List<Node> msep = this.graph.paths().possibleMsep(x, y, maxPathLength);
+    private List<Node> getPossibleMsep(Node x, Node y, int maxPossibleDsepPathLength) {
+        List<Node> msep = this.graph.paths().possibleDsep(x, y, maxPossibleDsepPathLength);
 
         if (this.verbose) {
-            System.out.println("Possible-M-Sep(" + x + ", " + y + ") = " + msep);
+            System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + msep);
         }
 
         return msep;

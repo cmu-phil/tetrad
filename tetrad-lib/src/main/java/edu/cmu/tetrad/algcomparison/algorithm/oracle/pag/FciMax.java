@@ -76,7 +76,7 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
      * @return the discovered causal graph structure
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a data set for time lagging.");
@@ -102,10 +102,8 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(this.test.getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setKnowledge(this.knowledge);
-        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
-        search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
         search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
         search.setPcHeuristicType(pcHeuristicType);
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
@@ -155,10 +153,8 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.DEPTH);
-        parameters.add(Params.MAX_PATH_LENGTH);
+        parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
-        parameters.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        parameters.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
         parameters.add(Params.GUARANTEE_PAG);
 //        parameters.add(Params.PC_HEURISTIC);

@@ -110,7 +110,12 @@ public class TestFges {
             parameters.set(Params.ALPHA, 1e-8);
 
             for (int i = 0; i < 5; i++) {
-                Graph out1 = alg.search(sim.getDataModel(0), parameters);
+                Graph out1 = null;
+                try {
+                    out1 = alg.search(sim.getDataModel(0), parameters);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 System.out.println(out1);
             }
         }
@@ -159,7 +164,11 @@ public class TestFges {
 
         fges.setVerbose(true);
 
-        return fges.search();
+        try {
+            return fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -195,7 +204,12 @@ public class TestFges {
         alg.setVerbose(true);
         alg.setOut(this.out);
         alg.setFaithfulnessAssumed(true);
-        Graph estCPDAG = alg.search();
+        Graph estCPDAG = null;
+        try {
+            estCPDAG = alg.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         Graph trueCPDAG = GraphTransforms.dagToCpdag(dag);
 
@@ -241,7 +255,12 @@ public class TestFges {
     public void testExplore3() {
         Graph graph = GraphUtils.convert("A-->B,A-->C,B-->D,C-->D");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
-        Graph CPDAG = fges.search();
+        Graph CPDAG = null;
+        try {
+            CPDAG = fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         assertEquals(GraphTransforms.dagToCpdag(graph), CPDAG);
     }
 
@@ -249,16 +268,26 @@ public class TestFges {
     public void testExplore4() {
         Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
-        Graph CPDAG = fges.search();
+        Graph CPDAG = null;
+        try {
+            CPDAG = fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         assertEquals(GraphTransforms.dagToCpdag(graph), CPDAG);
     }
 
     @Test
     public void testExplore5() {
-        Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
+        Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,A-->E,B-->F,C-->F,D-->F,E-->F");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         fges.setFaithfulnessAssumed(true);
-        Graph CPDAG = fges.search();
+        Graph CPDAG = null;
+        try {
+            CPDAG = fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         assertEquals(GraphTransforms.dagToCpdag(graph), CPDAG);
     }
 
@@ -283,10 +312,20 @@ public class TestFges {
         g.addDirectedEdge(x4, x2);
         g.addDirectedEdge(x4, x3);
 
-        Graph CPDAG1 = new Pc(new MsepTest(g)).search();
+        Graph CPDAG1 = null;
+        try {
+            CPDAG1 = new Pc(new MsepTest(g)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(g));
         fges.setFaithfulnessAssumed(true);
-        Graph CPDAG2 = fges.search();
+        Graph CPDAG2 = null;
+        try {
+            CPDAG2 = fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         assertEquals(CPDAG1, CPDAG2);
     }
@@ -315,7 +354,12 @@ public class TestFges {
         GraphScore fgesScore = new GraphScore(dag);
 
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(fgesScore);
-        Graph CPDAG1 = fges.search();
+        Graph CPDAG1 = null;
+        try {
+            CPDAG1 = fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         Set<Node> mb = new HashSet<>();
         mb.add(x1);
@@ -329,7 +373,12 @@ public class TestFges {
         Graph mb1 = CPDAG1.subgraph(new ArrayList<>(mb));
 
         FgesMb fgesMb = new FgesMb(fgesScore);
-        Graph mb2 = fgesMb.search(Collections.singletonList(x1));
+        Graph mb2 = null;
+        try {
+            mb2 = fgesMb.search(Collections.singletonList(x1));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         assertEquals(mb1, mb2);
     }
@@ -352,7 +401,12 @@ public class TestFges {
 
         Algorithm fges = new Fges(score);
 
-        Graph fgesGraph = fges.search(dataSet, parameters);
+        Graph fgesGraph = null;
+        try {
+            fgesGraph = fges.search(dataSet, parameters);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         clarkTestForAlpha(0.05, parameters, dataSet, trueGraph, fgesGraph, test);
         clarkTestForAlpha(0.01, parameters, dataSet, trueGraph, fgesGraph, test);
@@ -404,7 +458,12 @@ public class TestFges {
                 fp1++;
             }
 
-            boolean dependent = !_test.checkIndependence(x, y).isIndependent();
+            boolean dependent = false;
+            try {
+                dependent = !_test.checkIndependence(x, y).isIndependent();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             if (trueAncestral && dependent) {
                 tp2++;
@@ -548,7 +607,12 @@ public class TestFges {
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
 
         // Run search
-        Graph resultGraph = fges.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
@@ -577,7 +641,12 @@ public class TestFges {
         fges.setKnowledge(knowledge);
 
         // Run search
-        Graph result = fges.search();
+        Graph result = null;
+        try {
+            result = fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // Build comparison graph.
         Graph answer = GraphUtils.convert(answerGraph);
@@ -598,7 +667,12 @@ public class TestFges {
             fges.setFaithfulnessAssumed(true);
             fges.setVerbose(true);
             fges.setNumThreads(1);
-            Graph CPDAG1 = fges.search();
+            Graph CPDAG1 = null;
+            try {
+                CPDAG1 = fges.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             Graph CPDAG2 = GraphTransforms.dagToCpdag(dag);
             assertEquals(CPDAG2, CPDAG1);
         }
@@ -620,7 +694,12 @@ public class TestFges {
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setKnowledge(knowledge);
-            Graph CPDAG1 = fges.search();
+            Graph CPDAG1 = null;
+            try {
+                CPDAG1 = fges.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             for (Edge edge : knowledgeGraph.getEdges()) {
                 Node x = Edges.getDirectedEdgeTail(edge);
@@ -651,7 +730,12 @@ public class TestFges {
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setKnowledge(knowledge);
-            Graph CPDAG1 = fges.search();
+            Graph CPDAG1 = null;
+            try {
+                CPDAG1 = fges.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             for (Edge edge : knowledgeGraph.getEdges()) {
                 Node x = Edges.getDirectedEdgeTail(edge);

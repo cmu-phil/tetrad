@@ -79,7 +79,7 @@ public class SvarFci extends AbstractBootstrapAlgorithm implements Algorithm, Ha
      * @return The graph structure that best fits the dataset.
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");

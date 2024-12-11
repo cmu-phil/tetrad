@@ -414,6 +414,16 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
         this.nodeType = nodeType;
     }
 
+    @Override
+    public void setSelectionBias(boolean selectionBias) {
+        super.setSelectionBias(selectionBias);
+    }
+
+    @Override
+    public boolean getSelectionBias() {
+        return false;
+    }
+
     /**
      * <p>isAccommodateNewCategories.</p>
      *

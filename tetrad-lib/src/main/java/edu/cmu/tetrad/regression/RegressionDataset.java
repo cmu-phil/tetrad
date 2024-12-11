@@ -96,8 +96,8 @@ public class RegressionDataset implements Regression {
     /**
      * <p>regress.</p>
      *
-     * @param target     an array of {@link double} objects
-     * @param regressors an array of {@link double} objects
+     * @param target     an array of  objects
+     * @param regressors an array of  objects
      * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
      */
     public static RegressionResult regress(double[] target, double[][] regressors) {
@@ -123,12 +123,7 @@ public class RegressionDataset implements Regression {
 
         Matrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
-        Vector _yHat = yHat.getColumn(0);
         Vector _res = res.getColumn(0);
-
-        yHat.getNumColumns();
-
-        //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
         double rss = RegressionDataset.rss(x, y, b);
         double se = FastMath.sqrt(rss / (n - k));
@@ -253,7 +248,7 @@ public class RegressionDataset implements Regression {
 
         Matrix x;
 
-        if (regressors.size() > 0) {
+        if (!regressors.isEmpty()) {
             x = new Matrix(xSub.getNumRows(), xSub.getNumColumns() + 1);
 
             for (int i = 0; i < x.getNumRows(); i++) {
@@ -286,7 +281,6 @@ public class RegressionDataset implements Regression {
 
         Matrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
-        Vector _yHat = yHat.getColumn(0);
         Vector _res = res.getColumn(0);
 
         Matrix b2 = b.copy();
@@ -330,7 +324,7 @@ public class RegressionDataset implements Regression {
         double[] seArray = sqErr.toArray();
 
 
-        return new RegressionResult(regressors.size() == 0, vNames, n,
+        return new RegressionResult(regressors.isEmpty(), vNames, n,
                 bArray, tArray, pArray, seArray, r2, rss, this.alpha, _res);
     }
 
@@ -380,7 +374,7 @@ public class RegressionDataset implements Regression {
     /**
      * <p>Setter for the field <code>rows</code>.</p>
      *
-     * @param rows an array of {@link int} objects
+     * @param rows an array of  objects
      */
     public void setRows(int[] rows) {
         this.rows = rows;

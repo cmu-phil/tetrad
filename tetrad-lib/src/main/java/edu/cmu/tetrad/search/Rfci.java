@@ -77,7 +77,7 @@ public final class Rfci implements IGraphSearch {
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     /**
      * The depth for the fast adjacency search.
      */
@@ -90,10 +90,6 @@ public final class Rfci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    /**
-     * True iff the final orientation step should be skipped.
-     */
-    private boolean ablationLeaveOutFinalOrientation;
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
@@ -144,7 +140,7 @@ public final class Rfci implements IGraphSearch {
      *
      * @return This PAG.
      */
-    public Graph search() {
+    public Graph search() throws InterruptedException {
         return search(getIndependenceTest().getVariables());
     }
 
@@ -154,7 +150,7 @@ public final class Rfci implements IGraphSearch {
      * @param nodes The sublist.
      * @return The RFCI PAG
      */
-    public Graph search(List<Node> nodes) {
+    public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);
 
         return search(new Fas(getIndependenceTest()), nodes);
@@ -167,7 +163,7 @@ public final class Rfci implements IGraphSearch {
      * @param nodes The nodes to search over.
      * @return The RFCI PAG.
      */
-    public Graph search(IFas fas, List<Node> nodes) {
+    public Graph search(IFas fas, List<Node> nodes) throws InterruptedException {
         long beginTime = MillisecondTimes.timeMillis();
         independenceTest.setVerbose(verbose);
 
@@ -176,7 +172,7 @@ public final class Rfci implements IGraphSearch {
             TetradLogger.getInstance().log("Independence test = " + getIndependenceTest() + ".");
         }
 
-        setMaxPathLength(this.maxPathLength);
+        setMaxDiscriminatingPathLength(this.maxDiscriminatingPathLength);
 
         this.graph = new EdgeListGraph(nodes);
 
@@ -185,15 +181,18 @@ public final class Rfci implements IGraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
         fas.setVerbose(this.verbose);
-        this.graph = fas.search();
+        try {
+            this.graph = fas.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         this.sepsets = fas.getSepsets();
 
         long stop1 = MillisecondTimes.timeMillis();
         long start2 = MillisecondTimes.timeMillis();
 
-        FciOrient orient = new FciOrient(
-                R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+        FciOrient orient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
 
         // For RFCI always executes R5-10
         orient.setCompleteRuleSetUsed(true);
@@ -202,9 +201,7 @@ public final class Rfci implements IGraphSearch {
         orient.fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
 
-        if (!ablationLeaveOutFinalOrientation) {
-            orient.finalOrientation(this.graph);
-        }
+        orient.finalOrientation(this.graph);
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
@@ -274,21 +271,21 @@ public final class Rfci implements IGraphSearch {
      *
      * @return This number.
      */
-    public int getMaxPathLength() {
-        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
+    public int getMaxDiscriminatingPathLength() {
+        return this.maxDiscriminatingPathLength == Integer.MAX_VALUE ? -1 : this.maxDiscriminatingPathLength;
     }
 
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -326,7 +323,7 @@ public final class Rfci implements IGraphSearch {
     /**
      * RFCI Algorithm 4.4 (Colombo et al, 2012) Orient colliders
      */
-    private void ruleR0_RFCI(List<Node[]> rTuples) {
+    private void ruleR0_RFCI(List<Node[]> rTuples) throws InterruptedException {
         List<Node[]> lTuples = new ArrayList<>();
 
         List<Node> nodes = this.graph.getNodes();
@@ -507,7 +504,7 @@ public final class Rfci implements IGraphSearch {
      * set the sepSet of x and y to the minimal such subset of the given sepSet and remove the edge <x, y> if background
      * knowledge allows
      */
-    private void setMinSepSet(Set<Node> _sepSet, Node x, Node y) {
+    private void setMinSepSet(Set<Node> _sepSet, Node x, Node y) throws InterruptedException {
         Set<Node> empty = Collections.emptySet();
         boolean independent;
 
@@ -541,15 +538,6 @@ public final class Rfci implements IGraphSearch {
                 }
             }
         }
-    }
-
-    /**
-     * Sets the flag to leave out final orientation during the search.
-     *
-     * @param ablationLeaveOutFinalOrientation True to leave out final orientation, false otherwise.
-     */
-    public void setLeaveOutFinalOrientation(boolean ablationLeaveOutFinalOrientation) {
-        this.ablationLeaveOutFinalOrientation = ablationLeaveOutFinalOrientation;
     }
 }
 

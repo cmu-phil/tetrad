@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -73,7 +74,7 @@ public class RevertToPag extends AbstractAction implements ClipboardOwner {
             return;
         }
 
-        workbench.setGraph(new DagToPag(graph).convert());
+        workbench.setGraph(PagCache.getInstance().getPag(graph));
 
 //        if (graph.paths().isLegalDag() || graph.paths().isLegalCpdag() || graph.paths().isLegalMpdag()) {
 //            workbench.setGraph(new DagToPag(graph).convert());

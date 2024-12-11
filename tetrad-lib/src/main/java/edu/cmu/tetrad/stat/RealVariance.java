@@ -30,7 +30,7 @@ public interface RealVariance {
      * <p>compute.</p>
      *
      * @param biasCorrected a boolean
-     * @return an array of {@link double} objects
+     * @return an array of  objects
      */
     double[] compute(boolean biasCorrected);
 

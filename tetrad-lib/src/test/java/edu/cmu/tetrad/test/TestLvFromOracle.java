@@ -26,9 +26,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.GraspFci;
 import edu.cmu.tetrad.search.LvLite;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -97,7 +94,12 @@ public class TestLvFromOracle {
 
         LV_ALGORITHMS algorithm = LV_ALGORITHMS.LV_LITE;
 
-        Graph estimated = new LvLite(msepTest, score).search();
+        Graph estimated = null;
+        try {
+            estimated = new LvLite(msepTest, score).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 //
 //           Graph estimated = new GFci(msepTest, score).search();
 

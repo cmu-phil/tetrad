@@ -62,7 +62,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see Grasp
  * @see Knowledge
  */
-public class Boss implements SuborderSearch {
+    public class Boss implements SuborderSearch {
     /**
      * The score.
      */
@@ -157,7 +157,7 @@ public class Boss implements SuborderSearch {
      * @param gsts     The GrowShrinkTree being used to do caching of scores.
      */
     @Override
-    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
+    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) throws InterruptedException {
         assert this.numStarts > 0;
         this.gsts = gsts;
         this.all = new HashSet<>(prefix);
@@ -195,7 +195,13 @@ public class Boss implements SuborderSearch {
                     if (this.verbose && (suborder.size() > 1)) System.out.println(x);
 
                     if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
-                    else improved |= betterMutationAsync(prefix, suborder, x);
+                    else {
+                        try {
+                            improved |= betterMutationAsync(prefix, suborder, x);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
 
                 if (this.verbose && (suborder.size() > 1)) {
@@ -370,7 +376,7 @@ public class Boss implements SuborderSearch {
      * @param x        The node to be moved in the suborder.
      * @return true if the suborder was modified, false otherwise.
      */
-    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
+    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) throws InterruptedException {
         List<Callable<Void>> tasks = new ArrayList<>();
 
         double[] scores = new double[suborder.size()];
@@ -510,7 +516,7 @@ public class Boss implements SuborderSearch {
      * @param prefix   The list of nodes that must precede the suborder.
      * @param suborder The list of nodes to be ordered.
      */
-    private void bes(List<Node> prefix, List<Node> suborder) {
+    private void bes(List<Node> prefix, List<Node> suborder) throws InterruptedException {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
 

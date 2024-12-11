@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class VerticalIntDataBox implements DataBox {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -73,7 +75,7 @@ public class VerticalIntDataBox implements DataBox {
     /**
      * Constructs a new data box using the given 2D int data array as data.
      *
-     * @param data an array of {@link int} objects
+     * @param data an array of  objects
      */
     public VerticalIntDataBox(int[][] data) {
         int length = data[0].length;
@@ -168,7 +170,7 @@ public class VerticalIntDataBox implements DataBox {
     /**
      * <p>getVariableVectors.</p>
      *
-     * @return an array of {@link int} objects
+     * @return an array of  objects
      */
     public int[][] getVariableVectors() {
         return this.data;

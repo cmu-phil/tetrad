@@ -151,8 +151,8 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
      * @param x         a {@link cern.colt.matrix.DoubleMatrix2D} object
      * @param y         a {@link cern.colt.matrix.DoubleMatrix2D} object
      * @param variables a {@link java.util.List} object
-     * @param l         an array of {@link int} objects
-     * @param lambda    an array of {@link double} objects
+     * @param l         an array of  objects
+     * @param lambda    an array of  objects
      */
     public Mgm(DoubleMatrix2D x, DoubleMatrix2D y, List<Node> variables, int[] l, double[] lambda) {
 
@@ -187,7 +187,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
      * <p>Constructor for Mgm.</p>
      *
      * @param ds     a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param lambda an array of {@link double} objects
+     * @param lambda an array of  objects
      */
     public Mgm(DataSet ds, double[] lambda) {
         this.variables = ds.getVariables();

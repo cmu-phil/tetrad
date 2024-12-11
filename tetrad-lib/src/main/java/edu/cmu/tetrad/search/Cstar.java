@@ -377,7 +377,12 @@ public class Cstar {
             tasks.add(new Task(subsample, possibleCauses, possibleEffects, dataSet, origDir, newDir));
         }
 
-        List<double[][]> allEffects = runCallablesDoubleArray(tasks, parallelized);
+        List<double[][]> allEffects = null;
+        try {
+            allEffects = runCallablesDoubleArray(tasks, parallelized);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         List<List<Double>> doubles = new ArrayList<>();
 
@@ -693,7 +698,7 @@ public class Cstar {
      * @param sample the dataset to use for the PC algorithm
      * @return the graph representing the stable pattern
      */
-    private Graph getPatternPcStable(DataSet sample) {
+    private Graph getPatternPcStable(DataSet sample) throws InterruptedException {
         IndependenceTest test = this.test.getTest(sample, parameters);
         test.setVerbose(false);
         Pc pc = new Pc(test);
@@ -712,7 +717,11 @@ public class Cstar {
         Score score = this.score.getScore(sample, parameters);
         Fges fges = new Fges(score);
         fges.setVerbose(false);
-        return fges.search();
+        try {
+            return fges.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -721,7 +730,7 @@ public class Cstar {
      * @param sample the dataset to use for the BOSS algorithm
      * @return the graph representing the pattern
      */
-    private Graph getPatternBoss(DataSet sample) {
+    private Graph getPatternBoss(DataSet sample) throws InterruptedException {
         Score score = this.score.getScore(sample, parameters);
         PermutationSearch boss = new PermutationSearch(new Boss(score));
         boss.setSeed(parameters.getLong(Params.SEED));
@@ -735,7 +744,7 @@ public class Cstar {
      * @param data   the dataset containing the variables for replacing the nodes in the resulting graph
      * @return the graph representing the pattern
      */
-    private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) {
+    private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) throws InterruptedException {
         RestrictedBoss restrictedBoss = new RestrictedBoss(score);
         parameters.set(Params.TRIMMING_STYLE, 1);
         Graph g = restrictedBoss.search(sample, parameters);
@@ -787,7 +796,7 @@ public class Cstar {
      * @param parallelized a boolean indicating whether to execute the tasks in parallel.
      * @return a List of double[][] arrays representing the results of the executed tasks.
      */
-    private List<double[][]> runCallablesDoubleArray(List<Callable<double[][]>> tasks, boolean parallelized) {
+    private List<double[][]> runCallablesDoubleArray(List<Callable<double[][]>> tasks, boolean parallelized) throws InterruptedException {
         if (tasks.isEmpty()) return new ArrayList<>();
 
         List<double[][]> results = new ArrayList<>();
@@ -795,7 +804,8 @@ public class Cstar {
         int parallelism = Runtime.getRuntime().availableProcessors();
         ForkJoinPool pool = new ForkJoinPool(parallelism);
 
-        List<Future<double[][]>> futures = pool.invokeAll(tasks);
+        List<Future<double[][]>> futures = null;
+        futures = pool.invokeAll(tasks);
 
         for (Future<double[][]> future : futures) {
             try {
@@ -806,6 +816,42 @@ public class Cstar {
         }
 
         return results;
+    }
+
+    /**
+     * Writes the object to the specified ObjectOutputStream.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Reads the object from the specified ObjectInputStream. This method is used during deserialization to restore the
+     * state of the object.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            in.defaultReadObject();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
+                                           + ", " + e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -1035,42 +1081,6 @@ public class Cstar {
          */
         public double getMinBeta() {
             return this.minBeta;
-        }
-    }
-
-    /**
-     * Writes the object to the specified ObjectOutputStream.
-     *
-     * @param out The ObjectOutputStream to write the object to.
-     * @throws IOException If an I/O error occurs.
-     */
-    @Serial
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        try {
-            out.defaultWriteObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
-            throw e;
-        }
-    }
-
-    /**
-     * Reads the object from the specified ObjectInputStream. This method is used during deserialization
-     * to restore the state of the object.
-     *
-     * @param in The ObjectInputStream to read the object from.
-     * @throws IOException            If an I/O error occurs.
-     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
-     */
-    @Serial
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        try {
-            in.defaultReadObject();
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
-            throw e;
         }
     }
 }

@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.GraphSampling;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -28,7 +29,7 @@ public class PagSamplingRfci implements IGraphSearch {
     private boolean verbose = false;
     // Rfci parameters
     private int depth = -1;
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     // IndTestProbabilistic parameters
     private boolean threshold = true;
     private double cutoff = 0.5;
@@ -86,7 +87,7 @@ public class PagSamplingRfci implements IGraphSearch {
                 for (Future<Graph> completedTask : completedTasks) {
                     try {
                         Graph graph = completedTask.get();
-                        if (graph != null && GraphSearchUtils.isLegalPag(graph).isLegalPag()) {
+                        if (graph != null && GraphSearchUtils.isLegalPag(graph, new HashSet<>()).isLegalPag()) {
                             graphs.add(graph);
                         }
                     } catch (ExecutionException exception) {
@@ -155,14 +156,14 @@ public class PagSamplingRfci implements IGraphSearch {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -220,7 +221,7 @@ public class PagSamplingRfci implements IGraphSearch {
                     rfci.setKnowledge(knowledge);
                 }
                 rfci.setDepth(depth);
-                rfci.setMaxPathLength(maxPathLength);
+                rfci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
                 rfci.setVerbose(verbose);
 
                 return rfci.search();

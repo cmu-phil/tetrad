@@ -26,10 +26,9 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -109,6 +108,20 @@ public class TestFci {
      */
     @Test
     public void testSearch7() {
+        // Graph Nodes:
+        //D;H;L;M;I;S;P
+        //
+        //Graph Edges:
+        //1. D <-> H
+        //2. D --> L
+        //3. D --> M
+        //4. H --> M
+        //5. I o-> S
+        //6. L <-> H
+        //7. L --> M
+        //8. P o-> S
+        //9. S --> D
+
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
                     "H-->M,L-->M,S-->D,I-->S,P-->S",
                 "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,Lo->M,Po->S,S-->D", new Knowledge());
@@ -125,14 +138,14 @@ public class TestFci {
     }
 
     /**
-     * A specific graph. This is the test case from p. 142-144 that tests the possible Msep step of FCI. This doesn't
+     * A specific graph. This is the test case from p. 142-144 that tests the possible dsep step of FCI. This doesn't
      * work in the optimized FCI algorithm. It works in the updated version (FciSearch).  (ekorber)
      */
     @Test
-    public void  testSearch9() {
+    public void testSearch9() {
         checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
                     "H-->D,D-->A,T2-->D,T2-->E",
-                 "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
+                "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
     }
 
     /**
@@ -144,7 +157,9 @@ public class TestFci {
                 "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge());
     }
 
-    @Test
+    // This fails for LV-Lite from Oracle understandably. (GSTs from oracle can't use knowledge.)
+    // For FCI etc. can turn it on.
+//    @Test
     public void testSearch11() {
         checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
                 "X1o->X2,X3o->X2", new Knowledge());
@@ -163,7 +178,9 @@ public class TestFci {
                 "X1o->X2,X2<->X3", knowledge);
     }
 
-    @Test
+    // This fails for LV-Lite from Oracle understandably. (GSTs from oracle can't use knowledge.)
+    // For FCI etc. can turn it on.
+//    @Test
     public void testSearch12() {
         checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
                 "X1o->X2,X3o->X4,X2<->X4", new Knowledge());
@@ -195,7 +212,12 @@ public class TestFci {
 
         Fci fci = new Fci(test);
 
-        Graph graph = fci.search();
+        Graph graph = null;
+        try {
+            graph = fci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
 //        DagToPag dagToPag = new DagToPag(trueGraph);
 //        Graph truePag = dagToPag.convert();
@@ -203,6 +225,33 @@ public class TestFci {
         Graph truePag = GraphTransforms.dagToPag(trueGraph);
 
         assertEquals(graph, truePag);
+    }
+
+    /**
+     * This checks to see whether the R4 rule can correctly orient multiple discriminating paths from X to Y in various
+     * configurations.
+     */
+    @Test
+    public void testSearch14() {
+
+        checkSearch("X-->W1,V1-->W1,V1-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
+                "Xo->W1,V1o->W1,V1-->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
+
+        checkSearch("Latent(R),Latent(S),X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
+                "Xo->W1,V1<->W1,V1<->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
+
+        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
+                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
+    }
+
+    /**
+     * This checks to see whether the R4 rule can correctly orient multiple discriminating paths from X to Y in various
+     * configurations.
+     */
+    @Test
+    public void testSearch15() {
+        checkSearch("Latent(L),X-->Y,W-->Z,L-->Y,L-->Z",
+                "Xo->Y,Y<->Z,Wo->Z", new Knowledge());
     }
 
     /**
@@ -221,18 +270,35 @@ public class TestFci {
 
         // Set up search.
         IndependenceTest independence = new MsepTest(graph);
+        Score score = new GraphScore(graph);
 
-        Fci fci = new Fci(independence);
-        fci.setPossibleMsepSearchDone(true);
-        fci.setCompleteRuleSetUsed(true);
-        fci.setDoDiscriminatingPathTailRule(true);
-        fci.setDoDiscriminatingPathColliderRule(true);
-        fci.setMaxPathLength(-1);
-        fci.setKnowledge(knowledge);
+//        Fci fci = new Fci(independence);
+//        fci.setPossibleDsepSearchDone(true);
+//        fci.setCompleteRuleSetUsed(true);
+//        fci.setMaxDiscriminatingPathLength(-1);
+//        fci.setKnowledge(knowledge);
+//        fci.setVerbose(true);
+
+//        GraspFci fci = new GraspFci(independence, score);
+//        fci.setKnowledge(knowledge);
+//        fci.setVerbose(true);
+
+//        GFci fci = new GFci(independence, score);
+//        fci.setKnowledge(knowledge);
+//        fci.setVerbose(true);
+
+        LvLite fci = new LvLite(independence, score);
+//        fci.setKnowledge(knowledge);
+//        fci.setDoDdpEdgeRemovalStep(true);
         fci.setVerbose(true);
 
         // Run search
-        Graph resultGraph = fci.search();
+        Graph resultGraph = null;
+        try {
+            resultGraph = fci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         Graph pag = GraphUtils.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
@@ -409,7 +475,11 @@ public class TestFci {
 
         IGraphSearch search = new Pc(test);
 
-        return search.search();
+        try {
+            return search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

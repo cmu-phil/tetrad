@@ -228,7 +228,7 @@ public final class Proposition implements TetradSerializable {
     /**
      * <p>isPermissibleCombination.</p>
      *
-     * @param point an array of {@link int} objects
+     * @param point an array of  objects
      * @return true iff the given point is true for this proposition.
      */
     public boolean isPermissibleCombination(int[] point) {

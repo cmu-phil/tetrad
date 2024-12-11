@@ -21,14 +21,16 @@
 
 package edu.cmu.tetrad.util;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * <p>Stores a table of cells with int values of arbitrary dimension. The
- * dimensionality of the table is set in the reset() method; if a dimensionality is set in the constructor, it will be
- * passed to the reset() method. Every time the dimensionality is changed, the table is reset to zero throughout. If the
- * dimensionality is set to null, the table cannot be used until a non-null dimensionality is set.&gt; 0
+ * Stores a table of cells with int values of arbitrary dimension. The dimensionality of the table is set in the
+ * constructor. The table is initialized with all cells set to zero.
+ * <p>
+ * Immutable.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -36,22 +38,20 @@ import java.util.Map;
 public class MultiDimIntTable {
 
     /**
-     * A single-dimension array containing all of the cells of the table. Must be at least long enough to contain data
-     * for each cell allowed for by the given dimension array--in other words, the length must be greater than or equal
-     * to dims[0] & dims[1] ... * dims[dims.length - 1].
+     * A single-dimension array containing all the cells of the table. Must be at least long enough to contain data for
+     * each cell allowed for by the given dimension array--in other words, the length must be greater than or equal to
+     * dims[0] & dims[1] ... * dims[dims.length - 1].
      */
-    private Map<Integer, Long> cells;
-
-    /**
-     * The number of cells in the table. (May be different from the length of cells[].
-     */
-    private int numCells;
-
+    private final Map<Integer, Integer> cells;
     /**
      * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
      * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
      */
-    private int[] dims;
+    private final int[] dims;
+    /**
+     * The number of cells in the table. (This may be different from the length of cells[].)
+     */
+    private int numCells;
 
     /**
      * Constructs a new multidimensional table of integer cells, with the given (fixed) dimensions. Each dimension must
@@ -61,31 +61,49 @@ public class MultiDimIntTable {
      *             dimension (&gt; 0).
      */
     public MultiDimIntTable(int[] dims) {
-        reset(dims);
+        if (dims.length < 1) {
+            throw new IllegalArgumentException(
+                    "Table must have at " + "least one dimension.");
+        }
+
+        // Calculate the number of cells in the table.
+        this.numCells = 1;
+
+        for (int dim : dims) {
+            this.numCells *= dim;
+        }
+
+        // Construct cells array.
+        this.cells = new HashMap<>();
+
+        // Store the dimensions, making a copy for security.
+        this.dims = Arrays.copyOf(dims, dims.length);
     }
 
     /**
-     * <p>getCellIndex.</p>
+     * Returns the index in the table for the cell with the given coordinates.
      *
-     * @param coords The coordinates of the cell. Each value must be less than the number of possible value for the
+     * @param coords The coordinates of the cell. Each value must be less than the number of possible values for the
      *               corresponding dimension in the table. (Enforced.)
      * @return the row in the table for the given node and combination of parent values.
      */
-    public synchronized int getCellIndex(int[] coords) {
+    public int getCellIndex(int[] coords) {
         int cellIndex = 0;
 
-        for (int i = 0; i < this.dims.length; i++) {
-            cellIndex *= this.dims[i];
-            cellIndex += coords[i];
+        for (int i = 0; i < coords.length; i++) {
+            if (i < dims.length) {
+                cellIndex *= this.dims[i];
+                cellIndex += coords[i];
+            }
         }
 
         return cellIndex;
     }
 
     /**
-     * <p>getCoordinates.</p>
+     * Returns the array representing the combination of parent values for this row.
      *
-     * @param cellIndex an <code>int</code> value
+     * @param cellIndex the index of the cell.
      * @return the array representing the combination of parent values for this row.
      */
     @SuppressWarnings("SameParameterValue")
@@ -107,49 +125,36 @@ public class MultiDimIntTable {
      * @param value  The amount by which the table cell at these coordinates should be incremented (an integer).
      * @return the new value at that table cell.
      */
-    public synchronized long increment(int[] coords, int value) {
+    public int increment(int[] coords, int value) {
         int cellIndex = getCellIndex(coords);
 
-        if (!this.cells.containsKey(cellIndex)) {
-            this.cells.put(cellIndex, 0L);
-        }
+        // Increment the value at the cell. Make sure that if the updated value is 0, the cell is removed from the map
+        // if it is present, to save space.
+        int updatedValue = this.cells.getOrDefault(cellIndex, 0) + value;
 
-        this.cells.put(cellIndex, this.cells.get(cellIndex) + value);
-        return this.cells.get(cellIndex);
-    }
-
-    /**
-     * Sets the value at the given coordinates to the given value, returning the new value.
-     *
-     * @param coords The coordinates of the table cell to update.
-     * @param value  The amount by which the table cell at these coordinates should be incremented (an integer).
-     * @return the new value at that table cell.
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public long setValue(int[] coords, int value) {
-        int cellIndex = getCellIndex(coords);
-        this.cells.put(cellIndex, (long) value);
-        return this.cells.get(cellIndex);
-    }
-
-    /**
-     * <p>getValue.</p>
-     *
-     * @param coords The coordinates of the table cell to update.
-     * @return the new value at that table cell.
-     */
-    public long getValue(int[] coords) {
-        int cellIndex = getCellIndex(coords);
-
-        if (this.cells == null || !this.cells.containsKey(cellIndex)) {
-            return 0L;
+        if (updatedValue == 0) {
+            this.cells.remove(cellIndex);
         } else {
-            return this.cells.get(cellIndex);
+            this.cells.put(cellIndex, updatedValue);
         }
+
+        return updatedValue;
     }
 
     /**
-     * <p>Getter for the field <code>numCells</code>.</p>
+     * Returns the value of the cell at the given coordinates.
+     *
+     * @param coords The coordinates of the table cell to update.
+     * @return the new value at that table cell.
+     */
+    public int getValue(int[] coords) {
+        int cellIndex = getCellIndex(coords);
+        Integer l = this.cells.get(cellIndex);
+        return Objects.requireNonNullElse(l, 0);
+    }
+
+    /**
+     * Returns the number of cells in the table.
      *
      * @return this number.
      */
@@ -158,80 +163,31 @@ public class MultiDimIntTable {
     }
 
     /**
-     * <p>getDimensions.</p>
+     * Returns the dimension of the given variable.
      *
-     * @return this number.
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public int[] getDimensions() {
-        return this.dims;
-    }
-
-    /**
-     * Describe <code>getDimension</code> method here.
-     *
-     * @param var an <code>int</code> value
-     * @return an <code>int</code> value
+     * @param var The index of the variable.
+     * @return Its dimension.
      */
     public int getDimension(int var) {
         return this.dims[var];
     }
 
     /**
-     * <p>getNumDimensions.</p>
+     * Returns the number of dimensions in the table.
      *
-     * @return an <code>int</code> value
+     * @return The number of dimensions.
      */
     public int getNumDimensions() {
         return this.dims.length;
     }
 
     /**
-     * Resets the table, allowing a different dimensionality. All cells are reset to zero. The underlying data array is
-     * reused if possible.
+     * Returns the dimension of the given variable.
      *
-     * @param dims an <code>int[]</code> value
+     * @param varIndex the index of the variable.
+     * @return the dimension of the variable.
      */
-    public final void reset(int[] dims) {
-        if (dims == null) {
-            this.cells = null;
-        } else {
-            if (dims.length < 1) {
-                throw new IllegalArgumentException(
-                        "Table must have at " + "least one dimension.");
-            }
-
-//            for (int i = 0; i < dims.length; i++) {
-//                if (dims[i] < 1) {
-//                    throw new IllegalArgumentException("Dimension " + i +
-//                            " has fewer than " + "one values: " + dims[i]);
-//                }
-//            }
-
-            // Calculate length of cells[] array.
-            this.numCells = 1;
-
-            for (int dim : dims) {
-                this.numCells *= dim;
-            }
-
-            // Construct (or reset) cells array.
-            this.cells = new HashMap<>();
-
-            // Store the dimensions, making a copy for security.
-            this.dims = new int[dims.length];
-
-            System.arraycopy(dims, 0, this.dims, 0, dims.length);
-        }
-    }
-
-    /**
-     * <p>Getter for the field <code>dims</code>.</p>
-     *
-     * @param varIndex a int
-     * @return a int
-     */
-    public int getDims(int varIndex) {
+    public int getDim(int varIndex) {
         return this.dims[varIndex];
     }
 }

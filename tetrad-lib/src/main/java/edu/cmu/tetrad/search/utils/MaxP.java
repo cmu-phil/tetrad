@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -46,7 +45,7 @@ public final class MaxP {
     private int depth = -1;
     private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
-    private int maxPathLength = -1;
+    private int maxDiscriminatingPathLength = -1;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
     private boolean verbose = false;
 
@@ -66,7 +65,7 @@ public final class MaxP {
      *
      * @param graph The graph to orient.
      */
-    public synchronized void orient(Graph graph) {
+    public synchronized void orient(Graph graph) throws InterruptedException {
         addColliders(graph);
     }
 
@@ -91,14 +90,14 @@ public final class MaxP {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
+        if (maxDiscriminatingPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
         }
 
-        this.maxPathLength = maxPathLength;
+        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -120,7 +119,7 @@ public final class MaxP {
         this.knowledge = knowledge;
     }
 
-    private void addColliders(Graph graph) {
+    private void addColliders(Graph graph) throws InterruptedException {
         Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
         List<Node> nodes = graph.getNodes();
@@ -147,7 +146,7 @@ public final class MaxP {
         }
     }
 
-    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
+    private void doNode(Graph graph, Map<Triple, Double> scores, Node b) throws InterruptedException {
         List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
@@ -171,7 +170,7 @@ public final class MaxP {
             }
 
             if (this.useHeuristic) {
-                if (existsShortPath(a, c, this.maxPathLength, graph)) {
+                if (existsShortPath(a, c, this.maxDiscriminatingPathLength, graph)) {
                     testColliderMaxP(graph, scores, a, b, c);
                 } else {
                     testColliderHeuristic(graph, scores, a, b, c);
@@ -182,7 +181,7 @@ public final class MaxP {
         }
     }
 
-    private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
+    private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) throws InterruptedException {
         List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
         List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
         adja.remove(c);
@@ -239,7 +238,7 @@ public final class MaxP {
         }
     }
 
-    private void testColliderHeuristic(Graph graph, Map<Triple, Double> colliders, Node a, Node b, Node c) {
+    private void testColliderHeuristic(Graph graph, Map<Triple, Double> colliders, Node a, Node b, Node c) throws InterruptedException {
         if (this.knowledge.isForbidden(a.getName(), b.getName())) {
             return;
         }
