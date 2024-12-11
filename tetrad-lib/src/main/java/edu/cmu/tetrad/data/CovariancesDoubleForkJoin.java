@@ -49,6 +49,10 @@ public class CovariancesDoubleForkJoin {
             numThreads /= 2;
         }
 
+        if (numThreads < 1) {
+            numThreads = 1;
+        }
+
         RealCovarianceMatrixForkJoin cov = new RealCovarianceMatrixForkJoin(data, numThreads);
         this.covariances = cov.compute(biasCorrected);
     }
