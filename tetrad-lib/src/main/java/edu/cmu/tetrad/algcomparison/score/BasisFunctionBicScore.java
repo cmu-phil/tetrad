@@ -41,8 +41,8 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "Basis-BIC (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
-@Mixed
+//@edu.cmu.tetrad.annotation.Score(name = "Basis-BIC (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
+//@Mixed
 public class BasisFunctionBicScore implements ScoreWrapper {
 
     @Serial
