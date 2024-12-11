@@ -44,8 +44,29 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public class Kci implements IndependenceTest, RowsSettable {
 
+    /**
+     * A static final map that stores precomputed instances of {@link SimpleMatrix} where each matrix is filled with
+     * ones. The map's keys are {@link Integer} values representing the size or dimension of the matrix, and the values
+     * are the corresponding {@link SimpleMatrix} objects.
+     * <p>
+     * This map is designed to cache commonly used matrices of ones to improve performance and avoid redundant
+     * calculations or memory allocation.
+     */
     private static final Map<Integer, SimpleMatrix> onesHash = new HashMap<>();
+    /**
+     * A static final map that serves as a cache for storing identity matrices. The map uses an integer as the key,
+     * representing the size of the matrix, and a {@code SimpleMatrix} as the value, representing the identity matrix of
+     * the corresponding size.
+     * <p>
+     * This caching mechanism is employed to avoid redundant computation of identity matrices, improving performance in
+     * scenarios where identity matrices of various sizes are frequently requested.
+     */
     private static final Map<Integer, SimpleMatrix> identityMap = new HashMap<>();
+    /**
+     * A static and final map that associates an integer key with a SimpleMatrix value. This map is used to store and
+     * retrieve SimpleMatrix objects based on their corresponding integer identifiers. It is initialized as an empty
+     * HashMap and designed to be immutable after its creation.
+     */
     private static final Map<Integer, SimpleMatrix> hMap = new HashMap<>();
     /**
      * The dataset to analyze.
@@ -97,9 +118,9 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     private double scalingFactor = 1.0;
     /**
-     * Epsilon for Proposition 5.
+     * Epsilon for Proposition 5. We are fixing this to 0.001.
      */
-    private double epsilon = 0.001;
+    private final double epsilon = 0.001;
     /**
      * True if verbose output is enabled.
      */
@@ -239,7 +260,7 @@ public class Kci implements IndependenceTest, RowsSettable {
     private static double h(Node x, SimpleMatrix data, Map<Node, Integer> nodesHash) {
         var _x = data.getColumn(nodesHash.get(x));
 //        var s = sd(_x.toArray2()[0]);
-//        _x = standardizeData(_x);
+//        _x = standardizeData(_x); // Already standardized.
         var N = _x.getNumRows();
         var g = new Vector(N);
         var central = median(convertTo1DArray(_x));
@@ -250,6 +271,13 @@ public class Kci implements IndependenceTest, RowsSettable {
         return 1.5716 * mad * FastMath.pow(N, -0.2);
     }
 
+    /**
+     * Retrieves an identity matrix of size N. If the matrix is not already cached,
+     * it creates a new identity matrix, caches it, and then returns it.
+     *
+     * @param N the size of the identity matrix to retrieve or create
+     * @return the identity matrix of size N
+     */
     private static @NotNull SimpleMatrix getI(int N) {
         SimpleMatrix I = identityMap.get(N);
 
@@ -261,6 +289,14 @@ public class Kci implements IndependenceTest, RowsSettable {
         return I;
     }
 
+    /**
+     * Retrieves or computes a specific matrix H based on the input value N.
+     * If the matrix is already cached, it will return the cached value.
+     * Otherwise, it computes the matrix, stores it in the cache, and returns it.
+     *
+     * @param N the dimension used to compute the matrix H
+     * @return the computed or cached SimpleMatrix H
+     */
     private static SimpleMatrix getH(int N) {
         SimpleMatrix H = hMap.get(N);
 
@@ -278,8 +314,8 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param n the size of the column vector to be created
      * @return a SimpleMatrix object representing the column vector of ones
      */
-    private @NotNull
-    static SimpleMatrix getOnes(int n) {
+    @NotNull
+    private static SimpleMatrix getOnes(int n) {
         SimpleMatrix ones = onesHash.get(n);
 
         if (ones == null) {
