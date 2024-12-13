@@ -32,10 +32,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * <p>
  * Please see that paper, especially Theorem 4 and Proposition 5.
  * <p>
- * Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):
- * <p>
- * Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel approach with
- * S-Plus illustrations (Vol. 18). OUP Oxford.
+ * Using optimal kernel bandwidths suggested by Silverman:
  *
  * @author kunzhang
  * @author Vineet Raghu on 7/3/2016
