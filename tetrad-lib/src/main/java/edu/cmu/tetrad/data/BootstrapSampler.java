@@ -36,13 +36,10 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public final class BootstrapSampler {
-
-
-    // private TetradLogger logger = TetradLogger.getInstance();
-
+    /**
+     * Whether to sample with replacement.
+     */
     private boolean withReplacement;
-
-
     /**
      * Constructs a sample that does not do any logging.
      */
@@ -66,7 +63,7 @@ public final class BootstrapSampler {
         if (dataSet.getNumRows() < 1) {
             throw new IllegalArgumentException("Dataset must contain samples.");
         }
-        //   this.logger.log("sampleSize", String.valueOf(newSampleSize));
+
         //Number of samples in input dataset
         int oldSampleSize = dataSet.getNumRows();
         int ncols = dataSet.getNumColumns();
