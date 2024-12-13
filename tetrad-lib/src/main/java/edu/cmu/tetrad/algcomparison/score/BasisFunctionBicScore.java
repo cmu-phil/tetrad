@@ -41,8 +41,8 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-//@edu.cmu.tetrad.annotation.Score(name = "Basis-BIC (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
-//@Mixed
+@edu.cmu.tetrad.annotation.Score(name = "Basis-BIC (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
+@Mixed
 public class BasisFunctionBicScore implements ScoreWrapper {
 
     @Serial
@@ -66,9 +66,8 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
         edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
-                SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances,
+                SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
@@ -101,7 +100,6 @@ public class BasisFunctionBicScore implements ScoreWrapper {
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.BASIS_TYPE);
         parameters.add(Params.BASIS_SCALE);
-        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.PENALTY_DISCOUNT);
 
         return parameters;

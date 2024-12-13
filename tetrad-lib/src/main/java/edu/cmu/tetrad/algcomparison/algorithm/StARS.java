@@ -185,7 +185,7 @@ public class StARS implements Algorithm {
 
         for (int i = 0; i < numSubsamples; i++) {
             BootstrapSampler sampler = new BootstrapSampler();
-            sampler.setWithoutReplacements(true);
+            sampler.setWithReplacement(true);
             samples.add(sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows())));
         }
 

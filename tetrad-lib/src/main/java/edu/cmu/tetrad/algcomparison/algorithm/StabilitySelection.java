@@ -77,7 +77,7 @@ public class StabilitySelection implements Algorithm {
                 if (this.to - this.from <= this.chunk) {
                     for (int s = this.from; s < this.to; s++) {
                         BootstrapSampler sampler = new BootstrapSampler();
-                        sampler.setWithoutReplacements(true);
+                        sampler.setWithReplacement(true);
                         DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
                         Graph graph = null;
                         try {

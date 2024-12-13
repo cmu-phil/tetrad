@@ -26,6 +26,7 @@ import cern.jet.stat.Descriptive;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,138 +143,20 @@ public final class StatUtils {
         return sum / (double) count;
     }
 
-    /**
-     * <p>median.</p>
-     *
-     * @param array a long array.
-     * @return the median of the values in this array.
-     */
-    public static double median(long[] array) {
-        return StatUtils.median(array, array.length);
+    public static double median(SimpleMatrix matrix) {
+        double[] elements = matrix.getDDRM().data.clone(); // Copy the elements
+        return median(elements);
     }
 
-    /**
-     * <p>median.</p>
-     *
-     * @param array a double array.
-     * @return the median of the values in this array.
-     */
-    public static double median(double[] array) {
-        return StatUtils.median(array, array.length);
-    }
+    public static double median(double[] elements) {
+        Arrays.sort(elements); // Sort the elements
 
-    /**
-     * <p>median.</p>
-     *
-     * @param array a long array.
-     * @param N     the number of values of array which should be considered.
-     * @return the median of the first N values in this array.
-     */
-    public static long median(long[] array, int N) {
-
-        long[] a = new long[N + 1];
-
-        System.arraycopy(array, 0, a, 0, N);
-
-        a[N] = Long.MAX_VALUE;
-
-        long v, t;
-        int i, j, l = 0;
-        int r = N - 1;
-        int k1 = r / 2;
-        int k2 = r - k1;
-
-        while (r > l) {
-            v = a[l];
-            i = l;
-            j = r + 1;
-
-            for (; ; ) {
-                while (a[++i] < v) {
-                }
-                while (a[--j] > v) {
-                }
-
-                if (i >= j) {
-                    break;
-                }
-
-                t = a[i];
-                a[i] = a[j];
-                a[j] = t;
-            }
-
-            t = a[j];
-            a[j] = a[l];
-            a[l] = t;
-
-            if (j <= k1) {
-                l = j + 1;
-            }
-
-            if (j >= k2) {
-                r = j - 1;
-            }
+        int n = elements.length;
+        if (n % 2 == 0) {
+            return (elements[n / 2 - 1] + elements[n / 2]) / 2.0;
+        } else {
+            return elements[n / 2];
         }
-
-        return (a[k1] + a[k2]) / 2;
-    }
-
-    /**
-     * <p>median.</p>
-     *
-     * @param array a double array.
-     * @param N     the number of values of array which should be considered.
-     * @return the median of the first N values in this array.
-     */
-    public static double median(double[] array, int N) {
-
-        double[] a = new double[N + 1];
-
-        System.arraycopy(array, 0, a, 0, N);
-
-        a[N] = Double.POSITIVE_INFINITY;
-
-        double v, t;
-        int i, j, l = 0;
-        int r = N - 1;
-        int k1 = r / 2;
-        int k2 = r - k1;
-
-        while (r > l) {
-            v = a[l];
-            i = l;
-            j = r + 1;
-
-            for (; ; ) {
-                while (a[++i] < v) {
-                }
-                while (a[--j] > v) {
-                }
-
-                if (i >= j) {
-                    break;
-                }
-
-                t = a[i];
-                a[i] = a[j];
-                a[j] = t;
-            }
-
-            t = a[j];
-            a[j] = a[l];
-            a[l] = t;
-
-            if (j <= k1) {
-                l = j + 1;
-            }
-
-            if (j >= k2) {
-                r = j - 1;
-            }
-        }
-
-        return (a[k1] + a[k2]) / 2;
     }
 
     /**
@@ -2079,10 +1962,12 @@ public final class StatUtils {
     }
 
     /**
-     * <p>logCoshScore.</p>
+     * Computes the log-cosh score for a given array of data. This method standardizes the input data, applies the
+     * log(cosh) transformation to each value in the dataset, computes the mean of the transformed values, and
+     * calculates the squared difference between the mean and a predefined log-cosh constant.
      *
-     * @param _f an array of  objects
-     * @return a double
+     * @param _f an array of double values representing the input data to be analyzed
+     * @return the computed log-cosh score as a squared difference between the mean of transformed data and a constant
      */
     public static double logCoshScore(double[] _f) {
         _f = StatUtils.standardizeData(_f);
@@ -2100,10 +1985,12 @@ public final class StatUtils {
     }
 
     /**
-     * <p>meanAbsolute.</p>
+     * Calculates the squared difference between the mean of the absolute values of a standardized dataset and the
+     * theoretical mean of the standard normal distribution.
      *
-     * @param _f an array of  objects
-     * @return a double
+     * @param _f an array of doubles representing the dataset to be processed and analyzed
+     * @return the squared difference between the computed mean of the absolute values and the theoretical mean of the
+     * standard normal distribution
      */
     public static double meanAbsolute(double[] _f) {
         _f = StatUtils.standardizeData(_f);
@@ -2118,15 +2005,15 @@ public final class StatUtils {
     }
 
     /**
-     * <p>pow.</p>
+     * Calculates the average of 1000 random absolute values generated from a normal distribution with a mean of 0 and
+     * standard deviation of 1.
      *
-     * @return a double
+     * @return the average of 1000 absolute values derived from a normal distribution.
      */
     public static double pow() {
         double sum = 0.0;
 
         for (int i = 0; i < 1000; i++) {
-//            sum += FastMath.pow(FastMath.tanh(RandomUtil.getInstance().nextNormal(0, 1)), 2);
             sum += abs(RandomUtil.getInstance().nextNormal(0, 1));
         }
 
@@ -2134,41 +2021,21 @@ public final class StatUtils {
     }
 
     /**
-     * <p>expScore.</p>
+     * Computes the logarithm of the hyperbolic cosine of an exponential value.
      *
-     * @param _f an array of  objects
-     * @return a double
-     */
-    public static double expScore(double[] _f) {
-//        _f = DataUtils.standardizeData(_f);
-        DoubleArrayList f = new DoubleArrayList(_f);
-
-        for (int k = 0; k < _f.length; k++) {
-            f.set(k, exp(f.get(k)));
-        }
-
-        double expected = Descriptive.mean(f);
-
-        return log(expected);
-
-    }
-
-    /**
-     * <p>logCoshExp.</p>
-     *
-     * @return a double
+     * @return the pre-defined constant value 0.3746764078432371.
      */
     public static double logCoshExp() {
-//        return 0.3745232061467262;
         return 0.3746764078432371;
     }
 
     /**
-     * <p>entropy.</p>
+     * Computes the entropy of a distribution based on the provided data values and number of bins. Entropy is a measure
+     * of the uncertainty or randomness in a dataset.
      *
-     * @param numBins a int
-     * @param _f      an array of  objects
-     * @return a double
+     * @param numBins the number of bins to discretize the range of data into
+     * @param _f      the array of data values to compute the entropy for
+     * @return the calculated entropy value
      */
     public static double entropy(int numBins, double[] _f) {
         double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
@@ -2201,10 +2068,12 @@ public final class StatUtils {
     }
 
     /**
-     * <p>maxEntApprox.</p>
+     * Calculates the maximum entropy approximation of the given data array. This method estimates the negentropy of the
+     * input data after standardizing it, and derives an approximation based on the Gaussian entropy.
      *
-     * @param x an array of  objects
-     * @return a double
+     * @param x the input array of doubles representing the dataset to be analyzed. The array will be standardized
+     *          before calculating the approximation.
+     * @return a double value representing the maximum entropy approximation of the input dataset.
      */
     public static double maxEntApprox(double[] x) {
 
@@ -2238,10 +2107,11 @@ public final class StatUtils {
     }
 
     /**
-     * <p>standardizeData.</p>
+     * Standardizes the provided data array by subtracting the mean and scaling by the standard deviation. This method
+     * transforms the data to have a mean of zero and a standard deviation of one.
      *
-     * @param data an array of  objects
-     * @return an array of  objects
+     * @param data the input array of data to be standardized
+     * @return a new array containing the standardized values
      */
     public static double[] standardizeData(double[] data) {
         double[] data2 = new double[data.length];
@@ -2416,7 +2286,8 @@ public final class StatUtils {
                 try {
                     subdata[c][i] = allData[c][rows.get(i)];
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    TetradLogger.getInstance().log("Error = " + e.getMessage());
+                    TetradLogger.getInstance().log("c = " + c + ", i = " + i + ", rows.size() = " + rows.size());
                 }
             }
         }
@@ -2559,55 +2430,6 @@ public final class StatUtils {
         return new double[]{exy, exy / sqrt(exx * eyy), exx, eyy, (double) n, exyv};
     }
 
-    /**
-     * Computes the (statitician's) Hermite polynomial of a given index and value. The Hermite polynomials are a
-     * sequence of orthogonal polynomials defined by the Rodrigues formula. They are orthogonal with respect to the
-     * weight function exp(-x^2). The Hermite polynomial of index index is denoted H_n(x).
-     * <p>
-     * These are coded up to index 20.
-     *
-     * @param index The index of the Hermite polynomial to be computed. This must be a non-negative integer less than or
-     *              equal to 20.
-     * @param x     The value at which the Hermite polynomial is to be evaluated.
-     * @return The computed value of the Hermite polynomial.
-     * @throws IllegalArgumentException if the index is negative or greater than 20.
-     */
-//    public static double hermite1(int index, double x) {
-//        return switch (index) {
-//            case 0 -> 1;
-//            case 1 -> x;
-//            case 2 -> pow(x, 2) - 1;
-//            case 3 -> pow(x, 3) - 3 * x;
-//            case 4 -> pow(x, 4) - 6 * pow(x, 2) + 3;
-//            case 5 -> pow(x, 5) - 10 * pow(x, 3) + 15 * x;
-//            case 6 -> pow(x, 6) - 15 * pow(x, 4) + 45 * pow(x, 2) - 15;
-//            case 7 -> pow(x, 7) - 21 * pow(x, 5) + 105 * pow(x, 3) - 105 * x;
-//            case 8 -> pow(x, 8) - 28 * pow(x, 6) + 210 * pow(x, 4) - 420 * pow(x, 2) + 105;
-//            case 9 -> pow(x, 9) - 36 * pow(x, 7) + 378 * pow(x, 5) - 1260 * pow(x, 3) + 945 * x;
-//            case 10 -> pow(x, 10) - 45 * pow(x, 8) + 630 * pow(x, 6) - 3150 * pow(x, 4) + 4725 * pow(x, 2) - 945;
-//            case 11 -> pow(x, 11) - 55 * pow(x, 9) + 990 * pow(x, 7) - 6930 * pow(x, 5) + 17325 * pow(x, 3) - 10395 * x;
-//            case 12 ->
-//                    pow(x, 12) - 66 * pow(x, 10) + 1485 * pow(x, 8) - 13860 * pow(x, 6) + 51975 * pow(x, 4) - 62370 * pow(x, 2) + 10395;
-//            case 13 ->
-//                    pow(x, 13) - 78 * pow(x, 11) + 2145 * pow(x, 9) - 25740 * pow(x, 7) + 135135 * pow(x, 5) - 270270 * pow(x, 3) + 135135 * x;
-//            case 14 ->
-//                    pow(x, 14) - 91 * pow(x, 12) + 3003 * pow(x, 10) - 45045 * pow(x, 8) + 315315 * pow(x, 6) - 945945 * pow(x, 4) + 945945 * pow(x, 2) - 135135;
-//            case 15 ->
-//                    pow(x, 15) - 105 * pow(x, 13) + 4095 * pow(x, 11) - 72072 * pow(x, 9) + 675675 * pow(x, 7) - 2702700 * pow(x, 5) + 4054050 * pow(x, 3) - 2027025 * x;
-//            case 16 ->
-//                    pow(x, 16) - 120 * pow(x, 14) + 5460 * pow(x, 12) - 120120 * pow(x, 10) + 1351350 * pow(x, 8) - 8108100 * pow(x, 6) + 24324300 * pow(x, 4) - 32432400 * pow(x, 2) + 2027025;
-//            case 17 ->
-//                    pow(x, 17) - 136 * pow(x, 15) + 7140 * pow(x, 13) - 185640 * pow(x, 11) + 2602600 * pow(x, 9) - 20420400 * pow(x, 7) + 81681600 * pow(x, 5) - 163363200 * pow(x, 3) + 81681600 * x;
-//            case 18 ->
-//                    pow(x, 18) - 153 * pow(x, 16) + 8855 * pow(x, 14) - 277134 * pow(x, 12) + 4849845 * pow(x, 10) - 48498450 * pow(x, 8) + 290990700 * pow(x, 6) - 970969000 * pow(x, 4) + 1456463500 * pow(x, 2) - 34459425;
-//            case 19 ->
-//                    pow(x, 19) - 171 * pow(x, 17) + 11628 * pow(x, 15) - 387600 * pow(x, 13) + 7759752 * pow(x, 11) - 96996900 * pow(x, 9) + 775975200 * pow(x, 7) - 3879876000L * pow(x, 5) + 9699690000L * pow(x, 3) - 4849845000L * x;
-//            case 20 ->
-//                    pow(x, 20) - 190 * pow(x, 18) + 14820 * pow(x, 16) - 530530 * pow(x, 14) + 11639628 * pow(x, 12) - 174594420 * pow(x, 10) + 1745944200 * pow(x, 8) - 11639628000L * pow(x, 6) + 46558512000L * pow(x, 4) - 93229224000L * pow(x, 2) + 4849845000L;
-//            default ->
-//                    throw new IllegalArgumentException("Sorry, I only coded up the Hermite polyomials up to number 20. You asked for index " + index + ".");
-//        };
-//    }
     public static double hermite1(int index, double x) {
         if (index < 0) {
             throw new IllegalArgumentException("The index of a Hermite polynomial must be a non-negative integer.");
@@ -2670,8 +2492,9 @@ public final class StatUtils {
 
     /**
      * Computes the value of the Chebyshev polynomial of a given degree at a specified point x.
+     *
      * @param index the degree of the Chebyshev polynomial. Must be a non-negative integer.
-     * @param x the point at which the Chebyshev polynomial is evaluated.
+     * @param x     the point at which the Chebyshev polynomial is evaluated.
      * @return the value of the Chebyshev polynomial of the given degree at the specified point x.
      */
     public static double chebyshev(int index, double x) {
@@ -2686,16 +2509,6 @@ public final class StatUtils {
         } else {
             return 2 * x * chebyshev(index - 1, x) - chebyshev(index - 2, x);
         }
-    }
-
-    private static double pow(double x, int power) {
-        double value = 1;
-
-        for (int i = 1; i <= power; i++) {
-            value *= x;
-        }
-
-        return value;
     }
 
     /**
@@ -2717,7 +2530,10 @@ public final class StatUtils {
      * @return The result of the iterative multiplication.
      */
     public static double basisFunctionValue(int type, int index, double x) {
-        if (type == 1) {
+
+        // TODO: Perhaps we need to insist that function = x for type = 1, ruling out hermite2.
+
+        if (type == 0) {
             double g = 1.0;
 
             for (int i = 1; i <= index; i++) {
@@ -2725,13 +2541,11 @@ public final class StatUtils {
             }
 
             return g;
+        } else if (type == 1) {
+            return legendre(index, x);
         } else if (type == 2) {
             return hermite1(index, x);
         } else if (type == 3) {
-            return hermite2(index, x);
-        } else if (type == 4) {
-            return legendre(index, x);
-        } else if (type == 5) {
             return chebyshev(index, x);
         } else {
             throw new IllegalArgumentException("Unrecognized type: " + type);

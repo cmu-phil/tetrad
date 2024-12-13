@@ -315,10 +315,10 @@ public class Cstar {
                         TetradLogger.getInstance().log("Sampling data for index " + (this.subsample + 1));
 
                         if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
-                            sampler.setWithoutReplacements(false);
+                            sampler.setWithReplacement(true);
                             sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
                         } else if (Cstar.this.sampleStyle == SampleStyle.SUBSAMPLE) {
-                            sampler.setWithoutReplacements(true);
+                            sampler.setWithReplacement(false);
                             sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
                         } else {
                             throw new IllegalArgumentException("That type of sample is not configured: " + Cstar.this.sampleStyle);

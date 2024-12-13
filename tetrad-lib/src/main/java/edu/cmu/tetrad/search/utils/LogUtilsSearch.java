@@ -279,8 +279,6 @@ public class LogUtilsSearch {
 
                 double score1 = score.localScore(hashIndices.get(node), parentIndices);
 
-                System.out.println("Node: " + node + " Score: " + score1);
-
                 if (!Double.isNaN(score1)) _score += score1;
 //                _score += score1;
             }

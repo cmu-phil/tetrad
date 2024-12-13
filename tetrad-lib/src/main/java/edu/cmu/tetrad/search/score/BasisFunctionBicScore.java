@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.math3.util.FastMath.abs;
+
 /**
  * Calculates the basis function BIC score for a given dataset. This is a modification of the Degenerate Gaussian score
  * by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
@@ -52,15 +54,14 @@ public class BasisFunctionBicScore implements Score {
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
      *
-     * @param dataSet               the data set on which the score is to be calculated.
-     * @param precomputeCovariances flag indicating whether covariances should be precomputed.
-     * @param truncationLimit       the truncation limit of the basis.
-     * @param basisType             the type of basis function used in the BIC score computation.
-     * @param basisScale                 the basisScale factor used in the calculation of the BIC score for basis functions.
-     *                              All variables are scaled to [-basisScale, basisScale], or standardized if 0.
+     * @param dataSet         the data set on which the score is to be calculated.
+     * @param truncationLimit the truncation limit of the basis.
+     * @param basisType       the type of basis function used in the BIC score computation.
+     * @param basisScale      the basisScale factor used in the calculation of the BIC score for basis functions. All
+     *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
-    public BasisFunctionBicScore(DataSet dataSet, boolean precomputeCovariances, int truncationLimit,
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
                                  int basisType, double basisScale) {
         Map<Integer, List<Integer>> embedding;
         if (dataSet == null) {
@@ -74,7 +75,8 @@ public class BasisFunctionBicScore implements Score {
         } else if (basisScale > 0.0) {
             dataSet = DataTransforms.scale(dataSet, basisScale);
         } else {
-            throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be standardized.");
+            throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be " +
+                                               "standardized.");
         }
 
         this.variables = dataSet.getVariables();
@@ -111,7 +113,6 @@ public class BasisFunctionBicScore implements Score {
                 keys.remove(keysReverse.get(i));
                 A.remove(i);
                 B.remove(i);
-
                 embedding.put(i_, new ArrayList<>(keys.values()));
             } else {
                 List<Integer> indexList = new ArrayList<>();
@@ -140,7 +141,20 @@ public class BasisFunctionBicScore implements Score {
 
         RealMatrix D = MatrixUtils.createRealMatrix(B_);
         BoxDataSet dataSet1 = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        this.bic = new SemBicScore(dataSet1, precomputeCovariances);
+
+        CorrelationMatrix correlationMatrix = new CorrelationMatrix(dataSet1);
+
+        double correlationThreshold = 1e-5;
+
+        for (int _i = 0; _i < correlationMatrix.getDimension(); _i++) {
+            for (int j = 0; j < correlationMatrix.getDimension(); j++) {
+                if (abs(correlationMatrix.getValue(_i, j)) < correlationThreshold) {
+                    correlationMatrix.setValue(_i, j, 0);
+                }
+            }
+        }
+
+        this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
 
         // We will be using the pseudo-inverse in the BIC score calculation so we don't get exceptions.
@@ -161,15 +175,6 @@ public class BasisFunctionBicScore implements Score {
     public double localScore(int i, int... parents) {
         double score = 0;
 
-        // Count the number of continuous parents
-        int numContinuousParents = 0;
-
-        for (int parent : parents) {
-            if (variables.get(parent) instanceof ContinuousVariable) {
-                numContinuousParents++;
-            }
-        }
-
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
@@ -184,33 +189,10 @@ public class BasisFunctionBicScore implements Score {
 
             double score1 = this.bic.localScore(i_, parents_);
 
-            // Extra penalty for higher-degree continuous parents
-            double[] weights1 = new double[numContinuousParents * truncationLimit];
-
-            for (int k = 0; k < numContinuousParents; k++) {
-                for (int j = 0; j < truncationLimit; j++) {
-                    weights1[k * truncationLimit + j] = 0.5 * (1 + j);
-                }
-            }
-
-            int n = this.bic.getSampleSize();
-
-            double penalty = 0.0;
-            for (int j = 1; j <= weights1.length; j++) {
-                if (weights1[j - 1] > .5) {
-                    penalty += (weights1[j - 1]) * Math.log(n);
-                }
-            }
-
-            // Return the modified BIC
-            double score2 = score1 + penalty;
-
-            if (!Double.isNaN(score2)) {
-                score += score2;
+            if (!Double.isNaN(score1)) {
+                score += score1;
                 B.add(i_);
             }
-
-//            score += score2;
         }
 
         return score;
