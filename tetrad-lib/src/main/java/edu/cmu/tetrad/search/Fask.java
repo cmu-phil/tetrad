@@ -329,6 +329,7 @@ public final class Fask {
      * some heuristics for orienting two-cycles.
      *
      * @return the graph. Some edges may be undirected; some adjacencies may be two-cycles.
+     * @throws InterruptedException if the search is interrupted.
      */
     public Graph search() throws InterruptedException {
         setCutoff(alpha);

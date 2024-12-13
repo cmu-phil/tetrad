@@ -140,6 +140,7 @@ public class Pc implements IGraphSearch {
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      *
      * @see Fci
+     * @throws InterruptedException if any
      */
     @Override
     public Graph search() throws InterruptedException {
@@ -158,6 +159,7 @@ public class Pc implements IGraphSearch {
      * @param nodes The sublist of nodes to search over.
      * @return The search graph.
      * @see #search()
+     * @throws InterruptedException if any
      */
     public Graph search(Set<Node> nodes) throws InterruptedException {
         nodes = new HashSet<>(nodes);
@@ -176,6 +178,7 @@ public class Pc implements IGraphSearch {
      * @return The result graph
      * @see #search()
      * @see IFas
+     * @throws InterruptedException if any
      */
     public Graph search(IFas fas, Set<Node> nodes) throws InterruptedException {
         if (verbose) {

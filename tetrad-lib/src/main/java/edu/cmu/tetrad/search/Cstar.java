@@ -697,6 +697,7 @@ public class Cstar {
      *
      * @param sample the dataset to use for the PC algorithm
      * @return the graph representing the stable pattern
+     * @throws InterruptedException if any
      */
     private Graph getPatternPcStable(DataSet sample) throws InterruptedException {
         IndependenceTest test = this.test.getTest(sample, parameters);
@@ -729,6 +730,7 @@ public class Cstar {
      *
      * @param sample the dataset to use for the BOSS algorithm
      * @return the graph representing the pattern
+     * @throws InterruptedException if any
      */
     private Graph getPatternBoss(DataSet sample) throws InterruptedException {
         Score score = this.score.getScore(sample, parameters);
@@ -743,6 +745,7 @@ public class Cstar {
      * @param sample the dataset to use for the Restricted BOSS algorithm
      * @param data   the dataset containing the variables for replacing the nodes in the resulting graph
      * @return the graph representing the pattern
+     * @throws InterruptedException if any
      */
     private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) throws InterruptedException {
         RestrictedBoss restrictedBoss = new RestrictedBoss(score);
@@ -795,6 +798,7 @@ public class Cstar {
      * @param tasks        a List of Callables that return double[][] arrays.
      * @param parallelized a boolean indicating whether to execute the tasks in parallel.
      * @return a List of double[][] arrays representing the results of the executed tasks.
+     * @throws InterruptedException if any
      */
     private List<double[][]> runCallablesDoubleArray(List<Callable<double[][]>> tasks, boolean parallelized) throws InterruptedException {
         if (tasks.isEmpty()) return new ArrayList<>();

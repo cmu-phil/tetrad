@@ -69,6 +69,7 @@ public class ShiftSearch {
      * <p>search.</p>
      *
      * @return an array of  objects
+     * @throws java.lang.InterruptedException if any.
      */
     public int[] search() throws InterruptedException {
         if (this.maxShift < 1) {

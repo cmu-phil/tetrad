@@ -71,7 +71,8 @@ public class TopEigenvalues {
      * Performs eigendecomposition on a given matrix and optionally stores the top eigenvalues and (optionaly)
      * eigenvectors.
      *
-     * @param storeV a flag indicating whether to store the eigenvectors
+     * @param storeV a flag indicating whether to store the eigenvectors]
+     * @param threshold the threshold for the eigenvalues
      * @return the Eigendecomposition object on which this method is invoked
      */
     public Kci.EigenReturn invoke(boolean storeV, double threshold) {

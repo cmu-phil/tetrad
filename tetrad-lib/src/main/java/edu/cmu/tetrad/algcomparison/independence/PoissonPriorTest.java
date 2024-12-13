@@ -16,10 +16,10 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on
-// * Poisosn Prior algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
-// */
+/**
+ * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on
+ * Poisosn Prior algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
+ */
 //@TestOfIndependence(
 //        name = "Poisson Prior Test",
 //        command = "poisson-test",

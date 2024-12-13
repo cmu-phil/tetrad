@@ -1776,6 +1776,7 @@ public final class GraphUtils {
      * @param sepsets A SepsetProducer that will do the sepset search operation described.
      * @param depth   The depth of the sepset search.
      * @param verbose Whether to print verbose output.
+     * @throws InterruptedException if any
      */
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes,
                                                 SepsetProducer sepsets, int depth, boolean verbose) throws InterruptedException {
@@ -2330,6 +2331,7 @@ public final class GraphUtils {
      * @param knowledge         The knowledge used to determine the orientation of edges.
      * @param verbose           Whether to print verbose output.
      * @param unshieldedTriples A set to store unshielded triples.
+     * @throws InterruptedException if any
      */
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
                               boolean verbose, Set<Triple> unshieldedTriples) throws InterruptedException {
@@ -3552,6 +3554,7 @@ public final class GraphUtils {
      * @return The percentage of p-values that are less than the significance level (alpha) used in the test. Returns
      * 0.0 if the number of p-values is less than 5 or if ensureMarkov is false or test instance is invalid.
      * @throws IllegalArgumentException if ensureMarkov is false.
+     * @throws InterruptedException if any
      */
     public static double localMarkovInitializePValues(Graph dag, boolean ensureMarkov, IndependenceTest test,
                                                       Map<Pair<Node, Node>, Set<Double>> pValues) throws InterruptedException {

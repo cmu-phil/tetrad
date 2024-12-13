@@ -143,11 +143,25 @@ public final class StatUtils {
         return sum / (double) count;
     }
 
+    /**
+     * Calculates the median of all the elements in the given SimpleMatrix.
+     *
+     * @param matrix the input SimpleMatrix containing the elements for which the median is to be calculated
+     * @return the median value of the elements in the input matrix
+     */
     public static double median(SimpleMatrix matrix) {
         double[] elements = matrix.getDDRM().data.clone(); // Copy the elements
         return median(elements);
     }
 
+    /**
+     * Computes the median value of a given array of doubles. The method sorts the array and then calculates the median
+     * based on whether the number of elements in the array is odd or even.
+     *
+     * @param elements an array of double values for which the median is to be calculated. The input array will be
+     *                 sorted in-place.
+     * @return the median value of the array. If the array is empty, the behavior is undefined.
+     */
     public static double median(double[] elements) {
         Arrays.sort(elements); // Sort the elements
 
@@ -1244,6 +1258,14 @@ public final class StatUtils {
         return adev;
     }
 
+    /**
+     * Calculates the i-th moment of the given data array. The i-th moment is computed as the mean of each data value
+     * raised to the power of i.
+     *
+     * @param data the array of data values for which the moment is to be calculated
+     * @param i    the power to which each data value is raised
+     * @return the calculated i-th moment of the data
+     */
     public static double calculateMoment(double[] data, int i) {
         double sum = 0.0;
         for (double value : data) {
@@ -1252,6 +1274,14 @@ public final class StatUtils {
         return sum / data.length; // Mean of powers
     }
 
+    /**
+     * Calculates the central moment of a dataset for a given order. The central moment is derived by raising each
+     * deviation of the data points from the mean to the specified power and averaging the results.
+     *
+     * @param data the array of data points for which the central moment is to be calculated
+     * @param i    the order of the central moment to be calculated
+     * @return the calculated central moment of the dataset
+     */
     public static double calculateCentralMoment(double[] data, int i) {
         double mean = calculateMoment(data, 1); // First moment is the mean
         double sum = 0.0;
@@ -1261,6 +1291,18 @@ public final class StatUtils {
         return sum / data.length; // Average
     }
 
+    /**
+     * Calculates the specified cumulant of a dataset based on the given order.
+     * Cumulants provide statistical descriptions of datasets and are related to moments.
+     *
+     * @param data the array of data points, representing the dataset for which the cumulant
+     *             is to be calculated
+     * @param i    the order of the cumulant to calculate (e.g., 1 for mean, 2 for variance,
+     *             3 for skewness-related cumulant, etc.)
+     * @return the calculated cumulant of the specified order
+     * @throws IllegalArgumentException if the order of the cumulant (i) is greater than 5,
+     *                                  as calculation for higher-order cumulants are not implemented
+     */
     public static double calculateCumulant(double[] data, int i) {
         switch (i) {
             case 1: // Mean
@@ -2430,6 +2472,17 @@ public final class StatUtils {
         return new double[]{exy, exy / sqrt(exx * eyy), exx, eyy, (double) n, exyv};
     }
 
+    /**
+     * Computes the probabilist's Hermite polynomial of the given index at the specified point.
+     * <p>
+     * The Hermite polynomials are defined recursively: He_0(x) = 1, He_1(x) = x, He_{n+1}(x) = x * He_n(x) - n *
+     * He_{n-1}(x).
+     *
+     * @param index the non-negative integer index of the Hermite polynomial. Must be 0 or greater.
+     * @param x     the point at which to evaluate the Hermite polynomial.
+     * @return the value of the Hermite polynomial of the specified index at the given point.
+     * @throws IllegalArgumentException if the index is negative.
+     */
     public static double hermite1(int index, double x) {
         if (index < 0) {
             throw new IllegalArgumentException("The index of a Hermite polynomial must be a non-negative integer.");

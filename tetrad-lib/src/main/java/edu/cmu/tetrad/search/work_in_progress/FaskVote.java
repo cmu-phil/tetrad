@@ -56,6 +56,7 @@ public class FaskVote {
      * @param parameters The parameers.
      * @return The composite graph.
      * @see Parameters
+     * @throws InterruptedException if any.
      */
     public Graph search(Parameters parameters) throws InterruptedException {
         List<DataModel> _dataSets = new ArrayList<>();

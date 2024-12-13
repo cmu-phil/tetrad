@@ -22,6 +22,7 @@ public interface MultiDataSetAlgorithm extends Algorithm {
      * @param dataSets   The data sets.
      * @param parameters The parameters.
      * @return The graph.
+     * @throws InterruptedException if any.
      */
     Graph search(List<DataModel> dataSets, Parameters parameters) throws InterruptedException;
 

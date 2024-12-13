@@ -104,6 +104,7 @@ public class Mimbuild {
      * @param latentNames The names of the latent variables corresponding in order ot each cluster in the clustering.
      * @param measuresCov The covariance matrix over the measured variables.
      * @return The inferred graph over the latent variables.
+     * @throws InterruptedException If the search is interrupted.
      */
     public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) throws InterruptedException {
         List<String> _latentNames = new ArrayList<>(latentNames);

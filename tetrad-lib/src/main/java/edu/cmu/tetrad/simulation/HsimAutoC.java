@@ -78,6 +78,7 @@ public class HsimAutoC {
      *
      * @param resimSize a int
      * @return an array of  objects
+     * @throws java.lang.InterruptedException if any.
      */
     public double[] run(int resimSize) throws InterruptedException {
 

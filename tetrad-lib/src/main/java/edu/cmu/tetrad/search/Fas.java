@@ -129,6 +129,7 @@ public class Fas implements IFas {
      * @param y           The second node.
      * @param mainThread  The main thread. Needed to try to interrupt the search if it takes too long.
      * @return True if there is an adjacency between x and y at the given depth, false otherwise.
+     * @throws InterruptedException if any
      */
     private static boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies,
                                      int depth, Node x, Node y,
@@ -224,6 +225,7 @@ public class Fas implements IFas {
      * @param knowledge The knowledge object that provides information about conditional independencies.
      * @param y         Another node in the graph.
      * @return A list of nodes that are possible parents of the node x.
+     * @throws InterruptedException if any
      */
     private static List<Node> possibleParents(Node x, List<Node> adjx, Knowledge knowledge, Node y) throws InterruptedException {
         List<Node> possibleParents = new LinkedList<>();
@@ -268,6 +270,7 @@ public class Fas implements IFas {
      * after this procedure are the adjacencies in the data.
      *
      * @return An undirected graph that summarizes the conditional independencies in the data.
+     * @throws InterruptedException if any
      */
     @Override
     public Graph search() throws InterruptedException {
@@ -284,6 +287,7 @@ public class Fas implements IFas {
      *
      * @param nodes A list of nodes to search over.
      * @return An undirected graph that summarizes the conditional independencies in the data.
+     * @throws InterruptedException if any    *
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
         Thread mainThread = Thread.currentThread();
@@ -602,6 +606,7 @@ public class Fas implements IFas {
      * @param depth       The maximum depth to search.
      * @param mainThread  The main thread. Needed to try to interrupt the search if it takes too long.
      * @return true if there are adjacencies at the given depth, false otherwise.
+     * @throws InterruptedException if any
      */
     private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Thread mainThread) throws InterruptedException {
         if (mainThread.isInterrupted()) {

@@ -67,6 +67,7 @@ public class EnsureMarkov {
      *                     them
      * @return a map of node pairs to sets of adjusted p-values
      * @throws IllegalArgumentException if ensureMarkov is false or if the test is null or an instance of MsepTest
+     * @throws InterruptedException     if any
      */
     public static Map<Pair<Node, Node>, Set<Double>> localMarkovAdjustPValues(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
                                                                               Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) throws InterruptedException {
@@ -141,6 +142,7 @@ public class EnsureMarkov {
      * Sets whether to ensure Markov property. By default, false; this must be turned on.
      *
      * @param ensureMarkov True if the Markov property should be ensured.
+     * @throws InterruptedException if any.
      */
     public void setEnsureMarkov(boolean ensureMarkov) throws InterruptedException {
         this.ensureMarkov = ensureMarkov;
@@ -164,6 +166,7 @@ public class EnsureMarkov {
      * @param y The second node.
      * @param z The set of conditioning nodes.
      * @return True if the nodes are independent.
+     * @throws InterruptedException if any.
      */
     public boolean markovIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         IndependenceResult result = test.checkIndependence(x, y, z);

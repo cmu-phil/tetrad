@@ -1314,6 +1314,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @param msep                 The set of m-separation facts.
      * @param mconn                The set of m-connection facts.
      * @param msepTest             The m-separation test.
+     * @throws InterruptedException if any
      */
     private void generateMseps(List<IndependenceFact> allIndependenceFacts, Set<IndependenceFact> msep, Set<IndependenceFact> mconn,
                                MsepTest msepTest) throws InterruptedException {
@@ -1393,6 +1394,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      *
      * @param facts The set of independence facts.
      * @param msep  True if for implied independencies, false if for implied dependencies.
+     * @throws InterruptedException if any
      */
     private void generateResults(Set<IndependenceFact> facts, boolean msep) throws InterruptedException {
         class IndCheckTask implements Callable<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> {

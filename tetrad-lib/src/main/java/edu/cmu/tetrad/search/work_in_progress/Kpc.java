@@ -239,6 +239,7 @@ public class Kpc implements IGraphSearch {
      *
      * @param nodes a {@link java.util.List} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.lang.InterruptedException if any.
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);

@@ -12,10 +12,10 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/// **
-// * The BasisFunctionText class implements the IndependenceWrapper interface and represents a test for independence based
-// * on Basis Function BIC algorithm.
-// */
+/**
+ * The BasisFunctionText class implements the IndependenceWrapper interface and represents a test for independence based
+ * on Basis Function BIC algorithm.
+ */
 //@TestOfIndependence(
 //        name = "Basis Function BIC Test",
 //        command = "bf-bic-test",

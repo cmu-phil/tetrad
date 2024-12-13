@@ -91,6 +91,7 @@ public class Bes {
      *
      * @param graph     The graph.
      * @param variables The variables the search should be restricted to.
+     * @throws InterruptedException If the search is interrupted.
      */
     public void bes(Graph graph, List<Node> variables) throws InterruptedException {
         Map<Node, Integer> hashIndices = new HashMap<>();

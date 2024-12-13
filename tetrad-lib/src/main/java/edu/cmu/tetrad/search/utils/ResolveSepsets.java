@@ -61,6 +61,7 @@ public final class ResolveSepsets {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests,
                                               Node x, Node y, Set<Node> condSet) throws InterruptedException {
@@ -103,10 +104,11 @@ public final class ResolveSepsets {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledFisher(List<IndependenceTest> independenceTests, Node x, Node y,
                                                     Set<Node> condSet) throws InterruptedException {
-        double alpha = independenceTests.iterator().next().getAlpha();
+        double alpha = independenceTests.getFirst().getAlpha();
         double tf = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
             if (ResolveSepsets.missingVariable(x, y, condSet, independenceTest)) continue;
@@ -160,6 +162,7 @@ public final class ResolveSepsets {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledTippett(List<IndependenceTest> independenceTests, Node x, Node y,
                                                      Set<Node> condSet) throws InterruptedException {
@@ -196,6 +199,7 @@ public final class ResolveSepsets {
      * @param condSet           a {@link java.util.Set} object
      * @param r                 a int
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledWilkinson(List<IndependenceTest> independenceTests, Node x, Node y,
                                                        Set<Node> condSet, int r) throws InterruptedException {
@@ -221,6 +225,7 @@ public final class ResolveSepsets {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y,
                                                             Set<Node> condSet) throws InterruptedException {
@@ -256,6 +261,7 @@ public final class ResolveSepsets {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledStouffer(List<IndependenceTest> independenceTests, Node x, Node y,
                                                       Set<Node> condSet) throws InterruptedException {
@@ -285,6 +291,7 @@ public final class ResolveSepsets {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.iterator().next().getAlpha();
@@ -335,6 +342,7 @@ public final class ResolveSepsets {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledAverage(List<IndependenceTest> independenceTests, Node x, Node y,
                                                      Set<Node> condSet) throws InterruptedException {
@@ -405,6 +413,7 @@ public final class ResolveSepsets {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledAverageTest(List<IndependenceTest> independenceTests, Node x, Node y,
                                                          Set<Node> condSet) throws InterruptedException {
@@ -436,6 +445,7 @@ public final class ResolveSepsets {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledRandom(List<IndependenceTest> independenceTests, Node x, Node y,
                                                     Set<Node> condSet) throws InterruptedException {

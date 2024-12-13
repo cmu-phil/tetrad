@@ -16,10 +16,10 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on SEM
-// * BIC algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
-// */
+/**
+ * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on SEM
+ * BIC algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
+ */
 //@TestOfIndependence(
 //        name = "SEM BIC Test",
 //        command = "sem-bic-test",

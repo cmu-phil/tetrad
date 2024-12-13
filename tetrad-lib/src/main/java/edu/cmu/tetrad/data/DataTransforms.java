@@ -881,7 +881,7 @@ public class DataTransforms {
 
         for (int j = 0; j < data2.getNumColumns(); j++) {
             double sum = 0.0;
-             int count = 0;
+            int count = 0;
 
             for (int i = 0; i < data2.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {
@@ -920,6 +920,18 @@ public class DataTransforms {
         return data2;
     }
 
+    /**
+     * Standardizes the columns of the given data matrix by centering and scaling. For each column representing a
+     * continuous variable, the method calculates the mean and standard deviation, subtracts the mean from each value,
+     * and divides by the standard deviation. Discrete variables are ignored.
+     *
+     * @param data      The input data matrix to be standardized. Each column corresponds to a variable, and each row
+     *                  represents an observation.
+     * @param variables A list of nodes representing the variables in the data. The type of each variable (e.g.,
+     *                  continuous or discrete) determines whether the variable will be standardized.
+     * @return A new standardized data matrix where each continuous variable has been mean-centered and normalized by
+     * its standard deviation.
+     */
     public static Matrix standardizeData(Matrix data, List<Node> variables) {
         Matrix data2 = data.copy();
 
@@ -1282,11 +1294,12 @@ public class DataTransforms {
 
     /**
      * Scales the continuous variables in the given DataSet to have values in the range [-1, 1].
-     *
-     * For each continuous column, the method computes the maximum of the absolute values of the minimum and maximum
-     * of the column, and divides all values in that column by this maximum value. Discrete columns are not affected.
+     * <p>
+     * For each continuous column, the method computes the maximum of the absolute values of the minimum and maximum of
+     * the column, and divides all values in that column by this maximum value. Discrete columns are not affected.
      *
      * @param dataSet The DataSet containing variables to be scaled.
+     * @param scale   The scaling factor to apply to the continuous variables. The scaling factor is applied after the
      * @return A new DataSet with scaled continuous variables, while discrete variables remain unchanged.
      */
     public static DataSet scale(DataSet dataSet, double scale) {
@@ -1333,6 +1346,15 @@ public class DataTransforms {
         return 2 * scale * (value - a) / (b - a) - scale;
     }
 
+    /**
+     * Scales the columns of the provided dataset based on the given scale factors. Only continuous variables in the
+     * dataset are scaled. Discrete variables are ignored. The method returns a new dataset with scaled values, leaving
+     * the original dataset unmodified.
+     *
+     * @param dataSet the input dataset to be scaled
+     * @param scales  an array of scale factors, where each scale corresponds to a column in the dataset
+     * @return a new dataset with the continuous columns scaled by the given factors
+     */
     public static DataSet scale(DataSet dataSet, double[] scales) {
         dataSet = dataSet.copy();
 

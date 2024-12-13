@@ -67,6 +67,7 @@ public class HsimRepeatAC {
      * @param resimSize a int
      * @param repeat    a int
      * @return an array of  objects
+     * @throws java.lang.InterruptedException if any.
      */
     public double[] run(int resimSize, int repeat) throws InterruptedException {
         //parameter: set of positive integers, which are resimSize values.

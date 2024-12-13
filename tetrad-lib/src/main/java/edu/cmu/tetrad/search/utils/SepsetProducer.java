@@ -43,6 +43,7 @@ public interface SepsetProducer {
      * @param b     the second node
      * @param depth the depth of the search
      * @return the set of common neighbors between nodes a and b
+     * @throws InterruptedException if any
      */
     Set<Node> getSepset(Node a, Node b, int depth) throws InterruptedException;
 
@@ -54,6 +55,7 @@ public interface SepsetProducer {
      * @param s     the set of nodes
      * @param depth the depth of the search
      * @return the sepset containing nodes a and b from the given set of nodes
+     * @throws InterruptedException if any
      */
     Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth) throws InterruptedException;
 
@@ -65,6 +67,7 @@ public interface SepsetProducer {
      * @param k     a {@link Node} object
      * @param depth the depth of the search
      * @return a boolean
+     * @throws InterruptedException if any
      */
     boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException;
 
@@ -96,6 +99,7 @@ public interface SepsetProducer {
      * @param c      the second node
      * @param sepset the set of common neighbors between d and c
      * @return true if d is independent of c, false otherwise
+     * @throws InterruptedException if any
      */
     boolean isIndependent(Node d, Node c, Set<Node> sepset) throws InterruptedException;
 
@@ -106,6 +110,7 @@ public interface SepsetProducer {
      * @param b      the second node
      * @param sepset the set of nodes
      * @return the p-value for the statistical test
+     * @throws InterruptedException if any
      */
     double getPValue(Node a, Node b, Set<Node> sepset) throws InterruptedException;
 

@@ -139,6 +139,7 @@ public final class Bpc {
      * their latents as parents.
      *
      * @return This graph.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();

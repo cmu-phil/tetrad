@@ -168,6 +168,8 @@ public class StARS implements Algorithm {
 
     /**
      * {@inheritDoc}
+     *
+     * @throws InterruptedException if any
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {

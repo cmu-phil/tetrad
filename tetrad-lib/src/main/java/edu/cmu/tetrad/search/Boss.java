@@ -62,7 +62,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see Grasp
  * @see Knowledge
  */
-    public class Boss implements SuborderSearch {
+public class Boss implements SuborderSearch {
     /**
      * The score.
      */
@@ -155,6 +155,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
      * @param prefix   The prefix of the suborder.
      * @param suborder The suborder.
      * @param gsts     The GrowShrinkTree being used to do caching of scores.
+     * @throws InterruptedException if any
      */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) throws InterruptedException {
@@ -375,6 +376,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
      * @param suborder The list of nodes to be ordered.
      * @param x        The node to be moved in the suborder.
      * @return true if the suborder was modified, false otherwise.
+     * @throws InterruptedException if any
      */
     private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) throws InterruptedException {
         List<Callable<Void>> tasks = new ArrayList<>();
@@ -515,6 +517,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
      *
      * @param prefix   The list of nodes that must precede the suborder.
      * @param suborder The list of nodes to be ordered.
+     * @throws InterruptedException if any
      */
     private void bes(List<Node> prefix, List<Node> suborder) throws InterruptedException {
         List<Node> all = new ArrayList<>(prefix);

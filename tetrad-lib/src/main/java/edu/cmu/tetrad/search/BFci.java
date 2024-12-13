@@ -158,6 +158,7 @@ public final class BFci implements IGraphSearch {
      * Does the search and returns a PAG.
      *
      * @return The discovered graph.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         if (seed != -1) {

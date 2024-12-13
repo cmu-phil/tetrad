@@ -104,6 +104,7 @@ public class MimbuildTrek {
      * @param latentNames The names of the latents, which cannot be known by the clustering algorithm.
      * @param measuresCov The covariance matrix over the measured variables, from the data.
      * @return A graph over the latents.
+     * @throws InterruptedException If the search is interrupted.
      */
     public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) throws InterruptedException {
         List<String> _latentNames = new ArrayList<>(latentNames);

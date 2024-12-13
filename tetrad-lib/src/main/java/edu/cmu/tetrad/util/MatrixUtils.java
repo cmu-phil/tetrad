@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,14 +17,16 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.util;
 
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.linalg.Property;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.linear.AbstractRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 
@@ -173,8 +175,7 @@ public final class MatrixUtils {
      * @param tolerance A double &gt;= 0.
      * @return Ibid.
      */
-    public static boolean equals(double[][] ma, double[][] mb,
-                                 double tolerance) {
+    public static boolean equals(double[][] ma, double[][] mb, double tolerance) {
         return new Matrix(ma).equals(new Matrix(mb), tolerance);
     }
 
@@ -188,8 +189,7 @@ public final class MatrixUtils {
      * @return Ibid.
      */
     public static boolean equals(double[] va, double[] vb, double tolerance) {
-        return new Property(tolerance).equals(new DenseDoubleMatrix1D(va),
-                new DenseDoubleMatrix1D(vb));
+        return new Property(tolerance).equals(new DenseDoubleMatrix1D(va), new DenseDoubleMatrix1D(vb));
     }
 
     /**
@@ -252,8 +252,7 @@ public final class MatrixUtils {
             indices[i] = j;
         }
 
-        return new Matrix(m).getSelection(indices,
-                indices).toArray();
+        return new Matrix(m).getSelection(indices, indices).toArray();
     }
 
     /**
@@ -517,18 +516,27 @@ public final class MatrixUtils {
         return arr;
     }
 
+    /**
+     * Calculates the implied covariance matrix from the given edge coefficient matrix and error covariance matrix. This
+     * method assumes that the provided matrices satisfy the necessary mathematical properties for the computation.
+     *
+     * @param edgeCoef the edge coefficient matrix, representing direct effects among variables. Must not contain
+     *                 undefined (NaN) values.
+     * @param errCovar the error covariance matrix, representing variances and covariances of errors. Must not contain
+     *                 undefined (NaN) values.
+     * @return the implied covariance matrix, computed as ((I - B)⁻¹) Cov(e) ((I - B)⁻¹)ᵀ, where B is the edge
+     * coefficient matrix and Cov(e) is the error covariance matrix.
+     * @throws IllegalArgumentException if either the edge coefficient matrix or the error covariance matrix contains
+     *                                  undefined (NaN) values.
+     */
     public static Matrix impliedCovar(Matrix edgeCoef, Matrix errCovar) {
         if (MatrixUtils.containsNaN(edgeCoef)) {
             System.out.println(edgeCoef);
-            throw new IllegalArgumentException("Edge coefficient matrix must not "
-                                               + "contain undefined values. Probably the search put them "
-                                               + "there.");
+            throw new IllegalArgumentException("Edge coefficient matrix must not " + "contain undefined values. Probably the search put them " + "there.");
         }
 
         if (MatrixUtils.containsNaN(errCovar)) {
-            throw new IllegalArgumentException("Error covariance matrix must not "
-                                               + "contain undefined values. Probably the search put them "
-                                               + "there.");
+            throw new IllegalArgumentException("Error covariance matrix must not " + "contain undefined values. Probably the search put them " + "there.");
         }
 
 //        TetradMatrix g = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
@@ -730,8 +738,7 @@ public final class MatrixUtils {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix cholesky(Matrix covar) {
-        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(
-                org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(covar.toArray())).getL();
+        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(covar.toArray())).getL();
         return new Matrix(L.getData());
     }
 
@@ -1090,9 +1097,7 @@ public final class MatrixUtils {
 
     //=========================PRIVATE METHODS===========================//
     private static String nullMessage() {
-        return "\n"
-               + "\t"
-               + "<Matrix is null>";
+        return "\n" + "\t" + "<Matrix is null>";
     }
 
     /**
@@ -1106,8 +1111,7 @@ public final class MatrixUtils {
         while (difference > 0) {
             difference -= (++order);
             if (difference < 0) {
-                throw new IllegalArgumentException(
-                        "Illegal length for vech: " + vech.length);
+                throw new IllegalArgumentException("Illegal length for vech: " + vech.length);
             }
         }
         return order;

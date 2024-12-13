@@ -22,7 +22,7 @@ import java.awt.event.ComponentEvent;
  * class MyWatchedProcess extends WatchedProcess {
  *
  *     &#64;Override
- *     public void watch() throws InterruptedException {
+ *     public void watch() {
  *         // Long process...
  *     }
  * };

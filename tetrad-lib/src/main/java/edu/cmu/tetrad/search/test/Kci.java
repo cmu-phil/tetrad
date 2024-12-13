@@ -159,6 +159,13 @@ public class Kci implements IndependenceTest, RowsSettable {
         this.mainThread = Thread.currentThread();
     }
 
+    /**
+     * Standardizes the data by centering (subtracting the mean) and scaling
+     * (dividing by the standard deviation) each column of the input matrix.
+     *
+     * @param data the input matrix where standardization will be applied column-wise
+     * @return a new matrix with the standardized data
+     */
     public static SimpleMatrix standardizeData(SimpleMatrix data) {
         SimpleMatrix data2 = data.copy();
 
@@ -308,6 +315,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param y The second node.
      * @param z The set of conditioning variables.
      * @return The result of the independence test.
+     * @throws InterruptedException if any
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
@@ -526,6 +534,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param fact The independence fact used to contextualize the test result.
      * @return An IndependenceResult object that encapsulates the result of the independence test, including whether the
      * variables are considered independent and the associated p-value.
+     * @throws InterruptedException if any
      */
     private @NotNull IndependenceResult getIndependenceResultApproximate(SimpleMatrix kx, SimpleMatrix ky, double kx1, double kx2, IndependenceFact fact) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
@@ -550,6 +559,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * Returns the KCI independence result for the unconditional case. Uses Theorem 4 from the paper.
      *
      * @return true, just in case independence holds.
+     * @throws InterruptedException if any
      */
     private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, SimpleMatrix _data, SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
@@ -586,6 +596,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * Returns the KCI independence result for the conditional case. Uses Theorem 3 from the paper.
      *
      * @return true just in case independence holds.
+     * @throws InterruptedException if any
      */
     private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, SimpleMatrix _data, SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
@@ -634,6 +645,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param fact  The independence fact.
      * @param N     The sample size.
      * @return The independence result.
+     * @throws InterruptedException if any
      */
     private IndependenceResult theorem4(SimpleMatrix kernx, SimpleMatrix kerny, IndependenceFact fact, int N) throws InterruptedException {
 
@@ -687,6 +699,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param fact The independence fact.
      * @param N    The size of the input dataset.
      * @return The independence result.
+     * @throws InterruptedException if any
      */
     private IndependenceResult proposition5(SimpleMatrix kx, SimpleMatrix ky, IndependenceFact fact, int N) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
@@ -776,6 +789,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param _h            the bandwidth vector
      * @param _rows         the list of rows to use
      * @return the calculated kernel matrix
+     * @throws InterruptedException if any
      */
     private SimpleMatrix kernelMatrix(SimpleMatrix _data, Node x, List<Node> z, double scalingFactor, Map<Node, Integer> hash, SimpleMatrix _h, List<Integer> _rows) throws InterruptedException {
 
@@ -1103,7 +1117,25 @@ public class Kci implements IndependenceTest, RowsSettable {
      * </ul>
      */
     public enum KernelType {
-        GAUSSIAN, LINEAR, POLYNOMIAL
+        /**
+         * Indicates the use of a Gaussian kernel, commonly used in various machine learning algorithms for its smooth
+         * and bell-shaped curve characteristics.
+         */
+        GAUSSIAN,
+
+        /**
+         * Represents the use of a linear kernel, typically employed when data is linearly separable or for problems
+         * that require linear decision boundaries.
+         */
+        LINEAR,
+
+        /**
+         * Represents a polynomial kernel, which is useful for situations requiring the transformation of input data
+         * into a higher-dimensional space. This type of kernel computes the similarity between data points as a
+         * polynomial function of their attributes, allowing for the modeling of more complex patterns or structures in
+         * the data.
+         */
+        POLYNOMIAL
     }
 
     /**

@@ -136,6 +136,7 @@ public final class FciMax implements IGraphSearch {
      * Performs the search and returns the PAG.
      *
      * @return This PAG.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
@@ -417,6 +418,7 @@ public final class FciMax implements IGraphSearch {
      * @param graph  The graph containing the nodes.
      * @param scores The map of node triples to scores.
      * @param b      The node on which to perform the DO operation.
+     * @throws InterruptedException if any
      */
     private void doNode(Graph graph, Map<Triple, Double> scores, Node b) throws InterruptedException {
         List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));

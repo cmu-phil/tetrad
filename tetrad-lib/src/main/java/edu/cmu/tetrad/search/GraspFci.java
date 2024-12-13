@@ -152,6 +152,7 @@ public final class GraspFci implements IGraphSearch {
      * Run the search and return s a PAG.
      *
      * @return The PAG.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         List<Node> nodes = this.independenceTest.getVariables();

@@ -69,6 +69,7 @@ public class StabilityUtils {
      * @param N    a int
      * @param b    a int
      * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @throws java.lang.InterruptedException if any.
      */
     public static DoubleMatrix2D StabilitySearch(DataSet data, DataGraphSearch gs, int N, int b) throws InterruptedException {
         int numVars = data.getNumColumns();
@@ -304,6 +305,7 @@ public class StabilityUtils {
      * <p>main.</p>
      *
      * @param args an array of {@link java.lang.String} objects
+     * @throws java.lang.InterruptedException if any.
      */
     public static void main(String[] args) throws InterruptedException {
         final String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";

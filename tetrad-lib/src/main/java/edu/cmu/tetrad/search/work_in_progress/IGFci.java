@@ -212,6 +212,7 @@ public final class IGFci implements IGraphSearch {
      * potentially identifying and orienting definite colliders.
      *
      * @param fgesGraph the FGES Graph to be processed; must not be null.
+     * @throws InterruptedException if the search is interrupted.
      */
     public void modifiedR0(Graph fgesGraph) throws InterruptedException {
         graph.reorientAllWith(Endpoint.CIRCLE);

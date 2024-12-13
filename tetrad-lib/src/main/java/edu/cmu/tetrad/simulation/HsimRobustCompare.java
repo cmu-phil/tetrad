@@ -43,6 +43,7 @@ public class HsimRobustCompare {
      * @param repeat          a int
      * @param verbose         a boolean
      * @return a {@link java.util.List} object
+     * @throws java.lang.InterruptedException if any.
      */
     public static List<double[]> run(int numVars, double edgesPerNode, int numCases, double penaltyDiscount,
                                      int resimSize, int repeat, boolean verbose) throws InterruptedException {

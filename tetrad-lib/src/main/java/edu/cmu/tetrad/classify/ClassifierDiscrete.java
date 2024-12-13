@@ -34,6 +34,7 @@ public interface ClassifierDiscrete {
      * <p>classify.</p>
      *
      * @return an array with a classification (estimated value) of a target variable for each case in a DataSet.
+     * @throws java.lang.InterruptedException if any.
      */
     int[] classify() throws InterruptedException;
 

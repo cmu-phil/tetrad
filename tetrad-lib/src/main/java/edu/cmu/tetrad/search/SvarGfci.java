@@ -103,6 +103,7 @@ public final class SvarGfci implements IGraphSearch {
      * Runs the search and returns a PAG.
      *
      * @return a PAG.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         independenceTest.setVerbose(verbose);
@@ -291,6 +292,7 @@ public final class SvarGfci implements IGraphSearch {
      * Modifies the R0 structure of the given graph according to the FGES algorithm.
      *
      * @param fgesGraph The graph to modify.
+     * @throws InterruptedException if any
      */
     private void modifiedR0(Graph fgesGraph) throws InterruptedException {
         this.graph.reorientAllWith(Endpoint.CIRCLE);

@@ -155,7 +155,7 @@ public class StatsListEditor extends JPanel {
 
             new WatchedProcess() {
                 @Override
-                public void watch() throws InterruptedException {
+                public void watch() {
                     SwingUtilities.invokeLater(() -> {
                         referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
                         area.setText(tableTextWithHeader());
@@ -212,7 +212,7 @@ public class StatsListEditor extends JPanel {
 
             new WatchedProcess() {
                 @Override
-                public void watch() throws InterruptedException {
+                public void watch() {
                     SwingUtilities.invokeLater(() -> {
                         referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
                         area.setText(tableTextWithHeader());

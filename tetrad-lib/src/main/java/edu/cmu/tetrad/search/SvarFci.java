@@ -152,6 +152,7 @@ public final class SvarFci implements IGraphSearch {
      * @param fas The FAS to use.
      * @return The PAG.
      * @see IFas
+     * @throws InterruptedException if any
      */
     public Graph search(IFas fas) throws InterruptedException {
 

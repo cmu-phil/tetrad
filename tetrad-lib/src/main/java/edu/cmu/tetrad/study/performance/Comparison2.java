@@ -57,6 +57,7 @@ public class Comparison2 {
      *
      * @param params a {@link edu.cmu.tetrad.study.performance.ComparisonParameters} object
      * @return a {@link edu.cmu.tetrad.study.performance.ComparisonResult} object
+     * @throws InterruptedException if any
      */
     public static ComparisonResult compare(ComparisonParameters params) throws InterruptedException {
         DataSet dataSet = null;

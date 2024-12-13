@@ -443,6 +443,7 @@ public final class FaskOrig implements IGraphSearch {
      *
      * @return the graph. Some edges may be undirected (though it shouldn't be many in most cases) and some adjacencies
      * may be two-cycles.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
@@ -647,6 +648,7 @@ public final class FaskOrig implements IGraphSearch {
      * these estimates. B[i][j] != 0 means i-&gt;j with that coefficient.
      *
      * @return This matrix as a double[][] array.
+     * @throws InterruptedException if any
      */
     public double[][] getB() throws InterruptedException {
         if (this.graph == null) search();

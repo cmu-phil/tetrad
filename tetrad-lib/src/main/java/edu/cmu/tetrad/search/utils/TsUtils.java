@@ -161,6 +161,7 @@ public class TsUtils {
      * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
      * @param numLags    a int
      * @return a {@link edu.cmu.tetrad.search.utils.TsUtils.VarResult} object
+     * @throws InterruptedException if any
      */
     public static VarResult structuralVar(DataSet timeSeries, int numLags) throws InterruptedException {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);

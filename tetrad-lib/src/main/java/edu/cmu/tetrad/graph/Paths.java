@@ -1616,6 +1616,7 @@ public class Paths implements TetradSerializable {
      * @param test    The independence test to use to remove edges.
      * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
      *                recorded.
+     * @throws InterruptedException if any
      */
     public void removeByPossibleMsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
         for (Edge edge : graph.getEdges()) {

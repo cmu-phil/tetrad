@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.Collections;
@@ -79,12 +78,18 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     private boolean usePermutation = false;
 
     /**
-     * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
-     * given data set (must be continuous). The given significance level is used.
+     * Constructs a new {@code IndTestConditionalCorrelation} to check independence based on conditional correlations
+     * derived from the given continuous data set. The test uses the specified significance level and allows
+     * customization of basis settings and a scaling factor.
      *
-     * @param dataSet    A data set containing only continuous columns.
-     * @param alpha      The q level of the test.
-     * @param basisScale
+     * @param dataSet       The continuous data set for performing independence tests.
+     * @param alpha         The significance level for the test (must be between 0 and 1 inclusive).
+     * @param scalingFactor The scaling factor applied in the independence test computations.
+     * @param basisType     The type of basis functions used in the computations.
+     * @param numFunctions  The number of orthogonal functions used for the calculations.
+     * @param basisScale    The scale of the basis functions applied in computations.
+     * @throws IllegalArgumentException if the data set is not continuous.
+     * @throws IllegalArgumentException if the significance level (alpha) is not in the range [0, 1].
      */
     public IndTestConditionalCorrelation(DataSet dataSet, double alpha, double scalingFactor,
                                          int basisType, int numFunctions, double basisScale) {

@@ -51,6 +51,7 @@ public interface IndependenceTest {
      * @param z a {@link java.util.Set} object
      * @return an IndependenceResult (see).
      * @see IndependenceResult
+     * @throws java.lang.InterruptedException if any.
      */
     IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException;
 
@@ -112,6 +113,7 @@ public interface IndependenceTest {
      * @param z a {@link edu.cmu.tetrad.graph.Node} object
      * @return The independence result.
      * @see IndependenceResult
+     * @throws java.lang.InterruptedException if any.
      */
     default IndependenceResult checkIndependence(Node x, Node y, Node... z) throws InterruptedException {
         Set<Node> zList = GraphUtils.asSet(z);

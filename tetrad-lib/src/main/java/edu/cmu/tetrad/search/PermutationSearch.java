@@ -140,6 +140,7 @@ public class PermutationSearch {
      * Performs a search for a graph using the default options. Returns the resulting graph.
      *
      * @return The constructed CPDAG.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         return search(true);
@@ -150,6 +151,7 @@ public class PermutationSearch {
      *
      * @param cpdag True a CPDAG is wanted, if false, a DAG.
      * @return The CPDAG.
+     * @throws InterruptedException if any
      */
     public Graph search(boolean cpdag) throws InterruptedException {
         if (this.seed != -1) {

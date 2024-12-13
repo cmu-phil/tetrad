@@ -128,6 +128,7 @@ public class PerformanceTests {
      * <p>main.</p>
      *
      * @param args a {@link java.lang.String} object
+     * @throws InterruptedException if any
      */
     public static void main(String... args) throws InterruptedException {
         System.out.println("Start ");
@@ -239,6 +240,7 @@ public class PerformanceTests {
      * @param edgeFactor a double
      * @param numCases   a int
      * @param alpha      a double
+     * @throws InterruptedException if any
      */
     public void testPc(int numVars, double edgeFactor, int numCases, double alpha) throws InterruptedException {
         final int depth = -1;
@@ -379,6 +381,7 @@ public class PerformanceTests {
      * @param edgeFactor a double
      * @param numCases   a int
      * @param alpha      a double
+     * @throws InterruptedException if any
      */
     public void testPcStable(int numVars, double edgeFactor, int numCases, double alpha) throws InterruptedException {
         final int depth = -1;
@@ -531,6 +534,7 @@ public class PerformanceTests {
      * @param numVars    a int
      * @param edgeFactor a double
      * @param numCases   a int
+     * @throws InterruptedException if any
      */
     public void testCpc(int numVars, double edgeFactor, int numCases) throws InterruptedException {
         final double alpha = 0.0001;
@@ -622,6 +626,7 @@ public class PerformanceTests {
      * @param edgeFactor a double
      * @param numCases   a int
      * @param alpha      a double
+     * @throws InterruptedException if any
      */
     public void testCpcStable(int numVars, double edgeFactor, int numCases, double alpha) throws InterruptedException {
         final int depth = 3;
@@ -704,6 +709,7 @@ public class PerformanceTests {
      * @param numVars    a int
      * @param edgeFactor a double
      * @param numCases   a int
+     * @throws InterruptedException if any
      */
     public void testFci(int numVars, double edgeFactor, int numCases) throws InterruptedException {
         final double alpha = 0.001;
@@ -1585,6 +1591,7 @@ public class PerformanceTests {
      * <p>testCompareDagToCPDAG.</p>
      *
      * @param numLatents a int
+     * @throws java.lang.InterruptedException if any.
      */
     public void testCompareDagToCPDAG(int numLatents) throws InterruptedException {
         System.out.println("Making list of vars");
@@ -1657,6 +1664,7 @@ public class PerformanceTests {
      * @param numVars    a int
      * @param edgeFactor a double
      * @param numLatents a int
+     * @throws java.lang.InterruptedException if any.
      */
     public void testComparePcVersions(int numVars, double edgeFactor, int numLatents) throws InterruptedException {
         System.out.println("Making list of vars");

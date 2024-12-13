@@ -141,6 +141,7 @@ public final class GFci implements IGraphSearch {
      * Runs the graph and returns the search PAG.
      *
      * @return This PAG.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         this.independenceTest.setVerbose(verbose);

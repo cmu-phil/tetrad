@@ -119,6 +119,7 @@ public class TeyssierScorer {
      *
      * @param order The permutation to score.
      * @return The score of it.
+     * @throws InterruptedException if any
      */
     public double score(List<Node> order) throws InterruptedException {
         this.pi = new ArrayList<>(order);
@@ -138,6 +139,7 @@ public class TeyssierScorer {
      * <p>score.</p>
      *
      * @return The score of the current permutation.
+     * @throws InterruptedException if any
      */
     public double score() throws InterruptedException {
         return sum();
@@ -842,6 +844,7 @@ public class TeyssierScorer {
      *
      * @param p The index.
      * @return The parents, as a Pair object (parents + score).
+     * @throws InterruptedException if any
      */
     private Pair getRaskuttiUhlerParents(int p) throws InterruptedException {
         Node x = this.pi.get(p);
