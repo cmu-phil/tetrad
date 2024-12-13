@@ -499,15 +499,6 @@ public class Kci implements IndependenceTest, RowsSettable {
         this.threshold = threshold;
     }
 
-//    /**
-//     * Sets the epsilon.
-//     *
-//     * @param epsilon This number.
-//     */
-//    public void setEpsilon(double epsilon) {
-//        this.epsilon = epsilon;
-//    }
-
     /**
      * Returns the value of the verbose flag.
      *
@@ -1134,6 +1125,4 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     public record EigenReturn(SimpleMatrix D, SimpleMatrix V, List<Double> topEigenvalues) {
     }
-
-
 }
