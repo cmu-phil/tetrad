@@ -195,7 +195,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
      * @return a {@link edu.cmu.tetrad.data.DataModel} object
      */
     public DataModel getDataModel() {
-        //return (DataModel) this.dataWrapper.getDataModelList().get(0);
+        //return (DataModel) this.dataWrapper.getDataModelList().getFirst();
         return this.dataModels.get(getModelIndex());
     }
 

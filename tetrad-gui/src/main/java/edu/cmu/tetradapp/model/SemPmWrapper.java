@@ -214,7 +214,7 @@ public class SemPmWrapper implements SessionModel {
             throw new IllegalArgumentException("Simulation must contain exactly one graph/data pair.");
         }
 
-        setSemPm(new SemPm(graphs.get(0)));
+        setSemPm(new SemPm(graphs.getFirst()));
     }
 
     /**

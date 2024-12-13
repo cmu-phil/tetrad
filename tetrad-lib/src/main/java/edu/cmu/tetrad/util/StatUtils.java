@@ -2180,7 +2180,7 @@ public final class StatUtils {
 
         double sum = 0.0;
         int N = logs.size() - 1;
-        double loga0 = logs.get(0);
+        double loga0 = logs.getFirst();
 
         for (int i = 1; i <= N; i++) {
             sum += exp(logs.get(i) - loga0);

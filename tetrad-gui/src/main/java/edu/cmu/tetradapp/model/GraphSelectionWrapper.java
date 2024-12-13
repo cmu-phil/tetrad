@@ -718,7 +718,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getGraph() {
-        return getSelectionGraphs(this.params).get(0);
+        return getSelectionGraphs(this.params).getFirst();
     }
 
     /**
@@ -827,7 +827,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getResultGraph() {
-        return (getSelectionGraphs(this.params)).get(0);
+        return (getSelectionGraphs(this.params)).getFirst();
     }
 
     /**

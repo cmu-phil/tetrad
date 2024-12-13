@@ -97,7 +97,7 @@ public class StARS implements Algorithm {
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }
-                        e = GraphUtils.replaceNodes(e, samples.get(0).getVariables());
+                        e = GraphUtils.replaceNodes(e, samples.getFirst().getVariables());
                         graphs.add(e);
                     }
                 } else {
@@ -126,8 +126,8 @@ public class StARS implements Algorithm {
             throw new IllegalStateException("Pool timed out");
         }
 
-        int p = samples.get(0).getNumColumns();
-        List<Node> nodes = graphs.get(0).getNodes();
+        int p = samples.getFirst().getNumColumns();
+        List<Node> nodes = graphs.getFirst().getNodes();
 
         double D = 0.0;
         int count = 0;

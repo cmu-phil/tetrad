@@ -512,7 +512,7 @@ public class Paths implements TetradSerializable {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
-            Node a = path.get(0);
+            Node a = path.getFirst();
             Node b = path.get(1);
 
             if (!graph.getEdge(a, b).pointsTowards(b)) {
@@ -538,7 +538,7 @@ public class Paths implements TetradSerializable {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
-            Node a = path.get(0);
+            Node a = path.getFirst();
             Node b = path.get(1);
 
             boolean visible = graph.paths().defVisible(graph.getEdge(a, b));
@@ -1897,7 +1897,7 @@ public class Paths implements TetradSerializable {
 
         if (path.size() - 1 <= 1) return true;
 
-        edge2 = graph.getEdge(path.get(0), path.get(1));
+        edge2 = graph.getEdge(path.getFirst(), path.get(1));
 
         for (int i = 0; i < path.size() - 2; i++) {
             edge1 = edge2;
@@ -1943,7 +1943,7 @@ public class Paths implements TetradSerializable {
     public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         Edge edge1, edge2;
 
-        edge2 = graph.getEdge(path.get(0), path.get(1));
+        edge2 = graph.getEdge(path.getFirst(), path.get(1));
 
         for (int i = 0; i < path.size() - 2; i++) {
             edge1 = edge2;
@@ -2663,7 +2663,7 @@ public class Paths implements TetradSerializable {
                 amenable.remove(path);
             }
 
-            Node a = path.get(0);
+            Node a = path.getFirst();
             Node b = path.get(1);
             Edge e = graph.getEdge(a, b);
 
@@ -2680,13 +2680,13 @@ public class Paths implements TetradSerializable {
 
         if (mpdag || mag) {
             backdoorPaths.removeIf(path -> path.size() < 2 ||
-                                           !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
+                                           !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
         } else {
             backdoorPaths.removeIf(path -> {
                 if (path.size() < 2) {
                     return false;
                 }
-                Node x = path.get(0);
+                Node x = path.getFirst();
                 Node w = path.get(1);
                 Node y = target;
                 return !(graph.getEdge(x, w).pointsTowards(x)

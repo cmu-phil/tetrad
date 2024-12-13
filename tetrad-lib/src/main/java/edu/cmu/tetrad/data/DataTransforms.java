@@ -289,7 +289,7 @@ public class DataTransforms {
             totalSampleSize += dataSet.getNumRows();
         }
 
-        int numColumns = dataSets.get(0).getNumColumns();
+        int numColumns = dataSets.getFirst().getNumColumns();
         Matrix allData = new Matrix(totalSampleSize, numColumns);
         int q = 0;
         int r;
@@ -307,7 +307,7 @@ public class DataTransforms {
             q += r;
         }
 
-        return new BoxDataSet(new VerticalDoubleDataBox(allData.transpose().toArray()), dataSets.get(0).getVariables());
+        return new BoxDataSet(new VerticalDoubleDataBox(allData.transpose().toArray()), dataSets.getFirst().getVariables());
     }
 
     /**
@@ -592,11 +592,11 @@ public class DataTransforms {
     public static List<DataSet> shuffleColumns2(List<DataSet> dataSets) {
         List<Node> vars = new ArrayList<>();
 
-        List<Node> variables = dataSets.get(0).getVariables();
+        List<Node> variables = dataSets.getFirst().getVariables();
         RandomUtil.shuffle(variables);
 
         for (Node node : variables) {
-            Node _node = dataSets.get(0).getVariable(node.getName());
+            Node _node = dataSets.getFirst().getVariable(node.getName());
 
             if (_node != null) {
                 vars.add(_node);

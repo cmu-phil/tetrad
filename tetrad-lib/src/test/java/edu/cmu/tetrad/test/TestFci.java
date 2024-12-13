@@ -434,7 +434,7 @@ public class TestFci {
 
                 while ((choice = gen.next()) != null) {
                     List<Node> c = GraphUtils.asList(choice, adj);
-                    Node n1 = c.get(0);
+                    Node n1 = c.getFirst();
                     Node n2 = c.get(1);
 
                     if (!pag.isAdjacentTo(n1, n2)) {

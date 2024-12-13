@@ -586,7 +586,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         if (this.dataModelList.size() > 1) {
             paramSettings.put("# Datasets", Integer.toString(this.dataModelList.size()));
         } else {
-            DataModel dataModel = this.dataModelList.get(0);
+            DataModel dataModel = this.dataModelList.getFirst();
 
             if (dataModel instanceof CovarianceMatrix) {
                 paramSettings.put("# Vars", Integer.toString(((CovarianceMatrix) dataModel).getDimension()));

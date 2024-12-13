@@ -141,7 +141,7 @@ public class Cstar {
             double medianPis = StatUtils.median(pis);
             double medianEffects = StatUtils.median(effects);
 
-            Record record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, recordList.get(0).getNumCauses(), recordList.get(0).getNumEffects());
+            Record record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, recordList.getFirst().getNumCauses(), recordList.getFirst().getNumEffects());
             cstar.add(record);
         }
 
@@ -649,8 +649,8 @@ public class Cstar {
             throw new IllegalArgumentException("There were no CSTaR records generated. Perhaps the parameters are wrong.");
         }
 
-        String header = "# Potential Causes = " + records.get(0).getNumCauses() + "\n"
-                        + "# Potential Effects = " + records.get(0).getNumEffects() + "\n" +
+        String header = "# Potential Causes = " + records.getFirst().getNumCauses() + "\n"
+                        + "# Potential Effects = " + records.getFirst().getNumEffects() + "\n" +
                         "Top Bracket (‘q’) = " + this.topBracket +
                         "\n\n";
 

@@ -405,7 +405,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             System.out.println("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             List<Double> ap_ar_ahp_ahr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData(x, estimatedCpdag, trueGraph);
-            Double ap = ap_ar_ahp_ahr.get(0);
+            Double ap = ap_ar_ahp_ahr.getFirst();
             Double ar = ap_ar_ahp_ahr.get(1);
             Double ahp = ap_ar_ahp_ahr.get(2);
             Double ahr = ap_ar_ahp_ahr.get(3);
@@ -465,49 +465,49 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 switch (entry.getKey()) {
                     case "accepts_AdjP_ADTestP_data.csv":
                         for (List<Double> AdjP_ADTestP_pair : accepts_AdjP_ADTestP) {
-                            writer.write(nf.format(AdjP_ADTestP_pair.get(0)) + "," + nf.format(AdjP_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(AdjP_ADTestP_pair.getFirst()) + "," + nf.format(AdjP_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "accepts_AdjR_ADTestP_data.csv":
                         for (List<Double> AdjR_ADTestP_pair : accepts_AdjR_ADTestP) {
-                            writer.write(nf.format(AdjR_ADTestP_pair.get(0)) + "," + nf.format(AdjR_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(AdjR_ADTestP_pair.getFirst()) + "," + nf.format(AdjR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "accepts_AHP_ADTestP_data.csv":
                         for (List<Double> AHP_ADTestP_pair : accepts_AHP_ADTestP) {
-                            writer.write(nf.format(AHP_ADTestP_pair.get(0)) + "," + nf.format(AHP_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(AHP_ADTestP_pair.getFirst()) + "," + nf.format(AHP_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "accepts_AHR_ADTestP_data.csv":
                         for (List<Double> AHR_ADTestP_pair : accepts_AHR_ADTestP) {
-                            writer.write(nf.format(AHR_ADTestP_pair.get(0)) + "," + nf.format(AHR_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(AHR_ADTestP_pair.getFirst()) + "," + nf.format(AHR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "rejects_AdjP_ADTestP_data.csv":
                         for (List<Double> AdjP_ADTestP_pair : rejects_AdjP_ADTestP) {
-                            writer.write(nf.format(AdjP_ADTestP_pair.get(0)) + "," + nf.format(AdjP_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(AdjP_ADTestP_pair.getFirst()) + "," + nf.format(AdjP_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "rejects_AdjR_ADTestP_data.csv":
                         for (List<Double> AdjR_ADTestP_pair : rejects_AdjR_ADTestP) {
-                            writer.write(nf.format(AdjR_ADTestP_pair.get(0)) + "," + nf.format(AdjR_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(AdjR_ADTestP_pair.getFirst()) + "," + nf.format(AdjR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "rejects_AHP_ADTestP_data.csv":
                         for (List<Double> AHP_ADTestP_pair : rejects_AHP_ADTestP) {
-                            writer.write(nf.format(AHP_ADTestP_pair.get(0)) + "," + nf.format(AHP_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(AHP_ADTestP_pair.getFirst()) + "," + nf.format(AHP_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "rejects_AHR_ADTestP_data.csv":
                         for (List<Double> AHR_ADTestP_pair : rejects_AHR_ADTestP) {
-                            writer.write(nf.format(AHR_ADTestP_pair.get(0)) + "," + nf.format(AHR_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(AHR_ADTestP_pair.getFirst()) + "," + nf.format(AHR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
                     case "lowAdjRecallNodes.csv":
@@ -577,7 +577,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             System.out.println("Target Node: " + x);
             List<IndependenceFact> localIndependenceFacts = checkIndependenceForTargetNode(x);
             List<Double> lgp_lgr = getPrecisionAndRecallOnMarkovBlanketGraphPlotData2(x, estimatedCpdag, trueGraph);
-            Double lgp = lgp_lgr.get(0);
+            Double lgp = lgp_lgr.getFirst();
             Double lgr = lgp_lgr.get(1);
             if (lgr < lowRecallBound) {
                 lowLGRecallNodes.add(x);
@@ -620,25 +620,25 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 switch (entry.getKey()) {
                     case "accepts_LGP_ADTestP_data.csv":
                         for (List<Double> LGP_ADTestP_pair : accepts_LGP_ADTestP) {
-                            writer.write(nf.format(LGP_ADTestP_pair.get(0)) + "," + nf.format(LGP_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(LGP_ADTestP_pair.getFirst()) + "," + nf.format(LGP_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "accepts_LGR_ADTestP_data.csv":
                         for (List<Double> LGR_ADTestP_pair : accepts_LGR_ADTestP) {
-                            writer.write(nf.format(LGR_ADTestP_pair.get(0)) + "," + nf.format(LGR_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(LGR_ADTestP_pair.getFirst()) + "," + nf.format(LGR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "rejects_LGP_ADTestP_data.csv":
                         for (List<Double> LGP_ADTestP_pair : rejects_LGP_ADTestP) {
-                            writer.write(nf.format(LGP_ADTestP_pair.get(0)) + "," + nf.format(LGP_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(LGP_ADTestP_pair.getFirst()) + "," + nf.format(LGP_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
 
                     case "rejects_LGR_ADTestP_data.csv":
                         for (List<Double> LGR_ADTestP_pair : rejects_LGR_ADTestP) {
-                            writer.write(nf.format(LGR_ADTestP_pair.get(0)) + "," + nf.format(LGR_ADTestP_pair.get(1)) + "\n");
+                            writer.write(nf.format(LGR_ADTestP_pair.getFirst()) + "," + nf.format(LGR_ADTestP_pair.get(1)) + "\n");
                         }
                         break;
                     case "lowLGRecallNodes.csv":
