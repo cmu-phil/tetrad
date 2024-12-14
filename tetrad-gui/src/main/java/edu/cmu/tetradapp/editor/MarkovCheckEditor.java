@@ -184,6 +184,14 @@ public class MarkovCheckEditor extends JPanel {
      */
     private JLabel andersonDarlingPLabelIndep;
     /**
+     * The label for the Shipley's C-Statistic test.
+     */
+    private JLabel shipleyCLabelDep;
+    /**
+     * The label for the Shipley's C-Statistic test.
+     */
+    private JLabel shipleyCLabelIndep;
+    /**
      * Sort direction.
      */
     private int sortDir;
@@ -833,6 +841,11 @@ public class MarkovCheckEditor extends JPanel {
         a9.add(andersonDarlingPLabelIndep);
         a4.add(a9);
 
+        Box a10 = Box.createHorizontalBox();
+        a10.add(Box.createHorizontalGlue());
+        a10.add(shipleyCLabelIndep);
+        a4.add(a10);
+
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
@@ -963,6 +976,10 @@ public class MarkovCheckEditor extends JPanel {
                         "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
                 );
 
+                shipleyCLabelIndep.setText(
+                        "Shipley C-statistic for the same p-values = " + nf.format(model.getMarkovCheck().getShipleyCPValue(visiblePairs))
+                );
+
                 histogramPanelIndep.removeAll();
                 histogramPanelIndep.add(createHistogramPanel(visiblePairs), BorderLayout.CENTER);
                 histogramPanelIndep.validate();
@@ -1003,6 +1020,10 @@ public class MarkovCheckEditor extends JPanel {
 
                 andersonDarlingPLabelDep.setText(
                         "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
+                );
+
+                shipleyCLabelDep.setText(
+                        "Shipley-s C-Statistic = " + nf.format(model.getMarkovCheck().getShipleyCPValue(visiblePairs))
                 );
 
                 histogramPanelDep.removeAll();
@@ -1189,6 +1210,11 @@ public class MarkovCheckEditor extends JPanel {
         a9.add(andersonDarlingPLabelDep);
         a4.add(a9);
 
+        Box a10 = Box.createHorizontalBox();
+        a10.add(Box.createHorizontalGlue());
+        a10.add(shipleyCLabelDep);
+        a4.add(a9);
+
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
@@ -1254,6 +1280,14 @@ public class MarkovCheckEditor extends JPanel {
             andersonDarlingPLabelDep = new JLabel();
         }
 
+        if (shipleyCLabelIndep == null) {
+            shipleyCLabelIndep = new JLabel();
+        }
+
+        if (shipleyCLabelDep == null) {
+            shipleyCLabelDep = new JLabel();
+        }
+
         if (fractionDepLabelIndep == null) {
             fractionDepLabelIndep = new JLabel();
         }
@@ -1277,6 +1311,14 @@ public class MarkovCheckEditor extends JPanel {
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
         andersonDarlingPLabelDep.setText("P-value of the Anderson-Darling test = "
                                          + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
+        shipleyCLabelIndep.setText("Shipley C-statistic= "
+                                           + ((Double.isNaN(model.getMarkovCheck().getShipleyCP(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
+        shipleyCLabelDep.setText("Shipley C-statistic = "
+                                         + ((Double.isNaN(model.getMarkovCheck().getShipleyCP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "

@@ -9,6 +9,7 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.distribution.BinomialDistribution;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
@@ -114,6 +115,14 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * The Anderson-Darling p-value for the dependent case.
      */
     private double andersonDarlingPDep = Double.NaN;
+    /**
+     * The Anderson-Darling p-value for the independent case.
+     */
+    private double shipleyCIndep = Double.NaN;
+    /**
+     * The Anderson-Darling p-value for the dependent case.
+     */
+    private double shipleyCDep = Double.NaN;
     /**
      * The Binomial p-value for the independent case.
      */
@@ -814,7 +823,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
             AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts();
             generateResultsAllSubsets(result.msep, result.mconn);
-            generateResultsAllSubsets(result.msep, result.mconn);
+//            generateResultsAllSubsets(result.msep, result.mconn);
         } else {
             List<Node> variables = getVariables(graph.getNodes(), independenceNodes, conditioningNodes);
             List<Node> nodes = new ArrayList<>(variables);
@@ -1107,6 +1116,14 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             return andersonDarlingPIndep;
         } else {
             return andersonDarlingPDep;
+        }
+    }
+
+    public double getShipleyCP(boolean indep) {
+        if (indep) {
+            return shipleyCIndep;
+        } else {
+            return shipleyCDep;
         }
     }
 
@@ -1769,6 +1786,26 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
     }
+
+    public double getShipleyCPValue(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+        double c = getShipleyCStatistic(visiblePairs);
+        ChiSquaredDistribution chiSquared = new ChiSquaredDistribution(2 * pValues.size());
+        return 1.0 - chiSquared.cumulativeProbability(c);
+    }
+
+    public double getShipleyCStatistic(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
+
+        double sum = 0.0;
+
+        for (double pValue : pValues) {
+            sum += Math.log(pValue);
+        }
+
+        return -2.0 * sum;
+    }
+
 
     /**
      * Adds a ModelObserver to the list of observers.
