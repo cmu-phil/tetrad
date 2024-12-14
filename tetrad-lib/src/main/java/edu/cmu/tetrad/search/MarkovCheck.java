@@ -118,11 +118,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The Anderson-Darling p-value for the independent case.
      */
-    private double shipleyCIndep = Double.NaN;
+    private double fisherCombinedPIndep = Double.NaN;
     /**
      * The Anderson-Darling p-value for the dependent case.
      */
-    private double shipleyCDep = Double.NaN;
+    private double fisherCombinedPDep = Double.NaN;
     /**
      * The Binomial p-value for the independent case.
      */
@@ -1119,11 +1119,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
     }
 
-    public double getShipleyCP(boolean indep) {
+    public double getFisherCombinedP(boolean indep) {
         if (indep) {
-            return shipleyCIndep;
+            return fisherCombinedPIndep;
         } else {
-            return shipleyCDep;
+            return fisherCombinedPDep;
         }
     }
 
@@ -1787,23 +1787,26 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
     }
 
-    public double getShipleyCPValue(List<IndependenceResult> visiblePairs) {
+    /**
+     * Calculates the Fisher combined p-value for a list of independence test results.
+     *
+     * @param visiblePairs a list of IndependenceResult objects representing the input pairs for which
+     *                     the p-values are extracted and combined using Fisher's method.
+     * @return the combined p-value obtained from Fisher's method applied to the input p-values.
+     */
+    public double getFisherCombinedPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
-        double c = getShipleyCStatistic(visiblePairs);
-        ChiSquaredDistribution chiSquared = new ChiSquaredDistribution(2 * pValues.size());
-        return 1.0 - chiSquared.cumulativeProbability(c);
-    }
-
-    public double getShipleyCStatistic(List<IndependenceResult> visiblePairs) {
-        List<Double> pValues = getPValues(visiblePairs);
+        List<Double> pValues1 = getPValues(visiblePairs);
 
         double sum = 0.0;
 
-        for (double pValue : pValues) {
+        for (double pValue : pValues1) {
             sum += Math.log(pValue);
         }
 
-        return -2.0 * sum;
+        double c = -2.0 * sum;
+        ChiSquaredDistribution chiSquared = new ChiSquaredDistribution(2 * pValues.size());
+        return 1.0 - chiSquared.cumulativeProbability(c);
     }
 
 

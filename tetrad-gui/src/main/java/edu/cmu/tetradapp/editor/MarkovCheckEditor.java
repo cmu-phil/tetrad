@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
@@ -184,13 +183,13 @@ public class MarkovCheckEditor extends JPanel {
      */
     private JLabel andersonDarlingPLabelIndep;
     /**
-     * The label for the Shipley's C-Statistic test.
+     * The label for the Fisher combined p.
      */
-    private JLabel shipleyCLabelDep;
+    private JLabel fisherCombinedPLabelDep;
     /**
-     * The label for the Shipley's C-Statistic test.
+     * The label for the Fisher combined p.
      */
-    private JLabel shipleyCLabelIndep;
+    private JLabel fisherCombinedLabelIndep;
     /**
      * Sort direction.
      */
@@ -843,7 +842,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box a10 = Box.createHorizontalBox();
         a10.add(Box.createHorizontalGlue());
-        a10.add(shipleyCLabelIndep);
+        a10.add(fisherCombinedLabelIndep);
         a4.add(a10);
 
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
@@ -976,8 +975,8 @@ public class MarkovCheckEditor extends JPanel {
                         "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
                 );
 
-                shipleyCLabelIndep.setText(
-                        "Shipley C-statistic for the same p-values = " + nf.format(model.getMarkovCheck().getShipleyCPValue(visiblePairs))
+                fisherCombinedLabelIndep.setText(
+                        "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
                 );
 
                 histogramPanelIndep.removeAll();
@@ -1022,8 +1021,8 @@ public class MarkovCheckEditor extends JPanel {
                         "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
                 );
 
-                shipleyCLabelDep.setText(
-                        "Shipley-s C-Statistic = " + nf.format(model.getMarkovCheck().getShipleyCPValue(visiblePairs))
+                fisherCombinedPLabelDep.setText(
+                        "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
                 );
 
                 histogramPanelDep.removeAll();
@@ -1212,7 +1211,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box a10 = Box.createHorizontalBox();
         a10.add(Box.createHorizontalGlue());
-        a10.add(shipleyCLabelDep);
+        a10.add(fisherCombinedPLabelDep);
         a4.add(a9);
 
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
@@ -1280,12 +1279,12 @@ public class MarkovCheckEditor extends JPanel {
             andersonDarlingPLabelDep = new JLabel();
         }
 
-        if (shipleyCLabelIndep == null) {
-            shipleyCLabelIndep = new JLabel();
+        if (fisherCombinedLabelIndep == null) {
+            fisherCombinedLabelIndep = new JLabel();
         }
 
-        if (shipleyCLabelDep == null) {
-            shipleyCLabelDep = new JLabel();
+        if (fisherCombinedPLabelDep == null) {
+            fisherCombinedPLabelDep = new JLabel();
         }
 
         if (fractionDepLabelIndep == null) {
@@ -1313,12 +1312,12 @@ public class MarkovCheckEditor extends JPanel {
                                          + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
-        shipleyCLabelIndep.setText("Shipley C-statistic= "
-                                           + ((Double.isNaN(model.getMarkovCheck().getShipleyCP(true))
+        fisherCombinedLabelIndep.setText("Fisher combined p= "
+                                         + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
-        shipleyCLabelDep.setText("Shipley C-statistic = "
-                                         + ((Double.isNaN(model.getMarkovCheck().getShipleyCP(false))
+        fisherCombinedPLabelDep.setText("Fisher combined p = "
+                                        + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "
