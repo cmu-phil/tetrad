@@ -69,9 +69,9 @@ public class BasisFunctionBicScore implements Score {
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
-        // We will zero out the correlations that are very close to zero.
+//        // We will zero out the correlations that are very close to zero.
         CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
-        double correlationThreshold = 1e-5;
+        double correlationThreshold = 1e-3;
 
         for (int _i = 0; _i < correlationMatrix.getDimension(); _i++) {
             for (int j = 0; j < correlationMatrix.getDimension(); j++) {
