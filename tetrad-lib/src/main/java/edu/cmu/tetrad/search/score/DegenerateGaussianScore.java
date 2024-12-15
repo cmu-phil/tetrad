@@ -69,9 +69,10 @@ public class DegenerateGaussianScore implements Score {
 
         this.variables = dataSet.getVariables();
 
-        // Expand the discrete columns to give indicators for each category.
+        // Expand the discrete columns to give indicators for each category. We want to leave a category out if
+        // we're not using the pseudoinverse option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, true);
+                dataSet, 1, 1, -1, !usePseudoInverse);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
 
