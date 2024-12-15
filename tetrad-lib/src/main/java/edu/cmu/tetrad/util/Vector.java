@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.util;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
+import org.ejml.simple.SimpleMatrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -42,7 +42,7 @@ public class Vector implements TetradSerializable {
     /**
      * The data.
      */
-    private final RealVector data;
+    private final SimpleMatrix data;
 
     /**
      * Constructs a new Vector object from an array of double values.
@@ -50,7 +50,7 @@ public class Vector implements TetradSerializable {
      * @param data the array of double values used to initialize the Vector object
      */
     public Vector(double[] data) {
-        this.data = new ArrayRealVector(data);
+        this.data = new SimpleMatrix(data);
     }
 
     /**
@@ -59,6 +59,14 @@ public class Vector implements TetradSerializable {
      * @param v the RealVector object to be used for creating the Vector object
      */
     public Vector(RealVector v) {
+        this.data = new SimpleMatrix(v.toArray());
+    }
+
+    public Vector(SimpleMatrix v) {
+        if (v.getNumCols() != 1) {
+            throw new IllegalArgumentException("SimpleMatrix must have one column.");
+        }
+
         this.data = v;
     }
 
@@ -69,7 +77,7 @@ public class Vector implements TetradSerializable {
      * @throws IllegalArgumentException if the size is negative
      */
     public Vector(int size) {
-        this.data = new ArrayRealVector(size);
+        this.data = new SimpleMatrix(size, 1);
     }
 
     /**
@@ -87,8 +95,8 @@ public class Vector implements TetradSerializable {
      * @param value a double
      */
     public void assign(double value) {
-        for (int i = 0; i < this.data.getDimension(); i++) {
-            this.data.setEntry(i, value);
+        for (int i = 0; i < this.data.getNumRows(); i++) {
+            this.data.set(i, value);
         }
     }
 
@@ -98,8 +106,8 @@ public class Vector implements TetradSerializable {
      * @param vector a {@link edu.cmu.tetrad.util.Vector} object
      */
     public void assign(Vector vector) {
-        for (int i = 0; i < this.data.getDimension(); i++) {
-            this.data.setEntry(i, vector.get(i));
+        for (int i = 0; i < this.data.getNumRows(); i++) {
+            this.data.set(i, vector.get(i));
         }
     }
 
@@ -109,7 +117,7 @@ public class Vector implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public Vector copy() {
-        return new Vector(this.data.copy().toArray());
+        return new Vector(this.data.copy());
     }
 
     /**
@@ -118,10 +126,10 @@ public class Vector implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix diag() {
-        Matrix m = new Matrix(this.data.getDimension(), this.data.getDimension());
+        Matrix m = new Matrix(this.data.getNumRows(), this.data.getNumRows());
 
-        for (int i = 0; i < this.data.getDimension(); i++) {
-            m.set(i, i, this.data.getEntry(i));
+        for (int i = 0; i < this.data.getNumRows(); i++) {
+            m.set(i, i, this.data.get(i));
         }
 
         return m;
@@ -134,7 +142,7 @@ public class Vector implements TetradSerializable {
      * @return a double
      */
     public double dotProduct(Vector v2) {
-        return this.data.dotProduct(v2.data);
+        return this.data.dot(v2.data);
     }
 
     /**
@@ -144,7 +152,7 @@ public class Vector implements TetradSerializable {
      * @return a double
      */
     public double get(int i) {
-        return this.data.getEntry(i);
+        return this.data.get(i);
     }
 
     /**
@@ -163,7 +171,7 @@ public class Vector implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public Vector minus(Vector mb) {
-        return new Vector(this.data.subtract(mb.data).toArray());
+        return new Vector(this.data.minus(mb.data));
     }
 
     /**
@@ -173,7 +181,7 @@ public class Vector implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public Vector plus(Vector mb) {
-        return new Vector(this.data.add(mb.data).toArray());
+        return new Vector(this.data.plus(mb.data));
     }
 
     /**
@@ -198,7 +206,7 @@ public class Vector implements TetradSerializable {
      * @param v a double
      */
     public void set(int j, double v) {
-        this.data.setEntry(j, v);
+        this.data.set(j, v);
     }
 
     /**
@@ -207,7 +215,7 @@ public class Vector implements TetradSerializable {
      * @return a int
      */
     public int size() {
-        return this.data.getDimension();
+        return this.data.getNumRows();
     }
 
     /**
@@ -216,7 +224,7 @@ public class Vector implements TetradSerializable {
      * @return an array of  objects
      */
     public double[] toArray() {
-        return this.data.toArray();
+        return this.data.getColumn(0).getDDRM().data;
     }
 
     /**
@@ -225,7 +233,7 @@ public class Vector implements TetradSerializable {
      * @return a {@link java.lang.String} object
      */
     public String toString() {
-        return MatrixUtils.toString(this.data.toArray());
+        return this.data.toString();
     }
 
     /**
@@ -238,7 +246,7 @@ public class Vector implements TetradSerializable {
         double[] _selection = new double[selection.length];
 
         for (int i = 0; i < selection.length; i++) {
-            _selection[i] = this.data.getEntry(selection[i]);
+            _selection[i] = this.data.get(selection[i]);
         }
 
         return new Vector(_selection);
@@ -303,6 +311,10 @@ public class Vector implements TetradSerializable {
                                            + ", " + e.getMessage());
             throw e;
         }
+    }
+
+    public SimpleMatrix getSimpleMatrix() {
+        return data;
     }
 }
 

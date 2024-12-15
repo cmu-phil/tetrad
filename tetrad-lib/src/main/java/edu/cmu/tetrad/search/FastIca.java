@@ -384,7 +384,7 @@ public class FastIca {
         // Whiten.
         Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
 
-        SingularValueDecomposition s = new SingularValueDecomposition(cov.getApacheData());
+        SingularValueDecomposition s = new SingularValueDecomposition(cov.getApacheMatrix());
         Matrix D = new Matrix(s.getS().getData());
         Matrix U = new Matrix(s.getU().getData());
 
@@ -397,7 +397,7 @@ public class FastIca {
         cov.sqrt();
 
         Matrix K = D.times(U.transpose());
-        K = K.getPart(0, this.numComponents - 1, 0, p - 1);
+        K = K.getPart(0, this.numComponents, 0, p);
 
         Matrix X1 = K.times(this.X);
 
@@ -601,7 +601,7 @@ public class FastIca {
         int p = X.getNumColumns();
         Matrix W = wInit;
 
-        SingularValueDecomposition sW = new SingularValueDecomposition(W.getApacheData());
+        SingularValueDecomposition sW = new SingularValueDecomposition(W.getApacheMatrix());
         Matrix D = new Matrix(sW.getS().getData());
         for (int i = 0; i < D.getNumRows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
@@ -649,7 +649,7 @@ public class FastIca {
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getApacheData());
+            SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getApacheMatrix());
             Matrix U = new Matrix(sW1.getU());
             Matrix sD = new Matrix(sW1.getS());
             for (int i = 0; i < sD.getNumRows(); i++)
