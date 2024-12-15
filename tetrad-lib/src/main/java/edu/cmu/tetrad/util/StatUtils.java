@@ -2583,9 +2583,6 @@ public final class StatUtils {
      * @return The result of the iterative multiplication.
      */
     public static double basisFunctionValue(int type, int index, double x) {
-
-        // TODO: Perhaps we need to insist that function = x for type = 1, ruling out hermite2.
-
         if (type == 0) {
             double g = 1.0;
 
@@ -2601,7 +2598,7 @@ public final class StatUtils {
         } else if (type == 3) {
             return chebyshev(index, x);
         } else {
-            throw new IllegalArgumentException("Unrecognized type: " + type);
+            throw new IllegalArgumentException("Unrecognized basis type: " + type);
         }
     }
 }

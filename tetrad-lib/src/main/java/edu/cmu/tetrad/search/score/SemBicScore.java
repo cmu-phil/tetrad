@@ -243,7 +243,6 @@ public class SemBicScore implements Score {
 
         if (usePseudoInverse) {
             b = covxx.pseudoinverse().times(covxy);
-//            b = new Matrix(MatrixUtils.pseudoInverse(covxx.toArray())).times(covxy);
         } else {
             b = covxx.inverse().times(covxy);
         }

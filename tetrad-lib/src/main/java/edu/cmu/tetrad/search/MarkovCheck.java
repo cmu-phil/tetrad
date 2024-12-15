@@ -1747,6 +1747,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public double getKsPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
+        if (pValues.isEmpty()) return Double.NaN;
         return UniformityTest.getKsPValue(pValues, 0.0, 1.0);
     }
 
@@ -1758,6 +1759,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public double getBinomialPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
+        if (pValues.isEmpty()) return Double.NaN;
         return getBinomialPValue(pValues, independenceTest.getAlpha());
     }
 
@@ -1769,6 +1771,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public double getAndersonDarlingA2(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
+        if (pValues.isEmpty()) return Double.NaN;
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getASquared();
     }
@@ -1781,6 +1784,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public double getAndersonDarlingPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
+        if (pValues.isEmpty()) return Double.NaN;
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
 //        double aSquared = generalAndersonDarlingTest.getASquared();
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
@@ -1788,25 +1792,34 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
-     * Calculates the Fisher combined p-value for a list of independence test results.
+     * Calculates the combined p-value using Fisher's method for a given list of independence test results. Fisher's
+     * method is used to combine independent p-values from multiple tests to determine overall significance.
      *
-     * @param visiblePairs a list of IndependenceResult objects representing the input pairs for which
-     *                     the p-values are extracted and combined using Fisher's method.
-     * @return the combined p-value obtained from Fisher's method applied to the input p-values.
+     * @param visiblePairs a list of IndependenceResult objects, each containing a p-value from an independence test
+     * @return the combined p-value. If the inputs are invalid or computation fails, returns Double.NaN.
      */
     public double getFisherCombinedPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
-        List<Double> pValues1 = getPValues(visiblePairs);
 
         double sum = 0.0;
 
-        for (double pValue : pValues1) {
+        for (double pValue : pValues) {
             sum += Math.log(pValue);
         }
 
         double c = -2.0 * sum;
-        ChiSquaredDistribution chiSquared = new ChiSquaredDistribution(2 * pValues.size());
-        return 1.0 - chiSquared.cumulativeProbability(c);
+        int m = pValues.size();
+
+        if (m > 0 && (Double.isNaN(c) || c == Double.NEGATIVE_INFINITY)) {
+            return Double.NaN;
+        } else if (m > 0 && c == Double.POSITIVE_INFINITY) {
+            return 0.0;
+        } else if (m > 0 && !(Double.isNaN(c))) {
+            ChiSquaredDistribution chiSquared = new ChiSquaredDistribution(2 * m);
+            return 1.0 - chiSquared.cumulativeProbability(c);
+        } else {
+            return Double.NaN;
+        }
     }
 
 

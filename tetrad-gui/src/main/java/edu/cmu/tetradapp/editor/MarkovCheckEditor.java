@@ -613,33 +613,64 @@ public class MarkovCheckEditor extends JPanel {
     private void refreshResult(MarkovCheckIndTestModel model, JTable tableIndep, JTable tableDep,
                                AbstractTableModel tableModelIndep, AbstractTableModel tableModelDep,
                                DoubleTextField percent, boolean clear) {
-        SwingUtilities.invokeLater(() -> {
-            setTest();
+        new WatchedProcess() {
+            @Override
+            public void watch() {
+                setTest();
 
-            tableModelIndep.fireTableDataChanged();
-            tableModelDep.fireTableDataChanged();
+                tableModelIndep.fireTableDataChanged();
+                tableModelDep.fireTableDataChanged();
 
-            model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
+                model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
 
-            model.getMarkovCheck().setPercentResample(percent.getValue());
-            model.getMarkovCheck().generateResults(true, clear);
-
-            if (checkDependentDistribution.isSelected()) {
-                if (clear) {
-                    model.getMarkovCheck().generateResults(true, true);
-                    model.getMarkovCheck().generateResults(false, false);
-                } else {
-                    model.getMarkovCheck().generateResults(false, false);
-                    model.getMarkovCheck().generateResults(false, false);
-                }
-            } else {
+                model.getMarkovCheck().setPercentResample(percent.getValue());
                 model.getMarkovCheck().generateResults(true, clear);
-            }
 
-            tableModelIndep.fireTableDataChanged();
-            tableModelDep.fireTableDataChanged();
-            updateTables(model, tableIndep, tableDep);
-        });
+                if (checkDependentDistribution.isSelected()) {
+                    if (clear) {
+                        model.getMarkovCheck().generateResults(true, true);
+                        model.getMarkovCheck().generateResults(false, false);
+                    } else {
+                        model.getMarkovCheck().generateResults(false, false);
+                        model.getMarkovCheck().generateResults(false, false);
+                    }
+                } else {
+                    model.getMarkovCheck().generateResults(true, clear);
+                }
+
+                tableModelIndep.fireTableDataChanged();
+                tableModelDep.fireTableDataChanged();
+                updateTables(model, tableIndep, tableDep);
+            }
+        };
+
+//        SwingUtilities.invokeLater(() -> {
+//            setTest();
+//
+//            tableModelIndep.fireTableDataChanged();
+//            tableModelDep.fireTableDataChanged();
+//
+//            model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
+//
+//            model.getMarkovCheck().setPercentResample(percent.getValue());
+//            model.getMarkovCheck().generateResults(true, clear);
+//
+//            if (checkDependentDistribution.isSelected()) {
+//                if (clear) {
+//                    model.getMarkovCheck().generateResults(true, true);
+//                    model.getMarkovCheck().generateResults(false, false);
+//                } else {
+//                    model.getMarkovCheck().generateResults(false, false);
+//                    model.getMarkovCheck().generateResults(false, false);
+//                }
+//            } else {
+//                model.getMarkovCheck().generateResults(true, clear);
+//            }
+//
+//            tableModelIndep.fireTableDataChanged();
+//            tableModelDep.fireTableDataChanged();
+//            updateTables(model, tableIndep, tableDep);
+//        });
     }
 
     private void setTest() {
