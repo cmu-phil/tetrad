@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.score;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.StatUtils;
@@ -14,8 +15,8 @@ import java.util.Map;
 import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
- * Calculates the basis function BIC score for a given dataset. This is a modification of the Degenerate Gaussian score
- * by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
+ * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
+ * score by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
  * discrete variables by adding indicator variables per category.
  *
  * @author bandrews
@@ -68,6 +69,7 @@ public class BasisFunctionBicScore implements Score {
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
+        // We will zero out the correlations that are very close to zero.
         CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
         double correlationThreshold = 1e-5;
 
@@ -82,7 +84,7 @@ public class BasisFunctionBicScore implements Score {
         this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
 
-        // We will be using the pseudo-inverse in the BIC score calculation so we don't get exceptions.
+        // We will be using the pseudo-inverse in the BIC score calculation so we don't get singularity exceptions.
         this.bic.setUsePseudoInverse(true);
 
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
