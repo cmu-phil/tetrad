@@ -2,15 +2,12 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +64,7 @@ public class BasisFunctionBicScore implements Score {
         this.truncationLimit = truncationLimit;
         this.variables = dataSet.getVariables();
 
-        EmbeddedData result = getEmbeddedData(dataSet, truncationLimit, basisType, basisScale, false);
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale, false);
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
@@ -91,91 +88,6 @@ public class BasisFunctionBicScore implements Score {
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
         this.bic.setStructurePrior(0);
 
-    }
-
-    public static @NotNull BasisFunctionBicScore.EmbeddedData getEmbeddedData(DataSet dataSet, int truncationLimit,
-                                                                              int basisType, double basisScale,
-                                                                              boolean leaveOneCategoryOut) {
-        if (dataSet == null) {
-            throw new IllegalArgumentException("Data set must not be null.");
-        }
-
-        if (truncationLimit < 1) {
-            throw new IllegalArgumentException("Truncation limit must be a positive integer.");
-        }
-
-        int n = dataSet.getNumRows();
-        List<Node> variables = dataSet.getVariables();
-
-        if (basisScale == 0.0) {
-            dataSet = DataTransforms.standardizeData(dataSet);
-        } else if (basisScale > 0.0) {
-            dataSet = DataTransforms.scale(dataSet, basisScale);
-        } else if (basisScale != -1) {
-            throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be " +
-                    "standardized, or -1 if the data should not be scaled.");
-        }
-
-        Map<Integer, List<Integer>> embedding = new HashMap<>();
-
-        List<Node> A = new ArrayList<>();
-        List<double[]> B = new ArrayList<>();
-
-        // Index of embedded variables in new data set...
-        int i = -1;
-
-        for (int i_ = 0; i_ < variables.size(); i_++) {
-            Node v = variables.get(i_);
-
-            if (v instanceof DiscreteVariable) {
-                Map<List<Integer>, Integer> keys = new HashMap<>();
-
-                int numCategories = ((DiscreteVariable) v).getNumCategories();
-
-                for (int c = 0; c < (leaveOneCategoryOut ? numCategories - 1 : numCategories); c++) {
-                    List<Integer> key = new ArrayList<>();
-                    i++;
-                    key.add(c);
-                    keys.put(key, i);
-
-                    Node v_ = new ContinuousVariable(v.getName() + "." + ((DiscreteVariable) v).getCategory(c));
-                    A.add(v_);
-                    B.add(new double[n]);
-
-                    for (int j = 0; j < n; j++) {
-                        B.get(i)[j] = dataSet.getInt(j, i_) == c ? 1 : 0;
-                    }
-                }
-
-                embedding.put(i_, new ArrayList<>(keys.values()));
-            } else {
-                List<Integer> indexList = new ArrayList<>();
-                for (int p = 1; p <= truncationLimit; p++) {
-                    i++;
-                    Node vPower = basisScale == -1 ? new ContinuousVariable(v.getName()) :
-                            new ContinuousVariable(v.getName() + ".P(" + p + ")");
-                    A.add(vPower);
-                    double[] functional = new double[n];
-                    for (int j = 0; j < n; j++) {
-                        functional[j] = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
-                    }
-                    B.add(functional);
-                    indexList.add(i);
-                }
-                embedding.put(i_, indexList);
-            }
-        }
-
-        double[][] B_ = new double[n][B.size()];
-        for (int j = 0; j < B.size(); j++) {
-            for (int k = 0; k < n; k++) {
-                B_[k][j] = B.get(j)[k];
-            }
-        }
-
-        RealMatrix D = MatrixUtils.createRealMatrix(B_);
-        BoxDataSet embeddedData = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        return new EmbeddedData(dataSet.copy(), embeddedData, embedding);
     }
 
     /**
@@ -275,7 +187,7 @@ public class BasisFunctionBicScore implements Score {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "Basis Function BIC Score (Basis-BIC) Penalty " + nf.format(this.bic.getPenaltyDiscount()) + " truncation = " + this.truncationLimit;
+        return "Basis Function Score (BFS) Penalty " + nf.format(this.bic.getPenaltyDiscount()) + " truncation = " + this.truncationLimit;
     }
 
     /**
@@ -286,9 +198,6 @@ public class BasisFunctionBicScore implements Score {
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
         this.bic.setPenaltyDiscount(penaltyDiscount);
-    }
-
-    public record EmbeddedData(DataSet originalData, DataSet embeddedData, Map<Integer, List<Integer>> embedding) {
     }
 
 }

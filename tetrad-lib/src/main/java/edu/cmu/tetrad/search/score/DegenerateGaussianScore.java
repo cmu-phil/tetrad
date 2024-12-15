@@ -23,13 +23,11 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import edu.cmu.tetrad.search.utils.Embedding;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +70,7 @@ public class DegenerateGaussianScore implements Score {
         this.variables = dataSet.getVariables();
 
         // Expand the discrete columns to give indicators for each category.
-        BasisFunctionBicScore.EmbeddedData embeddedData = BasisFunctionBicScore.getEmbeddedData(
+        Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, 1, 1, -1, true);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();

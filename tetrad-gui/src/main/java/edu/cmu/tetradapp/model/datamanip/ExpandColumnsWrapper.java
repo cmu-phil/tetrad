@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
-import edu.cmu.tetrad.search.score.BasisFunctionBicScore;
+import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -69,7 +69,7 @@ public class ExpandColumnsWrapper extends DataWrapper {
             }
 
             DataSet convertedData;
-            convertedData = BasisFunctionBicScore.getEmbeddedData(originalData, 1, 1, -1).embeddedData();
+            convertedData = Embedding.getEmbeddedData(originalData, 1, 1, -1).embeddedData();
             convertedDataSets.add(convertedData);
         }
 
