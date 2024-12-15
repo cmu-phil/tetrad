@@ -185,10 +185,6 @@ public class BasisFunctionBicScore implements Score {
     public double localScore(int i, int... parents) {
         double score = 0;
 
-        if (i == -1) {
-            System.out.println("i = -1");
-        }
-
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
@@ -199,11 +195,6 @@ public class BasisFunctionBicScore implements Score {
             int[] parents_ = new int[B.size()];
             for (int i__ = 0; i__ < B.size(); i__++) {
                 Integer i1 = B.get(i__);
-
-                if (i1 == -1) {
-                    System.out.println("i1 = -1");
-                }
-
                 parents_[i__] = i1;
             }
 
