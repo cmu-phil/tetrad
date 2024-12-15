@@ -67,7 +67,7 @@ public class BasisFunctionBicScore implements Score {
         this.truncationLimit = truncationLimit;
         this.variables = dataSet.getVariables();
 
-        EmbeddedData result = getEmbeddedData(dataSet, truncationLimit, basisType, basisScale);
+        EmbeddedData result = getEmbeddedData(dataSet, truncationLimit, basisType, basisScale, false);
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
@@ -94,7 +94,8 @@ public class BasisFunctionBicScore implements Score {
     }
 
     public static @NotNull BasisFunctionBicScore.EmbeddedData getEmbeddedData(DataSet dataSet, int truncationLimit,
-                                                                              int basisType, double basisScale) {
+                                                                              int basisType, double basisScale,
+                                                                              boolean leaveOneCategoryOut) {
         if (dataSet == null) {
             throw new IllegalArgumentException("Data set must not be null.");
         }
@@ -129,7 +130,9 @@ public class BasisFunctionBicScore implements Score {
             if (v instanceof DiscreteVariable) {
                 Map<List<Integer>, Integer> keys = new HashMap<>();
 
-                for (int c = 0; c < ((DiscreteVariable) v).getNumCategories(); c++) {
+                int numCategories = ((DiscreteVariable) v).getNumCategories();
+
+                for (int c = 0; c < (leaveOneCategoryOut ? numCategories - 1 : numCategories); c++) {
                     List<Integer> key = new ArrayList<>();
                     i++;
                     key.add(c);

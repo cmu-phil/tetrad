@@ -73,7 +73,7 @@ public class DegenerateGaussianScore implements Score {
 
         // Expand the discrete columns to give indicators for each category.
         BasisFunctionBicScore.EmbeddedData embeddedData = BasisFunctionBicScore.getEmbeddedData(
-                dataSet, 1, 1, -1);
+                dataSet, 1, 1, -1, true);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
 
