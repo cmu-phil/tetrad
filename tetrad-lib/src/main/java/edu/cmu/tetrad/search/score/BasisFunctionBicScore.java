@@ -106,8 +106,6 @@ public class BasisFunctionBicScore implements Score {
         int n = dataSet.getNumRows();
         List<Node> variables = dataSet.getVariables();
 
-        Map<Integer, List<Integer>> embedding;
-
         if (basisScale == 0.0) {
             dataSet = DataTransforms.standardizeData(dataSet);
         } else if (basisScale > 0.0) {
@@ -117,30 +115,29 @@ public class BasisFunctionBicScore implements Score {
                     "standardized, or -1 if the data should not be scaled.");
         }
 
-        embedding = new HashMap<>();
+        Map<Integer, List<Integer>> embedding = new HashMap<>();
 
         List<Node> A = new ArrayList<>();
         List<double[]> B = new ArrayList<>();
 
+        // Index of embedded variables in new data set...
         int i = -1;
-        int i_ = 0;
-        while (i_ < variables.size()) {
+
+        for (int i_ = 0; i_ < variables.size(); i_++) {
             Node v = variables.get(i_);
 
             if (v instanceof DiscreteVariable) {
-                int index = 0;
-
                 Map<List<Integer>, Integer> keys = new HashMap<>();
 
                 for (int c = 0; c < ((DiscreteVariable) v).getNumCategories(); c++) {
                     List<Integer> key = new ArrayList<>();
+                    i++;
                     key.add(c);
                     keys.put(key, i);
 
                     Node v_ = new ContinuousVariable(v.getName() + "." + ((DiscreteVariable) v).getCategory(c));
                     A.add(v_);
                     B.add(new double[n]);
-                    i++;
 
                     for (int j = 0; j < n; j++) {
                         B.get(i)[j] = dataSet.getInt(j, i_) == c ? 1 : 0;
@@ -164,7 +161,6 @@ public class BasisFunctionBicScore implements Score {
                 }
                 embedding.put(i_, indexList);
             }
-            i_++;
         }
 
         double[][] B_ = new double[n][B.size()];
@@ -189,6 +185,10 @@ public class BasisFunctionBicScore implements Score {
     public double localScore(int i, int... parents) {
         double score = 0;
 
+        if (i == -1) {
+            System.out.println("i = -1");
+        }
+
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
@@ -198,7 +198,13 @@ public class BasisFunctionBicScore implements Score {
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
             for (int i__ = 0; i__ < B.size(); i__++) {
-                parents_[i__] = B.get(i__);
+                Integer i1 = B.get(i__);
+
+                if (i1 == -1) {
+                    System.out.println("i1 = -1");
+                }
+
+                parents_[i__] = i1;
             }
 
             double score1 = this.bic.localScore(i_, parents_);

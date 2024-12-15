@@ -41,6 +41,8 @@ import java.io.Serial;
  * <p>
  * This wrapper operates on tabular datasets and modifies the data model to include the expanded data representations.
  * Additionally, it supports logging of the transformation applied to the data models.
+ * <p>
+ * Currently this is only being used to expand discrete columns.
  */
 public class ExpandColumnsWrapper extends DataWrapper {
     @Serial

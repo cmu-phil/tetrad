@@ -70,74 +70,14 @@ public class DegenerateGaussianScore implements Score {
         }
 
         this.variables = dataSet.getVariables();
-        // The number of instances.
-        int n = dataSet.getNumRows();
-        this.embedding = new HashMap<>();
 
-        List<Node> A = new ArrayList<>();
-        List<double[]> B = new ArrayList<>();
+        // Expand the discrete columns to give indicators for each category.
+        BasisFunctionBicScore.EmbeddedData embeddedData = BasisFunctionBicScore.getEmbeddedData(
+                dataSet, 1, 1, -1);
+        DataSet convertedData = embeddedData.embeddedData();
+        this.embedding = embeddedData.embedding();
 
-        int index = 0;
-
-        int i = 0;
-        int i_ = 0;
-        while (i_ < this.variables.size()) {
-
-            Node v = this.variables.get(i_);
-
-            if (v instanceof DiscreteVariable) {
-
-                Map<List<Integer>, Integer> keys = new HashMap<>();
-                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
-                for (int j = 0; j < n; j++) {
-                    List<Integer> key = new ArrayList<>();
-                    key.add(dataSet.getInt(j, i_));
-                    if (!keys.containsKey(key)) {
-                        keys.put(key, i);
-                        keysReverse.put(i, key);
-                        Node v_ = new ContinuousVariable("V__" + ++index);
-                        A.add(v_);
-                        B.add(new double[n]);
-                        i++;
-                    }
-                    B.get(keys.get(key))[j] = 1;
-                }
-
-                // Remove a degenerate dimension.
-                i--;
-                keys.remove(keysReverse.get(i));
-                A.remove(i);
-                B.remove(i);
-//                }
-
-                this.embedding.put(i_, new ArrayList<>(keys.values()));
-
-            } else {
-
-                A.add(v);
-                double[] b = new double[n];
-                for (int j = 0; j < n; j++) {
-                    b[j] = dataSet.getDouble(j, i_);
-                }
-
-                B.add(b);
-                List<Integer> index2 = new ArrayList<>();
-                index2.add(i);
-                this.embedding.put(i_, index2);
-                i++;
-
-            }
-            i_++;
-        }
-        double[][] B_ = new double[n][B.size()];
-        for (int j = 0; j < B.size(); j++) {
-            for (int k = 0; k < n; k++) {
-                B_[k][j] = B.get(j)[k];
-            }
-        }
-
-        RealMatrix D = MatrixUtils.createRealMatrix(B_);
-        this.bic = new SemBicScore(new BoxDataSet(new DoubleDataBox(D.getData()), A), precomputeCovariances);
+        this.bic = new SemBicScore(convertedData, precomputeCovariances);
         this.bic.setUsePseudoInverse(usePseudoInverse);
         this.bic.setStructurePrior(0);
     }
@@ -157,7 +97,6 @@ public class DegenerateGaussianScore implements Score {
         for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
         }
-
 
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
