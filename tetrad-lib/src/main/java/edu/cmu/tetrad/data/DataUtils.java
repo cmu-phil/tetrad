@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -24,14 +24,12 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * Some static utility methods for dealing with data sets.
@@ -412,11 +410,11 @@ public final class DataUtils {
             }
         }
 
-        RealMatrix q = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(data.toArray());
+        SimpleMatrix q = new SimpleMatrix(data.toArray());
 
-        RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
-        RealMatrix q2 = DataUtils.times(q1, q);
-        Matrix prod = new Matrix(q2.getData());
+        SimpleMatrix q1 = q.transpose();
+        SimpleMatrix q2 = q1.mult(q);
+        Matrix prod = new Matrix(q2);
 
         double factor = 1.0 / (data.getNumRows() - 1);
 
@@ -427,52 +425,6 @@ public final class DataUtils {
         }
 
         return prod;
-    }
-
-    private static RealMatrix times(RealMatrix m, RealMatrix n) {
-        if (m.getColumnDimension() != n.getRowDimension()) throw new IllegalArgumentException("Incompatible matrices.");
-
-        int rowDimension = m.getRowDimension();
-        int columnDimension = n.getColumnDimension();
-
-        RealMatrix out = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(rowDimension, columnDimension);
-
-        int NTHREADS = Runtime.getRuntime().availableProcessors();
-
-        int parallelism = Runtime.getRuntime().availableProcessors();
-        ForkJoinPool pool = new ForkJoinPool(parallelism);
-
-        for (int t = 0; t < NTHREADS; t++) {
-            int _t = t;
-
-            Runnable worker = () -> {
-                int chunk = rowDimension / NTHREADS + 1;
-                for (int row = _t * chunk; row < FastMath.min((_t + 1) * chunk, rowDimension); row++) {
-                    if ((row + 1) % 100 == 0) System.out.println(row + 1);
-
-                    for (int col = 0; col < columnDimension; ++col) {
-                        double sum = 0.0D;
-
-                        int commonDimension = m.getColumnDimension();
-
-                        for (int i = 0; i < commonDimension; ++i) {
-                            sum += m.getEntry(row, i) * n.getEntry(i, col);
-                        }
-
-//                            double sum = m.getRowVector(row).dotProduct(n.getColumnVector(col));
-                        out.setEntry(row, col, sum);
-                    }
-                }
-            };
-
-            pool.submit(worker);
-        }
-
-        while (true) {
-            if (pool.isQuiescent()) break;
-        }
-
-        return out;
     }
 
     /**

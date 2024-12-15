@@ -124,33 +124,4 @@ public class TestBoss {
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
-
-    /**
-     * <p>testGigaflops.</p>
-     */
-    public static void testGigaflops() {
-
-        final long start = MillisecondTimes.timeMillis();// System.currentTimeMillis();
-
-        for (int i = 0; i < 200; i++) {
-            int N = 1024;
-            RealMatrix A = MatrixUtils.createRealMatrix(N, N);
-            RealMatrix B = MatrixUtils.createRealMatrix(N, N);
-
-            MillisecondTimes.type = MillisecondTimes.Type.CPU;
-
-            RealMatrix C = A.multiply(B);
-            final long end = MillisecondTimes.timeMillis();// System.currentTimeMillis();
-
-            double gflop = N * N * N * 2e-9;
-            double sec = (end - start) * 1e-3;
-
-            System.out.println(gflop / sec);
-        }
-
-        final long end = MillisecondTimes.timeMillis();// System.currentTimeMillis();
-
-        System.out.println((end - start) * 1e-3);
-
-    }
 }

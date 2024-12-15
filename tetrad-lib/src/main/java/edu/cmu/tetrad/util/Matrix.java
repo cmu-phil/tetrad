@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
@@ -54,12 +53,12 @@ public class Matrix implements TetradSerializable {
     /**
      * The number of rows.
      */
-    private int m;
+    private final int m;
 
     /**
      * The number of columns.
      */
-    private int n;
+    private final int n;
 
     /**
      * <p>Constructor for Matrix.</p>
@@ -135,17 +134,6 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * <p>sparseMatrix.</p>
-     *
-     * @param m a int
-     * @param n a int
-     * @return a {@link edu.cmu.tetrad.util.Matrix} object
-     */
-    public static Matrix sparseMatrix(int m, int n) {
-        return new Matrix(new OpenMapRealMatrix(m, n).getData());
-    }
-
-    /**
      * Generates a simple exemplar of this class to test serialization.
      *
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
@@ -212,13 +200,6 @@ public class Matrix implements TetradSerializable {
         }
 
         return m;
-
-//        if (rows.length == 0 || cols.length == 0) {
-//            return new Matrix(rows.length, cols.length);
-//        }
-//
-//        RealMatrix subMatrix = this.apacheData.getSubMatrix(rows, cols);
-//        return new Matrix(subMatrix.getData());
     }
 
     /**
@@ -366,8 +347,8 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * Returns the inverse of the matrix. If the matrix is not square, an exception is thrown. If the matrix is singular,
-     * an exception is thrown.
+     * Returns the inverse of the matrix. If the matrix is not square, an exception is thrown. If the matrix is
+     * singular, an exception is thrown.
      *
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
