@@ -322,9 +322,9 @@ public class FastIca {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * Sets whether verbose output should be enabled or disabled for the algorithm.
      *
-     * @param verbose True, if so.
+     * @param verbose A boolean value. If true, verbose output will be enabled; if false, it will be disabled.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

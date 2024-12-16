@@ -203,10 +203,5 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-        <dependency>
-            <groupId>de.bwaldvogel</groupId>
-            <artifactId>liblinear</artifactId>
-            <version>2.44</version>
-        </dependency>
     </dependencies>
 </project>

@@ -65,21 +65,22 @@ public class BasisFunctionBicScore implements Score {
         this.truncationLimit = truncationLimit;
         this.variables = dataSet.getVariables();
 
-        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale, false);
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
+                false);
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
-//        // We will zero out the correlations that are very close to zero.
+        // We will zero out the correlations that are very close to zero.
         CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
-        double correlationThreshold = 1e-3;
-
-        for (int _i = 0; _i < correlationMatrix.getDimension(); _i++) {
-            for (int j = 0; j < correlationMatrix.getDimension(); j++) {
-                if (abs(correlationMatrix.getValue(_i, j)) < correlationThreshold) {
-                    correlationMatrix.setValue(_i, j, 0);
-                }
-            }
-        }
+//        double correlationThreshold = 1e-2;
+//
+//        for (int _i = 0; _i < correlationMatrix.getDimension(); _i++) {
+//            for (int j = 0; j < correlationMatrix.getDimension(); j++) {
+//                if (abs(correlationMatrix.getValue(_i, j)) < correlationThreshold) {
+//                    correlationMatrix.setValue(_i, j, 0);
+//                }
+//            }
+//        }
 
         this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
