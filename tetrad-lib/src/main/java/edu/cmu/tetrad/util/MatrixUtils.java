@@ -282,17 +282,6 @@ public final class MatrixUtils {
     }
 
     /**
-     * <p>outerProduct.</p>
-     *
-     * @param ma an array of  objects
-     * @param mb an array of  objects
-     * @return an array of  objects
-     */
-    public static double[][] outerProduct(double[] ma, double[] mb) {
-        return TetradAlgebra.multOuter(new Vector(ma), new Vector(mb)).toArray();
-    }
-
-    /**
      * <p>innerProduct.</p>
      *
      * @param ma an array of  objects

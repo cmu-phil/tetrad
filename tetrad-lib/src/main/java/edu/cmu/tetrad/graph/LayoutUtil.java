@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.PointXy;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -641,7 +644,7 @@ public class LayoutUtil {
                     Matrix c;
 
                     try {
-                        c = TetradAlgebra.solve(a, b);
+                        c = new Matrix(a.getSimpleMatrix().solve(b.getSimpleMatrix()));
                     } catch (Exception e) {
                         this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
                                 2 * jump) - jump;
