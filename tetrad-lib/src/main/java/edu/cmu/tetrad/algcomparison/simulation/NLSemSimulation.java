@@ -11,8 +11,6 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
-import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
@@ -22,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.linear.MatrixUtils.createRealMatrix;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -89,7 +86,7 @@ public class NLSemSimulation implements Simulation {
             }
 
             this.graphs.add(graph);
-            RealMatrix data = MatrixUtils.createRealMatrix(sampleSize, numVars);
+            SimpleMatrix data = new SimpleMatrix(sampleSize, numVars);
 
             int errorType = parameters.getInt(Params.SIMULATION_ERROR_TYPE);
 
@@ -104,30 +101,30 @@ public class NLSemSimulation implements Simulation {
                     double high = parameters.getDouble(Params.VAR_HIGH);
                     double std = sqrt(RandomUtil.getInstance().nextUniform(low, high));
                     for (int j = 0; j < sampleSize; j++) {
-                        data.setEntry(j, k, RandomUtil.getInstance().nextNormal(0, std));
+                        data.set(j, k, RandomUtil.getInstance().nextNormal(0, std));
                     }
                 } else if (errorType == 2) {
                     double low = parameters.getDouble(Params.SIMULATION_PARAM1);
                     double high = parameters.getDouble(Params.SIMULATION_PARAM1);
                     for (int j = 0; j < sampleSize; j++) {
-                        data.setEntry(j, k, RandomUtil.getInstance().nextUniform(low, high));
+                        data.set(j, k, RandomUtil.getInstance().nextUniform(low, high));
                     }
                 } else if (errorType == 3) {
                     double lambda = parameters.getDouble(Params.SIMULATION_PARAM1);
                     for (int j = 0; j < sampleSize; j++) {
-                        data.setEntry(j, k, RandomUtil.getInstance().nextExponential(lambda));
+                        data.set(j, k, RandomUtil.getInstance().nextExponential(lambda));
                     }
                 } else if (errorType == 4) {
                     double mu = parameters.getDouble(Params.SIMULATION_PARAM1);
                     double beta = parameters.getDouble(Params.SIMULATION_PARAM2);
                     for (int j = 0; j < sampleSize; j++) {
-                        data.setEntry(j, k, RandomUtil.getInstance().nextGumbel(mu, beta));
+                        data.set(j, k, RandomUtil.getInstance().nextGumbel(mu, beta));
                     }
                 } else if (errorType == 5) {
                     double shape = parameters.getDouble(Params.SIMULATION_PARAM1);
                     double scale = parameters.getDouble(Params.SIMULATION_PARAM2);
                     for (int j = 0; j < sampleSize; j++) {
-                        data.setEntry(j, k, RandomUtil.getInstance().nextGamma(shape, scale));
+                        data.set(j, k, RandomUtil.getInstance().nextGamma(shape, scale));
                     }
                 }
 
@@ -146,9 +143,9 @@ public class NLSemSimulation implements Simulation {
                 for (Node z : Pa) {
                     int w = indices.get(z);
                     for (int j = 0; j < sampleSize; j++) {
-                        mu[j] = beta * data.getEntry(j, w);
+                        mu[j] = beta * data.get(j, w);
                         for (int l = 0; l < sampleSize; l++) {
-                            kernel.set(j, l, kernel.get(j, i) + pow(data.getEntry(j, w) - data.getEntry(l, w), 2) / Pa.size());
+                            kernel.set(j, l, kernel.get(j, i) + pow(data.get(j, w) - data.get(l, w), 2) / Pa.size());
                         }
                     }
                 }
@@ -170,10 +167,16 @@ public class NLSemSimulation implements Simulation {
                 SimpleMatrix X = svd.getU().mult(W).mult(N).getColumn(0);
 
                 for (int j = 0; j < sampleSize; j++) {
-                    data.addToEntry(j, k, mu[j] + X.get(j, 0));
+                    data.set(j, k, data.get(j, k) + mu[j] + X.get(j, 0));
                 }
 
-                data.setColumn(k, StatUtils.standardizeData(data.getColumn(k)));
+                double[] array = new double[sampleSize];
+                for (int j = 0; j < sampleSize; j++) {
+                    array[j] = data.get(j, k);
+                }
+                double[] doubles = StatUtils.standardizeData(array);
+                SimpleMatrix transpose = new SimpleMatrix(doubles.length, 1, false, doubles);
+                data.setColumn(k, transpose);
             }
 
             List<Node> continuousVars = new ArrayList<>();
@@ -183,7 +186,7 @@ public class NLSemSimulation implements Simulation {
                 continuousVars.add(var);
             }
 
-            DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.getData()), continuousVars);
+            DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.toArray2()), continuousVars);
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
                 dataSet = DataTransforms.shuffleColumns(dataSet);
