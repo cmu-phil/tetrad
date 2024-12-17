@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.util;
 
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
@@ -73,18 +71,6 @@ public class Matrix implements TetradSerializable {
 
         this.m = data.length;
         this.n = this.m == 0 ? 0 : data[0].length;
-    }
-
-    /**
-     * <p>Constructor for Matrix.</p>
-     *
-     * @param data a {@link org.apache.commons.math3.linear.RealMatrix} object
-     */
-    public Matrix(RealMatrix data) {
-        this.simpleMatrix = new SimpleMatrix(data.getData());
-
-        this.m = data.getRowDimension();
-        this.n = data.getColumnDimension();
     }
 
     public Matrix(SimpleMatrix data) {
@@ -341,9 +327,8 @@ public class Matrix implements TetradSerializable {
      * singular, an exception is thrown.
      *
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
-     * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
-    public Matrix inverse() throws SingularMatrixException {
+    public Matrix inverse() {
         if (this.simpleMatrix.getNumRows() == 0) {
             return new Matrix(0, 0);
         }
@@ -358,9 +343,6 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix pseudoinverse() {
         if (zeroDimension()) return new Matrix(getNumColumns(), getNumRows());
-//        SingularValueDecomposition svd = new SingularValueDecomposition(getApacheMatrix());
-//        RealMatrix pseudoinverse = svd.getSolver().getInverse();
-//        return new Matrix(pseudoinverse);
         return new Matrix(this.simpleMatrix.pseudoInverse());
     }
 
