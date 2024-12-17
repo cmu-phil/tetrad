@@ -5,11 +5,11 @@ import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.*;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.distribution.BinomialDistribution;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
@@ -118,11 +118,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The Anderson-Darling p-value for the independent case.
      */
-    private double fisherCombinedPIndep = Double.NaN;
+    private final double fisherCombinedPIndep = Double.NaN;
     /**
      * The Anderson-Darling p-value for the dependent case.
      */
-    private double fisherCombinedPDep = Double.NaN;
+    private final double fisherCombinedPDep = Double.NaN;
     /**
      * The Binomial p-value for the independent case.
      */
@@ -1815,8 +1815,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         } else if (m > 0 && c == Double.POSITIVE_INFINITY) {
             return 0.0;
         } else if (m > 0 && !(Double.isNaN(c))) {
-            ChiSquaredDistribution chiSquared = new ChiSquaredDistribution(2 * m);
-            return 1.0 - chiSquared.cumulativeProbability(c);
+            return StatUtils.getChiSquareP(2 * m, c);
         } else {
             return Double.NaN;
         }

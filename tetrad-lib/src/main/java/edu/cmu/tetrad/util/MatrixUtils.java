@@ -22,17 +22,10 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.linalg.Property;
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
-import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.linear.AbstractRealMatrix;
-import org.apache.commons.math3.linear.EigenDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
-import org.ejml.interfaces.decomposition.CholeskyLDLDecomposition_F64;
-import org.ejml.interfaces.decomposition.LUDecomposition_F64;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -61,44 +54,6 @@ public final class MatrixUtils {
      */
     private MatrixUtils() {
 
-    }
-
-    /**
-     * Make a repeat copy of matrix mat.
-     *
-     * @param mat     matrix to copy
-     * @param nRow    number of repeat copy of row
-     * @param mColumn number of repeat copy of column
-     * @return an array of  objects
-     */
-    public static double[][] repmat(double[][] mat, int nRow, int mColumn) {
-        int numOfRow = mat.length;
-        double[][] repMat = new double[numOfRow * nRow][];
-        for (int row = 0; row < numOfRow; row++) {
-            repMat[row] = MatrixUtils.repeatCopyVector(mat[row], mColumn);
-        }
-
-        MatrixUtils.repeatCopyRow(repMat, --nRow, numOfRow, numOfRow);
-
-        return repMat;
-    }
-
-    /**
-     * Make a n repeat copy of the rows and columns of the matrix mat.
-     *
-     * @param n   number of repeat copy
-     * @param mat an array of  objects
-     * @return an array of  objects
-     */
-    public static double[][] repmat(double[][] mat, int n) {
-        int numOfRow = mat.length;
-        double[][] repMat = new double[numOfRow * n][];
-        for (int row = 0; row < numOfRow; row++) {
-            repMat[row] = MatrixUtils.repeatCopyVector(mat[row], n);
-        }
-
-        MatrixUtils.repeatCopyRow(repMat, --n, numOfRow, numOfRow);
-        return repMat;
     }
 
     /**
@@ -1155,46 +1110,4 @@ public final class MatrixUtils {
 
         return copy;
     }
-
-    /**
-     * <p>transposeWithoutCopy.</p>
-     *
-     * @param apacheData a {@link org.apache.commons.math3.linear.RealMatrix} object
-     * @return a {@link org.apache.commons.math3.linear.RealMatrix} object
-     */
-    public static RealMatrix transposeWithoutCopy(RealMatrix apacheData) {
-        return new AbstractRealMatrix(apacheData.getColumnDimension(), apacheData.getRowDimension()) {
-            @Override
-            public int getRowDimension() {
-                return apacheData.getColumnDimension();
-            }
-
-            @Override
-            public int getColumnDimension() {
-                return apacheData.getRowDimension();
-            }
-
-            @Override
-            public RealMatrix createMatrix(int rowDimension, int columnDimension) throws NotStrictlyPositiveException {
-                return apacheData.createMatrix(rowDimension, columnDimension);
-            }
-
-            @Override
-            public RealMatrix copy() {
-                throw new IllegalArgumentException("Can't copy");
-            }
-
-            @Override
-            public double getEntry(int i, int j) throws OutOfRangeException {
-                //                throw new UnsupportedOperationException();
-                return apacheData.getEntry(j, i);
-            }
-
-            @Override
-            public void setEntry(int i, int j, double v) throws OutOfRangeException {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
 }

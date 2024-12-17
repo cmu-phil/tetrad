@@ -1245,7 +1245,8 @@ public final class SemIm implements Im, ISemIm {
         } else if (chiSquare < 0) {
             return Double.NaN;
         } else {
-            return 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chiSquare);
+//            return 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chiSquare);
+            return StatUtils.getChiSquareP(dof, chiSquare);
         }
     }
 

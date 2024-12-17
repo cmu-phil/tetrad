@@ -23,6 +23,7 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
@@ -2600,6 +2601,10 @@ public final class StatUtils {
         } else {
             throw new IllegalArgumentException("Unrecognized basis type: " + type);
         }
+    }
+
+    public static double getChiSquareP(double dof, double chisq) {
+        return 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chisq);
     }
 }
 

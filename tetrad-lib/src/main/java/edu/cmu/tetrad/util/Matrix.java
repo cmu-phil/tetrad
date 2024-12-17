@@ -401,6 +401,7 @@ public class Matrix implements TetradSerializable {
      * @return a double
      */
     public double det() {
+        if (zeroDimension()) return 0;
         return this.simpleMatrix.determinant();
     }
 

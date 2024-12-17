@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -269,8 +270,11 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
             throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
         } else {
             try {
-                pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(-2 * lik_diff);
+                pValue = StatUtils.getChiSquareP(dof_diff, -2 * lik_diff);
             } catch (Exception e) {
+                TetradLogger.getInstance().log("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z)
+                        + " with lik_diff = " + lik_diff + " and dof_diff = " + dof_diff
+                        + e.getMessage());
                 throw new RuntimeException("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z), e);
             }
         }

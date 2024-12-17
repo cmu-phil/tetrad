@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.*;
@@ -230,8 +231,7 @@ public class DeltaTetradTest {
      * @return the p value for the most recent test.
      */
     public double getPValue() {
-        double cdf = new ChiSquaredDistribution(this.df).cumulativeProbability(this.chisq);
-        return 1.0 - cdf;
+        return StatUtils.getChiSquareP(this.df, this.chisq);
     }
 
     /**

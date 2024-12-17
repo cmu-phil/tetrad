@@ -32,6 +32,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -239,7 +240,8 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
             double chisq = (ll0 - ll1);
             int df = this.variablesPerNode.get(y).size();
-            double p = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(chisq);
+//            double p = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(chisq);
+            double p = StatUtils.getChiSquareP(df, chisq);
 
             if (Double.isNaN(p)) {
                 throw new RuntimeException("Undefined p-value encountered when testing " +

@@ -342,8 +342,21 @@ public class MimbuildTrek {
 
         int df = (p) * (p + 1) / 2 - (numParams);
         double x = (N - 1) * this.minimum;
-        this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
+//        this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 
+        ChiSquaredDistribution chisq = new ChiSquaredDistribution(df);
+
+        double _p;
+
+        if (Double.isInfinite(x)) {
+            _p = 0.0;
+        } else if (x == 0.0) {
+            _p = 1.0;
+        } else {
+            _p = 1.0 - chisq.cumulativeProbability(x);
+        }
+
+        this.pValue = _p;
         return latentscov;
     }
 

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
@@ -356,7 +357,7 @@ public class LogisticRegression implements TetradSerializable {
             return (1.0 - 1.0 / q + 3.0 / (q * q)) * FastMath.exp(-q / 2.0) /
                    (FastMath.abs(z) * FastMath.sqrt(piOver2));
         } else {
-            return new ChiSquaredDistribution(1).cumulativeProbability(q);
+            return StatUtils.getChiSquareP(1, q);
         }
 
     }

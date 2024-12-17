@@ -374,7 +374,8 @@ public class Fas implements IFas {
                         scores.put(edge, result.get(edge));
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    TetradLogger.getInstance().log(e.getMessage());
+                    e.printStackTrace();
+//                    TetradLogger.getInstance().log(e.getMessage());
                     pool.shutdown();
                     return null;
                 }
