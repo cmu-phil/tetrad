@@ -27,6 +27,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
+import org.ejml.simple.SimpleSVD;
 
 import static org.apache.commons.math3.util.FastMath.*;
 
@@ -384,9 +386,10 @@ public class FastIca {
         // Whiten.
         Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
 
-        SingularValueDecomposition s = new SingularValueDecomposition(cov.getApacheMatrix());
-        Matrix D = new Matrix(s.getS().getData());
-        Matrix U = new Matrix(s.getU().getData());
+        SimpleSVD<SimpleMatrix> s = cov.getSimpleMatrix().svd();
+
+        Matrix D = new Matrix(s.getW());
+        Matrix U = new Matrix(s.getU());
 
         for (int i = 0; i < D.getNumRows(); i++) {
 
