@@ -12,6 +12,9 @@ import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.ejml.simple.SimpleEVD;
+import org.ejml.simple.SimpleMatrix;
+import org.ejml.simple.SimpleSVD;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -137,15 +140,15 @@ public class NLSemSimulation implements Simulation {
                 double beta = RandomUtil.getInstance().nextUniform(low, high);
                 double[] mu = new double[sampleSize];
 
-                RealMatrix kernel = createRealMatrix(sampleSize, sampleSize);
-                RealMatrix cov = createRealMatrix(sampleSize, sampleSize);
+                SimpleMatrix kernel = new SimpleMatrix(sampleSize, sampleSize);
+                SimpleMatrix cov = new SimpleMatrix(sampleSize, sampleSize);
 
                 for (Node z : Pa) {
                     int w = indices.get(z);
                     for (int j = 0; j < sampleSize; j++) {
                         mu[j] = beta * data.getEntry(j, w);
                         for (int l = 0; l < sampleSize; l++) {
-                            kernel.addToEntry(j, l, pow(data.getEntry(j, w) - data.getEntry(l, w), 2) / Pa.size());
+                            kernel.set(j, l, kernel.get(j, i) + pow(data.getEntry(j, w) - data.getEntry(l, w), 2) / Pa.size());
                         }
                     }
                 }
@@ -153,21 +156,21 @@ public class NLSemSimulation implements Simulation {
                 for (int j = 0; j < sampleSize; j++) {
                     for (int l = 0; l < sampleSize; l++) {
                         // Should the -1 be a tunable parameter?
-                        cov.setEntry(j, l, exp(-1 * kernel.getEntry(j, l)));
+                        cov.set(j, l, exp(-1 * kernel.get(j, l)));
                     }
                 }
 
-                SingularValueDecomposition svd = new SingularValueDecomposition(cov);
-                RealMatrix S = svd.getS();
-                RealMatrix N = createRealMatrix(sampleSize, 1);
+                SimpleSVD<SimpleMatrix> svd = cov.svd();
+                SimpleMatrix W = svd.getW();
+                SimpleMatrix N = new SimpleMatrix(sampleSize, 1);
                 for (int j = 0; j < sampleSize; j++) {
-                    S.setEntry(j, j, sqrt(S.getEntry(j, j)));
-                    N.setEntry(j, 0, RandomUtil.getInstance().nextNormal(0, 1));
+                    W.set(j, j, sqrt(W.get(j, j)));
+                    N.set(j, 0, RandomUtil.getInstance().nextNormal(0, 1));
                 }
-                double[] X = svd.getU().multiply(S).multiply(N).getColumn(0);
+                SimpleMatrix X = svd.getU().mult(W).mult(N).getColumn(0);
 
                 for (int j = 0; j < sampleSize; j++) {
-                    data.addToEntry(j, k, mu[j] + X[j]);
+                    data.addToEntry(j, k, mu[j] + X.get(j, 0));
                 }
 
                 data.setColumn(k, StatUtils.standardizeData(data.getColumn(k)));

@@ -2604,6 +2604,16 @@ public final class StatUtils {
     }
 
     public static double getChiSquareP(double dof, double chisq) {
+        if (dof < 0) {
+            throw new IllegalArgumentException("Degrees of freedom for chi square must be non-negative.");
+        } else if (chisq < 0) {
+            throw new IllegalArgumentException("Chi-square value must be non-negative.");
+        } else if (Double.isInfinite(chisq)) {
+            return 0.0;
+        } else if (chisq == 0) {
+            return 1.0;
+        }
+
         return 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chisq);
     }
 }

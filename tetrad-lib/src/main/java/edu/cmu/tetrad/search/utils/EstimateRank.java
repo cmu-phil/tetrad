@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.util.ProbUtils;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.Arrays;
 
@@ -50,10 +51,13 @@ public class EstimateRank {
      * @return an array of  objects
      */
     public static double[] CanCor(double[][] A, double[][] B) {
-        RealMatrix Ua = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(A)).getU();
-        RealMatrix UTa = Ua.transpose();
-        RealMatrix Ub = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(B)).getU();
-        return new SingularValueDecomposition(UTa.multiply(Ub)).getSingularValues();
+        SimpleMatrix Ua = new SimpleMatrix(A).svd().getU();
+        SimpleMatrix Ub = new SimpleMatrix(B).svd().getU();
+        return Arrays.stream(Ua.transpose().mult(Ub).svd().getSingularValues()).toArray();
+//        RealMatrix Ua = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(A)).getU();
+//        RealMatrix UTa = Ua.transpose();
+//        RealMatrix Ub = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(B)).getU();
+//        return new SingularValueDecomposition(UTa.multiply(Ub)).getSingularValues();
     }
 
     /**

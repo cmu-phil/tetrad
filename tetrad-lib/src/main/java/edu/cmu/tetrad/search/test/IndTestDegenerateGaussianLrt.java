@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
@@ -30,9 +30,7 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.ejml.simple.SimpleMatrix;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -62,10 +60,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      */
     private final BoxDataSet ddata;
     private final Matrix dcov;
-    /**
-     * The data set.
-     */
-    private final double[][] _ddata;
     /**
      * A hash of nodes to indices.
      */
@@ -192,10 +186,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         }
 
         // The continuous variables of the post-embedding dataset.
-        RealMatrix D = MatrixUtils.createRealMatrix(B_);
-        this.ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
+        SimpleMatrix D = new SimpleMatrix(B_);
+        this.ddata = new BoxDataSet(new DoubleDataBox(D.toArray2()), A);
         this.dcov = new CovarianceMatrix(ddata).getMatrix();
-        this._ddata = ddata.getDoubleData().toArray();
     }
 
     /**
@@ -221,11 +214,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         if (facts.containsKey(new IndependenceFact(x, y, _z))) {
             return facts.get(new IndependenceFact(x, y, _z));
         }
-
-        List<Node> allNodes = new ArrayList<>();
-        allNodes.add(x);
-        allNodes.add(y);
-        allNodes.addAll(_z);
 
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
@@ -273,8 +261,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
                 pValue = StatUtils.getChiSquareP(dof_diff, -2 * lik_diff);
             } catch (Exception e) {
                 TetradLogger.getInstance().log("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z)
-                        + " with lik_diff = " + lik_diff + " and dof_diff = " + dof_diff
-                        + e.getMessage());
+                                               + " with lik_diff = " + lik_diff + " and dof_diff = " + dof_diff
+                                               + e.getMessage());
                 throw new RuntimeException("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z), e);
             }
         }
@@ -415,44 +403,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         }
 
         return rows;
-    }
-
-    /**
-     * Calculates the covariance matrix for the given rows and columns.
-     *
-     * @param rows The list of row indices to include in the covariance calculation.
-     * @param cols The array of column indices to include in the covariance calculation.
-     * @return The covariance matrix for the selected rows and columns.
-     */
-    private Matrix getCov(List<Integer> rows, int[] cols) {
-        Matrix cov = new Matrix(cols.length, cols.length);
-
-        for (int i = 0; i < cols.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                double mui = 0.0;
-                double muj = 0.0;
-
-                for (int k : rows) {
-                    mui += this._ddata[k][cols[i]];
-                    muj += this._ddata[k][cols[j]];
-                }
-
-                mui /= rows.size() - 1;
-                muj /= rows.size() - 1;
-
-                double _cov = 0.0;
-
-                for (int k : rows) {
-                    _cov += (this._ddata[k][cols[i]] - mui) * (this._ddata[k][cols[j]] - muj);
-//                    _cov += (ddata.getDouble(k, cols[i]) - mui) * (ddata.getDouble(k, cols[j]) - muj);
-                }
-
-                double mean = _cov / (rows.size());
-                cov.set(i, j, mean);
-            }
-        }
-
-        return cov;
     }
 
     /**
