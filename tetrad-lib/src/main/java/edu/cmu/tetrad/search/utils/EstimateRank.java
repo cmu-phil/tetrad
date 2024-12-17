@@ -21,9 +21,13 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
+import javassist.Loader;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleBase;
+import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.Arrays;
@@ -65,12 +69,22 @@ public class EstimateRank {
      * @return an array of  objects
      */
     public static double[] CanCor(int[] iA, int[] iB, double[][] cov) {
-        RealMatrix covA = MatrixUtils.createRealMatrix(cov).getSubMatrix(iA, iA);
-        RealMatrix covB = MatrixUtils.createRealMatrix(cov).getSubMatrix(iB, iB);
-        RealMatrix covAB = MatrixUtils.createRealMatrix(cov).getSubMatrix(iA, iB);
-        RealMatrix covBA = MatrixUtils.createRealMatrix(cov).getSubMatrix(iB, iA);
-        RealMatrix S = getInverse(covA).multiply(covAB).multiply(getInverse(covB)).multiply(covBA);
-        double[] rtCors = new EigenDecomposition(S).getRealEigenvalues();
+        Matrix _cov = new Matrix(cov);
+
+        Matrix covA = _cov.getSelection(iA, iA);
+        Matrix covB = _cov.getSelection(iB, iB);
+        Matrix covAB = _cov.getSelection(iA, iB);
+        Matrix covBA = _cov.getSelection(iB, iA);
+
+        // TODO check the parens at the end of this.
+        Matrix S = covA.inverse().times(covAB).times(covB.inverse().times(covBA));
+        SimpleEVD<SimpleMatrix> eig = S.getSimpleMatrix().eig();
+
+        double[] rtCors = new double[eig.getNumberOfEigenvalues()];
+        for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
+            rtCors[i] = eig.getEigenvalue(i).getReal();
+        }
+
         Arrays.sort(rtCors);
         double[] Cors = new double[rtCors.length];
         for (int i = rtCors.length; i > 0; i--) {
@@ -140,9 +154,5 @@ public class EstimateRank {
         }
 
         return rank;
-    }
-
-    private static RealMatrix getInverse(RealMatrix covA) {
-        return new LUDecomposition(covA).getSolver().getInverse();
     }
 }
