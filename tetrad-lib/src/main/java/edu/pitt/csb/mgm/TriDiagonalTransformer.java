@@ -16,7 +16,7 @@ import java.util.Arrays;
  * <p>This implementation only uses the upper part of the matrix, the part below the
  * diagonal is not accessed at all.&gt; 0
  * <p>Transformation to tridiagonal shape is often not a goal by itself, but it is
- * an intermediate step in more general decomposition algorithms like {@link EigenDecomposition eigen decomposition}.
+ * an intermediate step in more general decomposition algorithms like eigen decomposition.
  * This class is therefore intended for internal use by the library and is not public. As a consequence of this
  * explicitly limited scope, many methods directly returns references to internal arrays, not copies.&gt; 0
  *

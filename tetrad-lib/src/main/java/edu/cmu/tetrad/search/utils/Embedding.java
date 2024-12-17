@@ -3,8 +3,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -118,8 +117,8 @@ public class Embedding {
             }
         }
 
-        RealMatrix D = MatrixUtils.createRealMatrix(B_);
-        BoxDataSet embeddedData = new BoxDataSet(new DoubleDataBox(D.getData()), A);
+        SimpleMatrix D = new SimpleMatrix(B_);
+        BoxDataSet embeddedData = new BoxDataSet(new DoubleDataBox(D.toArray2()), A);
         return new EmbeddedData(dataSet.copy(), embeddedData, embedding);
     }
 

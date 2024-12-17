@@ -54,10 +54,6 @@ public class EstimateRank {
         SimpleMatrix Ua = new SimpleMatrix(A).svd().getU();
         SimpleMatrix Ub = new SimpleMatrix(B).svd().getU();
         return Arrays.stream(Ua.transpose().mult(Ub).svd().getSingularValues()).toArray();
-//        RealMatrix Ua = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(A)).getU();
-//        RealMatrix UTa = Ua.transpose();
-//        RealMatrix Ub = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(B)).getU();
-//        return new SingularValueDecomposition(UTa.multiply(Ub)).getSingularValues();
     }
 
     /**
