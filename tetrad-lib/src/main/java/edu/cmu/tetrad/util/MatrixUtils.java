@@ -28,6 +28,12 @@ import org.apache.commons.math3.linear.AbstractRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
+import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
+import org.ejml.interfaces.decomposition.CholeskyLDLDecomposition_F64;
+import org.ejml.interfaces.decomposition.LUDecomposition_F64;
+import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
 import java.text.DecimalFormat;
@@ -720,14 +726,14 @@ public final class MatrixUtils {
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isPositiveDefinite(Matrix matrix) {
-        RealMatrix realMatrix = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(matrix.toArray());
-        EigenDecomposition eigenDecomposition = new EigenDecomposition(realMatrix);
-        double[] eigenvalues = eigenDecomposition.getRealEigenvalues();
-        for (double eigenvalue : eigenvalues) {
-            if (eigenvalue <= 0) {
+        SimpleEVD<SimpleMatrix> eig = matrix.getSimpleMatrix().eig();
+
+        for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
+            if (eig.getEigenvalue(i).getReal() <= 0) {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -738,8 +744,12 @@ public final class MatrixUtils {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix cholesky(Matrix covar) {
-        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(covar.toArray())).getL();
-        return new Matrix(L.getData());
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+        DMatrixRMaj _M = covar.getSimpleMatrix().getMatrix();
+        DMatrixRMaj L = new DMatrixRMaj(_M.getNumRows(), _M.getNumCols());
+        chol.decompose(_M);
+        chol.getT(L);
+        return new Matrix(new SimpleMatrix(L));
     }
 
     /**
