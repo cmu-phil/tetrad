@@ -20,8 +20,6 @@
 /// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.util;
 
-import cern.colt.matrix.impl.DenseDoubleMatrix1D;
-import cern.colt.matrix.linalg.Property;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
@@ -150,7 +148,17 @@ public final class MatrixUtils {
      * @return Ibid.
      */
     public static boolean equals(double[] va, double[] vb, double tolerance) {
-        return new Property(tolerance).equals(new DenseDoubleMatrix1D(va), new DenseDoubleMatrix1D(vb));
+        if (va.length != vb.length) {
+            return false;
+        }
+
+        for (int i = 0; i < va.length; i++) {
+            if (FastMath.abs(va[i] - vb[i]) > tolerance) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

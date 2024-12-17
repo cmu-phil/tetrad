@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.util;
 
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
 import cern.jet.random.Beta;
 import cern.jet.random.BreitWigner;
 import cern.jet.random.Normal;
@@ -69,8 +67,7 @@ public class TetradSerializableUtils {
             String.class, Class.class, Date.class, Collection.class, Map.class,
             Matrix.class, Document.class, Normal.class, Uniform.class,
             BreitWigner.class, Beta.class, Vector.class, Number.class,
-            DoubleMatrix2D.class, DoubleMatrix1D.class, SimpleMatrix.class,
-            NumberFormat.class
+            SimpleMatrix.class, NumberFormat.class
     };
 
     /**
