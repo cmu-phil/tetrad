@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.util;
 
-import cern.colt.list.DoubleArrayList;
-import cern.jet.stat.Descriptive;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -1293,16 +1291,15 @@ public final class StatUtils {
     }
 
     /**
-     * Calculates the specified cumulant of a dataset based on the given order.
-     * Cumulants provide statistical descriptions of datasets and are related to moments.
+     * Calculates the specified cumulant of a dataset based on the given order. Cumulants provide statistical
+     * descriptions of datasets and are related to moments.
      *
-     * @param data the array of data points, representing the dataset for which the cumulant
-     *             is to be calculated
-     * @param i    the order of the cumulant to calculate (e.g., 1 for mean, 2 for variance,
-     *             3 for skewness-related cumulant, etc.)
+     * @param data the array of data points, representing the dataset for which the cumulant is to be calculated
+     * @param i    the order of the cumulant to calculate (e.g., 1 for mean, 2 for variance, 3 for skewness-related
+     *             cumulant, etc.)
      * @return the calculated cumulant of the specified order
-     * @throws IllegalArgumentException if the order of the cumulant (i) is greater than 5,
-     *                                  as calculation for higher-order cumulants are not implemented
+     * @throws IllegalArgumentException if the order of the cumulant (i) is greater than 5, as calculation for
+     *                                  higher-order cumulants are not implemented
      */
     public static double calculateCumulant(double[] data, int i) {
         switch (i) {
@@ -2015,14 +2012,14 @@ public final class StatUtils {
     public static double logCoshScore(double[] _f) {
         _f = StatUtils.standardizeData(_f);
 
-        DoubleArrayList f = new DoubleArrayList(_f);
+        double[] f = _f.clone();
 
         for (int k = 0; k < _f.length; k++) {
-            double v = log(cosh((f.get(k))));
-            f.set(k, v);
+            double v = log(cosh((f[k])));
+            f[k] = v;
         }
 
-        double expected = Descriptive.mean(f);
+        double expected = StatUtils.mean(f);
         double diff = expected - StatUtils.logCoshExp;
         return diff * diff;
     }

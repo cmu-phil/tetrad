@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.data;
 
 
-import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
@@ -1017,47 +1016,10 @@ public class DataTransforms {
     }
 
     /**
-     * <p>standardizeData.</p>
+     * Centers the values in the given array by subtracting the mean of the array from each element.
      *
-     * @param data a {@link cern.colt.list.DoubleArrayList} object
-     * @return a {@link cern.colt.list.DoubleArrayList} object
-     */
-    public static DoubleArrayList standardizeData(DoubleArrayList data) {
-        DoubleArrayList data2 = new DoubleArrayList(data.size());
-
-        double sum = 0.0;
-
-        for (int i = 0; i < data.size(); i++) {
-            sum += data.get(i);
-        }
-
-        double mean = sum / data.size();
-
-        for (int i = 0; i < data.size(); i++) {
-            data2.add(data.get(i) - mean);
-        }
-
-        double norm = 0.0;
-
-        for (int i = 0; i < data2.size(); i++) {
-            double v = data2.get(i);
-            norm += v * v;
-        }
-
-        norm = FastMath.sqrt(norm / (data2.size() - 1));
-
-        for (int i = 0; i < data2.size(); i++) {
-            data2.set(i, data2.get(i) / norm);
-        }
-
-        return data2;
-    }
-
-    /**
-     * <p>center.</p>
-     *
-     * @param d an array of  objects
-     * @return an array of  objects
+     * @param d the array of double values to be centered
+     * @return a new array where each element is the original value minus the mean of the input array
      */
     public static double[] center(double[] d) {
         double sum = 0.0;
