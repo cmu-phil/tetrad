@@ -276,15 +276,6 @@ public class Matrix implements TetradSerializable {
         return this.simpleMatrix.toArray2();
     }
 
-    /**
-     * <p>Getter for the field <code>apacheData</code>.</p>
-     *
-     * @return a {@link org.apache.commons.math3.linear.RealMatrix} object
-     */
-    public RealMatrix getApacheMatrix() {
-        return new BlockRealMatrix(this.simpleMatrix.toArray2());
-    }
-
     public SimpleMatrix getSimpleMatrix() {
         return this.simpleMatrix.copy();
     }

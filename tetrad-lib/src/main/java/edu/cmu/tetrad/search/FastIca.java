@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -604,8 +604,9 @@ public class FastIca {
         int p = X.getNumColumns();
         Matrix W = wInit;
 
-        SingularValueDecomposition sW = new SingularValueDecomposition(W.getApacheMatrix());
-        Matrix D = new Matrix(sW.getS().getData());
+        SimpleSVD<SimpleMatrix> sW = W.getSimpleMatrix().svd();
+
+        Matrix D = new Matrix(sW.getW());
         for (int i = 0; i < D.getNumRows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
         Matrix WTemp = new Matrix(sW.getU()).times(D);
@@ -652,9 +653,9 @@ public class FastIca {
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getApacheMatrix());
+            SimpleSVD<SimpleMatrix> sW1 = (W1.getSimpleMatrix()).svd();
             Matrix U = new Matrix(sW1.getU());
-            Matrix sD = new Matrix(sW1.getS());
+            Matrix sD = new Matrix(sW1.getW());
             for (int i = 0; i < sD.getNumRows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 
