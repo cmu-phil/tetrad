@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.search.test;
 
-import org.ejml.simple.SimpleEVD;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
+import org.ejml.interfaces.decomposition.EigenDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,6 +19,7 @@ import static java.lang.Math.sqrt;
  */
 public class TopEigenvalues {
     private final SimpleMatrix k;
+    EigenDecomposition_F64<DMatrixRMaj> eigDecomp;
 
     /**
      * Construct a new object with the given matrix.
@@ -40,38 +43,35 @@ public class TopEigenvalues {
      * @return the top eigenvalues and eigenvectors
      */
     private static @NotNull EigResult getTopEigen(SimpleMatrix data, double threshold) {
-        // Perform eigenvalue decomposition
-        SimpleMatrix matrix = new SimpleMatrix(data);
-        SimpleEVD<SimpleMatrix> evd = matrix.eig();
-        List<Double> realEigen = new ArrayList<>();
+        DMatrixRMaj M = data.getMatrix();
 
-        for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
-            realEigen.add(evd.getEigenvalue(i).getReal());
-        }
+        EigenDecomposition_F64<DMatrixRMaj> eigDecomp =
+                DecompositionFactory_DDRM.eig(M.numRows, true);
 
-        List<Integer> indices = new ArrayList<>();
-        for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
-            if (evd.getEigenvalue(i).getReal() > threshold * evd.getEigenvalue(0).getReal()) {
-                indices.add(i);
-            }
+        if (!eigDecomp.decompose(M)) {
+            throw new RuntimeException("Eigenvalue decomposition failed");
         }
 
         // Make a new list of eigenvalues and eigenvectors based on the sorted indices
-        List<Double> realEigen2 = new ArrayList<>();
-        List<SimpleMatrix> eigenVectors2 = new ArrayList<>();
-        for (Integer index : indices) {
-            realEigen2.add(realEigen.get(index));
-            eigenVectors2.add(evd.getEigenVector(index));
+        List<Double> realEigen = new ArrayList<>();
+        List<DMatrixRMaj> eigenVectors = new ArrayList<>();
+        for (int i = 0; i < eigDecomp.getNumberOfEigenvalues(); i++) {
+            if (eigDecomp.getEigenvalue(i).getReal() < threshold * eigDecomp.getEigenvalue(0).getReal()) {
+                break;
+            }
+
+            realEigen.add(eigDecomp.getEigenvalue(i).getReal());
+            eigenVectors.add(eigDecomp.getEigenVector(i));
         }
 
-        return new EigResult(realEigen2, eigenVectors2);
+        return new EigResult(realEigen, eigenVectors);
     }
 
     /**
      * Performs eigendecomposition on a given matrix and optionally stores the top eigenvalues and (optionaly)
      * eigenvectors.
      *
-     * @param storeV a flag indicating whether to store the eigenvectors]
+     * @param storeV    a flag indicating whether to store the eigenvectors]
      * @param threshold the threshold for the eigenvalues
      * @return the Eigendecomposition object on which this method is invoked
      */
@@ -83,7 +83,7 @@ public class TopEigenvalues {
         SimpleMatrix D = null;
         SimpleMatrix V = null;
         List<Double> topEigenValues = result.realEigen();
-        List<SimpleMatrix> topEigenVectors = result.eigenVectors();
+        List<DMatrixRMaj> topEigenVectors = result.eigenVectors();
 
         if (storeV) {
             D = new SimpleMatrix(topEigenValues.size(), topEigenValues.size());
@@ -95,8 +95,8 @@ public class TopEigenvalues {
             V = new SimpleMatrix(topEigenVectors.getFirst().getNumRows(), topEigenValues.size());
 
             for (int i = 0; i < topEigenValues.size(); i++) {
-                SimpleMatrix ev = topEigenVectors.get(i);
-                V.setColumn(i, ev);
+                DMatrixRMaj ev = topEigenVectors.get(i);
+                V.setColumn(i, new SimpleMatrix(ev).transpose());
             }
         }
 
@@ -109,6 +109,6 @@ public class TopEigenvalues {
      * @param realEigen    the top eigenvalues
      * @param eigenVectors the top eigenvectors
      */
-    private record EigResult(List<Double> realEigen, List<SimpleMatrix> eigenVectors) {
+    private record EigResult(List<Double> realEigen, List<DMatrixRMaj> eigenVectors) {
     }
 }
