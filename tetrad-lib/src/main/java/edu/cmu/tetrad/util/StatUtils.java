@@ -2183,6 +2183,12 @@ public final class StatUtils {
         return data2;
     }
 
+    public static Vector standardizeData(Vector _data) {
+        double[] data = _data.toArray();
+        double[] standardized = standardizeData(data);
+        return new Vector(standardized);
+    }
+
     /**
      * <p>factorial.</p>
      *

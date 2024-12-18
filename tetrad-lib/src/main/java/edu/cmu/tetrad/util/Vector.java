@@ -316,6 +316,40 @@ public class Vector implements TetradSerializable {
     public SimpleMatrix getSimpleMatrix() {
         return data;
     }
+
+    public double sum() {
+        double sum = 0.0;
+
+        for (int i = 0; i < size(); i++) {
+            sum += get(i);
+        }
+
+        return sum;
+    }
+
+    public Vector getPart(int from, int to) {
+        if (from < 0 || to > size() || from > to) {
+            throw new IllegalArgumentException("Invalid range: " + from + " to " + to);
+        }
+
+        double[] part = new double[to - from];
+
+        for (int i = from; i < to; i++) {
+            part[i - from] = get(i);
+        }
+
+        return new Vector(part);
+    }
+
+    public double euclideanNorm() {
+        double sum = 0.0;
+
+        for (int i = 0; i < size(); i++) {
+            sum += get(i) * get(i);
+        }
+
+        return Math.sqrt(sum);
+    }
 }
 
 
