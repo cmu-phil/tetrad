@@ -17,7 +17,7 @@ import java.text.ParseException;
 import java.util.*;
 
 /**
- * A version of the Lee and Hastic simulation which is guaranteed ot generate a discrete data set.
+ * A version of the Lee and Hastic simulation.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -66,10 +66,6 @@ public class LeeHastieSimulation implements Simulation {
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (parameters.getLong(Params.SEED) != -1L) {
-//            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
-//        }
-
         double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
         boolean discrete = parameters.getString(Params.DATA_TYPE).equals("discrete");
@@ -166,7 +162,6 @@ public class LeeHastieSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.VERBOSE);
-//        parameters.add(Params.SEED);
 
         return parameters;
     }
@@ -590,10 +585,6 @@ public class LeeHastieSimulation implements Simulation {
                 paramList.add(p);
             }
         }
-        //ex.
-        //if(child instanceof DiscreteVariable){
-        //    if(parent instanceof DiscreteVariable)
-        //}
 
         return paramList;
     }
