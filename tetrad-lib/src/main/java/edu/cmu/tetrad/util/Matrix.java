@@ -183,31 +183,6 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * <p>getSelection.</p>
-     *
-     * @param rows an array of  objects
-     * @param cols an array of  objects
-     * @return a {@link edu.cmu.tetrad.util.Matrix} object
-     */
-    public Matrix getSelection(int[] rows, int[] cols) {
-        return view(rows, cols).matrix();
-//
-//        Matrix m = new Matrix(rows.length, cols.length);
-//
-//        for (int i = 0; i < rows.length; i++) {
-//            for (int j = 0; j < cols.length; j++) {
-//                m.set(i, j, getData().get(rows[i], cols[j]));
-//            }
-//        }
-//
-//        return m;
-    }
-
-    public void setSelection(int[] rows, int[] cols, Matrix m) {
-        view(rows, cols).set(m);
-    }
-
-    /**
      * <p>copy.</p>
      *
      * @return a {@link edu.cmu.tetrad.util.Matrix} object

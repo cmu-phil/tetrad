@@ -221,7 +221,8 @@ public final class MatrixUtils {
             indices[i] = j;
         }
 
-        return new Matrix(m).getSelection(indices, indices).toArray();
+        Matrix matrix = new Matrix(m);
+        return matrix.view(indices, indices).matrix().toArray();
     }
 
     /**

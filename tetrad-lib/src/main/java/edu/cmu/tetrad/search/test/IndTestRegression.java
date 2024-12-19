@@ -250,7 +250,7 @@ public final class IndTestRegression implements IndependenceTest {
             zRows[i] = i;
         }
 
-        Matrix Z = this.data.getSelection(zRows, zCols);
+        Matrix Z = this.data.view(zRows, zCols).matrix();
         Vector x = this.data.getColumn(xIndex);
         Matrix Zt = Z.transpose();
         Matrix ZtZ = Zt.times(Z);

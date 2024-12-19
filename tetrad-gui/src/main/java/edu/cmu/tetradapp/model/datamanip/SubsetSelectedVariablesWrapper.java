@@ -114,8 +114,7 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
 
         Matrix matrix = data.getMatrix();
 
-        Matrix newMatrix = matrix.getSelection(
-                selectedIndices, selectedIndices).copy();
+        Matrix newMatrix = matrix.view(selectedIndices, selectedIndices).matrix().copy();
 
 
         return new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, matrix.getNumRows());

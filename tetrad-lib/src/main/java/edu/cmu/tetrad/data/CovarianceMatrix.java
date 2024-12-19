@@ -306,7 +306,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             submatrixVars.add(this.variables.get(indice));
         }
 
-        Matrix cov = new Matrix(this._covariancesMatrix.getSelection(indices, indices));
+        Matrix cov = new Matrix(this._covariancesMatrix.view(indices, indices).matrix());
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
@@ -374,7 +374,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             indices[i] = getVariables().indexOf(submatrixVars.get(i));
         }
 
-        Matrix cov = getMatrix().getSelection(indices, indices);
+        Matrix cov = getMatrix().view(indices, indices).matrix();
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
@@ -514,7 +514,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      */
     @Override
     public Matrix getSelection(int[] rows, int[] cols) {
-        return getMatrix().getSelection(rows, cols);
+        return getMatrix().view(rows, cols).matrix();
     }
 
     /**
