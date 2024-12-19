@@ -312,7 +312,6 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix getPart(int i, int j, int k, int l) {
         return viewPart(i, j, k, l).matrix();
-//        return new Matrix(getData().extractMatrix(i, j, k, l));
     }
 
     /**
