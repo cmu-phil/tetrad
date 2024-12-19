@@ -28,8 +28,8 @@ public class MView implements TetradSerializable {
     protected MView(Matrix matrix) {
         this.matrix = matrix;
         this.matrixView = null;
-        this.viewRows = inverted(range(0, matrix.getNumRows()));
-        this.viewCols = inverted(range(0, matrix.getNumColumns()));
+        this.viewRows = range(0, matrix.getNumRows());
+        this.viewCols = range(0, matrix.getNumColumns());
     }
 
     /**
@@ -42,8 +42,8 @@ public class MView implements TetradSerializable {
      */
     protected MView(MView matrixView, int[] viewRows, int[] viewCols) {
         this.matrix = null;
-        this.viewRows = inverted(viewRows);
-        this.viewCols = inverted(viewCols);
+        this.viewRows = viewRows;
+        this.viewCols = viewCols;
         this.matrixView = matrixView;
     }
 
@@ -101,7 +101,7 @@ public class MView implements TetradSerializable {
      */
     public double get(int row, int column) {
         if (matrix == null) {
-            return matrixView.get(row, column);
+            return matrixView.get(viewRows[row], viewCols[column]);
         } else {
             return matrix.get(row, column);
         }
@@ -305,21 +305,6 @@ public class MView implements TetradSerializable {
         return new MView(matrixView, range(row, row), range(0, getNumColumns()));
     }
 
-    private int[] inverted(int[] perm) {
-        if (true) return perm;
-
-        int[] inverse = new int[perm.length];
-        for (int i = 0; i < perm.length; i++) {
-            for (int j = 0; j < perm.length; j++) {
-                if (perm[j] == i) {
-                    inverse[i] = j;
-                    break;
-                }
-            }
-        }
-        return inverse;
-    }
-
     /**
      * Creates a view of a specific column from the matrix.
      *
@@ -359,17 +344,25 @@ public class MView implements TetradSerializable {
         return range;
     }
 
-    private int[] invertedPerm(int[] perm) {
-        int[] inverse = new int[perm.length];
-        for (int i = 0; i < perm.length; i++) {
-            for (int j = 0; j < perm.length; j++) {
-                if (perm[j] == i) {
-                    inverse[i] = j;
-                    break;
-                }
-            }
+    public Vector vector() {
+        if (matrixView == null) {
+            throw new IllegalArgumentException("Matrix view is null");
         }
-        return inverse;
-    }
 
+        if (viewRows.length == 1) {
+            Vector vector = new Vector(getNumColumns());
+            for (int i = 0; i < getNumColumns(); i++) {
+                vector.set(i, get(0, i));
+            }
+            return vector;
+        } else if (viewCols.length == 1) {
+            Vector vector = new Vector(getNumRows());
+            for (int i = 0; i < getNumRows(); i++) {
+                vector.set(i, get(i, 0));
+            }
+            return vector;
+        } else {
+            throw new IllegalArgumentException("Matrix view is not a vector");
+        }
+    }
 }

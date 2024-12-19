@@ -237,7 +237,7 @@ public class FastIca {
      */
     public static void center(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
-            Vector u = x.getRow(i);
+            Vector u = x.row(i);
             double mean = mean(u);
 
             for (int j = 0; j < x.getNumColumns(); j++) {
@@ -439,12 +439,12 @@ public class FastIca {
                 TetradLogger.getInstance().log("Component " + (i + 1));
             }
 
-            Vector w = wInit.getRow(i);
+            Vector w = wInit.row(i);
 
             if (i > 0) {
                 for (int u = 0; u < i; u++) {
-                    double k = w.dotProduct(W.getRow(u));
-                    w = w.minus(W.getRow(u).scalarMult(k));
+                    double k = w.dotProduct(W.row(u));
+                    w = w.minus(W.row(u).scalarMult(k));
                 }
             }
 
@@ -480,7 +480,7 @@ public class FastIca {
                 Vector v1 = new Vector(X.getNumRows());
 
                 for (int k = 0; k < X.getNumRows(); k++) {
-                    v1.set(k, mean(xgwx.getRow(k)));
+                    v1.set(k, mean(xgwx.row(k)));
                 }
 
                 Vector g_wx = new Vector(X.getNumColumns());
@@ -645,7 +645,7 @@ public class FastIca {
             Vector V20 = new Vector(numComponents);
 
             for (int k = 0; k < numComponents; k++) {
-                V20.set(k, mean(g_wx.getRow(k)));
+                V20.set(k, mean(g_wx.row(k)));
             }
 
             Matrix v2 = V20.diag();
@@ -691,7 +691,7 @@ public class FastIca {
      */
     private void scale(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
-            Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
+            Vector u = x.row(i).scalarMult(1.0 / rms(x.row(i)));
             x.assignRow(i, u);
         }
     }

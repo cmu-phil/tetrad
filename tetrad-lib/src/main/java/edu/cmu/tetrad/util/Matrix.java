@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.util;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
@@ -189,27 +190,21 @@ public class Matrix implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix getSelection(int[] rows, int[] cols) {
-        Matrix m = new Matrix(rows.length, cols.length);
-
-        for (int i = 0; i < rows.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                m.set(i, j, getData().get(rows[i], cols[j]));
-            }
-        }
-
-        return m;
+        return view(rows, cols).matrix();
+//
+//        Matrix m = new Matrix(rows.length, cols.length);
+//
+//        for (int i = 0; i < rows.length; i++) {
+//            for (int j = 0; j < cols.length; j++) {
+//                m.set(i, j, getData().get(rows[i], cols[j]));
+//            }
+//        }
+//
+//        return m;
     }
 
-    public Matrix setSelection(int[] rows, int[] cols, Matrix m) {
-//        Matrix m = new Matrix(rows.length, cols.length);
-
-        for (int i = 0; i < rows.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                m.set(i, j, getData().get(rows[i], cols[j]) + m.get(i, j));
-            }
-        }
-
-        return m;
+    public void setSelection(int[] rows, int[] cols, Matrix m) {
+        view(rows, cols).set(m);
     }
 
     /**
@@ -322,22 +317,23 @@ public class Matrix implements TetradSerializable {
      * @param i a int
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
-    public Vector getRow(int i) {
-        if (zeroDimension()) {
-            return new Vector(getNumColumns());
-        }
+    public Vector row(int i) {
+        MView mView = viewRow(i);
+        return mView.vector();
+    }
 
-        return new Vector(getData().transpose().getColumn(i));
+    public Vector col(int i) {
+        return viewColumn(i).vector();
     }
 
     /**
-     * <p>getPart.</p>
+     * Extracts a submatrix from the current matrix based on the specified row and column ranges.
      *
-     * @param i a int
-     * @param j a int
-     * @param k a int
-     * @param l a int
-     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param i the starting row index (inclusive) of the submatrix
+     * @param j the ending row index (inclusive) of the submatrix
+     * @param k the starting column index (inclusive) of the submatrix
+     * @param l the ending column index (inclusive) of the submatrix
+     * @return a new Matrix instance representing the extracted submatrix
      */
     public Matrix getPart(int i, int j, int k, int l) {
         return new Matrix(getData().extractMatrix(i, j, k, l));
@@ -643,7 +639,8 @@ public class Matrix implements TetradSerializable {
      * @return a MatrixView object representing the specified row
      */
     public MView viewRow(int row) {
-        return new MView(matrixView, range(row, row), range(0, getNumColumns() - 1));
+        Pair<int[], int[]> ranges = ranges(row, row, 0, getNumColumns() - 1);
+        return new MView(matrixView, ranges.getLeft(), ranges.getRight());
     }
 
 
@@ -654,7 +651,8 @@ public class Matrix implements TetradSerializable {
      * @return a MatrixView object representing the specified column
      */
     public MView viewColumn(int column) {
-        return new MView(matrixView, range(0, getNumRows() - 1), range(column, column));
+        Pair<int[], int[]> ranges = ranges(0, getNumRows() - 1, column, column);
+        return new MView(matrixView, ranges.getLeft(), ranges.getRight());
     }
 
     /**
@@ -667,33 +665,48 @@ public class Matrix implements TetradSerializable {
      * @return a MatrixView object representing the specified submatrix view
      */
     public MView viewPart(int fromRow, int fromColumn, int toRow, int toColumn) {
-        return new MView(matrixView, range(fromRow, toRow), range(fromColumn, toColumn));
+        Pair<int[], int[]> ranges = ranges(fromRow, toRow, fromColumn, toColumn);
+        return new MView(matrixView, ranges.getLeft(), ranges.getRight());
     }
 
     /**
      * Generates an array of integers representing a range of values between two specified row indices, inclusive.
      *
-     * @param fromRow the starting row index (inclusive) of the range
+     * @param from the starting row index (inclusive) of the range
      * @param toRow   the ending row index (inclusive) of the range
      * @return an array of integers containing the range of row indices
-     * @throws IllegalArgumentException if either fromRow or toRow is out of the valid row index range
+     * @throws IllegalArgumentException if either from or toRow is out of the valid row index range
      */
-    private int[] range(int fromRow, int toRow) {
+    private Pair<int[], int[]> ranges(int from, int toRow, int fromCol, int toCol) {
 
         // Check that the ranges are valid.
-        if (fromRow < 0 || fromRow > getNumRows()) {
-            throw new IllegalArgumentException("Invalid row index: " + fromRow);
+        if (from < 0 || from >= getNumRows()) {
+            throw new IllegalArgumentException("Invalid row index: " + from);
         }
 
-        if (toRow < 0 || toRow > getNumRows()) {
+        if (toRow < from || toRow >= getNumRows()) {
             throw new IllegalArgumentException("Invalid row index: " + toRow);
         }
 
-        int[] range = new int[toRow - fromRow + 1];
-        for (int i = 0; i < range.length; i++) {
-            range[i] = fromRow + i;
+        if (fromCol < 0 || fromCol >= getNumColumns()) {
+            throw new IllegalArgumentException("Invalid column index: " + fromCol);
         }
-        return range;
+
+        if (toCol < fromCol || toCol >= getNumColumns()) {
+            throw new IllegalArgumentException("Invalid column index: " + toCol);
+        }
+
+        int[] rangeRow = new int[toRow - from + 1];
+        for (int i = 0; i < rangeRow.length; i++) {
+            rangeRow[i] = from + i;
+        }
+
+        int[] rangeCol = new int[toCol - fromCol + 1];
+        for (int i = 0; i < rangeCol.length; i++) {
+            rangeCol[i] = fromCol + i;
+        }
+
+        return Pair.of(rangeRow, rangeCol);
     }
 
     private boolean zeroDimension() {

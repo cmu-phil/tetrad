@@ -121,7 +121,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     private static double gaussianKernel(Matrix z, int i, int j, double h, double scalingFactor) {
         double _h = h * scalingFactor;
 
-        Vector difference = z.getRow(i).minus(z.getRow(j));
+        Vector difference = z.row(i).minus(z.row(j));
         double squaredDistance = difference.dotProduct(difference);
 
         return FastMath.exp(-squaredDistance / (2 * _h * _h));

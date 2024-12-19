@@ -92,7 +92,7 @@ public class FactorAnalysis {
     private static Matrix normalizeRows(Matrix matrix) {
         LinkedList<Matrix> normalizedRows = new LinkedList<>();
         for (int i = 0; i < matrix.getNumRows(); i++) {
-            Vector vector = matrix.getRow(i);
+            Vector vector = matrix.row(i);
             Matrix colVector = new Matrix(matrix.getNumColumns(), 1);
             for (int j = 0; j < matrix.getNumColumns(); j++)
                 colVector.set(j, 0, vector.get(j));
@@ -256,7 +256,7 @@ public class FactorAnalysis {
             r = residuals.getLast();
 
             hVectors.add(new Matrix(r.getNumColumns(), 1));
-            Vector rowFromFactorLoading = r.getRow(lIndex);
+            Vector rowFromFactorLoading = r.row(lIndex);
 
             for (int j = 0; j < hVectors.getLast().getNumRows(); j++) {
                 hVectors.getLast().set(j, 0, rowFromFactorLoading.get(j));

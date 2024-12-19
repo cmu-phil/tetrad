@@ -87,7 +87,13 @@ public class TestMatrix {
 
         System.out.println(A.view(new int[]{1, 2}, new int[]{1, 2}).matrix().times(A.view(new int[]{1, 2}, new int[]{1, 2}).matrix().inverse()));
 
+        System.out.println("1. " + A.viewRow(1).matrix());
 
+        System.out.println(A.row(1));
+
+        System.out.println("2. " + A.viewColumn(3).matrix());
+
+        System.out.println(A.col(1));
     }
 }
 

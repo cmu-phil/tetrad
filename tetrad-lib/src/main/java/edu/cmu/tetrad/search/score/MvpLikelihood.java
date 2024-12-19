@@ -444,7 +444,7 @@ public class MvpLikelihood {
         }
 
         for (int i = 0; i < n; i++) {
-            lik += FastMath.log(P.getRow(i).dotProduct(Y.getRow(i)));
+            lik += FastMath.log(P.row(i).dotProduct(Y.row(i)));
         }
 
         if (Double.isInfinite(lik) || Double.isNaN(lik)) {
