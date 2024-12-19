@@ -415,7 +415,7 @@ public class MvpLikelihood {
         if (d >= n || X.getNumColumns() >= n) {
             Matrix ones = new Matrix(n, 1);
             for (int i = 0; i < n; i++) ones.set(i, 0, 1);
-            P = ones.times(ones.transpose().times(Y).scalarMult(1 / (double) n));
+            P = ones.times(ones.transpose().times(Y).scale(1 / (double) n));
         } else {
             try {
                 Matrix Xt = X.transpose();
@@ -424,7 +424,7 @@ public class MvpLikelihood {
             } catch (Exception e) {
                 Matrix ones = new Matrix(n, 1);
                 for (int i = 0; i < n; i++) ones.set(i, 0, 1);
-                P = ones.times(ones.transpose().times(Y).scalarMult(1 / (double) n));
+                P = ones.times(ones.transpose().times(Y).scale(1 / (double) n));
             }
 
             for (int i = 0; i < n; i++) {

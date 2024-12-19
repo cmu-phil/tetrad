@@ -37,8 +37,8 @@ public class MView implements TetradSerializable {
      * columns.
      *
      * @param matrixView the original MatrixView object from which this new view is created
-     * @param viewRows       the array of row indices specifying the rows included in the new view
-     * @param viewCols    the array of column indices specifying the columns included in the new view
+     * @param viewRows   the array of row indices specifying the rows included in the new view
+     * @param viewCols   the array of column indices specifying the columns included in the new view
      */
     protected MView(MView matrixView, int[] viewRows, int[] viewCols) {
         this.matrix = null;
@@ -57,9 +57,17 @@ public class MView implements TetradSerializable {
     public Matrix mat() {
         Matrix submatrix = new Matrix(viewRows.length, viewCols.length);
 
-        for (int i = 0; i < viewRows.length; i++) {
-            for (int j = 0; j < viewCols.length; j++) {
-                submatrix.set(i, j, matrixView.get(viewRows[i], viewCols[j]));
+        if (matrixView == null) {
+            for (int i = 0; i < viewRows.length; i++) {
+                for (int j = 0; j < viewCols.length; j++) {
+                    submatrix.set(i, j, matrix.get(viewRows[i], viewCols[j]));
+                }
+            }
+        } else {
+            for (int i = 0; i < viewRows.length; i++) {
+                for (int j = 0; j < viewCols.length; j++) {
+                    submatrix.set(i, j, matrixView.get(viewRows[i], viewCols[j]));
+                }
             }
         }
 
@@ -72,11 +80,7 @@ public class MView implements TetradSerializable {
      * @return the number of rows in the matrix view.
      */
     public int getNumRows() {
-        if (matrix == null) {
-            return matrixView.getNumRows();
-        } else {
-            return viewRows.length;
-        }
+        return viewRows.length;
     }
 
     /**
@@ -85,11 +89,7 @@ public class MView implements TetradSerializable {
      * @return the number of columns in the matrix view.
      */
     public int getNumColumns() {
-        if (matrix == null) {
-            return matrixView.viewCols.length;
-        } else {
-            return viewCols.length;
-        }
+        return viewCols.length;
     }
 
     /**
@@ -219,9 +219,9 @@ public class MView implements TetradSerializable {
      * @param matrixView the matrix view containing the values to be set in the view. It must have the same
      */
     public void set(MView matrixView) {
-        int numRows = this.matrixView.getNumRows();
+        int numRows = getNumRows();
         int rowsLength = viewRows.length;
-        int numColumns = this.matrixView.getNumColumns();
+        int numColumns = getNumColumns();
         int colsLength = viewCols.length;
         if (numRows != rowsLength || numColumns != colsLength) {
             throw new IllegalArgumentException("Matrix dimensions do not match view dimensions");
@@ -302,7 +302,7 @@ public class MView implements TetradSerializable {
      * @return a MatrixView object representing the specified row
      */
     public MView viewRow(int row) {
-        return new MView(matrixView, range(row, row), range(0, getNumColumns()));
+        return new MView(matrixView, range(row, row + 1), range(0, getNumColumns()));
     }
 
     /**
@@ -312,7 +312,7 @@ public class MView implements TetradSerializable {
      * @return a MatrixView object representing the specified column
      */
     public MView viewColumn(int column) {
-        return new MView(matrixView, range(0, getNumRows()), range(column, column));
+        return new MView(matrixView, range(0, getNumRows()), range(column, column + 1));
     }
 
     /**
@@ -364,5 +364,9 @@ public class MView implements TetradSerializable {
         } else {
             throw new IllegalArgumentException("Matrix view is not a vector");
         }
+    }
+
+    public String toString() {
+        return mat().toString();
     }
 }

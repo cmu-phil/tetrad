@@ -124,7 +124,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         }
 
         this.ncov = new ArrayList<>();
-        for (Matrix d : this.data) this.ncov.add(d.transpose().times(d).scalarMult(1.0 / d.getNumRows()));
+        for (Matrix d : this.data) this.ncov.add(d.transpose().times(d).scale(1.0 / d.getNumRows()));
 
         setAlpha(alpha);
         this.rows = new int[dataSets.get(0).getNumRows()];

@@ -129,7 +129,7 @@ public class RicfNew {
                             MView a1 = S.view(parv, parv);
                             MView a2 = S.view(v, parv);
                             Matrix a3 = a1.mat().inverse();
-                            Matrix a4 = a2.mat().times(a3).scalarMult(-1);
+                            Matrix a4 = a2.mat().times(a3).scale(-1);
                             a6.set(a4);
 
                             Matrix a7 = S.view(parv, v).mat();
@@ -143,125 +143,75 @@ public class RicfNew {
                         }
                     }
                 } else {
-                    if (parv.length != 0) {
-                        Matrix oInv = new Matrix(p, p);
-                        Matrix a2 = omega.view(vcomp, vcomp).mat();
-                        Matrix a3 = a2.inverse();
-                        oInv.view(vcomp, vcomp).set(a3);
+                    Matrix oInv = new Matrix(p, p);
+                    Matrix a2 = omega.view(vcomp, vcomp).mat();
+                    Matrix a3 = a2.inverse();
+                    oInv.view(vcomp, vcomp).set(a3);
 
-                        Matrix mat1 = oInv.view(spov, vcomp).mat();
-                        Matrix mat2 = B.view(vcomp, all).mat();
-                        Matrix Z = mat1.times(mat2).times(B.view(vcomp, all).mat()).transpose();
+                    Matrix Z = oInv.view(spov, vcomp).mat().times(B.view(vcomp, all).mat());
 
-                        int lpa = parv.length;
-                        int lspo = spov.length;
+                    int lpa = parv.length;
+                    int lspo = spov.length;
 
-                        // Build XX
-                        Matrix XX = new Matrix(lpa + lspo, lpa + lspo);
-                        int[] range1 = range(0, lpa - 1);
-                        int[] range2 = range(lpa, lpa + lspo - 1);
+                    // Build XX
+                    Matrix XX = new Matrix(lpa + lspo, lpa + lspo);
+                    int[] range1 = range(0, lpa - 1);
+                    int[] range2 = range(lpa, lpa + lspo - 1);
 
-                        // Upper left quadrant
-                        XX.view(range1, range1).set(S.view(parv, parv).mat());
+                    // Upper left quadrant
+                    XX.view(range1, range1).set(S.view(parv, parv).mat());
 
-                        // Upper right quadrant
-                        Matrix mat = S.view(parv, all).mat();
-                        Matrix transpose = Z.transpose();
-                        Matrix a11 = null;
-                        try {
-                            a11 = mat.times(transpose);
-                            XX.view(range1, range2).set(a11);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
+                    // Upper right quadrant
+                    Matrix mat = S.view(parv, all).mat();
+                    Matrix transpose = Z.transpose();
+                    Matrix a11 = null;
+                    a11 = mat.times(transpose);
+                    XX.view(range1, range2).set(a11);
 
+                    // Lower left quadrant
+                    MView a12 = XX.view(range2, range1);
+                    Matrix a13 = XX.view(range1, range2).mat().transpose();
+                    a12.set(a13);
 
-                        // Lower left quadrant
-                        MView a12 = XX.view(range2, range1);
-                        Matrix a13 = XX.view(range1, range2).mat().transpose();
-                        a12.set(a13);
+                    // Lower right quadrant
+                    MView a14 = XX.view(range2, range2);
+                    Matrix a15 = Z.times(S);
+                    Matrix a16 = a15.times(Z.transpose());
+                    a14.set(a16);
 
-                        // Lower right quadrant
-                        MView a14 = XX.view(range2, range2);
-                        Matrix a15 = Z.times(S);
-                        Matrix a16 = a15.times(Z.transpose());
-                        a14.set(a16);
+                    // Build XY
+                    Matrix YX = new Matrix(1, lpa + lspo);
+                    MView a17 = YX.view(range1, new int[]{0});
+                    MView a18 = S.view(v, parv);
+                    a17.set(a18);
 
-                        // Build XY
-                        Vector YX = new Vector(lpa + lspo);
-                        Vector a17 = YX.getSelection(range1);
-                        Vector a18 = S.view(v, parv).mat().row(0);
-                        a17.assign(a18);
+                    MView a19 = YX.view(new int[]{0}, range2);
+                    Matrix a20 = S.view(v, all).mat();
+                    Matrix a21 = a20.times(Z.transpose());
+                    a19.set(a21);
 
-                        Vector a19 = YX.getSelection(range2);
-                        Matrix a20 = S.view(v, all).mat();
-                        Vector a21 = (a20.times(Z.transpose()).row(0));
-                        a19.assign(a21);
+                    // Temp
+                    Matrix a22 = XX.inverse();
+                    Matrix temp = YX.times(a22.transpose());
 
-                        // Temp
-                        Matrix a22 = XX.inverse();
-                        Vector temp = a22.transpose().times(YX);
+                    // Assign to b.
+                    MView a23 = a6.viewRow(0);
+                    MView a24 = temp.view(range1, new int[]{0});
+                    a23.set(a24.mat().scale(-1));
 
-                        // Assign to b.
-                        Vector a23 = a6.viewRow(0).vector();
-                        Vector a24 = temp.getSelection(range1);
-                        a23.assign(a24.scalarMult(-1));
-//                        a23.assign(Mult.mult(-1));
+                    // Assign to omega.
+                    MView view = temp.view(new int[]{0}, range2);
+                    omega.view(v, spov).set(view.mat());
+                    omega.view(spov, v).set(view.mat().transpose());
 
-                        // Assign to omega.
-                        omega.view(v, spov).viewRow(0).set(temp.diag().view(range2, range2));
-                        omega.view(spov, v).viewColumn(0).set(temp.diag().view(range2, range2));
-
-                        // Variance.
-                        double tempVar = S.get(_v, _v) - temp.dot(YX);
-                        MView a27 = omega.view(v, spov);
-                        MView a28 = oInv.view(spov, spov);
-                        Matrix a29 = omega.view(spov, v).mat();
-                        Matrix a30 = a27.mat().times(a28.mat());
-                        Matrix a31 = a30.times(a29).scalarPlus(tempVar);
-                        omega.view(v, v).set(a31);
-//                        omega.view(v, v).set(a31, PlusMult.plusMult(1));
-                    } else {
-                        Matrix oInv = new Matrix(p, p);
-                        MView a2 = omega.view(vcomp, vcomp);
-                        Matrix a3 = a2.mat().inverse();
-                        oInv.view(vcomp, vcomp).set(a3);
-
-                        MView a4 = oInv.view(spov, vcomp);
-                        MView a5 = B.view(vcomp, all);
-                        Matrix Z = a4.mat().times(a5.mat());
-
-                        // Build XX
-                        Matrix XX = Z.times(S).times(Z.transpose());
-
-                        // Build XY
-                        MView a20 = S.view(v, all);
-                        Vector YX = a20.mat().times(Z.transpose()).row(0);
-
-                        // Temp
-                        Matrix a22 = XX.inverse();
-                        Vector a23 = a22.transpose().times(YX);
-
-                        // Assign to omega.
-                        Vector a24 = omega.view(v, spov).viewRow(0).vector();
-                        a24.assign(a23);
-                        Vector a25 = omega.view(spov, v).viewRow(0).vector();
-                        a25.assign(a23);
-
-                        // Variance.
-                        double tempVar = S.get(_v, _v) - a24.dot(YX);
-
-//                        System.out.println("tempVar = " + tempVar);
-
-                        MView a27 = omega.view(v, spov);
-                        MView a28 = oInv.view(spov, spov);
-                        MView a29 = omega.view(spov, v);
-                        Matrix a30 = a27.mat().times(a28.mat());
-                        Matrix a31 = a30.times(a29.mat());
-                        omega.set(_v, _v, tempVar + a31.get(0, 0));
-
-//                        System.out.println("Omega final " + omega);
-                    }
+                    // Variance.
+                    double tempVar = S.get(_v, _v) - temp.times(YX.transpose()).get(0, 0);
+                    MView a27 = omega.view(v, spov);
+                    MView a28 = oInv.view(spov, spov);
+                    Matrix a29 = omega.view(spov, v).mat();
+                    Matrix a30 = a27.mat().times(a28.mat());
+                    Matrix a31 = a30.times(a29).scalarPlus(tempVar);
+                    omega.view(v, v).set(a31);
                 }
             }
 

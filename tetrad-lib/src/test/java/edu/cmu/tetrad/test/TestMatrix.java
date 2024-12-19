@@ -78,7 +78,7 @@ public class TestMatrix {
 
         System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
 
-        A.view(new int[]{1, 2}, new int[]{1, 2}).view(new int[]{1}, new int[]{1, 2}).set(new Matrix(new double[][]{{-2, -3}}));
+        A.view(new int[]{1, 2}, new int[]{1, 2}).view(new int[]{0}, new int[]{0, 1}).set(new Matrix(new double[][]{{-2, -3}}));
 
         System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
 

@@ -483,7 +483,7 @@ public class Matrix implements TetradSerializable {
      * @param scalar a double
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
-    public Matrix scalarMult(double scalar) {
+    public Matrix scale(double scalar) {
         Matrix newMatrix = copy();
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {

@@ -418,7 +418,7 @@ public final class MatrixUtils {
      */
     public static double[][] scalarProduct(double scalar, double[][] m) {
         Matrix _m = new Matrix(m);
-        return _m.scalarMult(scalar).toArray();
+        return _m.scale(scalar).toArray();
     }
 
     /**

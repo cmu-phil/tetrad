@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -150,117 +150,75 @@ public class Ricf {
                         }
                     }
                 } else {
-                    if (parv.length != 0) {
-                        DoubleMatrix2D oInv = new DenseDoubleMatrix2D(p, p);
-                        DoubleMatrix2D a2 = omega.viewSelection(vcomp, vcomp);
-                        DoubleMatrix2D a3 = algebra.inverse(a2);
-                        oInv.viewSelection(vcomp, vcomp).assign(a3);
+                    DoubleMatrix2D oInv = new DenseDoubleMatrix2D(p, p);
+                    DoubleMatrix2D a2 = omega.viewSelection(vcomp, vcomp);
+                    DoubleMatrix2D a3 = algebra.inverse(a2);
+                    oInv.viewSelection(vcomp, vcomp).assign(a3);
 
-                        DoubleMatrix2D Z = algebra.mult(oInv.viewSelection(spov, vcomp),
-                                B.viewSelection(vcomp, all));
+                    DoubleMatrix2D Z = algebra.mult(oInv.viewSelection(spov, vcomp), B.viewSelection(vcomp, all));
 
-                        int lpa = parv.length;
-                        int lspo = spov.length;
+                    int lpa = parv.length;
+                    int lspo = spov.length;
 
-                        // Build XX
-                        DoubleMatrix2D XX = new DenseDoubleMatrix2D(lpa + lspo, lpa + lspo);
-                        int[] range1 = range(0, lpa - 1);
-                        int[] range2 = range(lpa, lpa + lspo - 1);
+                    // Build XX
+                    DoubleMatrix2D XX = new DenseDoubleMatrix2D(lpa + lspo, lpa + lspo);
+                    int[] range1 = range(0, lpa - 1);
+                    int[] range2 = range(lpa, lpa + lspo - 1);
 
-                        // Upper left quadrant
-                        XX.viewSelection(range1, range1).assign(S.viewSelection(parv, parv));
+                    // Upper left quadrant
+                    XX.viewSelection(range1, range1).assign(S.viewSelection(parv, parv));
 
-                        // Upper right quadrant
-                        DoubleMatrix2D a11 = algebra.mult(S.viewSelection(parv, all),
-                                algebra.transpose(Z));
-                        XX.viewSelection(range1, range2).assign(a11);
+                    // Upper right quadrant
+                    DoubleMatrix2D a11 = algebra.mult(S.viewSelection(parv, all),
+                            algebra.transpose(Z));
+                    XX.viewSelection(range1, range2).assign(a11);
 
-                        // Lower left quadrant
-                        DoubleMatrix2D a12 = XX.viewSelection(range2, range1);
-                        DoubleMatrix2D a13 = algebra.transpose(XX.viewSelection(range1, range2));
-                        a12.assign(a13);
+                    // Lower left quadrant
+                    DoubleMatrix2D a12 = XX.viewSelection(range2, range1);
+                    DoubleMatrix2D a13 = algebra.transpose(XX.viewSelection(range1, range2));
+                    a12.assign(a13);
 
-                        // Lower right quadrant
-                        DoubleMatrix2D a14 = XX.viewSelection(range2, range2);
-                        DoubleMatrix2D a15 = algebra.mult(Z, S);
-                        DoubleMatrix2D a16 = algebra.mult(a15, algebra.transpose(Z));
-                        a14.assign(a16);
+                    // Lower right quadrant
+                    DoubleMatrix2D a14 = XX.viewSelection(range2, range2);
+                    DoubleMatrix2D a15 = algebra.mult(Z, S);
+                    DoubleMatrix2D a16 = algebra.mult(a15, algebra.transpose(Z));
+                    a14.assign(a16);
 
-                        // Build XY
-                        DoubleMatrix1D YX = new DenseDoubleMatrix1D(lpa + lspo);
-                        DoubleMatrix1D a17 = YX.viewSelection(range1);
-                        DoubleMatrix1D a18 = S.viewSelection(v, parv).viewRow(0);
-                        a17.assign(a18);
+                    // Build XY
+                    DoubleMatrix1D YX = new DenseDoubleMatrix1D(lpa + lspo);
+                    DoubleMatrix1D a17 = YX.viewSelection(range1);
+                    DoubleMatrix1D a18 = S.viewSelection(v, parv).viewRow(0);
+                    a17.assign(a18);
 
-                        DoubleMatrix1D a19 = YX.viewSelection(range2);
-                        DoubleMatrix2D a20 = S.viewSelection(v, all);
-                        DoubleMatrix1D a21 = algebra.mult(a20, algebra.transpose(Z)).viewRow(0);
-                        a19.assign(a21);
+                    DoubleMatrix1D a19 = YX.viewSelection(range2);
+                    DoubleMatrix2D a20 = S.viewSelection(v, all);
+                    DoubleMatrix1D a21 = algebra.mult(a20, algebra.transpose(Z)).viewRow(0);
+                    a19.assign(a21);
 
-                        // Temp
-                        DoubleMatrix2D a22 = algebra.inverse(XX);
-                        DoubleMatrix1D temp = algebra.mult(algebra.transpose(a22), YX);
+                    // Temp
+                    DoubleMatrix2D a22 = algebra.inverse(XX);
+                    DoubleMatrix1D temp = algebra.mult(algebra.transpose(a22), YX);
 
-                        // Assign to b.
-                        DoubleMatrix1D a23 = a6.viewRow(0);
-                        DoubleMatrix1D a24 = temp.viewSelection(range1);
-                        a23.assign(a24);
-                        a23.assign(Mult.mult(-1));
+                    // Assign to b.
+                    DoubleMatrix1D a23 = a6.viewRow(0);
+                    DoubleMatrix1D a24 = temp.viewSelection(range1);
+                    a23.assign(a24);
+                    a23.assign(Mult.mult(-1));
 
-                        // Assign to omega.
-                        omega.viewSelection(v, spov).viewRow(0).assign(temp.viewSelection(range2));
-                        omega.viewSelection(spov, v).viewColumn(0).assign(temp.viewSelection(range2));
+                    // Assign to omega.
+                    DoubleMatrix1D view = temp.viewSelection(range2);
+                    omega.viewSelection(v, spov).viewRow(0).assign(view);
+                    omega.viewSelection(spov, v).viewColumn(0).assign(view);
 
-                        // Variance.
-                        double tempVar = S.get(_v, _v) - algebra.mult(temp, YX);
-                        DoubleMatrix2D a27 = omega.viewSelection(v, spov);
-                        DoubleMatrix2D a28 = oInv.viewSelection(spov, spov);
-                        DoubleMatrix2D a29 = omega.viewSelection(spov, v).copy();
-                        DoubleMatrix2D a30 = algebra.mult(a27, a28);
-                        DoubleMatrix2D a31 = algebra.mult(a30, a29);
-                        omega.viewSelection(v, v).assign(tempVar);
-                        omega.viewSelection(v, v).assign(a31, PlusMult.plusMult(1));
-                    } else {
-                        DoubleMatrix2D oInv = new DenseDoubleMatrix2D(p, p);
-                        DoubleMatrix2D a2 = omega.viewSelection(vcomp, vcomp);
-                        DoubleMatrix2D a3 = algebra.inverse(a2);
-                        oInv.viewSelection(vcomp, vcomp).assign(a3);
-
-                        DoubleMatrix2D a4 = oInv.viewSelection(spov, vcomp);
-                        DoubleMatrix2D a5 = B.viewSelection(vcomp, all);
-                        DoubleMatrix2D Z = algebra.mult(a4, a5);
-
-                        // Build XX
-                        DoubleMatrix2D XX = algebra.mult(algebra.mult(Z, S), Z.viewDice());
-
-                        // Build XY
-                        DoubleMatrix2D a20 = S.viewSelection(v, all);
-                        DoubleMatrix1D YX = algebra.mult(a20, Z.viewDice()).viewRow(0);
-
-                        // Temp
-                        DoubleMatrix2D a22 = algebra.inverse(XX);
-                        DoubleMatrix1D a23 = algebra.mult(algebra.transpose(a22), YX);
-
-                        // Assign to omega.
-                        DoubleMatrix1D a24 = omega.viewSelection(v, spov).viewRow(0);
-                        a24.assign(a23);
-                        DoubleMatrix1D a25 = omega.viewSelection(spov, v).viewColumn(0);
-                        a25.assign(a23);
-
-                        // Variance.
-                        double tempVar = S.get(_v, _v) - algebra.mult(a24, YX);
-
-//                        System.out.println("tempVar = " + tempVar);
-
-                        DoubleMatrix2D a27 = omega.viewSelection(v, spov);
-                        DoubleMatrix2D a28 = oInv.viewSelection(spov, spov);
-                        DoubleMatrix2D a29 = omega.viewSelection(spov, v).copy();
-                        DoubleMatrix2D a30 = algebra.mult(a27, a28);
-                        DoubleMatrix2D a31 = algebra.mult(a30, a29);
-                        omega.set(_v, _v, tempVar + a31.get(0, 0));
-
-//                        System.out.println("Omega final " + omega);
-                    }
+                    // Variance.
+                    double tempVar = S.get(_v, _v) - algebra.mult(temp, YX);
+                    DoubleMatrix2D a27 = omega.viewSelection(v, spov);
+                    DoubleMatrix2D a28 = oInv.viewSelection(spov, spov);
+                    DoubleMatrix2D a29 = omega.viewSelection(spov, v).copy();
+                    DoubleMatrix2D a30 = algebra.mult(a27, a28);
+                    DoubleMatrix2D a31 = algebra.mult(a30, a29);
+                    omega.viewSelection(v, v).assign(tempVar);
+                    omega.viewSelection(v, v).assign(a31, PlusMult.plusMult(1));
                 }
             }
 

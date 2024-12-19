@@ -383,7 +383,7 @@ public class FastIca {
         }
 
         // Whiten.
-        Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
+        Matrix cov = this.X.times(this.X.transpose()).scale(1.0 / n);
 
         SimpleSVD<SimpleMatrix> s = cov.getDataCopy().svd();
 
@@ -631,7 +631,7 @@ public class FastIca {
                 }
             }
 
-            Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
+            Matrix v1 = gwx.times(X.transpose().scale(1.0 / p));
             Matrix g_wx = gwx.like();
 
             for (int i = 0; i < g_wx.getNumRows(); i++) {
