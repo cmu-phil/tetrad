@@ -672,7 +672,7 @@ public class TsUtils {
      * @return a boolean
      */
     public static boolean allEigenvaluesAreSmallerThanOneInModulus(Matrix mat) {
-        SimpleEVD<SimpleMatrix> eig = mat.getSimpleMatrix().eig();
+        SimpleEVD<SimpleMatrix> eig = mat.getDataCopy().eig();
 
         for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
             double realEigenvalue = eig.getEigenvalue(i).getReal();

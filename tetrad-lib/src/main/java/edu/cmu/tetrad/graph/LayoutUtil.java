@@ -644,7 +644,7 @@ public class LayoutUtil {
                     Matrix c;
 
                     try {
-                        c = new Matrix(a.getSimpleMatrix().solve(b.getSimpleMatrix()));
+                        c = new Matrix(a.getDataCopy().solve(b.getDataCopy()));
                     } catch (Exception e) {
                         this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
                                 2 * jump) - jump;

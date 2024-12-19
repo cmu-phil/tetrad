@@ -55,33 +55,37 @@ public class TestMatrix {
 
         System.out.println(A);
 
-//        A.set(0, 0, 1);
-//        A.set(0, 1, 2);
-//
-//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+        A.set(0, 0, 1);
+        A.set(0, 1, 2);
 
-//        A.view(new int[]{2, 3}, new int[]{2, 3}).set(new Matrix(new double[][]{{-2, -3}, {-1, -2}}));
-//
-//        A.view().setRow(0, new Vector(new double[]{2, 3, 4, 5}));
-////
-//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
-//
-//        A.view().setColumn(3, new Vector(new double[]{2, 3, 4, 5}));
-//
-//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
-//
-//        A.viewRow(2).setRow(2, new Vector(new double[]{-5, -6, -7, -8}));
-//
-//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
-//
-//        A.viewColumn(2).setColumn(2, new Vector(new double[]{5, 6, 7, 8}));
-//
-//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+
+        A.view(new int[]{2, 3}, new int[]{2, 3}).set(new Matrix(new double[][]{{-2, -3}, {-1, -2}}));
+
+        A.view().setRow(0, new Vector(new double[]{2, 3, 4, 5}));
+
+        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+
+        A.view().setColumn(3, new Vector(new double[]{2, 3, 4, 5}));
+
+        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+
+        A.viewRow(2).setRow(2, new Vector(new double[]{-5, -6, -7, -8}));
+
+        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+
+        A.viewColumn(2).setColumn(2, new Vector(new double[]{5, 6, 7, 8}));
+
+        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
 
         A.view(new int[]{1, 2}, new int[]{1, 2}).view(new int[]{1}, new int[]{1, 2}).set(new Matrix(new double[][]{{-2, -3}}));
 
         System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
 
+
+        // Calculation.
+
+        System.out.println(A.view(new int[]{1, 2}, new int[]{1, 2}).matrix().times(A.view(new int[]{1, 2}, new int[]{1, 2}).matrix().inverse()));
 
 
     }

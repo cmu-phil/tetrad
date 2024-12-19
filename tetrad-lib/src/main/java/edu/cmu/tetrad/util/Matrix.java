@@ -42,7 +42,7 @@ public class Matrix implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    private final SimpleMatrix matrix;
+    private final SimpleMatrix data;
 
     /**
      * The number of rows.
@@ -66,9 +66,9 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix(double[][] data) {
         if (data.length == 0) {
-            this.matrix = new SimpleMatrix(0, 0);
+            this.data = new SimpleMatrix(0, 0);
         } else {
-            this.matrix = new SimpleMatrix(data);
+            this.data = new SimpleMatrix(data);
         }
 
         this.m = data.length;
@@ -77,7 +77,7 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix(SimpleMatrix data) {
-        this.matrix = data.copy();
+        this.data = data.copy();
 
         this.m = data.getNumRows();
         this.n = data.getNumCols();
@@ -92,9 +92,9 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix(int m, int n) {
         if (m == 0 || n == 0) {
-            this.matrix = new SimpleMatrix(0, 0);
+            this.data = new SimpleMatrix(0, 0);
         } else {
-            this.matrix = new SimpleMatrix(m, n);
+            this.data = new SimpleMatrix(m, n);
         }
 
         this.m = m;
@@ -108,7 +108,7 @@ public class Matrix implements TetradSerializable {
      * @param m a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix(Matrix m) {
-        this(m.getMatrix().copy());
+        this(m.getData().copy());
     }
 
     /**
@@ -135,7 +135,7 @@ public class Matrix implements TetradSerializable {
     public void assignPart(int[] range1, int[] range2, Matrix from) {
         for (int j = 0; j < range1.length; j++) {
             for (int k = 0; k < range2.length; k++) {
-                getMatrix().set(range1[j], range2[k], from.get(j, k) + getMatrix().get(range1[j], range2[k]));
+                getData().set(range1[j], range2[k], from.get(j, k) + getData().get(range1[j], range2[k]));
             }
         }
     }
@@ -146,13 +146,13 @@ public class Matrix implements TetradSerializable {
      * @param matrix a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public void assign(Matrix matrix) {
-        if (getMatrix().getNumRows() != matrix.getNumRows() || getMatrix().getNumCols() != matrix.getNumColumns()) {
+        if (getData().getNumRows() != matrix.getNumRows() || getData().getNumCols() != matrix.getNumColumns()) {
             throw new IllegalArgumentException("Mismatched matrix size.");
         }
 
-        for (int i = 0; i < getMatrix().getNumRows(); i++) {
-            for (int j = 0; j < getMatrix().getNumCols(); j++) {
-                getMatrix().set(i, j, matrix.get(i, j));
+        for (int i = 0; i < getData().getNumRows(); i++) {
+            for (int j = 0; j < getData().getNumCols(); j++) {
+                getData().set(i, j, matrix.get(i, j));
             }
         }
     }
@@ -172,10 +172,10 @@ public class Matrix implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public Vector diag() {
-        double[] diag = new double[getMatrix().getNumRows()];
+        double[] diag = new double[getData().getNumRows()];
 
-        for (int i = 0; i < getMatrix().getNumRows(); i++) {
-            diag[i] = getMatrix().get(i, i);
+        for (int i = 0; i < getData().getNumRows(); i++) {
+            diag[i] = getData().get(i, i);
         }
 
         return new Vector(diag);
@@ -193,7 +193,7 @@ public class Matrix implements TetradSerializable {
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                m.set(i, j, getMatrix().get(rows[i], cols[j]));
+                m.set(i, j, getData().get(rows[i], cols[j]));
             }
         }
 
@@ -205,7 +205,7 @@ public class Matrix implements TetradSerializable {
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                m.set(i, j, getMatrix().get(rows[i], cols[j]) + m.get(i, j));
+                m.set(i, j, getData().get(rows[i], cols[j]) + m.get(i, j));
             }
         }
 
@@ -219,7 +219,7 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix copy() {
         if (zeroDimension()) return new Matrix(getNumRows(), getNumColumns());
-        return new Matrix(getMatrix().copy());
+        return new Matrix(getData().copy());
     }
 
     /**
@@ -233,7 +233,7 @@ public class Matrix implements TetradSerializable {
             return new Vector(getNumRows());
         }
 
-        return new Vector(getMatrix().getColumn(j));
+        return new Vector(getData().getColumn(j));
     }
 
     /**
@@ -246,7 +246,7 @@ public class Matrix implements TetradSerializable {
         if (this.zeroDimension() || m.zeroDimension())
             return new Matrix(this.getNumRows(), m.getNumColumns());
         else {
-            return new Matrix(getMatrix().mult(m.getMatrix()));
+            return new Matrix(getData().mult(m.getData()));
         }
     }
 
@@ -257,17 +257,17 @@ public class Matrix implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public Vector times(Vector v) {
-        if (v.size() != getMatrix().getNumCols()) {
+        if (v.size() != getData().getNumCols()) {
             throw new IllegalArgumentException("Mismatched dimensions.");
         }
 
-        double[] y = new double[getMatrix().getNumRows()];
+        double[] y = new double[getData().getNumRows()];
 
-        for (int i = 0; i < getMatrix().getNumRows(); i++) {
+        for (int i = 0; i < getData().getNumRows(); i++) {
             double sum = 0.0;
 
-            for (int j = 0; j < getMatrix().getNumCols(); j++) {
-                sum += getMatrix().get(i, j) * v.get(j);
+            for (int j = 0; j < getData().getNumCols(); j++) {
+                sum += getData().get(i, j) * v.get(j);
             }
 
             y[i] = sum;
@@ -282,7 +282,7 @@ public class Matrix implements TetradSerializable {
      * @return an array of  objects
      */
     public double[][] toArray() {
-        return getMatrix().toArray2();
+        return getData().toArray2();
     }
 
     /**
@@ -293,7 +293,7 @@ public class Matrix implements TetradSerializable {
      * @return a double
      */
     public double get(int i, int j) {
-        return getMatrix().get(i, j);
+        return getData().get(i, j);
     }
 
     /**
@@ -302,7 +302,7 @@ public class Matrix implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix like() {
-        return new Matrix(getMatrix().getNumRows(), getMatrix().getNumCols());
+        return new Matrix(getData().getNumRows(), getData().getNumCols());
     }
 
     /**
@@ -313,7 +313,7 @@ public class Matrix implements TetradSerializable {
      * @param v a double
      */
     public void set(int i, int j, double v) {
-        getMatrix().set(i, j, v);
+        getData().set(i, j, v);
     }
 
     /**
@@ -327,7 +327,7 @@ public class Matrix implements TetradSerializable {
             return new Vector(getNumColumns());
         }
 
-        return new Vector(getMatrix().transpose().getColumn(i));
+        return new Vector(getData().transpose().getColumn(i));
     }
 
     /**
@@ -340,7 +340,7 @@ public class Matrix implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix getPart(int i, int j, int k, int l) {
-        return new Matrix(getMatrix().extractMatrix(i, j, k, l));
+        return new Matrix(getData().extractMatrix(i, j, k, l));
     }
 
     /**
@@ -350,11 +350,11 @@ public class Matrix implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix inverse() {
-        if (getMatrix().getNumRows() == 0) {
+        if (getData().getNumRows() == 0) {
             return new Matrix(0, 0);
         }
 
-        return new Matrix(getMatrix().invert());
+        return new Matrix(getData().invert());
     }
 
     /**
@@ -364,7 +364,7 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix pseudoinverse() {
         if (zeroDimension()) return new Matrix(getNumColumns(), getNumRows());
-        return new Matrix(getMatrix().pseudoInverse());
+        return new Matrix(getData().pseudoInverse());
     }
 
     /**
@@ -374,7 +374,7 @@ public class Matrix implements TetradSerializable {
      * @param doubles a {@link edu.cmu.tetrad.util.Vector} object
      */
     public void assignRow(int row, Vector doubles) {
-        getMatrix().setRow(row, doubles.getSimpleMatrix().getColumn(0));
+        getData().setRow(row, doubles.getSimpleMatrix().getColumn(0));
     }
 
     /**
@@ -384,7 +384,7 @@ public class Matrix implements TetradSerializable {
      * @param doubles a {@link edu.cmu.tetrad.util.Vector} object
      */
     public void assignColumn(int col, Vector doubles) {
-        getMatrix().setColumn(col, doubles.getSimpleMatrix());
+        getData().setColumn(col, doubles.getSimpleMatrix());
     }
 
     /**
@@ -393,7 +393,7 @@ public class Matrix implements TetradSerializable {
      * @return a double
      */
     public double trace() {
-        return getMatrix().trace();
+        return getData().trace();
     }
 
     /**
@@ -403,7 +403,7 @@ public class Matrix implements TetradSerializable {
      */
     public double det() {
         if (zeroDimension()) return 0;
-        return getMatrix().determinant();
+        return getData().determinant();
     }
 
     /**
@@ -413,7 +413,7 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix transpose() {
         if (zeroDimension()) return new Matrix(getNumColumns(), getNumRows());
-        return new Matrix(getMatrix().transpose());
+        return new Matrix(getData().transpose());
     }
 
     /**
@@ -424,9 +424,9 @@ public class Matrix implements TetradSerializable {
      * @return a boolean
      */
     public boolean equals(Matrix m, double tolerance) {
-        for (int i = 0; i < getMatrix().getNumRows(); i++) {
-            for (int j = 0; j < getMatrix().getNumCols(); j++) {
-                if (FastMath.abs(getMatrix().get(i, j) - m.getMatrix().get(i, j)) > tolerance) {
+        for (int i = 0; i < getData().getNumRows(); i++) {
+            for (int j = 0; j < getData().getNumCols(); j++) {
+                if (FastMath.abs(getData().get(i, j) - m.getData().get(i, j)) > tolerance) {
                     return false;
                 }
             }
@@ -452,7 +452,7 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix minus(Matrix mb) {
         if (mb.getNumRows() == 0 || mb.getNumColumns() == 0) return this;
-        return new Matrix(getMatrix().minus(mb.getMatrix()));
+        return new Matrix(getData().minus(mb.getData()));
     }
 
     /**
@@ -465,10 +465,10 @@ public class Matrix implements TetradSerializable {
         // Find the maximum absolute entry in simpleMatrix.
         double max = 0.0;
 
-        for (int i = 0; i < getMatrix().getNumRows(); i++) {
+        for (int i = 0; i < getData().getNumRows(); i++) {
             double sum = 0.0;
-            for (int j = 0; j < getMatrix().getNumCols(); j++) {
-                sum += FastMath.abs(getMatrix().get(i, j));
+            for (int j = 0; j < getData().getNumCols(); j++) {
+                sum += FastMath.abs(getData().get(i, j));
             }
             max = FastMath.max(max, sum);
         }
@@ -485,7 +485,7 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix plus(Matrix mb) {
         if (mb.getNumRows() == 0 || mb.getNumColumns() == 0) return this;
-        return new Matrix(getMatrix().plus(mb.getMatrix()));
+        return new Matrix(getData().plus(mb.getData()));
     }
 
     /**
@@ -494,7 +494,7 @@ public class Matrix implements TetradSerializable {
      * @return a int
      */
     public int rank() {
-        return getMatrix().svd().rank();
+        return getData().svd().rank();
     }
 
     /**
@@ -541,7 +541,7 @@ public class Matrix implements TetradSerializable {
      */
     public Matrix sqrt() {
         // Perform Singular Value Decomposition (SVD)
-        SimpleSVD<SimpleMatrix> svd = getMatrix().svd();
+        SimpleSVD<SimpleMatrix> svd = getData().svd();
 
         // Get U, W, and V matrices from SVD
         SimpleMatrix U = svd.getU();
@@ -573,7 +573,7 @@ public class Matrix implements TetradSerializable {
                 double sum = 0.0;
 
                 for (int i = 0; i < getNumRows(); i++) {
-                    sum += getMatrix().get(i, j);
+                    sum += getData().get(i, j);
                 }
 
                 sums.set(j, sum);
@@ -587,7 +587,7 @@ public class Matrix implements TetradSerializable {
                 double sum = 0.0;
 
                 for (int j = 0; j < getNumColumns(); j++) {
-                    sum += getMatrix().get(i, j);
+                    sum += getData().get(i, j);
                 }
 
                 sums.set(i, sum);
@@ -749,15 +749,15 @@ public class Matrix implements TetradSerializable {
         }
     }
     
-    public SimpleMatrix getSimpleMatrix() {
-        return getMatrix().copy();
+    public SimpleMatrix getDataCopy() {
+        return getData().copy();
     }
 
     /**
      * And EJML SimpleMatrix.
      */
-    private SimpleMatrix getMatrix() {
-        return matrix;
+    private SimpleMatrix getData() {
+        return data;
     }
 }
 
