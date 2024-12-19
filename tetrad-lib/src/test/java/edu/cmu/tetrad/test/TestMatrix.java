@@ -21,8 +21,11 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.*;
+import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
+
+import java.text.DecimalFormat;
 
 import static org.junit.Assert.assertEquals;
 
@@ -43,6 +46,44 @@ public class TestMatrix {
 
         assertEquals(0, xTx.trace(), 0.01);
         assertEquals(0, xTxInv.trace(), 0.01);
+    }
+
+    @Test
+    public void test2() {
+        Matrix A = new Matrix(SimpleMatrix.random_DDRM(4, 4));
+        NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.###"));
+
+        System.out.println(A);
+
+//        A.set(0, 0, 1);
+//        A.set(0, 1, 2);
+//
+//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+
+//        A.view(new int[]{2, 3}, new int[]{2, 3}).set(new Matrix(new double[][]{{-2, -3}, {-1, -2}}));
+//
+//        A.view().setRow(0, new Vector(new double[]{2, 3, 4, 5}));
+////
+//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+//
+//        A.view().setColumn(3, new Vector(new double[]{2, 3, 4, 5}));
+//
+//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+//
+//        A.viewRow(2).setRow(2, new Vector(new double[]{-5, -6, -7, -8}));
+//
+//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+//
+//        A.viewColumn(2).setColumn(2, new Vector(new double[]{5, 6, 7, 8}));
+//
+//        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+
+        A.view(new int[]{1, 2}, new int[]{1, 2}).view(new int[]{1}, new int[]{1, 2}).set(new Matrix(new double[][]{{-2, -3}}));
+
+        System.out.println(MatrixUtils.toString(A.toArray(), new DecimalFormat("0.###")));
+
+
+
     }
 }
 

@@ -783,7 +783,7 @@ public final class MatrixUtils {
         return MatrixUtils.toString(m, nf, variables);
     }
 
-    private static String toString(double[][] m, NumberFormat nf) {
+    public static String toString(double[][] m, NumberFormat nf) {
         return MatrixUtils.toString(m, nf, null);
     }
 
@@ -791,7 +791,7 @@ public final class MatrixUtils {
      * Copies the given array, using a standard scientific notation number formatter and beginning each line with the
      * given lineInit. The number format is DecimalFormat(" 0.0000;-0.0000").
      */
-    private static String toString(double[][] m, NumberFormat nf, List<String> variables) {
+    public static String toString(double[][] m, NumberFormat nf, List<String> variables) {
         String result;
         if (nf == null) {
             throw new NullPointerException("NumberFormat must not be null.");

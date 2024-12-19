@@ -31,8 +31,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serial;
 
 /**
- * Wraps the Apache math3 linear algebra library for most uses in Tetrad. Specialized uses will still have to use the
- * library directly. One issue is that we need to be able to represent empty matrices gracefully; this case is handled
+ * Wraps the EJML linear algebra library for most uses in Tetrad. Specialized uses will still have to use the library
+ * directly. One issue is that we need to be able to represent empty matrices gracefully; this case is handled
  * separately and incorporated into the class.
  *
  * @author josephramsey
@@ -43,7 +43,7 @@ public class Matrix implements TetradSerializable {
     private static final long serialVersionUID = 23L;
 
     /**
-     * The Apache math3 matrix.
+     * And EJML SimpleMatrix.
      */
     private final SimpleMatrix simpleMatrix;
 
@@ -56,6 +56,11 @@ public class Matrix implements TetradSerializable {
      * The number of columns.
      */
     private final int n;
+
+    /**
+     * The view of the matrix. This is used to allow a subset of the matrix to be viewed and set.
+     */
+    private final MView matrixView;
 
     /**
      * <p>Constructor for Matrix.</p>
@@ -71,6 +76,7 @@ public class Matrix implements TetradSerializable {
 
         this.m = data.length;
         this.n = this.m == 0 ? 0 : data[0].length;
+        this.matrixView = new MView(this);
     }
 
     public Matrix(SimpleMatrix data) {
@@ -78,6 +84,7 @@ public class Matrix implements TetradSerializable {
 
         this.m = data.getNumRows();
         this.n = data.getNumCols();
+        this.matrixView = new MView(this);
     }
 
     /**
@@ -95,6 +102,7 @@ public class Matrix implements TetradSerializable {
 
         this.m = m;
         this.n = n;
+        this.matrixView = new MView(this);
     }
 
     /**
@@ -125,6 +133,14 @@ public class Matrix implements TetradSerializable {
      */
     public static Matrix serializableInstance() {
         return new Matrix(0, 0);
+    }
+
+    public void assignPart(int[] range1, int[] range2, Matrix from) {
+        for (int j = 0; j < range1.length; j++) {
+            for (int k = 0; k < range2.length; k++) {
+                simpleMatrix.set(range1[j], range2[k], from.get(j, k) + simpleMatrix.get(range1[j], range2[k]));
+            }
+        }
     }
 
     /**
@@ -181,6 +197,18 @@ public class Matrix implements TetradSerializable {
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
                 m.set(i, j, this.simpleMatrix.get(rows[i], cols[j]));
+            }
+        }
+
+        return m;
+    }
+
+    public Matrix setSelection(int[] rows, int[] cols, Matrix m) {
+//        Matrix m = new Matrix(rows.length, cols.length);
+
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                m.set(i, j, this.simpleMatrix.get(rows[i], cols[j]) + m.get(i, j));
             }
         }
 
@@ -440,8 +468,21 @@ public class Matrix implements TetradSerializable {
      * @return a double
      */
     public double norm1() {
-        return this.simpleMatrix.normF();
+
+        // Find the maximum absolute entry in simpleMatrix.
+        double max = 0.0;
+
+        for (int i = 0; i < this.simpleMatrix.getNumRows(); i++) {
+            double sum = 0.0;
+            for (int j = 0; j < this.simpleMatrix.getNumCols(); j++) {
+                sum += FastMath.abs(this.simpleMatrix.get(i, j));
+            }
+            max = FastMath.max(max, sum);
+        }
+
+        return max;
     }
+
 
     /**
      * <p>plus.</p>
@@ -483,6 +524,17 @@ public class Matrix implements TetradSerializable {
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {
                 newMatrix.set(i, j, get(i, j) * scalar);
+            }
+        }
+
+        return newMatrix;
+    }
+
+    public Matrix scalarPlus(double scalar) {
+        Matrix newMatrix = copy();
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumColumns(); j++) {
+                newMatrix.set(i, j, get(i, j) + scalar);
             }
         }
 
@@ -554,6 +606,103 @@ public class Matrix implements TetradSerializable {
         }
     }
 
+    /**
+     * Creates a view of a matrix using the specified row and column indices.
+     *
+     * @param range1 an array of row indices to include in the view. Each index must be within the range [0, number of
+     *               rows).
+     * @param range2 an array of column indices to include in the view. Each index must be within the range [0, number
+     *               of columns).
+     * @return a MatrixView object representing the specified subset of the matrix.
+     * @throws IllegalArgumentException if any row index in range1 is out of bounds or any column index in range2 is out
+     *                                  of bounds.
+     */
+    public MView view(int[] range1, int[] range2) {
+        // Check that the ranges are valid.
+        for (int i : range1) {
+            if (i < 0 || i >= getNumRows()) {
+                throw new IllegalArgumentException("Invalid row index: " + i);
+            }
+        }
+
+        for (int i : range2) {
+            if (i < 0 || i >= getNumColumns()) {
+                throw new IllegalArgumentException("Invalid column index: " + i);
+            }
+        }
+
+        return new MView(matrixView, range1, range2);
+    }
+
+    /**
+     * Creates a view of the entire matrix.
+     *
+     * @return a MatrixView object representing the entire matrix.
+     */
+    public MView view() {
+        return new MView(this);
+    }
+
+    /**
+     * Creates a sub-view of the matrix representing a specific row.
+     *
+     * @param row the index of the row to be viewed
+     * @return a MatrixView object representing the specified row
+     */
+    public MView viewRow(int row) {
+        return new MView(matrixView, range(row, row), range(0, getNumColumns() - 1));
+    }
+
+
+    /**
+     * Creates a view of a specific column from the matrix.
+     *
+     * @param column the index of the column to be viewed
+     * @return a MatrixView object representing the specified column
+     */
+    public MView viewColumn(int column) {
+        return new MView(matrixView, range(0, getNumRows() - 1), range(column, column));
+    }
+
+    /**
+     * Creates a view of a specified submatrix defined by the given row and column ranges.
+     *
+     * @param fromRow    the starting row index (inclusive) of the submatrix
+     * @param fromColumn the starting column index (inclusive) of the submatrix
+     * @param toRow      the ending row index (exclusive) of the submatrix
+     * @param toColumn   the ending column index (exclusive) of the submatrix
+     * @return a MatrixView object representing the specified submatrix view
+     */
+    public MView viewPart(int fromRow, int fromColumn, int toRow, int toColumn) {
+        return new MView(matrixView, range(fromRow, toRow), range(fromColumn, toColumn));
+    }
+
+    /**
+     * Generates an array of integers representing a range of values between two specified row indices, inclusive.
+     *
+     * @param fromRow the starting row index (inclusive) of the range
+     * @param toRow   the ending row index (inclusive) of the range
+     * @return an array of integers containing the range of row indices
+     * @throws IllegalArgumentException if either fromRow or toRow is out of the valid row index range
+     */
+    private int[] range(int fromRow, int toRow) {
+
+        // Check that the ranges are valid.
+        if (fromRow < 0 || fromRow > getNumRows()) {
+            throw new IllegalArgumentException("Invalid row index: " + fromRow);
+        }
+
+        if (toRow < 0 || toRow > getNumRows()) {
+            throw new IllegalArgumentException("Invalid row index: " + toRow);
+        }
+
+        int[] range = new int[toRow - fromRow + 1];
+        for (int i = 0; i < range.length; i++) {
+            range[i] = fromRow + i;
+        }
+        return range;
+    }
+
     private boolean zeroDimension() {
         return getNumRows() == 0 || getNumColumns() == 0;
     }
@@ -606,8 +755,6 @@ public class Matrix implements TetradSerializable {
             throw e;
         }
     }
-
-
 }
 
 

@@ -89,6 +89,16 @@ public class Vector implements TetradSerializable {
         return new Vector(0);
     }
 
+    public static Matrix diag(Vector diag) {
+        Matrix m = new Matrix(diag.size(), diag.size());
+
+        for (int i = 0; i < diag.size(); i++) {
+            m.set(i, i, diag.get(i));
+        }
+
+        return m;
+    }
+
     /**
      * <p>assign.</p>
      *
@@ -349,6 +359,13 @@ public class Vector implements TetradSerializable {
         }
 
         return Math.sqrt(sum);
+    }
+
+
+    public void assignPart(int[] range1, Vector from) {
+        for (int j = 0; j < range1.length; j++) {
+            data.set(range1[j], 0, from.get(j) + data.get(range1[j], 0));
+        }
     }
 }
 

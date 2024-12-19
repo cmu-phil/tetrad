@@ -21,10 +21,6 @@
 
 package edu.cmu.tetrad.util;
 
-import cern.jet.random.Beta;
-import cern.jet.random.BreitWigner;
-import cern.jet.random.Normal;
-import cern.jet.random.Uniform;
 import org.ejml.simple.SimpleMatrix;
 
 import javax.swing.text.Document;
@@ -65,8 +61,8 @@ public class TetradSerializableUtils {
      */
     private static final Class<?>[] safelySerializableTypes = {
             String.class, Class.class, Date.class, Collection.class, Map.class,
-            Matrix.class, Document.class, Normal.class, Uniform.class,
-            BreitWigner.class, Beta.class, Vector.class, Number.class,
+            Matrix.class, Document.class,
+            Vector.class, Number.class, SimpleMatrix.class,
             SimpleMatrix.class, NumberFormat.class
     };
 

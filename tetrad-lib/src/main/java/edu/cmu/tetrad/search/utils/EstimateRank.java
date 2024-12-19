@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
-import javassist.Loader;
-import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
-import org.ejml.simple.SimpleBase;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 

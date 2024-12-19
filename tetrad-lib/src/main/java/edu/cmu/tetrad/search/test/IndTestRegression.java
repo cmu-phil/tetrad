@@ -21,11 +21,6 @@
 
 package edu.cmu.tetrad.search.test;
 
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -37,6 +32,7 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.Vector;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -59,7 +55,7 @@ public final class IndTestRegression implements IndependenceTest {
     /**
      * The correlation matrix.
      */
-    private final DoubleMatrix2D data;
+    private final Matrix data;
     /**
      * The variables of the correlation matrix, in order. (Unmodifiable list.)
      */
@@ -94,7 +90,7 @@ public final class IndTestRegression implements IndependenceTest {
         }
 
         this.dataSet = dataSet;
-        this.data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
+        this.data = new Matrix(dataSet.getDoubleData().toArray());
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
         setAlpha(alpha);
     }
@@ -249,30 +245,26 @@ public final class IndTestRegression implements IndependenceTest {
             zCols[i] = getVariables().indexOf(zList.get(i));
         }
 
-        int[] zRows = new int[this.data.rows()];
-        for (int i = 0; i < this.data.rows(); i++) {
+        int[] zRows = new int[this.data.getNumRows()];
+        for (int i = 0; i < this.data.getNumRows(); i++) {
             zRows[i] = i;
         }
 
-        DoubleMatrix2D Z = this.data.viewSelection(zRows, zCols);
-        DoubleMatrix1D x = this.data.viewColumn(xIndex);
-        DoubleMatrix2D Zt = new Algebra().transpose(Z);
-        DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
-        DoubleMatrix2D G = new DenseDoubleMatrix2D(new Matrix(ZtZ.toArray()).inverse().toArray());
+        Matrix Z = this.data.getSelection(zRows, zCols);
+        Vector x = this.data.getColumn(xIndex);
+        Matrix Zt = Z.transpose();
+        Matrix ZtZ = Zt.times(Z);
+        Matrix G =ZtZ.inverse();
 
         // Bug in Colt? Need to make a copy before multiplying to avoid
         // a ClassCastException.
-        DoubleMatrix2D Zt2 = Zt.like();
+        Matrix Zt2 = Zt.like();
         Zt2.assign(Zt);
-        DoubleMatrix2D GZt = new Algebra().mult(G, Zt2);
-
-        DoubleMatrix1D b_x = new Algebra().mult(GZt, x);
-
-        DoubleMatrix1D xPred = new Algebra().mult(Z, b_x);
-
-        DoubleMatrix1D xRes = xPred.copy().assign(x, Functions.minus);
-
-        double SSE = xRes.aggregate(Functions.plus, Functions.square);
+        Matrix GZt = G.times(Zt2);
+        Vector b_x = GZt.times(x);
+        Vector xPred = Z.times(b_x);
+        Vector xRes = xPred.minus(x);
+        double SSE = xRes.dot(xRes);// xRes.aggregate(Functions.plus, Functions.square);
         boolean determined = SSE < 0.0001;
 
         if (determined) {
