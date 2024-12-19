@@ -399,7 +399,7 @@ public class FastIca {
         cov.sqrt();
 
         Matrix K = D.times(U.transpose());
-        K = K.getPart(0, this.numComponents, 0, p);
+        K = K.getPart(0, this.numComponents - 1, 0, p - 1);
 
         Matrix X1 = K.times(this.X);
 

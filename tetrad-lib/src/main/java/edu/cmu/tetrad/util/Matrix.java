@@ -311,7 +311,8 @@ public class Matrix implements TetradSerializable {
      * @return a new Matrix instance representing the extracted submatrix
      */
     public Matrix getPart(int i, int j, int k, int l) {
-        return new Matrix(getData().extractMatrix(i, j, k, l));
+        return viewPart(i, j, k, l).matrix();
+//        return new Matrix(getData().extractMatrix(i, j, k, l));
     }
 
     /**
@@ -639,7 +640,7 @@ public class Matrix implements TetradSerializable {
      * @param toColumn   the ending column index (exclusive) of the submatrix
      * @return a MatrixView object representing the specified submatrix view
      */
-    public MView viewPart(int fromRow, int fromColumn, int toRow, int toColumn) {
+    public MView viewPart(int fromRow, int toRow, int fromColumn, int toColumn) {
         Pair<int[], int[]> ranges = ranges(fromRow, toRow, fromColumn, toColumn);
         return new MView(matrixView, ranges.getLeft(), ranges.getRight());
     }
