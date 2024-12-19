@@ -227,7 +227,7 @@ public final class IndTestCramerT implements IndependenceTest {
         // Extract submatrix of correlation matrix using this index array.
         Matrix matrix = covMatrix().getMatrix();
         Matrix submatrix =
-                matrix.view(indices, indices).matrix();
+                matrix.view(indices, indices).mat();
 
         // Check for missing values.
         if (DataUtils.containsMissingValue(submatrix)) {
@@ -345,7 +345,7 @@ public final class IndTestCramerT implements IndependenceTest {
 
             // Regress z onto i, yielding regression coefficients b.
             Matrix Czz =
-                    matrix2D.view(parents, parents).matrix();
+                    matrix2D.view(parents, parents).mat();
             Matrix inverse;
             try {
                 inverse = Czz.inverse();

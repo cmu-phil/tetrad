@@ -111,7 +111,7 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
 
         Matrix matrix = data.getMatrix();
 
-        Matrix newMatrix = matrix.view(selectedIndices, selectedIndices).matrix().copy();
+        Matrix newMatrix = matrix.view(selectedIndices, selectedIndices).mat().copy();
 
 
         return new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, data.getSampleSize());

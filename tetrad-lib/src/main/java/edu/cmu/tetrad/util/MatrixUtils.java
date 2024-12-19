@@ -222,7 +222,7 @@ public final class MatrixUtils {
         }
 
         Matrix matrix = new Matrix(m);
-        return matrix.view(indices, indices).matrix().toArray();
+        return matrix.view(indices, indices).mat().toArray();
     }
 
     /**

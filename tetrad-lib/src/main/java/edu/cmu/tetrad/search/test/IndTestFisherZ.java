@@ -346,12 +346,12 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         SemBicScore.CovAndCoefs covAndCoefsY = SemBicScore.getCovAndCoefs(yIndex, zCols, this.data,
                 covMatrix, true, usePseudoinverse);
 
-        Matrix selection = data.view(rows, zCols).matrix();
+        Matrix selection = data.view(rows, zCols).mat();
         edu.cmu.tetrad.util.Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
         edu.cmu.tetrad.util.Vector yPred = selection.times(covAndCoefsY.b()).getColumn(0);
 
-        Vector x = this.data.view(rows, new int[]{xIndex}).matrix().getColumn(0);
-        Vector y = this.data.view(rows, new int[]{yIndex}).matrix().getColumn(0);
+        Vector x = this.data.view(rows, new int[]{xIndex}).mat().getColumn(0);
+        Vector y = this.data.view(rows, new int[]{yIndex}).mat().getColumn(0);
 
         Vector xRes = xPred.minus(x);
         Vector yRes = yPred.minus(y);
@@ -640,7 +640,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
                 cov, true, usePseudoinverse);
 
-        Matrix selection = data.view(rows, zCols).matrix();
+        Matrix selection = data.view(rows, zCols).mat();
         Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
         Vector xRes = xPred.minus(x);
 

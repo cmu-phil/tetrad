@@ -311,7 +311,7 @@ public class Matrix implements TetradSerializable {
      * @return a new Matrix instance representing the extracted submatrix
      */
     public Matrix getPart(int i, int j, int k, int l) {
-        return viewPart(i, j, k, l).matrix();
+        return viewPart(i, j, k, l).mat();
     }
 
     /**

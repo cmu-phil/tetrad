@@ -259,7 +259,7 @@ public final class DataUtils {
 
         // Extract submatrix of correlation matrix using this index array.
 
-        return m.view(indices, indices).matrix();
+        return m.view(indices, indices).mat();
     }
 
     /**
@@ -302,7 +302,7 @@ public final class DataUtils {
         }
 
         // Extract submatrix of correlation matrix using this index array.
-        return m.view(indices, indices).matrix();
+        return m.view(indices, indices).mat();
     }
 
     /**

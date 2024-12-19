@@ -54,7 +54,7 @@ public class MView implements TetradSerializable {
      * @return a Matrix object that is a submatrix extracted based on the specified rows and columns of the original
      * matrix.
      */
-    public Matrix matrix() {
+    public Matrix mat() {
         Matrix submatrix = new Matrix(viewRows.length, viewCols.length);
 
         for (int i = 0; i < viewRows.length; i++) {

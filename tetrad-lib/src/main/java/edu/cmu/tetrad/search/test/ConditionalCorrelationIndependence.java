@@ -289,7 +289,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         var _rows = rows.stream().mapToInt(i -> i).toArray();
         var _cols = z.stream().mapToInt(nodesHash::get).toArray();
 
-        var _z = data.view(_rows, _cols).matrix();
+        var _z = data.view(_rows, _cols).mat();
         var __x = _x.getSelection(_rows);
         return kernelRegressionResiduals(__x, _z);
     }

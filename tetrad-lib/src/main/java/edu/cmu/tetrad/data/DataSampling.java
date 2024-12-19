@@ -90,7 +90,7 @@ public final class DataSampling {
             // create a new dataset containing selected rows and selected columns
             Matrix matrix = dataSet.getDoubleData();
             BoxDataSet boxDataSet = new BoxDataSet(
-                    new VerticalDoubleDataBox(matrix.view(selectedRows, selectedColumns).matrix().transpose().toArray()),
+                    new VerticalDoubleDataBox(matrix.view(selectedRows, selectedColumns).mat().transpose().toArray()),
                     dataSet.getVariables());
             boxDataSet.setKnowledge(dataSet.getKnowledge());
             datasets.add(boxDataSet);

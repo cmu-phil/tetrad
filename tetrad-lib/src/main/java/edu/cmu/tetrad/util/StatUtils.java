@@ -1880,9 +1880,9 @@ public final class StatUtils {
         int[] _z = new int[submatrix.getNumRows() - 2];
         for (int i = 0; i < submatrix.getNumRows() - 2; i++) _z[i] = i + 2;
 
-        Matrix covXz = submatrix.view(new int[]{0}, _z).matrix();
-        Matrix covZy = submatrix.view(_z, new int[]{1}).matrix();
-        Matrix covZ = submatrix.view(_z, _z).matrix();
+        Matrix covXz = submatrix.view(new int[]{0}, _z).mat();
+        Matrix covZy = submatrix.view(_z, new int[]{1}).mat();
+        Matrix covZ = submatrix.view(_z, _z).mat();
 
         Matrix _zInverse = covZ.inverse();
 
@@ -1917,7 +1917,7 @@ public final class StatUtils {
         selection[1] = y;
         System.arraycopy(z, 0, selection, 2, z.length);
 
-        return StatUtils.partialCovarianceWhittaker(covariance.view(selection, selection).matrix());
+        return StatUtils.partialCovarianceWhittaker(covariance.view(selection, selection).mat());
     }
 
     /**
@@ -1998,7 +1998,7 @@ public final class StatUtils {
         selection[1] = y;
         System.arraycopy(z, 0, selection, 2, z.length);
 
-        return StatUtils.partialCorrelation(covariance.view(selection, selection).matrix());
+        return StatUtils.partialCorrelation(covariance.view(selection, selection).mat());
     }
 
     /**

@@ -109,7 +109,7 @@ public final class CorrelationMatrix extends CovarianceMatrix {
      */
     @Override
     public Matrix getSelection(int[] rows, int[] cols) {
-        return getMatrix().view(rows, cols).matrix();
+        return getMatrix().view(rows, cols).mat();
     }
 
     /**

@@ -290,7 +290,7 @@ public class FasFdr implements IFas {
             n[i] = variables.indexOf(nodes.get(i));
         }
 
-        Matrix inv = this.cov.view(n, n).matrix().inverse();
+        Matrix inv = this.cov.view(n, n).mat().inverse();
         int sampleSize = test.getCov().getSampleSize();
 
         for (int i = 0; i < nodes.size(); i++) {

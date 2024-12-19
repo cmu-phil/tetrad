@@ -260,8 +260,8 @@ public class Comparison2 {
                         dataSet = sim.simulateDataFisher(params.getSampleSize());
 
                         Matrix coefMat = new Matrix(sim.getCoefficientMatrix());
-                        Matrix B = coefMat.view(sub, sub).matrix();
-                        Matrix Gamma1 = coefMat.view(sub2, sub).matrix();
+                        Matrix B = coefMat.view(sub, sub).mat();
+                        Matrix Gamma1 = coefMat.view(sub2, sub).mat();
                         Matrix Gamma0 = Matrix.identity(tierSize).minus(B);
                         Matrix A1 = Gamma0.inverse().times(Gamma1);
 

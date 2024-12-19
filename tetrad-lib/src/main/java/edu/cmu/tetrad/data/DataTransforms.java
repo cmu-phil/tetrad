@@ -369,7 +369,7 @@ public class DataTransforms {
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
         Matrix matrix = data.getDoubleData();
-        return new BoxDataSet(new VerticalDoubleDataBox(matrix.view(rows, cols).matrix().transpose().toArray()), data.getVariables());
+        return new BoxDataSet(new VerticalDoubleDataBox(matrix.view(rows, cols).mat().transpose().toArray()), data.getVariables());
     }
 
     /**
@@ -414,7 +414,7 @@ public class DataTransforms {
         }
 
         Matrix matrix = data.getDoubleData();
-        return new BoxDataSet(new VerticalDoubleDataBox(matrix.view(rows, cols).matrix().transpose().toArray()), data.getVariables());
+        return new BoxDataSet(new VerticalDoubleDataBox(matrix.view(rows, cols).mat().transpose().toArray()), data.getVariables());
     }
 
     /**
@@ -437,7 +437,7 @@ public class DataTransforms {
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
         Matrix matrix = data.getDoubleData();
-        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix.view(rows, cols).matrix().transpose().toArray()),
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix.view(rows, cols).mat().transpose().toArray()),
                 data.getVariables());
         boxDataSet.setKnowledge(data.getKnowledge());
         return boxDataSet;
@@ -465,7 +465,7 @@ public class DataTransforms {
 
         Matrix matrix = data.getDoubleData();
         BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(
-                matrix.view(rows, cols).matrix().transpose().toArray()),
+                matrix.view(rows, cols).mat().transpose().toArray()),
                 data.getVariables());
         boxDataSet.setKnowledge(data.getKnowledge());
 
@@ -511,12 +511,12 @@ public class DataTransforms {
 
         Matrix matrix1 = data.getDoubleData();
         BoxDataSet boxDataSet1 = new BoxDataSet(new VerticalDoubleDataBox(
-                matrix1.view(_rows1, cols).matrix().transpose().toArray()),
+                matrix1.view(_rows1, cols).mat().transpose().toArray()),
                 data.getVariables());
 
         Matrix matrix = data.getDoubleData();
         BoxDataSet boxDataSet2 = new BoxDataSet(new VerticalDoubleDataBox(
-                matrix.view(_rows2, cols).matrix().transpose().toArray()),
+                matrix.view(_rows2, cols).mat().transpose().toArray()),
                 data.getVariables());
 
         List<DataSet> ret = new ArrayList<>();
@@ -1122,7 +1122,7 @@ public class DataTransforms {
         int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        return data.view(rows, cols).matrix();
+        return data.view(rows, cols).mat();
     }
 
     /**

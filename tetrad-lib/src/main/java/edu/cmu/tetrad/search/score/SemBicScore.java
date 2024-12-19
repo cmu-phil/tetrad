@@ -235,8 +235,8 @@ public class SemBicScore implements Score {
         int[] all = SemBicScore.concat(i, parents);
         Matrix cov = SemBicScore.getCov(rows, all, all, data, covariances);
         int[] pp = SemBicScore.indexedParents(parents);
-        Matrix covxx = cov.view(pp, pp).matrix();
-        Matrix covxy = cov.view(pp, new int[]{0}).matrix();
+        Matrix covxx = cov.view(pp, pp).mat();
+        Matrix covxy = cov.view(pp, new int[]{0}).mat();
 
         // The regression coefficient vector.
         Matrix b;
@@ -361,7 +361,7 @@ public class SemBicScore implements Score {
      */
     public static Matrix getCov(List<Integer> rows, int[] cols, int[] all, DataSet dataSet, Matrix cov) {
         if (dataSet == null && cov != null) {
-            return cov.view(cols, cols).matrix();
+            return cov.view(cols, cols).mat();
         } else if (dataSet != null) {
 
             Matrix _cov = new Matrix(cols.length, cols.length);

@@ -421,7 +421,7 @@ public class KMeans implements ClusteringAlgorithm {
             cols[j] = j;
         }
 
-        return data.view(rows, cols).matrix().copy();
+        return data.view(rows, cols).mat().copy();
     }
 
     private Vector countClusterSizes() {

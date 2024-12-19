@@ -158,8 +158,8 @@ public class SemUpdater implements TetradSerializable {
             yIndices[i] = manipulatedSemIm.getVariableNodes().indexOf(YVars.get(i));
         }
 
-        Matrix covyx = implcov.view(yIndices, xIndices).matrix();
-        Matrix varx = implcov.view(xIndices, xIndices).matrix();
+        Matrix covyx = implcov.view(yIndices, xIndices).mat();
+        Matrix varx = implcov.view(xIndices, xIndices).mat();
 
         Vector EX = means.getSelection(xIndices);
         Vector EY = means.getSelection(yIndices);

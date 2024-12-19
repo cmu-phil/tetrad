@@ -68,10 +68,10 @@ public class EstimateRank {
     public static double[] CanCor(int[] iA, int[] iB, double[][] cov) {
         Matrix _cov = new Matrix(cov);
 
-        Matrix covA = _cov.view(iA, iA).matrix();
-        Matrix covB = _cov.view(iB, iB).matrix();
-        Matrix covAB = _cov.view(iA, iB).matrix();
-        Matrix covBA = _cov.view(iB, iA).matrix();
+        Matrix covA = _cov.view(iA, iA).mat();
+        Matrix covB = _cov.view(iB, iB).mat();
+        Matrix covAB = _cov.view(iA, iB).mat();
+        Matrix covBA = _cov.view(iB, iA).mat();
 
         // TODO check the parens at the end of this.
         Matrix S = covA.inverse().times(covAB).times(covB.inverse().times(covBA));
