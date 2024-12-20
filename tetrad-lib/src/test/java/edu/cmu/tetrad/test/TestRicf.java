@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,23 +17,25 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.Ricf;
-import edu.cmu.tetrad.sem.RicfNew;
+import edu.cmu.tetrad.sem.RicfOld;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,7 +113,7 @@ public class TestRicf {
                 0.76, -0.78, 1.66, -0.78, -0.06, 0.1, -0.78, 0.81};
         Matrix m = matrix(values, numVars, numVars);
 
-        ICovarianceMatrix s = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), m, 30);
+        ICovarianceMatrix s = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), m, 300);
 
         Graph mag = new EdgeListGraph();
         Node x = new ContinuousVariable("x");
@@ -132,40 +134,55 @@ public class TestRicf {
         final double tol = 1e-06;
 
         Ricf ricf = new Ricf();
-        Ricf.RicfResult ricfResult = ricf.ricf(new SemGraph(mag), s, tol);
+        Ricf.RicfResult ricfResult1 = ricf.ricf(new SemGraph(mag), s, tol);
 
-        RicfNew ricfNew = new RicfNew();
-        RicfNew.RicfResult ricfResultNew = ricfNew.ricf(new SemGraph(mag), s, tol);
+        NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.0000"));
+
+        System.out.println("ricfResult1 = " + ricfResult1);
 
         // Test shat at least.
-        double[] shatValues = {2.93, -1.434425, 0, 0,
-                -1.434425, 1.379968, -0.343037, 0,
-                0, -0.343037, 1.594307, -0.744252,
-                0, 0, -0.744252, 0.81};
+//        double[] sHatValues = {2.93, -1.434425, 0, 0,
+//                -1.434425, 1.379968, -0.343037, 0,
+//                0, -0.343037, 1.594307, -0.744252,
+//                0, 0, -0.744252, 0.81};
 
-//        double norm = this.normdiff(ricfResult, shatValues, numVars, numVars);
-//        assertTrue(norm < 0.0001);
-//
-//        // sHat should be the same for the bidirected model.
-//
-//        mag.removeEdges(mag.getEdges());
-//        mag.addBidirectedEdge(y, x);
-////        mag.addDirectedEdge(u, x);
-//        mag.addBidirectedEdge(x, z);
-//        mag.addBidirectedEdge(u, z);
-//
-//        ricf.ricf(new SemGraph(mag), s, tol);
-//
-//        norm = this.normdiff(ricfResult, shatValues, numVars, numVars);
-//        assertTrue(norm < 0.0001);
+        double[] sHatValues = {
+                3.5296, 0, 0, 0,
+                0, 0.6143, -0.2580, 0,
+                0, -0.2580, 0.7301, 0,
+                0, 0, 0, 0.8100
+        };
+
+//        double norm1 = this.normdiff(ricfResult1.getShat(), sHatValues, numVars, numVars);
+//        assertTrue(norm1 < 0.0001);
+//        System.out.println("norm1 = " + norm1);
+
+        mag.removeEdges(mag.getEdges());
+        mag.addBidirectedEdge(y, x);
+//        mag.addDirectedEdge(u, x);
+        mag.addBidirectedEdge(x, z);
+        mag.addBidirectedEdge(u, z);
+
+//        System.out.println("------- NEW");
+
+        Ricf ricf2 = new Ricf();
+        Ricf.RicfResult ricfResult2 = ricf2.ricf(new SemGraph(mag), s, tol);
+
+//        System.out.println("------- OLD");
+
+        RicfOld ricf2b = new RicfOld();
+        RicfOld.RicfResult ricfResult2b = ricf2b.ricf2(new SemGraph(mag), s, tol);
+
+        System.out.println("ricfResult2 " + ricfResult2);
+        System.out.println("ricfResult2b " + ricfResult2b);
+
+        double norm2 = this.normdiff(ricfResult2.getShat(), sHatValues, numVars, numVars);
+        assertTrue(norm2 < 0.0001);
     }
 
-    private double normdiff(Ricf.RicfResult ricfResult, double[] shatValues,
-                            int rows, int cols) {
+    private double normdiff(Matrix sHat, double[] shatValues, int rows, int cols) {
         Matrix shat = this.matrix(shatValues, rows, cols);
-        Matrix diff = shat.copy();
-//        diff.assign(ricfResult.getShat(), PlusMult.plusMult(-1));
-        diff = diff.minus(new Matrix(ricfResult.getShat().toArray()));
+        Matrix diff = sHat.minus(sHat);
         return diff.norm1();
     }
 
