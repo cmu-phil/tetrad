@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.sem;
 
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
@@ -34,10 +32,8 @@ import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.util.FastMath;
 
-import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.List;
 
 /**
  * Implements ICF as specified in Drton and Richardson (2003), Iterative Conditional Fitting for Gaussian Ancestral

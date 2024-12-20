@@ -24,7 +24,6 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.Ricf;
-import edu.cmu.tetrad.sem.RicfOld;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Matrix;
@@ -126,7 +125,6 @@ public class TestRicf {
         mag.addNode(u);
 
         mag.addDirectedEdge(y, x);
-//        mag.addDirectedEdge(u, x);
         mag.addBidirectedEdge(x, z);
         mag.addDirectedEdge(u, z);
 
@@ -153,28 +151,19 @@ public class TestRicf {
                 0, 0, 0, 0.8100
         };
 
-//        double norm1 = this.normdiff(ricfResult1.getShat(), sHatValues, numVars, numVars);
-//        assertTrue(norm1 < 0.0001);
-//        System.out.println("norm1 = " + norm1);
+        double norm1 = this.normdiff(ricfResult1.getShat(), sHatValues, numVars, numVars);
+        assertTrue(norm1 < 0.0001);
+        System.out.println("norm1 = " + norm1);
 
         mag.removeEdges(mag.getEdges());
         mag.addBidirectedEdge(y, x);
-//        mag.addDirectedEdge(u, x);
         mag.addBidirectedEdge(x, z);
         mag.addBidirectedEdge(u, z);
-
-//        System.out.println("------- NEW");
 
         Ricf ricf2 = new Ricf();
         Ricf.RicfResult ricfResult2 = ricf2.ricf(new SemGraph(mag), s, tol);
 
-//        System.out.println("------- OLD");
-
-        RicfOld ricf2b = new RicfOld();
-        RicfOld.RicfResult ricfResult2b = ricf2b.ricf2(new SemGraph(mag), s, tol);
-
         System.out.println("ricfResult2 " + ricfResult2);
-        System.out.println("ricfResult2b " + ricfResult2b);
 
         double norm2 = this.normdiff(ricfResult2.getShat(), sHatValues, numVars, numVars);
         assertTrue(norm2 < 0.0001);
