@@ -189,7 +189,7 @@ public class Ricf {
 
                         // Build XY
                         Matrix YX = new Matrix(1, lpa + lspo);
-                        MView a17 = YX.view(range1, new int[]{0});
+                        MView a17 = YX.view(new int[]{0}, range1);
                         MView a18 = S.view(v, parv);
                         a17.set(a18);
 
@@ -204,7 +204,7 @@ public class Ricf {
 
                         // Assign to b.
                         MView a23 = a6.viewRow(0);
-                        MView a24 = temp.view(range1, new int[]{0});
+                        MView a24 = temp.view(new int[]{0}, range1);
                         a23.set(a24.mat().scale(-1));
 
                         // Assign to omega.
@@ -481,6 +481,7 @@ public class Ricf {
 
         for (int i = 0; i < p; i++) {
             List<Node> parents = new ArrayList<>(mag.getParents(nodes.get(i)));
+
             int[] indices = new int[parents.size()];
 
             for (int j = 0; j < parents.size(); j++) {

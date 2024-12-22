@@ -58,7 +58,7 @@ public class TestRicf {
      *
      * > ## The following should give the same fit.
      *
-     * > ## Fit an ancestral graph y -> x &lt;-> z &lt;- u
+     * > ## Fit an ancestral graph y -> x <-> z <- u
      *
      * > fitAncestralGraph(ag1 &lt;- makeAG(dag=DAG(x~y,z~u), bg = UG(~x*z)), S,
      * n=100)
@@ -128,7 +128,7 @@ public class TestRicf {
         mag.addBidirectedEdge(x, z);
         mag.addDirectedEdge(u, z);
 
-//        int n = 100;
+        int n = 100;
         final double tol = 1e-06;
 
         Ricf ricf = new Ricf();

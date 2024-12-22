@@ -65,7 +65,7 @@ public class Split implements Distribution {
                     "When asking for a range from a to b, the value of a must be >= 0: a = " + a + " b = " + b);
         }
 
-        if (b <= a) {
+        if (b < a) {
             throw new IllegalArgumentException(
                     "When asking for a range from a to b, the value of b must be > a: a = " + a + " b = " + b);
         }
