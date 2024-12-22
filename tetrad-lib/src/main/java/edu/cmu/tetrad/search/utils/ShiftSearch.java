@@ -268,7 +268,7 @@ public class ShiftSearch {
         for (DataModel _dataSet : dataSets) {
             DataSet dataSet = (DataSet) _dataSet;
             Matrix mat = dataSet.getDoubleData();
-            Matrix mat2 = mat.getPart(0, numRows - 1, 0, mat.getNumColumns() - 1);
+            Matrix mat2 = mat.getPart(0, numRows, 0, mat.getNumColumns());
             truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 

@@ -584,13 +584,13 @@ public class Matrix implements TetradSerializable {
     public MView view(int[] range1, int[] range2) {
         // Check that the ranges are valid.
         for (int i : range1) {
-            if (i < 0 || i >= getNumRows()) {
+            if (i < 0 || i > getNumRows()) {
                 throw new IllegalArgumentException("Invalid row index: " + i);
             }
         }
 
         for (int i : range2) {
-            if (i < 0 || i >= getNumColumns()) {
+            if (i < 0 || i > getNumColumns()) {
                 throw new IllegalArgumentException("Invalid column index: " + i);
             }
         }
@@ -614,7 +614,7 @@ public class Matrix implements TetradSerializable {
      * @return a MatrixView object representing the specified row
      */
     public MView viewRow(int row) {
-        Pair<int[], int[]> ranges = ranges(row, row, 0, getNumColumns() - 1);
+        Pair<int[], int[]> ranges = ranges(row, row + 1, 0, getNumColumns());
         return new MView(matrixView, ranges.getLeft(), ranges.getRight());
     }
 
@@ -626,7 +626,7 @@ public class Matrix implements TetradSerializable {
      * @return a MatrixView object representing the specified column
      */
     public MView viewColumn(int column) {
-        Pair<int[], int[]> ranges = ranges(0, getNumRows() - 1, column, column);
+        Pair<int[], int[]> ranges = ranges(0, getNumRows(), column, column + 1);
         return new MView(matrixView, ranges.getLeft(), ranges.getRight());
     }
 
@@ -655,28 +655,28 @@ public class Matrix implements TetradSerializable {
     private Pair<int[], int[]> ranges(int from, int toRow, int fromCol, int toCol) {
 
         // Check that the ranges are valid.
-        if (from < 0 || from >= getNumRows()) {
+        if (from < 0 || from > getNumRows()) {
             throw new IllegalArgumentException("Invalid row index: " + from);
         }
 
-        if (toRow < from || toRow >= getNumRows()) {
+        if (toRow < from || toRow > getNumRows()) {
             throw new IllegalArgumentException("Invalid row index: " + toRow);
         }
 
-        if (fromCol < 0 || fromCol >= getNumColumns()) {
+        if (fromCol < 0 || fromCol > getNumColumns()) {
             throw new IllegalArgumentException("Invalid column index: " + fromCol);
         }
 
-        if (toCol < fromCol || toCol >= getNumColumns()) {
+        if (toCol < fromCol || toCol > getNumColumns()) {
             throw new IllegalArgumentException("Invalid column index: " + toCol);
         }
 
-        int[] rangeRow = new int[toRow - from + 1];
+        int[] rangeRow = new int[toRow - from];
         for (int i = 0; i < rangeRow.length; i++) {
             rangeRow[i] = from + i;
         }
 
-        int[] rangeCol = new int[toCol - fromCol + 1];
+        int[] rangeCol = new int[toCol - fromCol];
         for (int i = 0; i < rangeCol.length; i++) {
             rangeCol[i] = fromCol + i;
         }

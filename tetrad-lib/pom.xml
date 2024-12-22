@@ -77,6 +77,11 @@
             <version>1.11.0</version>
         </dependency>
         <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
@@ -120,11 +125,6 @@
             <version>24.0.1</version>
             <scope>compile</scope>
         </dependency>
-
-        <!--We are settling on EJML for matrix operations. If you update -->
-        <!--to a new matrix library, please make sure to use it throughout -->
-        <!--the codebase for consistency, and please maske sure its performance -->
-        <!--is better than EJML.-->
         <dependency>
             <groupId>org.ejml</groupId>
             <artifactId>ejml-ddense</artifactId>

@@ -21,6 +21,11 @@
 
 package edu.cmu.tetrad.sem;
 
+import cern.colt.matrix.DoubleMatrix1D;
+import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.impl.DenseDoubleMatrix2D;
+import cern.jet.math.Mult;
+import cern.jet.math.PlusMult;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
@@ -32,6 +37,7 @@ import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.util.FastMath;
 
+import java.rmi.dgc.VMID;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -100,14 +106,6 @@ public class Ricf {
         int[][] pars = parentIndices(p, mag, nodes);
         int[][] spo = spouseIndices(p, mag, nodes);
 
-//        for (int[] par : pars) {
-//            System.out.println(Arrays.toString(par));
-//        }
-//
-//        for (int[] sp : spo) {
-//            System.out.println(Arrays.toString(sp));
-//        }
-
         int i = 0;
         double _diff;
 
@@ -126,11 +124,12 @@ public class Ricf {
 
                 int[] v = {_v};
                 int[] vcomp = complement(p, v);
-                int[] all = range(0, p - 1);
+                int[] all = range(0, p);
                 int[] parv = pars[_v];
                 int[] spov = spo[_v];
 
-                MView a6 = B.view(v, parv);
+                MView bview = B.view(v, parv);
+
                 if (spov.length == 0) {
                     if (parv.length != 0) {
                         if (i == 1) {
@@ -138,14 +137,13 @@ public class Ricf {
                             MView a2 = S.view(v, parv);
                             Matrix a3 = a1.mat().inverse();
                             Matrix a4 = a2.mat().times(a3).scale(-1);
-                            a6.set(a4);
+                            bview.set(a4);
 
                             Matrix a7 = S.view(parv, v).mat();
-                            Matrix a9 = a6.mat().times(a7);
+                            Matrix a9 = bview.mat().times(a7);
                             Matrix a8 = S.view(v, v).mat();
                             MView a8b = omega.view(v, v);
                             a8b.set(a8);
-
                             omega.view(v, v).set(omega.view(v, v).mat().plus(a9));
                         }
                     }
@@ -157,23 +155,19 @@ public class Ricf {
                         oInv.view(vcomp, vcomp).set(a3);
 
                         Matrix Z = oInv.view(spov, vcomp).mat().times(B.view(vcomp, all).mat());
-
                         int lpa = parv.length;
                         int lspo = spov.length;
 
                         // Build XX
                         Matrix XX = new Matrix(lpa + lspo, lpa + lspo);
-                        int[] range1 = range(0, lpa - 1);
-                        int[] range2 = range(lpa, lpa + lspo - 1);
+                        int[] range1 = range(0, lpa);
+                        int[] range2 = range(lpa, lpa + lspo);
 
                         // Upper left quadrant
-                        XX.view(range1, range1).set(S.view(parv, parv).mat());
+                        XX.view(range1, range1).set(S.view(parv, parv));
 
                         // Upper right quadrant
-                        Matrix mat = S.view(parv, all).mat();
-                        Matrix transpose = Z.transpose();
-                        Matrix a11 = null;
-                        a11 = mat.times(transpose);
+                        Matrix a11 = S.view(parv, all).mat().times(Z.transpose());
                         XX.view(range1, range2).set(a11);
 
                         // Lower left quadrant
@@ -195,7 +189,9 @@ public class Ricf {
 
                         MView a19 = YX.view(new int[]{0}, range2);
                         Matrix a20 = S.view(v, all).mat();
-                        Matrix a21 = a20.times(Z.transpose());
+                        Matrix mult = a20.times(Z.transpose());
+
+                        MView a21 = mult.viewRow(0);
                         a19.set(a21);
 
                         // Temp
@@ -203,14 +199,14 @@ public class Ricf {
                         Matrix temp = YX.times(a22.transpose());
 
                         // Assign to b.
-                        MView a23 = a6.viewRow(0);
-                        MView a24 = temp.view(new int[]{0}, range1);
-                        a23.set(a24.mat().scale(-1));
+                        MView a23 = bview.viewRow(0);
+                        Matrix a24 = temp.view(range1, new int[]{0}).mat();
+                        a23.set(a24.scale(-1));
 
                         // Assign to omega.
                         MView view = temp.view(new int[]{0}, range2);
-                        omega.view(v, spov).set(view.mat());
-                        omega.view(spov, v).set(view.mat().transpose());
+                        omega.view(v, spov).set(view.mat().transpose());
+                        omega.view(spov, v).set(view.mat());
 
                         // Variance.
                         double tempVar = S.get(_v, _v) - temp.times(YX.transpose()).get(0, 0);
@@ -220,6 +216,8 @@ public class Ricf {
                         Matrix a30 = a27.mat().times(a28.mat());
                         Matrix a31 = a30.times(a29).scalarPlus(tempVar);
                         omega.view(v, v).set(a31);
+
+
                     } else {
                         Matrix oInv = new Matrix(p, p);
                         MView a2 = omega.view(vcomp, vcomp);
@@ -262,8 +260,8 @@ public class Ricf {
             }
 
             Matrix a32 = omega.minus(omegaOld);
-            double diff1 = a32.norm1();
 
+            double diff1 = a32.norm1();
             Matrix a33 = B.minus(bOld);
             double diff2 = a33.norm1();
 
@@ -271,6 +269,7 @@ public class Ricf {
             _diff = diff;
 
             if (diff < tolerance) break;
+//            break;
         }
 
         Matrix a34 = B.inverse();
@@ -363,7 +362,7 @@ public class Ricf {
         // Only coding alg #2 here.
         Matrix K = Vector.diag(S.diag()).inverse();
 
-        int[] all = range(0, k - 1);
+        int[] all = range(0, k);
 
         while (true) {
             Matrix KOld = K.copy();
@@ -420,9 +419,9 @@ public class Ricf {
             throw new IllegalArgumentException();
         }
 
-        int[] range = new int[to - from + 1];
+        int[] range = new int[to - from];
 
-        for (int k = from; k <= to; k++) {
+        for (int k = from; k < to; k++) {
             range[k - from] = k;
         }
 
@@ -481,7 +480,6 @@ public class Ricf {
 
         for (int i = 0; i < p; i++) {
             List<Node> parents = new ArrayList<>(mag.getParents(nodes.get(i)));
-
             int[] indices = new int[parents.size()];
 
             for (int j = 0; j < parents.size(); j++) {
