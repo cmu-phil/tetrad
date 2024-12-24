@@ -93,7 +93,7 @@ public class SemOptimizerRicf implements SemOptimizer {
                 sampleCovar, semIm.getSampleSize());
 
         SemGraph graph = semIm.getSemPm().getGraph();
-        RicfOld.RicfResult result = new RicfOld().ricf(graph, cov, 0.001);
+        Ricf.RicfResult result = new Ricf().ricf(graph, cov, 0.001);
 
         Matrix bHat = new Matrix(result.getBhat().toArray());
         Matrix lHat = new Matrix(result.getLhat().toArray());

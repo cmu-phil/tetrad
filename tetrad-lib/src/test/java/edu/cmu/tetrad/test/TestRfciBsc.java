@@ -8,6 +8,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.BayesImParser;
+import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
@@ -100,7 +101,7 @@ public class TestRfciBsc {
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
-        edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
+        Rfci rfci = new Rfci(test);
         rfci.setVerbose(true);
         rfci.setDepth(depth);
 
@@ -177,7 +178,7 @@ public class TestRfciBsc {
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
-        edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
+        Rfci rfci = new Rfci(test);
         rfci.setVerbose(true);
         rfci.setDepth(depth);
 
