@@ -21,8 +21,10 @@
 
 package edu.cmu.tetrad.util;
 
+import cern.colt.matrix.DoubleMatrix2D;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
@@ -432,19 +434,7 @@ public class Matrix implements TetradSerializable {
      * @return a double
      */
     public double norm1() {
-
-        // Find the maximum absolute entry in simpleMatrix.
-        double max = 0.0;
-
-        for (int i = 0; i < getData().getNumRows(); i++) {
-            double sum = 0.0;
-            for (int j = 0; j < getData().getNumCols(); j++) {
-                sum += FastMath.abs(getData().get(i, j));
-            }
-            max = FastMath.max(max, sum);
-        }
-
-        return max;
+        return NormOps_DDRM.normP1(getData().getDDRM());
     }
 
 
