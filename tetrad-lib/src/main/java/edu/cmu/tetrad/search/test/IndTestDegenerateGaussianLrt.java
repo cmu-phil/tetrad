@@ -26,11 +26,11 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.ejml.simple.SimpleMatrix;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -56,11 +56,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      */
     private static final double L2PE = log(2.0 * PI * E);
     /**
-     * The data set.
-     */
-    private final BoxDataSet ddata;
-    private final Matrix dcov;
-    /**
      * A hash of nodes to indices.
      */
     private final Map<Node, Integer> nodeHash;
@@ -80,6 +75,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      * A cache of results for independence facts.
      */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    /**
+     * The SEM BIC score, used to calculate local likelihoods.
+     */
+    private final SemBicScore bic;
     /**
      * The alpha level.
      */
@@ -109,13 +108,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        // The number of instances.
-        int n = dataSet.getNumRows();
-        this.embedding = new HashMap<>();
-
-        List<Node> A = new ArrayList<>();
-        List<double[]> B = new ArrayList<>();
-
         Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int j = 0; j < this.variables.size(); j++) {
@@ -123,72 +115,17 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
         }
 
         this.nodeHash = nodesHash;
+        boolean usePseudoInverse = false;
 
-        int index = 0;
-
-        int i = 0;
-        int i_ = 0;
-        while (i_ < this.variables.size()) {
-
-            Node v = this.variables.get(i_);
-
-            if (v instanceof DiscreteVariable) {
-
-                Map<List<Integer>, Integer> keys = new HashMap<>();
-                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
-                for (int j = 0; j < n; j++) {
-                    List<Integer> key = new ArrayList<>();
-                    key.add(this.dataSet.getInt(j, i_));
-                    if (!keys.containsKey(key)) {
-                        keys.put(key, i);
-                        keysReverse.put(i, key);
-                        Node v_ = new ContinuousVariable("V__" + ++index);
-                        A.add(v_);
-                        B.add(new double[n]);
-                        i++;
-                    }
-                    B.get(keys.get(key))[j] = 1;
-                }
-
-                /*
-                 * Remove a degenerate dimension.
-                 */
-                i--;
-                keys.remove(keysReverse.get(i));
-                A.remove(i);
-                B.remove(i);
-
-                this.embedding.put(i_, new ArrayList<>(keys.values()));
-
-            } else {
-
-                A.add(v);
-                double[] b = new double[n];
-                for (int j = 0; j < n; j++) {
-                    b[j] = this.dataSet.getDouble(j, i_);
-                }
-
-                B.add(b);
-                List<Integer> index2 = new ArrayList<>();
-                index2.add(i);
-                this.embedding.put(i_, index2);
-                i++;
-
-            }
-            i_++;
-        }
-
-        double[][] B_ = new double[n][B.size()];
-        for (int j = 0; j < B.size(); j++) {
-            for (int k = 0; k < n; k++) {
-                B_[k][j] = B.get(j)[k];
-            }
-        }
-
-        // The continuous variables of the post-embedding dataset.
-        SimpleMatrix D = new SimpleMatrix(B_);
-        this.ddata = new BoxDataSet(new DoubleDataBox(D.toArray2()), A);
-        this.dcov = new CovarianceMatrix(ddata).getMatrix();
+        // Expand the discrete columns to give indicators for each category. We want to leave a category out if
+        // we're not using the pseudoinverse option.
+        Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
+                dataSet, 1, 1, -1, usePseudoInverse);
+        DataSet convertedData = embeddedData.embeddedData();
+        this.embedding = embeddedData.embedding();
+        this.bic = new SemBicScore(convertedData, false);
+        this.bic.setUsePseudoInverse(usePseudoInverse);
+        this.bic.setStructurePrior(0);
     }
 
     /**
@@ -367,22 +304,11 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
             B.addAll(this.embedding.get(i_));
         }
 
-        int[] A_ = new int[A.size() + B.size()];
-        int[] B_ = new int[B.size()];
-        for (int i_ = 0; i_ < A.size(); i_++) {
-            A_[i_] = A.get(i_);
-        }
-        for (int i_ = 0; i_ < B.size(); i_++) {
-            A_[A.size() + i_] = B.get(i_);
-            B_[i_] = B.get(i_);
-        }
+        int _ALength = A.size() + B.size();
+        int _BLength = B.size();
 
-        double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
-        double ldetA = log(abs(SemBicScore.getCov(rows, A_, A_, ddata, dcov).det()));
-        double ldetB = log(abs(SemBicScore.getCov(rows, B_, B_, ddata, dcov).det()));
-
-        double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLrt.L2PE * (B_.length - A_.length);
-
+        double dof = (_ALength * (_ALength + 1) - _BLength * (_BLength + 1)) / 2.0;
+        double lik = localLikelihood(i, parents);
         return new Ret(lik, dof);
     }
 
@@ -429,6 +355,63 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
 
             this.rows = rows;
         }
+    }
+
+    /**
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
+     *
+     * @param i       The child indes.
+     * @param parents The indices of the parents.
+     * @return a double
+     */
+    public double localLikelihood(int i, int... parents) {
+        double score = 0;
+
+        List<Integer> A = new ArrayList<>(this.embedding.get(i));
+        List<Integer> B = new ArrayList<>();
+        for (int i_ : parents) {
+            B.addAll(this.embedding.get(i_));
+        }
+
+        for (Integer i_ : A) {
+            int[] parents_ = new int[B.size()];
+            for (int i__ = 0; i__ < B.size(); i__++) {
+                parents_[i__] = B.get(i__);
+            }
+            score += this.bic.getLikelihood(i_, parents_);
+            B.add(i_);
+        }
+
+        return score;
+    }
+
+
+    /**
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
+     *
+     * @param i       The child indes.
+     * @param parents The indices of the parents.
+     * @return a double
+     */
+    public double likelihood(int i, int... parents) {
+        double score = 0;
+
+        List<Integer> A = new ArrayList<>(this.embedding.get(i));
+        List<Integer> B = new ArrayList<>();
+        for (int i_ : parents) {
+            B.addAll(this.embedding.get(i_));
+        }
+
+        for (Integer i_ : A) {
+            int[] parents_ = new int[B.size()];
+            for (int i__ = 0; i__ < B.size(); i__++) {
+                parents_[i__] = B.get(i__);
+            }
+            score += this.bic.getLikelihood(i_, parents_);
+            B.add(i_);
+        }
+
+        return score;
     }
 
     /**

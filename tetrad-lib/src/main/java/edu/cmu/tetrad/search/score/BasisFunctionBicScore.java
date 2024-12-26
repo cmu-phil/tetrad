@@ -66,7 +66,7 @@ public class BasisFunctionBicScore implements Score {
         this.variables = dataSet.getVariables();
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
-                false);
+                true);
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 

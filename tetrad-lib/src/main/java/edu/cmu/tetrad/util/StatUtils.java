@@ -2572,13 +2572,12 @@ public final class StatUtils {
      * Performs a calculation that involves repeatedly multiplying an initial value of `1.0` by the product of `0.95`
      * and a given parameter `x`, iterating `index` times. The type of function used in the calculation is determined by
      * the `type` parameter. The function types are as follows:
-     * <ol>
-     *     <li> `g(x) = x^index [Polynomial basis]</li>
-     *     <li> `g(x) = hermite1(index, x) [Statician's Hermite polynomial]</li>
-     *     <li> `g(x) = hermite2(index, x) [Physicist's Hermite polynomial]</li>
-     *     <li> `g(x) = legendre(index, x) [Legendre polynomial]</li>
-     *     <li> `g(x) = chebyshev(index, x) [Chebyshev polynomial]</li>
-     *  </ol>
+     * <ul>
+     *     <li> 0 = `g(x) = x^index [Polynomial basis]</li>
+     *     <li> 1 = `g(x) = hermite1(index, x) [Probabilist's Hermite polynomial]</li>
+     *     <li> 2 = `g(x) = legendre(index, x) [Legendre polynomial]</li>
+     *     <li> 3 = `g(x) = chebyshev(index, x) [Chebyshev polynomial]</li>
+     *  </ul>
      *  Any other value of `type` will result in an `IllegalArgumentException`.
      *
      * @param type  The type of function to be used in the calculation.

@@ -24,14 +24,14 @@ public class Embedding {
     /**
      * Computes the embedded data representation based on the provided dataset and parameters.
      *
-     * @param dataSet             The original dataset to be embedded; must not be null.
-     * @param truncationLimit     The maximum number of basis expansions for continuous variables; must be a positive
-     *                            integer.
-     * @param basisType           The type of basis function to use for continuous variable expansions.
-     * @param basisScale          The scaling factor for data transformation. Set to 0 for standardization, positive for
-     *                            scaling, and -1 to skip scaling.
-     * @param leaveOneCategoryOut A flag indicating whether to leave out one category when encoding discrete variables
-     *                            as one-hot vectors.
+     * @param dataSet          The original dataset to be embedded; must not be null.
+     * @param truncationLimit  The maximum number of basis expansions for continuous variables; must be a positive
+     *                         integer.
+     * @param basisType        The type of basis function to use for continuous variable expansions.
+     * @param basisScale       The scaling factor for data transformation. Set to 0 for standardization, positive for
+     *                         scaling, and -1 to skip scaling.
+     * @param usePseudoInverse A flag indicating whether pseudoinverse will be used. If not, one category is left out
+     *                         per variable when encoding discrete variables as one-hot vectors.
      * @return An instance of {@code EmbeddedData}, containing the original dataset, the embedded dataset, and a mapping
      * from original variable indices to their respective transformed indices in the embedded dataset.
      * @throws IllegalArgumentException If the dataset is null, the truncation limit is less than 1, or the basis scale
@@ -39,7 +39,7 @@ public class Embedding {
      */
     public static @NotNull Embedding.EmbeddedData getEmbeddedData(DataSet dataSet, int truncationLimit,
                                                                   int basisType, double basisScale,
-                                                                  boolean leaveOneCategoryOut) {
+                                                                  boolean usePseudoInverse) {
         if (dataSet == null) {
             throw new IllegalArgumentException("Data set must not be null.");
         }
@@ -76,7 +76,7 @@ public class Embedding {
 
                 int numCategories = ((DiscreteVariable) v).getNumCategories();
 
-                for (int c = 0; c < (leaveOneCategoryOut ? numCategories - 1 : numCategories); c++) {
+                for (int c = 0; c < (usePseudoInverse ? numCategories : numCategories - 1); c++) {
                     List<Integer> key = new ArrayList<>();
                     i++;
                     key.add(c);

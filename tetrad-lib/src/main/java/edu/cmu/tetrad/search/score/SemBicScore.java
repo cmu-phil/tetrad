@@ -482,9 +482,7 @@ public class SemBicScore implements Score {
         Arrays.sort(parents);
 
         try {
-            double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
-                    usePseudoInverse);
-            lik = -(double) (this.sampleSize / 2.0) * log(varey);
+            lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
             System.out.println("Singularity encountered when scoring " +
                                LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -507,6 +505,12 @@ public class SemBicScore implements Score {
         } else {
             throw new IllegalStateException("That rule type is not implemented: " + this.ruleType);
         }
+    }
+
+    public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
+        double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
+                usePseudoInverse);
+        return -(double) (this.sampleSize / 2.0) * log(varey);
     }
 
     /**
