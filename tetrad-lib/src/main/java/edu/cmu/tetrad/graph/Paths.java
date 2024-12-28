@@ -2828,6 +2828,10 @@ public class Paths implements TetradSerializable {
         }
     }
 
+    public boolean isAcyclic() {
+        return !existsDirectedCycle();
+    }
+
     // Helper class to represent an element in the BFS queue
     static class PathElement {
         Node current;  // The current node

@@ -507,6 +507,38 @@ public class SemBicScore implements Score {
         }
     }
 
+    public double getAic(int i, int... parents) {
+        int k = parents.length;
+        double lik;
+
+        Arrays.sort(parents);
+
+        try {
+            lik = getLikelihood(i, parents);
+        } catch (SingularMatrixException e) {
+            System.out.println("Singularity encountered when scoring " +
+                               LogUtilsSearch.getScoreFact(i, parents, variables));
+            return Double.NaN;
+        }
+
+
+        double c = getPenaltyDiscount();
+
+        if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
+
+            // AIC score
+            double _score = 2 * lik - 2 * k;
+
+            if (Double.isNaN(_score) || Double.isInfinite(_score)) {
+                return Double.NaN;
+            } else {
+                return _score;
+            }
+        } else {
+            throw new IllegalStateException("That rule type is not implemented: " + this.ruleType);
+        }
+    }
+
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
                 usePseudoInverse);

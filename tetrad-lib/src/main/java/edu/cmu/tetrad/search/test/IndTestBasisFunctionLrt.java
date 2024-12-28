@@ -47,7 +47,7 @@ import static java.lang.Double.NaN;
  * @author Joseph Ramsey refactoring 2024-12-26
  * @version $Id: $Id
  */
-public class IndTestDegenerateGaussianLrt implements IndependenceTest {
+public class IndTestBasisFunctionLrt implements IndependenceTest {
     /**
      * A hash of nodes to indices.
      */
@@ -86,7 +86,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      *
      * @param dataSet The data being analyzed.
      */
-    public IndTestDegenerateGaussianLrt(DataSet dataSet) {
+    public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit,
+                                   int basisType, double basisScale) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -105,7 +106,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
         // we're not using the pseudoinverse option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, usePseudoInverse);
+                dataSet, truncationLimit, basisType, basisScale, usePseudoInverse);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
         this.bic = new SemBicScore(convertedData, false);
@@ -172,7 +173,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
             } catch (Exception e) {
                 TetradLogger.getInstance().log("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z)
                                                + " with lik_diff = " + lik_diff + " and dof_diff = " + dof_diff
-                                               + e.getMessage());
+                                               + " (" + e.getMessage() + ")");
                 throw new RuntimeException("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z), e);
             }
         }
@@ -269,7 +270,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     /**
      * Calculates the sample log likelihood
      */
-    private IndTestDegenerateGaussianLrt.Ret getlldof(int i, int... parents) {
+    private Ret getlldof(int i, int... parents) {
         double score = 0;
 
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
@@ -298,12 +299,13 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
             }
 
             score += likelihood;
-            B.add(a);
+
+//            B.add(a);
         }
 
         double lik = score;
         double dof = (bLength * (bLength + 1) - aLength * (aLength + 1)) / 2.0;
-        return new IndTestDegenerateGaussianLrt.Ret(lik, dof);
+        return new Ret(lik, dof);
     }
 
     /**

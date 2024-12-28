@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-
 /**
  * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
  * score by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
@@ -40,10 +38,6 @@ public class BasisFunctionBicScore implements Score {
      */
     private final SemBicScore bic;
     /**
-     * Represents the truncation limit of the basis.
-     */
-    private final int truncationLimit;
-    /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
      * adjustments in the likelihood penalty term.
@@ -62,31 +56,23 @@ public class BasisFunctionBicScore implements Score {
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
                                  int basisType, double basisScale) {
-        this.truncationLimit = truncationLimit;
         this.variables = dataSet.getVariables();
 
+        boolean usePseudoInverse = false;
+
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
-                true);
+                usePseudoInverse);
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
         // We will zero out the correlations that are very close to zero.
         CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
-//        double correlationThreshold = 1e-2;
-//
-//        for (int _i = 0; _i < correlationMatrix.getDimension(); _i++) {
-//            for (int j = 0; j < correlationMatrix.getDimension(); j++) {
-//                if (abs(correlationMatrix.getValue(_i, j)) < correlationThreshold) {
-//                    correlationMatrix.setValue(_i, j, 0);
-//                }
-//            }
-//        }
 
         this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
 
         // We will be using the pseudo-inverse in the BIC score calculation so we don't get singularity exceptions.
-        this.bic.setUsePseudoInverse(true);
+        this.bic.setUsePseudoInverse(usePseudoInverse);
 
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
         this.bic.setStructurePrior(0);
@@ -112,16 +98,17 @@ public class BasisFunctionBicScore implements Score {
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
             for (int i__ = 0; i__ < B.size(); i__++) {
-                Integer i1 = B.get(i__);
-                parents_[i__] = i1;
+                parents_[i__] = B.get(i__);
             }
 
             double score1 = this.bic.localScore(i_, parents_);
 
-            if (!Double.isNaN(score1)) {
-                score += score1;
-                B.add(i_);
+            if (Double.isNaN(score1)) {
+                break;
             }
+
+            score += score1;
+            B.add(i_);
         }
 
         return score;
@@ -190,7 +177,7 @@ public class BasisFunctionBicScore implements Score {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "Basis Function Score (BFS) Penalty " + nf.format(this.bic.getPenaltyDiscount()) + " truncation = " + this.truncationLimit;
+        return "Basis Function Score (BFS)";
     }
 
     /**

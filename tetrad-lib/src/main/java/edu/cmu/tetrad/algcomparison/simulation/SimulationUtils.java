@@ -46,6 +46,8 @@ public final class SimulationUtils {
                 return new SemSimulation(randomGraph);
             case SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL:
                 return new NLSemSimulation(randomGraph);
+            case SimulationTypes.POST_NONLINEAR_STRUCTURAL_EQUATION_MODEL:
+                return new PostNonlinearSimulation(randomGraph);
             case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
                 return new GeneralSemSimulationSpecial1(randomGraph);
             case SimulationTypes.LEE_AND_HASTIE:
