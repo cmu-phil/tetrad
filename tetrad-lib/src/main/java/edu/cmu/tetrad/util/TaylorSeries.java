@@ -17,7 +17,7 @@ package edu.cmu.tetrad.util;
  *
  *     // Output:
  *     // f(0.5) = 0.75
- *     // f(x) = 0.0 + 1.0x^1/1! + 0.0x^2/2! + -1.0x^3/3!
+ *     // f(x) = 1.0x^0/0! + 0.0x^1/1! + -1.0x^2/2! + 0.0x^3/3!
  * </pre>
  *
  * @author josephramsey
