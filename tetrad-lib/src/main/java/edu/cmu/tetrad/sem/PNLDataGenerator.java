@@ -1,15 +1,14 @@
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.distribution.NormalDistribution;
+import edu.cmu.tetrad.util.TaylorSeries;
+import org.apache.commons.math3.distribution.BetaDistribution;
+import org.apache.commons.math3.distribution.RealDistribution;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -62,7 +61,7 @@ public class PNLDataGenerator {
      * The noise is added to the data as part of simulating real-world imperfections and variations in observed values
      * during the data generation process.
      */
-    private final NormalDistribution noiseDistribution;
+    private final RealDistribution noiseDistribution;
     /**
      * Represents a list of causal mechanisms modeled as mathematical functions. These functions are used to define the
      * causal relationships in a system, where each function maps a given input value to an output value.
@@ -73,31 +72,7 @@ public class PNLDataGenerator {
      * The causal mechanisms are applied during data generation to simulate causal dependencies between variables in the
      * system.
      */
-    private final List<Function<Double, Double>> causalMechanisms = new ArrayList<>(Arrays.asList(
-            x -> x,
-            Math::sin,
-            Math::tanh,
-            x -> Math.log1p(Math.abs(x))
-    ));
-    /**
-     * A list of nonlinear transformation functions applied after the causal mechanisms in the Post-Nonlinear Structural
-     * Equation Model (PNL-SEM) data generation process. Each function in the list corresponds to a different type of
-     * transformation that can be applied to model nonlinear effects, such as identity, exponential, square, or
-     * hyperbolic tangent.
-     * <p>
-     * This list is pre-populated with a set of commonly used nonlinear transformations: - Identity transformation: `x
-     * -> x` - Exponential transformation: `Math::exp` - Quadratic transformation: `x -> x * x` - Hyperbolic tangent
-     * transformation: `Math::tanh`
-     * <p>
-     * Additional transformations can be added to this list using the appropriate class methods to customize the data
-     * generation process.
-     */
-    private final List<Function<Double, Double>> postNonlinearTransformations = new ArrayList<>(Arrays.asList(
-            x -> x,
-            Math::exp,
-            x -> x * x,
-            Math::tanh
-    ));
+    private final List<Function<Double, Double>> postNonlinearTransformations = new ArrayList<>();
     /**
      * A mapping of coefficients used to represent causal relationships and dependencies between nodes in a graph
      * structure.
@@ -114,6 +89,20 @@ public class PNLDataGenerator {
      * coefficient defining the relationship strength between connected nodes.
      */
     private final Map<Node, Map<Node, Double>> coefficients = new HashMap<>();
+    /**
+     * A list of nonlinear transformation functions applied after the causal mechanisms in the Post-Nonlinear Structural
+     * Equation Model (PNL-SEM) data generation process. Each function in the list corresponds to a different type of
+     * transformation that can be applied to model nonlinear effects, such as identity, exponential, square, or
+     * hyperbolic tangent.
+     * <p>
+     * This list is pre-populated with a set of commonly used nonlinear transformations: - Identity transformation: `x
+     * -> x` - Exponential transformation: `Math::exp` - Quadratic transformation: `x -> x * x` - Hyperbolic tangent
+     * transformation: `Math::tanh`
+     * <p>
+     * Additional transformations can be added to this list using the appropriate class methods to customize the data
+     * generation process.
+     */
+    private final List<Function<Double, Double>> causalMechanisms = new ArrayList<>();
 
     /**
      * Constructor for the PNLDataGenerator class.
@@ -121,10 +110,9 @@ public class PNLDataGenerator {
      * @param graph      the directed acyclic graph (DAG) representing the causal structure on which the data generation
      *                   process is based.
      * @param numSamples the number of data samples to be generated.
-     * @param noiseStd   the standard deviation of the noise added to the generated data. It must be a positive value.
      * @throws IllegalArgumentException if the provided graph contains cycles.
      */
-    public PNLDataGenerator(Graph graph, int numSamples, double noiseStd) {
+    public PNLDataGenerator(Graph graph, int numSamples) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -132,8 +120,28 @@ public class PNLDataGenerator {
         this.graph = graph;
         this.numSamples = numSamples;
         this.random = RandomUtil.getInstance();
-        this.noiseDistribution = new NormalDistribution(0, noiseStd);
+        this.noiseDistribution = new BetaDistribution(2, 5);
         initializeCoefficients();
+
+//        for (TaylorSeries taylor : new ArrayList<>(Arrays.asList(
+//                TaylorSeries.randomTaylorSeries(4),
+//                TaylorSeries.randomTaylorSeries(4),
+//                TaylorSeries.randomTaylorSeries(4),
+//                TaylorSeries.randomTaylorSeries(4)
+//        ))) {
+//            addCausalMechanism(taylor::evaluate);
+//        }
+
+        addCausalMechanism(x -> x);
+
+        for (TaylorSeries taylor : new ArrayList<>(Arrays.asList(
+                TaylorSeries.randomTaylorSeries(5),
+                TaylorSeries.randomTaylorSeries(5),
+                TaylorSeries.randomTaylorSeries(5),
+                TaylorSeries.randomTaylorSeries(5)
+        ))) {
+            addPostNonlinearTransformation(taylor::evaluate);
+        }
     }
 
     /**
@@ -156,7 +164,7 @@ public class PNLDataGenerator {
                 100, 100, false);
 
         // Generate data
-        PNLDataGenerator generator = new PNLDataGenerator(graph, 1000, .5);
+        PNLDataGenerator generator = new PNLDataGenerator(graph, 1000);
         DataSet data = generator.generateData();
 
         // Save the data to a file.
@@ -229,18 +237,20 @@ public class PNLDataGenerator {
                     }
 
                     // Apply a random causal mechanism
-                    Function<Double, Double> f = getRandomElement(causalMechanisms);
+                    var f = getRandomElement(causalMechanisms);
                     double fOutput = f.apply(linearCombination);
 
                     // Add noise
-                    double noisyOutput = fOutput + noiseDistribution.sample();
+                    double noisyOutput = linearCombination + (noiseDistribution.sample() * fOutput);
 
                     // Apply a random post-nonlinear transformation
-                    Function<Double, Double> g = getRandomElement(postNonlinearTransformations);
+                    var g = getRandomElement(postNonlinearTransformations);
 
                     data.setDouble(sample, nodeToIndex.get(node), g.apply(noisyOutput));
                 }
             }
+
+            DataTransforms.scale(data, 1, node);
         }
 
         return data;
@@ -272,7 +282,7 @@ public class PNLDataGenerator {
         for (Node child : graph.getNodes()) {
             Map<Node, Double> parentCoefficients = new HashMap<>();
             for (Node parent : graph.getParents(child)) {
-                parentCoefficients.put(parent, random.nextDouble() * .9 + 0.1);
+                parentCoefficients.put(parent, random.nextDouble() * .6 + 0.1);
             }
             coefficients.put(child, parentCoefficients);
         }

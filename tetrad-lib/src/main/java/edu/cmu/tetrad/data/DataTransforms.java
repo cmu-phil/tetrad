@@ -1277,37 +1277,37 @@ public class DataTransforms {
         // Ignore the discrete columns.
 
         for (Node node : dataSet.getVariables()) {
-            if (node instanceof ContinuousVariable) {
-                int j = dataSet.getColumn(node);
-
-                double min = Double.POSITIVE_INFINITY;
-                double max = Double.NEGATIVE_INFINITY;
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    double value = dataSet.getDouble(i, j);
-                    if (value < min) {
-                        min = value;
-                    }
-                    if (value > max) {
-                        max = value;
-                    }
-                }
-
-//                double _max = Math.max(Math.abs(min), Math.abs(max)) * scale;
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    double value = dataSet.getDouble(i, j);
-                    dataSet.setDouble(i, j, scaleToMinusOneToOne(value, min, max, scale));
-
-//                    dataSet.setDouble(i, j, (value / _max) * scale);
-                }
-            }
+            scale(dataSet, scale, node);
         }
 
         return dataSet;
     }
 
-    private static double scaleToMinusOneToOne(double value, double a, double b, double scale) {
+    public static void scale(DataSet dataSet, double scale, Node node) {
+        if (node instanceof ContinuousVariable) {
+            int j = dataSet.getColumn(node);
+
+            double min = Double.POSITIVE_INFINITY;
+            double max = Double.NEGATIVE_INFINITY;
+
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                double value = dataSet.getDouble(i, j);
+                if (value < min) {
+                    min = value;
+                }
+                if (value > max) {
+                    max = value;
+                }
+            }
+
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                double value = dataSet.getDouble(i, j);
+                dataSet.setDouble(i, j, scale(value, min, max, scale));
+            }
+        }
+    }
+
+    private static double scale(double value, double a, double b, double scale) {
         if (a == b) {
             throw new IllegalArgumentException("Lower and upper bounds must not be the same.");
         }

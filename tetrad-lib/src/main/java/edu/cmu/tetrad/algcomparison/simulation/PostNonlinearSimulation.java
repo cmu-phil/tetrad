@@ -17,8 +17,6 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Math.sqrt;
-
 /**
  * This class represents a default post-nonlinear simulation.
  *
@@ -198,8 +196,6 @@ public class PostNonlinearSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.add(Params.VAR_LOW);
-        parameters.add(Params.VAR_HIGH);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -234,12 +230,8 @@ public class PostNonlinearSimulation implements Simulation {
         // Get the number of samples
         int numSamples = parameters.getInt(Params.SAMPLE_SIZE);
 
-        // Get the noise standard deviation
-        double noiseStd = RandomUtil.getInstance().nextUniform(parameters.getDouble(Params.VAR_LOW),
-                parameters.getDouble(Params.VAR_HIGH));
-
         // Run the simulation
-        return runPostNonlinearSimulation(graph, numSamples, sqrt(noiseStd));
+        return runPostNonlinearSimulation(graph, numSamples);
     }
 
     /**
@@ -248,12 +240,11 @@ public class PostNonlinearSimulation implements Simulation {
      *
      * @param graph      the graph representing the causal relationships used in the simulation.
      * @param numSamples the number of samples to generate in the synthetic dataset.
-     * @param noiseStd   the standard deviation of the noise to add during dataset generation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runPostNonlinearSimulation(Graph graph, int numSamples, double noiseStd) {
+    private DataSet runPostNonlinearSimulation(Graph graph, int numSamples) {
         // Use the default PNLDataGenerator configuration
-        PNLDataGenerator generator = new PNLDataGenerator(graph, numSamples, noiseStd);
+        PNLDataGenerator generator = new PNLDataGenerator(graph, numSamples);
 
         // Generate the synthetic dataset
         return generator.generateData();
