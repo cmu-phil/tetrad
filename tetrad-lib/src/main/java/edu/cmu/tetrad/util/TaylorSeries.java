@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.util;
 
 /**
- * Represents a Taylor series with a given set of derivatives.
+ * Represents a Taylor series with a given list of derivatives.
  *
  * <p>Example usage:
  * <pre>
@@ -20,7 +20,7 @@ package edu.cmu.tetrad.util;
  *     // f(x) = 0.0 + 1.0x^1/1! + 0.0x^2/2! + -1.0x^3/3!
  * </pre>
  *
- * @author ChatGPT
+ * @author josephramsey
  */
 public class TaylorSeries {
     /**
@@ -56,18 +56,32 @@ public class TaylorSeries {
     }
 
     /**
-     * Factorial calculation.
+     * Evaluate the Taylor series at a given point x.
      *
-     * @param n Number to calculate factorial.
-     * @return Factorial of n.
+     * @param x Point to evaluate the Taylor series.
+     * @return Result of the Taylor series at x.
      */
-    private static long factorial(int n) {
-        if (n == 0 || n == 1) return 1;
-        long fact = 1;
-        for (int i = 2; i <= n; i++) {
-            fact *= i;
+    public double evaluate(double x) {
+        double result = 0.0;
+        double term = 1.0;
+        for (int n = 0; n < derivatives.length; n++) {
+            result += derivatives[n] * term / factorial(n);
+            term *= x;
         }
-        return fact;
+
+        return result;
+    }
+
+    /**
+     * Print the Taylor series.
+     */
+    public void printSeries() {
+        StringBuilder builder = new StringBuilder("f(x) = ");
+        for (int n = 0; n < derivatives.length; n++) {
+            if (n > 0) builder.append(" + ");
+            builder.append(derivatives[n]).append("x^").append(n).append("/").append(n).append("!");
+        }
+        System.out.println(builder);
     }
 
     /**
@@ -89,31 +103,17 @@ public class TaylorSeries {
     }
 
     /**
-     * Evaluate the Taylor series at a given point x.
+     * Factorial calculation.
      *
-     * @param x Point to evaluate the Taylor series.
-     * @return Result of the Taylor series at x.
+     * @param n Number to calculate factorial.
+     * @return Factorial of n.
      */
-    public double evaluate(double x) {
-        double result = 0.0;
-        double term = 1.0; // Tracks x^n
-        for (int n = 0; n < derivatives.length; n++) {
-            result += derivatives[n] * term / factorial(n);
-            term *= x; // Increment x^n for the next term
+    private static long factorial(int n) {
+        if (n == 0 || n == 1) return 1;
+        long fact = 1;
+        for (int i = 2; i <= n; i++) {
+            fact *= i;
         }
-
-        return result;
-    }
-
-    /**
-     * Print the Taylor series.
-     */
-    public void printSeries() {
-        StringBuilder builder = new StringBuilder("f(x) = ");
-        for (int n = 0; n < derivatives.length; n++) {
-            if (n > 0) builder.append(" + ");
-            builder.append(derivatives[n]).append("x^").append(n).append("/").append(n).append("!");
-        }
-        System.out.println(builder);
+        return fact;
     }
 }

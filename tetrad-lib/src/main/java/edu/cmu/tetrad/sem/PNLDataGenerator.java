@@ -29,6 +29,8 @@ import java.util.stream.IntStream;
  * This class supports the following functionalities: - Defining a DAG as the structure for data generation - Adding
  * custom causal mechanisms - Adding custom post-nonlinear transformations - Sampling data based on the PNL model that
  * applies causal mechanisms, noise, and post-nonlinear transformations
+ *
+ * @author josephramsey
  */
 public class PNLDataGenerator {
     /**
