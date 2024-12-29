@@ -39,9 +39,9 @@ public final class SimulationTypes {
      */
     public static final String LINEAR_FISHER_MODEL = "Linear Fisher Model";
     /**
-     * Constant <code>NON_LINEAR_STRUCTURAL_EQUATION_MODEL="NonLinear Structural Equation Model"</code>
+     * Constant <code>NON_LINEAR_STRUCTURAL_EQUATION_MODEL="GP Nonlinear Structural Equation Model"</code>
      */
-    public static final String NON_LINEAR_STRUCTURAL_EQUATION_MODEL = "NonLinear Structural Equation Model";
+    public static final String NON_LINEAR_STRUCTURAL_EQUATION_MODEL = "GP Nonlinear Structural Equation Model";
     /**
      * Constant <code>POST_NONLINEAR_STRUCTURAL_EQUATION_MODEL="Post-nonlinear Structural Equation Model"</code>
      */

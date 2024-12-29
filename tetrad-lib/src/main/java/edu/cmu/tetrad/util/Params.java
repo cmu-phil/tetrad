@@ -765,7 +765,8 @@ public final class Params {
     /**
      * Constant <code>TIMEOUT="timeout"</code>
      */
-    public static final String TIMEOUT = "timeout";    /**
+    public static final String TIMEOUT = "timeout";
+    /**
      * Constant <code>TEST_TIMEOUT="testTimeout"</code>
      */
     public static final String TEST_TIMEOUT = "testTimeout";
@@ -912,17 +913,13 @@ public final class Params {
      */
     public static final String ENSURE_MARKOV = "ensureMarkov";
     /**
-     * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
+     * Constant <code>NUM_POST_NONLINEAR_FUNCTIONS="numPostNonlinearFunctions"</code>
      */
-    public static String PC_HEURISTIC = "pcHeuristic";
+    public static final String NUM_POST_NONLINEAR_FUNCTIONS = "numPostNonlinearFunctions";
     /**
-     * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
+     * Constant <code>TAYLOR_SERIES_DEGREE="taylorSeriesDegree"</code>
      */
-    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
-    /**
-     * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
-     */
-    public static String EXTRA_EDGE_REMOVAL_STEP = "extraEdgeRemovalStep";
+    public static final String TAYLOR_SERIES_DEGREE = "taylorSeriesDegree";
     /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
@@ -932,19 +929,9 @@ public final class Params {
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
     /**
-     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
+     * Constant <code>RESCALE_BOUND="rescaleBound"</code>
      */
-    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
-    /**
-     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
-     */
-    public static String CELL_TABLE_TYPE = "cellTableType";
-
-
-    private Params() {
-    }
-
-
+    public static final String RESCALE_BOUND = "rescaleBound";
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
@@ -992,6 +979,28 @@ public final class Params {
             Params.SAVE_BOOTSTRAP_GRAPHS,
             Params.SEED
     ));
+    /**
+     * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
+     */
+    public static String PC_HEURISTIC = "pcHeuristic";
+    /**
+     * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
+     */
+    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
+    /**
+     * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
+     */
+    public static String EXTRA_EDGE_REMOVAL_STEP = "extraEdgeRemovalStep";
+    /**
+     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
+     */
+    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
+    /**
+     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
+     */
+    public static String CELL_TABLE_TYPE = "cellTableType";
+    private Params() {
+    }
 
     /**
      * <p>getAlgorithmParameters.</p>

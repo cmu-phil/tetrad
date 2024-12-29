@@ -13,7 +13,10 @@ import org.apache.commons.math3.distribution.RealDistribution;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -90,19 +93,24 @@ public class PNLDataGenerator {
      */
     private final Map<Node, Map<Node, Double>> coefficients = new HashMap<>();
     /**
-     * A list of nonlinear transformation functions applied after the causal mechanisms in the Post-Nonlinear Structural
-     * Equation Model (PNL-SEM) data generation process. Each function in the list corresponds to a different type of
-     * transformation that can be applied to model nonlinear effects, such as identity, exponential, square, or
-     * hyperbolic tangent.
-     * <p>
-     * This list is pre-populated with a set of commonly used nonlinear transformations: - Identity transformation: `x
-     * -> x` - Exponential transformation: `Math::exp` - Quadratic transformation: `x -> x * x` - Hyperbolic tangent
-     * transformation: `Math::tanh`
-     * <p>
-     * Additional transformations can be added to this list using the appropriate class methods to customize the data
-     * generation process.
+     * Represents the number of post-nonlinear transformations to be applied to the data generation process. This
+     * variable determines the number of possible transformations to be applied to the data after the main causal
+     * mechanisms have been processed. The default value is set to 3. In each case, one function is selected and applied
+     * to the data. The functions are random Taylor series of the specified degree, with f(0) = 0.
      */
-    private final List<Function<Double, Double>> causalMechanisms = new ArrayList<>();
+    private int numPostNonlinearFunctions = 3;
+    /**
+     * Represents the degree of the Taylor series used in the post-nonlinear transformations. This is the maximum
+     * polynomial degree of the Taylor series used in the post-processing stage of the data generation process. The
+     * default value is set to 5.
+     */
+    private int taylorSeriesDegree = 5;
+    /**
+     * Represents the rescale bound used to scale the generated data. This value is used to rescale the data to a
+     * specified bound after the post-nonlinear transformations have been applied, for each new variable simulated. The
+     * default value is set to 1.0. If the value is set to 0, no rescaling is performed.
+     */
+    private double rescaleBound = 1.0;
 
     /**
      * Constructor for the PNLDataGenerator class.
@@ -123,23 +131,8 @@ public class PNLDataGenerator {
         this.noiseDistribution = new BetaDistribution(2, 5);
         initializeCoefficients();
 
-//        for (TaylorSeries taylor : new ArrayList<>(Arrays.asList(
-//                TaylorSeries.randomTaylorSeries(4),
-//                TaylorSeries.randomTaylorSeries(4),
-//                TaylorSeries.randomTaylorSeries(4),
-//                TaylorSeries.randomTaylorSeries(4)
-//        ))) {
-//            addCausalMechanism(taylor::evaluate);
-//        }
-
-        addCausalMechanism(x -> x);
-
-        for (TaylorSeries taylor : new ArrayList<>(Arrays.asList(
-                TaylorSeries.randomTaylorSeries(5),
-                TaylorSeries.randomTaylorSeries(5),
-                TaylorSeries.randomTaylorSeries(5),
-                TaylorSeries.randomTaylorSeries(5)
-        ))) {
+        for (int i = 0; i < numPostNonlinearFunctions; i++) {
+            TaylorSeries taylor = TaylorSeries.randomTaylorSeries(taylorSeriesDegree);
             addPostNonlinearTransformation(taylor::evaluate);
         }
     }
@@ -179,17 +172,6 @@ public class PNLDataGenerator {
 
         // Save the graph to a file.
         GraphSaveLoadUtils.saveGraph(graph, new File("graph_pnl.txt"), false);
-    }
-
-    /**
-     * Adds a causal mechanism to the list of mechanisms used in the data generation process.
-     *
-     * @param mechanism the function representing a causal mechanism. It takes a single input of type Double and returns
-     *                  a value of type Double. This mechanism defines the transformation applied to generate data in
-     *                  accordance with the causal structure.
-     */
-    public void addCausalMechanism(Function<Double, Double> mechanism) {
-        causalMechanisms.add(mechanism);
     }
 
     /**
@@ -236,12 +218,8 @@ public class PNLDataGenerator {
                         linearCombination += coefficients.get(node).get(parent) * data.getDouble(sample, nodeToIndex.get(parent));
                     }
 
-                    // Apply a random causal mechanism
-                    var f = getRandomElement(causalMechanisms);
-                    double fOutput = f.apply(linearCombination);
-
                     // Add noise
-                    double noisyOutput = linearCombination + (noiseDistribution.sample() * fOutput);
+                    double noisyOutput = linearCombination + noiseDistribution.sample();
 
                     // Apply a random post-nonlinear transformation
                     var g = getRandomElement(postNonlinearTransformations);
@@ -250,7 +228,9 @@ public class PNLDataGenerator {
                 }
             }
 
-            DataTransforms.scale(data, 1, node);
+            if (rescaleBound > 0) {
+                DataTransforms.scale(data, rescaleBound, node);
+            }
         }
 
         return data;
@@ -288,4 +268,48 @@ public class PNLDataGenerator {
         }
     }
 
+    /**
+     * Sets the degree of the Taylor series to be used in the data generation process. The Taylor series degree
+     * determines the complexity of the approximations applied in generating synthetic data. The default value is 5.
+     *
+     * @param taylorSeriesDegree the degree of the Taylor series. It should be a positive integer that specifies the
+     *                           order of terms to be included in the series during approximations.
+     */
+    public void setTaylorSeriesDegree(int taylorSeriesDegree) {
+        if (taylorSeriesDegree < 1) {
+            throw new IllegalArgumentException("Taylor series degree must be positive.");
+        }
+
+        this.taylorSeriesDegree = taylorSeriesDegree;
+    }
+
+    /**
+     * Represents the number of post-nonlinear transformations to be applied to the data generation process. This
+     * variable determines the number of possible transformations to be applied to the data after the main causal
+     * mechanisms have been processed. In each case, one function is selected and applied to the data. The functions are
+     * random Taylor series of the specified degree, with f(0) = 0.
+     *
+     * @param numPostNonlinearFunctions The number of post-nonlinear transformations to be applied. The default value is
+     *                                  set to 3.
+     */
+    public void setNumPostNonlinearFunctions(int numPostNonlinearFunctions) {
+        if (numPostNonlinearFunctions < 1) {
+            throw new IllegalArgumentException("Number of post-nonlinear functions must be positive.");
+        }
+
+        this.numPostNonlinearFunctions = numPostNonlinearFunctions;
+    }
+
+    /**
+     * Represents the rescale bound used to scale the generated data. This value is used to rescale the data to a
+     * specified bound after the post-nonlinear transformations have been applied, for each new variable simulated. The
+     * default value is set to 1.0. If the value is set to 0, no rescaling is performed.
+     */
+    public void setRescaleBound(double rescaleBound) {
+        if (rescaleBound < 0) {
+            throw new IllegalArgumentException("Rescale bound must be non-negative.");
+        }
+
+        this.rescaleBound = rescaleBound;
+    }
 }
