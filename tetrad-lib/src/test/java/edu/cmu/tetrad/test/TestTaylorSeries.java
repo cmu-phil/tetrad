@@ -26,7 +26,7 @@ public class TestTaylorSeries {
         // Example 2: Derivatives for e^x at a = 1 (f^(n)(a) = e^1 = e for all n)
         int numTerms = 30;
         double[] derivatives2 = new double[numTerms];
-        Arrays.fill(derivatives2, Math.exp(1));
+        Arrays.fill(derivatives2, Math.E);
 
         double x2 = 1.5; // Point to evaluate the Taylor series
         double a2 = 1.0; // Center of the series
