@@ -11,6 +11,7 @@ import edu.cmu.tetrad.sem.PNLDataGenerator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
@@ -243,7 +244,7 @@ public class PostNonlinearSimulation implements Simulation {
      */
     private DataSet runPostNonlinearSimulation(Graph graph, Parameters parameters) {
         // Use the default PNLDataGenerator configuration
-        PNLDataGenerator generator = new PNLDataGenerator(graph, parameters.getInt(Params.SAMPLE_SIZE));
+        PNLDataGenerator generator = new PNLDataGenerator(graph, parameters.getInt(Params.SAMPLE_SIZE), new BetaDistribution(2, 5));
         generator.setNumPostNonlinearFunctions(parameters.getInt(Params.PNL_NUM_POST_NONLINEAR_FUNCTIONS));
         generator.setTaylorSeriesDegree(parameters.getInt(Params.PNL_TAYLOR_SERIES_DEGREE));
         generator.setRescaleBound(parameters.getDouble(Params.PNL_RESCALE_BOUND));

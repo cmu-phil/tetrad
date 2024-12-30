@@ -122,7 +122,7 @@ public class PNLDataGenerator {
      * @param numSamples the number of data samples to be generated.
      * @throws IllegalArgumentException if the provided graph contains cycles.
      */
-    public PNLDataGenerator(Graph graph, int numSamples) {
+    public PNLDataGenerator(Graph graph, int numSamples, RealDistribution noiseDistribution) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -130,7 +130,7 @@ public class PNLDataGenerator {
         this.graph = graph;
         this.numSamples = numSamples;
         this.random = RandomUtil.getInstance();
-        this.noiseDistribution = new BetaDistribution(2, 5);
+        this.noiseDistribution = noiseDistribution;
         initializeCoefficients();
 
         for (int i = 0; i < numPostNonlinearFunctions; i++) {
@@ -138,7 +138,10 @@ public class PNLDataGenerator {
             for (int i1 = 1; i1 <= taylorSeriesDegree; i1++) {
                 derivatives[i1] = RandomUtil.getInstance().nextUniform(-1, 1);
             }
+
+            // We want the function to be 0 at 0, since the causal theory we are using assumes the data is centered.
             derivatives[0] = 0;
+
             TaylorSeries taylor = TaylorSeries.get(derivatives, 0);
             addPostNonlinearTransformation(taylor::evaluate);
         }
@@ -164,7 +167,7 @@ public class PNLDataGenerator {
                 100, 100, false);
 
         // Generate data
-        PNLDataGenerator generator = new PNLDataGenerator(graph, 1000);
+        PNLDataGenerator generator = new PNLDataGenerator(graph, 1000, new BetaDistribution(2, 5));
         DataSet data = generator.generateData();
 
         // Save the data to a file.
