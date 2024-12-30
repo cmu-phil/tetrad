@@ -128,12 +128,12 @@ public class PNLDataGenerator {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
 
-        if (derativeMin >= derivateMax) {
-            throw new IllegalArgumentException("Derivative min must be less than derivative max.");
+        if (derativeMin > derivateMax) {
+            throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
         }
 
-        if (coefMin >= coefMax) {
-            throw new IllegalArgumentException("Coefficient min must be less than coefficient max.");
+        if (coefMin > coefMax) {
+            throw new IllegalArgumentException("Coefficient min must be less than or equal to coefficient max.");
         }
 
         if (numSamples < 1) {
@@ -151,9 +151,6 @@ public class PNLDataGenerator {
             for (int i1 = 1; i1 <= taylorSeriesDegree; i1++) {
                 derivatives[i1] = RandomUtil.getInstance().nextUniform(derativeMin, derivateMax);
             }
-
-            // We want the function to be 0 at 0, since the causal theory we are using assumes the data is centered.
-            derivatives[0] = 0;
 
             TaylorSeries taylor = TaylorSeries.get(derivatives, 0);
             addPostNonlinearTransformation(taylor::evaluate);
