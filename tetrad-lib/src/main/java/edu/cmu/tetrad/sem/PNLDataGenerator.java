@@ -134,7 +134,7 @@ public class PNLDataGenerator {
         initializeCoefficients();
 
         for (int i = 0; i < numPostNonlinearFunctions; i++) {
-            TaylorSeries taylor = TaylorSeries.randomTaylorSeries(taylorSeriesDegree);
+            TaylorSeries taylor = TaylorSeries.random(taylorSeriesDegree);
             addPostNonlinearTransformation(taylor::evaluate);
         }
     }
