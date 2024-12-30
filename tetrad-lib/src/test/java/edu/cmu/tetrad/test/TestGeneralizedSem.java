@@ -414,7 +414,7 @@ public class TestGeneralizedSem {
         Vector e = new Vector(5);
 
         for (int i = 0; i < e.size(); i++) {
-            e.set(i, RandomUtil.getInstance().nextNormal(0, 1));
+            e.set(i, RandomUtil.getInstance().nextGaussian(0, 1));
         }
 
         Vector record1 = semIm.simulateOneRecord(e);

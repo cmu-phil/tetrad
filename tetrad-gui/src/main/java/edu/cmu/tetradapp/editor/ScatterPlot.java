@@ -422,13 +422,13 @@ public class ScatterPlot {
             double v = 0.03;
 
             if (jitterStyle == JitterStyle.Gaussian) {
-                x1 += RandomUtil.getInstance().nextNormal(0, spreadx * v);
+                x1 += RandomUtil.getInstance().nextGaussian(0, spreadx * v);
             } else if (jitterStyle == JitterStyle.Uniform) {
                 x1 += RandomUtil.getInstance().nextUniform(-2 * spreadx * v, 2 * spreadx * v);
             }
 
             if (jitterStyle == JitterStyle.Gaussian) {
-                y1 += RandomUtil.getInstance().nextNormal(0, spready * v);
+                y1 += RandomUtil.getInstance().nextGaussian(0, spready * v);
             } else if (jitterStyle == JitterStyle.Uniform) {
                 y1 += RandomUtil.getInstance().nextUniform(-2 * spready * v, 2 * spready * v);
             }

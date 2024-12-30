@@ -470,7 +470,7 @@ public final class DataUtils {
             double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
-                exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
+                exoData[i] = RandomUtil.getInstance().nextGaussian(0, 1);
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.

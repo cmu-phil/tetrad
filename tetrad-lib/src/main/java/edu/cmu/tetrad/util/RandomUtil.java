@@ -186,7 +186,7 @@ public class RandomUtil {
      * @param sd   The standard deviation of the Normal.
      * @return Ibid.
      */
-    public double nextNormal(double mean, double sd) {
+    public double nextGaussian(double mean, double sd) {
         return new NormalDistribution(randomGenerator, mean, sd).sample();
     }
 
@@ -211,7 +211,7 @@ public class RandomUtil {
         double d;
 
         do {
-            d = nextNormal(mean, sd);
+            d = nextGaussian(mean, sd);
         } while (!(d >= low) || !(d <= high));
 
         return d;

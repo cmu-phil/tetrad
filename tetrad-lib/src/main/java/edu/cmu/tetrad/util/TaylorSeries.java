@@ -3,14 +3,20 @@ package edu.cmu.tetrad.util;
 import org.apache.commons.math3.special.Gamma;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a Taylor series expansion for a mathematical function. A Taylor series approximates a function as a sum of
- * terms calculated from the derivatives at a specific expansion point.
+ * terms calculated from the derivatives at a specific center. This class is thread-safe and immutable.
  *
  * @author josephramsey
  */
 public class TaylorSeries {
+    /**
+     * Cache for logGamma values.
+     */
+    private static final Map<Integer, Double> logGammaCache = new HashMap<>();
     /**
      * Derivatives for the Taylor series.
      */
@@ -18,7 +24,7 @@ public class TaylorSeries {
     /**
      * Center of the Taylor series.
      */
-    private final double a;
+    private double center;
 
     /**
      * Constructs a TaylorSeries object with the specified derivatives and center. Private constructor.
@@ -27,12 +33,17 @@ public class TaylorSeries {
      * @param a           The center point of the Taylor series.
      */
     private TaylorSeries(double[] derivatives, double a) {
-        this.derivatives = derivatives;
-        this.a = a;
+        if (derivatives == null || derivatives.length == 0) {
+            throw new IllegalArgumentException("Derivatives array must not be null or empty.");
+        }
+
+        this.derivatives = Arrays.copyOf(derivatives, derivatives.length);
+        this.center = a;
     }
 
     /**
-     * Get the Taylor series with the given derivatives and center.
+     * Get the Taylor series with the given derivatives and center. The length of the derivative array determines the
+     * degree of the Taylor series.
      *
      * @param derivatives Derivatives for the Taylor series.
      * @param a           Center of the Taylor series.
@@ -43,79 +54,99 @@ public class TaylorSeries {
     }
 
     /**
-     * Generate a random Taylor series of a given degree.
+     * Calculates the nth term of center Taylor series at center given point x, based on the derivatives provided and
+     * the expansion point center.
      *
-     * @param degree Order of the Taylor series.
-     * @return Random Taylor series.
-     */
-    public static TaylorSeries random(int degree) {
-        double[] derivatives = new double[1 + degree];
-
-        for (int i = 1; i <= degree; i++) {
-            derivatives[i] = RandomUtil.getInstance().nextUniform(-1, 1);
-        }
-
-        return new TaylorSeries(derivatives, 0);
-    }
-
-    /**
-     * Calculates the nth term of a Taylor series at a given point x, based on the derivatives provided and the
-     * expansion point a.
-     *
-     * @param derivatives An array of derivatives, where the nth element represents the nth derivative at point a.
+     * @param derivatives An array of derivatives, where the nth element represents the nth derivative at a center
+     *                    point.
      * @param x           The value at which the Taylor series term is evaluated.
-     * @param a           The point about which the Taylor series is expanded.
+     * @param center      The point about which the Taylor series is expanded.
      * @param n           The index of the term in the Taylor series to calculate.
      * @return The nth term of the Taylor series.
-     * @throws IllegalArgumentException If n is greater than or equal to the length of the derivatives array.
+     * @throws IllegalArgumentException If n is greater than or equal to the length of the derivative array.
      */
-    public static double taylorTerm(double[] derivatives, double x, double a, int n) {
+    private static double taylorTerm(double[] derivatives, double x, double center, int n) {
         if (n >= derivatives.length) {
             throw new IllegalArgumentException("Index exceeds the number of derivatives provided.");
         }
 
-        double derivative = derivatives[n]; // f^(n)(a)
+        double derivative = derivatives[n]; // f^(n)(center)
 
         if (derivative == 0) {
             return 0;
         }
 
-        double logTerm = Math.log(Math.abs(derivative)) + n * Math.log(Math.abs(x - a)) - Gamma.logGamma(n + 1);
+        if (x == center && n > 0) {
+            return 0.0; // Higher-order terms vanish when x = the center
+        }
+
+        if (x == center && n == 0) {
+            return derivative; // f(center) = f^(0)(center)
+        }
+
+        double logTerm = Math.log(Math.abs(derivative)) + n * Math.log(Math.abs(x - center)) - logGamma(n + 1);
 
         // Restore sign of derivative to avoid log of negatives
         return Math.exp(logTerm) * Math.signum(derivative);
     }
 
     /**
-     * Main method to demonstrate the Taylor series.
+     * Memoized version of the logGamma function.
      *
-     * @param args Command-line arguments.
+     * @param n The value to compute the logGamma of.
+     * @return The logGamma of n.
      */
-    public static void main(String[] args) {
+    private static double logGamma(int n) {
+        return logGammaCache.computeIfAbsent(n, Gamma::logGamma);
+    }
 
-        // Example 1: Derivatives for f(x) = 1 - x^2 at a = 0
-        double[] derivatives = {1.0, 0.0, -2.0, 0.0}; // f(x) = 1 - x^2
+    /**
+     * Creates a new TaylorSeries object with the same derivatives but a specified new center.
+     *
+     * @param newCenter The new center point of the Taylor series.
+     * @return A new TaylorSeries object with the updated center.
+     */
+    public TaylorSeries withNewCenter(double newCenter) {
+        return new TaylorSeries(this.derivatives, newCenter);
+    }
 
-        double x = 0.5;
-        System.out.println("f(" + x + ") = " + TaylorSeries.get(derivatives, 0).evaluate(x) + ", actual value: " + (1 - x * x));
+    /**
+     * Creates a new TaylorSeries instance with modified derivatives while maintaining the same center.
+     *
+     * @param newDerivatives An array of new derivatives to be used in the TaylorSeries.
+     * @return A new TaylorSeries object with the updated derivatives and the existing center.
+     */
+    public TaylorSeries withModifiedDerivatives(double[] newDerivatives) {
+        return new TaylorSeries(newDerivatives, this.center);
+    }
 
-        // Print the Taylor series
-        TaylorSeries.get(derivatives, 0).printSeries();
+    /**
+     * Retrieves a copy of the array containing the derivatives of the Taylor series. The derivatives represent the
+     * coefficients of the Taylor series expansion about its center.
+     *
+     * @return A copy of the array containing the derivatives of the Taylor series.
+     */
+    public double[] getDerivatives() {
+        return Arrays.copyOf(derivatives, derivatives.length);
+    }
 
-        // Example 2: Derivatives for e^x at a = 1 (f^(n)(a) = e^1 = e for all n)
-        int numTerms = 30;
-        double[] derivatives2 = new double[numTerms];
-        Arrays.fill(derivatives2, Math.exp(1));
+    /**
+     * Retrieves the center point about which the Taylor series is expanded.
+     *
+     * @return The center point of the Taylor series.
+     */
+    public double getCenter() {
+        return center;
+    }
 
-        double x2 = 1.5; // Point to evaluate the Taylor series
-        double a2 = 1.0; // Center of the series
-
-        System.out.println("f(" + x + ") = " + TaylorSeries.get(derivatives2, a2).evaluate(x2));
-
-        double result = TaylorSeries.get(derivatives2, a2).evaluate(x2);
-        System.out.println("Taylor series approximation: " + result + ", actual value: " + Math.exp(x2));
-
-        TaylorSeries.get(derivatives2, a2).printSeries();
+    /**
+     * Sets the center point of the Taylor series. This does not change the derivatives of the series, only the point
+     * about which the series is expanded.
+     *
+     * @param center The new center point of the Taylor series.
+     */
+    public void setCenter(double center) {
+        this.center = center;
     }
 
     /**
@@ -127,7 +158,7 @@ public class TaylorSeries {
     public double evaluate(double x) {
         double result = 0.0;
         for (int n = 0; n < derivatives.length; n++) {
-            result += taylorTerm(derivatives, x, a, n);
+            result += taylorTerm(derivatives, x, center, n);
         }
 
         return result;
@@ -139,8 +170,14 @@ public class TaylorSeries {
     public void printSeries() {
         StringBuilder builder = new StringBuilder("f(x) = ");
         for (int n = 0; n < derivatives.length; n++) {
-            if (n > 0) builder.append(" + ");
-            builder.append(derivatives[n]).append("x^").append(n).append("/").append(n).append("!");
+            if (n > 0 && derivatives[n] != 0) {
+                builder.append(" + ");
+            }
+            if (derivatives[n] != 0) {
+                builder.append(derivatives[n])
+                        .append(" * (x - ").append(center).append(")^").append(n)
+                        .append(" / ").append(n).append("!");
+            }
         }
         System.out.println(builder);
     }

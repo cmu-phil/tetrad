@@ -70,7 +70,7 @@ public class PostNonlinearSimulation implements Simulation {
             for (int k = 0; k < dataSet.getNumRows(); k++) {
                 for (int j = 0; j < dataSet.getNumColumns(); j++) {
                     double d = dataSet.getDouble(k, j);
-                    double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
+                    double norm = RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(variance));
                     dataSet.setDouble(k, j, d + norm);
                 }
             }
@@ -196,9 +196,9 @@ public class PostNonlinearSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.add(Params.NUM_POST_NONLINEAR_FUNCTIONS);
-        parameters.add(Params.TAYLOR_SERIES_DEGREE);
-        parameters.add(Params.RESCALE_BOUND);
+        parameters.add(Params.PNL_NUM_POST_NONLINEAR_FUNCTIONS);
+        parameters.add(Params.PNL_TAYLOR_SERIES_DEGREE);
+        parameters.add(Params.PNL_RESCALE_BOUND);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -239,15 +239,14 @@ public class PostNonlinearSimulation implements Simulation {
      * samples, and noise standard deviation using the default configuration of the PNLDataGenerator.
      *
      * @param graph      the graph representing the causal relationships used in the simulation.
-     * @param numSamples the number of samples to generate in the synthetic dataset.
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runPostNonlinearSimulation(Graph graph, Parameters parameters) {
         // Use the default PNLDataGenerator configuration
         PNLDataGenerator generator = new PNLDataGenerator(graph, parameters.getInt(Params.SAMPLE_SIZE));
-        generator.setNumPostNonlinearFunctions(parameters.getInt(Params.NUM_POST_NONLINEAR_FUNCTIONS));
-        generator.setTaylorSeriesDegree(parameters.getInt(Params.TAYLOR_SERIES_DEGREE));
-        generator.setRescaleBound(parameters.getDouble(Params.RESCALE_BOUND));
+        generator.setNumPostNonlinearFunctions(parameters.getInt(Params.PNL_NUM_POST_NONLINEAR_FUNCTIONS));
+        generator.setTaylorSeriesDegree(parameters.getInt(Params.PNL_TAYLOR_SERIES_DEGREE));
+        generator.setRescaleBound(parameters.getDouble(Params.PNL_RESCALE_BOUND));
 
         // Generate the synthetic dataset
         return generator.generateData();

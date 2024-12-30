@@ -90,7 +90,7 @@ public class PNLDataGenerator {
      * values are {@link Double} representing the strength or magnitude of the causal effect between the source and
      * target nodes.
      * <p>
-     * This structure is utilized in generating simulated data based on a given causal graph, where each edge has a
+     * This structure is used in generating simulated data based on a given causal graph, where each edge has a
      * coefficient defining the relationship strength between connected nodes.
      */
     private final Map<Node, Map<Node, Double>> coefficients = new HashMap<>();
@@ -108,8 +108,8 @@ public class PNLDataGenerator {
      */
     private int taylorSeriesDegree = 5;
     /**
-     * Represents the rescale bound used to scale the generated data. This value is used to rescale the data to a
-     * specified bound after the post-nonlinear transformations have been applied, for each new variable simulated. The
+     * Represents the rescale-bound used to scale the generated data. This value is used to rescale the data to a
+     * specified bound after the post-nonlinear transformations have been applied for each new variable simulated. The
      * default value is set to 1.0. If the value is set to 0, no rescaling is performed.
      */
     private double rescaleBound = 1.0;
@@ -134,7 +134,12 @@ public class PNLDataGenerator {
         initializeCoefficients();
 
         for (int i = 0; i < numPostNonlinearFunctions; i++) {
-            TaylorSeries taylor = TaylorSeries.random(taylorSeriesDegree);
+            double[] derivatives = new double[taylorSeriesDegree + 1];
+            for (int i1 = 1; i1 <= taylorSeriesDegree; i1++) {
+                derivatives[i1] = RandomUtil.getInstance().nextUniform(-1, 1);
+            }
+            derivatives[0] = 0;
+            TaylorSeries taylor = TaylorSeries.get(derivatives, 0);
             addPostNonlinearTransformation(taylor::evaluate);
         }
     }
@@ -303,8 +308,8 @@ public class PNLDataGenerator {
     }
 
     /**
-     * Represents the rescale bound used to scale the generated data. This value is used to rescale the data to a
-     * specified bound after the post-nonlinear transformations have been applied, for each new variable simulated. The
+     * Represents the rescale-bound used to scale the generated data. This value is used to rescale the data to a
+     * specified bound after the post-nonlinear transformations have been applied for each new variable simulated. The
      * default value is set to 1.0. If the value is set to 0, no rescaling is performed.
      */
     public void setRescaleBound(double rescaleBound) {

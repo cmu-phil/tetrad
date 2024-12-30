@@ -74,7 +74,7 @@ public class NbGeneOr extends AbstractNbComponent {
         if (getSd() == 0.0) {
         } else {
             double r = 1.0 +
-                       RandomUtil.getInstance().nextNormal(0, 1) * getSd();
+                       RandomUtil.getInstance().nextGaussian(0, 1) * getSd();
             setValue(getValue() * r);
         }
 

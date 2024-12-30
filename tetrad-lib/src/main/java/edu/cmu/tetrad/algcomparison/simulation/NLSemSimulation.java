@@ -99,7 +99,7 @@ public class NLSemSimulation implements Simulation {
                     double high = parameters.getDouble(Params.VAR_HIGH);
                     double std = sqrt(RandomUtil.getInstance().nextUniform(low, high));
                     for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextNormal(0, std));
+                        data.set(j, k, RandomUtil.getInstance().nextGaussian(0, std));
                     }
                 } else if (errorType == 2) {
                     double low = parameters.getDouble(Params.SIMULATION_PARAM1);
@@ -160,7 +160,7 @@ public class NLSemSimulation implements Simulation {
                 SimpleMatrix N = new SimpleMatrix(sampleSize, 1);
                 for (int j = 0; j < sampleSize; j++) {
                     W.set(j, j, sqrt(W.get(j, j)));
-                    N.set(j, 0, RandomUtil.getInstance().nextNormal(0, 1));
+                    N.set(j, 0, RandomUtil.getInstance().nextGaussian(0, 1));
                 }
                 SimpleMatrix X = svd.getU().mult(W).mult(N).getColumn(0);
 

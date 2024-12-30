@@ -361,7 +361,7 @@ public class FastIca {
             this.wInit = new Matrix(this.numComponents, this.numComponents);
             for (int i = 0; i < this.wInit.getNumRows(); i++) {
                 for (int j = 0; j < this.wInit.getNumColumns(); j++) {
-                    this.wInit.set(i, j, RandomUtil.getInstance().nextNormal(0, 1));
+                    this.wInit.set(i, j, RandomUtil.getInstance().nextGaussian(0, 1));
                 }
             }
         } else if (this.wInit.getNumRows() != this.wInit.getNumColumns()) {

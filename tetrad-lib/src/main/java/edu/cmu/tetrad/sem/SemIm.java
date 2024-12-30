@@ -29,7 +29,6 @@ import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
@@ -1345,7 +1344,7 @@ public final class SemIm implements Im, ISemIm {
 
     private double getNextNormal(double mean, double stdDev) {
         numRandomCalls++;
-        return RandomUtil.getInstance().nextNormal(mean, stdDev);
+        return RandomUtil.getInstance().nextGaussian(mean, stdDev);
     }
 
 //    /**
@@ -1402,7 +1401,7 @@ public final class SemIm implements Im, ISemIm {
             double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
-                exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
+                exoData[i] = RandomUtil.getInstance().nextGaussian(0, 1);
                 //            exoData[i] = randomUtil.nextUniform(-1, 1);
             }
 
@@ -1678,7 +1677,7 @@ public final class SemIm implements Im, ISemIm {
                     if (errCovar == 0.0) {
                         e.set(i, 0.0);
                     } else {
-                        e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar)));
+                        e.set(i, RandomUtil.getInstance().nextGaussian(0, sqrt(errCovar)));
                     }
                 } else if (errorType == 2) {
                     e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));

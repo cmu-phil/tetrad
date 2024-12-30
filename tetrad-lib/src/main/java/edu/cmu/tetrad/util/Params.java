@@ -915,23 +915,24 @@ public final class Params {
     /**
      * Constant <code>NUM_POST_NONLINEAR_FUNCTIONS="numPostNonlinearFunctions"</code>
      */
-    public static final String NUM_POST_NONLINEAR_FUNCTIONS = "numPostNonlinearFunctions";
+    public static final String PNL_NUM_POST_NONLINEAR_FUNCTIONS = "pnlNumPostNonlinearFunctions";
     /**
      * Constant <code>TAYLOR_SERIES_DEGREE="taylorSeriesDegree"</code>
      */
-    public static final String TAYLOR_SERIES_DEGREE = "taylorSeriesDegree";
+    public static final String PNL_TAYLOR_SERIES_DEGREE = "pnlTaylorSeriesDegree";
     /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
     /**
+     * Constant <code>RESCALE_BOUND="rescaleBound"</code>
+     */
+    public static final String PNL_RESCALE_BOUND = "pnlRescaleBound";
+    /**
      * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
-    /**
-     * Constant <code>RESCALE_BOUND="rescaleBound"</code>
-     */
-    public static final String RESCALE_BOUND = "rescaleBound";
+
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,

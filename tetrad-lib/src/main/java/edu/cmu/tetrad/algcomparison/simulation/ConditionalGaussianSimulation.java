@@ -439,7 +439,7 @@ public class ConditionalGaussianSimulation implements Simulation {
                         muComb.addParamValue(v, mixedData.getInt(i, mixedData.getColumn(v)));
                     }
 
-                    double value = RandomUtil.getInstance().nextNormal(0, getParamValue(varComb, paramValues));
+                    double value = RandomUtil.getInstance().nextGaussian(0, getParamValue(varComb, paramValues));
 
                     for (Node x : continuousParents) {
                         Parameter coefParam = semPm.getParameter(x, y);

@@ -390,7 +390,7 @@ public class LinearSineSimulation implements Simulation {
 
             double noiseVar = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);
             for (int i = 0; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
-                mixedData.setDouble(i, mixedIndex, mixedData.getDouble(i, mixedIndex) + var * RandomUtil.getInstance().nextNormal(0, noiseVar));
+                mixedData.setDouble(i, mixedIndex, mixedData.getDouble(i, mixedIndex) + var * RandomUtil.getInstance().nextGaussian(0, noiseVar));
             }
         }
         return mixedData;

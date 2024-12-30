@@ -2054,7 +2054,7 @@ public final class StatUtils {
         double sum = 0.0;
 
         for (int i = 0; i < 1000; i++) {
-            sum += abs(RandomUtil.getInstance().nextNormal(0, 1));
+            sum += abs(RandomUtil.getInstance().nextGaussian(0, 1));
         }
 
         return sum / 1000;

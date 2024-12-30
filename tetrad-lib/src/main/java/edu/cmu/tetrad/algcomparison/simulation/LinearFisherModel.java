@@ -168,7 +168,7 @@ public class LinearFisherModel implements Simulation, TakesData {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
                         double d = dataSet.getDouble(k, j);
-                        double delta = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
+                        double delta = RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(variance));
                         dataSet.setDouble(k, j, d + delta);
                     }
                 }

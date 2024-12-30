@@ -910,7 +910,7 @@ public final class LargeScaleSimulation {
                     v = 1 - v;
                 }
 
-                shocks[i][j] = v + RandomUtil.getInstance().nextNormal(0, 0.1);
+                shocks[i][j] = v + RandomUtil.getInstance().nextGaussian(0, 0.1);
             }
         }
 
