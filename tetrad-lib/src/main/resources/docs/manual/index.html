@@ -5060,7 +5060,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     </span></li>
             <li>Default
                 Value: <span id="basisScale_default_value">1</span></li>
-            <li><Lower></Lower>
+            <li>
+                <Lower></Lower>
                 Bound: <span id="basisScale_lower_bound">0</span></li>
             <li>Upper
                 Bound: <span id="basisScale_upper_bound">500000</span></li>
@@ -6579,9 +6580,147 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="pnlRescaleBound_lower_bound">0</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlRescaleBound_upper_bound">1000.0</span></li>
+                        id="pnlRescaleBound_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="pnlRescaleBound_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pnlBetaAlpha">pnlBetaAlpha</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="pnlBetaAlpha_short_desc">
+                PNL: The 'alpha' shape parameter for the Beta noise terms.
+            </span></li>
+            <li>Long Description: <span
+                    id="pnlBetaAlpha_long_desc">
+                PNL: The 'alpha' shape parameter for the Beta noise terms.
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="pnlBetaAlpha_default_value">2</span></li>
+            <li>Lower Bound: <span
+                    id="pnlBetaAlpha_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="pnlBetaAlpha_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="pnlBetaAlpha_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pnlBetaBeta">pnlBetaBeta</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="pnlBetaBeta_short_desc">
+                PNL: The 'beta' shape parameter for the Beta noise terms.
+            </span></li>
+            <li>Long Description: <span
+                    id="pnlBetaBeta_long_desc">
+                PNL: The 'beta' shape parameter for the Beta noise terms.
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="pnlBetaBeta_default_value">5</span></li>
+            <li>Lower Bound: <span
+                    id="pnlBetaBeta_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="pnlBetaBeta_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="pnlBetaBeta_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pnlDerivativeMin">pnlDerivativeMin</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="pnlDerivativeMin_short_desc">
+                PNL: 'Min' for the U(min, max) range for random derivative values (with f(0) = 0)
+            </span></li>
+            <li>Long Description: <span
+                    id="pnlDerivativeMin_long_desc">
+                PNL: 'Min' for the U(min, max) range for random derivative values (with f(0) = 0)
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="pnlDerivativeMin_default_value">-1</span></li>
+            <li>Lower Bound: <span
+                    id="pnlDerivativeMin_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="pnlDerivativeMin_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="pnlDerivativeMin_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pnlDerivativeMax">pnlDerivativeMax</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="pnlDerivativeMax_short_desc">
+                PNL: 'Max' for the U(min, max) range for random derivative values (with f(0) = 0)
+            </span></li>
+            <li>Long Description: <span
+                    id="pnlDerivativeMax_long_desc">
+                PNL: 'Max' for the U(min, max) range for random derivative values (with f(0) = 0)
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="pnlDerivativeMax_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="pnlDerivativeMax_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="pnlDerivativeMax_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="pnlDerivativeMax_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pnlCoefMin">pnlCoefMin</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="pnlCoefMin_short_desc">
+                PNL: 'Min' for the U(min, max) range for linear coefficient values for the causal function
+            </span></li>
+            <li>Long Description: <span
+                    id="pnlCoefMin_long_desc">
+                PNL: 'Min' for the U(min, max) range for linear coefficient values for the causal function
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="pnlCoefMin_default_value">-.7</span></li>
+            <li>Lower Bound: <span
+                    id="pnlCoefMin_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="pnlCoefMin_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="pnlCoefMin_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="pnlCoefMax">pnlCoefMax</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="pnlCoefMax_short_desc">
+                PNL: 'Max' for the U(min, max) range for linear coefficient values for the causal function
+            </span></li>
+            <li>Long Description: <span
+                    id="pnlCoefMax_long_desc">
+                PNL: 'Max' for the U(min, max) range for linear coefficient values for the causal function
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="pnlCoefMax_default_value">.7</span></li>
+            <li>Lower Bound: <span
+                    id="pnlCoefMax_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="pnlCoefMax_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="pnlCoefMax_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6935,7 +7074,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="scalingFactor_short_desc">For Gaussian kernel: The scaling factor * Silverman bandwidth.</span></li>
+                    id="scalingFactor_short_desc">For Gaussian kernel: The scaling factor * Silverman bandwidth.</span>
+            </li>
             <li>Long
                 Description: <span id="scalingFactor_long_desc">
                     For Gaussian kernel: The scaling factor * Silverman bandwidth.

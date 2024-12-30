@@ -921,13 +921,37 @@ public final class Params {
      */
     public static final String PNL_TAYLOR_SERIES_DEGREE = "pnlTaylorSeriesDegree";
     /**
-     * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
-     */
-    public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
-    /**
      * Constant <code>RESCALE_BOUND="rescaleBound"</code>
      */
     public static final String PNL_RESCALE_BOUND = "pnlRescaleBound";
+
+    /**
+     * Constant <code>PNL_BETA_ALPHA="pnlBetaAlpha"</code>
+     */
+    public static final String PNL_BETA_ALPHA = "pnlBetaAlpha";
+    /**
+     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     */
+    public static final String PNL_BETA_BETA = "pnlBetaBeta";
+    /**
+     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     */
+    public static final String PNL_DERIVATIVE_MIN = "pnlDerivativeMin";
+    /**
+     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     */
+    public static final String PNL_DERIVATIVE_MAX = "pnlDerivativeMax";
+    /**
+     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     */
+    public static final String PNL_COEF_MIN = "pnlCoefMin";
+    /**
+     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     */
+    public static final String PNL_COEF_MAX = "pnlCoefMax";   /**
+     * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
+     */
+    public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
     /**
      * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
      */

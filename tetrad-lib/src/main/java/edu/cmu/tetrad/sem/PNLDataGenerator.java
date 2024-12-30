@@ -95,6 +95,19 @@ public class PNLDataGenerator {
      */
     private final Map<Node, Map<Node, Double>> coefficients = new HashMap<>();
     /**
+     * Represents the minimum value for the range of coefficients that can be assigned to the edges in the directed
+     * acyclic graph (DAG). This value is used to set a lower boundary for the randomly generated coefficients during
+     * the data generation process. The coefficients represent the strengths or weights of the causal relationships
+     * between nodes in the graph.
+     */
+    private double coefMin;
+    /**
+     * Represents the maximum value for the range of coefficients used in the data generation process. This variable
+     * determines the upper bound for the randomly assigned coefficients associated with the edges in the directed
+     * acyclic graph (DAG). These coefficients influence the relationships between parent and child nodes in the graph.
+     */
+    private double coefMax;
+    /**
      * Represents the number of post-nonlinear transformations to be applied to the data generation process. This
      * variable determines the number of possible transformations to be applied to the data after the main causal
      * mechanisms have been processed. The default value is set to 3. In each case, one function is selected and applied
@@ -122,21 +135,34 @@ public class PNLDataGenerator {
      * @param numSamples the number of data samples to be generated.
      * @throws IllegalArgumentException if the provided graph contains cycles.
      */
-    public PNLDataGenerator(Graph graph, int numSamples, RealDistribution noiseDistribution) {
+    public PNLDataGenerator(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                            double derativeMin, double derivateMax, double coefMin, double coefMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
+        }
+
+        if (derativeMin >= derivateMax) {
+            throw new IllegalArgumentException("Derivative min must be less than derivative max.");
+        }
+
+        if (coefMin >= coefMax) {
+            throw new IllegalArgumentException("Coefficient min must be less than coefficient max.");
+        }
+
+        if (numSamples < 1) {
+            throw new IllegalArgumentException("Number of samples must be positive.");
         }
 
         this.graph = graph;
         this.numSamples = numSamples;
         this.random = RandomUtil.getInstance();
         this.noiseDistribution = noiseDistribution;
-        initializeCoefficients();
+        initializeCoefficients(coefMin, coefMax);
 
         for (int i = 0; i < numPostNonlinearFunctions; i++) {
             double[] derivatives = new double[taylorSeriesDegree + 1];
             for (int i1 = 1; i1 <= taylorSeriesDegree; i1++) {
-                derivatives[i1] = RandomUtil.getInstance().nextUniform(-1, 1);
+                derivatives[i1] = RandomUtil.getInstance().nextUniform(derativeMin, derivateMax);
             }
 
             // We want the function to be 0 at 0, since the causal theory we are using assumes the data is centered.
@@ -167,7 +193,9 @@ public class PNLDataGenerator {
                 100, 100, false);
 
         // Generate data
-        PNLDataGenerator generator = new PNLDataGenerator(graph, 1000, new BetaDistribution(2, 5));
+        PNLDataGenerator generator = new PNLDataGenerator(graph, 1000,
+                new BetaDistribution(2, 5), -1, 1,
+                0.1, 1);
         DataSet data = generator.generateData();
 
         // Save the data to a file.
@@ -268,11 +296,11 @@ public class PNLDataGenerator {
      * <p>
      * The coefficients are generated as random double values in the range [0.1, 1.0).
      */
-    private void initializeCoefficients() {
+    private void initializeCoefficients(double coefMin, double coefMax) {
         for (Node child : graph.getNodes()) {
             Map<Node, Double> parentCoefficients = new HashMap<>();
             for (Node parent : graph.getParents(child)) {
-                parentCoefficients.put(parent, random.nextDouble() * .6 + 0.1);
+                parentCoefficients.put(parent, random.nextUniform(coefMin, coefMax));
             }
             coefficients.put(child, parentCoefficients);
         }

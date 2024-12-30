@@ -200,6 +200,12 @@ public class PostNonlinearSimulation implements Simulation {
         parameters.add(Params.PNL_NUM_POST_NONLINEAR_FUNCTIONS);
         parameters.add(Params.PNL_TAYLOR_SERIES_DEGREE);
         parameters.add(Params.PNL_RESCALE_BOUND);
+        parameters.add(Params.PNL_BETA_ALPHA);
+        parameters.add(Params.PNL_BETA_BETA);
+        parameters.add(Params.PNL_DERIVATIVE_MIN);
+        parameters.add(Params.PNL_DERIVATIVE_MAX);
+        parameters.add(Params.PNL_COEF_MIN);
+        parameters.add(Params.PNL_COEF_MAX);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -244,7 +250,10 @@ public class PostNonlinearSimulation implements Simulation {
      */
     private DataSet runPostNonlinearSimulation(Graph graph, Parameters parameters) {
         // Use the default PNLDataGenerator configuration
-        PNLDataGenerator generator = new PNLDataGenerator(graph, parameters.getInt(Params.SAMPLE_SIZE), new BetaDistribution(2, 5));
+        PNLDataGenerator generator = new PNLDataGenerator(graph, parameters.getInt(Params.SAMPLE_SIZE),
+                new BetaDistribution(parameters.getDouble(Params.PNL_BETA_ALPHA), parameters.getDouble(Params.PNL_BETA_BETA)),
+                parameters.getDouble(Params.PNL_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_DERIVATIVE_MAX),
+                parameters.getDouble(Params.PNL_COEF_MIN), parameters.getDouble(Params.PNL_COEF_MAX));
         generator.setNumPostNonlinearFunctions(parameters.getInt(Params.PNL_NUM_POST_NONLINEAR_FUNCTIONS));
         generator.setTaylorSeriesDegree(parameters.getInt(Params.PNL_TAYLOR_SERIES_DEGREE));
         generator.setRescaleBound(parameters.getDouble(Params.PNL_RESCALE_BOUND));
