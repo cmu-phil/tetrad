@@ -95,19 +95,6 @@ public class PNLDataGenerator {
      */
     private final Map<Node, Map<Node, Double>> coefficients = new HashMap<>();
     /**
-     * Represents the minimum value for the range of coefficients that can be assigned to the edges in the directed
-     * acyclic graph (DAG). This value is used to set a lower boundary for the randomly generated coefficients during
-     * the data generation process. The coefficients represent the strengths or weights of the causal relationships
-     * between nodes in the graph.
-     */
-    private double coefMin;
-    /**
-     * Represents the maximum value for the range of coefficients used in the data generation process. This variable
-     * determines the upper bound for the randomly assigned coefficients associated with the edges in the directed
-     * acyclic graph (DAG). These coefficients influence the relationships between parent and child nodes in the graph.
-     */
-    private double coefMax;
-    /**
      * Represents the number of post-nonlinear transformations to be applied to the data generation process. This
      * variable determines the number of possible transformations to be applied to the data after the main causal
      * mechanisms have been processed. The default value is set to 3. In each case, one function is selected and applied
