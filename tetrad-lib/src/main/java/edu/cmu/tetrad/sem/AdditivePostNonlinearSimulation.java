@@ -59,6 +59,12 @@ public class AdditivePostNonlinearSimulation {
      */
     private final RealDistribution noiseDistribution;
     /**
+     * Represents the rescale-bound used to scale the generated data. This value is used to rescale the data to a
+     * specified bound after the post-nonlinear transformations have been applied for each new variable simulated. The
+     * default value is set to 1.0. If the value is set to 0, no rescaling is performed.
+     */
+    private final double rescaleBound;
+    /**
      * A mapping structure that establishes relationships between nodes in a directed acyclic graph (DAG) and their
      * corresponding parent nodes, associating each parent-child relationship with a functional transformation. This is
      * a two-level map where the top-level key represents a child node, the second-level map contains parent nodes of
@@ -83,12 +89,6 @@ public class AdditivePostNonlinearSimulation {
      * be used.
      */
     private Map<Node, Function<Double, Double>> postNonlinearFunctions = new HashMap<>();
-    /**
-     * Represents the rescale-bound used to scale the generated data. This value is used to rescale the data to a
-     * specified bound after the post-nonlinear transformations have been applied for each new variable simulated. The
-     * default value is set to 1.0. If the value is set to 0, no rescaling is performed.
-     */
-    private double rescaleBound = 1.0;
 
     /**
      * Constructs an AdditivePostNonlinearSimulation with the specified graph, number of samples, noise distribution,
@@ -112,9 +112,9 @@ public class AdditivePostNonlinearSimulation {
      */
     public AdditivePostNonlinearSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                            double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                           int taylorSeriesDegree) {
+                                           int taylorSeriesDegree, double rescaleBound) {
         this(graph, numSamples, noiseDistribution, derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree,
-                null, null);
+                null, null, rescaleBound);
     }
 
     /**
@@ -122,24 +122,24 @@ public class AdditivePostNonlinearSimulation {
      * parent functions, and post-nonlinear functions. This simulation generates synthetic data based on post-nonlinear
      * causal mechanisms defined in the provided directed acyclic graph (DAG).
      *
-     * @param graph               The directed acyclic graph (DAG) that defines the causal relationships among variables.
-     *                            The graph must be acyclic for the simulation to work.
-     * @param numSamples          The number of samples to generate for the simulation. Must be a positive integer.
-     * @param noiseDistribution   The real-valued noise distribution used for simulating additive noise in the causal
-     *                            mechanisms.
-     * @param parentFunctions     A map specifying functions representing the relationships between parent nodes and
-     *                            their corresponding child node in the graph. The keys are nodes, and the values are
-     *                            maps where keys are parent nodes, and values are functions defining the relationship.
-     *                            If null, parent functions are initialized randomly.
+     * @param graph                  The directed acyclic graph (DAG) that defines the causal relationships among
+     *                               variables. The graph must be acyclic for the simulation to work.
+     * @param numSamples             The number of samples to generate for the simulation. Must be a positive integer.
+     * @param noiseDistribution      The real-valued noise distribution used for simulating additive noise in the causal
+     *                               mechanisms.
+     * @param parentFunctions        A map specifying functions representing the relationships between parent nodes and
+     *                               their corresponding child node in the graph. The keys are nodes, and the values are
+     *                               maps where keys are parent nodes, and values are functions defining the
+     *                               relationship. If null, parent functions are initialized randomly.
      * @param postNonlinearFunctions A map specifying post-nonlinear transformation functions for each node in the
      *                               graph. For each node, the function provides a transformation to be applied after
      *                               simulating the relationships. If null, default functions are applied.
      */
     public AdditivePostNonlinearSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                            Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
-                                           Map<Node, Function<Double, Double>> postNonlinearFunctions) {
+                                           Map<Node, Function<Double, Double>> postNonlinearFunctions, double rescaleBound) {
         this(graph, numSamples, noiseDistribution, -1, -1, -1, -1, -1,
-                parentFunctions, postNonlinearFunctions);
+                parentFunctions, postNonlinearFunctions, rescaleBound);
     }
 
     /**
@@ -174,7 +174,7 @@ public class AdditivePostNonlinearSimulation {
     private AdditivePostNonlinearSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                             double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
                                             int taylorSeriesDegree, Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
-                                            Map<Node, Function<Double, Double>> postNonlinearFunctions) {
+                                            Map<Node, Function<Double, Double>> postNonlinearFunctions, double rescaleBound) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -183,9 +183,14 @@ public class AdditivePostNonlinearSimulation {
             throw new IllegalArgumentException("Number of samples must be positive.");
         }
 
+        if (rescaleBound < 0) {
+            throw new IllegalArgumentException("Rescale bound must be non-negative.");
+        }
+
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
+        this.rescaleBound = rescaleBound;
 
         if (parentFunctions != null) {
             // Check to make sure all nodes in the graph have parent functions for all parents.
@@ -288,7 +293,7 @@ public class AdditivePostNonlinearSimulation {
         // Generate data
         AdditivePostNonlinearSimulation generator = new AdditivePostNonlinearSimulation(graph, 1000,
                 new BetaDistribution(2, 5), -1, 1,
-                0.1, 1, 5);
+                0.1, 1, 5, 1);
         DataSet data = generator.generateData();
 
         // Save the data to a file.
@@ -355,18 +360,5 @@ public class AdditivePostNonlinearSimulation {
         }
 
         return data;
-    }
-
-    /**
-     * Represents the rescale-bound used to scale the generated data. This value is used to rescale the data to a
-     * specified bound after the post-nonlinear transformations have been applied for each new variable simulated. The
-     * default value is set to 1.0. If the value is set to 0, no rescaling is performed.
-     */
-    public void setRescaleBound(double rescaleBound) {
-        if (rescaleBound < 0) {
-            throw new IllegalArgumentException("Rescale bound must be non-negative.");
-        }
-
-        this.rescaleBound = rescaleBound;
     }
 }

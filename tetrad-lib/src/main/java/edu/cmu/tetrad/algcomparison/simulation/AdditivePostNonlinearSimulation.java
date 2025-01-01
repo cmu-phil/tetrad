@@ -234,8 +234,6 @@ public class AdditivePostNonlinearSimulation implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(Graph graph, Parameters parameters) {
-
-        // Run the simulation
         return runAdditivePostnonlinearSimulation(graph, parameters);
     }
 
@@ -247,15 +245,11 @@ public class AdditivePostNonlinearSimulation implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runAdditivePostnonlinearSimulation(Graph graph, Parameters parameters) {
-        // Use the default PNLDataGenerator configuration
         edu.cmu.tetrad.sem.AdditivePostNonlinearSimulation generator = new edu.cmu.tetrad.sem.AdditivePostNonlinearSimulation(graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.PNL_BETA_ALPHA), parameters.getDouble(Params.PNL_BETA_BETA)),
                 parameters.getDouble(Params.PNL_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_DERIVATIVE_MAX),
                 parameters.getDouble(Params.PNL_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_FIRST_DERIVATIVE_MAX),
-                parameters.getInt(Params.PNL_TAYLOR_SERIES_DEGREE));
-        generator.setRescaleBound(parameters.getDouble(Params.PNL_RESCALE_BOUND));
-
-        // Generate the synthetic dataset
+                parameters.getInt(Params.PNL_TAYLOR_SERIES_DEGREE), parameters.getDouble(Params.PNL_RESCALE_BOUND));
         return generator.generateData();
     }
 }
