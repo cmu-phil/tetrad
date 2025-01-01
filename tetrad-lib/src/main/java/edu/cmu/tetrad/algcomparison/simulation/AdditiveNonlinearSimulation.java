@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.PNLDataGenerator;
+import edu.cmu.tetrad.sem.AdditivePostNonlinearSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a default post-nonlinear simulation.
+ * This class represents a random additive post-nonlinear SEM simulation.
  *
  * @author josephramsey
  */
-public class PostNonlinearSimulation implements Simulation {
+public class AdditiveNonlinearSimulation implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -48,7 +48,7 @@ public class PostNonlinearSimulation implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public PostNonlinearSimulation(RandomGraph graph) {
+    public AdditiveNonlinearSimulation(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -172,7 +172,7 @@ public class PostNonlinearSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Post-nonlinear SEM simulation using " + this.randomGraph.getDescription();
+        return "Additive post-nonlinear SEM simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -181,7 +181,7 @@ public class PostNonlinearSimulation implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Post-nonlinear SEM Simulation";
+        return "Additive post-nonlinear SEM Simulation";
     }
 
     /**
@@ -238,7 +238,7 @@ public class PostNonlinearSimulation implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
 
         // Run the simulation
-        return runPostNonlinearSimulation(graph, parameters);
+        return runAdditivePostnonlinearSimulation(graph, parameters);
     }
 
     /**
@@ -248,14 +248,13 @@ public class PostNonlinearSimulation implements Simulation {
      * @param graph      the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runPostNonlinearSimulation(Graph graph, Parameters parameters) {
+    private DataSet runAdditivePostnonlinearSimulation(Graph graph, Parameters parameters) {
         // Use the default PNLDataGenerator configuration
-        PNLDataGenerator generator = new PNLDataGenerator(graph, parameters.getInt(Params.SAMPLE_SIZE),
+        AdditivePostNonlinearSimulation generator = new AdditivePostNonlinearSimulation(graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.PNL_BETA_ALPHA), parameters.getDouble(Params.PNL_BETA_BETA)),
                 parameters.getDouble(Params.PNL_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_DERIVATIVE_MAX),
-                parameters.getDouble(Params.PNL_COEF_MIN), parameters.getDouble(Params.PNL_COEF_MAX));
-        generator.setNumPostNonlinearFunctions(parameters.getInt(Params.PNL_NUM_POST_NONLINEAR_FUNCTIONS));
-        generator.setTaylorSeriesDegree(parameters.getInt(Params.PNL_TAYLOR_SERIES_DEGREE));
+                parameters.getDouble(Params.PNL_COEF_MIN), parameters.getDouble(Params.PNL_COEF_MAX),
+                parameters.getInt(Params.PNL_TAYLOR_SERIES_DEGREE));
         generator.setRescaleBound(parameters.getDouble(Params.PNL_RESCALE_BOUND));
 
         // Generate the synthetic dataset
