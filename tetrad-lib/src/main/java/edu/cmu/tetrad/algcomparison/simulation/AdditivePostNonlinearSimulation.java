@@ -7,7 +7,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.sem.AdditivePostNonlinearSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -23,7 +22,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class AdditiveNonlinearSimulation implements Simulation {
+public class AdditivePostNonlinearSimulation implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -48,7 +47,7 @@ public class AdditiveNonlinearSimulation implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public AdditiveNonlinearSimulation(RandomGraph graph) {
+    public AdditivePostNonlinearSimulation(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -197,15 +196,14 @@ public class AdditiveNonlinearSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.add(Params.PNL_NUM_POST_NONLINEAR_FUNCTIONS);
         parameters.add(Params.PNL_TAYLOR_SERIES_DEGREE);
         parameters.add(Params.PNL_RESCALE_BOUND);
         parameters.add(Params.PNL_BETA_ALPHA);
         parameters.add(Params.PNL_BETA_BETA);
         parameters.add(Params.PNL_DERIVATIVE_MIN);
         parameters.add(Params.PNL_DERIVATIVE_MAX);
-        parameters.add(Params.PNL_COEF_MIN);
-        parameters.add(Params.PNL_COEF_MAX);
+        parameters.add(Params.PNL_FIRST_DERIVATIVE_MIN);
+        parameters.add(Params.PNL_FIRST_DERIVATIVE_MAX);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -250,10 +248,10 @@ public class AdditiveNonlinearSimulation implements Simulation {
      */
     private DataSet runAdditivePostnonlinearSimulation(Graph graph, Parameters parameters) {
         // Use the default PNLDataGenerator configuration
-        AdditivePostNonlinearSimulation generator = new AdditivePostNonlinearSimulation(graph, parameters.getInt(Params.SAMPLE_SIZE),
+        edu.cmu.tetrad.sem.AdditivePostNonlinearSimulation generator = new edu.cmu.tetrad.sem.AdditivePostNonlinearSimulation(graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.PNL_BETA_ALPHA), parameters.getDouble(Params.PNL_BETA_BETA)),
                 parameters.getDouble(Params.PNL_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_DERIVATIVE_MAX),
-                parameters.getDouble(Params.PNL_COEF_MIN), parameters.getDouble(Params.PNL_COEF_MAX),
+                parameters.getDouble(Params.PNL_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_FIRST_DERIVATIVE_MAX),
                 parameters.getInt(Params.PNL_TAYLOR_SERIES_DEGREE));
         generator.setRescaleBound(parameters.getDouble(Params.PNL_RESCALE_BOUND));
 

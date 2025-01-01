@@ -944,11 +944,11 @@ public final class Params {
     /**
      * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
      */
-    public static final String PNL_COEF_MIN = "pnlCoefMin";
+    public static final String PNL_FIRST_DERIVATIVE_MIN = "pnlFirstDerivMin";
     /**
      * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
      */
-    public static final String PNL_COEF_MAX = "pnlCoefMax";   /**
+    public static final String PNL_FIRST_DERIVATIVE_MAX = "pnlFirstDerivMax";   /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";

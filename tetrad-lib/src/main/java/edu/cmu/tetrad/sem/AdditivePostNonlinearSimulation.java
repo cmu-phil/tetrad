@@ -69,7 +69,20 @@ public class AdditivePostNonlinearSimulation {
      * This map is initialized and populated during the setup of the data generation process, ensuring that every
      * parent-child relationship in the graph is associated with the appropriate functional dependencies.
      */
-    private final Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
+    private Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
+    /**
+     * A map where each key is a node in the graph, and each value is a function representing the post-nonlinear
+     * transformation applied to that node.
+     * <p>
+     * This map defines the post-nonlinear mechanisms for variables in the graph, allowing customization of how the
+     * nonlinearity is applied to each node's value. The functions are expected to take a double value as input and
+     * return a transformed double value as output.
+     * <p>
+     * It is used during the data generation process to apply specified post-nonlinear transformations to the synthetic
+     * data after applying additive noise and parent functions. If not explicitly provided, default transformations may
+     * be used.
+     */
+    private Map<Node, Function<Double, Double>> postNonlinearFunctions = new HashMap<>();
     /**
      * Represents the rescale-bound used to scale the generated data. This value is used to rescale the data to a
      * specified bound after the post-nonlinear transformations have been applied for each new variable simulated. The
@@ -80,7 +93,8 @@ public class AdditivePostNonlinearSimulation {
     /**
      * Constructs an AdditivePostNonlinearSimulation with the specified graph, number of samples, noise distribution,
      * derivative bounds, coefficient bounds, and Taylor series degree. This simulation generates synthetic data based
-     * on post-nonlinear causal mechanisms defined in the provided directed acyclic graph.
+     * on post-nonlinear causal mechanisms defined in the provided directed acyclic graph. The parent functions are
+     * initialized randomly.
      *
      * @param graph              The directed acyclic graph (DAG) that defines the causal relationships among
      *                           variables.
@@ -99,30 +113,131 @@ public class AdditivePostNonlinearSimulation {
     public AdditivePostNonlinearSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                            double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
                                            int taylorSeriesDegree) {
+        this(graph, numSamples, noiseDistribution, derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree,
+                null, null);
+    }
+
+    /**
+     * Constructs an AdditivePostNonlinearSimulation with the specified graph, number of samples, noise distribution,
+     * parent functions, and post-nonlinear functions. This simulation generates synthetic data based on post-nonlinear
+     * causal mechanisms defined in the provided directed acyclic graph (DAG).
+     *
+     * @param graph               The directed acyclic graph (DAG) that defines the causal relationships among variables.
+     *                            The graph must be acyclic for the simulation to work.
+     * @param numSamples          The number of samples to generate for the simulation. Must be a positive integer.
+     * @param noiseDistribution   The real-valued noise distribution used for simulating additive noise in the causal
+     *                            mechanisms.
+     * @param parentFunctions     A map specifying functions representing the relationships between parent nodes and
+     *                            their corresponding child node in the graph. The keys are nodes, and the values are
+     *                            maps where keys are parent nodes, and values are functions defining the relationship.
+     *                            If null, parent functions are initialized randomly.
+     * @param postNonlinearFunctions A map specifying post-nonlinear transformation functions for each node in the
+     *                               graph. For each node, the function provides a transformation to be applied after
+     *                               simulating the relationships. If null, default functions are applied.
+     */
+    public AdditivePostNonlinearSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                           Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
+                                           Map<Node, Function<Double, Double>> postNonlinearFunctions) {
+        this(graph, numSamples, noiseDistribution, -1, -1, -1, -1, -1,
+                parentFunctions, postNonlinearFunctions);
+    }
+
+    /**
+     * Constructs an AdditivePostNonlinearSimulation with the specified graph, number of samples, noise distribution,
+     * derivative bounds, coefficient bounds, and Taylor series degree. This simulation generates synthetic data based
+     * on post-nonlinear causal mechanisms defined in the provided directed acyclic graph.
+     * <p>
+     * This is a private constructor that initializes the simulation with the specified parameters and parent
+     * functions.
+     *
+     * @param graph              The directed acyclic graph (DAG) that defines the causal relationships among variables.
+     *                           It must be acyclic, otherwise an IllegalArgumentException is thrown.
+     * @param numSamples         The number of samples to generate for the simulation. Must be a positive integer.
+     * @param noiseDistribution  The real-valued noise distribution used for simulating additive noise in the causal
+     *                           mechanisms.
+     * @param derivMin           The minimum bound for the derivative of the causal functions. Must be less than or
+     *                           equal to derivMax.
+     * @param derivMax           The maximum bound for the derivative of the causal functions.
+     * @param firstDerivMin      The minimum bound for f'(0) in the causal functions. Must be less than or equal to
+     *                           firstDerivMax.
+     * @param firstDerivMax      The maximum bound for f'(0) in the causal functions.
+     * @param taylorSeriesDegree The degree of the Taylor series used to approximate the causal functions. Must be a
+     *                           positive integer.
+     * @param parentFunctions    A map specifying the parent functions for relationships between nodes. For a node, all
+     *                           its parent nodes in the graph must have defined functions. If null, the parent
+     *                           functions are initialized randomly.
+     * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
+     *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
+     *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
+     *                                  defined graph structure.
+     */
+    private AdditivePostNonlinearSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                            double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                                            int taylorSeriesDegree, Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
+                                            Map<Node, Function<Double, Double>> postNonlinearFunctions) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
-        }
-
-        if (derivMin > derivMax) {
-            throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
-        }
-
-        if (firstDerivMin > firstDerivMax) {
-            throw new IllegalArgumentException("Coefficient min must be less than or equal to coefficient max.");
         }
 
         if (numSamples < 1) {
             throw new IllegalArgumentException("Number of samples must be positive.");
         }
 
-        if (taylorSeriesDegree < 1) {
-            throw new IllegalArgumentException("Taylor series degree must be a positive integer.");
-        }
-
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
-        initializeParentFunctions(firstDerivMin, firstDerivMax, derivMin, derivMax, taylorSeriesDegree);
+
+        if (parentFunctions != null) {
+            // Check to make sure all nodes in the graph have parent functions for all parents.
+            for (Node node : graph.getNodes()) {
+                if (!parentFunctions.containsKey(node)) {
+                    throw new IllegalArgumentException("Parent functions must be provided for all nodes in the graph.");
+                }
+                for (Node parent : graph.getParents(node)) {
+                    if (!parentFunctions.get(node).containsKey(parent)) {
+                        throw new IllegalArgumentException("Parent functions must be provided for all parents of each node.");
+                    }
+                }
+            }
+
+            this.parentFunctions = parentFunctions;
+        } else {
+            if (derivMin > derivMax) {
+                throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
+            }
+
+            if (firstDerivMin > firstDerivMax) {
+                throw new IllegalArgumentException("Coefficient min must be less than or equal to coefficient max.");
+            }
+
+            if (taylorSeriesDegree < 1) {
+                throw new IllegalArgumentException("Taylor series degree must be a positive integer.");
+            }
+
+            for (Node child : this.graph.getNodes()) {
+                Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
+                for (Node parent : this.graph.getParents(child)) {
+                    TaylorSeries taylor = getTaylorSeries(firstDerivMin, firstDerivMax, derivMin, derivMax, taylorSeriesDegree);
+                    parentFunctions1.put(parent, taylor::evaluate);
+                }
+                this.parentFunctions.put(child, parentFunctions1);
+            }
+        }
+
+        if (postNonlinearFunctions != null) {
+            for (Node node : graph.getNodes()) {
+                if (!postNonlinearFunctions.containsKey(node)) {
+                    throw new IllegalArgumentException("Post-nonlinear functions must be provided for all nodes in the graph.");
+                }
+            }
+            this.postNonlinearFunctions = postNonlinearFunctions;
+        } else {
+            for (Node node : this.graph.getNodes()) {
+                RandomPiecewiseLinear randomPiecewiseLinear = RandomPiecewiseLinear.get(-1, 1, 20);
+                Function<Double, Double> g = randomPiecewiseLinear::evaluate;
+                this.postNonlinearFunctions.put(node, g);
+            }
+        }
     }
 
     /**
@@ -130,9 +245,9 @@ public class AdditivePostNonlinearSimulation {
      * Taylor series is defined by its degree and its derivatives, where the coefficients are sampled uniformly from the
      * given ranges.
      *
-     * @param derativeMin        The minimum bound for the derivative coefficients of the Taylor series (except for the
+     * @param derivMin           The minimum bound for the derivative coefficients of the Taylor series (except for the
      *                           first derivative).
-     * @param derivateMax        The maximum bound for the derivative coefficients of the Taylor series (except for the
+     * @param derivMax           The maximum bound for the derivative coefficients of the Taylor series (except for the
      *                           first derivative).
      * @param firstDerivMin      The minimum bound for f'(0) in the Taylor series.
      * @param firstDerivMax      The maximum bound for f'(0) in the Taylor series.
@@ -140,11 +255,11 @@ public class AdditivePostNonlinearSimulation {
      *                           Must be a non-negative integer.
      * @return A TaylorSeries instance with randomly generated coefficients for the specified degree and ranges.
      */
-    private static @NotNull TaylorSeries getTaylorSeries(double derativeMin, double derivateMax, double firstDerivMin,
+    private static @NotNull TaylorSeries getTaylorSeries(double derivMin, double derivMax, double firstDerivMin,
                                                          double firstDerivMax, int taylorSeriesDegree) {
         double[] derivatives = new double[taylorSeriesDegree + 1];
         for (int i1 = 0; i1 <= taylorSeriesDegree; i1++) {
-            derivatives[i1] = RandomUtil.getInstance().nextUniform(derativeMin, derivateMax);
+            derivatives[i1] = RandomUtil.getInstance().nextUniform(derivMin, derivMax);
         }
 
         derivatives[1] = RandomUtil.getInstance().nextUniform(firstDerivMin, firstDerivMax);
@@ -232,8 +347,7 @@ public class AdditivePostNonlinearSimulation {
                 DataTransforms.scale(data, rescaleBound, node);
             }
 
-            RandomPiecewiseLinear randomPiecewiseLinear = RandomPiecewiseLinear.get(-1, 1, 20);
-            Function<Double, Double> g = randomPiecewiseLinear::evaluate;
+            var g = postNonlinearFunctions.get(node);
 
             for (int sample = 0; sample < numSamples; sample++) {
                 data.setDouble(sample, nodeToIndex.get(node), g.apply(data.getDouble(sample, nodeToIndex.get(node))));
@@ -241,29 +355,6 @@ public class AdditivePostNonlinearSimulation {
         }
 
         return data;
-    }
-
-    /**
-     * Initializes the parent functions for each child node in the directed acyclic graph (DAG). This method associates
-     * each parent node of a child with a Taylor series function that defines the causal relationship between them. The
-     * Taylor series is generated with random coefficients within the specified derivative and coefficient bounds.
-     *
-     * @param derativeMin        The minimum bound for the derivative coefficients of the Taylor series.
-     * @param derivateMax        The maximum bound for the derivative coefficients of the Taylor series.
-     * @param coefMin            The minimum bound for the coefficients of the Taylor series.
-     * @param coefMax            The maximum bound for the coefficients of the Taylor series.
-     * @param taylorSeriesDegree The degree of the Taylor series, indicating the number of terms to include.
-     */
-    private void initializeParentFunctions(double derativeMin, double derivateMax, double coefMin, double coefMax,
-                                           int taylorSeriesDegree) {
-        for (Node child : graph.getNodes()) {
-            Map<Node, Function<Double, Double>> parentFunctions = new HashMap<>();
-            for (Node parent : graph.getParents(child)) {
-                TaylorSeries taylor = getTaylorSeries(derativeMin, derivateMax, coefMin, coefMax, taylorSeriesDegree);
-                parentFunctions.put(parent, taylor::evaluate);
-            }
-            this.parentFunctions.put(child, parentFunctions);
-        }
     }
 
     /**
