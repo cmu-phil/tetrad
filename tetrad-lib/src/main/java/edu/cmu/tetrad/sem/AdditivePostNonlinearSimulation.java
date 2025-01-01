@@ -339,7 +339,7 @@ public class AdditivePostNonlinearSimulation {
 
                     // Add noise
                     double noisyOutput = linearCombination + noiseDistribution.sample();
-                    data.setDouble(sample, nodeToIndex.get(node), noisyOutput);// g.apply(noisyOutput));
+                    data.setDouble(sample, nodeToIndex.get(node), noisyOutput);
                 }
             }
 
