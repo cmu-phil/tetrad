@@ -18,11 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a random additive post-nonlinear SEM simulation.
+ * This class represents a random additive post-nonlinear causal additive model.
  *
  * @author josephramsey
  */
-public class AdditivePostNonlinearSimulation implements Simulation {
+public class PostnonlinearCamSimulation implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class AdditivePostNonlinearSimulation implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public AdditivePostNonlinearSimulation(RandomGraph graph) {
+    public PostnonlinearCamSimulation(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -90,6 +90,15 @@ public class AdditivePostNonlinearSimulation implements Simulation {
         return dataSet;
     }
 
+    /**
+     * Creates simulated data and associated graphs based on the given parameters. This method generates a specified
+     * number of graphs and datasets using a random graph creation process, applies a layout to the graphs, simulates
+     * data according to the graph structure, and performs post-processing on the data.
+     *
+     * @param parameters The parameters used to control the simulation process, including settings for seed, number of
+     *                   runs, and other configurations.
+     * @param newModel   A flag indicating whether a new model should be created for the simulation.
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -171,7 +180,7 @@ public class AdditivePostNonlinearSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Additive post-nonlinear SEM simulation using " + this.randomGraph.getDescription();
+        return "Post-nonlinear CAM (PCAM) simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -180,7 +189,7 @@ public class AdditivePostNonlinearSimulation implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Additive post-nonlinear SEM Simulation";
+        return "Post-nonlinear GAM Simulation";
     }
 
     /**
@@ -216,11 +225,21 @@ public class AdditivePostNonlinearSimulation implements Simulation {
         return parameters;
     }
 
+    /**
+     * Returns the random graph class used in the simulation.
+     *
+     * @return The class of the random graph used in the simulation.
+     */
     @Override
     public Class<? extends RandomGraph> getRandomGraphClass() {
         return randomGraph.getClass();
     }
 
+    /**
+     * Returns the class of the current simulation.
+     *
+     * @return The class of the simulation extending the Simulation interface.
+     */
     @Override
     public Class<? extends Simulation> getSimulationClass() {
         return getClass();
@@ -234,18 +253,18 @@ public class AdditivePostNonlinearSimulation implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(Graph graph, Parameters parameters) {
-        return runAdditivePostnonlinearSimulation(graph, parameters);
+        return runPostnonlinearGamSimulation(graph, parameters);
     }
 
     /**
-     * Executes a post-nonlinear simulation to generate a synthetic dataset based on the provided graph, number of
+     * Executes a post-nonlinear GAM simulation to generate a synthetic dataset based on the provided graph, number of
      * samples, and noise standard deviation using the default configuration of the PNLDataGenerator.
      *
-     * @param graph      the graph representing the causal relationships used in the simulation.
+     * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runAdditivePostnonlinearSimulation(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.AdditivePostNonlinearSimulation generator = new edu.cmu.tetrad.sem.AdditivePostNonlinearSimulation(graph, parameters.getInt(Params.SAMPLE_SIZE),
+    private DataSet runPostnonlinearGamSimulation(Graph graph, Parameters parameters) {
+        edu.cmu.tetrad.sem.PostnonlinearCamSimulation generator = new edu.cmu.tetrad.sem.PostnonlinearCamSimulation(graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.PNL_BETA_ALPHA), parameters.getDouble(Params.PNL_BETA_BETA)),
                 parameters.getDouble(Params.PNL_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_DERIVATIVE_MAX),
                 parameters.getDouble(Params.PNL_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_FIRST_DERIVATIVE_MAX),

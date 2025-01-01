@@ -62,7 +62,7 @@ public class ParameterTab extends JPanel {
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.POST_NONLINEAR_STRUCTURAL_EQUATION_MODEL,
+            SimulationTypes.POST_NONLINEAR_CAM,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
@@ -192,8 +192,8 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.POST_NONLINEAR_STRUCTURAL_EQUATION_MODEL:
-                        this.simulation.setSimulation(new AdditivePostNonlinearSimulation(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.POST_NONLINEAR_CAM:
+                        this.simulation.setSimulation(new PostnonlinearCamSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LINEAR_FISHER_MODEL:
                         this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());

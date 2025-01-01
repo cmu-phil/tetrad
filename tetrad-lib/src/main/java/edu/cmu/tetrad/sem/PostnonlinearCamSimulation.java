@@ -24,15 +24,32 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Class representing a simulation for generating synthetic data based on the Additive Post-Nonlinear (APNL) model. This
- * simulation utilizes a causal structure defined by a directed acyclic graph (DAG) and includes configurable
- * mechanisms, noise distributions, and rescaling options.
+ * Class representing a simulation for generating synthetic data based on the Post-nonlinear Causal Additive Model
+ * (PCAM) model. This simulation utilizes a causal structure defined by a directed acyclic graph (DAG) and includes
+ * configurable mechanisms, noise distributions, and rescaling options.
  * <p>
- * The AdditivePostNonlinearSimulation class is primarily used to model causal relationships between variables and
- * create synthetic data that adheres to these relationships. It applies post-nonlinear transformations combined with
+ * The PCAM class is primarily used to model causal relationships between variables and create synthetic data that
+ * adheres to these relationships. It applies post-nonlinear transformations to additive nonlinar models combined with
  * random noise, making the generated data more closely resemble real-world processes.
+ * <p>
+ * Bühlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
+ * penalized regression". The Annals of Statistics.
+ * <p>
+ * Peters, J., Mooij, J. M., Janzing, D., &amp; Schölkopf, B. (2014). "Causal Discovery with Continuous Additive Noise
+ * Models". Journal of Machine Learning Research.
+ * <p>
+ * Zhang, K., &amp; Hyvarinen, A. (2012). On the identifiability of the post-nonlinear causal model. arXiv preprint
+ * arXiv:1205.2599.
+ * <p>
+ * Hastie, T., &amp; Tibshirani, R. (1986). "Generalized Additive Models".
+ * <p>
+ * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
+ * Results"
+ * <p>
+ * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
+ * Machine Learning Research, 9(5).
  */
-public class AdditivePostNonlinearSimulation {
+public class PostnonlinearCamSimulation {
     /**
      * Represents the graphical structure used to encode the causal relationships between variables in the context of
      * data generation. This variable holds the directed graph that defines the causal dependencies, which is central to
@@ -91,10 +108,9 @@ public class AdditivePostNonlinearSimulation {
     private Map<Node, Function<Double, Double>> postNonlinearFunctions = new HashMap<>();
 
     /**
-     * Constructs an AdditivePostNonlinearSimulation with the specified graph, number of samples, noise distribution,
-     * derivative bounds, coefficient bounds, and Taylor series degree. This simulation generates synthetic data based
-     * on post-nonlinear causal mechanisms defined in the provided directed acyclic graph. The parent functions are
-     * initialized randomly.
+     * Constructs an PCAM with the specified graph, number of samples, noise distribution, derivative bounds,
+     * coefficient bounds, and Taylor series degree. This simulation generates synthetic data based on post-nonlinear
+     * causal mechanisms defined in the provided directed acyclic graph. The parent functions are initialized randomly.
      *
      * @param graph              The directed acyclic graph (DAG) that defines the causal relationships among
      *                           variables.
@@ -110,17 +126,17 @@ public class AdditivePostNonlinearSimulation {
      * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
      *                                  firstDerivMin is greater than firstDerivMax, or if numSamples is less than 1.
      */
-    public AdditivePostNonlinearSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                           double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                           int taylorSeriesDegree, double rescaleBound) {
+    public PostnonlinearCamSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                      double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                                      int taylorSeriesDegree, double rescaleBound) {
         this(graph, numSamples, noiseDistribution, derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree,
                 null, null, rescaleBound);
     }
 
     /**
-     * Constructs an AdditivePostNonlinearSimulation with the specified graph, number of samples, noise distribution,
-     * parent functions, and post-nonlinear functions. This simulation generates synthetic data based on post-nonlinear
-     * causal mechanisms defined in the provided directed acyclic graph (DAG).
+     * Constructs a PCAM with the specified graph, number of samples, noise distribution, parent functions, and
+     * post-nonlinear functions. This simulation generates synthetic data based on post-nonlinear causal mechanisms
+     * defined in the provided directed acyclic graph (DAG).
      *
      * @param graph                  The directed acyclic graph (DAG) that defines the causal relationships among
      *                               variables. The graph must be acyclic for the simulation to work.
@@ -135,17 +151,17 @@ public class AdditivePostNonlinearSimulation {
      *                               graph. For each node, the function provides a transformation to be applied after
      *                               simulating the relationships. If null, default functions are applied.
      */
-    public AdditivePostNonlinearSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                           Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
-                                           Map<Node, Function<Double, Double>> postNonlinearFunctions, double rescaleBound) {
+    public PostnonlinearCamSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                      Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
+                                      Map<Node, Function<Double, Double>> postNonlinearFunctions, double rescaleBound) {
         this(graph, numSamples, noiseDistribution, -1, -1, -1, -1, -1,
                 parentFunctions, postNonlinearFunctions, rescaleBound);
     }
 
     /**
-     * Constructs an AdditivePostNonlinearSimulation with the specified graph, number of samples, noise distribution,
-     * derivative bounds, coefficient bounds, and Taylor series degree. This simulation generates synthetic data based
-     * on post-nonlinear causal mechanisms defined in the provided directed acyclic graph.
+     * Constructs a PCAM with the specified graph, number of samples, noise distribution, derivative bounds, coefficient
+     * bounds, and Taylor series degree. This simulation generates synthetic data based on post-nonlinear causal
+     * mechanisms defined in the provided directed acyclic graph.
      * <p>
      * This is a private constructor that initializes the simulation with the specified parameters and parent
      * functions.
@@ -171,10 +187,10 @@ public class AdditivePostNonlinearSimulation {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    private AdditivePostNonlinearSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                            double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                            int taylorSeriesDegree, Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
-                                            Map<Node, Function<Double, Double>> postNonlinearFunctions, double rescaleBound) {
+    private PostnonlinearCamSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                       double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                                       int taylorSeriesDegree, Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
+                                       Map<Node, Function<Double, Double>> postNonlinearFunctions, double rescaleBound) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -291,7 +307,7 @@ public class AdditivePostNonlinearSimulation {
                 100, 100, false);
 
         // Generate data
-        AdditivePostNonlinearSimulation generator = new AdditivePostNonlinearSimulation(graph, 1000,
+        PostnonlinearCamSimulation generator = new PostnonlinearCamSimulation(graph, 1000,
                 new BetaDistribution(2, 5), -1, 1,
                 0.1, 1, 5, 1);
         DataSet data = generator.generateData();
