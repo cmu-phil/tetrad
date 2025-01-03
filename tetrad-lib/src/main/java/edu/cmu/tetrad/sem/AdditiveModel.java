@@ -118,13 +118,13 @@ public class AdditiveModel {
     private Map<Node, Function<Double, Double>> blurs = new HashMap<>();
     /**
      * A flag indicating whether blurs should be applied after the noise has been added. If true, the blur functions are
-     * applied after the noise is added to the data, allowing for additional post-processing of the synthetic data.
-     * If false, they are added before the noise is applied, if supplied.
+     * applied after the noise is added to the data, allowing for additional post-processing of the synthetic data. If
+     * false, they are added before the noise is applied, if supplied.
      */
     private boolean postNonlinear;
 
     /**
-     * Constructs an PCAM with the specified graph, number of samples, noise distribution, derivative bounds,
+     * Constructs an addivie model with the specified graph, number of samples, noise distribution, derivative bounds,
      * coefficient bounds, and Taylor series degree. This simulation generates synthetic data based on post-nonlinear
      * causal mechanisms defined in the provided directed acyclic graph. The parent functions are initialized randomly.
      *
@@ -150,8 +150,8 @@ public class AdditiveModel {
     }
 
     /**
-     * Constructs a PCAM with the specified graph, number of samples, noise distribution, parent functions, and
-     * post-nonlinear functions. This simulation generates synthetic data based on post-nonlinear causal mechanisms
+     * Constructs a additive model with the specified graph, number of samples, noise distribution, parent functions,
+     * and post-nonlinear functions. This simulation generates synthetic data based on post-nonlinear causal mechanisms
      * defined in the provided directed acyclic graph (DAG).
      *
      * @param graph               The directed acyclic graph (DAG) that defines the causal relationships among
@@ -176,8 +176,8 @@ public class AdditiveModel {
     }
 
     /**
-     * Constructs a PCAM with the specified graph, number of samples, noise distribution, derivative bounds, coefficient
-     * bounds, and Taylor series degree.
+     * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
+     * coefficient bounds, and Taylor series degree.
      * <p>
      * This is a private constructor that initializes the simulation with the specified parameters and parent
      * functions.
@@ -395,7 +395,7 @@ public class AdditiveModel {
             }
 
             if (postNonlinear) {
-            blur(node, data, nodeToIndex);
+                blur(node, data, nodeToIndex);
             }
         }
 
@@ -435,8 +435,8 @@ public class AdditiveModel {
 
     /**
      * A flag indicating whether blurs should be applied after the noise has been added. If true, the blur functions are
-     * applied after the noise is added to the data, allowing for additional post-processing of the synthetic data.
-     * If false, they are added before the noise is applied, if supplied.
+     * applied after the noise is added to the data, allowing for additional post-processing of the synthetic data. If
+     * false, they are added before the noise is applied, if supplied.
      *
      * @param postNonlinear A boolean flag indicating whether post-nonlinear transformations should be applied after
      *                      adding noise to the data.
