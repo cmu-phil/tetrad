@@ -913,10 +913,6 @@ public final class Params {
      */
     public static final String ENSURE_MARKOV = "ensureMarkov";
     /**
-     * Constant <code>AM_NUM_BLUR_FUNCIONS="amNumBlurFunctions"</code>
-     */
-    public static final String AM_NUM_BLUR_FUNCIONS = "amNumBlurFunctions";
-    /**
      * Constant <code>AM_TAYLOR_SERIES_DEGREE="amTaylorSeriesDegree"</code>
      */
     public static final String AM_TAYLOR_SERIES_DEGREE = "amTaylorSeriesDegree";
@@ -953,9 +949,12 @@ public final class Params {
      */
     public static final String AM_FIRST_DERIVATIVE_MAX = "amFirstDerivMax";
     /**
-     * Constant <code>AM_POST_NONLINEAR="amPostNonlinear"</code>
+     * Constant <code>AM_DISTORT_PRE_ERROR="amDistortPreError"</code>
      */
-    public static final String AM_POST_NONLINEAR = "amPostNonlinear";
+    public static final String AM_DISTORT_PRE_ERROR = "amDistortPreError";    /**
+     * Constant <code>AM_DISTORT_POST_ERROR="amDistortPostError"</code>
+     */
+    public static final String AM_DISTORT_POST_ERROR = "amDistortPostError";
     /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */

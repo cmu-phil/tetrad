@@ -26,15 +26,15 @@ import java.util.stream.IntStream;
 
 /**
  * Represents an Additive Model for generating synthetic data based on a directed acyclic graph (DAG) as a sum of smooth
- * nonlinear influences from parents of a node to the node. Optionally, a blur function may be specified for each node
- * to mask the additivity of the node, to be applied after the sum of the parent influences and before the addition of
- * noise. With or without a blur function, independent noise is added to each node as it is generated, so that the
- * function will be an additive error model in each case. That is, each node is a nonlinear function of the parents plus
- * noise).
+ * nonlinear influences from parents of a node to the node. Optionally, a distortion function may be specified for each
+ * node to mask the additivity of the node, to be applied after the sum of the parent influences and before the addition
+ * of noise. With or without a distortion function, independent noise is added to each node as it is generated, so that
+ * the function will be an additive error model in each case. That is, each node is a nonlinear function of the parents
+ * plus noise).
  * <p>
- * This simulation without the blur implements the Causal Additive Model as given in Buhlmann et al. (2014) and Chu et
- * al. (2008). Zhang and Hyvarinen (2012) add a post-nonlinear distortion to the model after the error has been added;
- * this is not included here, though perhaps we may in the future allow it.
+ * This simulation without the distortion implements the Causal Additive Model as given in Buhlmann et al. (2014) and
+ * Chu et al. (2008). Zhang and Hyvarinen (2012) add a post-nonlinear distortion to the model after the error has been
+ * added; this is not included here, though perhaps we may in the future allow it.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -53,7 +53,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class AdditiveModel {
+public class NonlinearAdditiveModel {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -90,7 +90,6 @@ public class AdditiveModel {
      * applied to normalized data, ensuring it fits within the specified range during synthetic data generation.
      */
     private final double rescaleMax;
-    private final Map<Node, RandomPiecewiseLinearBijective> blurPiecewiseLinear = new HashMap<>();
     /**
      * A mapping structure that establishes relationships between nodes in a directed acyclic graph (DAG) and their
      * corresponding parent nodes, associating each parent-child relationship with a functional transformation. This is
@@ -102,78 +101,27 @@ public class AdditiveModel {
      * This map is initialized and populated during the setup of the data generation process, ensuring that every
      * parent-child relationship in the graph is associated with the appropriate functional dependencies.
      */
-    private Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
+    private final Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
     /**
-     * A map where each key is a node in the graph, and each value is a function representing the post-nonlinear
-     * transformation applied to that node.
+     * A flag indicating whether distortions should be applied to the data points before the introduction of error noise
+     * in the model.
      * <p>
-     * This map defines the post-nonlinear mechanisms for variables in the graph, allowing customization of how the
-     * nonlinearity is applied to each node's value. The functions are expected to take a double value as input and
-     * return a transformed double value as output.
+     * When set to true, the pre-error distortion functions are used to modify the values of nodes before any noise is
+     * added. This setting is relevant to the simulation process and affects how the synthetic data is generated in the
+     * model.
      * <p>
-     * It is used during the data generation process to apply specified post-nonlinear transformations to the synthetic
-     * data after applying additive noise and parent functions. If not explicitly provided, default transformations may
-     * be used.
+     * By default, this flag is set to false, meaning no distortions are applied before the addition of noise.
      */
-    private Map<Node, Function<Double, Double>> blurs = new HashMap<>();
+    private boolean distortPreError = false;
     /**
-     * A flag indicating whether blurs should be applied after the noise has been added. If true, the blur functions are
-     * applied after the noise is added to the data, allowing for additional post-processing of the synthetic data. If
-     * false, they are added before the noise is applied, if supplied.
+     * Indicates whether post-error distortion should be applied to the data in the model. When set to true, additional
+     * distortions are applied after the error terms are introduced to simulate post-nonlinear mechanisms. This
+     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
+     * and causal simulation.
+     * <p>
+     * This is the "post-nonlinear" distortion.
      */
-    private boolean postNonlinear;
-
-    /**
-     * Constructs an addivie model with the specified graph, number of samples, noise distribution, derivative bounds,
-     * coefficient bounds, and Taylor series degree. This simulation generates synthetic data based on post-nonlinear
-     * causal mechanisms defined in the provided directed acyclic graph. The parent functions are initialized randomly.
-     *
-     * @param graph              The directed acyclic graph (DAG) that defines the causal relationships among
-     *                           variables.
-     * @param numSamples         The number of samples to generate for the simulation. Must be a positive integer.
-     * @param noiseDistribution  The real-valued noise distribution used for simulating additive noise in the causal
-     *                           mechanisms.
-     * @param derivMin           The minimum bound for the derivative of the causal functions. Must be less than or
-     *                           equal to derivMax.
-     * @param derivMax           The maximum bound for the derivative of the causal functions.
-     * @param firstDerivMin      The minimum bound for f'(0) in the causal functions.
-     * @param firstDerivMax      The maximum bound for f'(0) in the causal functions.
-     * @param taylorSeriesDegree The degree of the Taylor series used to approximate the causal functions.
-     * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
-     *                                  firstDerivMin is greater than firstDerivMax, or if numSamples is less than 1.
-     */
-    public AdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                         double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                         int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
-        this(graph, numSamples, noiseDistribution, derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree,
-                null, null, rescaleMin, rescaleMax);
-    }
-
-    /**
-     * Constructs a additive model with the specified graph, number of samples, noise distribution, parent functions,
-     * and post-nonlinear functions. This simulation generates synthetic data based on post-nonlinear causal mechanisms
-     * defined in the provided directed acyclic graph (DAG).
-     *
-     * @param graph               The directed acyclic graph (DAG) that defines the causal relationships among
-     *                            variables. The graph must be acyclic for the simulation to work.
-     * @param numSamples          The number of samples to generate for the simulation. Must be a positive integer.
-     * @param noiseDistribution   The real-valued noise distribution used for simulating additive noise in the causal
-     *                            mechanisms.
-     * @param parentFunctions     A map specifying functions representing the relationships between parent nodes and
-     *                            their corresponding child node in the graph. The keys are nodes, and the values are
-     *                            maps where keys are parent nodes, and values are functions defining the relationship.
-     *                            If null, parent functions are initialized randomly.
-     * @param distortionFunctions A map specifying distortion function functions for each node in the graph. For each
-     *                            node, the function provides a transformation to be applied before adding noise. If
-     *                            null, distortion functions are initialized randomly.
-     */
-    public AdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                         Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
-                         Map<Node, Function<Double, Double>> distortionFunctions,
-                         double rescaleMin, double rescaleMax) {
-        this(graph, numSamples, noiseDistribution, -1, -1, -1, -1, -1,
-                parentFunctions, distortionFunctions, rescaleMin, rescaleMax);
-    }
+    private boolean distortPostError = false;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -195,19 +143,14 @@ public class AdditiveModel {
      * @param firstDerivMax      The maximum bound for f'(0) in the causal functions.
      * @param taylorSeriesDegree The degree of the Taylor series used to approximate the causal functions. Must be a
      *                           positive integer.
-     * @param parentFunctions    A map specifying the parent functions for relationships between nodes. For a node, all
-     *                           its parent nodes in the graph must have defined functions. If null, the parent
-     *                           functions are initialized randomly.
      * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
      *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    private AdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                          double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                          int taylorSeriesDegree, Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
-                          Map<Node, Function<Double, Double>> blurFunctions,
-                          double rescaleMin, double rescaleMax) {
+    public NonlinearAdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                   double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                                   int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -230,56 +173,25 @@ public class AdditiveModel {
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
 
-        if (parentFunctions != null) {
-            // Check to make sure all nodes in the graph have parent functions for all parents.
-            for (Node node : graph.getNodes()) {
-                if (!parentFunctions.containsKey(node)) {
-                    throw new IllegalArgumentException("Parent functions must be provided for all nodes in the graph.");
-                }
-                for (Node parent : graph.getParents(node)) {
-                    if (!parentFunctions.get(node).containsKey(parent)) {
-                        throw new IllegalArgumentException("Parent functions must be provided for all parents of each node.");
-                    }
-                }
-            }
-
-            this.parentFunctions = parentFunctions;
-        } else {
-            if (derivMin > derivMax) {
-                throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
-            }
-
-            if (firstDerivMin > firstDerivMax) {
-                throw new IllegalArgumentException("Coefficient min must be less than or equal to coefficient max.");
-            }
-
-            if (taylorSeriesDegree < 1) {
-                throw new IllegalArgumentException("Taylor series degree must be a positive integer.");
-            }
-
-            for (Node child : this.graph.getNodes()) {
-                Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
-                for (Node parent : this.graph.getParents(child)) {
-                    TaylorSeries taylor = getTaylorSeries(firstDerivMin, firstDerivMax, derivMin, derivMax, taylorSeriesDegree);
-                    parentFunctions1.put(parent, taylor::evaluate);
-                }
-                this.parentFunctions.put(child, parentFunctions1);
-            }
+        if (derivMin > derivMax) {
+            throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
         }
 
-        if (blurFunctions != null) {
-            for (Node node : graph.getNodes()) {
-                if (!blurFunctions.containsKey(node)) {
-                    throw new IllegalArgumentException("Blur functions must be provided for all nodes in the graph.");
-                }
+        if (firstDerivMin > firstDerivMax) {
+            throw new IllegalArgumentException("Coefficient min must be less than or equal to coefficient max.");
+        }
+
+        if (taylorSeriesDegree < 1) {
+            throw new IllegalArgumentException("Taylor series degree must be a positive integer.");
+        }
+
+        for (Node child : this.graph.getNodes()) {
+            Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
+            for (Node parent : this.graph.getParents(child)) {
+                TaylorSeries taylor = getTaylorSeries(firstDerivMin, firstDerivMax, derivMin, derivMax, taylorSeriesDegree);
+                parentFunctions1.put(parent, taylor::evaluate);
             }
-            this.blurs = blurFunctions;
-        } else {
-            for (Node node : this.graph.getNodes()) {
-                RandomPiecewiseLinearBijective randomPiecewiseLinear = new RandomPiecewiseLinearBijective(50,
-                        RandomUtil.getInstance().nextLong());
-                this.blurPiecewiseLinear.put(node, randomPiecewiseLinear);
-            }
+            this.parentFunctions.put(child, parentFunctions1);
         }
     }
 
@@ -329,7 +241,7 @@ public class AdditiveModel {
                 100, 100, false);
 
         // Generate data
-        AdditiveModel generator = new AdditiveModel(graph, 1000,
+        NonlinearAdditiveModel generator = new NonlinearAdditiveModel(graph, 1000,
                 new BetaDistribution(2, 5), -1, 1,
                 0.1, 1, 5, -1, 1);
         DataSet data = generator.generateData();
@@ -382,8 +294,8 @@ public class AdditiveModel {
                 }
             }
 
-            if (!postNonlinear) {
-                blur(node, data, nodeToIndex);
+            if (distortPreError) {
+                distort(node, data, nodeToIndex);
             }
 
             for (int sample = 0; sample < numSamples; sample++) {
@@ -394,39 +306,34 @@ public class AdditiveModel {
                 DataTransforms.scale(data, rescaleMin, rescaleMax, node);
             }
 
-            if (postNonlinear) {
-                blur(node, data, nodeToIndex);
+            if (distortPostError) {
+                distort(node, data, nodeToIndex);
             }
         }
 
         return data;
     }
 
-    private void blur(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
-        RandomPiecewiseLinearBijective rpl = blurPiecewiseLinear.get(node);
+    private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
+        RandomPiecewiseLinearBijective rpl = new RandomPiecewiseLinearBijective(50, RandomUtil.getInstance().nextLong());
         Function<Double, Double> g;
 
-        if (rpl != null) {
+        // Find the min and max of the column the node in the data.
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
 
-            // Find the min and max of the column the node in the data.
-            double min = Double.POSITIVE_INFINITY;
-            double max = Double.NEGATIVE_INFINITY;
-
-            for (int sample = 0; sample < numSamples; sample++) {
-                double value = data.getDouble(sample, nodeToIndex.get(node));
-                if (value < min) {
-                    min = value;
-                }
-                if (value > max) {
-                    max = value;
-                }
+        for (int sample = 0; sample < numSamples; sample++) {
+            double value = data.getDouble(sample, nodeToIndex.get(node));
+            if (value < min) {
+                min = value;
             }
-
-            rpl.setScale(min, max, rescaleMin, rescaleMax);
-            g = rpl::evaluate;
-        } else {
-            g = blurs.get(node);
+            if (value > max) {
+                max = value;
+            }
         }
+
+        rpl.setScale(min, max, rescaleMin, rescaleMax);
+        g = rpl::evaluate;
 
         for (int sample = 0; sample < numSamples; sample++) {
             data.setDouble(sample, nodeToIndex.get(node), g.apply(data.getDouble(sample, nodeToIndex.get(node))));
@@ -434,14 +341,32 @@ public class AdditiveModel {
     }
 
     /**
-     * A flag indicating whether blurs should be applied after the noise has been added. If true, the blur functions are
-     * applied after the noise is added to the data, allowing for additional post-processing of the synthetic data. If
-     * false, they are added before the noise is applied, if supplied.
+     * A flag indicating whether distortions should be applied to the data points before the introduction of error noise
+     * in the model.
+     * <p>
+     * When set to true, the pre-error distortion functions are used to modify the values of nodes before any noise is
+     * added. This setting is relevant to the simulation process and affects how the synthetic data is generated in the
+     * model.
+     * <p>
+     * By default, this flag is set to false, meaning no distortions are applied before the addition of noise.
      *
-     * @param postNonlinear A boolean flag indicating whether post-nonlinear transformations should be applied after
-     *                      adding noise to the data.
+     * @param distortPreError true if pre-error distortions should be applied, false otherwise.
      */
-    public void setPostNonlinear(boolean postNonlinear) {
-        this.postNonlinear = postNonlinear;
+    public void setDistortPreError(boolean distortPreError) {
+        this.distortPreError = distortPreError;
+    }
+
+    /**
+     * Indicates whether post-error distortion should be applied to the data in the model. When set to true, additional
+     * distortions are applied after the error terms are introduced to simulate post-nonlinear mechanisms. This
+     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
+     * and causal simulation.
+     * <p>
+     * This is the "post-nonlinear" distortion.
+     *
+     * @param distortPostError true if post-error distortions should be applied, false otherwise.
+     */
+    public void setDistortPostError(boolean distortPostError) {
+        this.distortPostError = distortPostError;
     }
 }

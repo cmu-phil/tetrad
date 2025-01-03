@@ -113,9 +113,9 @@ public class BasisFunctionBicScore implements Score {
             score += score1;
 
             // This should not be needed for an orthogonal basis.
-            if (basisType == 0 || variables.get(i) instanceof DiscreteVariable) {
+//            if (basisType == 0 || variables.get(i) instanceof DiscreteVariable) {
                 B.add(i_);
-            }
+//            }
         }
 
         return score;

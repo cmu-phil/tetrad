@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class AdditiveModel implements Simulation {
+public class NonlinearAdditiveModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class AdditiveModel implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public AdditiveModel(RandomGraph graph) {
+    public NonlinearAdditiveModel(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -214,7 +214,8 @@ public class AdditiveModel implements Simulation {
         parameters.add(Params.AM_DERIVATIVE_MAX);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
-        parameters.add(Params.AM_POST_NONLINEAR);
+        parameters.add(Params.AM_DISTORT_PRE_ERROR);
+        parameters.add(Params.AM_DISTORT_POST_ERROR);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -266,13 +267,14 @@ public class AdditiveModel implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runNonlinearAdditiveModelSimulation(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.AdditiveModel generator = new edu.cmu.tetrad.sem.AdditiveModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
+        edu.cmu.tetrad.sem.NonlinearAdditiveModel generator = new edu.cmu.tetrad.sem.NonlinearAdditiveModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_DERIVATIVE_MIN), parameters.getDouble(Params.AM_DERIVATIVE_MAX),
                 parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),
                 parameters.getInt(Params.AM_TAYLOR_SERIES_DEGREE),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
-        generator.setPostNonlinear(parameters.getBoolean(Params.AM_POST_NONLINEAR));
+        generator.setDistortPreError(parameters.getBoolean(Params.AM_DISTORT_PRE_ERROR));
+        generator.setDistortPostError(parameters.getBoolean(Params.AM_DISTORT_POST_ERROR));
         return generator.generateData();
     }
 }
