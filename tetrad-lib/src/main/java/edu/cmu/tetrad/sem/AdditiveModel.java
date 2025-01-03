@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.util.RandomPiecewiseLinear;
+import edu.cmu.tetrad.util.RandomPiecewiseLinearBijective;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaylorSeries;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -90,6 +90,7 @@ public class AdditiveModel {
      * applied to normalized data, ensuring it fits within the specified range during synthetic data generation.
      */
     private final double rescaleMax;
+    private final Map<Node, RandomPiecewiseLinearBijective> blurPiecewiseLinear = new HashMap<>();
     /**
      * A mapping structure that establishes relationships between nodes in a directed acyclic graph (DAG) and their
      * corresponding parent nodes, associating each parent-child relationship with a functional transformation. This is
@@ -115,6 +116,12 @@ public class AdditiveModel {
      * be used.
      */
     private Map<Node, Function<Double, Double>> blurs = new HashMap<>();
+    /**
+     * A flag indicating whether blurs should be applied after the noise has been added. If true, the blur functions are
+     * applied after the noise is added to the data, allowing for additional post-processing of the synthetic data.
+     * If false, they are added before the noise is applied, if supplied.
+     */
+    private boolean postNonlinear;
 
     /**
      * Constructs an PCAM with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -199,7 +206,7 @@ public class AdditiveModel {
     private AdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
                           double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
                           int taylorSeriesDegree, Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
-                          Map<Node, Function<Double, Double>> postNonlinearFunctions,
+                          Map<Node, Function<Double, Double>> blurFunctions,
                           double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
@@ -260,19 +267,18 @@ public class AdditiveModel {
             }
         }
 
-        if (postNonlinearFunctions != null) {
+        if (blurFunctions != null) {
             for (Node node : graph.getNodes()) {
-                if (!postNonlinearFunctions.containsKey(node)) {
-                    throw new IllegalArgumentException("Post-nonlinear functions must be provided for all nodes in the graph.");
+                if (!blurFunctions.containsKey(node)) {
+                    throw new IllegalArgumentException("Blur functions must be provided for all nodes in the graph.");
                 }
             }
-            this.blurs = postNonlinearFunctions;
+            this.blurs = blurFunctions;
         } else {
             for (Node node : this.graph.getNodes()) {
-                RandomPiecewiseLinear randomPiecewiseLinear = RandomPiecewiseLinear.get(0, 1,
-                        0, 1, 10, true);
-                Function<Double, Double> g = randomPiecewiseLinear::evaluate;
-                this.blurs.put(node, g);
+                RandomPiecewiseLinearBijective randomPiecewiseLinear = new RandomPiecewiseLinearBijective(50,
+                        RandomUtil.getInstance().nextLong());
+                this.blurPiecewiseLinear.put(node, randomPiecewiseLinear);
             }
         }
     }
@@ -376,30 +382,8 @@ public class AdditiveModel {
                 }
             }
 
-            Function<Double, Double> g = blurs.get(node);
-
-            if (g instanceof RandomPiecewiseLinear rpl) {
-
-                // Find the min and max of the column the node in the data.
-                double min = Double.POSITIVE_INFINITY;
-                double max = Double.NEGATIVE_INFINITY;
-
-                for (int sample = 0; sample < numSamples; sample++) {
-                    double value = data.getDouble(sample, nodeToIndex.get(node));
-                    if (value < min) {
-                        min = value;
-                    }
-                    if (value > max) {
-                        max = value;
-                    }
-                }
-
-                rpl.setScale(min, max, rescaleMin, rescaleMax);
-                g = rpl::evaluate;
-
-                for (int sample = 0; sample < numSamples; sample++) {
-                    data.setDouble(sample, nodeToIndex.get(node), g.apply(data.getDouble(sample, nodeToIndex.get(node))));
-                }
+            if (!postNonlinear) {
+                blur(node, data, nodeToIndex);
             }
 
             for (int sample = 0; sample < numSamples; sample++) {
@@ -410,13 +394,54 @@ public class AdditiveModel {
                 DataTransforms.scale(data, rescaleMin, rescaleMax, node);
             }
 
-//            var g = postNonlinearFunctions.get(node);
-//
-//            for (int sample = 0; sample < numSamples; sample++) {
-//                data.setDouble(sample, nodeToIndex.get(node), g.apply(data.getDouble(sample, nodeToIndex.get(node))));
-//            }
+            if (postNonlinear) {
+            blur(node, data, nodeToIndex);
+            }
         }
 
         return data;
+    }
+
+    private void blur(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
+        RandomPiecewiseLinearBijective rpl = blurPiecewiseLinear.get(node);
+        Function<Double, Double> g;
+
+        if (rpl != null) {
+
+            // Find the min and max of the column the node in the data.
+            double min = Double.POSITIVE_INFINITY;
+            double max = Double.NEGATIVE_INFINITY;
+
+            for (int sample = 0; sample < numSamples; sample++) {
+                double value = data.getDouble(sample, nodeToIndex.get(node));
+                if (value < min) {
+                    min = value;
+                }
+                if (value > max) {
+                    max = value;
+                }
+            }
+
+            rpl.setScale(min, max, rescaleMin, rescaleMax);
+            g = rpl::evaluate;
+        } else {
+            g = blurs.get(node);
+        }
+
+        for (int sample = 0; sample < numSamples; sample++) {
+            data.setDouble(sample, nodeToIndex.get(node), g.apply(data.getDouble(sample, nodeToIndex.get(node))));
+        }
+    }
+
+    /**
+     * A flag indicating whether blurs should be applied after the noise has been added. If true, the blur functions are
+     * applied after the noise is added to the data, allowing for additional post-processing of the synthetic data.
+     * If false, they are added before the noise is applied, if supplied.
+     *
+     * @param postNonlinear A boolean flag indicating whether post-nonlinear transformations should be applied after
+     *                      adding noise to the data.
+     */
+    public void setPostNonlinear(boolean postNonlinear) {
+        this.postNonlinear = postNonlinear;
     }
 }
