@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class PostnonlinearCamSimulation implements Simulation {
+public class AdditiveModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class PostnonlinearCamSimulation implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public PostnonlinearCamSimulation(RandomGraph graph) {
+    public AdditiveModel(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -180,7 +180,7 @@ public class PostnonlinearCamSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Post-nonlinear CAM (PCAM) simulation using " + this.randomGraph.getDescription();
+        return "Post-nonlinear Additive Model simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -189,7 +189,7 @@ public class PostnonlinearCamSimulation implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Post-nonlinear GAM Simulation";
+        return "Post-nonlinear Additive Model Simulation";
     }
 
     /**
@@ -205,14 +205,15 @@ public class PostnonlinearCamSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.add(Params.PNL_TAYLOR_SERIES_DEGREE);
-        parameters.add(Params.PNL_RESCALE_BOUND);
-        parameters.add(Params.PNL_BETA_ALPHA);
-        parameters.add(Params.PNL_BETA_BETA);
-        parameters.add(Params.PNL_DERIVATIVE_MIN);
-        parameters.add(Params.PNL_DERIVATIVE_MAX);
-        parameters.add(Params.PNL_FIRST_DERIVATIVE_MIN);
-        parameters.add(Params.PNL_FIRST_DERIVATIVE_MAX);
+        parameters.add(Params.AM_TAYLOR_SERIES_DEGREE);
+        parameters.add(Params.AM_RESCALE_MIN);
+        parameters.add(Params.AM_RESCALE_MAX);
+        parameters.add(Params.AM_BETA_ALPHA);
+        parameters.add(Params.AM_BETA_BETA);
+        parameters.add(Params.AM_DERIVATIVE_MIN);
+        parameters.add(Params.AM_DERIVATIVE_MAX);
+        parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
+        parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -258,17 +259,18 @@ public class PostnonlinearCamSimulation implements Simulation {
 
     /**
      * Executes a post-nonlinear GAM simulation to generate a synthetic dataset based on the provided graph, number of
-     * samples, and noise standard deviation using the default configuration of the PNLDataGenerator.
+     * samples, and noise standard deviation using the default configuration of the amDataGenerator.
      *
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runPostnonlinearGamSimulation(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.PostnonlinearCamSimulation generator = new edu.cmu.tetrad.sem.PostnonlinearCamSimulation(graph, parameters.getInt(Params.SAMPLE_SIZE),
-                new BetaDistribution(parameters.getDouble(Params.PNL_BETA_ALPHA), parameters.getDouble(Params.PNL_BETA_BETA)),
-                parameters.getDouble(Params.PNL_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_DERIVATIVE_MAX),
-                parameters.getDouble(Params.PNL_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.PNL_FIRST_DERIVATIVE_MAX),
-                parameters.getInt(Params.PNL_TAYLOR_SERIES_DEGREE), parameters.getDouble(Params.PNL_RESCALE_BOUND));
+        edu.cmu.tetrad.sem.AdditiveModel generator = new edu.cmu.tetrad.sem.AdditiveModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
+                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
+                parameters.getDouble(Params.AM_DERIVATIVE_MIN), parameters.getDouble(Params.AM_DERIVATIVE_MAX),
+                parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),
+                parameters.getInt(Params.AM_TAYLOR_SERIES_DEGREE),
+                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
         return generator.generateData();
     }
 }

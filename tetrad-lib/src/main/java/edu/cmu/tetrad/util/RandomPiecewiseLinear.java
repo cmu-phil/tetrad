@@ -7,38 +7,32 @@ import java.util.Arrays;
  */
 public class RandomPiecewiseLinear {
 
-    /**
-     * Number of linear segments to divide the range into.
-     */
+    private double xMin;
+    private double xMax;
+    private double yMin;
+    private double yMax;
     private final int numSegments;
+    private double[] breakpoints;
+    private double[] slopes;
+    private double[] intercepts;
+
+    private final boolean isDefaultRange; // True for (0,0) -> (1,1), False for (0,1) -> (1,0)
 
     /**
-     * Breakpoints (x-values) for the linear segments.
+     * Constructs a random piecewise linear function with specified parameters.
      */
-    private final double[] breakpoints;
-
-    /**
-     * Slopes for each segment.
-     */
-    private final double[] slopes;
-
-    /**
-     * Intercepts for each segment.
-     */
-    private final double[] intercepts;
-
-    /**
-     * Constructs a random piecewise linear function that is monotonic (invertible) within the specified x-range and
-     * splits the range into the given number of segments.
-     *
-     * @param xMin        the minimum x-value for the range
-     * @param xMax        the maximum x-value for the range
-     * @param numSegments the number of linear segments to divide the range into
-     */
-    private RandomPiecewiseLinear(double xMin, double xMax, int numSegments) {
+    private RandomPiecewiseLinear(double xMin, double xMax, double yMin, double yMax, int numSegments, boolean isDefaultRange) {
+        this.xMin = xMin;
+        this.xMax = xMax;
         this.numSegments = numSegments;
+        this.yMin = yMin;
+        this.yMax = yMax;
+        this.isDefaultRange = isDefaultRange;
 
-        // Generate random breakpoints (segments) in the x-range
+        initialize(xMin, xMax, numSegments, yMin, yMax);
+    }
+
+    private void initialize(double xMin, double xMax, int numSegments, double yMin, double yMax) {
         breakpoints = new double[numSegments + 1];
         breakpoints[0] = xMin;
         breakpoints[numSegments] = xMax;
@@ -48,69 +42,65 @@ public class RandomPiecewiseLinear {
         }
         Arrays.sort(breakpoints);
 
-        // Generate random slopes for each segment (positive for monotonicity)
         slopes = new double[numSegments];
         for (int i = 0; i < numSegments; i++) {
             slopes[i] = 0.5 + Math.random() * 1.5; // Slopes between 0.5 and 2.0
         }
 
-        // Calculate intercepts for each segment
         intercepts = new double[numSegments];
-        intercepts[0] = 0; // Start at y = 0 for the first breakpoint
+        if (isDefaultRange) {
+            intercepts[0] = yMin; // Start at yMin
+        } else {
+            intercepts[0] = yMax; // Start at yMax
+        }
+
         for (int i = 1; i < numSegments; i++) {
             double dx = breakpoints[i] - breakpoints[i - 1];
             intercepts[i] = intercepts[i - 1] + slopes[i - 1] * dx;
         }
-    }
 
-    /**
-     * Returns a new instance of RandomPiecewiseLinear with the specified x-range and number of segments.
-     *
-     * @param xMin        the minimum x-value for the range
-     * @param xMax        the maximum x-value for the range
-     * @param numSegments the number of linear segments to divide the range into
-     * @return a new instance of RandomPiecewiseLinear
-     */
-    public static RandomPiecewiseLinear get(double xMin, double xMax, int numSegments) {
-        return new RandomPiecewiseLinear(xMin, xMax, numSegments);
-    }
+        double initialYMin = intercepts[0];
+        double initialYMax = intercepts[numSegments - 1]
+                             + slopes[numSegments - 1] * (xMax - breakpoints[numSegments - 1]);
 
-    /**
-     * The main method demonstrates the usage of the RandomPiecewiseLinear class.
-     *
-     * @param args the command-line arguments (not used in this implementation)
-     */
-    public static void main(String[] args) {
-        // Example usage
-        double[] xValues = {-10, -5, 0, 5, 10}; // Input points
+        double scale = (yMax - yMin) / (initialYMax - initialYMin);
+        double offset = yMin - initialYMin * scale;
 
-        // Get the min and max of the x values
-        double xMin = Arrays.stream(xValues).min().orElseThrow();
-        double xMax = Arrays.stream(xValues).max().orElseThrow();
-
-        RandomPiecewiseLinear piecewiseLinear = RandomPiecewiseLinear.get(xMin, xMax, 3);
-
-        // Print the output
-        for (double xValue : xValues) {
-            System.out.printf("x: %f, y: %f%n", xValue, piecewiseLinear.evaluate(xValue));
+        for (int i = 0; i < numSegments; i++) {
+            slopes[i] *= scale;
+            intercepts[i] = intercepts[i] * scale + offset;
         }
     }
 
-    /**
-     * Evaluates the piecewise linear function at the specified x-value.
-     *
-     * @param x the input x-value for which the function is evaluated
-     * @return the corresponding y-value of the function at the specified x
-     */
+    public static RandomPiecewiseLinear get(double xMin, double xMax, double yMin, double yMax, int numSegments, boolean isDefaultRange) {
+        return new RandomPiecewiseLinear(xMin, xMax, yMin, yMax, numSegments, isDefaultRange);
+    }
+
     public double evaluate(double x) {
-        // Find the segment for this x-value
         int segment = 0;
         while (segment < numSegments && x > breakpoints[segment + 1]) {
             segment++;
         }
 
-        // Compute y based on the slope and intercept of the segment
         double dx = x - breakpoints[segment];
         return intercepts[segment] + slopes[segment] * dx;
+    }
+
+    public void setScale(double xMin, double xMax, double yMin, double yMax) {
+        this.xMin = xMin;
+        this.xMax = xMax;
+        this.yMin = yMin;
+        this.yMax = yMax;
+        initialize(xMin, xMax, numSegments, yMin, yMax);
+    }
+
+    public static void main(String[] args) {
+        RandomPiecewiseLinear piecewiseLinear = RandomPiecewiseLinear.get(0, 1, 0, 1, 5, true);
+        piecewiseLinear.setScale(-10, 10, 0, 100);
+
+        double[] xValues = {-10, -5, 0, 5, 10};
+        for (double x : xValues) {
+            System.out.printf("x: %f, y: %f%n", x, piecewiseLinear.evaluate(x));
+        }
     }
 }

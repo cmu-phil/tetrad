@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.StatUtils;
@@ -37,6 +38,7 @@ public class BasisFunctionBicScore implements Score {
      * of a statistical model to a data set within the context of structural equation modeling (SEM).
      */
     private final SemBicScore bic;
+    private final int basisType/**/;
     /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
@@ -57,8 +59,9 @@ public class BasisFunctionBicScore implements Score {
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
                                  int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
+        this.basisType = basisType;
 
-        boolean usePseudoInverse = false;
+        boolean usePseudoInverse = true;
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
                 usePseudoInverse);
@@ -108,7 +111,11 @@ public class BasisFunctionBicScore implements Score {
             }
 
             score += score1;
-            B.add(i_);
+
+            // This should not be needed for an orthogonal basis.
+            if (basisType == 0 || variables.get(i) instanceof DiscreteVariable) {
+                B.add(i_);
+            }
         }
 
         return score;
@@ -176,7 +183,6 @@ public class BasisFunctionBicScore implements Score {
      */
     @Override
     public String toString() {
-        NumberFormat nf = new DecimalFormat("0.00");
         return "Basis Function Score (BFS)";
     }
 

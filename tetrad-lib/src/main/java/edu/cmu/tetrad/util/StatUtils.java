@@ -2195,7 +2195,7 @@ public final class StatUtils {
      * @param c a int
      * @return a double
      */
-    public static double factorial(int c) {
+    public static long factorial(int c) {
         if (c < 0) throw new IllegalArgumentException("Can't take the factorial of a negative number: " + c);
         if (c == 0) return 1;
         return c * StatUtils.factorial(c - 1);

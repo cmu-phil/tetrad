@@ -913,42 +913,45 @@ public final class Params {
      */
     public static final String ENSURE_MARKOV = "ensureMarkov";
     /**
-     * Constant <code>NUM_POST_NONLINEAR_FUNCTIONS="numPostNonlinearFunctions"</code>
+     * Constant <code>AM_NUM_BLUR_FUNCIONS="amNumBlurFunctions"</code>
      */
-    public static final String PNL_NUM_POST_NONLINEAR_FUNCTIONS = "pnlNumPostNonlinearFunctions";
+    public static final String AM_NUM_BLUR_FUNCIONS = "amNumBlurFunctions";
     /**
-     * Constant <code>TAYLOR_SERIES_DEGREE="taylorSeriesDegree"</code>
+     * Constant <code>AM_TAYLOR_SERIES_DEGREE="amTaylorSeriesDegree"</code>
      */
-    public static final String PNL_TAYLOR_SERIES_DEGREE = "pnlTaylorSeriesDegree";
+    public static final String AM_TAYLOR_SERIES_DEGREE = "amTaylorSeriesDegree";
     /**
-     * Constant <code>RESCALE_BOUND="rescaleBound"</code>
+     * Constant <code>AM_RESCALE_MIN="amRescaleMin"</code>
      */
-    public static final String PNL_RESCALE_BOUND = "pnlRescaleBound";
-
+    public static final String AM_RESCALE_MIN = "amRescaleMin";
     /**
-     * Constant <code>PNL_BETA_ALPHA="pnlBetaAlpha"</code>
+     * Constant <code>AM_RESCALE_MAX="amRescaleMax"</code>
      */
-    public static final String PNL_BETA_ALPHA = "pnlBetaAlpha";
+    public static final String AM_RESCALE_MAX = "amRescaleMax";
     /**
-     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     * Constant <code>AM_BETA_ALPHA="amBetaAlpha"</code>
      */
-    public static final String PNL_BETA_BETA = "pnlBetaBeta";
+    public static final String AM_BETA_ALPHA = "amBetaAlpha";
     /**
-     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     * Constant <code>AM_BETA_BETA="amBetaBeta"</code>
      */
-    public static final String PNL_DERIVATIVE_MIN = "pnlDerivativeMin";
+    public static final String AM_BETA_BETA = "amBetaBeta";
     /**
-     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     * Constant <code>AM_DERIVATIVE_MIN="amDerivativeMin"</code>
      */
-    public static final String PNL_DERIVATIVE_MAX = "pnlDerivativeMax";
+    public static final String AM_DERIVATIVE_MIN = "amDerivativeMin";
     /**
-     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     * Constant <code>AM_DERIVATIVE_MAX="amDerivativeMax"</code>
      */
-    public static final String PNL_FIRST_DERIVATIVE_MIN = "pnlFirstDerivMin";
+    public static final String AM_DERIVATIVE_MAX = "amDerivativeMax";
     /**
-     * Constant <code>PNL_BETA_BETA="pnlBetaBeta"</code>
+     * Constant <code>AM_FIRST_DERIVATIVE_MIN="amFirstDerivMin"</code>
      */
-    public static final String PNL_FIRST_DERIVATIVE_MAX = "pnlFirstDerivMax";   /**
+    public static final String AM_FIRST_DERIVATIVE_MIN = "amFirstDerivMin";
+    /**
+     * Constant <code>AM_FIRST_DERIVATIVE_MAX="amFirstDerivMax"</code>
+     */
+    public static final String AM_FIRST_DERIVATIVE_MAX = "amFirstDerivMax";   /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";

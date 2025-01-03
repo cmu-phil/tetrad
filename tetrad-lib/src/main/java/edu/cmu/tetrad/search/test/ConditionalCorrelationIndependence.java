@@ -80,7 +80,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         if (basisScale == 0.0) {
             dataSet = DataTransforms.standardizeData(dataSet);
         } else if (basisScale > 0.0) {
-            dataSet = DataTransforms.scale(dataSet, basisScale);
+            dataSet = DataTransforms.scale(dataSet, -basisScale, basisScale);
         } else {
             throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be standardized.");
         }

@@ -6513,214 +6513,239 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="pnlNumPostNonlinearFunctions">pnlNumPostNonlinearFunctions</h3>
+            id="amNumPostNonlinearFunctions">amNumPostNonlinearFunctions</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="pnlNumPostNonlinearFunctions_short_desc">
-                PNL: The number of random post-nonlinear functions to choose from
+                    id="amNumPostNonlinearFunctions_short_desc">
+                am: The number of random post-nonlinear functions to choose from
             </span></li>
             <li>Long Description: <span
-                    id="pnlNumPostNonlinearFunctions_long_desc">
-                    PNL: The number of random post-nonlinear functions to choose from
+                    id="amNumPostNonlinearFunctions_long_desc">
+                    am: The number of random post-nonlinear functions to choose from
         </span></li>
             <li>Default
                 Value: <span
-                        id="pnlNumPostNonlinearFunctions_default_value">3</span></li>
+                        id="amNumPostNonlinearFunctions_default_value">3</span></li>
             <li>Lower Bound: <span
-                    id="pnlNumPostNonlinearFunctions_lower_bound">1</span></li>
+                    id="amNumPostNonlinearFunctions_lower_bound">1</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlNumPostNonlinearFunctions_upper_bound">2147483647</span></li>
+                        id="amNumPostNonlinearFunctions_upper_bound">2147483647</span></li>
             <li>Value Type: <span
-                    id="pnlNumPostNonlinearFunctions_value_type">Integer</span></li>
+                    id="amNumPostNonlinearFunctions_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="pnlTaylorSeriesDegree">pnlTaylorSeriesDegree</h3>
+            id="amTaylorSeriesDegree">amTaylorSeriesDegree</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="pnlTaylorSeriesDegree_short_desc">
-                PNL: The maximum exponent for a Taylor series to use as a random
+                    id="amTaylorSeriesDegree_short_desc">
+                am: The maximum exponent for a Taylor series to use as a random
                 post-nonlinear function
             </span></li>
             <li>Long Description: <span
-                    id="pnlTaylorSeriesDegree_long_desc">
-                    PNL: The maximum exponent for a Taylor series to use as a random
+                    id="amTaylorSeriesDegree_long_desc">
+                    am: The maximum exponent for a Taylor series to use as a random
                 post-nonlinear function. The f(0) term is set to 0.
         </span></li>
             <li>Default
                 Value: <span
-                        id="pnlTaylorSeriesDegree_default_value">5</span></li>
+                        id="amTaylorSeriesDegree_default_value">5</span></li>
             <li>Lower Bound: <span
-                    id="pnlTaylorSeriesDegree_lower_bound">1</span></li>
+                    id="amTaylorSeriesDegree_lower_bound">1</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlTaylorSeriesDegree_upper_bound">2147483647</span></li>
+                        id="amTaylorSeriesDegree_upper_bound">2147483647</span></li>
             <li>Value Type: <span
-                    id="pnlTaylorSeriesDegree_value_type">Integer</span></li>
+                    id="amTaylorSeriesDegree_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="pnlRescaleBound">pnlRescaleBound</h3>
+            id="amRescaleMin">amRescaleMin</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="pnlRescaleBound_short_desc">
-                PNL: Variables will be rescaled to [-b, b] for this b; if b = 0, no
-                rescaling will be done.
+                    id="amRescaleMin_short_desc">
+                am: Variables will be rescaled to [min, max] for this min; if min = max
+                no rescaling will be done
             </span></li>
             <li>Long Description: <span
-                    id="pnlRescaleBound_long_desc">
-                PNL: Variables will be rescaled to [-b, b] for this b; if b = 0, no
-                rescaling will be done.
+                    id="amRescaleMin_long_desc">
+                am: Variables will be rescaled to [min, max] for this min; if min = max
+                no rescaling will be done
         </span></li>
             <li>Default
                 Value: <span
-                        id="pnlRescaleBound_default_value">1</span></li>
+                        id="amRescaleMin_default_value">-1</span></li>
             <li>Lower Bound: <span
-                    id="pnlRescaleBound_lower_bound">0</span></li>
+                    id="amRescaleMin_lower_bound">-Infinity</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlRescaleBound_upper_bound">2147483647</span></li>
+                        id="amRescaleMin_upper_bound">Infinity</span></li>
             <li>Value Type: <span
-                    id="pnlRescaleBound_value_type">Double</span></li>
+                    id="amRescaleMin_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="pnlBetaAlpha">pnlBetaAlpha</h3>
+            id="amRescaleMax">amRescaleMax</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="pnlBetaAlpha_short_desc">
-                PNL: The 'alpha' shape parameter for the Beta noise terms.
+                    id="amRescaleMax_short_desc">
+                am: Variables will be rescaled to [min, max] for this max; if min = max
+                no rescaling will be done
             </span></li>
             <li>Long Description: <span
-                    id="pnlBetaAlpha_long_desc">
-                PNL: The 'alpha' shape parameter for the Beta noise terms.
+                    id="amRescaleMax_long_desc">
+                am: Variables will be rescaled to [min, max] for this max; if min = max
+                no rescaling will be done
         </span></li>
             <li>Default
                 Value: <span
-                        id="pnlBetaAlpha_default_value">2</span></li>
+                        id="amRescaleMax_default_value">1</span></li>
             <li>Lower Bound: <span
-                    id="pnlBetaAlpha_lower_bound">0</span></li>
+                    id="amRescaleMax_lower_bound">-Infinity</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlBetaAlpha_upper_bound">Infinity</span></li>
+                        id="amRescaleMax_upper_bound">Infinity</span></li>
             <li>Value Type: <span
-                    id="pnlBetaAlpha_value_type">Double</span></li>
+                    id="amRescaleMax_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="pnlBetaBeta">pnlBetaBeta</h3>
+            id="amBetaAlpha">amBetaAlpha</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="pnlBetaBeta_short_desc">
-                PNL: The 'beta' shape parameter for the Beta noise terms.
+                    id="amBetaAlpha_short_desc">
+                am: The 'alpha' shape parameter for the Beta noise terms.
             </span></li>
             <li>Long Description: <span
-                    id="pnlBetaBeta_long_desc">
-                PNL: The 'beta' shape parameter for the Beta noise terms.
+                    id="amBetaAlpha_long_desc">
+                am: The 'alpha' shape parameter for the Beta noise terms.
         </span></li>
             <li>Default
                 Value: <span
-                        id="pnlBetaBeta_default_value">5</span></li>
+                        id="amBetaAlpha_default_value">2</span></li>
             <li>Lower Bound: <span
-                    id="pnlBetaBeta_lower_bound">0</span></li>
+                    id="amBetaAlpha_lower_bound">0</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlBetaBeta_upper_bound">Infinity</span></li>
+                        id="amBetaAlpha_upper_bound">Infinity</span></li>
             <li>Value Type: <span
-                    id="pnlBetaBeta_value_type">Double</span></li>
+                    id="amBetaAlpha_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="pnlDerivativeMin">pnlDerivativeMin</h3>
+            id="amBetaBeta">amBetaBeta</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="pnlDerivativeMin_short_desc">
-                PNL: 'Min' for the U(min, max) range for random derivative values (with f(0) = 0)
+                    id="amBetaBeta_short_desc">
+                am: The 'beta' shape parameter for the Beta noise terms.
             </span></li>
             <li>Long Description: <span
-                    id="pnlDerivativeMin_long_desc">
-                PNL: 'Min' for the U(min, max) range for random derivative values (with f(0) = 0)
+                    id="amBetaBeta_long_desc">
+                am: The 'beta' shape parameter for the Beta noise terms.
         </span></li>
             <li>Default
                 Value: <span
-                        id="pnlDerivativeMin_default_value">-1</span></li>
+                        id="amBetaBeta_default_value">5</span></li>
             <li>Lower Bound: <span
-                    id="pnlDerivativeMin_lower_bound">-Infinity</span></li>
+                    id="amBetaBeta_lower_bound">0</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlDerivativeMin_upper_bound">Infinity</span></li>
+                        id="amBetaBeta_upper_bound">Infinity</span></li>
             <li>Value Type: <span
-                    id="pnlDerivativeMin_value_type">Double</span></li>
+                    id="amBetaBeta_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="pnlDerivativeMax">pnlDerivativeMax</h3>
+            id="amDerivativeMin">amDerivativeMin</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="pnlDerivativeMax_short_desc">
-                PNL: 'Max' for the U(min, max) range for random derivative values (with f(0) = 0)
+                    id="amDerivativeMin_short_desc">
+                am: 'Min' for the U(min, max) range for random derivative values (with f(0) = 0)
             </span></li>
             <li>Long Description: <span
-                    id="pnlDerivativeMax_long_desc">
-                PNL: 'Max' for the U(min, max) range for random derivative values (with f(0) = 0)
+                    id="amDerivativeMin_long_desc">
+                am: 'Min' for the U(min, max) range for random derivative values (with f(0) = 0)
         </span></li>
             <li>Default
                 Value: <span
-                        id="pnlDerivativeMax_default_value">1</span></li>
+                        id="amDerivativeMin_default_value">-1</span></li>
             <li>Lower Bound: <span
-                    id="pnlDerivativeMax_lower_bound">-Infinity</span></li>
+                    id="amDerivativeMin_lower_bound">-Infinity</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlDerivativeMax_upper_bound">Infinity</span></li>
+                        id="amDerivativeMin_upper_bound">Infinity</span></li>
             <li>Value Type: <span
-                    id="pnlDerivativeMax_value_type">Double</span></li>
+                    id="amDerivativeMin_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="pnlFirstDerivMin">pnlFirstDerivMin</h3>
+            id="amDerivativeMax">amDerivativeMax</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="pnlFirstDerivMin_short_desc">
-                PNL: 'Min' for the U(min, max) range for f'(0) for the causal function
+                    id="amDerivativeMax_short_desc">
+                am: 'Max' for the U(min, max) range for random derivative values (with f(0) = 0)
             </span></li>
             <li>Long Description: <span
-                    id="pnlFirstDerivMin_long_desc">
-                PNL: 'Min' for the U(min, max) range for f'(0) for the causal function
+                    id="amDerivativeMax_long_desc">
+                am: 'Max' for the U(min, max) range for random derivative values (with f(0) = 0)
         </span></li>
             <li>Default
                 Value: <span
-                        id="pnlFirstDerivMin_default_value">-.7</span></li>
+                        id="amDerivativeMax_default_value">1</span></li>
             <li>Lower Bound: <span
-                    id="pnlFirstDerivMin_lower_bound">-Infinity</span></li>
+                    id="amDerivativeMax_lower_bound">-Infinity</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlFirstDerivMin_upper_bound">Infinity</span></li>
+                        id="amDerivativeMax_upper_bound">Infinity</span></li>
             <li>Value Type: <span
-                    id="pnlFirstDerivMin_value_type">Double</span></li>
+                    id="amDerivativeMax_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
-            id="pnlFirstDerivMax">pnlFirstDerivMax</h3>
+            id="amFirstDerivMin">amFirstDerivMin</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="pnlFirstDerivMax_short_desc">
-                PNL: 'Max' for the U(min, max) range for f'(0) for the causal function
+                    id="amFirstDerivMin_short_desc">
+                am: 'Min' for the U(min, max) range for f'(0) for the causal function
             </span></li>
             <li>Long Description: <span
-                    id="pnlFirstDerivMax_long_desc">
-                PNL: 'Max' for the U(min, max) range for f'(0) for the causal function
+                    id="amFirstDerivMin_long_desc">
+                am: 'Min' for the U(min, max) range for f'(0) for the causal function
         </span></li>
             <li>Default
                 Value: <span
-                        id="pnlFirstDerivMax_default_value">.7</span></li>
+                        id="amFirstDerivMin_default_value">-.7</span></li>
             <li>Lower Bound: <span
-                    id="pnlFirstDerivMax_lower_bound">-Infinity</span></li>
+                    id="amFirstDerivMin_lower_bound">-Infinity</span></li>
             <li>Upper
                 Bound: <span
-                        id="pnlFirstDerivMax_upper_bound">Infinity</span></li>
+                        id="amFirstDerivMin_upper_bound">Infinity</span></li>
             <li>Value Type: <span
-                    id="pnlFirstDerivMax_value_type">Double</span></li>
+                    id="amFirstDerivMin_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amFirstDerivMax">amFirstDerivMax</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amFirstDerivMax_short_desc">
+                am: 'Max' for the U(min, max) range for f'(0) for the causal function
+            </span></li>
+            <li>Long Description: <span
+                    id="amFirstDerivMax_long_desc">
+                am: 'Max' for the U(min, max) range for f'(0) for the causal function
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amFirstDerivMax_default_value">.7</span></li>
+            <li>Lower Bound: <span
+                    id="amFirstDerivMax_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amFirstDerivMax_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="amFirstDerivMax_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"

@@ -1267,23 +1267,24 @@ public class DataTransforms {
      * the column, and divides all values in that column by this maximum value. Discrete columns are not affected.
      *
      * @param dataSet The DataSet containing variables to be scaled.
-     * @param scale   The scaling factor to apply to the continuous variables. The scaling factor is applied after the
+     * @param scaleMin The minimum value to scale to.
+     * @param scaleMax The maximum value to scale to.
      * @return A new DataSet with scaled continuous variables, while discrete variables remain unchanged.
      */
-    public static DataSet scale(DataSet dataSet, double scale) {
+    public static DataSet scale(DataSet dataSet, double scaleMin, double scaleMax) {
         dataSet = dataSet.copy();
 
         // For each continuous column, find the min and max of the column, then max(abs(min, max)), then divide the column by that value.
         // Ignore the discrete columns.
 
         for (Node node : dataSet.getVariables()) {
-            scale(dataSet, scale, node);
+            scale(dataSet, scaleMin, scaleMax, node);
         }
 
         return dataSet;
     }
 
-    public static void scale(DataSet dataSet, double scale, Node node) {
+    public static void scale(DataSet dataSet, double scaleMin, double scaleMax, Node node) {
         if (node instanceof ContinuousVariable) {
             int j = dataSet.getColumn(node);
 
@@ -1302,16 +1303,34 @@ public class DataTransforms {
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 double value = dataSet.getDouble(i, j);
-                dataSet.setDouble(i, j, scale(value, min, max, scale));
+                dataSet.setDouble(i, j, scale(value, min, max, scaleMin, scaleMax));
             }
         }
     }
 
-    private static double scale(double value, double a, double b, double scale) {
-        if (a == b) {
-            throw new IllegalArgumentException("Lower and upper bounds must not be the same.");
+//    private static double scale(double value, double a, double b, double scaleMin, double scaleMax) {
+//        if (a == b) {
+//            throw new IllegalArgumentException("Lower and upper bounds must not be the same.");
+//        }
+//        return 2 * scaleMax * (value - a) / (b - a) - scaleMin;
+//    }
+
+    /**
+     * Scales a value from one range to another.
+     *
+     * @param value     The value to scale
+     * @param dataMin   The minimum value of the data range
+     * @param dataMax   The maximum value of the data range
+     * @param scaleMin  The minimum value of the scale range
+     * @param scaleMax  The maximum value of the scale range
+     * @return          The scaled value
+     * @throws IllegalArgumentException if dataMin is equal to dataMax
+     */
+    public static double scale(double value, double dataMin, double dataMax, double scaleMin, double scaleMax) {
+        if (dataMax == dataMin) {
+            throw new IllegalArgumentException("dataMin and dataMax cannot be the same (division by zero).");
         }
-        return 2 * scale * (value - a) / (b - a) - scale;
+        return scaleMin + (value - dataMin) * (scaleMax - scaleMin) / (dataMax - dataMin);
     }
 
     /**

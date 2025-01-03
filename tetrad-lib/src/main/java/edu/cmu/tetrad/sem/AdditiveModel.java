@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.util.RandomPiecewiseLinear;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaylorSeries;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.jetbrains.annotations.NotNull;
@@ -24,13 +25,19 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Class representing a simulation for generating synthetic data based on the Post-nonlinear Causal Additive Model
- * (PCAM) model. This simulation utilizes a causal structure defined by a directed acyclic graph (DAG) and includes
- * configurable mechanisms, noise distributions, and rescaling options.
+ * Represents an Additive Model for generating synthetic data based on a directed acyclic graph (DAG) as a sum of smooth
+ * nonlinear influences from parents of a node to the node. Optionally, a blur function may be specified for each node
+ * to mask the additivity of the node, to be applied after the sum of the parent influences and before the addition of
+ * noise. With or without a blur function, independent noise is added to each node as it is generated, so that the
+ * function will be an additive error model in each case. That is, each node is a nonlinear function of the parents plus
+ * noise).
  * <p>
- * The PCAM class is primarily used to model causal relationships between variables and create synthetic data that
- * adheres to these relationships. It applies post-nonlinear transformations to additive nonlinar models combined with
- * random noise, making the generated data more closely resemble real-world processes.
+ * This simulation without the blur implements the Causal Additive Model as given in Buhlmann et al. (2014) and Chu et
+ * al. (2008). Zhang and Hyvarinen (2012) add a post-nonlinear distortion to the model after the error has been added;
+ * this is not included here, though perhaps we may in the future allow it.
+ * <p>
+ * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
+ * Machine Learning Research, 9(5).
  * <p>
  * Bühlmann, P., Peters, J., &amp; Ernest, J. (2014). "CAM: Causal Additive Models, high-dimensional order search and
  * penalized regression". The Annals of Statistics.
@@ -45,42 +52,44 @@ import java.util.stream.IntStream;
  * <p>
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
- * <p>
- * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
- * Machine Learning Research, 9(5).
  */
-public class PostnonlinearCamSimulation {
+public class AdditiveModel {
     /**
-     * Represents the graphical structure used to encode the causal relationships between variables in the context of
-     * data generation. This variable holds the directed graph that defines the causal dependencies, which is central to
-     * the operations of the PNLDataGenerator.
+     * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
+     * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
+     * It must be acyclic for the simulation to be valid.
      * <p>
-     * The graph is used to guide the generation of synthetic data by defining which variables directly influence others
-     * within the structure. It is expected that the graph includes nodes representing variables and directed edges
-     * representing causal relationships.
-     * <p>
-     * This variable is immutable and must be initialized through the constructor of the containing class to ensure
-     * consistent usage throughout the data generation process.
+     * The `graph` is used to generate synthetic data under the assumption of additive noise models, where causal
+     * mechanisms are modeled as functions of their parent variables in the graph, with noise added to capture
+     * non-deterministic influences. The graph's structure is critical in determining these causal mechanisms and the
+     * relationships among variables.
      */
     private final Graph graph;
     /**
-     * Represents the number of samples to be generated in the synthetic data generation process. This variable is used
-     * to control the size of the dataset produced by the {@code generateData} method. It is a fixed parameter
-     * initialized during the construction of the {@code PNLDataGenerator} instance.
+     * Represents the number of samples to be generated in the additive noise simulation. This variable determines how
+     * many synthetic data points will be created based on the causal relationships in the provided directed acyclic
+     * graph (DAG).
+     * <p>
+     * Constraints: Must be a positive integer.
      */
     private final int numSamples;
     /**
-     * Represents the noise distribution used in the additive post-nonlinear simulation framework. This distribution is
-     * utilized to introduce randomness into the simulated data, reflecting inherent noise in causal relationships. The
-     * noise is applied during data generation, ensuring variability and realism in the synthetic dataset.
+     * Represents the noise distribution used in the additive simulation framework. This distribution is used to
+     * introduce randomness into the simulated data, reflecting inherent noise in causal relationships. The noise is
+     * applied during data generation, ensuring variability and realism in the synthetic dataset. Exogenous variables
+     * are assumed to be independent and identically distributed (i.i.d) with the specified noise distribution.
      */
     private final RealDistribution noiseDistribution;
     /**
-     * Represents the rescale-bound used to scale the generated data. This value is used to rescale the data to a
-     * specified bound after the post-nonlinear transformations have been applied for each new variable simulated. The
-     * default value is set to 1.0. If the value is set to 0, no rescaling is performed.
+     * The lower bound used for rescaling data during the simulation process. This value is used to ensure that the
+     * synthetic data is scaled within a specific range before further processing or transformations.
      */
-    private final double rescaleBound;
+    private final double rescaleMin;
+    /**
+     * The upper bound used for rescaling data during the simulation process. This value determines the maximum scale
+     * applied to normalized data, ensuring it fits within the specified range during synthetic data generation.
+     */
+    private final double rescaleMax;
     /**
      * A mapping structure that establishes relationships between nodes in a directed acyclic graph (DAG) and their
      * corresponding parent nodes, associating each parent-child relationship with a functional transformation. This is
@@ -105,7 +114,7 @@ public class PostnonlinearCamSimulation {
      * data after applying additive noise and parent functions. If not explicitly provided, default transformations may
      * be used.
      */
-    private Map<Node, Function<Double, Double>> postNonlinearFunctions = new HashMap<>();
+    private Map<Node, Function<Double, Double>> blurs = new HashMap<>();
 
     /**
      * Constructs an PCAM with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -126,11 +135,11 @@ public class PostnonlinearCamSimulation {
      * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
      *                                  firstDerivMin is greater than firstDerivMax, or if numSamples is less than 1.
      */
-    public PostnonlinearCamSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                      double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                      int taylorSeriesDegree, double rescaleBound) {
+    public AdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                         double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                         int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
         this(graph, numSamples, noiseDistribution, derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree,
-                null, null, rescaleBound);
+                null, null, rescaleMin, rescaleMax);
     }
 
     /**
@@ -138,30 +147,30 @@ public class PostnonlinearCamSimulation {
      * post-nonlinear functions. This simulation generates synthetic data based on post-nonlinear causal mechanisms
      * defined in the provided directed acyclic graph (DAG).
      *
-     * @param graph                  The directed acyclic graph (DAG) that defines the causal relationships among
-     *                               variables. The graph must be acyclic for the simulation to work.
-     * @param numSamples             The number of samples to generate for the simulation. Must be a positive integer.
-     * @param noiseDistribution      The real-valued noise distribution used for simulating additive noise in the causal
-     *                               mechanisms.
-     * @param parentFunctions        A map specifying functions representing the relationships between parent nodes and
-     *                               their corresponding child node in the graph. The keys are nodes, and the values are
-     *                               maps where keys are parent nodes, and values are functions defining the
-     *                               relationship. If null, parent functions are initialized randomly.
-     * @param postNonlinearFunctions A map specifying post-nonlinear transformation functions for each node in the
-     *                               graph. For each node, the function provides a transformation to be applied after
-     *                               simulating the relationships. If null, default functions are applied.
+     * @param graph               The directed acyclic graph (DAG) that defines the causal relationships among
+     *                            variables. The graph must be acyclic for the simulation to work.
+     * @param numSamples          The number of samples to generate for the simulation. Must be a positive integer.
+     * @param noiseDistribution   The real-valued noise distribution used for simulating additive noise in the causal
+     *                            mechanisms.
+     * @param parentFunctions     A map specifying functions representing the relationships between parent nodes and
+     *                            their corresponding child node in the graph. The keys are nodes, and the values are
+     *                            maps where keys are parent nodes, and values are functions defining the relationship.
+     *                            If null, parent functions are initialized randomly.
+     * @param distortionFunctions A map specifying distortion function functions for each node in the graph. For each
+     *                            node, the function provides a transformation to be applied before adding noise. If
+     *                            null, distortion functions are initialized randomly.
      */
-    public PostnonlinearCamSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                      Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
-                                      Map<Node, Function<Double, Double>> postNonlinearFunctions, double rescaleBound) {
+    public AdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                         Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
+                         Map<Node, Function<Double, Double>> distortionFunctions,
+                         double rescaleMin, double rescaleMax) {
         this(graph, numSamples, noiseDistribution, -1, -1, -1, -1, -1,
-                parentFunctions, postNonlinearFunctions, rescaleBound);
+                parentFunctions, distortionFunctions, rescaleMin, rescaleMax);
     }
 
     /**
      * Constructs a PCAM with the specified graph, number of samples, noise distribution, derivative bounds, coefficient
-     * bounds, and Taylor series degree. This simulation generates synthetic data based on post-nonlinear causal
-     * mechanisms defined in the provided directed acyclic graph.
+     * bounds, and Taylor series degree.
      * <p>
      * This is a private constructor that initializes the simulation with the specified parameters and parent
      * functions.
@@ -187,10 +196,11 @@ public class PostnonlinearCamSimulation {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    private PostnonlinearCamSimulation(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                       double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                       int taylorSeriesDegree, Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
-                                       Map<Node, Function<Double, Double>> postNonlinearFunctions, double rescaleBound) {
+    private AdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                          double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                          int taylorSeriesDegree, Map<Node, Map<Node, Function<Double, Double>>> parentFunctions,
+                          Map<Node, Function<Double, Double>> postNonlinearFunctions,
+                          double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -199,14 +209,19 @@ public class PostnonlinearCamSimulation {
             throw new IllegalArgumentException("Number of samples must be positive.");
         }
 
-        if (rescaleBound < 0) {
-            throw new IllegalArgumentException("Rescale bound must be non-negative.");
+        if (rescaleMin > rescaleMax) {
+            throw new IllegalArgumentException("Rescale min must be less than or equal to rescale max.");
+        }
+
+        if (rescaleMin == rescaleMax) {
+            TetradLogger.getInstance().log("Rescale min and rescale max are equal. No rescaling will be applied.");
         }
 
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
-        this.rescaleBound = rescaleBound;
+        this.rescaleMin = rescaleMin;
+        this.rescaleMax = rescaleMax;
 
         if (parentFunctions != null) {
             // Check to make sure all nodes in the graph have parent functions for all parents.
@@ -251,12 +266,13 @@ public class PostnonlinearCamSimulation {
                     throw new IllegalArgumentException("Post-nonlinear functions must be provided for all nodes in the graph.");
                 }
             }
-            this.postNonlinearFunctions = postNonlinearFunctions;
+            this.blurs = postNonlinearFunctions;
         } else {
             for (Node node : this.graph.getNodes()) {
-                RandomPiecewiseLinear randomPiecewiseLinear = RandomPiecewiseLinear.get(-1, 1, 20);
+                RandomPiecewiseLinear randomPiecewiseLinear = RandomPiecewiseLinear.get(0, 1,
+                        0, 1, 10, true);
                 Function<Double, Double> g = randomPiecewiseLinear::evaluate;
-                this.postNonlinearFunctions.put(node, g);
+                this.blurs.put(node, g);
             }
         }
     }
@@ -307,14 +323,14 @@ public class PostnonlinearCamSimulation {
                 100, 100, false);
 
         // Generate data
-        PostnonlinearCamSimulation generator = new PostnonlinearCamSimulation(graph, 1000,
+        AdditiveModel generator = new AdditiveModel(graph, 1000,
                 new BetaDistribution(2, 5), -1, 1,
-                0.1, 1, 5, 1);
+                0.1, 1, 5, -1, 1);
         DataSet data = generator.generateData();
 
         // Save the data to a file.
         try {
-            File file = new File("data_pnl.txt");
+            File file = new File("data_am.txt");
             FileWriter writer = new FileWriter(file);
             writer.write(data.toString());
             writer.close();
@@ -323,7 +339,7 @@ public class PostnonlinearCamSimulation {
         }
 
         // Save the graph to a file.
-        GraphSaveLoadUtils.saveGraph(graph, new File("graph_pnl.txt"), false);
+        GraphSaveLoadUtils.saveGraph(graph, new File("graph_am.txt"), false);
     }
 
     /**
@@ -352,27 +368,53 @@ public class PostnonlinearCamSimulation {
                 if (parents.isEmpty()) {
                     data.setDouble(sample, nodeToIndex.get(node), noiseDistribution.sample());
                 } else {
-                    // Compute a linear combination of the parents
                     double linearCombination = 0;
                     for (Node parent : parents) {
                         linearCombination += nodeFunctionMap.get(parent).apply(data.getDouble(sample, nodeToIndex.get(parent)));
                     }
-
-                    // Add noise
-                    double noisyOutput = linearCombination + noiseDistribution.sample();
-                    data.setDouble(sample, nodeToIndex.get(node), noisyOutput);
+                    data.setDouble(sample, nodeToIndex.get(node), linearCombination);
                 }
             }
 
-            if (rescaleBound > 0) {
-                DataTransforms.scale(data, rescaleBound, node);
-            }
+            Function<Double, Double> g = blurs.get(node);
 
-            var g = postNonlinearFunctions.get(node);
+            if (g instanceof RandomPiecewiseLinear rpl) {
+
+                // Find the min and max of the column the node in the data.
+                double min = Double.POSITIVE_INFINITY;
+                double max = Double.NEGATIVE_INFINITY;
+
+                for (int sample = 0; sample < numSamples; sample++) {
+                    double value = data.getDouble(sample, nodeToIndex.get(node));
+                    if (value < min) {
+                        min = value;
+                    }
+                    if (value > max) {
+                        max = value;
+                    }
+                }
+
+                rpl.setScale(min, max, rescaleMin, rescaleMax);
+                g = rpl::evaluate;
+
+                for (int sample = 0; sample < numSamples; sample++) {
+                    data.setDouble(sample, nodeToIndex.get(node), g.apply(data.getDouble(sample, nodeToIndex.get(node))));
+                }
+            }
 
             for (int sample = 0; sample < numSamples; sample++) {
-                data.setDouble(sample, nodeToIndex.get(node), g.apply(data.getDouble(sample, nodeToIndex.get(node))));
+                data.setDouble(sample, nodeToIndex.get(node), data.getDouble(sample, nodeToIndex.get(node)) + noiseDistribution.sample());
             }
+
+            if (rescaleMin < rescaleMax) {
+                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
+            }
+
+//            var g = postNonlinearFunctions.get(node);
+//
+//            for (int sample = 0; sample < numSamples; sample++) {
+//                data.setDouble(sample, nodeToIndex.get(node), g.apply(data.getDouble(sample, nodeToIndex.get(node))));
+//            }
         }
 
         return data;
