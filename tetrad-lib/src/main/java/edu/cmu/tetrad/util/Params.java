@@ -951,7 +951,12 @@ public final class Params {
     /**
      * Constant <code>AM_FIRST_DERIVATIVE_MAX="amFirstDerivMax"</code>
      */
-    public static final String AM_FIRST_DERIVATIVE_MAX = "amFirstDerivMax";   /**
+    public static final String AM_FIRST_DERIVATIVE_MAX = "amFirstDerivMax";
+    /**
+     * Constant <code>AM_POST_NONLINEAR="amPostNonlinear"</code>
+     */
+    public static final String AM_POST_NONLINEAR = "amPostNonlinear";
+    /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";
@@ -1027,6 +1032,7 @@ public final class Params {
      * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
      */
     public static String CELL_TABLE_TYPE = "cellTableType";
+
     private Params() {
     }
 

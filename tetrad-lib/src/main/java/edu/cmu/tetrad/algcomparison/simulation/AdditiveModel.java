@@ -189,7 +189,7 @@ public class AdditiveModel implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Post-nonlinear Additive Model Simulation";
+        return " Nonlinear Additive Model Simulation";
     }
 
     /**
@@ -214,6 +214,7 @@ public class AdditiveModel implements Simulation {
         parameters.add(Params.AM_DERIVATIVE_MAX);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
+        parameters.add(Params.AM_POST_NONLINEAR);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -254,23 +255,24 @@ public class AdditiveModel implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(Graph graph, Parameters parameters) {
-        return runPostnonlinearGamSimulation(graph, parameters);
+        return runNonlinearAdditiveModelSimulation(graph, parameters);
     }
 
     /**
-     * Executes a post-nonlinear GAM simulation to generate a synthetic dataset based on the provided graph, number of
-     * samples, and noise standard deviation using the default configuration of the amDataGenerator.
+     * Executes a nonlinear additive model simulation to generate a synthetic dataset based on the provided graph,
+     * number of samples, and noise standard deviation using the default configuration of the amDataGenerator.
      *
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runPostnonlinearGamSimulation(Graph graph, Parameters parameters) {
+    private DataSet runNonlinearAdditiveModelSimulation(Graph graph, Parameters parameters) {
         edu.cmu.tetrad.sem.AdditiveModel generator = new edu.cmu.tetrad.sem.AdditiveModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_DERIVATIVE_MIN), parameters.getDouble(Params.AM_DERIVATIVE_MAX),
                 parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),
                 parameters.getInt(Params.AM_TAYLOR_SERIES_DEGREE),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
+        generator.setPostNonlinear(parameters.getBoolean(Params.AM_POST_NONLINEAR));
         return generator.generateData();
     }
 }

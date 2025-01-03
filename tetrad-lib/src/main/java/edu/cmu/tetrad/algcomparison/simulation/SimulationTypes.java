@@ -43,9 +43,9 @@ public final class SimulationTypes {
      */
     public static final String NON_LINEAR_STRUCTURAL_EQUATION_MODEL = "GP Nonlinear Structural Equation Model";
     /**
-     * Constant <code>ADDITIVE_MODEL="Additive Model"</code>
+     * Constant <code>ADDITIVE_MODEL="Nonlinear Additive Model"</code>
      */
-    public static final String ADDITIVE_MODEL = "Additive Model";
+    public static final String ADDITIVE_MODEL = "Nonlinear Additive Model";
     /**
      * Constant <code>LEE_AND_HASTIE="Mixed Lee &amp; Hastie"</code>
      */
