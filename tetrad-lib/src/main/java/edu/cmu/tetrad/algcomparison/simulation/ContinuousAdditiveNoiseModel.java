@@ -273,7 +273,6 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
                 parameters.getInt(Params.AM_TAYLOR_SERIES_DEGREE),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
         generator.setDistortPreError(parameters.getBoolean(Params.AM_DISTORT_PRE_ERROR));
-        generator.setDistortPostError(parameters.getBoolean(Params.AM_DISTORT_POST_ERROR));
         return generator.generateData();
     }
 }
