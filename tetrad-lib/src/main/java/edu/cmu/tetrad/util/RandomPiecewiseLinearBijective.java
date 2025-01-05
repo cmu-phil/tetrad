@@ -7,6 +7,7 @@ import java.util.*;
  * defined within a specified domain and range, and it can map values from one interval to another.
  *
  * @author GPT 4o.
+ * @author josephramsey
  */
 public class RandomPiecewiseLinearBijective {
 
