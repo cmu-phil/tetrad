@@ -5,11 +5,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.util.RandomPiecewiseLinearBijective;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaylorSeries;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.analysis.interpolation.PiecewiseBicubicSplineInterpolatingFunction;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.jetbrains.annotations.NotNull;
@@ -56,7 +54,7 @@ import static java.lang.Math.abs;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class NonlinearAdditiveModel2 {
+public class RecursiveTaylorPostNonlinearModel {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -156,9 +154,9 @@ public class NonlinearAdditiveModel2 {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public NonlinearAdditiveModel2(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                   double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                   int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
+    public RecursiveTaylorPostNonlinearModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                             double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                                             int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -283,7 +281,7 @@ public class NonlinearAdditiveModel2 {
                 100, 100, false);
 
         // Generate data
-        NonlinearAdditiveModel2 generator = new NonlinearAdditiveModel2(graph, 1000,
+        RecursiveTaylorPostNonlinearModel generator = new RecursiveTaylorPostNonlinearModel(graph, 1000,
                 new BetaDistribution(2, 5), -1, 1,
                 0.1, 1, 5, -1, 1);
         DataSet data = generator.generateData();

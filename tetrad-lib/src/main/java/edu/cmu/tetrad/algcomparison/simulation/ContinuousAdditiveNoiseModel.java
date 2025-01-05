@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class NonlinearAdditiveModel2 implements Simulation {
+public class ContinuousAdditiveNoiseModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class NonlinearAdditiveModel2 implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public NonlinearAdditiveModel2(RandomGraph graph) {
+    public ContinuousAdditiveNoiseModel(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -180,7 +180,7 @@ public class NonlinearAdditiveModel2 implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Post-nonlinear Additive Model 2 simulation using " + this.randomGraph.getDescription();
+        return "Continuous Additive Noise Model simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -189,7 +189,7 @@ public class NonlinearAdditiveModel2 implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return " Nonlinear Additive Model Simulation 2";
+        return " Continuous Additive Noise Model Simulation";
     }
 
     /**
@@ -256,7 +256,7 @@ public class NonlinearAdditiveModel2 implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(Graph graph, Parameters parameters) {
-        return runNonlinearAdditiveModelSimulation(graph, parameters);
+        return runContinuousAdditiveNoiseModel(graph, parameters);
     }
 
     /**
@@ -266,8 +266,8 @@ public class NonlinearAdditiveModel2 implements Simulation {
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runNonlinearAdditiveModelSimulation(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.NonlinearAdditiveModel2 generator = new edu.cmu.tetrad.sem.NonlinearAdditiveModel2(graph, parameters.getInt(Params.SAMPLE_SIZE),
+    private DataSet runContinuousAdditiveNoiseModel(Graph graph, Parameters parameters) {
+        edu.cmu.tetrad.sem.ContinuousAdditiveNoiseModel generator = new edu.cmu.tetrad.sem.ContinuousAdditiveNoiseModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_DERIVATIVE_MIN), parameters.getDouble(Params.AM_DERIVATIVE_MAX),
                 parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),

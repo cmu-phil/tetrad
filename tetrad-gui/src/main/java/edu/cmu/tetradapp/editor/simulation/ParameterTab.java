@@ -61,9 +61,9 @@ public class ParameterTab extends JPanel {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
-            SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.NONLINEAR_ADDITIVE_MODEL,
-            SimulationTypes.NONLINEAR_ADDITIVE_MODEL2,
+            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
+            SimulationTypes.CONTINUOUS_ADDITIVE_NOISE_MODEL,
+            SimulationTypes.RECURSIVE_TAYLOR_POST_NONLINEAR_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
@@ -190,14 +190,14 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL:
+                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_MODEL:
-                        this.simulation.setSimulation(new NonlinearAdditiveModel(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.CONTINUOUS_ADDITIVE_NOISE_MODEL:
+                        this.simulation.setSimulation(new ContinuousAdditiveNoiseModel(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_MODEL2:
-                        this.simulation.setSimulation(new NonlinearAdditiveModel2(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.RECURSIVE_TAYLOR_POST_NONLINEAR_MODEL:
+                        this.simulation.setSimulation(new RecursiveTaylorPostNonlinearModel(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LINEAR_FISHER_MODEL:
                         this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
@@ -228,14 +228,14 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL:
+                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_MODEL:
-                        this.simulation.setSimulation(new NonlinearAdditiveModel(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.CONTINUOUS_ADDITIVE_NOISE_MODEL:
+                        this.simulation.setSimulation(new ContinuousAdditiveNoiseModel(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_MODEL2:
-                        this.simulation.setSimulation(new NonlinearAdditiveModel2(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.RECURSIVE_TAYLOR_POST_NONLINEAR_MODEL:
+                        this.simulation.setSimulation(new RecursiveTaylorPostNonlinearModel(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LINEAR_FISHER_MODEL:
                         this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());

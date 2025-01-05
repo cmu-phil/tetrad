@@ -53,7 +53,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class NonlinearAdditiveModel {
+public class ContinuousAdditiveNoiseModel {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -148,9 +148,9 @@ public class NonlinearAdditiveModel {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public NonlinearAdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                   double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                   int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
+    public ContinuousAdditiveNoiseModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                        double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                                        int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -241,7 +241,7 @@ public class NonlinearAdditiveModel {
                 100, 100, false);
 
         // Generate data
-        NonlinearAdditiveModel generator = new NonlinearAdditiveModel(graph, 1000,
+        ContinuousAdditiveNoiseModel generator = new ContinuousAdditiveNoiseModel(graph, 1000,
                 new BetaDistribution(2, 5), -1, 1,
                 0.1, 1, 5, -1, 1);
         DataSet data = generator.generateData();

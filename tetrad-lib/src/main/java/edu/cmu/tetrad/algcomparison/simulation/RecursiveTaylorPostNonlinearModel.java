@@ -18,11 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a random additive post-nonlinear causal additive model.
+ * This class represents a recursive Taylor post-nonlinear additive model.
  *
  * @author josephramsey
  */
-public class NonlinearAdditiveModel implements Simulation {
+public class RecursiveTaylorPostNonlinearModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class NonlinearAdditiveModel implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public NonlinearAdditiveModel(RandomGraph graph) {
+    public RecursiveTaylorPostNonlinearModel(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -180,7 +180,7 @@ public class NonlinearAdditiveModel implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Post-nonlinear Additive Model simulation using " + this.randomGraph.getDescription();
+        return "Recurse Post Nonlinear Taylor simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -189,7 +189,7 @@ public class NonlinearAdditiveModel implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return " Nonlinear Additive Model Simulation";
+        return "Recursive Taylor Post Nonlinear Model";
     }
 
     /**
@@ -256,7 +256,7 @@ public class NonlinearAdditiveModel implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(Graph graph, Parameters parameters) {
-        return runNonlinearAdditiveModelSimulation(graph, parameters);
+        return runRecursiveTaylorPostNonlinearModel(graph, parameters);
     }
 
     /**
@@ -266,8 +266,8 @@ public class NonlinearAdditiveModel implements Simulation {
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runNonlinearAdditiveModelSimulation(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.NonlinearAdditiveModel generator = new edu.cmu.tetrad.sem.NonlinearAdditiveModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
+    private DataSet runRecursiveTaylorPostNonlinearModel(Graph graph, Parameters parameters) {
+        edu.cmu.tetrad.sem.RecursiveTaylorPostNonlinearModel generator = new edu.cmu.tetrad.sem.RecursiveTaylorPostNonlinearModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_DERIVATIVE_MIN), parameters.getDouble(Params.AM_DERIVATIVE_MAX),
                 parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),
