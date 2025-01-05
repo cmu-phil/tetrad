@@ -400,5 +400,4 @@ public class RecursiveTaylorPostNonlinearModel {
             data.setDouble(sample, nodeToIndex.get(node), apply);
         }
     }
-
 }
