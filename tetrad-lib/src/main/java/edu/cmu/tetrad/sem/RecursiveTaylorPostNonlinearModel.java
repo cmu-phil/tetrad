@@ -26,16 +26,12 @@ import java.util.stream.IntStream;
 import static java.lang.Math.abs;
 
 /**
- * Represents an Additive Model for generating synthetic data based on a directed acyclic graph (DAG) as a sum of smooth
- * nonlinear influences from parents of a node to the node. Optionally, a distortion function may be specified for each
- * node to mask the additivity of the node, to be applied after the sum of the parent influences and before the addition
- * of noise. With or without a distortion function, independent noise is added to each node as it is generated, so that
- * the function will be an additive error model in each case. That is, each node is a nonlinear function of the parents
- * plus noise).
+ * Represents a Recursive Taylor Post-nonlinear Model (RTPN) for generating synthetic data based on a directed acyclic
+ * graph (DAG). This is a nonlinear function for a linear combination of parent influences plus noise, where the
+ * non-linear function is represented as general Taylor series.
  * <p>
- * This simulation without the distortion implements the Causal Additive Model as given in Buhlmann et al. (2014) and
- * Chu et al. (2008). Zhang and Hyvarinen (2012) add a post-nonlinear distortion to the model after the error has been
- * added; this is not included here, though perhaps we may in the future allow it.
+ * That is, the form of the model is Xi = g(a1 Xi_1 + a2 Xi_2 + ... + ak Xi_k + Ei), where g is a smooth nonlinear
+ * function represented as a Taylor series.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -103,31 +99,50 @@ public class RecursiveTaylorPostNonlinearModel {
      * parent-child relationship in the graph is associated with the appropriate functional dependencies.
      */
     private final Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
+    /**
+     * The minimum bound for the derivative of the causal functions. This value determines the lower limit for the
+     * derivative coefficients used in the Taylor series representation of the causal functions. It is used to constrain
+     * the range of derivative values in the simulation process, ensuring that the functions are well-behaved and
+     * realistic.
+     * <p>
+     * Constraints: Must be less than or equal to derivMax.
+     */
     private final double derivMin;
+    /**
+     * The maximum bound for the derivative of the causal functions. This value determines the upper limit for the
+     * derivative coefficients used in the Taylor series representation of the causal functions. It is used to constrain
+     * the range of derivative values in the simulation process, ensuring that the functions are well-behaved and
+     * realistic.
+     */
     private final double derivMax;
+    /**
+     * The minimum bound for f'(0) in the causal functions. This value determines the lower limit for the first
+     * derivative of the causal functions at the origin. It is used to constrain the range of first derivative values in
+     * the simulation process, ensuring that the functions are well-behaved and realistic.
+     * <p>
+     * Constraints: Must be less than or equal to firstDerivMax.
+     */
     private final double firstDerivMin;
+    /**
+     * The maximum bound for f'(0) in the causal functions. This value determines the upper limit for the first
+     * derivative of the causal functions at the origin. It is used to constrain the range of first derivative values in
+     * the simulation process, ensuring that the functions are well-behaved and realistic.
+     */
     private final double firstDerivMax;
+    /**
+     * The degree of the Taylor series used to approximate the causal functions. This value defines the number of terms
+     * included in the Taylor series representation of the causal functions, affecting the accuracy and complexity of
+     * the model. Higher degrees result in more accurate approximations but may require more computational resources.
+     * <p>
+     * Constraints: Must be a positive integer.
+     */
     private final int taylorSeriesDegree;
     /**
-     * A flag indicating whether distortions should be applied to the data points before the introduction of error noise
-     * in the model.
-     * <p>
-     * When set to true, the pre-error distortion functions are used to modify the values of nodes before any noise is
-     * added. This setting is relevant to the simulation process and affects how the synthetic data is generated in the
-     * model.
-     * <p>
-     * By default, this flag is set to false, meaning no distortions are applied before the addition of noise.
+     * Indicates whether post-nonlinear distortion should be applied to each variable in the model as it is simulated.
+     * By default, this is set to true. When set to true, additional distortions are applied before after error terms
+     * are added to simulate nonlinear mechanisms. If false, this is an additive model with no nonlinear distortion.
      */
-    private boolean distortPreError = false;
-    /**
-     * Indicates whether post-error distortion should be applied to the data in the model. When set to true, additional
-     * distortions are applied after the error terms are introduced to simulate post-nonlinear mechanisms. This
-     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
-     * and causal simulation.
-     * <p>
-     * This is the "post-nonlinear" distortion.
-     */
-    private boolean distortPostError = false;
+    private boolean distortPostNonlinear = true;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -199,25 +214,7 @@ public class RecursiveTaylorPostNonlinearModel {
         for (Node child : this.graph.getNodes()) {
             Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
             for (Node parent : this.graph.getParents(child)) {
-//                TaylorSeries taylor = getTaylorSeries(firstDerivMin, firstDerivMax, derivMin, derivMax, taylorSeriesDegree);
-//                parentFunctions1.put(parent, taylor::evaluate);
                 final double r = getCoef();
-//                parentFunctions1.put(parent, x -> r * x);
-
-//                PiecewiseBicubicSplineInterpolatingFunction function1 = new PiecewiseBicubicSplineInterpolatingFunction(
-//                        new double[]{0.0, 0.25, 0.5, 0.75, 1.0},
-//                        new double[]{0.0, 0.25, 0.5, 0.75, 1.0},
-//                        new double[][]{
-//                                {0.0, 0.25, 0.5, 0.75, 1.0},
-//                                {0.25, 0.5, 0.75, 1.0, 0.25},
-//                                {0.5, 0.75, 1.0, 0.25, 0.5},
-//                                {0.75, 1.0, 0.25, 0.5, 0.75},
-//                                {1.0, 0.25, 0.5, 0.75, 1.0}
-//                        }
-//                );
-
-                //    parentFunctions1.put(parent, new RandomPiecewiseLinearBijective(10, RandomUtil.getInstance().nextLong())::evaluate);
-
                 parentFunctions1.put(parent, x -> r * x);
             }
 
@@ -268,7 +265,6 @@ public class RecursiveTaylorPostNonlinearModel {
      * @param args the command-line arguments, not used in this implementation.
      */
     public static void main(String[] args) {
-
         int numNodes = 5;
 
         List<Node> nodes = new ArrayList<>();
@@ -312,8 +308,7 @@ public class RecursiveTaylorPostNonlinearModel {
         DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
 
         List<Node> nodes = graph.getNodes();
-        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size())
-                .boxed()
+        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed()
                 .collect(Collectors.toMap(nodes::get, i -> i));
 
         List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
@@ -336,15 +331,11 @@ public class RecursiveTaylorPostNonlinearModel {
                 }
             }
 
-            if (distortPreError) {
-                distort(node, data, nodeToIndex);
-            }
-
             for (int sample = 0; sample < numSamples; sample++) {
                 data.setDouble(sample, nodeToIndex.get(node), data.getDouble(sample, nodeToIndex.get(node)) + noiseDistribution.sample());
             }
 
-            if (distortPostError) {
+            if (distortPostNonlinear) {
                 distort(node, data, nodeToIndex);
             }
 
@@ -357,26 +348,6 @@ public class RecursiveTaylorPostNonlinearModel {
     }
 
     private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
-//        RandomPiecewiseLinearBijective rpl = new RandomPiecewiseLinearBijective(10, RandomUtil.getInstance().nextLong());
-//        Function<Double, Double> g;
-//
-//        // Find the min and max of the column the node in the data.
-//        double min = Double.POSITIVE_INFINITY;
-//        double max = Double.NEGATIVE_INFINITY;
-//
-//        for (int sample = 0; sample < numSamples; sample++) {
-//            double value = data.getDouble(sample, nodeToIndex.get(node));
-//            if (value < min) {
-//                min = value;
-//            }
-//            if (value > max) {
-//                max = value;
-//            }
-//        }
-//
-//        rpl.setScale(min, max, min, max);
-//        g = rpl::evaluate;
-
         TaylorSeries taylor = getTaylorSeries(derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree);
         Function<Double, Double> g = taylor::evaluate;
 
@@ -387,22 +358,6 @@ public class RecursiveTaylorPostNonlinearModel {
     }
 
     /**
-     * A flag indicating whether distortions should be applied to the data points before the introduction of error noise
-     * in the model.
-     * <p>
-     * When set to true, the pre-error distortion functions are used to modify the values of nodes before any noise is
-     * added. This setting is relevant to the simulation process and affects how the synthetic data is generated in the
-     * model.
-     * <p>
-     * By default, this flag is set to false, meaning no distortions are applied before the addition of noise.
-     *
-     * @param distortPreError true if pre-error distortions should be applied, false otherwise.
-     */
-    public void setDistortPreError(boolean distortPreError) {
-        this.distortPreError = distortPreError;
-    }
-
-    /**
      * Indicates whether post-error distortion should be applied to the data in the model. When set to true, additional
      * distortions are applied after the error terms are introduced to simulate post-nonlinear mechanisms. This
      * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
@@ -410,9 +365,9 @@ public class RecursiveTaylorPostNonlinearModel {
      * <p>
      * This is the "post-nonlinear" distortion.
      *
-     * @param distortPostError true if post-error distortions should be applied, false otherwise.
+     * @param distortPostNonlinear true if post-error distortions should be applied, false otherwise.
      */
-    public void setDistortPostError(boolean distortPostError) {
-        this.distortPostError = distortPostError;
+    public void setDistortPostNonlinear(boolean distortPostNonlinear) {
+        this.distortPostNonlinear = distortPostNonlinear;
     }
 }

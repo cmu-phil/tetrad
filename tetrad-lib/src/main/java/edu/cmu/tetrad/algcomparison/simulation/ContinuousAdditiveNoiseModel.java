@@ -215,7 +215,6 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
         parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
         parameters.add(Params.AM_DISTORT_PRE_ERROR);
-        parameters.add(Params.AM_DISTORT_POST_ERROR);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);

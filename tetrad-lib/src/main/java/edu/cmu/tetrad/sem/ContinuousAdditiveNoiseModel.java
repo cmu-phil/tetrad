@@ -5,7 +5,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.util.RandomPiecewiseLinearBijective;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaylorSeries;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -25,16 +24,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents an Additive Model for generating synthetic data based on a directed acyclic graph (DAG) as a sum of smooth
- * nonlinear influences from parents of a node to the node. Optionally, a distortion function may be specified for each
- * node to mask the additivity of the node, to be applied after the sum of the parent influences and before the addition
- * of noise. With or without a distortion function, independent noise is added to each node as it is generated, so that
- * the function will be an additive error model in each case. That is, each node is a nonlinear function of the parents
- * plus noise).
- * <p>
- * This simulation without the distortion implements the Causal Additive Model as given in Buhlmann et al. (2014) and
- * Chu et al. (2008). Zhang and Hyvarinen (2012) add a post-nonlinear distortion to the model after the error has been
- * added; this is not included here, though perhaps we may in the future allow it.
+ * Represents a Continuous Additive Model for generating synthetic data based on a directed acyclic graph (DAG) as a sum
+ * of smooth nonlinear influences from parents of a node to the node, with a distortion function, plus noise.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -102,6 +93,11 @@ public class ContinuousAdditiveNoiseModel {
      * parent-child relationship in the graph is associated with the appropriate functional dependencies.
      */
     private final Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
+    private final double derivMin;
+    private final double derivMax;
+    private final double firstDerivMin;
+    private final double firstDerivMax;
+    private final int taylorSeriesDegree;
     /**
      * A flag indicating whether distortions should be applied to the data points before the introduction of error noise
      * in the model.
@@ -113,15 +109,6 @@ public class ContinuousAdditiveNoiseModel {
      * By default, this flag is set to false, meaning no distortions are applied before the addition of noise.
      */
     private boolean distortPreError = false;
-    /**
-     * Indicates whether post-error distortion should be applied to the data in the model. When set to true, additional
-     * distortions are applied after the error terms are introduced to simulate post-nonlinear mechanisms. This
-     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
-     * and causal simulation.
-     * <p>
-     * This is the "post-nonlinear" distortion.
-     */
-    private boolean distortPostError = false;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -173,6 +160,12 @@ public class ContinuousAdditiveNoiseModel {
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
 
+        this.derivMin = derivMin;
+        this.derivMax = derivMax;
+        this.firstDerivMin = firstDerivMin;
+        this.firstDerivMax = firstDerivMax;
+        this.taylorSeriesDegree = taylorSeriesDegree;
+
         if (derivMin > derivMax) {
             throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
         }
@@ -193,32 +186,6 @@ public class ContinuousAdditiveNoiseModel {
             }
             this.parentFunctions.put(child, parentFunctions1);
         }
-    }
-
-    /**
-     * Generates a Taylor series representation with random derivative coefficients within the specified bounds. The
-     * Taylor series is defined by its degree and its derivatives, where the coefficients are sampled uniformly from the
-     * given ranges.
-     *
-     * @param derivMin           The minimum bound for the derivative coefficients of the Taylor series (except for the
-     *                           first derivative).
-     * @param derivMax           The maximum bound for the derivative coefficients of the Taylor series (except for the
-     *                           first derivative).
-     * @param firstDerivMin      The minimum bound for f'(0) in the Taylor series.
-     * @param firstDerivMax      The maximum bound for f'(0) in the Taylor series.
-     * @param taylorSeriesDegree The degree of the Taylor series, defining the number of terms to include in the series.
-     *                           Must be a non-negative integer.
-     * @return A TaylorSeries instance with randomly generated coefficients for the specified degree and ranges.
-     */
-    private static @NotNull TaylorSeries getTaylorSeries(double derivMin, double derivMax, double firstDerivMin,
-                                                         double firstDerivMax, int taylorSeriesDegree) {
-        double[] derivatives = new double[taylorSeriesDegree + 1];
-        for (int i1 = 2; i1 <= taylorSeriesDegree; i1++) {
-            derivatives[i1] = RandomUtil.getInstance().nextUniform(derivMin, derivMax);
-        }
-
-        derivatives[1] = RandomUtil.getInstance().nextUniform(firstDerivMin, firstDerivMax);
-        return TaylorSeries.get(derivatives, 0);
     }
 
     /**
@@ -258,6 +225,32 @@ public class ContinuousAdditiveNoiseModel {
 
         // Save the graph to a file.
         GraphSaveLoadUtils.saveGraph(graph, new File("graph_am.txt"), false);
+    }
+
+    /**
+     * Generates a Taylor series representation with random derivative coefficients within the specified bounds. The
+     * Taylor series is defined by its degree and its derivatives, where the coefficients are sampled uniformly from the
+     * given ranges.
+     *
+     * @param derivMin           The minimum bound for the derivative coefficients of the Taylor series (except for the
+     *                           first derivative).
+     * @param derivMax           The maximum bound for the derivative coefficients of the Taylor series (except for the
+     *                           first derivative).
+     * @param firstDerivMin      The minimum bound for f'(0) in the Taylor series.
+     * @param firstDerivMax      The maximum bound for f'(0) in the Taylor series.
+     * @param taylorSeriesDegree The degree of the Taylor series, defining the number of terms to include in the series.
+     *                           Must be a non-negative integer.
+     * @return A TaylorSeries instance with randomly generated coefficients for the specified degree and ranges.
+     */
+    private static @NotNull TaylorSeries getTaylorSeries(double derivMin, double derivMax, double firstDerivMin,
+                                                         double firstDerivMax, int taylorSeriesDegree) {
+        double[] derivatives = new double[taylorSeriesDegree + 1];
+        for (int i1 = 2; i1 <= taylorSeriesDegree; i1++) {
+            derivatives[i1] = RandomUtil.getInstance().nextUniform(derivMin, derivMax);
+        }
+
+        derivatives[1] = RandomUtil.getInstance().nextUniform(firstDerivMin, firstDerivMax);
+        return TaylorSeries.get(derivatives, 0);
     }
 
     /**
@@ -302,46 +295,12 @@ public class ContinuousAdditiveNoiseModel {
                 data.setDouble(sample, nodeToIndex.get(node), data.getDouble(sample, nodeToIndex.get(node)) + noiseDistribution.sample());
             }
 
-            if (distortPostError) {
-                distort(node, data, nodeToIndex);
-            }
-
             if (rescaleMin < rescaleMax) {
                 DataTransforms.scale(data, rescaleMin, rescaleMax, node);
             }
         }
 
         return data;
-    }
-
-    private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
-        RandomPiecewiseLinearBijective rpl = new RandomPiecewiseLinearBijective(10, RandomUtil.getInstance().nextLong());
-        Function<Double, Double> g;
-
-        // Find the min and max of the column the node in the data.
-        double min = Double.POSITIVE_INFINITY;
-        double max = Double.NEGATIVE_INFINITY;
-
-        for (int sample = 0; sample < numSamples; sample++) {
-            double value = data.getDouble(sample, nodeToIndex.get(node));
-            if (value < min) {
-                min = value;
-            }
-            if (value > max) {
-                max = value;
-            }
-        }
-
-        rpl.setScale(min, max, min, max);
-        g = rpl::evaluate;
-
-//        TaylorSeries taylor = getTaylorSeries(-1, 1, -1, 1, 9);
-//        g = taylor::evaluate;
-
-        for (int sample = 0; sample < numSamples; sample++) {
-            Double apply = g.apply(data.getDouble(sample, nodeToIndex.get(node)));
-            data.setDouble(sample, nodeToIndex.get(node), apply);
-        }
     }
 
     /**
@@ -360,17 +319,13 @@ public class ContinuousAdditiveNoiseModel {
         this.distortPreError = distortPreError;
     }
 
-    /**
-     * Indicates whether post-error distortion should be applied to the data in the model. When set to true, additional
-     * distortions are applied after the error terms are introduced to simulate post-nonlinear mechanisms. This
-     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
-     * and causal simulation.
-     * <p>
-     * This is the "post-nonlinear" distortion.
-     *
-     * @param distortPostError true if post-error distortions should be applied, false otherwise.
-     */
-    public void setDistortPostError(boolean distortPostError) {
-        this.distortPostError = distortPostError;
+    private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
+        TaylorSeries taylor = getTaylorSeries(derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree);
+        Function<Double, Double> g = taylor::evaluate;
+
+        for (int sample = 0; sample < numSamples; sample++) {
+            Double apply = g.apply(data.getDouble(sample, nodeToIndex.get(node)));
+            data.setDouble(sample, nodeToIndex.get(node), apply);
+        }
     }
 }

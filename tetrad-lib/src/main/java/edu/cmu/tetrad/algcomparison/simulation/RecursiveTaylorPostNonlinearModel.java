@@ -214,7 +214,6 @@ public class RecursiveTaylorPostNonlinearModel implements Simulation {
         parameters.add(Params.AM_DERIVATIVE_MAX);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
-        parameters.add(Params.AM_DISTORT_PRE_ERROR);
         parameters.add(Params.AM_DISTORT_POST_ERROR);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
@@ -260,21 +259,22 @@ public class RecursiveTaylorPostNonlinearModel implements Simulation {
     }
 
     /**
-     * Executes a nonlinear additive model simulation to generate a synthetic dataset based on the provided graph,
-     * number of samples, and noise standard deviation using the default configuration of the amDataGenerator.
+     * Executes a nonlinear recursive Taylor post-nonlinear model simulation to generate a synthetic dataset based on
+     * the provided graph, number of samples, and noise standard deviation using the default configuration of the
+     * amDataGenerator.
      *
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runRecursiveTaylorPostNonlinearModel(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.RecursiveTaylorPostNonlinearModel generator = new edu.cmu.tetrad.sem.RecursiveTaylorPostNonlinearModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
+        edu.cmu.tetrad.sem.RecursiveTaylorPostNonlinearModel generator = new edu.cmu.tetrad.sem.RecursiveTaylorPostNonlinearModel(
+                graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_DERIVATIVE_MIN), parameters.getDouble(Params.AM_DERIVATIVE_MAX),
                 parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),
                 parameters.getInt(Params.AM_TAYLOR_SERIES_DEGREE),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
-        generator.setDistortPreError(parameters.getBoolean(Params.AM_DISTORT_PRE_ERROR));
-        generator.setDistortPostError(parameters.getBoolean(Params.AM_DISTORT_POST_ERROR));
+        generator.setDistortPostNonlinear(parameters.getBoolean(Params.AM_DISTORT_POST_ERROR));
         return generator.generateData();
     }
 }
