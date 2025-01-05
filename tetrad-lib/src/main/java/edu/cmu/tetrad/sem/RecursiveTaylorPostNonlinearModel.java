@@ -1,21 +1,17 @@
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaylorSeries;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,10 +135,38 @@ public class RecursiveTaylorPostNonlinearModel {
     private final int taylorSeriesDegree;
     /**
      * Indicates whether post-nonlinear distortion should be applied to each variable in the model as it is simulated.
-     * By default, this is set to true. When set to true, additional distortions are applied before after error terms
+     * By default, this is set to true. When set to true, additional distortions are applied before after noise terms
      * are added to simulate nonlinear mechanisms. If false, this is an additive model with no nonlinear distortion.
      */
     private boolean distortPostNonlinear = true;
+    /**
+     * The lower bound for the random coefficient in the model.
+     * <p>
+     * This variable specifies the minimum value for the coefficient used in simulations involving random distortions or
+     * transformations. It is used as part of the range to sample coefficients for defining nonlinear behaviors in the
+     * post-nonlinear causal mechanisms.
+     */
+    private double coefLow = 0.2;
+    /**
+     * Represents the upper bound for the random coefficient sampling range used in generating synthetic data or
+     * defining transformations in the post-nonlinear model. This value defines the maximum allowable magnitude for
+     * coefficients when they are randomly generated or set within the model.
+     * <p>
+     * The specific role of this variable depends on its usage in the model's context, such as defining bounds for
+     * transformation functions or scaling.
+     */
+    private double coefHigh = 1.0;
+    /**
+     * Indicates whether the coefficients in the model should be symmetric. Symmetry of coefficients may influence the
+     * behavior and properties of the Taylor series and any transformations derived from it.
+     * <p>
+     * When set to true, the coefficients are adjusted to enforce symmetry, which may be useful for ensuring certain
+     * theoretical or practical constraints in simulation or modeling tasks.
+     * <p>
+     * This field affects the generation process of the coefficients in the context of the model's operations, such as
+     * polynomial approximations or transformations.
+     */
+    private boolean coefSymmetric = true;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -188,17 +212,6 @@ public class RecursiveTaylorPostNonlinearModel {
             TetradLogger.getInstance().log("Rescale min and rescale max are equal. No rescaling will be applied.");
         }
 
-        this.graph = graph;
-        this.numSamples = numSamples;
-        this.noiseDistribution = noiseDistribution;
-        this.rescaleMin = rescaleMin;
-        this.rescaleMax = rescaleMax;
-        this.derivMin = derivMin;
-        this.derivMax = derivMax;
-        this.firstDerivMin = firstDerivMin;
-        this.firstDerivMax = firstDerivMax;
-        this.taylorSeriesDegree = taylorSeriesDegree;
-
         if (derivMin > derivMax) {
             throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
         }
@@ -211,6 +224,17 @@ public class RecursiveTaylorPostNonlinearModel {
             throw new IllegalArgumentException("Taylor series degree must be a positive integer.");
         }
 
+        this.graph = graph;
+        this.numSamples = numSamples;
+        this.noiseDistribution = noiseDistribution;
+        this.rescaleMin = rescaleMin;
+        this.rescaleMax = rescaleMax;
+        this.derivMin = derivMin;
+        this.derivMax = derivMax;
+        this.firstDerivMin = firstDerivMin;
+        this.firstDerivMax = firstDerivMax;
+        this.taylorSeriesDegree = taylorSeriesDegree;
+
         for (Node child : this.graph.getNodes()) {
             Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
             for (Node parent : this.graph.getParents(child)) {
@@ -220,16 +244,6 @@ public class RecursiveTaylorPostNonlinearModel {
 
             this.parentFunctions.put(child, parentFunctions1);
         }
-    }
-
-    private static double getCoef() {
-        double r;
-
-        do {
-            r = RandomUtil.getInstance().nextUniform(-1.0, 1.0);
-        } while (abs(r) < 0.2);
-
-        return r;
     }
 
     /**
@@ -259,41 +273,19 @@ public class RecursiveTaylorPostNonlinearModel {
     }
 
     /**
-     * The main method demonstrates the generation of synthetic data based on a random graph, saving the data to a file,
-     * and printing the dataset and graph structure.
+     * Generates a random coefficient uniformly sampled in the range (-1.0, 1.0) with an absolute value that is at least
+     * 0.2. The method continues sampling randomly until the condition on the absolute value is satisfied.
      *
-     * @param args the command-line arguments, not used in this implementation.
+     * @return A random double value in the range (-1.0, 1.0), such that its absolute value is at least 0.2.
      */
-    public static void main(String[] args) {
-        int numNodes = 5;
+    private double getCoef() {
+        double r = RandomUtil.getInstance().nextUniform(coefLow, coefHigh);
 
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < numNodes; i++) {
-            nodes.add(new ContinuousVariable("X" + i));
+        if (coefSymmetric) {
+            r *= RandomUtil.getInstance().nextDouble() > 0.5 ? 1 : -1;
         }
 
-        Graph graph = RandomGraph.randomGraph(nodes, 0, 5, 100,
-                100, 100, false);
-
-        // Generate data
-        RecursiveTaylorPostNonlinearModel generator = new RecursiveTaylorPostNonlinearModel(graph, 1000,
-                new BetaDistribution(2, 5), -1, 1,
-                0.1, 1, 5, -1, 1);
-        DataSet data = generator.generateData();
-
-        // Save the data to a file.
-        try {
-            File file = new File("data_am.txt");
-            FileWriter writer = new FileWriter(file);
-            writer.write(data.toString());
-            writer.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        // Save the graph to a file.
-        GraphSaveLoadUtils.saveGraph(graph, new File("graph_am.txt"), false);
+        return r;
     }
 
     /**
@@ -347,6 +339,58 @@ public class RecursiveTaylorPostNonlinearModel {
         return data;
     }
 
+    /**
+     * Indicates whether post-noise distortion should be applied to the data in the model. When set to true, additional
+     * distortions are applied after the noise terms are introduced to simulate post-nonlinear mechanisms. This
+     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
+     * and causal simulation.
+     * <p>
+     * This is the "post-nonlinear" distortion.
+     *
+     * @param distortPostNonlinear true if post-noise distortions should be applied, false otherwise.
+     */
+    public void setDistortPostNonlinear(boolean distortPostNonlinear) {
+        this.distortPostNonlinear = distortPostNonlinear;
+    }
+
+    /**
+     * Sets the lower bound for the coefficient used in the model.
+     *
+     * @param coefLow The lower bound for the coefficient. This value determines the minimum limit for the range of
+     *                coefficients in the model. Default is 0.2.
+     */
+    public void setCoefLow(double coefLow) {
+        this.coefLow = coefLow;
+    }
+
+    /**
+     * Sets the upper bound for the coefficient used in the model.
+     *
+     * @param coefHigh The upper bound for the coefficient. This value determines the maximum limit for the range of
+     *                 coefficients in the model. Default is 1.0.
+     */
+    public void setCoefHigh(double coefHigh) {
+        this.coefHigh = coefHigh;
+    }
+
+    /**
+     * Sets whether the coefficient range in the model should be symmetric.
+     *
+     * @param coefSymmetric true if the range for coefficients should be symmetric about zero, false otherwise. Default
+     *                      is true.
+     */
+    public void setCoefSymmetric(boolean coefSymmetric) {
+        this.coefSymmetric = coefSymmetric;
+    }
+
+    /**
+     * Applies distortion to the values of a specified node in the given dataset using a Taylor series approximation of
+     * the transformation function. This method modifies the dataset in place.
+     *
+     * @param node        The node whose data values will be distorted. Represents a variable in the graph.
+     * @param data        The dataset containing the samples and variables to be distorted.
+     * @param nodeToIndex A mapping of nodes to their corresponding column indices in the dataset.
+     */
     private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
         TaylorSeries taylor = getTaylorSeries(derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree);
         Function<Double, Double> g = taylor::evaluate;
@@ -357,17 +401,4 @@ public class RecursiveTaylorPostNonlinearModel {
         }
     }
 
-    /**
-     * Indicates whether post-error distortion should be applied to the data in the model. When set to true, additional
-     * distortions are applied after the error terms are introduced to simulate post-nonlinear mechanisms. This
-     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
-     * and causal simulation.
-     * <p>
-     * This is the "post-nonlinear" distortion.
-     *
-     * @param distortPostNonlinear true if post-error distortions should be applied, false otherwise.
-     */
-    public void setDistortPostNonlinear(boolean distortPostNonlinear) {
-        this.distortPostNonlinear = distortPostNonlinear;
-    }
 }

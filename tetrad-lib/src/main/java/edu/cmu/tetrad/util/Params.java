@@ -951,10 +951,10 @@ public final class Params {
     /**
      * Constant <code>AM_DISTORT_PRE_ERROR="amDistortPreError"</code>
      */
-    public static final String AM_DISTORT_PRE_ERROR = "amDistortPreError";    /**
-     * Constant <code>AM_DISTORT_POST_ERROR="amDistortPostError"</code>
+    public static final String DISTORT_PRE_NOISE = "distortPreNoise";    /**
+     * Constant <code>AM_DISTORT_POST_ERROR="amdistortPostNoise"</code>
      */
-    public static final String AM_DISTORT_POST_ERROR = "amDistortPostError";
+    public static final String DISTORT_POST_NONLINEAR = "distortPostNonlinear";
     /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */

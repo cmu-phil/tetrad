@@ -214,7 +214,10 @@ public class RecursiveTaylorPostNonlinearModel implements Simulation {
         parameters.add(Params.AM_DERIVATIVE_MAX);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
-        parameters.add(Params.AM_DISTORT_POST_ERROR);
+        parameters.add(Params.COEF_LOW);
+        parameters.add(Params.COEF_HIGH);
+        parameters.add(Params.COEF_SYMMETRIC);
+        parameters.add(Params.DISTORT_POST_NONLINEAR);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -274,7 +277,10 @@ public class RecursiveTaylorPostNonlinearModel implements Simulation {
                 parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),
                 parameters.getInt(Params.AM_TAYLOR_SERIES_DEGREE),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
-        generator.setDistortPostNonlinear(parameters.getBoolean(Params.AM_DISTORT_POST_ERROR));
+        generator.setDistortPostNonlinear(parameters.getBoolean(Params.DISTORT_POST_NONLINEAR));
+        generator.setCoefLow(parameters.getDouble(Params.COEF_LOW));
+        generator.setCoefHigh(parameters.getDouble(Params.COEF_HIGH));
+        generator.setCoefSymmetric(parameters.getBoolean(Params.COEF_SYMMETRIC));
         return generator.generateData();
     }
 }

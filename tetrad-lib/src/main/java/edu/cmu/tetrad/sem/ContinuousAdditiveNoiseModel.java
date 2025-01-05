@@ -1,21 +1,17 @@
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaylorSeries;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +22,9 @@ import java.util.stream.IntStream;
 /**
  * Represents a Continuous Additive Model for generating synthetic data based on a directed acyclic graph (DAG) as a sum
  * of smooth nonlinear influences from parents of a node to the node, with a distortion function, plus noise.
+ * <p>
+ * That is, the form of the model is Xi = g(fi1(Xi_1) + fi2(Xi_2) + ... + fin(Xi_k)) + Ei, where g is a smooth nonlinear
+ * function represented as a Taylor series and f is a Taylor series.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -99,16 +98,16 @@ public class ContinuousAdditiveNoiseModel {
     private final double firstDerivMax;
     private final int taylorSeriesDegree;
     /**
-     * A flag indicating whether distortions should be applied to the data points before the introduction of error noise
-     * in the model.
+     * A flag indicating whether distortions should be applied to the data points before the introduction of noise in
+     * the model.
      * <p>
-     * When set to true, the pre-error distortion functions are used to modify the values of nodes before any noise is
+     * When set to true, the pre-noise distortion functions are used to modify the values of nodes before any noise is
      * added. This setting is relevant to the simulation process and affects how the synthetic data is generated in the
      * model.
      * <p>
      * By default, this flag is set to false, meaning no distortions are applied before the addition of noise.
      */
-    private boolean distortPreError = false;
+    private boolean distortPreNoise = false;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -189,45 +188,6 @@ public class ContinuousAdditiveNoiseModel {
     }
 
     /**
-     * The main method demonstrates the generation of synthetic data based on a random graph, saving the data to a file,
-     * and printing the dataset and graph structure.
-     *
-     * @param args the command-line arguments, not used in this implementation.
-     */
-    public static void main(String[] args) {
-
-        int numNodes = 5;
-
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < numNodes; i++) {
-            nodes.add(new ContinuousVariable("X" + i));
-        }
-
-        Graph graph = RandomGraph.randomGraph(nodes, 0, 5, 100,
-                100, 100, false);
-
-        // Generate data
-        ContinuousAdditiveNoiseModel generator = new ContinuousAdditiveNoiseModel(graph, 1000,
-                new BetaDistribution(2, 5), -1, 1,
-                0.1, 1, 5, -1, 1);
-        DataSet data = generator.generateData();
-
-        // Save the data to a file.
-        try {
-            File file = new File("data_am.txt");
-            FileWriter writer = new FileWriter(file);
-            writer.write(data.toString());
-            writer.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        // Save the graph to a file.
-        GraphSaveLoadUtils.saveGraph(graph, new File("graph_am.txt"), false);
-    }
-
-    /**
      * Generates a Taylor series representation with random derivative coefficients within the specified bounds. The
      * Taylor series is defined by its degree and its derivatives, where the coefficients are sampled uniformly from the
      * given ranges.
@@ -287,7 +247,7 @@ public class ContinuousAdditiveNoiseModel {
                 }
             }
 
-            if (distortPreError) {
+            if (distortPreNoise) {
                 distort(node, data, nodeToIndex);
             }
 
@@ -304,21 +264,30 @@ public class ContinuousAdditiveNoiseModel {
     }
 
     /**
-     * A flag indicating whether distortions should be applied to the data points before the introduction of error noise
-     * in the model.
+     * A flag indicating whether distortions should be applied to the data points before the introduction of noise in
+     * the model.
      * <p>
-     * When set to true, the pre-error distortion functions are used to modify the values of nodes before any noise is
+     * When set to true, the pre-noise distortion functions are used to modify the values of nodes before any noise is
      * added. This setting is relevant to the simulation process and affects how the synthetic data is generated in the
      * model.
      * <p>
      * By default, this flag is set to false, meaning no distortions are applied before the addition of noise.
      *
-     * @param distortPreError true if pre-error distortions should be applied, false otherwise.
+     * @param distortPreNoise true if pre-noise distortions should be applied, false otherwise.
      */
-    public void setDistortPreError(boolean distortPreError) {
-        this.distortPreError = distortPreError;
+    public void setDistortPreNoise(boolean distortPreNoise) {
+        this.distortPreNoise = distortPreNoise;
     }
 
+    /**
+     * Applies a distortion operation to the values of a given node in a dataset using a function derived from a Taylor
+     * series. The function is applied to each sample of the node's data, modifying the values in place.
+     *
+     * @param node        The node in the graph whose values in the dataset are to be distorted.
+     * @param data        The dataset containing the values of the nodes. It is modified in place to include the
+     *                    distorted values.
+     * @param nodeToIndex A mapping of nodes to their corresponding column indices in the dataset.
+     */
     private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
         TaylorSeries taylor = getTaylorSeries(derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree);
         Function<Double, Double> g = taylor::evaluate;

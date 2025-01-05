@@ -214,7 +214,7 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
         parameters.add(Params.AM_DERIVATIVE_MAX);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
-        parameters.add(Params.AM_DISTORT_PRE_ERROR);
+        parameters.add(Params.DISTORT_PRE_NOISE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -272,7 +272,7 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
                 parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),
                 parameters.getInt(Params.AM_TAYLOR_SERIES_DEGREE),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
-        generator.setDistortPreError(parameters.getBoolean(Params.AM_DISTORT_PRE_ERROR));
+        generator.setDistortPreNoise(parameters.getBoolean(Params.DISTORT_PRE_NOISE));
         return generator.generateData();
     }
 }
