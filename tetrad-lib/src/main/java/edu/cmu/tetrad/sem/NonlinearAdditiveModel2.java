@@ -9,6 +9,7 @@ import edu.cmu.tetrad.util.RandomPiecewiseLinearBijective;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaylorSeries;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.analysis.interpolation.PiecewiseBicubicSplineInterpolatingFunction;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +24,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static java.lang.Math.abs;
 
 /**
  * Represents an Additive Model for generating synthetic data based on a directed acyclic graph (DAG) as a sum of smooth
@@ -53,7 +56,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class NonlinearAdditiveModel {
+public class NonlinearAdditiveModel2 {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -102,6 +105,11 @@ public class NonlinearAdditiveModel {
      * parent-child relationship in the graph is associated with the appropriate functional dependencies.
      */
     private final Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
+    private final double derivMin;
+    private final double derivMax;
+    private final double firstDerivMin;
+    private final double firstDerivMax;
+    private final int taylorSeriesDegree;
     /**
      * A flag indicating whether distortions should be applied to the data points before the introduction of error noise
      * in the model.
@@ -148,7 +156,7 @@ public class NonlinearAdditiveModel {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public NonlinearAdditiveModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+    public NonlinearAdditiveModel2(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                    double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
                                    int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
@@ -172,6 +180,11 @@ public class NonlinearAdditiveModel {
         this.noiseDistribution = noiseDistribution;
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
+        this.derivMin = derivMin;
+        this.derivMax = derivMax;
+        this.firstDerivMin = firstDerivMin;
+        this.firstDerivMax = firstDerivMax;
+        this.taylorSeriesDegree = taylorSeriesDegree;
 
         if (derivMin > derivMax) {
             throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
@@ -188,11 +201,40 @@ public class NonlinearAdditiveModel {
         for (Node child : this.graph.getNodes()) {
             Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
             for (Node parent : this.graph.getParents(child)) {
-                TaylorSeries taylor = getTaylorSeries(firstDerivMin, firstDerivMax, derivMin, derivMax, taylorSeriesDegree);
-                parentFunctions1.put(parent, taylor::evaluate);
+//                TaylorSeries taylor = getTaylorSeries(firstDerivMin, firstDerivMax, derivMin, derivMax, taylorSeriesDegree);
+//                parentFunctions1.put(parent, taylor::evaluate);
+                final double r = getCoef();
+//                parentFunctions1.put(parent, x -> r * x);
+
+//                PiecewiseBicubicSplineInterpolatingFunction function1 = new PiecewiseBicubicSplineInterpolatingFunction(
+//                        new double[]{0.0, 0.25, 0.5, 0.75, 1.0},
+//                        new double[]{0.0, 0.25, 0.5, 0.75, 1.0},
+//                        new double[][]{
+//                                {0.0, 0.25, 0.5, 0.75, 1.0},
+//                                {0.25, 0.5, 0.75, 1.0, 0.25},
+//                                {0.5, 0.75, 1.0, 0.25, 0.5},
+//                                {0.75, 1.0, 0.25, 0.5, 0.75},
+//                                {1.0, 0.25, 0.5, 0.75, 1.0}
+//                        }
+//                );
+
+                //    parentFunctions1.put(parent, new RandomPiecewiseLinearBijective(10, RandomUtil.getInstance().nextLong())::evaluate);
+
+                parentFunctions1.put(parent, x -> r * x);
             }
+
             this.parentFunctions.put(child, parentFunctions1);
         }
+    }
+
+    private static double getCoef() {
+        double r;
+
+        do {
+            r = RandomUtil.getInstance().nextUniform(-1.0, 1.0);
+        } while (abs(r) < 0.2);
+
+        return r;
     }
 
     /**
@@ -241,7 +283,7 @@ public class NonlinearAdditiveModel {
                 100, 100, false);
 
         // Generate data
-        NonlinearAdditiveModel generator = new NonlinearAdditiveModel(graph, 1000,
+        NonlinearAdditiveModel2 generator = new NonlinearAdditiveModel2(graph, 1000,
                 new BetaDistribution(2, 5), -1, 1,
                 0.1, 1, 5, -1, 1);
         DataSet data = generator.generateData();
@@ -288,7 +330,9 @@ public class NonlinearAdditiveModel {
                 } else {
                     double linearCombination = 0;
                     for (Node parent : parents) {
-                        linearCombination += nodeFunctionMap.get(parent).apply(data.getDouble(sample, nodeToIndex.get(parent)));
+                        DataTransforms.scale(data, 0, 1, parent);
+                        double aDouble = data.getDouble(sample, nodeToIndex.get(parent));
+                        linearCombination += nodeFunctionMap.get(parent).apply(aDouble);
                     }
                     data.setDouble(sample, nodeToIndex.get(node), linearCombination);
                 }
@@ -315,28 +359,28 @@ public class NonlinearAdditiveModel {
     }
 
     private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
-        RandomPiecewiseLinearBijective rpl = new RandomPiecewiseLinearBijective(10, RandomUtil.getInstance().nextLong());
-        Function<Double, Double> g;
+//        RandomPiecewiseLinearBijective rpl = new RandomPiecewiseLinearBijective(10, RandomUtil.getInstance().nextLong());
+//        Function<Double, Double> g;
+//
+//        // Find the min and max of the column the node in the data.
+//        double min = Double.POSITIVE_INFINITY;
+//        double max = Double.NEGATIVE_INFINITY;
+//
+//        for (int sample = 0; sample < numSamples; sample++) {
+//            double value = data.getDouble(sample, nodeToIndex.get(node));
+//            if (value < min) {
+//                min = value;
+//            }
+//            if (value > max) {
+//                max = value;
+//            }
+//        }
+//
+//        rpl.setScale(min, max, min, max);
+//        g = rpl::evaluate;
 
-        // Find the min and max of the column the node in the data.
-        double min = Double.POSITIVE_INFINITY;
-        double max = Double.NEGATIVE_INFINITY;
-
-        for (int sample = 0; sample < numSamples; sample++) {
-            double value = data.getDouble(sample, nodeToIndex.get(node));
-            if (value < min) {
-                min = value;
-            }
-            if (value > max) {
-                max = value;
-            }
-        }
-
-        rpl.setScale(min, max, min, max);
-        g = rpl::evaluate;
-
-//        TaylorSeries taylor = getTaylorSeries(-1, 1, -1, 1, 9);
-//        g = taylor::evaluate;
+        TaylorSeries taylor = getTaylorSeries(derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree);
+        Function<Double, Double> g = taylor::evaluate;
 
         for (int sample = 0; sample < numSamples; sample++) {
             Double apply = g.apply(data.getDouble(sample, nodeToIndex.get(node)));

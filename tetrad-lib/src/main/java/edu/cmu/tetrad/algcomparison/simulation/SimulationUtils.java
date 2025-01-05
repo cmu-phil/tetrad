@@ -39,27 +39,19 @@ public final class SimulationUtils {
      * @return a {@link edu.cmu.tetrad.algcomparison.simulation.Simulation} object
      */
     public static Simulation create(String simulationType, RandomGraph randomGraph) {
-        switch (simulationType) {
-            case SimulationTypes.BAYS_NET:
-                return new BayesNetSimulation(randomGraph);
-            case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
-                return new SemSimulation(randomGraph);
-            case SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL:
-                return new NLSemSimulation(randomGraph);
-            case SimulationTypes.NONLINEAR_ADDITIVE_MODEL:
-                return new NonlinearAdditiveModel(randomGraph);
-            case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
-                return new GeneralSemSimulationSpecial1(randomGraph);
-            case SimulationTypes.LEE_AND_HASTIE:
-                return new LeeHastieSimulation(randomGraph);
-            case SimulationTypes.CONDITIONAL_GAUSSIAN:
-                return new ConditionalGaussianSimulation(randomGraph);
-            case SimulationTypes.TIME_SERIES:
-                return new TimeSeriesSemSimulation(randomGraph);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("Unknown simulation type %s.", simulationType));
-        }
+        return switch (simulationType) {
+            case SimulationTypes.BAYS_NET -> new BayesNetSimulation(randomGraph);
+            case SimulationTypes.STRUCTURAL_EQUATION_MODEL -> new SemSimulation(randomGraph);
+            case SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL -> new NLSemSimulation(randomGraph);
+            case SimulationTypes.NONLINEAR_ADDITIVE_MODEL -> new NonlinearAdditiveModel(randomGraph);
+            case SimulationTypes.NONLINEAR_ADDITIVE_MODEL2 -> new NonlinearAdditiveModel2(randomGraph);
+            case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL -> new GeneralSemSimulationSpecial1(randomGraph);
+            case SimulationTypes.LEE_AND_HASTIE -> new LeeHastieSimulation(randomGraph);
+            case SimulationTypes.CONDITIONAL_GAUSSIAN -> new ConditionalGaussianSimulation(randomGraph);
+            case SimulationTypes.TIME_SERIES -> new TimeSeriesSemSimulation(randomGraph);
+            default -> throw new IllegalArgumentException(
+                    String.format("Unknown simulation type %s.", simulationType));
+        };
     }
 
 }

@@ -101,8 +101,8 @@ public class ScatterPlot {
      * Constructor.
      *
      * @param includeLine             whether to include the regression line in the plot.
-     * @param x                       y-axis variable name.
-     * @param y                       x-axis variable name.
+     * @param x                       x-axis variable name.
+     * @param y                       y-axis variable name.
      * @param removeZeroPointsPerPlot whether to remove zero points per plot.
      * @param dataSet                 a {@link edu.cmu.tetrad.data.DataSet} object
      */

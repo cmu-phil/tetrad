@@ -47,6 +47,10 @@ public final class SimulationTypes {
      */
     public static final String NONLINEAR_ADDITIVE_MODEL = "Nonlinear Additive Model";
     /**
+     * Constant <code>ADDITIVE_MODEL="Nonlinear Additive Model"</code>
+     */
+    public static final String NONLINEAR_ADDITIVE_MODEL2 = "Nonlinear Additive Model 2";
+    /**
      * Constant <code>LEE_AND_HASTIE="Mixed Lee &amp; Hastie"</code>
      */
     public static final String LEE_AND_HASTIE = "Mixed Lee & Hastie";

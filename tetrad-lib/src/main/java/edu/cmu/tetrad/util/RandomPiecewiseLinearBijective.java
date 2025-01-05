@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.util;
 
+import org.apache.commons.math3.analysis.interpolation.PiecewiseBicubicSplineInterpolatingFunction;
+
 import java.util.*;
 
 public class RandomPiecewiseLinearBijective {

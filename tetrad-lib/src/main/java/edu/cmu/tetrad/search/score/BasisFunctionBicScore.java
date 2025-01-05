@@ -2,13 +2,10 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.StatUtils;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -111,11 +108,7 @@ public class BasisFunctionBicScore implements Score {
             }
 
             score += score1;
-
-            // This should not be needed for an orthogonal basis.
-//            if (basisType == 0 || variables.get(i) instanceof DiscreteVariable) {
-                B.add(i_);
-//            }
+            B.add(i_);
         }
 
         return score;

@@ -106,13 +106,13 @@ public class Embedding {
                     }
 
                     // Determine if the functional is essentially contant--i.e., if the absolute value of the maximum
-                    // in the columns minus the minimum in the columns is less than 1e-10. Skip this functional if so.
+                    // in the columns minus the minimum in the columns is less than 1e-6. Skip this functional if so.
                     // We should not regress on a constant variable, and we should count it among the degrees of
                     // freedom.
                     double max = StatUtils.max(functional);
                     double min = StatUtils.min(functional);
 
-                    if (Math.abs(max - min) < 1e-10) {
+                    if (Math.abs(max - min) < 1e-6) {
                         i--;
                         A.removeLast();
                     } else {
