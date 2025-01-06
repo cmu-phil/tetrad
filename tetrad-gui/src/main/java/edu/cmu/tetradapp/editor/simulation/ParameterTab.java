@@ -62,7 +62,7 @@ public class ParameterTab extends JPanel {
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.CONTINUOUS_ADDITIVE_NOISE_MODEL,
+            SimulationTypes.RESTRICTED_CONTINUOUS_ADDITIVE_NOISE_MODEL,
             SimulationTypes.RECURSIVE_TAYLOR_POST_NONLINEAR_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
@@ -193,8 +193,8 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.CONTINUOUS_ADDITIVE_NOISE_MODEL:
-                        this.simulation.setSimulation(new ContinuousAdditiveNoiseModel(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.RESTRICTED_CONTINUOUS_ADDITIVE_NOISE_MODEL:
+                        this.simulation.setSimulation(new RestrictedContinuousAdditiveNoiseModel(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.RECURSIVE_TAYLOR_POST_NONLINEAR_MODEL:
                         this.simulation.setSimulation(new RecursiveTaylorPostNonlinearModel(randomGraph), this.simulation.getParams());
@@ -231,8 +231,8 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.CONTINUOUS_ADDITIVE_NOISE_MODEL:
-                        this.simulation.setSimulation(new ContinuousAdditiveNoiseModel(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.RESTRICTED_CONTINUOUS_ADDITIVE_NOISE_MODEL:
+                        this.simulation.setSimulation(new RestrictedContinuousAdditiveNoiseModel(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.RECURSIVE_TAYLOR_POST_NONLINEAR_MODEL:
                         this.simulation.setSimulation(new RecursiveTaylorPostNonlinearModel(randomGraph), this.simulation.getParams());

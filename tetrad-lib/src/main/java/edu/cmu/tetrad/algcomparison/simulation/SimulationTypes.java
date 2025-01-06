@@ -43,13 +43,13 @@ public final class SimulationTypes {
      */
     public static final String GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL = "Gaussian Process Structural Equation Model";
     /**
-     * Constant <code>CONTINUOUS_ADDITIVE_NOISE_MODEL="Continuous Additive Noise Model"</code>
+     * Constant <code>RESTRICTED_CONTINUOUS_ADDITIVE_NOISE_MODEL="Restricted Continuous Additive Noise Model"</code>
      */
-    public static final String CONTINUOUS_ADDITIVE_NOISE_MODEL = "Continuous Additive Noise Model";
+    public static final String RESTRICTED_CONTINUOUS_ADDITIVE_NOISE_MODEL = "Restricted Continuous Additive Noise Model";
     /**
-     * Constant <code>RECURSIVE_POST_NONLINEAR_TAYLOR_MODEL="Recursive Post-Nonlinear Model Taylor"</code>
+     * Constant <code>RECURSIVE_POST_NONLINEAR_TAYLOR_MODEL="Recursive Taylor Post-Nonlinear Model"</code>
      */
-    public static final String RECURSIVE_TAYLOR_POST_NONLINEAR_MODEL = "Recursive Post-Nonlinear Model Taylor";
+    public static final String RECURSIVE_TAYLOR_POST_NONLINEAR_MODEL = "Recursive Taylor Post-Nonlinear Model";
     /**
      * Constant <code>LEE_AND_HASTIE="Mixed Lee &amp; Hastie"</code>
      */

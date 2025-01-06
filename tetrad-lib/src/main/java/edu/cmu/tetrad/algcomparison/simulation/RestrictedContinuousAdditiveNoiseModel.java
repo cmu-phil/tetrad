@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class ContinuousAdditiveNoiseModel implements Simulation {
+public class RestrictedContinuousAdditiveNoiseModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public ContinuousAdditiveNoiseModel(RandomGraph graph) {
+    public RestrictedContinuousAdditiveNoiseModel(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -180,7 +180,7 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Continuous Additive Noise Model simulation using " + this.randomGraph.getDescription();
+        return "Restricted Continuous Additive Noise Model simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -189,7 +189,7 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return " Continuous Additive Noise Model Simulation";
+        return "Restricted Continuous Additive Noise Model Simulation";
     }
 
     /**
@@ -215,6 +215,9 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
         parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
         parameters.add(Params.DISTORT_PRE_NOISE);
+        parameters.add(Params.AM_COEF_LOW);
+        parameters.add(Params.AM_COEF_HIGH);
+        parameters.add(Params.AM_COEF_SYMMETRIC);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -266,13 +269,16 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runContinuousAdditiveNoiseModel(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.ContinuousAdditiveNoiseModel generator = new edu.cmu.tetrad.sem.ContinuousAdditiveNoiseModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
+        edu.cmu.tetrad.sem.RestrictedContinuousAdditiveNoiseModel generator = new edu.cmu.tetrad.sem.RestrictedContinuousAdditiveNoiseModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_DERIVATIVE_MIN), parameters.getDouble(Params.AM_DERIVATIVE_MAX),
                 parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),
                 parameters.getInt(Params.AM_TAYLOR_SERIES_DEGREE),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
         generator.setDistortPreNoise(parameters.getBoolean(Params.DISTORT_PRE_NOISE));
+        generator.setCoefLow(parameters.getDouble(Params.AM_COEF_LOW));
+        generator.setCoefHigh(parameters.getDouble(Params.AM_COEF_HIGH));
+        generator.setCoefSymmetric(parameters.getBoolean(Params.AM_COEF_SYMMETRIC));
         return generator.generateData();
     }
 }

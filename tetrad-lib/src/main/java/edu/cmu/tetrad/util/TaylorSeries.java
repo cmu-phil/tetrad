@@ -54,43 +54,6 @@ public class TaylorSeries {
     }
 
     /**
-     * Calculates the nth term of center Taylor series at center given point x, based on the derivatives provided and
-     * the expansion point center.
-     *
-     * @param derivatives An array of derivatives, where the nth element represents the nth derivative at a center
-     *                    point.
-     * @param x           The value at which the Taylor series term is evaluated.
-     * @param center      The point about which the Taylor series is expanded.
-     * @param n           The index of the term in the Taylor series to calculate.
-     * @return The nth term of the Taylor series.
-     * @throws IllegalArgumentException If n is greater than or equal to the length of the derivative array.
-     */
-    private static double taylorTerm(double[] derivatives, double x, double center, int n) {
-        if (n >= derivatives.length) {
-            throw new IllegalArgumentException("Index exceeds the number of derivatives provided.");
-        }
-
-        double derivative = derivatives[n]; // f^(n)(center)
-
-        if (derivative == 0) {
-            return 0;
-        }
-
-        if (x == center && n > 0) {
-            return 0.0; // Higher-order terms vanish when x = the center
-        }
-
-        if (x == center && n == 0) {
-            return derivative; // f(center) = f^(0)(center)
-        }
-
-        double logTerm = Math.log(Math.abs(derivative)) + n * Math.log(Math.abs(x - center)) - logGamma(n + 1);
-
-        // Restore sign of derivative to avoid log of negatives
-        return Math.exp(logTerm) * Math.signum(derivative);
-    }
-
-    /**
      * Memoized version of the logGamma function.
      *
      * @param n The value to compute the logGamma of.
@@ -181,4 +144,42 @@ public class TaylorSeries {
         }
         System.out.println(builder);
     }
+
+    /**
+     * Calculates the nth term of center Taylor series at center given point x, based on the derivatives provided and
+     * the expansion point center.
+     *
+     * @param derivatives An array of derivatives, where the nth element represents the nth derivative at a center
+     *                    point.
+     * @param x           The value at which the Taylor series term is evaluated.
+     * @param center      The point about which the Taylor series is expanded.
+     * @param n           The index of the term in the Taylor series to calculate.
+     * @return The nth term of the Taylor series.
+     * @throws IllegalArgumentException If n is greater than or equal to the length of the derivative array.
+     */
+    private static double taylorTerm(double[] derivatives, double x, double center, int n) {
+        if (n >= derivatives.length) {
+            throw new IllegalArgumentException("Index exceeds the number of derivatives provided.");
+        }
+
+        double derivative = derivatives[n]; // f^(n)(center)
+
+        if (derivative == 0) {
+            return 0;
+        }
+
+        if (x == center && n > 0) {
+            return 0.0; // Higher-order terms vanish when x = the center
+        }
+
+        if (x == center && n == 0) {
+            return derivative; // f(center) = f^(0)(center)
+        }
+
+        double logTerm = Math.log(Math.abs(derivative)) + n * Math.log(Math.abs(x - center)) - logGamma(n + 1);
+
+        // Restore sign of derivative to avoid log of negatives
+        return Math.exp(logTerm) * Math.signum(derivative);
+    }
+
 }

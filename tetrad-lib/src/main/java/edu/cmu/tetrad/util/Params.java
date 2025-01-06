@@ -956,6 +956,18 @@ public final class Params {
      */
     public static final String DISTORT_POST_NONLINEAR = "distortPostNonlinear";
     /**
+     * Constant <code>AM_COEF_HIGH="amCoefHigh"</code>
+     */
+    public static final String AM_COEF_HIGH = "amCoefHigh";
+    /**
+     * Constant <code>AM_COEF_LOW="amCoefLow"</code>
+     */
+    public static final String AM_COEF_LOW = "amCoefLow";
+    /**
+     * Constant <code>AM_COEF_SYMMETRIC="amCoefSymmetric"</code>
+     */
+    public static final String AM_COEF_SYMMETRIC = "amCoefSymmetric";
+    /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";

@@ -6550,7 +6550,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </span></li>
             <li>Default
                 Value: <span
-                        id="amTaylorSeriesDegree_default_value">5</span></li>
+                        id="amTaylorSeriesDegree_default_value">10</span></li>
             <li>Lower Bound: <span
                     id="amTaylorSeriesDegree_lower_bound">1</span></li>
             <li>Upper
@@ -6715,7 +6715,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </span></li>
             <li>Default
                 Value: <span
-                        id="amFirstDerivMin_default_value">-.7</span></li>
+                        id="amFirstDerivMin_default_value">-1.0</span></li>
             <li>Lower Bound: <span
                     id="amFirstDerivMin_lower_bound">-Infinity</span></li>
             <li>Upper
@@ -6738,7 +6738,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </span></li>
             <li>Default
                 Value: <span
-                        id="amFirstDerivMax_default_value">.7</span></li>
+                        id="amFirstDerivMax_default_value">1.0</span></li>
             <li>Lower Bound: <span
                     id="amFirstDerivMax_lower_bound">-Infinity</span></li>
             <li>Upper
@@ -6792,6 +6792,63 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                         id="distortPostNonlinear_upper_bound"></span></li>
             <li>Value Type: <span
                     id="distortPostNonlinear_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="amCoefHigh">amCoefHigh</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amCoefHigh_short_desc">AM: High end of coefficient range (min =
+        0.0)</span></li>
+            <li>Long Description: <span id="amCoefHigh_long_desc">
+        AM: Value m2 for coefficients drawn from U(-m2, -m1) U U(m1, m2).</span>
+            </li>
+            <li>Default Value: <span
+                    id="amCoefHigh_default_value">1.0</span></li>
+            <li>Lower Bound: <span
+                    id="amCoefHigh_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span
+                    id="amCoefHigh_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="amCoefHigh_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="amCoefLow">amCoefLow</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amCoefLow_short_desc">AM: Low end of coefficient range (min =
+        0.0)</span></li>
+            <li>Long Description: <span id="amCoefLow_long_desc">
+        AM: The parameter m1 for coefficients drawn from U(-m2, -m1) U U(m1,
+        m2).</span></li>
+            <li>Default Value: <span
+                    id="amCoefLow_default_value">0.2</span></li>
+            <li>Lower Bound: <span
+                    id="amCoefLow_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span
+                    id="amCoefLow_upper_bound">Infinity</span></li>
+            <li>Value
+                Type: <span id="amCoefLow_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amCoefSymmetric">amCoefSymmetric</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amCoefSymmetric_short_desc">AM: Yes if negative coefficient values
+        should be considered</span></li>
+            <li>Long Description: <span
+                    id="amCoefSymmetric_long_desc">AM: Yes if coefficients should be drawn
+        from +/-(a, b); No if from +(a, b).</span></li>
+            <li>Default Value:
+                <span id="amCoefSymmetric_default_value">true</span></li>
+            <li>Lower
+                Bound: <span id="amCoefSymmetric_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span id="amCoefSymmetric_upper_bound"></span></li>
+            <li>Value
+                Type: <span id="amCoefSymmetric_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"

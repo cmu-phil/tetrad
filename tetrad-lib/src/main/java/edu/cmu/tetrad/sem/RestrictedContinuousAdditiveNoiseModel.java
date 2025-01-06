@@ -20,11 +20,22 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents a Continuous Additive Model for generating synthetic data based on a directed acyclic graph (DAG) as a sum
- * of smooth nonlinear influences from parents of a node to the node, with a distortion function, plus noise.
+ * Represents a Restricted Continuous Additive Noise (RCAN) Model (with some specific choices) for generating synthetic
+ * data based on a directed acyclic graph (DAG). This is a nonlinear function for a linear combination of parent
+ * influences, plus noise applied after the nonlinear function, where the non-linear function is represented as general
+ * Taylor series.
  * <p>
- * That is, the form of the model is Xi = g(fi1(Xi_1) + fi2(Xi_2) + ... + fin(Xi_k)) + Ei, where g is a smooth nonlinear
- * function represented as a Taylor series and f is a Taylor series.
+ * That is, the form of the model is Xi = fi(a1 Xi_1 + a2 Xi_2 + ... + ak Xi_k) + Ni, where g is a smooth nonlinear
+ * function represented as a Taylor series.
+ * <p>
+ * The form specified in Peters et al. (2014) is as follows:
+ * <p>
+ * xi = fi(Paj) + Ni
+ * <p>
+ * We have interpreted f here as a nonlinear function of a linear combination of parents. Further work might be to use a
+ * more general Taylor series for f, or to use a more general nonlinear function. For a more general nonlinear function,
+ * consider using the Continuous Additive Noise model in Peters et al. (2014) with Gaussian process simulation.
+ *
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -43,7 +54,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class ContinuousAdditiveNoiseModel {
+public class RestrictedContinuousAdditiveNoiseModel {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -92,22 +103,78 @@ public class ContinuousAdditiveNoiseModel {
      * parent-child relationship in the graph is associated with the appropriate functional dependencies.
      */
     private final Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
+    /**
+     * The minimum bound for the derivative of the causal functions. This value determines the lower limit for the
+     * derivative coefficients used in the Taylor series representation of the causal functions. It is used to constrain
+     * the range of derivative values in the simulation process, ensuring that the functions are well-behaved and
+     * realistic.
+     * <p>
+     * Constraints: Must be less than or equal to derivMax.
+     */
     private final double derivMin;
+    /**
+     * The maximum bound for the derivative of the causal functions. This value determines the upper limit for the
+     * derivative coefficients used in the Taylor series representation of the causal functions. It is used to constrain
+     * the range of derivative values in the simulation process, ensuring that the functions are well-behaved and
+     * realistic.
+     */
     private final double derivMax;
+    /**
+     * The minimum bound for f'(0) in the causal functions. This value determines the lower limit for the first
+     * derivative of the causal functions at the origin. It is used to constrain the range of first derivative values in
+     * the simulation process, ensuring that the functions are well-behaved and realistic.
+     * <p>
+     * Constraints: Must be less than or equal to firstDerivMax.
+     */
     private final double firstDerivMin;
+    /**
+     * The maximum bound for f'(0) in the causal functions. This value determines the upper limit for the first
+     * derivative of the causal functions at the origin. It is used to constrain the range of first derivative values in
+     * the simulation process, ensuring that the functions are well-behaved and realistic.
+     */
     private final double firstDerivMax;
+    /**
+     * The degree of the Taylor series used to approximate the causal functions. This value defines the number of terms
+     * included in the Taylor series representation of the causal functions, affecting the accuracy and complexity of
+     * the model. Higher degrees result in more accurate approximations but may require more computational resources.
+     * <p>
+     * Constraints: Must be a positive integer.
+     */
     private final int taylorSeriesDegree;
     /**
-     * A flag indicating whether distortions should be applied to the data points before the introduction of noise in
-     * the model.
-     * <p>
-     * When set to true, the pre-noise distortion functions are used to modify the values of nodes before any noise is
-     * added. This setting is relevant to the simulation process and affects how the synthetic data is generated in the
-     * model.
-     * <p>
-     * By default, this flag is set to false, meaning no distortions are applied before the addition of noise.
+     * Indicates whether post-nonlinear distortion should be applied to each variable in the model as it is simulated.
+     * By default, this is set to true. When set to true, additional distortions are applied before after noise terms
+     * are added to simulate nonlinear mechanisms. If false, this is an additive model with no nonlinear distortion.
      */
-    private boolean distortPreNoise = false;
+    private boolean distortPreNoise = true;
+    /**
+     * The lower bound for the random coefficient in the model.
+     * <p>
+     * This variable specifies the minimum value for the coefficient used in simulations involving random distortions or
+     * transformations. It is used as part of the range to sample coefficients for defining nonlinear behaviors in the
+     * post-nonlinear causal mechanisms.
+     */
+    private double coefLow = 0.2;
+    /**
+     * Represents the upper bound for the random coefficient sampling range used in generating synthetic data or
+     * defining transformations in the post-nonlinear model. This value defines the maximum allowable magnitude for
+     * coefficients when they are randomly generated or set within the model.
+     * <p>
+     * The specific role of this variable depends on its usage in the model's context, such as defining bounds for
+     * transformation functions or scaling.
+     */
+    private double coefHigh = 1.0;
+    /**
+     * Indicates whether the coefficients in the model should be symmetric. Symmetry of coefficients may influence the
+     * behavior and properties of the Taylor series and any transformations derived from it.
+     * <p>
+     * When set to true, the coefficients are adjusted to enforce symmetry, which may be useful for ensuring certain
+     * theoretical or practical constraints in simulation or modeling tasks.
+     * <p>
+     * This field affects the generation process of the coefficients in the context of the model's operations, such as
+     * polynomial approximations or transformations.
+     */
+    private boolean coefSymmetric = true;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -134,9 +201,9 @@ public class ContinuousAdditiveNoiseModel {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public ContinuousAdditiveNoiseModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                        double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                        int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
+    public RestrictedContinuousAdditiveNoiseModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                                  double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                                                  int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -153,18 +220,6 @@ public class ContinuousAdditiveNoiseModel {
             TetradLogger.getInstance().log("Rescale min and rescale max are equal. No rescaling will be applied.");
         }
 
-        this.graph = graph;
-        this.numSamples = numSamples;
-        this.noiseDistribution = noiseDistribution;
-        this.rescaleMin = rescaleMin;
-        this.rescaleMax = rescaleMax;
-
-        this.derivMin = derivMin;
-        this.derivMax = derivMax;
-        this.firstDerivMin = firstDerivMin;
-        this.firstDerivMax = firstDerivMax;
-        this.taylorSeriesDegree = taylorSeriesDegree;
-
         if (derivMin > derivMax) {
             throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
         }
@@ -177,12 +232,24 @@ public class ContinuousAdditiveNoiseModel {
             throw new IllegalArgumentException("Taylor series degree must be a positive integer.");
         }
 
+        this.graph = graph;
+        this.numSamples = numSamples;
+        this.noiseDistribution = noiseDistribution;
+        this.rescaleMin = rescaleMin;
+        this.rescaleMax = rescaleMax;
+        this.derivMin = derivMin;
+        this.derivMax = derivMax;
+        this.firstDerivMin = firstDerivMin;
+        this.firstDerivMax = firstDerivMax;
+        this.taylorSeriesDegree = taylorSeriesDegree;
+
         for (Node child : this.graph.getNodes()) {
             Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
             for (Node parent : this.graph.getParents(child)) {
-                TaylorSeries taylor = getTaylorSeries(firstDerivMin, firstDerivMax, derivMin, derivMax, taylorSeriesDegree);
-                parentFunctions1.put(parent, taylor::evaluate);
+                final double r = getCoef();
+                parentFunctions1.put(parent, x -> r * x);
             }
+
             this.parentFunctions.put(child, parentFunctions1);
         }
     }
@@ -214,6 +281,22 @@ public class ContinuousAdditiveNoiseModel {
     }
 
     /**
+     * Generates a random coefficient uniformly sampled in the range (-1.0, 1.0) with an absolute value that is at least
+     * 0.2. The method continues sampling randomly until the condition on the absolute value is satisfied.
+     *
+     * @return A random double value in the range (-1.0, 1.0), such that its absolute value is at least 0.2.
+     */
+    private double getCoef() {
+        double r = RandomUtil.getInstance().nextUniform(coefLow, coefHigh);
+
+        if (coefSymmetric) {
+            r *= RandomUtil.getInstance().nextDouble() > 0.5 ? 1 : -1;
+        }
+
+        return r;
+    }
+
+    /**
      * Generates synthetic data based on a directed acyclic graph (DAG) with causal relationships and post-nonlinear
      * causal mechanisms. The data generation process involves simulating parent-child relationships in the graph,
      * applying noise, rescaling, and applying random piecewise linear transformations.
@@ -225,8 +308,7 @@ public class ContinuousAdditiveNoiseModel {
         DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
 
         List<Node> nodes = graph.getNodes();
-        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size())
-                .boxed()
+        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed()
                 .collect(Collectors.toMap(nodes::get, i -> i));
 
         List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
@@ -241,7 +323,9 @@ public class ContinuousAdditiveNoiseModel {
                 } else {
                     double linearCombination = 0;
                     for (Node parent : parents) {
-                        linearCombination += nodeFunctionMap.get(parent).apply(data.getDouble(sample, nodeToIndex.get(parent)));
+                        DataTransforms.scale(data, 0, 1, parent);
+                        double aDouble = data.getDouble(sample, nodeToIndex.get(parent));
+                        linearCombination += nodeFunctionMap.get(parent).apply(aDouble);
                     }
                     data.setDouble(sample, nodeToIndex.get(node), linearCombination);
                 }
@@ -264,28 +348,55 @@ public class ContinuousAdditiveNoiseModel {
     }
 
     /**
-     * A flag indicating whether distortions should be applied to the data points before the introduction of noise in
-     * the model.
+     * Indicates whether post-noise distortion should be applied to the data in the model. When set to true, additional
+     * distortions are applied after the noise terms are introduced to simulate post-nonlinear mechanisms. This
+     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
+     * and causal simulation.
      * <p>
-     * When set to true, the pre-noise distortion functions are used to modify the values of nodes before any noise is
-     * added. This setting is relevant to the simulation process and affects how the synthetic data is generated in the
-     * model.
-     * <p>
-     * By default, this flag is set to false, meaning no distortions are applied before the addition of noise.
+     * This is the "post-nonlinear" distortion.
      *
-     * @param distortPreNoise true if pre-noise distortions should be applied, false otherwise.
+     * @param distortPreNoise true if post-noise distortions should be applied, false otherwise.
      */
     public void setDistortPreNoise(boolean distortPreNoise) {
         this.distortPreNoise = distortPreNoise;
     }
 
     /**
-     * Applies a distortion operation to the values of a given node in a dataset using a function derived from a Taylor
-     * series. The function is applied to each sample of the node's data, modifying the values in place.
+     * Sets the lower bound for the coefficient used in the model.
      *
-     * @param node        The node in the graph whose values in the dataset are to be distorted.
-     * @param data        The dataset containing the values of the nodes. It is modified in place to include the
-     *                    distorted values.
+     * @param coefLow The lower bound for the coefficient. This value determines the minimum limit for the range of
+     *                coefficients in the model. Default is 0.2.
+     */
+    public void setCoefLow(double coefLow) {
+        this.coefLow = coefLow;
+    }
+
+    /**
+     * Sets the upper bound for the coefficient used in the model.
+     *
+     * @param coefHigh The upper bound for the coefficient. This value determines the maximum limit for the range of
+     *                 coefficients in the model. Default is 1.0.
+     */
+    public void setCoefHigh(double coefHigh) {
+        this.coefHigh = coefHigh;
+    }
+
+    /**
+     * Sets whether the coefficient range in the model should be symmetric.
+     *
+     * @param coefSymmetric true if the range for coefficients should be symmetric about zero, false otherwise. Default
+     *                      is true.
+     */
+    public void setCoefSymmetric(boolean coefSymmetric) {
+        this.coefSymmetric = coefSymmetric;
+    }
+
+    /**
+     * Applies distortion to the values of a specified node in the given dataset using a Taylor series approximation of
+     * the transformation function. This method modifies the dataset in place.
+     *
+     * @param node        The node whose data values will be distorted. Represents a variable in the graph.
+     * @param data        The dataset containing the samples and variables to be distorted.
      * @param nodeToIndex A mapping of nodes to their corresponding column indices in the dataset.
      */
     private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
