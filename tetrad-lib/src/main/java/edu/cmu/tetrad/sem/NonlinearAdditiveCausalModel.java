@@ -140,18 +140,6 @@ public class NonlinearAdditiveCausalModel {
      * Constraints: Must be a positive integer.
      */
     private final int taylorSeriesDegree;
-//    /**
-//     * Indicates whether post-nonlinear distortion should be applied to each variable in the model as it is simulated.
-//     * By default, this is set to true. When set to true, additional distortions are applied before after noise terms
-//     * are added to simulate nonlinear mechanisms. If false, this is an additive model with no nonlinear distortion.
-//     */
-//    private boolean distortPreNoise = true;
-//    /**
-//     * Indicates whether post-nonlinear distortion should be applied to each variable in the model as it is simulated.
-//     * By default, this is set to true. When set to true, additional distortions are applied before after noise terms
-//     * are added to simulate nonlinear mechanisms. If false, this is an additive model with no nonlinear distortion.
-//     */
-//    private boolean distortPostNonlinear = true;
     /**
      * The lower bound for the random coefficient in the model.
      * <p>
@@ -361,34 +349,6 @@ public class NonlinearAdditiveCausalModel {
 
         return data;
     }
-
-//    /**
-//     * Indicates whether post-noise distortion should be applied to the data in the model. When set to true, additional
-//     * distortions are applied after the noise terms are introduced to simulate post-nonlinear mechanisms. This
-//     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
-//     * and causal simulation.
-//     * <p>
-//     * This is the "post-nonlinear" distortion.
-//     *
-//     * @param distortPreNoise true if post-noise distortions should be applied, false otherwise.
-//     */
-//    public void setDistortPreNoise(boolean distortPreNoise) {
-//        this.distortPreNoise = distortPreNoise;
-//    }
-
-//    /**
-//     * Indicates whether post-noise distortion should be applied to the data in the model. When set to true, additional
-//     * distortions are applied after the noise terms are introduced to simulate post-nonlinear mechanisms. This
-//     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
-//     * and causal simulation.
-//     * <p>
-//     * This is the "post-nonlinear" distortion.
-//     *
-//     * @param distortPostNonlinear true if post-noise distortions should be applied, false otherwise.
-//     */
-//    public void setDistortPostNonlinear(boolean distortPostNonlinear) {
-//        this.distortPostNonlinear = distortPostNonlinear;
-//    }
 
     /**
      * Sets the lower bound for the coefficient used in the model.
