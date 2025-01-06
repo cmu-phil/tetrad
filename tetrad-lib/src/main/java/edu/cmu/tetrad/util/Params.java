@@ -951,6 +951,10 @@ public final class Params {
     /**
      * Constant <code>AM_DISTORT_PRE_ERROR="amDistortPreError"</code>
      */
+    public static final String AM_DISTORTION_TYPE = "amDistortionType";    /**
+    /**
+     * Constant <code>AM_DISTORT_PRE_ERROR="amDistortPreError"</code>
+     */
     public static final String DISTORT_PRE_NOISE = "distortPreNoise";    /**
      * Constant <code>AM_DISTORT_POST_ERROR="amdistortPostNoise"</code>
      */

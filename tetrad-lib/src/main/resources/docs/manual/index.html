@@ -6749,49 +6749,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="distortPreNoise">distortPreNoise</h3>
+            id="amDistortionType">amDistortionType</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="distortPreNoise_short_desc">
-                AM: True if distortions should be applied before adding noises
+                    id="amDistortionType_short_desc">
+				AM: 1 = Add noise after distortion (additive), 2 = Add noise before distortion (post-nonlinear)
             </span></li>
             <li>Long Description: <span
-                    id="distortPreNoise_long_desc">
-                AM: True if distortions should be applied before adding noises
+                    id="amDistortionType_long_desc">
+				AM: 1 = Add noise after distortion (additive), 2 = Add noise before distortion (post-nonlinear)
         </span></li>
             <li>Default
                 Value: <span
-                        id="distortPreNoise_default_value">true</span></li>
+                        id="amDistortionType_default_value">1</span></li>
             <li>Lower Bound: <span
-                    id="distortPreNoise_lower_bound"></span></li>
+                    id="amDistortionType_lower_bound">1</span></li>
             <li>Upper
                 Bound: <span
-                        id="distortPreNoise_upper_bound"></span></li>
+                        id="amDistortionType_upper_bound">2</span></li>
             <li>Value Type: <span
-                    id="distortPreNoise_value_type">Boolean</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="distortPostNonlinear">distortPostNonlinear</h3>
-        <ul class="parameter_description_list">
-            <li>Short Description: <span
-                    id="distortPostNonlinear_short_desc">
-                AM: True if distortions should be applied after adding noises
-            </span></li>
-            <li>Long Description: <span
-                    id="distortPostNonlinear_long_desc">
-                AM: True if distortions should be applied after adding noises
-        </span></li>
-            <li>Default
-                Value: <span
-                        id="distortPostNonlinear_default_value">true</span></li>
-            <li>Lower Bound: <span
-                    id="distortPostNonlinear_lower_bound"></span></li>
-            <li>Upper
-                Bound: <span
-                        id="distortPostNonlinear_upper_bound"></span></li>
-            <li>Value Type: <span
-                    id="distortPostNonlinear_value_type">Boolean</span></li>
+                    id="amDistortionType_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="amCoefHigh">amCoefHigh</h3>

@@ -20,10 +20,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents a Restricted Continuous Additive Noise (RCAN) Model (with some specific choices) for generating synthetic
- * data based on a directed acyclic graph (DAG). This is a nonlinear function for a linear combination of parent
- * influences, plus noise applied after the nonlinear function, where the non-linear function is represented as general
- * Taylor series.
+ * Represents a Nonlinear Additive Causal Model (NAC) (with some specific choices) for generating synthetic data based
+ * on a directed acyclic graph (DAG). This is a nonlinear function for a linear combination of parent influences, plus
+ * noise applied after the nonlinear function, where the non-linear function is represented as general Taylor series.
  * <p>
  * That is, the form of the model is Xi = fi(a1 Xi_1 + a2 Xi_2 + ... + ak Xi_k) + Ni, where g is a smooth nonlinear
  * function represented as a Taylor series.
@@ -54,7 +53,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class RestrictedContinuousAdditiveNoiseModel {
+public class NonlinearAdditiveCausalModel {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -141,12 +140,18 @@ public class RestrictedContinuousAdditiveNoiseModel {
      * Constraints: Must be a positive integer.
      */
     private final int taylorSeriesDegree;
-    /**
-     * Indicates whether post-nonlinear distortion should be applied to each variable in the model as it is simulated.
-     * By default, this is set to true. When set to true, additional distortions are applied before after noise terms
-     * are added to simulate nonlinear mechanisms. If false, this is an additive model with no nonlinear distortion.
-     */
-    private boolean distortPreNoise = true;
+//    /**
+//     * Indicates whether post-nonlinear distortion should be applied to each variable in the model as it is simulated.
+//     * By default, this is set to true. When set to true, additional distortions are applied before after noise terms
+//     * are added to simulate nonlinear mechanisms. If false, this is an additive model with no nonlinear distortion.
+//     */
+//    private boolean distortPreNoise = true;
+//    /**
+//     * Indicates whether post-nonlinear distortion should be applied to each variable in the model as it is simulated.
+//     * By default, this is set to true. When set to true, additional distortions are applied before after noise terms
+//     * are added to simulate nonlinear mechanisms. If false, this is an additive model with no nonlinear distortion.
+//     */
+//    private boolean distortPostNonlinear = true;
     /**
      * The lower bound for the random coefficient in the model.
      * <p>
@@ -175,6 +180,12 @@ public class RestrictedContinuousAdditiveNoiseModel {
      * polynomial approximations or transformations.
      */
     private boolean coefSymmetric = true;
+    /**
+     * The type of distortion applied to the data in the model. This parameter controls the nature of the distortions
+     * applied to the synthetic data during the simulation process, affecting the behavior and properties of the
+     * generated data.
+     */
+    private DistortionType distortionType = DistortionType.POST_NONLINEAR;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -201,9 +212,9 @@ public class RestrictedContinuousAdditiveNoiseModel {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public RestrictedContinuousAdditiveNoiseModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                                  double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                                  int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
+    public NonlinearAdditiveCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                        double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
+                                        int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -331,12 +342,16 @@ public class RestrictedContinuousAdditiveNoiseModel {
                 }
             }
 
-            if (distortPreNoise) {
+            if (distortionType == DistortionType.PRE_NOISE) {
                 distort(node, data, nodeToIndex);
             }
 
             for (int sample = 0; sample < numSamples; sample++) {
                 data.setDouble(sample, nodeToIndex.get(node), data.getDouble(sample, nodeToIndex.get(node)) + noiseDistribution.sample());
+            }
+
+            if (distortionType == DistortionType.POST_NONLINEAR) {
+                distort(node, data, nodeToIndex);
             }
 
             if (rescaleMin < rescaleMax) {
@@ -347,19 +362,33 @@ public class RestrictedContinuousAdditiveNoiseModel {
         return data;
     }
 
-    /**
-     * Indicates whether post-noise distortion should be applied to the data in the model. When set to true, additional
-     * distortions are applied after the noise terms are introduced to simulate post-nonlinear mechanisms. This
-     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
-     * and causal simulation.
-     * <p>
-     * This is the "post-nonlinear" distortion.
-     *
-     * @param distortPreNoise true if post-noise distortions should be applied, false otherwise.
-     */
-    public void setDistortPreNoise(boolean distortPreNoise) {
-        this.distortPreNoise = distortPreNoise;
-    }
+//    /**
+//     * Indicates whether post-noise distortion should be applied to the data in the model. When set to true, additional
+//     * distortions are applied after the noise terms are introduced to simulate post-nonlinear mechanisms. This
+//     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
+//     * and causal simulation.
+//     * <p>
+//     * This is the "post-nonlinear" distortion.
+//     *
+//     * @param distortPreNoise true if post-noise distortions should be applied, false otherwise.
+//     */
+//    public void setDistortPreNoise(boolean distortPreNoise) {
+//        this.distortPreNoise = distortPreNoise;
+//    }
+
+//    /**
+//     * Indicates whether post-noise distortion should be applied to the data in the model. When set to true, additional
+//     * distortions are applied after the noise terms are introduced to simulate post-nonlinear mechanisms. This
+//     * parameter works in conjunction with other distortion settings to control the nature of synthetic data generation
+//     * and causal simulation.
+//     * <p>
+//     * This is the "post-nonlinear" distortion.
+//     *
+//     * @param distortPostNonlinear true if post-noise distortions should be applied, false otherwise.
+//     */
+//    public void setDistortPostNonlinear(boolean distortPostNonlinear) {
+//        this.distortPostNonlinear = distortPostNonlinear;
+//    }
 
     /**
      * Sets the lower bound for the coefficient used in the model.
@@ -407,5 +436,29 @@ public class RestrictedContinuousAdditiveNoiseModel {
             Double apply = g.apply(data.getDouble(sample, nodeToIndex.get(node)));
             data.setDouble(sample, nodeToIndex.get(node), apply);
         }
+    }
+
+    public void setDistortionType(DistortionType distortionType) {
+        this.distortionType = distortionType;
+    }
+
+    /**
+     * Represents the type of distortion applied in a nonlinear additive causal model. This enumeration defines the
+     * available distortion mechanisms that can be used to simulate post-nonlinear causal relationships by modifying the
+     * data.
+     */
+    public enum DistortionType {
+        /**
+         * No distortion applied to the data.
+         */
+        NONE,
+        /**
+         * Noise added after the nonlinear distortion.
+         */
+        PRE_NOISE,
+        /**
+         * Noise added before the nonlinear distortion.
+         */
+        POST_NONLINEAR
     }
 }
