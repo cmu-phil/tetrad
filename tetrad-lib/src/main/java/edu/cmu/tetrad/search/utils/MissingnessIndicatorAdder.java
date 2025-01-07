@@ -10,11 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The MissingnessIndicatorAdder class provides functionality to add missingness indicators
- * to a dataset. Missingness indicators are binary variables indicating the presence (1.0)
- * or absence (0.0) of observed values for each variable in the original dataset. These
- * indicators are added as additional columns in the resulting dataset when a variable contains
- * missing values.
+ * The MissingnessIndicatorAdder class provides functionality to add missingness indicators to a dataset. Missingness
+ * indicators are binary variables indicating the presence (1.0) or absence (0.0) of observed values for each variable
+ * in the original dataset. These indicators are added as additional columns in the resulting dataset when a variable
+ * contains missing values.
  *
  * @author josephramsey
  * @author ChatGpt 4o
