@@ -287,8 +287,6 @@ public class NonlinearAdditiveCausalModel implements Simulation {
             generator.setDistortionType(edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel.DistortionType.POST_NONLINEAR);
         }
 
-//        generator.setDistortPreNoise(parameters.getBoolean(Params.DISTORT_PRE_NOISE));
-//        generator.setDistortPostNonlinear(parameters.getBoolean(Params.DISTORT_POST_NONLINEAR));
         generator.setCoefLow(parameters.getDouble(Params.AM_COEF_LOW));
         generator.setCoefHigh(parameters.getDouble(Params.AM_COEF_HIGH));
         generator.setCoefSymmetric(parameters.getBoolean(Params.AM_COEF_SYMMETRIC));

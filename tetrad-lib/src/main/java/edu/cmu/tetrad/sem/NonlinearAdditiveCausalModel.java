@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TaylorSeries;
+import edu.cmu.tetrad.util.TaylorSeriesDerivativeCheck;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.jetbrains.annotations.NotNull;
@@ -174,6 +175,19 @@ public class NonlinearAdditiveCausalModel {
      * generated data.
      */
     private DistortionType distortionType = DistortionType.POST_NONLINEAR;
+    /**
+     * A flag that determines whether the model should check the positivity of the first derivative of the causal
+     * functions during computations or simulations.
+     * <p>
+     * When set to {@code true}, the model enforces that the first derivative (f'(x)) is positive for causal functions,
+     * ensuring monotonicity in the causal relationships. This may be relevant for models with monotonic causal
+     * constraints.
+     * <p>
+     * When set to {@code false}, no such checks are performed, and the first derivative may have any sign.
+     * <p>
+     * Default value is {@code false}.
+     */
+    private boolean checkFirstDerivPositivity = false;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -200,9 +214,7 @@ public class NonlinearAdditiveCausalModel {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public NonlinearAdditiveCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                        double derivMin, double derivMax, double firstDerivMin, double firstDerivMax,
-                                        int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
+    public NonlinearAdditiveCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution, double derivMin, double derivMax, double firstDerivMin, double firstDerivMax, int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -268,15 +280,29 @@ public class NonlinearAdditiveCausalModel {
      *                           Must be a non-negative integer.
      * @return A TaylorSeries instance with randomly generated coefficients for the specified degree and ranges.
      */
-    private static @NotNull TaylorSeries getTaylorSeries(double derivMin, double derivMax, double firstDerivMin,
-                                                         double firstDerivMax, int taylorSeriesDegree) {
+    private @NotNull TaylorSeries getTaylorSeries(double derivMin, double derivMax, double firstDerivMin, double firstDerivMax, int taylorSeriesDegree) {
         double[] derivatives = new double[taylorSeriesDegree + 1];
-        for (int i1 = 2; i1 <= taylorSeriesDegree; i1++) {
-            derivatives[i1] = RandomUtil.getInstance().nextUniform(derivMin, derivMax);
-        }
 
-        derivatives[1] = RandomUtil.getInstance().nextUniform(firstDerivMin, firstDerivMax);
+        do {
+            for (int i1 = 2; i1 <= taylorSeriesDegree; i1++) {
+                derivatives[i1] = RandomUtil.getInstance().nextUniform(derivMin, derivMax);
+            }
+
+            derivatives[1] = RandomUtil.getInstance().nextUniform(firstDerivMin, firstDerivMax);
+        } while (checkFirstDerivPositivity && !(TaylorSeriesDerivativeCheck.testDerivativePositivity(derivatives, -3.0, 3.0, 0.01)));
+
         return TaylorSeries.get(derivatives, 0);
+    }
+
+    /**
+     * Sets whether to check the positivity of the first derivative in the model.
+     *
+     * @param checkFirstDerivPositivity A boolean indicating whether the positivity of the first derivative should be
+     *                                  enforced. If true, the model checks that the first derivative is positive;
+     *                                  otherwise, no such check is performed.
+     */
+    public void setCheckFirstDerivPositivity(boolean checkFirstDerivPositivity) {
+        this.checkFirstDerivPositivity = checkFirstDerivPositivity;
     }
 
     /**
@@ -307,8 +333,7 @@ public class NonlinearAdditiveCausalModel {
         DataSet data = new BoxDataSet(new DoubleDataBox(numSamples, graph.getNodes().size()), graph.getNodes());
 
         List<Node> nodes = graph.getNodes();
-        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed()
-                .collect(Collectors.toMap(nodes::get, i -> i));
+        Map<Node, Integer> nodeToIndex = IntStream.range(0, nodes.size()).boxed().collect(Collectors.toMap(nodes::get, i -> i));
 
         List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
 
