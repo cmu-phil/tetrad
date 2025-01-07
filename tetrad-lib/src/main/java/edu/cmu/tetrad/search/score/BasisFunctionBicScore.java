@@ -35,7 +35,6 @@ public class BasisFunctionBicScore implements Score {
      * of a statistical model to a data set within the context of structural equation modeling (SEM).
      */
     private final SemBicScore bic;
-    private final int basisType/**/;
     /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
@@ -56,7 +55,6 @@ public class BasisFunctionBicScore implements Score {
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
                                  int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
-        this.basisType = basisType;
 
         boolean usePseudoInverse = true;
 

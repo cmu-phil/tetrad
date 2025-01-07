@@ -282,7 +282,7 @@ public class SemBicScore implements Score {
             for (int j = 0; j < cols.length; j++) {
                 double mui = 0.0;
                 double muj = 0.0;
-                double sampleSize = data.getNumRows();
+                double sampleSize = 0;//data.getNumRows();
 
                 K1:
                 for (int k : rowsInData) {
@@ -300,7 +300,7 @@ public class SemBicScore implements Score {
 
                     mui += data.get(k, cols[i]);
                     muj += data.get(k, cols[j]);
-//                    sampleSize++;
+                    sampleSize++;
                 }
 
                 mui /= sampleSize;
@@ -327,7 +327,7 @@ public class SemBicScore implements Score {
 
                 double mean = _cov / (sampleSize - 1);
                 cov.set(i, j, mean);
-//                cov.set(j, i, mean);
+                cov.set(j, i, mean);
             }
         }
 
