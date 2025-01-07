@@ -6,7 +6,7 @@ import java.util.stream.DoubleStream;
 /**
  * Tests if the derivative f'(x) is positive for a Taylor series function over a range of x given its derivatives at 0.
  *
- * @author GPT 4.o
+ * @author ChatGPT 4o
  * @author josephramsey
  */
 public class TaylorSeriesDerivativeCheck {
