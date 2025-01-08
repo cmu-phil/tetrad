@@ -13,66 +13,80 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * The MNARDataSimulator class provides functionality to simulate Missing Not at Random (MNAR) data.
- *
- * @author josephramsey
  */
 public class MnarDataSimulator {
 
     /**
-     * Generates a model with a constructed graph and simulated data, applying MNAR (Missing Not At Random) mechanisms
-     * to introduce missingness to the dataset based on a specified graph structure.
+     * Generates a dataset with Missing Not At a Random (MNAR) data mechanism applied to specific variables in a graph.
+     * The method modifies the input graph to include missingness indicators and simulates data based on the modified
+     * graph. Certain data entries are set to missing based on their corresponding indicators.
      *
-     * @param numMeasures        the number of measure variables to include in the graph
-     * @param numEdges           the number of edges to be created in the graph
-     * @param numExtraInfluences the number of additional influences to be added to the missingness indicators
-     * @return a {@code MnarDataSimulator.Model} containing the constructed graph and the dataset with simulated
-     * missingness values applied
+     * @param graph              The input graph defining the relationships between variables.
+     * @param numExtraInfluences The number of additional edges influencing missingness.
+     * @param threshold          The threshold value to determine missingness, used to produce binary indicators.
+     * @param numRows            The number of rows to simulate in the generated dataset.
+     * @return A DataSet object with simulated data, including MNAR modification.
      */
-    public static @NotNull MnarDataSimulator.Model getMnarModel(int numMeasures, int numEdges, int numExtraInfluences) {
-        Graph g = RandomGraph.randomGraph(numMeasures, 0, numEdges, 100, 100, 100, false);
-        Graph saveG = new EdgeListGraph(g);
+    public static @NotNull DataSet getMnarData(Graph graph, int numExtraInfluences, double threshold, int numRows) {
 
-        // Add missingness variables for selected variables.
-        List<String> names = g.getNodeNames();
+        // Throw an exceptionm if any variables in the graph has a name ending with "_missing"
+        for (Node node : graph.getNodes()) {
+            if (node.getName().endsWith("_missing")) {
+                throw new IllegalArgumentException("Variable names cannot end with '_missing'");
+            }
+        }
+
+        if (numExtraInfluences < 0) {
+            throw new IllegalArgumentException("Number of extra influences must be non-negative.");
+        }
+
+        if (numRows <= 0) {
+            throw new IllegalArgumentException("Number of rows must be positive.");
+        }
+
+        // Add missingness variables for selected variables
+        Graph expandedGraph = new EdgeListGraph(graph);
+
+        List<String> names = expandedGraph.getNodeNames();
         String[] targetColumns = {names.get(0), names.get(2)};
         List<Node> missingnessNodes = new ArrayList<>();
 
         for (String targetColumn : targetColumns) {
-            Node variable = g.getNode(targetColumn);
-            Node missingnesNode = new ContinuousVariable(variable.getName() + "_missing");
-            missingnessNodes.add(missingnesNode);
-            g.addNode(missingnesNode);
-            g.addDirectedEdge(variable, missingnesNode);
+            Node variable = expandedGraph.getNode(targetColumn);
+            Node missingnessNode = new ContinuousVariable(variable.getName() + "_missing");
+            missingnessNodes.add(missingnessNode);
+            expandedGraph.addNode(missingnessNode);
+            expandedGraph.addDirectedEdge(variable, missingnessNode);
         }
 
         // Add additional edges to influence missingness as desired
         for (int i = 0; i < numExtraInfluences; i++) {
-            // Pick a random node with name ending with "_missing".
             Node node = missingnessNodes.get(RandomUtil.getInstance().nextInt(missingnessNodes.size()));
-            List<Node> parents = g.getParents(node);
+            List<Node> parents = expandedGraph.getParents(node);
 
-            // Pick a node that's not a parent of the missingness variable and make it a parent.
-            g.getNodes().stream().filter(n -> !parents.contains(n) && !n.equals(node)).findAny()
-                    .ifPresent(parent -> g.addDirectedEdge(parent, node));
+            expandedGraph.getNodes().stream()
+                    .filter(n -> !parents.contains(n) && !n.equals(node))
+                    .findAny()
+                    .ifPresent(parent -> expandedGraph.addDirectedEdge(parent, node));
         }
 
-        // Simulate data over all the variables
-        SemPm pm = new SemPm(g);
+        // Simulate data over all variables
+        SemPm pm = new SemPm(expandedGraph);
         SemIm im = new SemIm(pm);
-        DataSet dataSet = im.simulateData(10, false);
+        DataSet dataSet = im.simulateData(numRows, false);
 
-        // Threshold the missingness variables to produce 0's and 1's.
-        double threshold = 0.4;
-
+        // Threshold missingness variables to produce binary 0's and 1's
         for (Node node : dataSet.getVariables()) {
             if (node.getName().endsWith("_missing")) {
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    double value = dataSet.getDouble(i, dataSet.getColumnIndex(node));
-                    dataSet.setDouble(i, dataSet.getColumnIndex(node), value > threshold ? 0.0 : 1.0);
-                }
+                int colIndex = dataSet.getColumnIndex(node);
+                IntStream.range(0, dataSet.getNumRows()).parallel().forEach(row -> {
+                    double value = dataSet.getDouble(row, colIndex);
+                    dataSet.setDouble(row, colIndex, value > threshold ? 0.0 : 1.0);
+                });
             }
         }
 
@@ -84,42 +98,46 @@ public class MnarDataSimulator {
                     int indicatorIndex = dataSet.getColumnIndex(indicator);
                     int columnIndex = dataSet.getColumnIndex(associatedColumn);
 
-                    for (int row = 0; row < dataSet.getNumRows(); row++) {
+                    IntStream.range(0, dataSet.getNumRows()).parallel().forEach(row -> {
                         if (dataSet.getDouble(row, indicatorIndex) == 0.0) {
                             dataSet.setDouble(row, columnIndex, Double.NaN);
                         }
-                    }
+                    });
                 }
             }
         }
 
-        // Remove the missingness columns.
+        // Remove the missingness columns
+        List<Node> toRemove = new ArrayList<>();
         for (Node node : dataSet.getVariables()) {
             if (node.getName().endsWith("_missing")) {
-                dataSet.removeColumn(node);
+                toRemove.add(node);
             }
         }
+        toRemove.forEach(dataSet::removeColumn);
 
-        return new Model(saveG, dataSet);
+        return dataSet;
     }
 
     public static void main(String[] args) {
         RandomUtil.getInstance().setSeed(38482834L);
 
-        int numMeasures = 5;
-        int numEdges = 2;
-        int numExtraInfluences = 2;
+        int numMeasures = 10;
+        int numEdges = 10;
 
-        var result = getMnarModel(numMeasures, numEdges, numExtraInfluences);
+        Graph graph = RandomGraph.randomGraph(numMeasures, 0, numEdges, 100, 100, 100, false);
+
+        int numExtraInfluences = 8;
+        double threshold = 1.0;
+        int numRows = 100;
+
+        DataSet dataSet = getMnarData(graph, numExtraInfluences, threshold, numRows);
 
         // Print the result
         System.out.println("MNAR Dataset:");
-        System.out.println(result.dataSet());
+        System.out.println(dataSet);
 
         System.out.println("Graph:");
-        System.out.println(result.graph());
-    }
-
-    public record Model(Graph graph, DataSet dataSet) {
+        System.out.println(graph);
     }
 }
