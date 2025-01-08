@@ -503,7 +503,7 @@ public final class NumberObjectDataSet
     /**
      * {@inheritDoc}
      */
-    public int getColumn(Node variable) {
+    public int getColumnIndex(Node variable) {
         return this.variables.indexOf(variable);
     }
 

@@ -218,7 +218,7 @@ public class Histogram {
      * @return an array of  objects
      */
     public double[] getContinuousData(String variable) {
-        int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));
+        int index = this.dataSet.getColumnIndex(this.dataSet.getVariable(variable));
         List<Double> _data = new ArrayList<>();
 
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
@@ -302,7 +302,7 @@ public class Histogram {
     }
 
     private List<Double> getUnconditionedDataContinuous() {
-        int index = this.dataSet.getColumn(this.target);
+        int index = this.dataSet.getColumnIndex(this.target);
 
         List<Double> _data = new ArrayList<>();
 
@@ -316,7 +316,7 @@ public class Histogram {
     private List<Double> getConditionedDataContinuous() {
         List<Integer> rows = getConditionedRows();
 
-        int index = this.dataSet.getColumn(this.target);
+        int index = this.dataSet.getColumnIndex(this.target);
 
         List<Double> _data = new ArrayList<>();
 
@@ -330,7 +330,7 @@ public class Histogram {
     private List<Integer> getConditionedDataDiscrete() {
         List<Integer> rows = getConditionedRows();
 
-        int index = this.dataSet.getColumn(this.target);
+        int index = this.dataSet.getColumnIndex(this.target);
 
         List<Integer> _data = new ArrayList<>();
 
@@ -349,7 +349,7 @@ public class Histogram {
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
             for (Node node : this.continuousIntervals.keySet()) {
                 double[] range = this.continuousIntervals.get(node);
-                int index = this.dataSet.getColumn(node);
+                int index = this.dataSet.getColumnIndex(node);
                 double value = this.dataSet.getDouble(i, index);
                 if (!(value >= range[0] && value <= range[1])) {
                     continue I;
@@ -358,7 +358,7 @@ public class Histogram {
 
             for (Node node : this.discreteValues.keySet()) {
                 int value = this.discreteValues.get(node);
-                int index = this.dataSet.getColumn(node);
+                int index = this.dataSet.getColumnIndex(node);
                 int _value = this.dataSet.getInt(i, index);
                 if (!(value == _value)) {
                     continue I;

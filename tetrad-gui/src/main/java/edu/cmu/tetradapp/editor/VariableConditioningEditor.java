@@ -460,7 +460,7 @@ public class VariableConditioningEditor extends JPanel {
          * @return an array of double
          */
         public static double[] getContinuousData(String variable, DataSet dataSet) {
-            int index = dataSet.getColumn(dataSet.getVariable(variable));
+            int index = dataSet.getColumnIndex(dataSet.getVariable(variable));
             List<Double> _data = new ArrayList<>();
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {

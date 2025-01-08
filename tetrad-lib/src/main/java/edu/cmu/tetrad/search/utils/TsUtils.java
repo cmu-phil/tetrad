@@ -465,7 +465,7 @@ public class TsUtils {
         data = data.copy();
         ContinuousVariable timeVar = new ContinuousVariable("Time");
         data.addVariable(timeVar);
-        int c = data.getColumn(timeVar);
+        int c = data.getColumnIndex(timeVar);
 
         for (int r = 0; r < data.getNumRows(); r++) {
             data.setDouble(r, c, (r + 1));

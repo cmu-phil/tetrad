@@ -35,6 +35,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr;
 import static java.lang.Double.NaN;
@@ -364,56 +365,115 @@ public class SemBicScore implements Score {
             return cov.view(cols, cols).mat();
         } else if (dataSet != null) {
 
-            Matrix _cov = new Matrix(cols.length, cols.length);
-
-            for (int i = 0; i < cols.length; i++) {
-                for (int j = i; j < cols.length; j++) {
-                    double mui = 0.0;
-                    double muj = 0.0;
-
-                    int sampleSize = rows.size();
-
-                    K1:
-                    for (int k : rows) {
-                        for (int c : all) {
-                            if (Double.isNaN(dataSet.getDouble(k, c))) {
-                                continue K1;
-                            }
-                        }
-
-                        mui += dataSet.getDouble(k, cols[i]);
-                        muj += dataSet.getDouble(k, cols[j]);
-                    }
-
-                    mui /= sampleSize - 1;
-                    muj /= sampleSize - 1;
-
-                    double __cov = 0.0;
-
-                    K2:
-                    for (int k : rows) {
-                        for (int c : all) {
-                            if (Double.isNaN(dataSet.getDouble(k, c))) {
-                                continue K2;
-                            }
-                        }
-
-                        double v = dataSet.getDouble(k, cols[i]);
-                        double w = dataSet.getDouble(k, cols[j]);
-
-                        __cov += (v - mui) * (w - muj);
-                    }
-
-                    __cov /= sampleSize;
-                    _cov.set(i, j, __cov);
-                    _cov.set(j, i, __cov);
-                }
-            }
+            Matrix _cov = calcCovWithTestwiseDeletion(rows, cols, all, dataSet);
 
             return _cov;
         } else {
             throw new IllegalArgumentException("No data set or covariance matrix provided.");
         }
+    }
+
+//    private static @NotNull Matrix calcCovWithTestwiseDeletion(List<Integer> rows, int[] cols, int[] all, DataSet dataSet) {
+//        Matrix _cov = new Matrix(cols.length, cols.length);
+//
+//        for (int i = 0; i < cols.length; i++) {
+//            for (int j = i; j < cols.length; j++) {
+//                double mui = 0.0;
+//                double muj = 0.0;
+//
+//                int sampleSize = rows.size();
+//
+//                K1:
+//                for (int k : rows) {
+//                    for (int c : all) {
+//                        if (Double.isNaN(dataSet.getDouble(k, c))) {
+//                            continue K1;
+//                        }
+//                    }
+//
+//                    mui += dataSet.getDouble(k, cols[i]);
+//                    muj += dataSet.getDouble(k, cols[j]);
+//                }
+//
+//                mui /= sampleSize - 1;
+//                muj /= sampleSize - 1;
+//
+//                double __cov = 0.0;
+//
+//                K2:
+//                for (int k : rows) {
+//                    for (int c : all) {
+//                        if (Double.isNaN(dataSet.getDouble(k, c))) {
+//                            continue K2;
+//                        }
+//                    }
+//
+//                    double v = dataSet.getDouble(k, cols[i]);
+//                    double w = dataSet.getDouble(k, cols[j]);
+//
+//                    __cov += (v - mui) * (w - muj);
+//                }
+//
+//                __cov /= sampleSize;
+//                _cov.set(i, j, __cov);
+//                _cov.set(j, i, __cov);
+//            }
+//        }
+//        return _cov;
+//    }
+
+
+    private static @NotNull Matrix calcCovWithTestwiseDeletion(List<Integer> rows, int[] cols, int[] all, DataSet dataSet) {
+        Matrix _cov = new Matrix(cols.length, cols.length);
+
+        // Precompute valid rows
+        List<Integer> validRows = new ArrayList<>();
+        for (int k : rows) {
+            boolean isValid = true;
+            for (int c : all) {
+                if (Double.isNaN(dataSet.getDouble(k, c))) {
+                    isValid = false;
+                    break;
+                }
+            }
+            if (isValid) {
+                validRows.add(k);
+            }
+        }
+
+        // Parallel computation of covariance matrix
+        IntStream.range(0, cols.length).parallel().forEach(i -> {
+            for (int j = i; j < cols.length; j++) {
+                double mui = 0.0, muj = 0.0, __cov = 0.0;
+                int validCount = 0;
+
+                for (int k : validRows) {
+                    double vi = dataSet.getDouble(k, cols[i]);
+                    double vj = dataSet.getDouble(k, cols[j]);
+
+                    mui += vi;
+                    muj += vj;
+
+                    __cov += vi * vj;
+                    validCount++;
+                }
+
+                if (validCount > 1) {
+                    mui /= validCount;
+                    muj /= validCount;
+                    __cov = (__cov - validCount * mui * muj) / validCount;
+                } else {
+                    __cov = 0.0; // Handle cases with no valid rows
+                }
+
+                synchronized (_cov) {
+                    _cov.set(i, j, __cov);
+                    _cov.set(j, i, __cov);
+                }
+            }
+        });
+
+        return _cov;
     }
 
     /**

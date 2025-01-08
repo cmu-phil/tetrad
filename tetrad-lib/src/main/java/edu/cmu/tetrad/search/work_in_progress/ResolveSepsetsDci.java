@@ -577,7 +577,7 @@ public final class ResolveSepsetsDci {
     private static boolean isMissing(Node node, DataSet dataSet) {
         Node _node = dataSet.getVariable(node.getName());
 
-        int col = dataSet.getColumn(_node);
+        int col = dataSet.getColumnIndex(_node);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             if (Double.isNaN(dataSet.getDouble(i, col))) {

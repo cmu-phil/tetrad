@@ -351,7 +351,7 @@ public class TestFci {
             RandomUtil.shuffle(variables);
 
             for (int m = 0; m < numVarsToMarginalize; m++) {
-                marginalData.removeColumn(marginalData.getColumn(variables.get(m)));
+                marginalData.removeColumn(marginalData.getColumnIndex(variables.get(m)));
             }
 
             Graph margPag = getPag(marginalData);

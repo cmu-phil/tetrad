@@ -469,7 +469,7 @@ public final class BoxDataSet implements DataSet {
     /**
      * {@inheritDoc}
      */
-    public int getColumn(Node variable) {
+    public int getColumnIndex(Node variable) {
         return this.variables.indexOf(variable);
     }
 

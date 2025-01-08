@@ -119,7 +119,7 @@ class NormalityTests {
      */
     public static double[] kolmogorovSmirnov(DataSet dataSet, ContinuousVariable variable) {
         int n = dataSet.getNumRows();
-        int columnIndex = dataSet.getColumn(variable);
+        int columnIndex = dataSet.getColumnIndex(variable);
         NormalDistribution idealDistribution = NormalityTests.getNormal(dataSet, variable);
 
         double[] ks = new double[6];
@@ -348,7 +348,7 @@ class NormalityTests {
      */
 
     private static double[] normalParams(DataSet dataSet, Variable variable) {
-        int columnIndex = dataSet.getColumn(variable);
+        int columnIndex = dataSet.getColumnIndex(variable);
         double mean = 0.0;
         double sd = 0.0;
 

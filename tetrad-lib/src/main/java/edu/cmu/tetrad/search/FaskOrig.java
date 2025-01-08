@@ -923,7 +923,7 @@ public final class FaskOrig implements IGraphSearch {
 
             for (int f = 0; f < _adj.size(); f++) {
                 Node _z = _adj.get(f);
-                int column = this.dataSet.getColumn(_z);
+                int column = this.dataSet.getColumnIndex(_z);
                 _Z[f] = D[column];
             }
 

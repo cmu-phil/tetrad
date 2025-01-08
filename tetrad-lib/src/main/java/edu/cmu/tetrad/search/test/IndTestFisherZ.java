@@ -312,13 +312,13 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         for (Integer row : new ArrayList<>(_rows)) {
             for (Node node : allVars) {
                 if (node instanceof ContinuousVariable) {
-                    if (Double.isNaN(dataSet.getDouble(row, dataSet.getColumn(node)))) {
+                    if (Double.isNaN(dataSet.getDouble(row, dataSet.getColumnIndex(node)))) {
                         _rows.remove(row);
                     }
                 }
 
                 if (node instanceof DiscreteVariable) {
-                    if (dataSet.getInt(row, dataSet.getColumn(node)) == -99) {
+                    if (dataSet.getInt(row, dataSet.getColumnIndex(node)) == -99) {
                         _rows.remove(row);
                     }
                 }

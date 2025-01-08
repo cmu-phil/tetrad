@@ -1133,8 +1133,8 @@ public class DataTransforms {
      * @param dest   a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static void copyColumn(Node node, DataSet source, DataSet dest) {
-        int sourceColumn = source.getColumn(node);
-        int destColumn = dest.getColumn(node);
+        int sourceColumn = source.getColumnIndex(node);
+        int destColumn = dest.getColumnIndex(node);
         if (sourceColumn < 0) {
             throw new NullPointerException("The given node was not in the source dataset");
         }
@@ -1286,7 +1286,7 @@ public class DataTransforms {
 
     public static void scale(DataSet dataSet, double scaleMin, double scaleMax, Node node) {
         if (node instanceof ContinuousVariable) {
-            int j = dataSet.getColumn(node);
+            int j = dataSet.getColumnIndex(node);
 
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
@@ -1350,7 +1350,7 @@ public class DataTransforms {
 
         for (Node node : dataSet.getVariables()) {
             if (node instanceof ContinuousVariable) {
-                int j = dataSet.getColumn(node);
+                int j = dataSet.getColumnIndex(node);
 
                 double scale = scales[j];
 
