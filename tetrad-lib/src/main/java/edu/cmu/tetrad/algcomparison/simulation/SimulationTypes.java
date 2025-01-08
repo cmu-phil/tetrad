@@ -47,6 +47,10 @@ public final class SimulationTypes {
      */
     public static final String NONLINEAR_ADDITIVE_CAUSAL_MODEL = "Nonlinear Additive Causal (NAC) Model";
     /**
+     * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>
+     */
+    public static final String LG_MNAR_SIMULATION = "LG MNAR Simulation";
+    /**
      * Constant <code>LEE_AND_HASTIE="Mixed Lee &amp; Hastie"</code>
      */
     public static final String LEE_AND_HASTIE = "Mixed Lee & Hastie";

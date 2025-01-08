@@ -12,26 +12,29 @@ import edu.cmu.tetrad.util.RandomUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
 /**
  * The MNARDataSimulator class provides functionality to simulate Missing Not at Random (MNAR) data.
  */
-public class MnarDataSimulator {
+public class LgMnarDataSimulator {
 
     /**
      * Generates a dataset with Missing Not At a Random (MNAR) data mechanism applied to specific variables in a graph.
      * The method modifies the input graph to include missingness indicators and simulates data based on the modified
      * graph. Certain data entries are set to missing based on their corresponding indicators.
      *
-     * @param graph              The input graph defining the relationships between variables.
-     * @param numExtraInfluences The number of additional edges influencing missingness.
-     * @param threshold          The threshold value to determine missingness, used to produce binary indicators.
-     * @param numRows            The number of rows to simulate in the generated dataset.
+     * @param graph                  The input graph defining the relationships between variables.
+     * @param numVariablesWithMissing The number of variables to have missing values.
+     * @param numExtraInfluences     The number of additional edges influencing missingness.
+     * @param threshold              The threshold value to determine missingness, used to produce binary indicators.
+     * @param numRows                The number of rows to simulate in the generated dataset.
      * @return A DataSet object with simulated data, including MNAR modification.
      */
-    public static @NotNull DataSet getMnarData(Graph graph, int numExtraInfluences, double threshold, int numRows) {
+    public static @NotNull DataSet getMnarData(Graph graph, int numVariablesWithMissing,
+                                               int numExtraInfluences, double threshold, int numRows) {
 
         // Throw an exceptionm if any variables in the graph has a name ending with "_missing"
         for (Node node : graph.getNodes()) {
@@ -48,11 +51,26 @@ public class MnarDataSimulator {
             throw new IllegalArgumentException("Number of rows must be positive.");
         }
 
+        if (numVariablesWithMissing < 0) {
+            throw new IllegalArgumentException("Number of variables with missing values must be non-negative.");
+        }
+
+        if (numVariablesWithMissing > graph.getNumNodes()) {
+            throw new IllegalArgumentException("Number of variables with missing values must be less than the number of variables in the graph.");
+        }
+
         // Add missingness variables for selected variables
         Graph expandedGraph = new EdgeListGraph(graph);
 
+        // Pick numVariablesWithMissing variables at random to have missing values
         List<String> names = expandedGraph.getNodeNames();
-        String[] targetColumns = {names.get(0), names.get(2)};
+        Collections.shuffle(names);
+
+        String[] targetColumns = new String[numVariablesWithMissing];
+        for (int i = 0; i < numVariablesWithMissing; i++) {
+            targetColumns[i] = names.get(i);
+        }
+
         List<Node> missingnessNodes = new ArrayList<>();
 
         for (String targetColumn : targetColumns) {
@@ -125,13 +143,15 @@ public class MnarDataSimulator {
         int numMeasures = 10;
         int numEdges = 10;
 
-        Graph graph = RandomGraph.randomGraph(numMeasures, 0, numEdges, 100, 100, 100, false);
+        Graph graph = RandomGraph.randomGraph(numMeasures, 0, numEdges, 100,
+                100, 100, false);
 
-        int numExtraInfluences = 8;
+        int numvariableWithMissing = 5;
+        int numExtraInfluences = 3;
         double threshold = 1.0;
         int numRows = 100;
 
-        DataSet dataSet = getMnarData(graph, numExtraInfluences, threshold, numRows);
+        DataSet dataSet = getMnarData(graph, numvariableWithMissing, numExtraInfluences, threshold, numRows);
 
         // Print the result
         System.out.println("MNAR Dataset:");

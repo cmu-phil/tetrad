@@ -951,11 +951,12 @@ public final class Params {
     /**
      * Constant <code>AM_DISTORT_PRE_ERROR="amDistortPreError"</code>
      */
-    public static final String AM_DISTORTION_TYPE = "amDistortionType";    /**
+    public static final String AM_DISTORTION_TYPE = "amDistortionType";
     /**
-     * Constant <code>AM_DISTORT_PRE_ERROR="amDistortPreError"</code>
+     * /** Constant <code>AM_DISTORT_PRE_ERROR="amDistortPreError"</code>
      */
-    public static final String DISTORT_PRE_NOISE = "distortPreNoise";    /**
+    public static final String DISTORT_PRE_NOISE = "distortPreNoise";
+    /**
      * Constant <code>AM_DISTORT_POST_ERROR="amdistortPostNoise"</code>
      */
     public static final String DISTORT_POST_NONLINEAR = "distortPostNonlinear";
@@ -979,6 +980,18 @@ public final class Params {
      * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
+    /**
+     * Constant <code>MNAR_NUM_EXTRA_INFLUENCES="mnarNumExtraInfluences"</code>
+     */
+    public static final String MNAR_NUM_EXTRA_INFLUENCES = "mnarNumExtraInfluences";
+    /**
+     * Constant <code>MNAR_THRESHOLD="mnarThreshold"</code>
+     */
+    public static final String MNAR_THRESHOLD = "mnarThreshold";
+    /**
+     * Constant <code>MNAR_NUM_VARIABLES_WITH_MISSING="mnarNumVariablesWithMissing"</code>
+     */
+    public static final String MNAR_NUM_VARIABLES_WITH_MISSING = "mnarNumVariablesWithMissing";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

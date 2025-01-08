@@ -63,6 +63,7 @@ public class ParameterTab extends JPanel {
             SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.NONLINEAR_ADDITIVE_CAUSAL_MODEL,
+            SimulationTypes.LG_MNAR_SIMULATION,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
@@ -195,6 +196,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.NONLINEAR_ADDITIVE_CAUSAL_MODEL:
                         this.simulation.setSimulation(new NonlinearAdditiveCausalModel(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.LG_MNAR_SIMULATION:
+                        this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
+                        break;
                     case SimulationTypes.LINEAR_FISHER_MODEL:
                         this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
                         break;
@@ -229,6 +233,9 @@ public class ParameterTab extends JPanel {
                         break;
                     case SimulationTypes.NONLINEAR_ADDITIVE_CAUSAL_MODEL:
                         this.simulation.setSimulation(new NonlinearAdditiveCausalModel(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.LG_MNAR_SIMULATION:
+                        this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LINEAR_FISHER_MODEL:
                         this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
