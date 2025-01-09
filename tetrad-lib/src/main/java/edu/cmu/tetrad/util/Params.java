@@ -973,6 +973,10 @@ public final class Params {
      */
     public static final String AM_COEF_SYMMETRIC = "amCoefSymmetric";
     /**
+     * Constant <code>AM_ENSURE_INVERTIBILITY="amEnsureInvertibility"</code>
+     */
+    public static final String AM_ENSURE_INVERTIBILITY = "amEnsureInvertibility";
+    /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
     public static final String MAX_BLOCKING_PATH_LENGTH = "maxBlockingPathLength";

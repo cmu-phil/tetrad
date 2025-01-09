@@ -187,7 +187,7 @@ public class NonlinearAdditiveCausalModel {
      * <p>
      * Default value is {@code false}.
      */
-    private boolean checkFirstDerivPositivity = false;
+    private boolean ensureInverbitility = false;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -289,7 +289,7 @@ public class NonlinearAdditiveCausalModel {
             }
 
             derivatives[1] = RandomUtil.getInstance().nextUniform(firstDerivMin, firstDerivMax);
-        } while (checkFirstDerivPositivity && !(TaylorSeriesDerivativeCheck.testDerivativePositivity(derivatives, -3.0, 3.0, 0.01)));
+        } while (ensureInverbitility && !(TaylorSeriesDerivativeCheck.testDerivativePositivity(derivatives, rescaleMin, rescaleMax, 0.01)));
 
         return TaylorSeries.get(derivatives, 0);
     }
@@ -297,12 +297,12 @@ public class NonlinearAdditiveCausalModel {
     /**
      * Sets whether to check the positivity of the first derivative in the model.
      *
-     * @param checkFirstDerivPositivity A boolean indicating whether the positivity of the first derivative should be
+     * @param ensureInverbitility A boolean indicating whether the positivity of the first derivative should be
      *                                  enforced. If true, the model checks that the first derivative is positive;
      *                                  otherwise, no such check is performed.
      */
-    public void setCheckFirstDerivPositivity(boolean checkFirstDerivPositivity) {
-        this.checkFirstDerivPositivity = checkFirstDerivPositivity;
+    public void setEnsureInverbitility(boolean ensureInverbitility) {
+        this.ensureInverbitility = ensureInverbitility;
     }
 
     /**

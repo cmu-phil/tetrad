@@ -215,9 +215,8 @@ public class NonlinearAdditiveCausalModel implements Simulation {
         parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
         parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
         parameters.add(Params.AM_DISTORTION_TYPE);
-//        parameters.add(Params.DISTORT_PRE_NOISE);
-//        parameters.add(Params.DISTORT_POST_NONLINEAR);
         parameters.add(Params.AM_DISTORTION_TYPE);
+        parameters.add(Params.AM_ENSURE_INVERTIBILITY);
         parameters.add(Params.AM_COEF_LOW);
         parameters.add(Params.AM_COEF_HIGH);
         parameters.add(Params.AM_COEF_SYMMETRIC);
@@ -290,6 +289,7 @@ public class NonlinearAdditiveCausalModel implements Simulation {
         generator.setCoefLow(parameters.getDouble(Params.AM_COEF_LOW));
         generator.setCoefHigh(parameters.getDouble(Params.AM_COEF_HIGH));
         generator.setCoefSymmetric(parameters.getBoolean(Params.AM_COEF_SYMMETRIC));
+        generator.setEnsureInverbitility(parameters.getBoolean(Params.AM_ENSURE_INVERTIBILITY));
         return generator.generateData();
     }
 }
