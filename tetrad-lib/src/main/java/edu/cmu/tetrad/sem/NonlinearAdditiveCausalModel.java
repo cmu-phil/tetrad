@@ -6,12 +6,10 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.RandomFourier;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TaylorSeries;
-import edu.cmu.tetrad.util.TaylorSeriesDerivativeCheck;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -104,44 +102,6 @@ public class NonlinearAdditiveCausalModel {
      */
     private final Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
     /**
-     * The minimum bound for the derivative of the causal functions. This value determines the lower limit for the
-     * derivative coefficients used in the Taylor series representation of the causal functions. It is used to constrain
-     * the range of derivative values in the simulation process, ensuring that the functions are well-behaved and
-     * realistic.
-     * <p>
-     * Constraints: Must be less than or equal to derivMax.
-     */
-    private final double derivMin;
-    /**
-     * The maximum bound for the derivative of the causal functions. This value determines the upper limit for the
-     * derivative coefficients used in the Taylor series representation of the causal functions. It is used to constrain
-     * the range of derivative values in the simulation process, ensuring that the functions are well-behaved and
-     * realistic.
-     */
-    private final double derivMax;
-    /**
-     * The minimum bound for f'(0) in the causal functions. This value determines the lower limit for the first
-     * derivative of the causal functions at the origin. It is used to constrain the range of first derivative values in
-     * the simulation process, ensuring that the functions are well-behaved and realistic.
-     * <p>
-     * Constraints: Must be less than or equal to firstDerivMax.
-     */
-    private final double firstDerivMin;
-    /**
-     * The maximum bound for f'(0) in the causal functions. This value determines the upper limit for the first
-     * derivative of the causal functions at the origin. It is used to constrain the range of first derivative values in
-     * the simulation process, ensuring that the functions are well-behaved and realistic.
-     */
-    private final double firstDerivMax;
-    /**
-     * The degree of the Taylor series used to approximate the causal functions. This value defines the number of terms
-     * included in the Taylor series representation of the causal functions, affecting the accuracy and complexity of
-     * the model. Higher degrees result in more accurate approximations but may require more computational resources.
-     * <p>
-     * Constraints: Must be a positive integer.
-     */
-    private final int taylorSeriesDegree;
-    /**
      * The lower bound for the random coefficient in the model.
      * <p>
      * This variable specifies the minimum value for the coefficient used in simulations involving random distortions or
@@ -201,20 +161,13 @@ public class NonlinearAdditiveCausalModel {
      * @param numSamples         The number of samples to generate for the simulation. Must be a positive integer.
      * @param noiseDistribution  The real-valued noise distribution used for simulating additive noise in the causal
      *                           mechanisms.
-     * @param derivMin           The minimum bound for the derivative of the causal functions. Must be less than or
-     *                           equal to derivMax.
-     * @param derivMax           The maximum bound for the derivative of the causal functions.
-     * @param firstDerivMin      The minimum bound for f'(0) in the causal functions. Must be less than or equal to
-     *                           firstDerivMax.
-     * @param firstDerivMax      The maximum bound for f'(0) in the causal functions.
-     * @param taylorSeriesDegree The degree of the Taylor series used to approximate the causal functions. Must be a
      *                           positive integer.
      * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
      *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public NonlinearAdditiveCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution, double derivMin, double derivMax, double firstDerivMin, double firstDerivMax, int taylorSeriesDegree, double rescaleMin, double rescaleMax) {
+    public NonlinearAdditiveCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution, double rescaleMin, double rescaleMax) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -231,28 +184,11 @@ public class NonlinearAdditiveCausalModel {
             TetradLogger.getInstance().log("Rescale min and rescale max are equal. No rescaling will be applied.");
         }
 
-        if (derivMin > derivMax) {
-            throw new IllegalArgumentException("Derivative min must be less or equal to derivative max.");
-        }
-
-        if (firstDerivMin > firstDerivMax) {
-            throw new IllegalArgumentException("Coefficient min must be less than or equal to coefficient max.");
-        }
-
-        if (taylorSeriesDegree < 1) {
-            throw new IllegalArgumentException("Taylor series degree must be a positive integer.");
-        }
-
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
-        this.derivMin = derivMin;
-        this.derivMax = derivMax;
-        this.firstDerivMin = firstDerivMin;
-        this.firstDerivMax = firstDerivMax;
-        this.taylorSeriesDegree = taylorSeriesDegree;
 
         for (Node child : this.graph.getNodes()) {
             Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
@@ -266,40 +202,11 @@ public class NonlinearAdditiveCausalModel {
     }
 
     /**
-     * Generates a Taylor series representation with random derivative coefficients within the specified bounds. The
-     * Taylor series is defined by its degree and its derivatives, where the coefficients are sampled uniformly from the
-     * given ranges.
-     *
-     * @param derivMin           The minimum bound for the derivative coefficients of the Taylor series (except for the
-     *                           first derivative).
-     * @param derivMax           The maximum bound for the derivative coefficients of the Taylor series (except for the
-     *                           first derivative).
-     * @param firstDerivMin      The minimum bound for f'(0) in the Taylor series.
-     * @param firstDerivMax      The maximum bound for f'(0) in the Taylor series.
-     * @param taylorSeriesDegree The degree of the Taylor series, defining the number of terms to include in the series.
-     *                           Must be a non-negative integer.
-     * @return A TaylorSeries instance with randomly generated coefficients for the specified degree and ranges.
-     */
-    private @NotNull TaylorSeries getTaylorSeries(double derivMin, double derivMax, double firstDerivMin, double firstDerivMax, int taylorSeriesDegree) {
-        double[] derivatives = new double[taylorSeriesDegree + 1];
-
-        do {
-            for (int i1 = 2; i1 <= taylorSeriesDegree; i1++) {
-                derivatives[i1] = RandomUtil.getInstance().nextUniform(derivMin, derivMax);
-            }
-
-            derivatives[1] = RandomUtil.getInstance().nextUniform(firstDerivMin, firstDerivMax);
-        } while (ensureInverbitility && !(TaylorSeriesDerivativeCheck.testDerivativePositivity(derivatives, rescaleMin, rescaleMax, 0.01)));
-
-        return TaylorSeries.get(derivatives, 0);
-    }
-
-    /**
      * Sets whether to check the positivity of the first derivative in the model.
      *
      * @param ensureInverbitility A boolean indicating whether the positivity of the first derivative should be
-     *                                  enforced. If true, the model checks that the first derivative is positive;
-     *                                  otherwise, no such check is performed.
+     *                            enforced. If true, the model checks that the first derivative is positive; otherwise,
+     *                            no such check is performed.
      */
     public void setEnsureInverbitility(boolean ensureInverbitility) {
         this.ensureInverbitility = ensureInverbitility;
@@ -414,12 +321,14 @@ public class NonlinearAdditiveCausalModel {
      * @param nodeToIndex A mapping of nodes to their corresponding column indices in the dataset.
      */
     private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
-        TaylorSeries taylor = getTaylorSeries(derivMin, derivMax, firstDerivMin, firstDerivMax, taylorSeriesDegree);
-        Function<Double, Double> g = taylor::evaluate;
+
+        //        RandomRBF rbf = new RandomRBF(5, 0.5);
+        RandomFourier fourier = new RandomFourier(5, 1.0);
+        Function<Double, Double> g = fourier::computeAdjusted;
 
         for (int sample = 0; sample < numSamples; sample++) {
-            Double apply = g.apply(data.getDouble(sample, nodeToIndex.get(node)));
-            data.setDouble(sample, nodeToIndex.get(node), apply);
+            double y = g.apply(data.getDouble(sample, nodeToIndex.get(node))) / rescaleMax;
+            data.setDouble(sample, nodeToIndex.get(node), y);
         }
     }
 

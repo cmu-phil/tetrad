@@ -210,12 +210,6 @@ public class NonlinearAdditiveCausalModel implements Simulation {
         parameters.add(Params.AM_RESCALE_MAX);
         parameters.add(Params.AM_BETA_ALPHA);
         parameters.add(Params.AM_BETA_BETA);
-        parameters.add(Params.AM_DERIVATIVE_MIN);
-        parameters.add(Params.AM_DERIVATIVE_MAX);
-        parameters.add(Params.AM_FIRST_DERIVATIVE_MIN);
-        parameters.add(Params.AM_FIRST_DERIVATIVE_MAX);
-        parameters.add(Params.AM_DISTORTION_TYPE);
-        parameters.add(Params.AM_DISTORTION_TYPE);
         parameters.add(Params.AM_ENSURE_INVERTIBILITY);
         parameters.add(Params.AM_COEF_LOW);
         parameters.add(Params.AM_COEF_HIGH);
@@ -271,11 +265,9 @@ public class NonlinearAdditiveCausalModel implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runContinuousAdditiveModel(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel generator = new edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel(graph, parameters.getInt(Params.SAMPLE_SIZE),
+        edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel generator = new edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel(
+                graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
-                parameters.getDouble(Params.AM_DERIVATIVE_MIN), parameters.getDouble(Params.AM_DERIVATIVE_MAX),
-                parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MIN), parameters.getDouble(Params.AM_FIRST_DERIVATIVE_MAX),
-                parameters.getInt(Params.AM_TAYLOR_SERIES_DEGREE),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
 
         if (parameters.getInt(Params.AM_DISTORTION_TYPE) == 0) {
