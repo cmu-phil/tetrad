@@ -6,7 +6,8 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.RandomFourier;
+import edu.cmu.tetrad.search.utils.RandomPiecewiseSpline;
+import edu.cmu.tetrad.search.utils.RandomRBF;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -156,12 +157,11 @@ public class NonlinearAdditiveCausalModel {
      * This is a private constructor that initializes the simulation with the specified parameters and parent
      * functions.
      *
-     * @param graph              The directed acyclic graph (DAG) that defines the causal relationships among variables.
-     *                           It must be acyclic, otherwise an IllegalArgumentException is thrown.
-     * @param numSamples         The number of samples to generate for the simulation. Must be a positive integer.
-     * @param noiseDistribution  The real-valued noise distribution used for simulating additive noise in the causal
-     *                           mechanisms.
-     *                           positive integer.
+     * @param graph             The directed acyclic graph (DAG) that defines the causal relationships among variables.
+     *                          It must be acyclic, otherwise an IllegalArgumentException is thrown.
+     * @param numSamples        The number of samples to generate for the simulation. Must be a positive integer.
+     * @param noiseDistribution The real-valued noise distribution used for simulating additive noise in the causal
+     *                          mechanisms. positive integer.
      * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
      *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
@@ -322,9 +322,30 @@ public class NonlinearAdditiveCausalModel {
      */
     private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
 
-        //        RandomRBF rbf = new RandomRBF(5, 0.5);
-        RandomFourier fourier = new RandomFourier(5, 1.0);
-        Function<Double, Double> g = fourier::computeAdjusted;
+        // Find the min and max of the node's values
+
+//        double min = Double.MAX_VALUE;
+//        double max = Double.MIN_VALUE;
+//
+//        for (int sample = 0; sample < numSamples; sample++) {
+//            double value = data.getDouble(sample, nodeToIndex.get(node));
+//            if (value < min) {
+//                min = value;
+//            }
+//            if (value > max) {
+//                max = value;
+//            }
+//        }
+//
+//        min -= 0.01;
+//        max += 0.01;
+
+        RandomRBF rbf = new RandomRBF(5, 0.5);
+//        RandomFourier fourier = new RandomFourier(5, 1.0);
+//        RandomPiecewiseSpline spline = new RandomPiecewiseSpline(10, min, max, min, max);
+//        RandomMonotonicPiecewiseLinear piecewiseLinear = new RandomMonotonicPiecewiseLinear(10, min, max, min, max);
+
+        Function<Double, Double> g = rbf::compute;
 
         for (int sample = 0; sample < numSamples; sample++) {
             double y = g.apply(data.getDouble(sample, nodeToIndex.get(node))) / rescaleMax;

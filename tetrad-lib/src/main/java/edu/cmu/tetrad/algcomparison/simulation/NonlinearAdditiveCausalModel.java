@@ -205,7 +205,6 @@ public class NonlinearAdditiveCausalModel implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.add(Params.AM_TAYLOR_SERIES_DEGREE);
         parameters.add(Params.AM_RESCALE_MIN);
         parameters.add(Params.AM_RESCALE_MAX);
         parameters.add(Params.AM_BETA_ALPHA);

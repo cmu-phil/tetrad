@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import java.util.Random;
+import java.util.stream.DoubleStream;
 
 public class RandomFourier {
     private final double[] cosAmplitudes; // Coefficients for cosines
@@ -32,10 +33,10 @@ public class RandomFourier {
         RandomFourier fourier = new RandomFourier(numTerms, frequencyScale);
 
         // Test the adjusted Fourier function
-        for (double x = -2; x <= 2; x += 0.1) {
+        DoubleStream.iterate(-2, x -> x <= 2, x -> x + 0.1).forEach(x -> {
             double y = fourier.computeAdjusted(x);
             System.out.printf("f(%5.2f) = %5.2f%n", x, y);
-        }
+        });
 
         // Verify f(0) is approximately 0
         double zeroCheck = fourier.computeAdjusted(0);
