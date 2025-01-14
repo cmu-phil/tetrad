@@ -6,8 +6,9 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.RandomPiecewiseSpline;
-import edu.cmu.tetrad.search.utils.RandomRBF;
+import edu.cmu.tetrad.search.utils.GaussianProcessRBF;
+import edu.cmu.tetrad.search.utils.RandomFunction1D;
+import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -136,19 +137,6 @@ public class NonlinearAdditiveCausalModel {
      * generated data.
      */
     private DistortionType distortionType = DistortionType.POST_NONLINEAR;
-    /**
-     * A flag that determines whether the model should check the positivity of the first derivative of the causal
-     * functions during computations or simulations.
-     * <p>
-     * When set to {@code true}, the model enforces that the first derivative (f'(x)) is positive for causal functions,
-     * ensuring monotonicity in the causal relationships. This may be relevant for models with monotonic causal
-     * constraints.
-     * <p>
-     * When set to {@code false}, no such checks are performed, and the first derivative may have any sign.
-     * <p>
-     * Default value is {@code false}.
-     */
-    private boolean ensureInverbitility = false;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -167,7 +155,8 @@ public class NonlinearAdditiveCausalModel {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public NonlinearAdditiveCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution, double rescaleMin, double rescaleMax) {
+    public NonlinearAdditiveCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                        double rescaleMin, double rescaleMax, double coefLow, double coefHigh, boolean coefSymmetric) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -189,6 +178,9 @@ public class NonlinearAdditiveCausalModel {
         this.noiseDistribution = noiseDistribution;
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
+        this.coefLow = coefLow;
+        this.coefHigh = coefHigh;
+        this.coefSymmetric = coefSymmetric;
 
         for (Node child : this.graph.getNodes()) {
             Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
@@ -199,17 +191,6 @@ public class NonlinearAdditiveCausalModel {
 
             this.parentFunctions.put(child, parentFunctions1);
         }
-    }
-
-    /**
-     * Sets whether to check the positivity of the first derivative in the model.
-     *
-     * @param ensureInverbitility A boolean indicating whether the positivity of the first derivative should be
-     *                            enforced. If true, the model checks that the first derivative is positive; otherwise,
-     *                            no such check is performed.
-     */
-    public void setEnsureInverbitility(boolean ensureInverbitility) {
-        this.ensureInverbitility = ensureInverbitility;
     }
 
     /**
@@ -254,7 +235,6 @@ public class NonlinearAdditiveCausalModel {
                 } else {
                     double linearCombination = 0;
                     for (Node parent : parents) {
-                        DataTransforms.scale(data, 0, 1, parent);
                         double aDouble = data.getDouble(sample, nodeToIndex.get(parent));
                         linearCombination += nodeFunctionMap.get(parent).apply(aDouble);
                     }
@@ -283,36 +263,6 @@ public class NonlinearAdditiveCausalModel {
     }
 
     /**
-     * Sets the lower bound for the coefficient used in the model.
-     *
-     * @param coefLow The lower bound for the coefficient. This value determines the minimum limit for the range of
-     *                coefficients in the model. Default is 0.2.
-     */
-    public void setCoefLow(double coefLow) {
-        this.coefLow = coefLow;
-    }
-
-    /**
-     * Sets the upper bound for the coefficient used in the model.
-     *
-     * @param coefHigh The upper bound for the coefficient. This value determines the maximum limit for the range of
-     *                 coefficients in the model. Default is 1.0.
-     */
-    public void setCoefHigh(double coefHigh) {
-        this.coefHigh = coefHigh;
-    }
-
-    /**
-     * Sets whether the coefficient range in the model should be symmetric.
-     *
-     * @param coefSymmetric true if the range for coefficients should be symmetric about zero, false otherwise. Default
-     *                      is true.
-     */
-    public void setCoefSymmetric(boolean coefSymmetric) {
-        this.coefSymmetric = coefSymmetric;
-    }
-
-    /**
      * Applies distortion to the values of a specified node in the given dataset using a Taylor series approximation of
      * the transformation function. This method modifies the dataset in place.
      *
@@ -322,30 +272,37 @@ public class NonlinearAdditiveCausalModel {
      */
     private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
 
-        // Find the min and max of the node's values
+        // Input points for the GP
+        double[] xValues = new double[100];
 
-//        double min = Double.MAX_VALUE;
-//        double max = Double.MIN_VALUE;
-//
-//        for (int sample = 0; sample < numSamples; sample++) {
-//            double value = data.getDouble(sample, nodeToIndex.get(node));
-//            if (value < min) {
-//                min = value;
-//            }
-//            if (value > max) {
-//                max = value;
-//            }
-//        }
-//
-//        min -= 0.01;
-//        max += 0.01;
+        // Generate points in range [-3, 3]
+        for (int i = 0; i < 100; i++) {
+            xValues[i] = i * 0.01;
+        }
 
-        RandomRBF rbf = new RandomRBF(5, 0.5);
-//        RandomFourier fourier = new RandomFourier(5, 1.0);
-//        RandomPiecewiseSpline spline = new RandomPiecewiseSpline(10, min, max, min, max);
-//        RandomMonotonicPiecewiseLinear piecewiseLinear = new RandomMonotonicPiecewiseLinear(10, min, max, min, max);
+        // GP parameters
+        double lengthScale = 1.0;  // Smoothness of the function
+        double amplitude = 1;   // Magnitude of the function
+        double noiseStd = 1e-6;   // Stability noise
 
-        Function<Double, Double> g = rbf::compute;
+        Function<Double, Double> g;
+
+        // Create a Gaussian Process simulator
+//        GaussianProcessRBF gp = new GaussianProcessRBF(xValues, lengthScale, amplitude, noiseStd);
+//        g = gp::adjustedEvaluate;
+
+        // Let g be defined by a neual net with one hidden layer.
+        RandomFunction1D randomFunction = new RandomFunction1D(
+                10, // Number of hidden neurons
+                Math::tanh, // Activation function
+                5.0, // Input scale for bumpiness
+                -1 // Random seed
+        );
+
+        g = randomFunction::evaluate;
+//        g = Math::tanh;
+//        g = x -> Math.max(0, x);
+//        g = x -> Math.max(0.01 * x, x);
 
         for (int sample = 0; sample < numSamples; sample++) {
             double y = g.apply(data.getDouble(sample, nodeToIndex.get(node))) / rescaleMax;

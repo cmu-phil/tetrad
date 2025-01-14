@@ -6565,23 +6565,21 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="mnarThreshold_short_desc">
-                MNAR: The threshold for missing value selection. Values greater than this
-                will be counted as missing.
+                MNAR: Remove this fraction upper tail values for columns with missing values
             </span></li>
             <li>Long Description: <span
                     id="mnarThreshold_long_desc">
                          id="mnarThreshold_short_desc">
-                MNAR: The threshold for missing value selection. Values greater than this
-                will be counted as missing.
-                </span></li>
+               MNAR: Remove this fraction upper tail values for columns with missing values
+                 </span></li>
             <li>Default
                 Value: <span
-                        id="mnarThreshold_default_value">1.0</span></li>
+                        id="mnarThreshold_default_value">0.1</span></li>
             <li>Lower Bound: <span
-                    id="mnarThreshold_lower_bound">-Infinity</span></li>
+                    id="mnarThreshold_lower_bound">0.0</span></li>
             <li>Upper
                 Bound: <span
-                        id="mnarThreshold_upper_bound">Infinity</span></li>
+                        id="mnarThreshold_upper_bound">1.0</span></li>
             <li>Value Type: <span
                     id="mnarThreshold_value_type">Double</span></li>
         </ul>

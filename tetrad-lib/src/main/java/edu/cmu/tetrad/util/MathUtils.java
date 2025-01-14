@@ -111,6 +111,14 @@ public class MathUtils {
     public static double logChoose(int a, int b) {
         return MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b));
     }
+
+    public static Double relu(Double x) {
+        return Math.max(0, x);
+    }
+
+    public static Double leakyRelu(Double x) {
+        return Math.max(0.1 * x, x);
+    }
 }
 
 

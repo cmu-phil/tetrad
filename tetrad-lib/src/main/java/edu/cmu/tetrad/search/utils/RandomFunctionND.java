@@ -1,0 +1,102 @@
+package edu.cmu.tetrad.search.utils;
+import java.util.Random;
+import java.util.function.Function;
+
+public class RandomFunctionND {
+
+    private final double[][] W1; // Weights for input to hidden layer
+    private final double[] b1;  // Biases for hidden layer
+    private final double[] W2;  // Weights for hidden to output layer
+    private final double b2;    // Bias for output layer
+    private final Function<Double, Double> activation; // Activation function
+    private final double inputScale; // Input scaling for bumpiness
+
+    /**
+     * Constructor to initialize a random function.
+     *
+     * @param inputDim   Number of input dimensions (R^n).
+     * @param hiddenDim  Number of neurons in the hidden layer.
+     * @param activation Activation function (e.g., Math::sin or Math::tanh).
+     * @param inputScale Scaling factor for the input to create bumpiness.
+     * @param seed       Random seed for reproducibility.
+     */
+    public RandomFunctionND(int inputDim, int hiddenDim, Function<Double, Double> activation, double inputScale, long seed) {
+        Random random = new Random(seed);
+
+        this.W1 = new double[hiddenDim][inputDim];
+        this.b1 = new double[hiddenDim];
+        this.W2 = new double[hiddenDim];
+        this.b2 = random.nextDouble() * 2 - 1; // Random value in [-1, 1]
+        this.activation = activation;
+        this.inputScale = inputScale;
+
+        // Initialize weights and biases randomly
+        for (int i = 0; i < hiddenDim; i++) {
+            for (int j = 0; j < inputDim; j++) {
+                this.W1[i][j] = random.nextGaussian(); // Gaussian weights
+            }
+            this.b1[i] = random.nextGaussian();       // Gaussian biases
+            this.W2[i] = random.nextGaussian();       // Gaussian weights
+        }
+    }
+
+    /**
+     * Evaluates the random function for a given input vector.
+     *
+     * @param x Input vector in R^n.
+     * @return Output value in R.
+     */
+    public double evaluate(double[] x) {
+        if (x.length != W1[0].length) {
+            throw new IllegalArgumentException("Input vector dimension does not match the expected dimension.");
+        }
+
+        double[] scaledInput = new double[x.length];
+        for (int i = 0; i < x.length; i++) {
+            scaledInput[i] = x[i] * inputScale; // Scale the input
+        }
+
+        double[] hiddenLayer = new double[W1.length];
+
+        // Compute hidden layer activations
+        for (int i = 0; i < W1.length; i++) {
+            double z = b1[i];
+            for (int j = 0; j < W1[i].length; j++) {
+                z += W1[i][j] * scaledInput[j];
+            }
+            hiddenLayer[i] = activation.apply(z);
+        }
+
+        // Compute output layer
+        double output = b2;
+        for (int i = 0; i < W1.length; i++) {
+            output += W2[i] * hiddenLayer[i];
+        }
+
+        return output;
+    }
+
+    public static void main(String[] args) {
+        // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
+        RandomFunctionND randomFunction = new RandomFunctionND(
+                3, // Input dimension (R^3 -> R)
+                20, // Number of hidden neurons
+                Math::sin, // Activation function
+                10.0, // Input scale for bumpiness
+                42 // Random seed
+        );
+
+        // Evaluate and print the random function for some sample inputs
+        double[][] sampleInputs = {
+                {1.0, 0.5, -1.2},
+                {0.2, -0.3, 0.8},
+                {-1.0, 1.5, 0.0},
+                {0.0, 0.0, 0.0}
+        };
+
+        for (double[] input : sampleInputs) {
+            double output = randomFunction.evaluate(input);
+            System.out.printf("f(%s) = %.5f%n", java.util.Arrays.toString(input), output);
+        }
+    }
+}

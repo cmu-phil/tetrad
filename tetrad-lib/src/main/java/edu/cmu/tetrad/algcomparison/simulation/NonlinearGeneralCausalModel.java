@@ -7,10 +7,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.LgMnarDataSimulator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
@@ -18,12 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a continuous MNAR simulation. The simulation generates a random graph, applies a layout to the
- * graph, simulates data according to the graph structure, and performs post-processing on the data.
+ * This class represents a nonlinear general causal (NGC) model.
  *
  * @author josephramsey
  */
-public class LgMnarSimulation implements Simulation {
+public class NonlinearGeneralCausalModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -48,7 +47,7 @@ public class LgMnarSimulation implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public LgMnarSimulation(RandomGraph graph) {
+    public NonlinearGeneralCausalModel(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -181,7 +180,7 @@ public class LgMnarSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "LG MNAR Causal simulation using " + this.randomGraph.getDescription();
+        return "Nonlinear General Causal simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -190,7 +189,7 @@ public class LgMnarSimulation implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "LG MNAR Simulation";
+        return "Nonlinear General Causal (NGC) Simulation";
     }
 
     /**
@@ -206,9 +205,10 @@ public class LgMnarSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.add(Params.MNAR_NUM_VARIABLES_WITH_MISSING);
-        parameters.add(Params.MNAR_NUM_EXTRA_INFLUENCES);
-        parameters.add(Params.MNAR_THRESHOLD);
+        parameters.add(Params.AM_RESCALE_MIN);
+        parameters.add(Params.AM_RESCALE_MAX);
+        parameters.add(Params.AM_BETA_ALPHA);
+        parameters.add(Params.AM_BETA_BETA);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -249,7 +249,7 @@ public class LgMnarSimulation implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(Graph graph, Parameters parameters) {
-        return runContinuousAdditiveModel(graph, parameters);
+        return runModel(graph, parameters);
     }
 
     /**
@@ -259,10 +259,12 @@ public class LgMnarSimulation implements Simulation {
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runContinuousAdditiveModel(Graph graph, Parameters parameters) {
-        return LgMnarDataSimulator.getMnarData(graph,
-                parameters.getInt(Params.MNAR_NUM_VARIABLES_WITH_MISSING),
-                parameters.getInt(Params.MNAR_NUM_EXTRA_INFLUENCES),
-                parameters.getDouble(Params.MNAR_THRESHOLD), parameters.getInt(Params.SAMPLE_SIZE));
+    private DataSet runModel(Graph graph, Parameters parameters) {
+        edu.cmu.tetrad.sem.NonlinearGeneralCausalModel generator = new edu.cmu.tetrad.sem.NonlinearGeneralCausalModel(
+                graph, parameters.getInt(Params.SAMPLE_SIZE),
+                new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
+                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
+
+        return generator.generateData();
     }
 }

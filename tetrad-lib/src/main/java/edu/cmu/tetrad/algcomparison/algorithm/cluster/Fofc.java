@@ -64,6 +64,16 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
+        System.out.println("alpha = " + parameters.getDouble(Params.ALPHA));
+        System.out.println("penaltyDiscount = " + parameters.getDouble(Params.PENALTY_DISCOUNT));
+        System.out.println("useWishart = " + parameters.getBoolean(Params.USE_WISHART));
+        System.out.println("significanceChecked = " + parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
+        System.out.println("useGap = " + parameters.getBoolean(Params.USE_GAP));
+        System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
+        System.out.println("checkType = " + parameters.getInt(Params.CHECK_TYPE));
+        System.out.println("precomputeCovariances = " + parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
+        System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
+
         ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
         double alpha = parameters.getDouble(Params.ALPHA);
 

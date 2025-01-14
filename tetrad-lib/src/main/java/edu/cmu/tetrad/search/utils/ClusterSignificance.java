@@ -70,7 +70,7 @@ public class ClusterSignificance {
      * @param _variables The variables.
      * @return The extracted node list.
      */
-    public static List<List<Node>> variablesForIndices2(Set<List<Integer>> clusters, List<Node> _variables) {
+    public static List<List<Node>> variablesForIndices(Set<List<Integer>> clusters, List<Node> _variables) {
         List<List<Node>> variables = new ArrayList<>();
 
         for (List<Integer> cluster : clusters) {

@@ -179,7 +179,7 @@ public class Fofc {
             throw new IllegalStateException("Expected SAG or GAP: " + this.testType);
         }
 
-        this.clusters = ClusterSignificance.variablesForIndices2(allClusters, variables);
+        this.clusters = ClusterSignificance.variablesForIndices(allClusters, variables);
 
         System.out.println("allClusters = " + allClusters);
         System.out.println("this.clusters = " + this.clusters);

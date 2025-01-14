@@ -9,9 +9,11 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.StatUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -26,11 +28,11 @@ public class LgMnarDataSimulator {
      * The method modifies the input graph to include missingness indicators and simulates data based on the modified
      * graph. Certain data entries are set to missing based on their corresponding indicators.
      *
-     * @param graph                  The input graph defining the relationships between variables.
+     * @param graph                   The input graph defining the relationships between variables.
      * @param numVariablesWithMissing The number of variables to have missing values.
-     * @param numExtraInfluences     The number of additional edges influencing missingness.
-     * @param threshold              The threshold value to determine missingness, used to produce binary indicators.
-     * @param numRows                The number of rows to simulate in the generated dataset.
+     * @param numExtraInfluences      The number of additional edges influencing missingness.
+     * @param threshold               The threshold value to determine missingness, used to produce binary indicators.
+     * @param numRows                 The number of rows to simulate in the generated dataset.
      * @return A DataSet object with simulated data, including MNAR modification.
      */
     public static @NotNull DataSet getMnarData(Graph graph, int numVariablesWithMissing,
@@ -57,6 +59,10 @@ public class LgMnarDataSimulator {
 
         if (numVariablesWithMissing > graph.getNumNodes()) {
             throw new IllegalArgumentException("Number of variables with missing values must be less than the number of variables in the graph.");
+        }
+
+        if (threshold < 0 || threshold > 1) {
+            throw new IllegalArgumentException("Threshold must be between 0 and 1.");
         }
 
         // Add missingness variables for selected variables
@@ -101,9 +107,23 @@ public class LgMnarDataSimulator {
         for (Node node : dataSet.getVariables()) {
             if (node.getName().endsWith("_missing")) {
                 int colIndex = dataSet.getColumnIndex(node);
+
+                // Retrieve the data for the node column as a double[] array.
+                double[] data = new double[dataSet.getNumRows()];
+
+                for (int row = 0; row < dataSet.getNumRows(); row++) {
+                    data[row] = dataSet.getDouble(row, colIndex);
+                }
+
+                // Sort the data to find the threshold value.
+                Arrays.sort(data);
+
+                // Find the threshold value at the 90th percentile.
+                double _threshold = data[data.length - (int) Math.ceil(threshold * data.length)];
+
                 IntStream.range(0, dataSet.getNumRows()).parallel().forEach(row -> {
                     double value = dataSet.getDouble(row, colIndex);
-                    dataSet.setDouble(row, colIndex, value > threshold ? 0.0 : 1.0);
+                    dataSet.setDouble(row, colIndex, value > _threshold ? 0.0 : 1.0);
                 });
             }
         }
