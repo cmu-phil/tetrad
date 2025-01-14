@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.abs;
+
 /**
  * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
  * score by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
@@ -105,7 +107,10 @@ public class BasisFunctionBicScore implements Score {
                 break;
             }
 
-            score += score1;
+//            if (abs(score1) > 1e-2) {
+                score += score1;
+//            }
+            
             B.add(i_);
         }
 

@@ -6,21 +6,35 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.RandomFunctionND;
+import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionIntoR;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents a Nonlinear General Causal Model (NGC) (with some specific choices) for generating synthetic data based on
- * a directed acyclic graph (DAG), simulated recursively.
+ * Represents a Functional Causal Model (FCM) (with some specific choices) for generating synthetic data based on a
+ * directed acyclic graph (DAG), simulated recursively.
  * <p>
  * The form of the model is Xi = fi(Pa(Xi), ei), ei _||_ Pa(Xi).
- *
+ * <p>
+ * By default, the independent noise is assumed to be distributed as Beta(2, 5), though this can be adjusted. It is
+ * assumed that the noise distribution is the same for all variables. In the future, this may be relaxed.
+ * <p>
+ * The activation function is assumed to be tanh, though this can be adjusted.
+ * <p>
+ * A good default for hidden dimension is 20; a good default for input scale it 5.0.
+ * <p>
+ * A good default for rescaling is to scale into the [-1, 1] interval, though rescaling can be turned off by setting the
+ * min and max to be equal.
+ * <p>
+ * If is assumed that the random functions may be represented as shallow multi-layer perceptrons (MLPs).
+ * <p>
+ * See Zhang et al. (2015) for a reference discussion for functional causal models.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -38,8 +52,12 @@ import java.util.stream.IntStream;
  * <p>
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
+ * <p>
+ * Zhang, K., Wang, Z., Zhang, J., & Schölkopf, B. (2015). On estimation of functional causal models: general results
+ * and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology (TIST),
+ * 7(2), 1-22.
  */
-public class NonlinearGeneralCausalModel {
+public class FunctionalCausalModelSimulator {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -76,6 +94,30 @@ public class NonlinearGeneralCausalModel {
      * applied to normalized data, ensuring it fits within the specified range during synthetic data generation.
      */
     private final double rescaleMax;
+    /**
+     * Represents the number of hidden neurons in a multilayer perceptron (MLP) function. This variable determines the
+     * dimensionality of the hidden layer, which can affect the model's capacity to approximate complex functions in the
+     * causal simulation.
+     */
+    private final int hiddenDimension;
+    /**
+     * A scaling factor applied to the input data in the simulation, used to introduce variability and adjust the
+     * "bumpiness" of the generated causal relationships. This parameter determines how sensitive the inputs are when
+     * passed through the data generation process.
+     * <p>
+     * It plays a critical role in shaping the nonlinearity and complexity of the causal mechanisms applied to the input
+     * variables, influencing the statistical properties of the generated data.
+     */
+    private final double inputScale;
+    /**
+     * Represents the activation function used in the simulation process within the FunctionalCausalModelSimulator.
+     * <p>
+     * The activation function is applied to intermediate computations or transformations during the simulation,
+     * providing a non-linear mapping that influences the resulting synthetic causal data. By default, the tangent
+     * hyperbolic function (tanh) is used, though it can be customized through a setter method to support other
+     * non-linear functions.
+     */
+    private Function<Double, Double> activationFunction = Math::tanh;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -89,13 +131,19 @@ public class NonlinearGeneralCausalModel {
      * @param numSamples        The number of samples to generate for the simulation. Must be a positive integer.
      * @param noiseDistribution The real-valued noise distribution used for simulating additive noise in the causal
      *                          mechanisms. positive integer.
+     * @param rescaleMin        The lower bound for rescaling data during the simulation. Must be less than or equal to
+     *                          rescaleMax.
+     * @param rescaleMax        The upper bound for rescaling data during the simulation. Must be greater than or equal
+     *                          to rescaleMin.
+     * @param hiddenDimension   The number of hidden neurons in the MLP function.
+     * @param inputScale        The scaling factor for the input to create bumpiness.
      * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
      *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public NonlinearGeneralCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                       double rescaleMin, double rescaleMax) {
+    public FunctionalCausalModelSimulator(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                          double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -117,6 +165,9 @@ public class NonlinearGeneralCausalModel {
         this.noiseDistribution = noiseDistribution;
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
+        this.setActivationFunction(activationFunction);
+        this.hiddenDimension = hiddenDimension;
+        this.inputScale = inputScale;
     }
 
     /**
@@ -139,11 +190,11 @@ public class NonlinearGeneralCausalModel {
             List<Node> parents = graph.getParents(node);
 
             // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
-            RandomFunctionND randomFunction = new RandomFunctionND(
+            MultiLayerPerceptronFunctionIntoR randomFunction = new MultiLayerPerceptronFunctionIntoR(
                     parents.size() + 1, // Input dimension (R^3 -> R)
-                    20, // Number of hidden neurons
-                    Math::tanh, // Activation function
-                    5.0, // Input scale for bumpiness
+                    this.hiddenDimension, // Number of hidden neurons
+                    this.activationFunction, // Activation function
+                    this.inputScale, // Input scale for bumpiness
                     -1 // Random seed
             );
 
@@ -162,5 +213,17 @@ public class NonlinearGeneralCausalModel {
         }
 
         return data;
+    }
+
+    /**
+     * Sets the activation function used for computation in the simulation. The activation function defines the
+     * non-linear transformation applied to the inputs within the causal model.
+     *
+     * @param activationFunction A function that takes a double value as input and returns a transformed double value as
+     *                           output. This function represents the mathematical transformation to be used as the
+     *                           activation operation.
+     */
+    public void setActivationFunction(Function<Double, Double> activationFunction) {
+        this.activationFunction = activationFunction;
     }
 }

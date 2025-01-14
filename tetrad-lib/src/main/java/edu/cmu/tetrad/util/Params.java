@@ -996,6 +996,14 @@ public final class Params {
      * Constant <code>MNAR_NUM_VARIABLES_WITH_MISSING="mnarNumVariablesWithMissing"</code>
      */
     public static final String MNAR_NUM_VARIABLES_WITH_MISSING = "mnarNumVariablesWithMissing";
+    /**
+     * Constant <code>HIDDEN_DIMENSION="hiddenDimension"</code>
+     */
+    public static final String HIDDEN_DIMENSION = "hiddenDimension";
+    /**
+     * Constant <code>INPUT_SCALE="inputScale"</code>
+     */
+    public static final String INPUT_SCALE = "inputScale";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

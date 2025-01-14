@@ -6,9 +6,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.GaussianProcessRBF;
-import edu.cmu.tetrad.search.utils.RandomFunction1D;
-import edu.cmu.tetrad.util.MathUtils;
+import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunction1D;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -292,7 +290,7 @@ public class NonlinearAdditiveCausalModel {
 //        g = gp::adjustedEvaluate;
 
         // Let g be defined by a neual net with one hidden layer.
-        RandomFunction1D randomFunction = new RandomFunction1D(
+        MultiLayerPerceptronFunction1D randomFunction = new MultiLayerPerceptronFunction1D(
                 10, // Number of hidden neurons
                 Math::tanh, // Activation function
                 5.0, // Input scale for bumpiness

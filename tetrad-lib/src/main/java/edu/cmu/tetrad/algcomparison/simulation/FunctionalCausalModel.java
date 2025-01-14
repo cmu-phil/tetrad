@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.FunctionalCausalModelSimulator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -18,11 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a nonlinear general causal (NGC) model.
+ * This class represents a functional causal model (FCM).
  *
  * @author josephramsey
  */
-public class NonlinearGeneralCausalModel implements Simulation {
+public class FunctionalCausalModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +48,7 @@ public class NonlinearGeneralCausalModel implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public NonlinearGeneralCausalModel(RandomGraph graph) {
+    public FunctionalCausalModel(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -180,7 +181,7 @@ public class NonlinearGeneralCausalModel implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Nonlinear General Causal simulation using " + this.randomGraph.getDescription();
+        return "Functional Causal Model (FCM) simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -189,7 +190,7 @@ public class NonlinearGeneralCausalModel implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Nonlinear General Causal (NGC) Simulation";
+        return "Functional Causal Model (FCM) Simulation";
     }
 
     /**
@@ -209,6 +210,8 @@ public class NonlinearGeneralCausalModel implements Simulation {
         parameters.add(Params.AM_RESCALE_MAX);
         parameters.add(Params.AM_BETA_ALPHA);
         parameters.add(Params.AM_BETA_BETA);
+        parameters.add(Params.HIDDEN_DIMENSION);
+        parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -260,10 +263,11 @@ public class NonlinearGeneralCausalModel implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runModel(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.NonlinearGeneralCausalModel generator = new edu.cmu.tetrad.sem.NonlinearGeneralCausalModel(
+        FunctionalCausalModelSimulator generator = new FunctionalCausalModelSimulator(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
-                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX));
+                parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
+                parameters.getInt(Params.HIDDEN_DIMENSION), parameters.getDouble(Params.INPUT_SCALE));
 
         return generator.generateData();
     }

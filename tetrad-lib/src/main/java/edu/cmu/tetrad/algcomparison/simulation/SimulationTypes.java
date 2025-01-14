@@ -47,9 +47,9 @@ public final class SimulationTypes {
      */
     public static final String NONLINEAR_ADDITIVE_CAUSAL_MODEL = "Nonlinear Additive Causal (NAC) Model";
     /**
-     * Constant <code>NONLINEAR_GENERAL_CAUSAL_MODEL="Nonlinear GENERAL Causal (NGC) Model"</code>
+     * Constant <code>FUNCTIONAL_CAUSAL_MODEL="Functional Causal Model (FCM)"</code>
      */
-    public static final String NONLINEAR_GENERAL_CAUSAL_MODEL = "Nonlinear General Causal (NGC) Model";
+    public static final String FUNCTIONAL_CAUSAL_MODEL = "Functional Causal Model (FCM)";
     /**
      * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>
      */

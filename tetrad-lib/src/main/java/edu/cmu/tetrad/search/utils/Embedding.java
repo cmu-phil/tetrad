@@ -109,16 +109,16 @@ public class Embedding {
                     // in the columns minus the minimum in the columns is less than 1e-6. Skip this functional if so.
                     // We should not regress on a constant variable, and we should count it among the degrees of
                     // freedom.
-                    double max = StatUtils.max(functional);
-                    double min = StatUtils.min(functional);
+//                    double max = StatUtils.max(functional);
+//                    double min = StatUtils.min(functional);
 
-                    if (Math.abs(max - min) < 1e-6) {
-                        i--;
-                        A.removeLast();
-                    } else {
-                        B.add(functional);
-                        indexList.add(i);
-                    }
+//                    if (Math.abs(max - min) < 1e-2) {
+//                        i--;
+//                        A.removeLast();
+//                    } else {
+                    B.add(functional);
+                    indexList.add(i);
+//                    }
                 }
                 embedding.put(i_, indexList);
             }

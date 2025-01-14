@@ -1,9 +1,12 @@
 package edu.cmu.tetrad.search.utils;
+
 import java.util.Random;
 import java.util.function.Function;
 
-public class RandomFunctionND {
-
+/**
+ * Represents a random Multi-layer Perceptron (MLP) function from R^n to R.
+ */
+public class MultiLayerPerceptronFunctionIntoR {
     private final double[][] W1; // Weights for input to hidden layer
     private final double[] b1;  // Biases for hidden layer
     private final double[] W2;  // Weights for hidden to output layer
@@ -20,7 +23,7 @@ public class RandomFunctionND {
      * @param inputScale Scaling factor for the input to create bumpiness.
      * @param seed       Random seed for reproducibility.
      */
-    public RandomFunctionND(int inputDim, int hiddenDim, Function<Double, Double> activation, double inputScale, long seed) {
+    public MultiLayerPerceptronFunctionIntoR(int inputDim, int hiddenDim, Function<Double, Double> activation, double inputScale, long seed) {
         Random random = new Random(seed);
 
         this.W1 = new double[hiddenDim][inputDim];
@@ -37,6 +40,30 @@ public class RandomFunctionND {
             }
             this.b1[i] = random.nextGaussian();       // Gaussian biases
             this.W2[i] = random.nextGaussian();       // Gaussian weights
+        }
+    }
+
+    public static void main(String[] args) {
+        // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
+        MultiLayerPerceptronFunctionIntoR randomFunction = new MultiLayerPerceptronFunctionIntoR(
+                3, // Input dimension (R^3 -> R)
+                20, // Number of hidden neurons
+                Math::tanh, // Activation function
+                10.0, // Input scale for bumpiness
+                42 // Random seed
+        );
+
+        // Evaluate and print the random function for some sample inputs
+        double[][] sampleInputs = {
+                {1.0, 0.5, -1.2},
+                {0.2, -0.3, 0.8},
+                {-1.0, 1.5, 0.0},
+                {0.0, 0.0, 0.0}
+        };
+
+        for (double[] input : sampleInputs) {
+            double output = randomFunction.evaluate(input);
+            System.out.printf("f(%s) = %.5f%n", java.util.Arrays.toString(input), output);
         }
     }
 
@@ -74,29 +101,5 @@ public class RandomFunctionND {
         }
 
         return output;
-    }
-
-    public static void main(String[] args) {
-        // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
-        RandomFunctionND randomFunction = new RandomFunctionND(
-                3, // Input dimension (R^3 -> R)
-                20, // Number of hidden neurons
-                Math::sin, // Activation function
-                10.0, // Input scale for bumpiness
-                42 // Random seed
-        );
-
-        // Evaluate and print the random function for some sample inputs
-        double[][] sampleInputs = {
-                {1.0, 0.5, -1.2},
-                {0.2, -0.3, 0.8},
-                {-1.0, 1.5, 0.0},
-                {0.0, 0.0, 0.0}
-        };
-
-        for (double[] input : sampleInputs) {
-            double output = randomFunction.evaluate(input);
-            System.out.printf("f(%s) = %.5f%n", java.util.Arrays.toString(input), output);
-        }
     }
 }

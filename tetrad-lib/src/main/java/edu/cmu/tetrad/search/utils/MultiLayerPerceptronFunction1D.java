@@ -3,8 +3,13 @@ package edu.cmu.tetrad.search.utils;
 import java.util.Random;
 import java.util.function.Function;
 
-public class RandomFunction1D {
-
+/**
+ * This class implements a 1-dimensional Multi-Layer Perceptron (MLP) function. It consists of
+ * a single hidden layer and scales the input to introduce variability or "bumpiness" as needed.
+ * The activation function for the hidden layer and weights/biases for the neural network
+ * are initialized during construction.
+ */
+public class MultiLayerPerceptronFunction1D {
     private final double[][] W1; // Weights for input to hidden layer
     private final double[] b1;  // Biases for hidden layer
     private final double[] W2;  // Weights for hidden to output layer
@@ -20,7 +25,7 @@ public class RandomFunction1D {
      * @param inputScale Scaling factor for the input to create bumpiness.
      * @param seed       Random seed for reproducibility.
      */
-    public RandomFunction1D(int hiddenDim, Function<Double, Double> activation, double inputScale, long seed) {
+    public MultiLayerPerceptronFunction1D(int hiddenDim, Function<Double, Double> activation, double inputScale, long seed) {
         Random random;
 
         if (seed == -1L) {
@@ -46,7 +51,7 @@ public class RandomFunction1D {
 
     public static void main(String[] args) {
         // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
-        RandomFunction1D randomFunction = new RandomFunction1D(
+        MultiLayerPerceptronFunction1D randomFunction = new MultiLayerPerceptronFunction1D(
                 20, // Number of hidden neurons
                 Math::sin, // Activation function
                 10.0, // Input scale for bumpiness
