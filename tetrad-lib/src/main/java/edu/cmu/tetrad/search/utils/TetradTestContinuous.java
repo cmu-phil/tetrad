@@ -56,7 +56,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  */
 public final class TetradTestContinuous implements TetradTest {
     private final DataSet dataSet;
-    DeltaTetradTest deltaTest;
+    DeltaTetradTest2 deltaTest;
     private double sig;
     private double[] prob;
     private ICovarianceMatrix covMatrix;
@@ -121,7 +121,7 @@ public final class TetradTestContinuous implements TetradTest {
         }
         this.dataSet = null;
 
-        this.deltaTest = new DeltaTetradTest(covMatrix);
+        this.deltaTest = new DeltaTetradTest2(covMatrix);
 
 //        this.corrMatrix = new CorrelationMatrix(covMatrix);
         this.setCovMatrix(covMatrix);
@@ -534,9 +534,9 @@ public final class TetradTestContinuous implements TetradTest {
 
         if (this.deltaTest == null) {
             if (this.dataSet != null) {
-                this.deltaTest = new DeltaTetradTest(this.dataSet);
+                this.deltaTest = new DeltaTetradTest2(this.dataSet);
             } else {
-                this.deltaTest = new DeltaTetradTest(this.covMatrix);
+                this.deltaTest = new DeltaTetradTest2(this.covMatrix);
             }
         }
 
@@ -545,13 +545,13 @@ public final class TetradTestContinuous implements TetradTest {
         Node ck = getVariables().get(k);
         Node cl = getVariables().get(l);
 
-        this.deltaTest.calcChiSquare(new Tetrad(ci, cj, ck, cl));
+        this.deltaTest.calcChiSquare(new Tetrad2(i, j, k, l));
         this.prob[0] = this.deltaTest.getPValue();
 
-        this.deltaTest.calcChiSquare(new Tetrad(ci, cj, cl, ck));
+        this.deltaTest.calcChiSquare(new Tetrad2(i, j, k, l));
         this.prob[1] = this.deltaTest.getPValue();
 
-        this.deltaTest.calcChiSquare(new Tetrad(ci, ck, cl, cj));
+        this.deltaTest.calcChiSquare(new Tetrad2(i, j, k, l));
         this.prob[2] = this.deltaTest.getPValue();
     }
 
@@ -564,13 +564,13 @@ public final class TetradTestContinuous implements TetradTest {
 
         if (this.deltaTest == null) {
             if (this.dataSet != null) {
-                this.deltaTest = new DeltaTetradTest(this.dataSet);
+                this.deltaTest = new DeltaTetradTest2(this.dataSet);
             } else {
-                this.deltaTest = new DeltaTetradTest(this.covMatrix);
+                this.deltaTest = new DeltaTetradTest2(this.covMatrix);
             }
         }
 
-        this.deltaTest.calcChiSquare(new Tetrad(ci, cj, ck, cl));
+        this.deltaTest.calcChiSquare(new Tetrad2(i, j, k, l));
         this.prob[0] = this.deltaTest.getPValue();
 
         TetradLogger.getInstance().log(new Tetrad(this.variables.get(i),
@@ -585,7 +585,7 @@ public final class TetradTestContinuous implements TetradTest {
      *
      * @param deltaTest a {@link edu.cmu.tetrad.search.utils.DeltaTetradTest} object
      */
-    public void setBollenTest(DeltaTetradTest deltaTest) {
+    public void setBollenTest(DeltaTetradTest2 deltaTest) {
         this.deltaTest = deltaTest;
     }
 

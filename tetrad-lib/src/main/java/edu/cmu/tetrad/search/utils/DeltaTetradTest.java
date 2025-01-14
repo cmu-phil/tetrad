@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -25,9 +25,10 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.*;
+
+import static java.lang.Math.max;
 
 /**
  * Implements a test for simultaneously zero tetrads in Bollen, K. (1990). "Outlier screening and distribution-free test
@@ -44,7 +45,7 @@ public class DeltaTetradTest {
     private final Map<Node, Integer> variablesHash;
     private DataSet dataSet;
     private double[][] data;
-    private int df;
+    private int numTetrads;
     private double chisq;
 
     // As input we require a data set and a list of non-redundant Tetrads.
@@ -75,7 +76,7 @@ public class DeltaTetradTest {
         data1.add(dataSet);
         List<DataSet> data2 = DataTransforms.center(data1);
 
-        this.dataSet = data2.get(0);
+        this.dataSet = data2.getFirst();
 
         this.data = this.dataSet.getDoubleData().transpose().toArray();
         this.N = dataSet.getNumRows();
@@ -121,7 +122,7 @@ public class DeltaTetradTest {
      * @return a double
      */
     public double calcChiSquare(Tetrad... tetrads) {
-        this.df = tetrads.length;
+        this.numTetrads = tetrads.length;
 
         // Need a list of symbolic covariances--i.e. covariances that appear in tetrads.
         Set<Sigma> boldSigmaSet = new LinkedHashSet<>();
@@ -162,10 +163,10 @@ public class DeltaTetradTest {
                 } else if (this.cov != null && this.dataSet == null) {
 
                     // Assumes multinormality--see p. 160.
-                    double _ss = sxy(e, g) * sxy(f, h) - sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
+                    double _ss = sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
                     sigma_ss.set(i, j, _ss);
                 } else {
-                    double _ss = sxyzw(e, f, g, h) - sxy(e, f) * sxy(g, h);
+                    double _ss = sxyzw(e, f, g, h) + sxy(e, f) * sxy(g, h);
                     sigma_ss.set(i, j, _ss);
                 }
             }
@@ -231,7 +232,14 @@ public class DeltaTetradTest {
      * @return the p value for the most recent test.
      */
     public double getPValue() {
-        return StatUtils.getChiSquareP(this.df, this.chisq);
+        int df = dofHarman(this.numTetrads);
+        return StatUtils.getChiSquareP(df, this.chisq);
+    }
+
+    private int dofHarman(int n) {
+        int dof = n * (n - 5) / 2 + 1;
+        if (dof < 1) dof = 1;
+        return dof;
     }
 
     /**

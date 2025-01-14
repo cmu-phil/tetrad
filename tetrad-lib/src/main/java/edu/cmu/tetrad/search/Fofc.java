@@ -74,7 +74,7 @@ public class Fofc {
     /**
      * The Delta test. Testing two tetrads simultaneously.
      */
-    private final DeltaTetradTest test;
+    private final DeltaTetradTest2 test;
     /**
      * The tetrad test--using Ricardo's. Used only for Wishart.
      */
@@ -130,7 +130,7 @@ public class Fofc {
         this.variables = cov.getVariables();
         this.alpha = alpha;
         this.testType = testType;
-        this.test = new DeltaTetradTest(cov);
+        this.test = new DeltaTetradTest2(cov);
         this.test2 = new TetradTestContinuous(cov, testType, alpha);
         this.dataModel = cov;
         this.algorithm = algorithm;
@@ -155,7 +155,7 @@ public class Fofc {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.testType = testType;
-        this.test = new DeltaTetradTest(dataSet);
+        this.test = new DeltaTetradTest2(dataSet);
         this.test2 = new TetradTestContinuous(dataSet, testType, alpha);
         this.dataModel = dataSet;
         this.algorithm = algorithm;
@@ -1106,8 +1106,11 @@ public class Fofc {
      */
     private boolean vanishes(int x, int y, int z, int w) {
         if (this.testType == BpcTestType.TETRAD_DELTA) {
-            Tetrad t1 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(z), this.variables.get(w));
-            Tetrad t2 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(w), this.variables.get(z));
+//            Tetrad t1 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(z), this.variables.get(w));
+//            Tetrad t2 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(w), this.variables.get(z));
+
+            Tetrad2 t1 = new Tetrad2(x, y, z, w);
+            Tetrad2 t2 = new Tetrad2(x, y, w, z);
 
             return this.test.getPValue(t1, t2) > this.alpha;
         } else if (this.testType == BpcTestType.TETRAD_WISHART) {
