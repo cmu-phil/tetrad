@@ -6,7 +6,9 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.LinearFunctionND;
 import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
+import edu.cmu.tetrad.search.utils.RandomMonotonicPiecewiseLinear;
 import edu.cmu.tetrad.util.RandomPiecewiseLinearBijective;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -76,21 +78,21 @@ public class PostnonlinearCausalModel {
      * applied to normalized data, ensuring it fits within the specified range during synthetic data generation.
      */
     private final double rescaleMax;
-    /**
-     * Represents the number of hidden neurons in a multilayer perceptron (MLP) function. This variable determines the
-     * dimensionality of the hidden layer, which can affect the model's capacity to approximate complex functions in the
-     * causal simulation.
-     */
-    private final int hiddenDimension;
-    /**
-     * A scaling factor applied to the input data in the simulation, used to introduce variability and adjust the
-     * "bumpiness" of the generated causal relationships. This parameter determines how sensitive the inputs are when
-     * passed through the data generation process.
-     * <p>
-     * It plays a critical role in shaping the nonlinearity and complexity of the causal mechanisms applied to the input
-     * variables, influencing the statistical properties of the generated data.
-     */
-    private final double inputScale;
+//    /**
+//     * Represents the number of hidden neurons in a multilayer perceptron (MLP) function. This variable determines the
+//     * dimensionality of the hidden layer, which can affect the model's capacity to approximate complex functions in the
+//     * causal simulation.
+//     */
+//    private final int hiddenDimension;
+//    /**
+//     * A scaling factor applied to the input data in the simulation, used to introduce variability and adjust the
+//     * "bumpiness" of the generated causal relationships. This parameter determines how sensitive the inputs are when
+//     * passed through the data generation process.
+//     * <p>
+//     * It plays a critical role in shaping the nonlinearity and complexity of the causal mechanisms applied to the input
+//     * variables, influencing the statistical properties of the generated data.
+//     */
+//    private final double inputScale;
     /**
      * The activation function used in the post-nonlinear causal model to introduce nonlinearity to the relationships
      * between variables. This typically applies a mathematical transformation to the data, and by default, it is set to
@@ -102,7 +104,10 @@ public class PostnonlinearCausalModel {
      * Users can customize the activation function to implement alternative nonlinearities by providing their own
      * implementation through the provided setter method.
      */
-    private Function<Double, Double> activationFunction = Math::tanh;
+//    private Function<Double, Double> activationFunction = Math::tanh;
+    private double coefLow = -1;
+    private double coefHigh = 1;
+    private boolean coefSymmetric = false;
 
     /**
      * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
@@ -122,7 +127,10 @@ public class PostnonlinearCausalModel {
      *                                  defined graph structure.
      */
     public PostnonlinearCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                    double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
+                                    double rescaleMin, double rescaleMax,
+//                                    int hiddenDimension, double inputScale,
+                                    double coefLow, double coefHigh, boolean coefSymmetric
+    ) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -144,8 +152,11 @@ public class PostnonlinearCausalModel {
         this.noiseDistribution = noiseDistribution;
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
-        this.hiddenDimension = hiddenDimension;
-        this.inputScale = inputScale;
+//        this.hiddenDimension = hiddenDimension;
+//        this.inputScale = inputScale;
+        this.coefLow = coefLow;
+        this.coefHigh = coefHigh;
+        this.coefSymmetric = coefSymmetric;
     }
 
     /**
@@ -171,24 +182,32 @@ public class PostnonlinearCausalModel {
             List<Node> parents = graph.getParents(node);
 
             // A random function from R^N -> R
-            var f1 = new MultiLayerPerceptronFunctionND(
-                    parents.size(), // Input dimension (R^N -> R)
-                    this.hiddenDimension, // Number of hidden neurons
-                    this.activationFunction, // Activation function
-                    this.inputScale, // Input scale for bumpiness
+//            Function<double[], Double> f1 = new MultiLayerPerceptronFunctionND(
+//                    parents.size(), // Input dimension (R^N -> R)
+//                    this.hiddenDimension, // Number of hidden neurons
+//                    this.activationFunction, // Activation function
+//                    this.inputScale, // Input scale for bumpiness
+//                    -1 // Random seed
+//            )::evaluateAdjusted;
+
+            Function<double[], Double> f1 = new LinearFunctionND(
+                    parents.size(), // Input dimension
+                    coefLow, // CoefLow
+                    coefHigh, // CoefHigh
+                    coefSymmetric, // CoefSymmetric
                     -1 // Random seed
-            );
+            )::evaluateAdjusted;
 
             for (int sample = 0; sample < numSamples; sample++) {
                 int _sample = sample;
                 double[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
-                double value = f1.evaluate(array) + noiseDistribution.sample();
+                double value = f1.apply(array) + noiseDistribution.sample();
                 data.setDouble(sample, nodeToIndex.get(node), value);
             }
 
-            if (rescaleMin < rescaleMax) {
-                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
-            }
+//            if (rescaleMin < rescaleMax) {
+//                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
+//            }
         }
 
         // Apply invertible post-nonlinear distortion. This does not affect scaling.
@@ -204,28 +223,30 @@ public class PostnonlinearCausalModel {
             }
 
             // Invertible post-nonlinear distortion.
-            var f2 = new RandomPiecewiseLinearBijective(20, -1);
-            f2.setScale(min, max, min, max);
+            var func = new RandomMonotonicPiecewiseLinear(20, min, max, min, max);
+            Function<Double, Double> f2 = func::computeValue;
+            f2 = Math::tanh;
+//            f2.setScale(min, max, min, max);
 
             for (int sample = 0; sample < numSamples; sample++) {
                 double value = data.getDouble(sample, nodeToIndex.get(node));
-                value = f2.evaluate(value);
+                value = f2.apply(value);
                 data.setDouble(sample, nodeToIndex.get(node), value);
             }
         }
 
         return data;
     }
-
-    /**
-     * Sets the activation function used in the model. The activation function is a mathematical function that
-     * transforms the input and can influence the relationships and behavior within the causal model.
-     *
-     * @param activationFunction The function to be used as the activation function. It must be a mapping from a Double
-     *                           input to a Double output, representing the non-linear transformation applied within the
-     *                           model.
-     */
-    public void setActivationFunction(Function<Double, Double> activationFunction) {
-        this.activationFunction = activationFunction;
-    }
+//
+//    /**
+//     * Sets the activation function used in the model. The activation function is a mathematical function that
+//     * transforms the input and can influence the relationships and behavior within the causal model.
+//     *
+//     * @param activationFunction The function to be used as the activation function. It must be a mapping from a Double
+//     *                           input to a Double output, representing the non-linear transformation applied within the
+//     *                           model.
+//     */
+//    public void setActivationFunction(Function<Double, Double> activationFunction) {
+//        this.activationFunction = activationFunction;
+//    }
 }

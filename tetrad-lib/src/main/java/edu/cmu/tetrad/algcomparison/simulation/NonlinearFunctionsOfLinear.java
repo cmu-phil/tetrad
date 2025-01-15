@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.sem.NonlinearFunctionOfLinear;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -18,11 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a nonlinear additive causal (NAC) model.
+ * This class represents a nonlinear functions of linear simulation.
  *
  * @author josephramsey
  */
-public class NonlinearAdditiveCausalModel implements Simulation {
+public class NonlinearFunctionsOfLinear implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +48,7 @@ public class NonlinearAdditiveCausalModel implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public NonlinearAdditiveCausalModel(RandomGraph graph) {
+    public NonlinearFunctionsOfLinear(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -180,7 +181,7 @@ public class NonlinearAdditiveCausalModel implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Nonlinear Additive Causal simulation using " + this.randomGraph.getDescription();
+        return "Nonlinear Functions of Linear (NFL) using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -189,7 +190,7 @@ public class NonlinearAdditiveCausalModel implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Nonlinear Additive Causal (NAC) Simulation";
+        return "Nonlinear Functions of Linear (NFL) Simulation";
     }
 
     /**
@@ -212,6 +213,9 @@ public class NonlinearAdditiveCausalModel implements Simulation {
         parameters.add(Params.AM_COEF_LOW);
         parameters.add(Params.AM_COEF_HIGH);
         parameters.add(Params.AM_COEF_SYMMETRIC);
+        parameters.add(Params.AM_DISTORTION_TYPE);
+        parameters.add(Params.HIDDEN_DIMENSION);
+        parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -263,19 +267,20 @@ public class NonlinearAdditiveCausalModel implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runSimulation(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel generator = new edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel(
+        NonlinearFunctionOfLinear generator = new NonlinearFunctionOfLinear(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
                 parameters.getDouble(Params.AM_COEF_LOW), parameters.getDouble(Params.AM_COEF_HIGH),
-                parameters.getBoolean(Params.AM_COEF_SYMMETRIC));
+                parameters.getBoolean(Params.AM_COEF_SYMMETRIC),
+                parameters.getInt(Params.HIDDEN_DIMENSION), parameters.getDouble(Params.INPUT_SCALE));
 
         if (parameters.getInt(Params.AM_DISTORTION_TYPE) == 0) {
-            generator.setDistortionType(edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel.DistortionType.NONE);
+            generator.setDistortionType(NonlinearFunctionOfLinear.DistortionType.NONE);
         } else if (parameters.getInt(Params.AM_DISTORTION_TYPE) == 1) {
-            generator.setDistortionType(edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel.DistortionType.PRE_NOISE);
+            generator.setDistortionType(NonlinearFunctionOfLinear.DistortionType.PRE_NOISE);
         } else if (parameters.getInt(Params.AM_DISTORTION_TYPE) == 2) {
-            generator.setDistortionType(edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel.DistortionType.POST_NONLINEAR);
+            generator.setDistortionType(NonlinearFunctionOfLinear.DistortionType.POST_NONLINEAR);
         }
 
         return generator.generateData();

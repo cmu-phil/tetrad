@@ -18,23 +18,23 @@ public class MultiLayerPerceptronFunctionND {
      * Constructor to initialize a random function.
      *
      * @param inputDim   Number of input dimensions (R^n).
-     * @param hiddenDim  Number of neurons in the hidden layer.
+     * @param hiddenDimension  Number of neurons in the hidden layer.
      * @param activation Activation function (e.g., Math::sin or Math::tanh).
      * @param inputScale Scaling factor for the input to create bumpiness.
      * @param seed       Random seed for reproducibility.
      */
-    public MultiLayerPerceptronFunctionND(int inputDim, int hiddenDim, Function<Double, Double> activation, double inputScale, long seed) {
+    public MultiLayerPerceptronFunctionND(int inputDim, int hiddenDimension, Function<Double, Double> activation, double inputScale, long seed) {
         Random random = new Random(seed);
 
-        this.W1 = new double[hiddenDim][inputDim];
-        this.b1 = new double[hiddenDim];
-        this.W2 = new double[hiddenDim];
+        this.W1 = new double[hiddenDimension][inputDim];
+        this.b1 = new double[hiddenDimension];
+        this.W2 = new double[hiddenDimension];
         this.b2 = random.nextDouble() * 2 - 1; // Random value in [-1, 1]
         this.activation = activation;
         this.inputScale = inputScale;
 
         // Initialize weights and biases randomly
-        for (int i = 0; i < hiddenDim; i++) {
+        for (int i = 0; i < hiddenDimension; i++) {
             for (int j = 0; j < inputDim; j++) {
                 this.W1[i][j] = random.nextGaussian(); // Gaussian weights
             }
@@ -101,5 +101,10 @@ public class MultiLayerPerceptronFunctionND {
         }
 
         return output;
+    }
+
+    public Double evaluateAdjusted(double[] doubles) {
+        double zero = evaluate(new double[doubles.length]);
+        return evaluate(doubles) - zero;
     }
 }

@@ -50,6 +50,10 @@ public final class SimulationTypes {
      * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
     public static final String POST_NONLINEAR_MODEL = "Post-nonlinear causal model";
+    /*
+     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
+     */
+    public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) model";
     /**
      * Constant <code>FUNCTIONAL_CAUSAL_MODEL="Functional Causal Model"</code>
      */

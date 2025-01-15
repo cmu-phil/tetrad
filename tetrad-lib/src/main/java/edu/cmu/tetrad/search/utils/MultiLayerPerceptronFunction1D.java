@@ -20,12 +20,12 @@ public class MultiLayerPerceptronFunction1D {
     /**
      * Constructor to initialize a random function.
      *
-     * @param hiddenDim  Number of neurons in the hidden layer.
-     * @param activation Activation function (e.g., Math::sin or Math::tanh).
+     * @param hiddenDimension  Number of neurons in the hidden layer.
      * @param inputScale Scaling factor for the input to create bumpiness.
+     * @param activation Activation function (e.g., Math::sin or Math::tanh).
      * @param seed       Random seed for reproducibility.
      */
-    public MultiLayerPerceptronFunction1D(int hiddenDim, Function<Double, Double> activation, double inputScale, long seed) {
+    public MultiLayerPerceptronFunction1D(int hiddenDimension, double inputScale, Function<Double, Double> activation, long seed) {
         Random random;
 
         if (seed == -1L) {
@@ -34,15 +34,15 @@ public class MultiLayerPerceptronFunction1D {
             random = new Random(seed);
         }
 
-        this.W1 = new double[hiddenDim][1];
-        this.b1 = new double[hiddenDim];
-        this.W2 = new double[hiddenDim];
+        this.W1 = new double[hiddenDimension][1];
+        this.b1 = new double[hiddenDimension];
+        this.W2 = new double[hiddenDimension];
         this.b2 = random.nextDouble() * 2 - 1; // Random value in [-1, 1]
         this.activation = activation;
         this.inputScale = inputScale;
 
         // Initialize weights and biases randomly
-        for (int i = 0; i < hiddenDim; i++) {
+        for (int i = 0; i < hiddenDimension; i++) {
             this.W1[i][0] = random.nextGaussian(); // Gaussian weights
             this.b1[i] = random.nextGaussian();   // Gaussian biases
             this.W2[i] = random.nextGaussian();   // Gaussian weights
@@ -53,8 +53,8 @@ public class MultiLayerPerceptronFunction1D {
         // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
         MultiLayerPerceptronFunction1D randomFunction = new MultiLayerPerceptronFunction1D(
                 20, // Number of hidden neurons
-                Math::sin, // Activation function
-                10.0, // Input scale for bumpiness
+                10.0, Math::sin, // Activation function
+                // Input scale for bumpiness
                 42 // Random seed
         );
 

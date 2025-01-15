@@ -19,21 +19,29 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents a Nonlinear Additive Causal Model (NAC) (with some specific choices) for generating synthetic data based
- * on a directed acyclic graph (DAG). This is a nonlinear function for a linear combination of parent influences, plus
- * noise applied after the nonlinear function, where the non-linear function is represented as general Taylor series.
+ * Represents a nonlinear function of linear model for generating synthetic data based on a directed acyclic graph
+ * (DAG). The error may be included additively or post-nonlinearly--that is, the nonlinear function may be taken either
+ * before (additively) or after (post-nonlinearly) an independent draw from the noise distribution is added.
  * <p>
- * That is, the form of the model is Xi = fi(a1 Xi_1 + a2 Xi_2 + ... + ak Xi_k) + Ni, where g is a smooth nonlinear
- * function represented as a Taylor series.
+ * If additively, the model is Xi = fi(a1 Xi_1 + a2 Xi_2 + ... + ak Xi_k) + Ni.
  * <p>
- * The form specified in Peters et al. (2014) is as follows:
+ * If post-nonlinearly, the model is Xi = fi(a1 Xi_1 + a2 Xi_2 + ... + ak Xi_k + Ni).
+ * <p>
+ * Additively, the model is a special case of the nonlinear additive model in Hoyer et al. (2008),
  * <p>
  * xi = fi(Paj) + Ni
  * <p>
- * We have interpreted f here as a nonlinear function of a linear combination of parents. Further work might be to use a
- * more general Taylor series for f, or to use a more general nonlinear function. For a more general nonlinear function,
- * consider using the Continuous Additive Noise model in Peters et al. (2014) with Gaussian process simulation.
- *
+ * We have interpreted fi here as a nonlinear function over a linear combination of parents.
+ * <p>
+ * Post-nonlinearly, the error is added inside the fi function. In the bivariate case, this is a special case of the
+ * post-nonlinear model in Zhang and Hyvarinen (2012); we are using the term 'post-nonlinear' in a more general sense
+ * here, allowing for arbitrary smooth nonlinear functions.
+ * <p>
+ * In either case, we choose random functions fi using multilayer perceptrons from R to R with one hidden layer and tanh
+ * activation functions. The number of hidden neurons is a parameter.
+ * <p>
+ * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., & Schölkopf, B. (2008). Nonlinear causal discovery with additive
+ * noise models. Advances in neural information processing systems, 21.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -52,7 +60,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class NonlinearAdditiveCausalModel {
+public class NonlinearFunctionOfLinear {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -101,6 +109,8 @@ public class NonlinearAdditiveCausalModel {
      * parent-child relationship in the graph is associated with the appropriate functional dependencies.
      */
     private final Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
+    private final int hiddenDimension;
+    private final double inputScale;
     /**
      * The lower bound for the random coefficient in the model.
      * <p>
@@ -153,8 +163,9 @@ public class NonlinearAdditiveCausalModel {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public NonlinearAdditiveCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                        double rescaleMin, double rescaleMax, double coefLow, double coefHigh, boolean coefSymmetric) {
+    public NonlinearFunctionOfLinear(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                     double rescaleMin, double rescaleMax, double coefLow, double coefHigh, boolean coefSymmetric,
+                                     int hiddenDimension, double inputScale) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -179,6 +190,8 @@ public class NonlinearAdditiveCausalModel {
         this.coefLow = coefLow;
         this.coefHigh = coefHigh;
         this.coefSymmetric = coefSymmetric;
+        this.hiddenDimension = hiddenDimension;
+        this.inputScale = inputScale;
 
         for (Node child : this.graph.getNodes()) {
             Map<Node, Function<Double, Double>> parentFunctions1 = new HashMap<>();
@@ -269,35 +282,13 @@ public class NonlinearAdditiveCausalModel {
      * @param nodeToIndex A mapping of nodes to their corresponding column indices in the dataset.
      */
     private void distort(Node node, DataSet data, Map<Node, Integer> nodeToIndex) {
-
-        // Input points for the GP
-        double[] xValues = new double[100];
-
-        // Generate points in range [-3, 3]
-        for (int i = 0; i < 100; i++) {
-            xValues[i] = i * 0.01;
-        }
-
-        // GP parameters
-        double lengthScale = 1.0;  // Smoothness of the function
-        double amplitude = 1;   // Magnitude of the function
-        double noiseStd = 1e-6;   // Stability noise
-
-        Function<Double, Double> g;
-
-        // Create a Gaussian Process simulator
-//        GaussianProcessRBF gp = new GaussianProcessRBF(xValues, lengthScale, amplitude, noiseStd);
-//        g = gp::adjustedEvaluate;
-
-        // Let g be defined by a neual net with one hidden layer.
-        MultiLayerPerceptronFunction1D randomFunction = new MultiLayerPerceptronFunction1D(
-                10, // Number of hidden neurons
+        Function<Double, Double> g = new MultiLayerPerceptronFunction1D(
+                this.hiddenDimension, // Number of hidden neurons
+                this.inputScale, // Input scaling, affects bumpiness of function
                 Math::tanh, // Activation function
-                5.0, // Input scale for bumpiness
                 -1 // Random seed
-        );
+        )::evaluate;
 
-        g = randomFunction::evaluate;
 //        g = Math::tanh;
 //        g = x -> Math.max(0, x);
 //        g = x -> Math.max(0.01 * x, x);

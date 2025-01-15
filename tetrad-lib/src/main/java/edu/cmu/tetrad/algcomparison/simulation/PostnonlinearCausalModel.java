@@ -209,8 +209,11 @@ public class PostnonlinearCausalModel implements Simulation {
         parameters.add(Params.AM_RESCALE_MAX);
         parameters.add(Params.AM_BETA_ALPHA);
         parameters.add(Params.AM_BETA_BETA);
-        parameters.add(Params.HIDDEN_DIMENSION);
-        parameters.add(Params.INPUT_SCALE);
+//        parameters.add(Params.HIDDEN_DIMENSION);
+//        parameters.add(Params.INPUT_SCALE);
+        parameters.add(Params.COEF_LOW);
+        parameters.add(Params.COEF_HIGH);
+        parameters.add(Params.COEF_SYMMETRIC);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
@@ -266,7 +269,8 @@ public class PostnonlinearCausalModel implements Simulation {
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-                parameters.getInt(Params.HIDDEN_DIMENSION), parameters.getDouble(Params.INPUT_SCALE));
+                parameters.getInt(Params.COEF_LOW), parameters.getDouble(Params.COEF_HIGH),
+                parameters.getBoolean(Params.COEF_SYMMETRIC));
 
         return generator.generateData();
     }
