@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class ContinuousAdditiveNoiseModel implements Simulation {
+public class NonlinearAdditiveNoiseModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public ContinuousAdditiveNoiseModel(RandomGraph graph) {
+    public NonlinearAdditiveNoiseModel(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -261,7 +261,7 @@ public class ContinuousAdditiveNoiseModel implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runModel(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.ContinuousAdditiveNoiseModel generator = new edu.cmu.tetrad.sem.ContinuousAdditiveNoiseModel(
+        edu.cmu.tetrad.sem.NonlinearAdditiveNoiseModel generator = new edu.cmu.tetrad.sem.NonlinearAdditiveNoiseModel(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),

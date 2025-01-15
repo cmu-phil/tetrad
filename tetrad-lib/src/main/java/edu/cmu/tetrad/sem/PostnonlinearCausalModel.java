@@ -164,6 +164,9 @@ public class PostnonlinearCausalModel {
 
         List<Node> validOrder = graph.paths().getValidOrder(graph.getNodes(), true);
 
+        // Generate data for each node in the valid order. This ensures that parents are generated before children.
+        // If rescaling is selected, the data is rescaled to the specified range after each node is generated,
+        // effectively enforcing a range constraint on the f1 functions.
         for (Node node : validOrder) {
             List<Node> parents = graph.getParents(node);
 
@@ -179,11 +182,17 @@ public class PostnonlinearCausalModel {
             for (int sample = 0; sample < numSamples; sample++) {
                 int _sample = sample;
                 double[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
-                double value = f1.evaluate(array);
-                value += noiseDistribution.sample();
+                double value = f1.evaluate(array) + noiseDistribution.sample();
                 data.setDouble(sample, nodeToIndex.get(node), value);
             }
 
+            if (rescaleMin < rescaleMax) {
+                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
+            }
+        }
+
+        // Apply invertible post-nonlinear distortion. This does not affect scaling.
+        for (Node node : validOrder) {
             // Find the min and max of the data for this node.
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
@@ -194,6 +203,7 @@ public class PostnonlinearCausalModel {
                 max = Math.max(max, value);
             }
 
+            // Invertible post-nonlinear distortion.
             var f2 = new RandomPiecewiseLinearBijective(20, -1);
             f2.setScale(min, max, min, max);
 
@@ -201,10 +211,6 @@ public class PostnonlinearCausalModel {
                 double value = data.getDouble(sample, nodeToIndex.get(node));
                 value = f2.evaluate(value);
                 data.setDouble(sample, nodeToIndex.get(node), value);
-            }
-
-            if (rescaleMin < rescaleMax) {
-                DataTransforms.scale(data, rescaleMin, rescaleMax, node);
             }
         }
 

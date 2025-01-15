@@ -249,7 +249,7 @@ public class LgMnarSimulation implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(Graph graph, Parameters parameters) {
-        return runContinuousAdditiveModel(graph, parameters);
+        return runSimulation(graph, parameters);
     }
 
     /**
@@ -259,7 +259,7 @@ public class LgMnarSimulation implements Simulation {
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runContinuousAdditiveModel(Graph graph, Parameters parameters) {
+    private DataSet runSimulation(Graph graph, Parameters parameters) {
         return LgMnarDataSimulator.getMnarData(graph,
                 parameters.getInt(Params.MNAR_NUM_VARIABLES_WITH_MISSING),
                 parameters.getInt(Params.MNAR_NUM_EXTRA_INFLUENCES),

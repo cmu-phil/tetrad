@@ -252,7 +252,7 @@ public class NonlinearAdditiveCausalModel implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(Graph graph, Parameters parameters) {
-        return runContinuousAdditiveModel(graph, parameters);
+        return runSimulation(graph, parameters);
     }
 
     /**
@@ -262,7 +262,7 @@ public class NonlinearAdditiveCausalModel implements Simulation {
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runContinuousAdditiveModel(Graph graph, Parameters parameters) {
+    private DataSet runSimulation(Graph graph, Parameters parameters) {
         edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel generator = new edu.cmu.tetrad.sem.NonlinearAdditiveCausalModel(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),

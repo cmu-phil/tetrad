@@ -17,9 +17,16 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents a continuous additive noise causal model (Peters et al., 2014).
+ * Represents a nonlinear additive noise causal model (Hoyer et al., 2008).
  * <p>
  * The form of the recursive model is Xi = fi(Pa(Xi)) + Ni
+ * <p>
+ * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., & Schölkopf, B. (2008). Nonlinear causal discovery with additive
+ * noise models. Advances in neural information processing systems, 21.
+ * <p>
+ * Zhang, K., & Hyvärinen, A. (2009). Causality discovery with additive disturbances: An information-theoretical
+ * perspective. In Machine Learning and Knowledge Discovery in Databases: European Conference, ECML PKDD 2009, Bled,
+ * Slovenia, September 7-11, 2009, Proceedings, Part II 20 (pp. 570-585). Springer Berlin Heidelberg.
  * <p>
  * Zhang, K., &amp; Hyvarinen, A. (2012). On the identifiability of the post-nonlinear causal model. arXiv preprint
  * arXiv:1205.2599.
@@ -38,7 +45,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class ContinuousAdditiveNoiseModel {
+public class NonlinearAdditiveNoiseModel {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -119,8 +126,8 @@ public class ContinuousAdditiveNoiseModel {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public ContinuousAdditiveNoiseModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                        double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
+    public NonlinearAdditiveNoiseModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                       double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -177,8 +184,7 @@ public class ContinuousAdditiveNoiseModel {
             for (int sample = 0; sample < numSamples; sample++) {
                 int _sample = sample;
                 double[] array = parents.stream().mapToDouble(parent -> data.getDouble(_sample, nodeToIndex.get(parent))).toArray();
-                double value = f.evaluate(array);
-                value += noiseDistribution.sample();
+                double value = f.evaluate(array) + noiseDistribution.sample();
                 data.setDouble(sample, nodeToIndex.get(node), value);
             }
 
