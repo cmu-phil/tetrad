@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionIntoR;
+import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
 import edu.cmu.tetrad.util.RandomPiecewiseLinearBijective;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
@@ -171,7 +171,7 @@ public class PostnonlinearCausalModel {
             List<Node> parents = graph.getParents(node);
 
             // A random function from R^N -> R
-            var f1 = new MultiLayerPerceptronFunctionIntoR(
+            var f1 = new MultiLayerPerceptronFunctionND(
                     parents.size(), // Input dimension (R^N -> R)
                     this.hiddenDimension, // Number of hidden neurons
                     this.activationFunction, // Activation function

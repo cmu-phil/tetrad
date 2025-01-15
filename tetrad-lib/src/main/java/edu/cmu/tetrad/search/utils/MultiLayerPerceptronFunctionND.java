@@ -6,7 +6,7 @@ import java.util.function.Function;
 /**
  * Represents a random Multi-layer Perceptron (MLP) function from R^n to R.
  */
-public class MultiLayerPerceptronFunctionIntoR {
+public class MultiLayerPerceptronFunctionND {
     private final double[][] W1; // Weights for input to hidden layer
     private final double[] b1;  // Biases for hidden layer
     private final double[] W2;  // Weights for hidden to output layer
@@ -23,7 +23,7 @@ public class MultiLayerPerceptronFunctionIntoR {
      * @param inputScale Scaling factor for the input to create bumpiness.
      * @param seed       Random seed for reproducibility.
      */
-    public MultiLayerPerceptronFunctionIntoR(int inputDim, int hiddenDim, Function<Double, Double> activation, double inputScale, long seed) {
+    public MultiLayerPerceptronFunctionND(int inputDim, int hiddenDim, Function<Double, Double> activation, double inputScale, long seed) {
         Random random = new Random(seed);
 
         this.W1 = new double[hiddenDim][inputDim];
@@ -45,7 +45,7 @@ public class MultiLayerPerceptronFunctionIntoR {
 
     public static void main(String[] args) {
         // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
-        MultiLayerPerceptronFunctionIntoR randomFunction = new MultiLayerPerceptronFunctionIntoR(
+        MultiLayerPerceptronFunctionND randomFunction = new MultiLayerPerceptronFunctionND(
                 3, // Input dimension (R^3 -> R)
                 20, // Number of hidden neurons
                 Math::tanh, // Activation function

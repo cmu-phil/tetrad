@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionIntoR;
+import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -190,7 +190,7 @@ public class FunctionalCausalModel {
             List<Node> parents = graph.getParents(node);
 
             // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
-            MultiLayerPerceptronFunctionIntoR randomFunction = new MultiLayerPerceptronFunctionIntoR(
+            MultiLayerPerceptronFunctionND randomFunction = new MultiLayerPerceptronFunctionND(
                     parents.size() + 1, // Input dimension (R^3 -> R)
                     this.hiddenDimension, // Number of hidden neurons
                     this.activationFunction, // Activation function
