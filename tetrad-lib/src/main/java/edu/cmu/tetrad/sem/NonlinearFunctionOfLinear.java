@@ -109,7 +109,21 @@ public class NonlinearFunctionOfLinear {
      * parent-child relationship in the graph is associated with the appropriate functional dependencies.
      */
     private final Map<Node, Map<Node, Function<Double, Double>>> parentFunctions = new HashMap<>();
+    /**
+     * Represents the dimensionality of the hidden layer used in the nonlinear transformation within the context of the
+     * causal simulation. This value defines the number of latent variables or features used when applying
+     * transformations or creating parent-child relationships in the data generation process.
+     * <p>
+     * The hidden dimension influences the complexity of the synthetic data being generated and affects the structure of
+     * nonlinear functions derived during the simulation. It is typically set during the instantiation of the
+     * `NonlinearFunctionOfLinear` object and remains immutable throughout the object's lifecycle.
+     */
     private final int hiddenDimension;
+    /**
+     * Represents a scaling factor used to adjust the inputs of the nonlinear function. Determines the degree of scaling
+     * applied to input values before processing through the modeled nonlinear function. Affects the magnitude of input
+     * transformation operations, thereby influencing the behavior of the synthetic data generation.
+     */
     private final double inputScale;
     /**
      * The lower bound for the random coefficient in the model.
