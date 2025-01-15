@@ -95,7 +95,13 @@ public class RandomPiecewiseLinearBijective {
      * @return a list of control points, where each control point is represented as a two-element double array
      */
     private List<double[]> generateControlPoints(int numSegments, long seed) {
-        Random random = new Random(seed);
+        Random random;
+
+        if (seed == -1) {
+            random = new Random();
+        } else {
+            random = new Random(seed);
+        }
 
         // Generate random x-coordinates in (0, 1), ensuring they are strictly increasing
         List<Double> xValues = new ArrayList<>();

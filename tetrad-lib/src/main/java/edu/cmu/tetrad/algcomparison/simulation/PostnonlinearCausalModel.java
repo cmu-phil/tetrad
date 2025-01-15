@@ -18,11 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a functional causal model.
+ * This class represents a post-nonlinear causal model.
  *
  * @author josephramsey
  */
-public class FunctionalCausalModel implements Simulation {
+public class PostnonlinearCausalModel implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class FunctionalCausalModel implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public FunctionalCausalModel(RandomGraph graph) {
+    public PostnonlinearCausalModel(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -180,7 +180,7 @@ public class FunctionalCausalModel implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Functional Causal Model simulation using " + this.randomGraph.getDescription();
+        return "Nonlinear Additive Causal simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -189,7 +189,7 @@ public class FunctionalCausalModel implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Functional Causal Model Simulation";
+        return "Post-nonlinear Causal Model Simulation";
     }
 
     /**
@@ -251,17 +251,18 @@ public class FunctionalCausalModel implements Simulation {
      * @return a DataSet object representing the simulated data
      */
     private DataSet simulate(Graph graph, Parameters parameters) {
-        return runModel(graph, parameters);
+        return runSimulation(graph, parameters);
     }
 
     /**
-     * Performs the simulation.
+     * Executes a nonlinear additive model simulation to generate a synthetic dataset based on the provided graph,
+     * number of samples, and noise standard deviation using the default configuration of the amDataGenerator.
      *
      * @param graph the graph representing the causal relationships used in the simulation.
      * @return the generated synthetic dataset as a DataSet object.
      */
-    private DataSet runModel(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.FunctionalCausalModel generator = new edu.cmu.tetrad.sem.FunctionalCausalModel(
+    private DataSet runSimulation(Graph graph, Parameters parameters) {
+        edu.cmu.tetrad.sem.PostnonlinearCausalModel generator = new edu.cmu.tetrad.sem.PostnonlinearCausalModel(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),

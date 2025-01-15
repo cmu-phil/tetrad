@@ -62,7 +62,8 @@ public class ParameterTab extends JPanel {
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.NONLINEAR_ADDITIVE_CAUSAL_MODEL,
+            SimulationTypes.CONTINUOUS_ADDITIVE_NOISE_MODEL,
+            SimulationTypes.POST_NONLINEAR_MODEL,
             SimulationTypes.FUNCTIONAL_CAUSAL_MODEL,
             SimulationTypes.LG_MNAR_SIMULATION,
             SimulationTypes.LEE_AND_HASTIE,
@@ -194,8 +195,11 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_CAUSAL_MODEL:
-                        this.simulation.setSimulation(new NonlinearAdditiveCausalModel(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.CONTINUOUS_ADDITIVE_NOISE_MODEL:
+                        this.simulation.setSimulation(new ContinuousAdditiveNoiseModel(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.POST_NONLINEAR_MODEL:
+                        this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.FUNCTIONAL_CAUSAL_MODEL:
                         this.simulation.setSimulation(new FunctionalCausalModel(randomGraph), this.simulation.getParams());
@@ -235,8 +239,11 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.NONLINEAR_ADDITIVE_CAUSAL_MODEL:
-                        this.simulation.setSimulation(new NonlinearAdditiveCausalModel(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.CONTINUOUS_ADDITIVE_NOISE_MODEL:
+                        this.simulation.setSimulation(new ContinuousAdditiveNoiseModel(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.POST_NONLINEAR_MODEL:
+                        this.simulation.setSimulation(new PostnonlinearCausalModel(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.FUNCTIONAL_CAUSAL_MODEL:
                         this.simulation.setSimulation(new FunctionalCausalModel(randomGraph), this.simulation.getParams());

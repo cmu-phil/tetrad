@@ -43,13 +43,17 @@ public final class SimulationTypes {
      */
     public static final String GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL = "Gaussian Process Structural Equation Model";
     /**
-     * Constant <code>NONLINEAR_ADDITIVE_CAUSAL_MODEL="Nonlinear Additive Causal (NAC) Model"</code>
+     * Constant <code>CONTINUOUS_ADDITIVE_NOISE_MODEL="Continuous Additive Noise Model"</code>
      */
-    public static final String NONLINEAR_ADDITIVE_CAUSAL_MODEL = "Nonlinear Additive Causal (NAC) Model";
+    public static final String CONTINUOUS_ADDITIVE_NOISE_MODEL = "Continuous Additive Noise Model";
     /**
-     * Constant <code>FUNCTIONAL_CAUSAL_MODEL="Functional Causal Model (FCM)"</code>
+     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
-    public static final String FUNCTIONAL_CAUSAL_MODEL = "Functional Causal Model (FCM)";
+    public static final String POST_NONLINEAR_MODEL = "Post-nonlinear causal model";
+    /**
+     * Constant <code>FUNCTIONAL_CAUSAL_MODEL="Functional Causal Model"</code>
+     */
+    public static final String FUNCTIONAL_CAUSAL_MODEL = "Functional Causal Model";
     /**
      * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>
      */
