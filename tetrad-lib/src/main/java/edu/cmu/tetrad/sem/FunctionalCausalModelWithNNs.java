@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents a Functional Causal Model (with some specific choices) for generating synthetic data based on a
- * directed acyclic graph (DAG), simulated recursively.
+ * Represents a functional causal model with neural networks for generating synthetic data based on a directed acyclic
+ * graph (DAG), simulated recursively.
  * <p>
  * The form of the model is Xi = fi(Pa(Xi), ei), ei _||_ Pa(Xi).
  * <p>
@@ -34,7 +34,15 @@ import java.util.stream.IntStream;
  * <p>
  * If is assumed that the random functions may be represented as shallow multi-layer perceptrons (MLPs).
  * <p>
- * See Zhang et al. (2015) for a reference discussion for functional causal models.
+ * See Zhang et al. (2015) for a reference discussion.
+ * <p>
+ * Goudet, O., Kalainathan, D., Caillou, P., Guyon, I., Lopez-Paz, D., & Sebag, M. (2018). Learning functional causal
+ * models with generative neural networks. Explainable and interpretable models in computer vision and machine learning,
+ * 39-80.
+ * <p>
+ * Zhang, K., Wang, Z., Zhang, J., & Schölkopf, B. (2015). On estimation of functional causal models: general results
+ * and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology (TIST),
+ * 7(2), 1-22.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -52,12 +60,8 @@ import java.util.stream.IntStream;
  * <p>
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
- * <p>
- * Zhang, K., Wang, Z., Zhang, J., & Schölkopf, B. (2015). On estimation of functional causal models: general results
- * and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology (TIST),
- * 7(2), 1-22.
  */
-public class FunctionalCausalModel {
+public class FunctionalCausalModelWithNNs {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -110,7 +114,7 @@ public class FunctionalCausalModel {
      */
     private final double inputScale;
     /**
-     * Represents the activation function used in the simulation process within the FunctionalCausalModelSimulator.
+     * Represents the activation function used in the simulation process within the CGNN.
      * <p>
      * The activation function is applied to intermediate computations or transformations during the simulation,
      * providing a non-linear mapping that influences the resulting synthetic causal data. By default, the tangent
@@ -142,8 +146,8 @@ public class FunctionalCausalModel {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public FunctionalCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                 double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
+    public FunctionalCausalModelWithNNs(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                        double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }

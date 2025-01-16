@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -25,11 +25,11 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.util.*;
-
-import static edu.cmu.tetrad.util.StatUtils.sxy;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implements a test for simultaneously zero sextads in the style of Bollen, K. (1990). Sociological Methods and
@@ -43,6 +43,7 @@ public class DeltaTetradTest2 {
     private final int N;
     private final ICovarianceMatrix cov;
     private final List<Node> variables;
+    private DataSet dataSet = null;
     private double[][] data;
     private int numTetrads;
 
@@ -68,7 +69,8 @@ public class DeltaTetradTest2 {
             throw new IllegalArgumentException();
         }
 
-        this.cov = new CovarianceMatrix(dataSet);
+        this.cov = new CorrelationMatrix(dataSet);
+        this.dataSet = dataSet;
 
         Matrix centered = DataTransforms.centerData(dataSet.getDoubleData());
         this.data = centered.transpose().toArray();
@@ -87,7 +89,7 @@ public class DeltaTetradTest2 {
             throw new NullPointerException();
         }
 
-        this.cov = cov;
+        this.cov = new CorrelationMatrix(cov);
         this.N = cov.getSampleSize();
         this.variables = cov.getVariables();
     }
@@ -145,23 +147,38 @@ public class DeltaTetradTest2 {
                 int g = sigmagh.getA();
                 int h = sigmagh.getB();
 
-                if (this.cov != null && this.cov instanceof CorrelationMatrix) {
+                if (this.cov != null && dataSet == null && this.cov instanceof CorrelationMatrix) {
 
-//                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
-//                does not come up.)
-                    double rr = 0.5 * (sxy(e, f) * sxy(g, h))
-                                * (sxy(e, g) * sxy(e, g) + sxy(e, h) * sxy(e, h) + sxy(f, g) * sxy(f, g) + sxy(f, h) * sxy(f, h))
-                                + sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g)
-                                - sxy(e, f) * (sxy(f, g) * sxy(f, h) + sxy(e, g) * sxy(e, h))
-                                - sxy(g, h) * (sxy(f, g) * sxy(e, g) + sxy(f, h) * sxy(e, h));
 
-                    sigma_ss.set(i, j, rr);
-                } else if (this.cov != null) {// && this.dataSet == null) {
+                    // Formula 23 (assumed multinormality):
+                    double rr_23 = 0.5 * (sxy(e, f) * sxy(g, h))
+                                   * (sxy(e, g) * sxy(e, g) + sxy(e, h) * sxy(e, h) + sxy(f, g) * sxy(f, g) + sxy(f, h) * sxy(f, h))
+                                   + sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g)
+                                   - sxy(e, f) * (sxy(f, g) * sxy(f, h) + sxy(e, g) * sxy(e, h))
+                                   - sxy(g, h) * (sxy(f, g) * sxy(e, g) + sxy(f, h) * sxy(e, h));
+
+                    sigma_ss.set(i, j, rr_23);
+                } else if (this.cov != null && this.dataSet != null && this.cov instanceof CorrelationMatrix) {
+
+                    // Formula 22 (arbitrary distributions):
+                    double rr_22 = sxyzw(e, f, g, h) + 0.25 * sxy(e, f) * sxy(g, h)
+                                                       * (sxyzw(e, e, g, g) + sxyzw(f, f, g, g) + sxyzw(e, e, h, h) + sxyzw(f, f, h, h))
+                                   - 0.5 * sxy(e, f) * (sxyzw(e, e, g, h) + sxyzw(f, f, g, h))
+                                   - 0.5 * sxy(g, h) * (sxyzw(e, f, g, g) + sxyzw(e, f, h, h));
 
                     // Assumes multinormality--see p. 160.
-                    double _ss = sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
-                    sigma_ss.set(i, j, _ss);
+//                    double _ss = sxy(e, f) * sxy(g, h) + sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
+                    sigma_ss.set(i, j, rr_22);
+                } else {
+                    throw new IllegalArgumentException("Not implemented.");
                 }
+
+//                if (this.cov != null && this.dataSet == null && !(this.cov instanceof CorrelationMatrix)) {
+//
+//                    // Assumes multinormality--see p. 160.
+//                    double _ss = sxy(e, g) * sxy(f, h) + sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
+//                    sigma_ss.set(i, j, _ss);
+//                }
 //                else {
 //                    double _ss = sxyzw(e, f, g, h) + sxy(e, f) * sxy(g, h);
 //                    sigma_ss.set(i, j, _ss);
@@ -420,17 +437,22 @@ public class DeltaTetradTest2 {
         return (1.0 / N) * sum;
     }
 
-//    private double sxyzw(int e, int f, int g, int h) {
-//        if (this.dataSet == null) {
-//            throw new IllegalArgumentException("To calculate sxyzw, tabular data is needed.");
-//        }
-//
-//        return getForthMoment(x, y, z, w);
-//    }
+    private double sxyzw(int x, int y, int z, int w) {
+        double sxyzw = 0.0;
 
-//    private double getForthMoment(int x, int y, int z, int w) {
-//        return sxyzw(x, y, z, w);
-//    }
+        double[] _x = this.data[x];
+        double[] _y = this.data[y];
+        double[] _z = this.data[z];
+        double[] _w = this.data[w];
+
+        int N = _x.length;
+
+        for (int j = 0; j < N; j++) {
+            sxyzw += _x[j] * _y[j] * _z[j] * _w[j];
+        }
+
+        return (1.0 / N) * sxyzw;
+    }
 
 //    private double getDerivative(Sextad sextad, Sigma sigma) {
 //        int a = sigma.getA();
@@ -444,14 +466,14 @@ public class DeltaTetradTest2 {
 //        int n6 = sextad.getN();
 //
 //        double x1 = derivative(a, b, n1, n2, n3, n4, n5, n6);
-////        double x2 = derivative(a, b, n4, n5, n6, n1, n2, n3);
+
+    ////        double x2 = derivative(a, b, n4, n5, n6, n1, n2, n3);
 //        double x2 = derivative(b, a, n1, n2, n3, n4, n5, n6);
 //
 //        if (x1 == 0) return x2;
 //        if (x2 == 0) return x1;
 //        throw new IllegalStateException("Both nonzero at the same time: x1 = " + x1 + " x2 = " + x2);
 //    }
-
     private double derivative(int a, int b, int n1, int n2, int n3, int n4, int n5, int n6) {
         if (a == n1) {
             if (b == n4) {

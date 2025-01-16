@@ -49,15 +49,15 @@ public final class SimulationTypes {
     /*
      * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
-    public static final String POST_NONLINEAR_MODEL = "Post-nonlinear causal model";
+    public static final String POST_NONLINEAR_MODEL = "Post-nonlinear causal Model";
     /*
      * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
-    public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) model";
+    public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) Model";
     /**
-     * Constant <code>FUNCTIONAL_CAUSAL_MODEL="Functional Causal Model"</code>
+     * Constant <code>FUNCTIONAL_CAUSAL_MODELS_WITH_NNS="Functional Causal Model with Neural Networks"</code>
      */
-    public static final String FUNCTIONAL_CAUSAL_MODEL = "Functional Causal Model";
+    public static final String FUNCTIONAL_CAUSAL_MODELS_WITH_NNS = "Functional Causal Model with Neural Networks";
     /**
      * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>
      */

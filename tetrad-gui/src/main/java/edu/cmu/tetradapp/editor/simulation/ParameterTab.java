@@ -62,10 +62,10 @@ public class ParameterTab extends JPanel {
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.NONLINEAR_ADDITIVE_NOISE_MODEL,
-            SimulationTypes.POST_NONLINEAR_MODEL,
+//            SimulationTypes.NONLINEAR_ADDITIVE_NOISE_MODEL,
+//            SimulationTypes.POST_NONLINEAR_MODEL,
             SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR,
-            SimulationTypes.FUNCTIONAL_CAUSAL_MODEL,
+            SimulationTypes.FUNCTIONAL_CAUSAL_MODELS_WITH_NNS,
             SimulationTypes.LG_MNAR_SIMULATION,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
@@ -205,8 +205,8 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR:
                         this.simulation.setSimulation(new NonlinearFunctionsOfLinear(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.FUNCTIONAL_CAUSAL_MODEL:
-                        this.simulation.setSimulation(new FunctionalCausalModel(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.FUNCTIONAL_CAUSAL_MODELS_WITH_NNS:
+                        this.simulation.setSimulation(new FunctionalCausalModelWithNNs(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
@@ -252,8 +252,8 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR:
                         this.simulation.setSimulation(new NonlinearFunctionsOfLinear(randomGraph), this.simulation.getParams());
                         break;
-                    case SimulationTypes.FUNCTIONAL_CAUSAL_MODEL:
-                        this.simulation.setSimulation(new FunctionalCausalModel(randomGraph), this.simulation.getParams());
+                    case SimulationTypes.FUNCTIONAL_CAUSAL_MODELS_WITH_NNS:
+                        this.simulation.setSimulation(new FunctionalCausalModelWithNNs(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());

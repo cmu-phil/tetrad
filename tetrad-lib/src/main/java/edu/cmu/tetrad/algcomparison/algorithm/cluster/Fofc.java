@@ -74,7 +74,9 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         System.out.println("precomputeCovariances = " + parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
         System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
 
-        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
+        DataSet dataSet = (DataSet) dataModel;
+
+//        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
         double alpha = parameters.getDouble(Params.ALPHA);
 
         boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
@@ -96,7 +98,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         }
 
         edu.cmu.tetrad.search.Fofc search
-                = new edu.cmu.tetrad.search.Fofc(cov, testType, algorithm, alpha);
+                = new edu.cmu.tetrad.search.Fofc(dataSet, testType, algorithm, alpha);
         search.setSignificanceChecked(parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -138,7 +140,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
             Graph structureGraph = null;
             try {
-                structureGraph = mimbuild.search(partition, latentNames, cov);
+                structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
