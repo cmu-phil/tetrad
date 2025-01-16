@@ -147,6 +147,10 @@ public class Embedding {
      * <p>
      * This class is primarily used to encapsulate the result of a dataset transformation and provide easy access to
      * both the raw and embedded data representations, as well as the transformation metadata.
+     *
+     * @param originalData The original dataset before transformation.
+     * @param embeddedData The embedded dataset after applying transformations.
+     * @param embedding    A mapping from original variable indices to their corresponding transformed indices.
      */
     public record EmbeddedData(DataSet originalData, DataSet embeddedData, Map<Integer, List<Integer>> embedding) {
     }

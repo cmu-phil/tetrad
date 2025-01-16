@@ -308,6 +308,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
     /**
      * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom for it.
+     *
+     * @param lik The likelihood value.
+     * @param dof The degrees of freedom.
      */
     public record Ret(double lik, double dof) {
     }

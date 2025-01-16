@@ -21,10 +21,10 @@ import java.util.stream.IntStream;
  * <p>
  * The form of the recursive model is Xi = fi(Pa(Xi)) + Ni
  * <p>
- * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., & Schölkopf, B. (2008). Nonlinear causal discovery with additive
+ * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., &amp; Schölkopf, B. (2008). Nonlinear causal discovery with additive
  * noise models. Advances in neural information processing systems, 21.
  * <p>
- * Zhang, K., & Hyvärinen, A. (2009). Causality discovery with additive disturbances: An information-theoretical
+ * Zhang, K., &amp; Hyvärinen, A. (2009). Causality discovery with additive disturbances: An information-theoretical
  * perspective. In Machine Learning and Knowledge Discovery in Databases: European Conference, ECML PKDD 2009, Bled,
  * Slovenia, September 7-11, 2009, Proceedings, Part II 20 (pp. 570-585). Springer Berlin Heidelberg.
  * <p>

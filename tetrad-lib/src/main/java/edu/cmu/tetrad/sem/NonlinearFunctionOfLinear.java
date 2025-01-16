@@ -40,7 +40,7 @@ import java.util.stream.IntStream;
  * In either case, we choose random functions fi using multilayer perceptrons from R to R with one hidden layer and tanh
  * activation functions. The number of hidden neurons is a parameter.
  * <p>
- * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., & Schölkopf, B. (2008). Nonlinear causal discovery with additive
+ * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., &amp; Schölkopf, B. (2008). Nonlinear causal discovery with additive
  * noise models. Advances in neural information processing systems, 21.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of

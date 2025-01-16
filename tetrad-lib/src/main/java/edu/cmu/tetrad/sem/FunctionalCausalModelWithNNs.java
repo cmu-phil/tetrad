@@ -36,11 +36,11 @@ import java.util.stream.IntStream;
  * <p>
  * See Zhang et al. (2015) for a reference discussion.
  * <p>
- * Goudet, O., Kalainathan, D., Caillou, P., Guyon, I., Lopez-Paz, D., & Sebag, M. (2018). Learning functional causal
+ * Goudet, O., Kalainathan, D., Caillou, P., Guyon, I., Lopez-Paz, D., &amp; Sebag, M. (2018). Learning functional causal
  * models with generative neural networks. Explainable and interpretable models in computer vision and machine learning,
  * 39-80.
  * <p>
- * Zhang, K., Wang, Z., Zhang, J., & Schölkopf, B. (2015). On estimation of functional causal models: general results
+ * Zhang, K., Wang, Z., Zhang, J., &amp; Schölkopf, B. (2015). On estimation of functional causal models: general results
  * and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology (TIST),
  * 7(2), 1-22.
  * <p>
