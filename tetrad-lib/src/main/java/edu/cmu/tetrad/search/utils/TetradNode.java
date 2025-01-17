@@ -34,7 +34,7 @@ import java.util.Set;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Tetrad {
+public class TetradNode {
     private final Node i;
     private final Node j;
     private final Node k;
@@ -49,7 +49,7 @@ public class Tetrad {
      * @param k a {@link edu.cmu.tetrad.graph.Node} object
      * @param l a {@link edu.cmu.tetrad.graph.Node} object
      */
-    public Tetrad(Node i, Node j, Node k, Node l) {
+    public TetradNode(Node i, Node j, Node k, Node l) {
         this.i = i;
         this.j = j;
         this.k = k;
@@ -66,7 +66,7 @@ public class Tetrad {
      * @param l      a {@link edu.cmu.tetrad.graph.Node} object
      * @param pValue a double
      */
-    public Tetrad(Node i, Node j, Node k, Node l, double pValue) {
+    public TetradNode(Node i, Node j, Node k, Node l, double pValue) {
         this.i = i;
         this.j = j;
         this.k = k;
@@ -126,7 +126,7 @@ public class Tetrad {
      */
     public boolean equals(Object o) {
         if (o == null) return false;
-        if (!(o instanceof Tetrad tetrad)) return false;
+        if (!(o instanceof TetradNode tetrad)) return false;
         return (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.k && this.l == tetrad.l)
                || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.k && this.l == tetrad.l)
                || (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.l && this.l == tetrad.k)

@@ -1109,8 +1109,8 @@ public class Fofc {
 //            Tetrad t1 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(z), this.variables.get(w));
 //            Tetrad t2 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(w), this.variables.get(z));
 
-            Tetrad2 t1 = new Tetrad2(x, y, z, w);
-            Tetrad2 t2 = new Tetrad2(x, y, w, z);
+            TetradInt t1 = new TetradInt(x, y, z, w);
+            TetradInt t2 = new TetradInt(x, y, w, z);
 
             return this.test.getPValue(t1, t2) > this.alpha;
         } else if (this.testType == BpcTestType.TETRAD_WISHART) {

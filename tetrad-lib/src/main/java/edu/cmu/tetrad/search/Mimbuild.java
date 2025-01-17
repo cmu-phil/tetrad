@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -107,6 +107,18 @@ public class Mimbuild {
      * @throws InterruptedException If the search is interrupted.
      */
     public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) throws InterruptedException {
+        for (List<Node> cluster1 : clustering) {
+            for (List<Node> cluster2 : clustering) {
+                if (cluster1 != cluster2) {
+                    for (Node node : cluster1) {
+                        if (cluster2.contains(node)) {
+                            throw new IllegalArgumentException("Clusters must be disjoint.");
+                        }
+                    }
+                }
+            }
+        }
+
         List<String> _latentNames = new ArrayList<>(latentNames);
 
         List<String> allVarNames = new ArrayList<>();
@@ -153,11 +165,10 @@ public class Mimbuild {
 
         SemBicScore score = new SemBicScore(latentscov);
         score.setPenaltyDiscount(this.penaltyDiscount);
-        Grasp search = new Grasp(score);
+        PermutationSearch search = new PermutationSearch(new Boss(score));
         search.setSeed(seed);
         search.setKnowledge(this.knowledge);
-        search.bestOrder(latentscov.getVariables());
-        graph = search.getGraph(true);
+        graph = search.search();
 
         this.structureGraph = new EdgeListGraph(graph);
         LayoutUtil.fruchtermanReingoldLayout(this.structureGraph);

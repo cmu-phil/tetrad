@@ -232,7 +232,8 @@ public class SemBicScore implements Score {
      * @return The covariance matrix of the regression of the ith variable on its parents and the regression
      */
     @NotNull
-    public static CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean usePseudoInverse, List<Integer> rows) {
+    public static CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
+                                             boolean usePseudoInverse, List<Integer> rows) {
         int[] all = SemBicScore.concat(i, parents);
         Matrix cov = SemBicScore.getCov(rows, all, all, data, covariances);
         int[] pp = SemBicScore.indexedParents(parents);

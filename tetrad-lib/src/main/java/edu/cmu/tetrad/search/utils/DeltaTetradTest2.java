@@ -110,23 +110,23 @@ public class DeltaTetradTest2 {
      * @param tetrads The tetrads for which a p-value is needed.
      * @return The p-value.
      */
-    public double getPValue(Tetrad2... tetrads) {
-        Set<Tetrad2> boldTetradSet = new LinkedHashSet<>();
+    public double getPValue(TetradInt... tetrads) {
+        Set<TetradInt> boldTetradSet = new LinkedHashSet<>();
         Collections.addAll(boldTetradSet, tetrads);
         int df = boldTetradSet.size();
         double chisq = calcChiSquare(boldTetradSet);
         return StatUtils.getChiSquareP(df, chisq);
     }
 
-    public double calcChiSquare(Set<Tetrad2> tetrads) {
-        List<Tetrad2> _tetrads = new ArrayList<>(tetrads);
+    public double calcChiSquare(Set<TetradInt> tetrads) {
+        List<TetradInt> _tetrads = new ArrayList<>(tetrads);
 
         this.numTetrads = _tetrads.size();
 
         // Need a list of symbolic covariances--i.e. covariances that appear in tetrads.
         Set<DeltaTetradTest2.Sigma> boldSigmaSet = new LinkedHashSet<>();
 
-        for (Tetrad2 tetrad : _tetrads) {
+        for (TetradInt tetrad : _tetrads) {
             boldSigmaSet.add(new DeltaTetradTest2.Sigma(tetrad.i(), tetrad.k()));
             boldSigmaSet.add(new DeltaTetradTest2.Sigma(tetrad.i(), tetrad.l()));
             boldSigmaSet.add(new DeltaTetradTest2.Sigma(tetrad.j(), tetrad.k()));
@@ -182,7 +182,7 @@ public class DeltaTetradTest2 {
         for (int i = 0; i < boldSigma.size(); i++) {
             for (int j = 0; j < _tetrads.size(); j++) {
                 DeltaTetradTest2.Sigma sigma = boldSigma.get(i);
-                Tetrad2 tetrad = _tetrads.get(j);
+                TetradInt tetrad = _tetrads.get(j);
 
                 int e = tetrad.i();
                 int f = tetrad.j();
@@ -198,7 +198,7 @@ public class DeltaTetradTest2 {
         Matrix t = new Matrix(_tetrads.size(), 1);
 
         for (int i = 0; i < _tetrads.size(); i++) {
-            Tetrad2 tetrad = _tetrads.get(i);
+            TetradInt tetrad = _tetrads.get(i);
 
             int e = tetrad.i();
             int f = tetrad.j();

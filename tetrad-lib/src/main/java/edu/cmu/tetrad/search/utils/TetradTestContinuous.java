@@ -546,13 +546,13 @@ public final class TetradTestContinuous implements TetradTest {
         Node ck = getVariables().get(k);
         Node cl = getVariables().get(l);
 
-        this.deltaTest.calcChiSquare(Collections.singleton(new Tetrad2(i, j, k, l)));
+        this.deltaTest.calcChiSquare(Collections.singleton(new TetradInt(i, j, k, l)));
         this.prob[0] = this.deltaTest.getPValue();
 
-        this.deltaTest.calcChiSquare(Collections.singleton(new Tetrad2(i, j, k, l)));
+        this.deltaTest.calcChiSquare(Collections.singleton(new TetradInt(i, j, k, l)));
         this.prob[1] = this.deltaTest.getPValue();
 
-        this.deltaTest.calcChiSquare(Collections.singleton(new Tetrad2(i, j, k, l)));
+        this.deltaTest.calcChiSquare(Collections.singleton(new TetradInt(i, j, k, l)));
         this.prob[2] = this.deltaTest.getPValue();
     }
 
@@ -571,10 +571,10 @@ public final class TetradTestContinuous implements TetradTest {
             }
         }
 
-        this.deltaTest.calcChiSquare(Collections.singleton(new Tetrad2(i, j, k, l)));
+        this.deltaTest.calcChiSquare(Collections.singleton(new TetradInt(i, j, k, l)));
         this.prob[0] = this.deltaTest.getPValue();
 
-        TetradLogger.getInstance().log(new Tetrad(this.variables.get(i),
+        TetradLogger.getInstance().log(new TetradNode(this.variables.get(i),
                 this.variables.get(j), this.variables.get(k), this.variables.get(l))
                                        + " = 0, p = " + this.prob[0]);
 

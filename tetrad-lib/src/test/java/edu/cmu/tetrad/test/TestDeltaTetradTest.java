@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.DeltaTetradTest;
-import edu.cmu.tetrad.search.utils.Tetrad;
+import edu.cmu.tetrad.search.utils.TetradNode;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Matrix;
@@ -74,9 +74,9 @@ public class TestDeltaTetradTest {
                 Node x3 = data.getVariable("x3");
                 Node x4 = data.getVariable("x4");
 
-                Tetrad t1234 = new Tetrad(x1, x2, x3, x4);
-                Tetrad t1342 = new Tetrad(x1, x3, x4, x2);
-                Tetrad t1423 = new Tetrad(x1, x4, x2, x3);
+                TetradNode t1234 = new TetradNode(x1, x2, x3, x4);
+                TetradNode t1342 = new TetradNode(x1, x3, x4, x2);
+                TetradNode t1423 = new TetradNode(x1, x4, x2, x3);
 
                 DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(data));
 
@@ -119,14 +119,14 @@ public class TestDeltaTetradTest {
         Node v5 = variables.get(4);
         Node v6 = variables.get(5);
 
-        Tetrad t1 = new Tetrad(v1, v2, v3, v4);
-        Tetrad t2 = new Tetrad(v1, v2, v3, v5);
-        Tetrad t3 = new Tetrad(v1, v2, v3, v6);
-        Tetrad t4 = new Tetrad(v1, v4, v5, v6);
-        Tetrad t5 = new Tetrad(v1, v4, v2, v3);
-        Tetrad t6 = new Tetrad(v1, v5, v2, v3);
-        Tetrad t7 = new Tetrad(v1, v6, v2, v3);
-        Tetrad t8 = new Tetrad(v1, v6, v4, v5);
+        TetradNode t1 = new TetradNode(v1, v2, v3, v4);
+        TetradNode t2 = new TetradNode(v1, v2, v3, v5);
+        TetradNode t3 = new TetradNode(v1, v2, v3, v6);
+        TetradNode t4 = new TetradNode(v1, v4, v5, v6);
+        TetradNode t5 = new TetradNode(v1, v4, v2, v3);
+        TetradNode t6 = new TetradNode(v1, v5, v2, v3);
+        TetradNode t7 = new TetradNode(v1, v6, v2, v3);
+        TetradNode t8 = new TetradNode(v1, v6, v4, v5);
 
         DeltaTetradTest test = new DeltaTetradTest(cov);
 //        DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(cov));
@@ -155,7 +155,7 @@ public class TestDeltaTetradTest {
         Node x1 = variables.get(3);
         Node x2 = variables.get(4);
 
-        Tetrad t1 = new Tetrad(y1, x1, x2, y2);
+        TetradNode t1 = new TetradNode(y1, x1, x2, y2);
 
         DeltaTetradTest test = new DeltaTetradTest(cov);
 
@@ -182,23 +182,23 @@ public class TestDeltaTetradTest {
         Node y4 = variables.get(3);
         Node y5 = variables.get(4);
 
-        Tetrad t1 = new Tetrad(y1, y2, y3, y4);
-        Tetrad t2 = new Tetrad(y1, y2, y4, y3);
-        Tetrad t3 = new Tetrad(y1, y3, y4, y2);
-        Tetrad t4 = new Tetrad(y1, y2, y3, y5);
-        Tetrad t5 = new Tetrad(y1, y2, y5, y3);
-        Tetrad t6 = new Tetrad(y1, y3, y5, y2);
-        Tetrad t7 = new Tetrad(y1, y2, y4, y5);
-        Tetrad t8 = new Tetrad(y1, y2, y5, y4);
-        Tetrad t9 = new Tetrad(y1, y4, y5, y2);
-        Tetrad t10 = new Tetrad(y1, y3, y4, y5);
-        Tetrad t11 = new Tetrad(y1, y3, y5, y4);
-        Tetrad t12 = new Tetrad(y1, y4, y5, y3);
-        Tetrad t13 = new Tetrad(y2, y3, y4, y5);
-        Tetrad t14 = new Tetrad(y2, y3, y5, y4);
-        Tetrad t15 = new Tetrad(y2, y4, y5, y3);
+        TetradNode t1 = new TetradNode(y1, y2, y3, y4);
+        TetradNode t2 = new TetradNode(y1, y2, y4, y3);
+        TetradNode t3 = new TetradNode(y1, y3, y4, y2);
+        TetradNode t4 = new TetradNode(y1, y2, y3, y5);
+        TetradNode t5 = new TetradNode(y1, y2, y5, y3);
+        TetradNode t6 = new TetradNode(y1, y3, y5, y2);
+        TetradNode t7 = new TetradNode(y1, y2, y4, y5);
+        TetradNode t8 = new TetradNode(y1, y2, y5, y4);
+        TetradNode t9 = new TetradNode(y1, y4, y5, y2);
+        TetradNode t10 = new TetradNode(y1, y3, y4, y5);
+        TetradNode t11 = new TetradNode(y1, y3, y5, y4);
+        TetradNode t12 = new TetradNode(y1, y4, y5, y3);
+        TetradNode t13 = new TetradNode(y2, y3, y4, y5);
+        TetradNode t14 = new TetradNode(y2, y3, y5, y4);
+        TetradNode t15 = new TetradNode(y2, y4, y5, y3);
 
-        Tetrad[] tetrads = {t1, t2, t3, t4};
+        TetradNode[] tetrads = {t1, t2, t3, t4};
 
         DeltaTetradTest test = new DeltaTetradTest(cov);
 
@@ -208,7 +208,7 @@ public class TestDeltaTetradTest {
         assertEquals(44.57, chiSq, 0.1);
         assertEquals(2.46E-11, pValue, .001);
 
-        Tetrad[] independentTetrads = {t1, t2, t4, t6, t10};
+        TetradNode[] independentTetrads = {t1, t2, t4, t6, t10};
 
         chiSq = test.calcChiSquare(independentTetrads[0]);
         pValue = test.getPValue();
@@ -241,18 +241,14 @@ public class TestDeltaTetradTest {
         Node x4 = variables.get(3);
         Node x5 = variables.get(4);
 
-        Tetrad t1234 = new Tetrad(x1, x2, x3, x4);
-        Tetrad t1342 = new Tetrad(x1, x3, x4, x2);
-        Tetrad t1423 = new Tetrad(x1, x4, x2, x3);
+        TetradNode t1234 = new TetradNode(x1, x2, x3, x4);
+        TetradNode t1342 = new TetradNode(x1, x3, x4, x2);
+        TetradNode t1423 = new TetradNode(x1, x4, x2, x3);
 
         DeltaTetradTest test1 = new DeltaTetradTest(data);
-//        DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(cov));
-
         double chiSq1 = test1.calcChiSquare(t1234, t1342);
 
         DeltaTetradTest test2 = new DeltaTetradTest(cov);
-//        DeltaTetradTest test = new DeltaTetradTest(new CorrelationMatrix(cov));
-
         double chiSq2 = test2.calcChiSquare(t1234, t1342);
     }
 
