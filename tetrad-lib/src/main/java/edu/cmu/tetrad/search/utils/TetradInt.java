@@ -3,12 +3,10 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
- * Represents a tetrad of nodes for vanishing tetrad constraints.
- * Equivalent tetrads result from permutations of {i, j, k, l} that
- * yield the same set of vanishing tetrad equalities.
+ * Represents a tetrad of nodes for vanishing tetrad constraints. Equivalent tetrads result from permutations of {i, j,
+ * k, l} that yield the same set of vanishing tetrad equalities.
  *
  * @param i First node.
  * @param j Second node.
@@ -35,11 +33,11 @@ public record TetradInt(int i, int j, int k, int l) implements TetradSerializabl
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TetradInt other)) return false;
+        if (!(o instanceof TetradInt(int i1, int j1, int k1, int l1))) return false;
 
         // Sort nodes for both tetrads and compare
         int[] thisNodes = {this.i, this.j, this.k, this.l};
-        int[] otherNodes = {other.i, other.j, other.k, other.l};
+        int[] otherNodes = {i1, j1, k1, l1};
         Arrays.sort(thisNodes);
         Arrays.sort(otherNodes);
 
