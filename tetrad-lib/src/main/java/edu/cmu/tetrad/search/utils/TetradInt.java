@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents an ordered sextad of nodes.
+ * Represents an ordered tetrad of nodes.
  *
  * @param i The first node.
  * @param j The second node.
