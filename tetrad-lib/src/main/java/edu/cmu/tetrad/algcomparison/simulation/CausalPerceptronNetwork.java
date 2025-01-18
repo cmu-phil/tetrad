@@ -18,11 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents a functional causal model with neural networks.
+ * This class represents a Causal Perceptron Network.
  *
  * @author josephramsey
  */
-public class FunctionalCausalModelWithNNs implements Simulation {
+public class CausalPerceptronNetwork implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -47,7 +47,7 @@ public class FunctionalCausalModelWithNNs implements Simulation {
      * @param graph the RandomGraph object used for simulation.
      * @throws NullPointerException if graph is null.
      */
-    public FunctionalCausalModelWithNNs(RandomGraph graph) {
+    public CausalPerceptronNetwork(RandomGraph graph) {
         if (graph == null) throw new NullPointerException("Graph is null.");
         this.randomGraph = graph;
     }
@@ -180,7 +180,7 @@ public class FunctionalCausalModelWithNNs implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Functional Causal Model with Neural Networks using " + this.randomGraph.getDescription();
+        return "Causal Perceptron Network (CPN) using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -189,7 +189,7 @@ public class FunctionalCausalModelWithNNs implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "\"Functional Causal Model with Neural Networks";
+        return "CPN";
     }
 
     /**
@@ -261,7 +261,7 @@ public class FunctionalCausalModelWithNNs implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runModel(Graph graph, Parameters parameters) {
-        edu.cmu.tetrad.sem.FunctionalCausalModelWithNNs generator = new edu.cmu.tetrad.sem.FunctionalCausalModelWithNNs(
+        edu.cmu.tetrad.sem.CausalPerceptronNetwork generator = new edu.cmu.tetrad.sem.CausalPerceptronNetwork(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),

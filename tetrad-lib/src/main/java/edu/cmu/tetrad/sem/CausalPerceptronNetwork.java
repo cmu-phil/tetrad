@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.MultiLayerPerceptronFunctionND;
+import edu.cmu.tetrad.search.utils.MultiLayerPerceptron;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.RealDistribution;
 
@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents a functional causal model with neural networks for generating synthetic data based on a directed acyclic
- * graph (DAG), simulated recursively.
+ * Represents a Causal Perceptron Network (CPN) for generating synthetic data based on a directed acyclic graph (DAG),
+ * simulated recursively.
  * <p>
  * The form of the model is Xi = fi(Pa(Xi), ei), ei _||_ Pa(Xi).
  * <p>
@@ -36,13 +36,13 @@ import java.util.stream.IntStream;
  * <p>
  * See Zhang et al. (2015) for a reference discussion.
  * <p>
- * Goudet, O., Kalainathan, D., Caillou, P., Guyon, I., Lopez-Paz, D., &amp; Sebag, M. (2018). Learning functional causal
- * models with generative neural networks. Explainable and interpretable models in computer vision and machine learning,
- * 39-80.
+ * Goudet, O., Kalainathan, D., Caillou, P., Guyon, I., Lopez-Paz, D., &amp; Sebag, M. (2018). Learning functional
+ * causal models with generative neural networks. Explainable and interpretable models in computer vision and machine
+ * learning, 39-80.
  * <p>
- * Zhang, K., Wang, Z., Zhang, J., &amp; Schölkopf, B. (2015). On estimation of functional causal models: general results
- * and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology (TIST),
- * 7(2), 1-22.
+ * Zhang, K., Wang, Z., Zhang, J., &amp; Schölkopf, B. (2015). On estimation of functional causal models: general
+ * results and application to the post-nonlinear causal model. ACM Transactions on Intelligent Systems and Technology
+ * (TIST), 7(2), 1-22.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -61,7 +61,7 @@ import java.util.stream.IntStream;
  * Hyvarinen, A., &amp; Pajunen, P. (1999). "Nonlinear Independent Component Analysis: Existence and Uniqueness
  * Results"
  */
-public class FunctionalCausalModelWithNNs {
+public class CausalPerceptronNetwork {
     /**
      * The directed acyclic graph (DAG) that defines the causal relationships among variables within the simulation.
      * This graph serves as the primary structure for defining causal interactions and dependencies between variables.
@@ -146,8 +146,8 @@ public class FunctionalCausalModelWithNNs {
      *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
      *                                  defined graph structure.
      */
-    public FunctionalCausalModelWithNNs(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                        double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
+    public CausalPerceptronNetwork(Graph graph, int numSamples, RealDistribution noiseDistribution,
+                                   double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -194,9 +194,18 @@ public class FunctionalCausalModelWithNNs {
             List<Node> parents = graph.getParents(node);
 
             // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
-            MultiLayerPerceptronFunctionND randomFunction = new MultiLayerPerceptronFunctionND(
+//            MultiLayerPerceptronFunctionND randomFunction = new MultiLayerPerceptronFunctionND(
+//                    parents.size() + 1, // Input dimension (R^3 -> R)
+//                    this.hiddenDimension, // Number of hidden neurons
+//                    this.activationFunction, // Activation function
+//                    this.inputScale, // Input scale for bumpiness
+//                    -1 // Random seed
+//            );
+
+
+            MultiLayerPerceptron randomFunction = new MultiLayerPerceptron(
                     parents.size() + 1, // Input dimension (R^3 -> R)
-                    this.hiddenDimension, // Number of hidden neurons
+                    new int[]{this.hiddenDimension, this.hiddenDimension}, // Number of hidden neurons
                     this.activationFunction, // Activation function
                     this.inputScale, // Input scale for bumpiness
                     -1 // Random seed

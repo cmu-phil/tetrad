@@ -55,9 +55,9 @@ public final class SimulationTypes {
      */
     public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) Model";
     /**
-     * Constant <code>FUNCTIONAL_CAUSAL_MODELS_WITH_NNS="Functional Causal Model with Neural Networks"</code>
+     * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
      */
-    public static final String FUNCTIONAL_CAUSAL_MODELS_WITH_NNS = "Functional Causal Model with Neural Networks";
+    public static final String CAUSAL_PERCEPTRON_NETWORK = "Causal Peceptron Network (CPN)";
     /**
      * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>
      */

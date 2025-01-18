@@ -2,16 +2,17 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
-import java.util.Arrays;
+import java.util.Objects;
 
 /**
- * Represents a tetrad of nodes for vanishing tetrad constraints. Equivalent tetrads result from permutations of {i, j,
- * k, l} that yield the same set of vanishing tetrad equalities.
+ * Represents an ordered tetrad (quartet) of nodes,
+ * where the order of nodes within {i, j} and {k, l} does not matter,
+ * but the order of the pairs <{i, j}, {k, l}> does matter.
  *
- * @param i First node.
- * @param j Second node.
- * @param k Third node.
- * @param l Fourth node.
+ * @param i The first node.
+ * @param j The second node.
+ * @param k The third node.
+ * @param l The fourth node.
  */
 public record TetradInt(int i, int j, int k, int l) implements TetradSerializable {
 
@@ -24,10 +25,14 @@ public record TetradInt(int i, int j, int k, int l) implements TetradSerializabl
 
     @Override
     public int hashCode() {
-        // Sort all nodes to ensure equivalent tetrads have the same hash
-        int[] sortedNodes = {i, j, k, l};
-        Arrays.sort(sortedNodes);
-        return Arrays.hashCode(sortedNodes);
+        // Sort nodes within each pair, then hash the ordered pairs
+        int min1 = Math.min(i, j);
+        int max1 = Math.max(i, j);
+        int min2 = Math.min(k, l);
+        int max2 = Math.max(k, l);
+
+        // Hash the ordered pairs <{i, j}, {k, l}>
+        return Objects.hash(min1, max1, min2, max2);
     }
 
     @Override
@@ -35,21 +40,26 @@ public record TetradInt(int i, int j, int k, int l) implements TetradSerializabl
         if (this == o) return true;
         if (!(o instanceof TetradInt(int i1, int j1, int k1, int l1))) return false;
 
-        // Sort nodes for both tetrads and compare
-        int[] thisNodes = {this.i, this.j, this.k, this.l};
-        int[] otherNodes = {i1, j1, k1, l1};
-        Arrays.sort(thisNodes);
-        Arrays.sort(otherNodes);
+        // Sort nodes within each pair
+        int min1This = Math.min(this.i, this.j);
+        int max1This = Math.max(this.i, this.j);
+        int min2This = Math.min(this.k, this.l);
+        int max2This = Math.max(this.k, this.l);
 
-        return Arrays.equals(thisNodes, otherNodes);
+        int min1Other = Math.min(i1, j1);
+        int max1Other = Math.max(i1, j1);
+        int min2Other = Math.min(k1, l1);
+        int max2Other = Math.max(k1, l1);
+
+        // Compare ordered pairs <{i, j}, {k, l}>
+        return min1This == min1Other && max1This == max1Other &&
+               min2This == min2Other && max2This == max2Other;
     }
 
     @Override
     public String toString() {
-        // Sort nodes for consistent representation
-        int[] sortedNodes = {i, j, k, l};
-        Arrays.sort(sortedNodes);
-        return String.format("TetradInt({%d, %d, %d, %d})",
-                sortedNodes[0], sortedNodes[1], sortedNodes[2], sortedNodes[3]);
+        return String.format("TetradInt(<{%d, %d}, {%d, %d}>)",
+                Math.min(i, j), Math.max(i, j),
+                Math.min(k, l), Math.max(k, l));
     }
 }
