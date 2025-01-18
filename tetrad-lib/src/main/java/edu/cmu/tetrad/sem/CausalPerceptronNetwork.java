@@ -205,7 +205,7 @@ public class CausalPerceptronNetwork {
 
             MultiLayerPerceptron randomFunction = new MultiLayerPerceptron(
                     parents.size() + 1, // Input dimension (R^3 -> R)
-                    new int[]{this.hiddenDimension, this.hiddenDimension}, // Number of hidden neurons
+                    new int[]{this.hiddenDimension, this.hiddenDimension, this.hiddenDimension}, // Number of hidden neurons
                     this.activationFunction, // Activation function
                     this.inputScale, // Input scale for bumpiness
                     -1 // Random seed
