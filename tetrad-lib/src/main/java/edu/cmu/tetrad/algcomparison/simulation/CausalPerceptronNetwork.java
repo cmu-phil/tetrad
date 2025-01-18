@@ -209,7 +209,7 @@ public class CausalPerceptronNetwork implements Simulation {
         parameters.add(Params.AM_RESCALE_MAX);
         parameters.add(Params.AM_BETA_ALPHA);
         parameters.add(Params.AM_BETA_BETA);
-        parameters.add(Params.HIDDEN_DIMENSION);
+        parameters.add(Params.HIDDEN_DIMENSIONS);
         parameters.add(Params.INPUT_SCALE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
@@ -261,11 +261,18 @@ public class CausalPerceptronNetwork implements Simulation {
      * @return the generated synthetic dataset as a DataSet object.
      */
     private DataSet runModel(Graph graph, Parameters parameters) {
+        String hiddenDimensionsString = parameters.getString(Params.HIDDEN_DIMENSIONS);
+        String[] hiddenDimensionsSplit = hiddenDimensionsString.split(",");
+        int[] hiddenDimensions = new int[hiddenDimensionsSplit.length];
+        for (int i = 0; i < hiddenDimensionsSplit.length; i++) {
+            hiddenDimensions[i] = Integer.parseInt(hiddenDimensionsSplit[i].trim());
+        }
+
         edu.cmu.tetrad.sem.CausalPerceptronNetwork generator = new edu.cmu.tetrad.sem.CausalPerceptronNetwork(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),
                 new BetaDistribution(parameters.getDouble(Params.AM_BETA_ALPHA), parameters.getDouble(Params.AM_BETA_BETA)),
                 parameters.getDouble(Params.AM_RESCALE_MIN), parameters.getDouble(Params.AM_RESCALE_MAX),
-                parameters.getInt(Params.HIDDEN_DIMENSION), parameters.getDouble(Params.INPUT_SCALE));
+                hiddenDimensions, parameters.getDouble(Params.INPUT_SCALE));
 
         return generator.generateData();
     }

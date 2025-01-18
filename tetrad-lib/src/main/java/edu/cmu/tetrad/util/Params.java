@@ -1001,6 +1001,10 @@ public final class Params {
      */
     public static final String HIDDEN_DIMENSION = "hiddenDimension";
     /**
+     * Constant <code>HIDDEN_DIMENSION="hiddenDimension"</code>
+     */
+    public static final String HIDDEN_DIMENSIONS = "hiddenDimensions";
+    /**
      * Constant <code>INPUT_SCALE="inputScale"</code>
      */
     public static final String INPUT_SCALE = "inputScale";

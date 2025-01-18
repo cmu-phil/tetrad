@@ -103,7 +103,7 @@ public class CausalPerceptronNetwork {
      * dimensionality of the hidden layer, which can affect the model's capacity to approximate complex functions in the
      * causal simulation.
      */
-    private final int hiddenDimension;
+    private final int[] hiddenDimensions;
     /**
      * A scaling factor applied to the input data in the simulation, used to introduce variability and adjust the
      * "bumpiness" of the generated causal relationships. This parameter determines how sensitive the inputs are when
@@ -139,7 +139,7 @@ public class CausalPerceptronNetwork {
      *                          rescaleMax.
      * @param rescaleMax        The upper bound for rescaling data during the simulation. Must be greater than or equal
      *                          to rescaleMin.
-     * @param hiddenDimension   The number of hidden neurons in the MLP function.
+     * @param hiddenDimensions   The number of neurons in each hidden layer the MLP functions.
      * @param inputScale        The scaling factor for the input to create bumpiness.
      * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
      *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
@@ -147,7 +147,7 @@ public class CausalPerceptronNetwork {
      *                                  defined graph structure.
      */
     public CausalPerceptronNetwork(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                   double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {
+                                   double rescaleMin, double rescaleMax, int[] hiddenDimensions, double inputScale) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -164,13 +164,19 @@ public class CausalPerceptronNetwork {
             TetradLogger.getInstance().log("Rescale min and rescale max are equal. No rescaling will be applied.");
         }
 
+        for (int i = 0; i < hiddenDimensions.length; i++) {
+            if (hiddenDimensions[i] < 1) {
+                throw new IllegalArgumentException("Hidden dimensions must be positive integers.");
+            }
+        }
+
         this.graph = graph;
         this.numSamples = numSamples;
         this.noiseDistribution = noiseDistribution;
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
         this.setActivationFunction(activationFunction);
-        this.hiddenDimension = hiddenDimension;
+        this.hiddenDimensions = hiddenDimensions;
         this.inputScale = inputScale;
     }
 
@@ -205,7 +211,7 @@ public class CausalPerceptronNetwork {
 
             MultiLayerPerceptron randomFunction = new MultiLayerPerceptron(
                     parents.size() + 1, // Input dimension (R^3 -> R)
-                    new int[]{this.hiddenDimension, this.hiddenDimension, this.hiddenDimension}, // Number of hidden neurons
+                     hiddenDimensions, // Number of hidden neurons
                     this.activationFunction, // Activation function
                     this.inputScale, // Input scale for bumpiness
                     -1 // Random seed
