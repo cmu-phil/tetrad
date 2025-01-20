@@ -97,29 +97,17 @@ public class Embedding {
                 for (int p = 1; p <= truncationLimit; p++) {
                     i++;
 
-                    Node vPower = basisScale == -1 ? new ContinuousVariable(v.getName()) :
-                            new ContinuousVariable(v.getName() + ".P(" + p + ")");
-                    A.add(vPower);
+                    Node vFunctional = new ContinuousVariable(v.getName() + ".P(" + p + ")");
+                    A.add(vFunctional);
                     double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
                         functional[j] = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
                     }
 
-                    // Determine if the functional is essentially contant--i.e., if the absolute value of the maximum
-                    // in the columns minus the minimum in the columns is less than 1e-6. Skip this functional if so.
-                    // We should not regress on a constant variable, and we should count it among the degrees of
-                    // freedom.
-//                    double max = StatUtils.max(functional);
-//                    double min = StatUtils.min(functional);
-
-//                    if (Math.abs(max - min) < 1e-2) {
-//                        i--;
-//                        A.removeLast();
-//                    } else {
                     B.add(functional);
                     indexList.add(i);
-//                    }
                 }
+
                 embedding.put(i_, indexList);
             }
         }

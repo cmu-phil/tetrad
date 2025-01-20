@@ -282,16 +282,14 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         int aLength = A.size();
         int bLength = B.size();
 
-        for (int a : A) {
+        double dof = (bLength * (bLength + 1) - aLength * (aLength + 1)) / 2.0;
 
-            // Includes previous columns for A.
+        for (int a : A) {
             int[] parents_ = new int[B.size()];
             for (int b = 0; b < B.size(); b++) {
                 parents_[b] = B.get(b);
             }
 
-            // Using the formula BIC = 2L - k ln N; need L - k / 2 ln N
-//            double likelihood = 0.5 * this.bic.localScore(a, parents_);
             double likelihood = this.bic.getLikelihood(a, parents_);
 
             if (Double.isNaN(likelihood)) {
@@ -299,12 +297,10 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
             }
 
             score += likelihood;
-
-            B.add(a);
+//            B.add(a);
         }
 
         double lik = score;
-        double dof = (bLength * (bLength + 1) - aLength * (aLength + 1)) / 2.0;
         return new Ret(lik, dof);
     }
 
