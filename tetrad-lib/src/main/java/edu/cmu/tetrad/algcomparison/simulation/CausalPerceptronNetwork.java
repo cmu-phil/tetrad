@@ -269,7 +269,7 @@ public class CausalPerceptronNetwork implements Simulation {
             hiddenDimensions[i] = Integer.parseInt(hiddenDimensionsSplit[i].trim());
         }
 
-        Function<Double, Double> activation = x -> Math.max(0.1 * x, x);
+        Function<Double, Double> activation = Math::tanh;// x -> Math.max(0.1 * x, x);
 
         edu.cmu.tetrad.sem.CausalPerceptronNetwork generator = new edu.cmu.tetrad.sem.CausalPerceptronNetwork(
                 graph, parameters.getInt(Params.SAMPLE_SIZE),

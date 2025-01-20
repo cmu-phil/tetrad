@@ -56,7 +56,7 @@ public class BasisFunctionBicScore implements Score {
                                  int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
 
-        boolean usePseudoInverse = true;
+        boolean usePseudoInverse = false;
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
                 usePseudoInverse);
@@ -102,7 +102,7 @@ public class BasisFunctionBicScore implements Score {
             double score1 = this.bic.localScore(i_, parents_);
 
             if (Double.isNaN(score1)) {
-                break;
+                continue;
             }
 
             score += score1;
