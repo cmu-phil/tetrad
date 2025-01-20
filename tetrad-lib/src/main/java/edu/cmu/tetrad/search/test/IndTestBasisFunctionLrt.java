@@ -300,7 +300,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
 
             score += likelihood;
 
-//            B.add(a);
+            B.add(a);
         }
 
         double lik = score;

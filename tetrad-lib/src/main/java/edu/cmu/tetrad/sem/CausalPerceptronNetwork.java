@@ -147,7 +147,8 @@ public class CausalPerceptronNetwork {
      *                                  defined graph structure.
      */
     public CausalPerceptronNetwork(Graph graph, int numSamples, RealDistribution noiseDistribution,
-                                   double rescaleMin, double rescaleMax, int[] hiddenDimensions, double inputScale) {
+                                   double rescaleMin, double rescaleMax, int[] hiddenDimensions, double inputScale,
+                                   Function<Double, Double> activationFunction) {
         if (!graph.paths().isAcyclic()) {
             throw new IllegalArgumentException("Graph contains cycles.");
         }
@@ -164,8 +165,8 @@ public class CausalPerceptronNetwork {
             TetradLogger.getInstance().log("Rescale min and rescale max are equal. No rescaling will be applied.");
         }
 
-        for (int i = 0; i < hiddenDimensions.length; i++) {
-            if (hiddenDimensions[i] < 1) {
+        for (int hiddenDimension : hiddenDimensions) {
+            if (hiddenDimension < 1) {
                 throw new IllegalArgumentException("Hidden dimensions must be positive integers.");
             }
         }
@@ -175,7 +176,7 @@ public class CausalPerceptronNetwork {
         this.noiseDistribution = noiseDistribution;
         this.rescaleMin = rescaleMin;
         this.rescaleMax = rescaleMax;
-        this.setActivationFunction(activationFunction);
+        this.activationFunction = activationFunction;
         this.hiddenDimensions = hiddenDimensions;
         this.inputScale = inputScale;
     }
@@ -198,16 +199,6 @@ public class CausalPerceptronNetwork {
 
         for (Node node : validOrder) {
             List<Node> parents = graph.getParents(node);
-
-            // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
-//            MultiLayerPerceptronFunctionND randomFunction = new MultiLayerPerceptronFunctionND(
-//                    parents.size() + 1, // Input dimension (R^3 -> R)
-//                    this.hiddenDimension, // Number of hidden neurons
-//                    this.activationFunction, // Activation function
-//                    this.inputScale, // Input scale for bumpiness
-//                    -1 // Random seed
-//            );
-
 
             MultiLayerPerceptron randomFunction = new MultiLayerPerceptron(
                     parents.size() + 1, // Input dimension (R^3 -> R)
@@ -232,17 +223,5 @@ public class CausalPerceptronNetwork {
         }
 
         return data;
-    }
-
-    /**
-     * Sets the activation function used for computation in the simulation. The activation function defines the
-     * non-linear transformation applied to the inputs within the causal model.
-     *
-     * @param activationFunction A function that takes a double value as input and returns a transformed double value as
-     *                           output. This function represents the mathematical transformation to be used as the
-     *                           activation operation.
-     */
-    public void setActivationFunction(Function<Double, Double> activationFunction) {
-        this.activationFunction = activationFunction;
     }
 }
