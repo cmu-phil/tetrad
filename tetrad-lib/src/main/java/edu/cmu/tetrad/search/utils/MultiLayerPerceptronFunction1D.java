@@ -49,6 +49,13 @@ public class MultiLayerPerceptronFunction1D {
         }
     }
 
+    /**
+     * The entry point of the application that demonstrates the usage of the
+     * MultiLayerPerceptronFunction1D class by defining a random function with specific
+     * parameters and evaluating it over a range of inputs.
+     *
+     * @param args Command-line arguments passed to the program.
+     */
     public static void main(String[] args) {
         // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
         MultiLayerPerceptronFunction1D randomFunction = new MultiLayerPerceptronFunction1D(

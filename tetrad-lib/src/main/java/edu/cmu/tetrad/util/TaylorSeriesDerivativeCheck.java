@@ -11,6 +11,22 @@ import java.util.stream.DoubleStream;
  */
 public class TaylorSeriesDerivativeCheck {
 
+    /**
+     * Utility class containing methods to test the positivity of derivatives of Taylor series over a specified range of
+     * values.
+     * <p>
+     * This class is not meant to be instantiated.
+     */
+    private TaylorSeriesDerivativeCheck() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    /**
+     * The main method initializes an array of derivatives and tests whether the first derivative f'(x) is positive in a
+     * specified range.
+     *
+     * @param args Command-line arguments passed to the program, not used in this method.
+     */
     public static void main(String[] args) {
         // Example: All derivatives are 1 (e.g., approximating e^x)
         double[] derivatives = new double[20]; // f(0), f'(0), f''(0), ...

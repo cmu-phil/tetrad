@@ -2828,11 +2828,23 @@ public class Paths implements TetradSerializable {
         }
     }
 
+    /**
+     * Determines whether the graph is acyclic, meaning it does not contain any directed cycles.
+     *
+     * @return true if the graph is acyclic; false otherwise
+     */
     public boolean isAcyclic() {
         return !existsDirectedCycle();
     }
 
-    // Helper class to represent an element in the BFS queue
+    /**
+     * Represents an element in a navigation path consisting of a current node
+     * and the previous node.
+     *
+     * This class is primarily used to track the traversal history in a pathfinding
+     * context or similar scenarios where the relationship between nodes in a path
+     * needs to be maintained.
+     */
     static class PathElement {
         Node current;  // The current node
         Node previous; // The previous node on the path

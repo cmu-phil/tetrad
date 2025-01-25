@@ -27,6 +27,10 @@ public class LgMnarSimulation implements Simulation {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    private LgMnarSimulation() {
+        throw new IllegalArgumentException("Utility class");
+    }
+
     /**
      * The random graph generator.
      */

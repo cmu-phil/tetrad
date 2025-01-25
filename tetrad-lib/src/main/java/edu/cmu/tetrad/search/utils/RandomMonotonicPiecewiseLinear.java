@@ -2,8 +2,12 @@ package edu.cmu.tetrad.search.utils;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
-import java.util.Arrays;
-
+/**
+ * A class that generates and evaluates a monotonic piecewise linear function
+ * defined over a specified domain and range. The y-values of the function are
+ * randomly generated while ensuring monotonicity. The function supports both
+ * interpolation within the range and extrapolation outside the range.
+ */
 public class RandomMonotonicPiecewiseLinear {
     private final double[] xPoints; // Breakpoints for the x-axis
     private final double[] yPoints; // Corresponding y-values ensuring monotonicity
@@ -12,10 +16,10 @@ public class RandomMonotonicPiecewiseLinear {
      * Constructor to initialize a monotonic piecewise linear function.
      *
      * @param numPoints Number of points for the piecewise linear function.
-     * @param xMin Minimum x-value for the domain.
-     * @param xMax Maximum x-value for the domain.
-     * @param yMin Minimum y-value for the range.
-     * @param yMax Maximum y-value for the range.
+     * @param xMin      Minimum x-value for the domain.
+     * @param xMax      Maximum x-value for the domain.
+     * @param yMin      Minimum y-value for the range.
+     * @param yMax      Maximum y-value for the range.
      */
     public RandomMonotonicPiecewiseLinear(int numPoints, double xMin, double xMax, double yMin, double yMax) {
         if (numPoints < 2) {
@@ -47,6 +51,31 @@ public class RandomMonotonicPiecewiseLinear {
         double yMaxActual = yPoints[numPoints - 1];
         for (int i = 0; i < numPoints; i++) {
             yPoints[i] = yMin + (yPoints[i] - yMinActual) / (yMaxActual - yMinActual) * (yMax - yMin);
+        }
+    }
+
+    /**
+     * The main method serves as the entry point for testing the functionality
+     * of the RandomMonotonicPiecewiseLinear class. It initializes parameters for
+     * creating an instance of the class, generates a monotonic piecewise linear
+     * function, and evaluates the function over a specified range of x-values.
+     *
+     * @param args Command-line arguments passed to the program. Not used in this method.
+     */
+    public static void main(String[] args) {
+        double xMin = -2.0;
+        double xMax = 2.0;
+        double yMin = -2.0;
+        double yMax = 2.0;
+        int numPoints = 10;
+
+        // Create a RandomMonotonicPiecewiseLinear instance
+        RandomMonotonicPiecewiseLinear piecewiseLinear = new RandomMonotonicPiecewiseLinear(numPoints, xMin, xMax, yMin, yMax);
+
+        // Test the piecewise linear function
+        for (double x = xMin; x <= xMax; x += 0.1) {
+            double y = piecewiseLinear.computeValue(x);
+            System.out.printf("f(%5.2f) = %5.2f%n", x, y);
         }
     }
 
@@ -83,23 +112,5 @@ public class RandomMonotonicPiecewiseLinear {
     // Extrapolation for x outside the range
     private double extrapolate(double x, int i, int j) {
         return interpolate(x, i, j);
-    }
-
-    // Main method for testing
-    public static void main(String[] args) {
-        double xMin = -2.0;
-        double xMax = 2.0;
-        double yMin = -2.0;
-        double yMax = 2.0;
-        int numPoints = 10;
-
-        // Create a RandomMonotonicPiecewiseLinear instance
-        RandomMonotonicPiecewiseLinear piecewiseLinear = new RandomMonotonicPiecewiseLinear(numPoints, xMin, xMax, yMin, yMax);
-
-        // Test the piecewise linear function
-        for (double x = xMin; x <= xMax; x += 0.1) {
-            double y = piecewiseLinear.computeValue(x);
-            System.out.printf("f(%5.2f) = %5.2f%n", x, y);
-        }
     }
 }

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.util;
 
-import cern.colt.matrix.DoubleMatrix2D;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.dense.row.NormOps_DDRM;
@@ -45,6 +44,10 @@ public class Matrix implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The `data` variable represents a matrix structure used for numerical computations and data representation. It is
+     * an immutable instance of the `SimpleMatrix` class that supports various matrix operations.
+     */
     private final SimpleMatrix data;
 
     /**
@@ -79,6 +82,11 @@ public class Matrix implements TetradSerializable {
         this.matrixView = new MView(this);
     }
 
+    /**
+     * Constructs a Matrix object based on the given SimpleMatrix data.
+     *
+     * @param data the SimpleMatrix object containing the data to initialize the matrix
+     */
     public Matrix(SimpleMatrix data) {
         this.data = data.copy();
 
@@ -135,6 +143,14 @@ public class Matrix implements TetradSerializable {
         return new Matrix(0, 0);
     }
 
+    /**
+     * Assigns a part of the given matrix to a specified submatrix while adding the values to the existing data.
+     * The values from the 'from' matrix are added to the corresponding elements of the submatrix defined by the ranges.
+     *
+     * @param range1 an array of integers representing the row indices of the submatrix to which the values will be assigned
+     * @param range2 an array of integers representing the column indices of the submatrix to which the values will be assigned
+     * @param from a Matrix object providing the values to be added to the specified submatrix
+     */
     public void assignPart(int[] range1, int[] range2, Matrix from) {
         for (int j = 0; j < range1.length; j++) {
             for (int k = 0; k < range2.length; k++) {
@@ -299,6 +315,12 @@ public class Matrix implements TetradSerializable {
         return mView.vector();
     }
 
+    /**
+     * Retrieves the specified column from a data structure as a Vector object.
+     *
+     * @param i the index of the column to retrieve
+     * @return a Vector representing the specified column
+     */
     public Vector col(int i) {
         return viewColumn(i).vector();
     }
@@ -484,6 +506,13 @@ public class Matrix implements TetradSerializable {
         return newMatrix;
     }
 
+    /**
+     * Adds the specified scalar value to each element of the matrix and returns the resulting matrix.
+     *
+     * @param scalar the scalar value to be added to each element of the matrix
+     * @return a new Matrix instance where each element is the sum of the corresponding element
+     * in the original matrix and the scalar value
+     */
     public Matrix scalarPlus(double scalar) {
         Matrix newMatrix = copy();
         for (int i = 0; i < getNumRows(); i++) {
@@ -637,8 +666,8 @@ public class Matrix implements TetradSerializable {
     /**
      * Generates an array of integers representing a range of values between two specified row indices, inclusive.
      *
-     * @param from the starting row index (inclusive) of the range
-     * @param toRow   the ending row index (inclusive) of the range
+     * @param from  the starting row index (inclusive) of the range
+     * @param toRow the ending row index (inclusive) of the range
      * @return an array of integers containing the range of row indices
      * @throws IllegalArgumentException if either from or toRow is out of the valid row index range
      */
@@ -726,7 +755,12 @@ public class Matrix implements TetradSerializable {
             throw e;
         }
     }
-    
+
+    /**
+     * Creates and returns a copy of the internal data matrix.
+     *
+     * @return A new SimpleMatrix instance that is a copy of the internal data.
+     */
     public SimpleMatrix getDataCopy() {
         return getData().copy();
     }

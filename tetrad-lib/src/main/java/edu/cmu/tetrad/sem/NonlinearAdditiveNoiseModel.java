@@ -110,21 +110,18 @@ public class NonlinearAdditiveNoiseModel {
     private Function<Double, Double> activationFunction = Math::tanh;
 
     /**
-     * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
-     * coefficient bounds, and Taylor series degree.
-     * <p>
-     * This is a private constructor that initializes the simulation with the specified parameters and parent
-     * functions.
+     * Constructs a nonlinear additive noise model based on a directed acyclic graph (DAG).
+     * This model is used to generate synthetic data where the relationships in the graph are
+     * affected by additive noise and potentially undergo nonlinear transformations.
      *
-     * @param graph             The directed acyclic graph (DAG) that defines the causal relationships among variables.
-     *                          It must be acyclic, otherwise an IllegalArgumentException is thrown.
-     * @param numSamples        The number of samples to generate for the simulation. Must be a positive integer.
-     * @param noiseDistribution The real-valued noise distribution used for simulating additive noise in the causal
-     *                          mechanisms. positive integer.
-     * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
-     *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
-     *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
-     *                                  defined graph structure.
+     * @param graph The directed acyclic graph (DAG) representing the underlying causal structure.
+     * @param numSamples The number of data samples to generate. Must be positive.
+     * @param noiseDistribution The distribution used to sample additive noise for each variable.
+     * @param rescaleMin The minimum value of the range for rescaling the generated data. Must be less than or equal to rescaleMax.
+     * @param rescaleMax The maximum value of the range for rescaling the generated data. Must be greater than or equal to rescaleMin.
+     * @param hiddenDimension The dimensionality of hidden layers or transformations used in data generation.
+     * @param inputScale A scaling factor applied to input data before applying transformations or noise.
+     * @throws IllegalArgumentException If the input graph contains cycles or if the provided parameters are invalid.
      */
     public NonlinearAdditiveNoiseModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                        double rescaleMin, double rescaleMax, int hiddenDimension, double inputScale) {

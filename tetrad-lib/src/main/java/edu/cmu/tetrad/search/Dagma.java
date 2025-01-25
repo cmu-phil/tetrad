@@ -149,6 +149,15 @@ public class Dagma {
         this.tol = 1e-6;
     }
 
+    /**
+     * Computes the matrix power of the given square matrix A raised to the power n.
+     * This method uses exponentiation by squaring for efficiency.
+     *
+     * @param A the square matrix to be raised to the power n
+     * @param n the non-negative integer exponent to which the matrix is raised
+     * @return the result of raising matrix A to the power n
+     * @throws IllegalArgumentException if n is negative
+     */
     public static SimpleMatrix power(SimpleMatrix A, int n) {
         if (n < 0) throw new IllegalArgumentException("Power must be non-negative");
         if (n == 0) return SimpleMatrix.identity(A.getNumRows());

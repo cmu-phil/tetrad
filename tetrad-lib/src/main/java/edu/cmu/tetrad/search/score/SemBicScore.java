@@ -568,6 +568,15 @@ public class SemBicScore implements Score {
         }
     }
 
+    /**
+     * Computes the Akaike Information Criterion (AIC) score for the given variable and its parent variables
+     * in a probabilistic graphical model such as a Bayesian network.
+     *
+     * @param i The index of the variable for which the AIC score is being computed.
+     * @param parents The indices of the parent variables of the variable specified by index i.
+     * @return The computed AIC score as a double value. Returns Double.NaN if a singular matrix is encountered
+     *         or the score is undefined. Throws an exception if the rule type is unsupported.
+     */
     public double getAic(int i, int... parents) {
         int k = parents.length;
         double lik;
@@ -600,6 +609,16 @@ public class SemBicScore implements Score {
         }
     }
 
+    /**
+     * Calculates the likelihood for the given variable and its parent variables based on the provided data
+     * and covariance matrices. This method computes the variance for the residuals and uses it to
+     * determine the likelihood score.
+     *
+     * @param i        The index of the variable for which the likelihood is being calculated.
+     * @param parents  An array of indices representing the parent variables of the variable at index i.
+     * @return The negative log-likelihood score for the specified variable and its parent variables.
+     * @throws SingularMatrixException if the covariance matrix is singular and cannot be inverted.
+     */
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
                 usePseudoInverse);

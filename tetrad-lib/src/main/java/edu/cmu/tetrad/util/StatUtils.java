@@ -2183,6 +2183,12 @@ public final class StatUtils {
         return data2;
     }
 
+    /**
+     * Standardizes the provided vector data by removing the mean and scaling to unit variance.
+     *
+     * @param _data the vector containing the data to be standardized
+     * @return a new vector containing the standardized data
+     */
     public static Vector standardizeData(Vector _data) {
         double[] data = _data.toArray();
         double[] standardized = standardizeData(data);
@@ -2605,6 +2611,14 @@ public final class StatUtils {
         }
     }
 
+    /**
+     * Calculates the p-value for the given chi-square statistic and degrees of freedom.
+     *
+     * @param dof Degrees of freedom; must be non-negative.
+     * @param chisq Chi-square statistic; must be non-negative.
+     * @return The p-value corresponding to the chi-square statistic and degrees of freedom.
+     * @throws IllegalArgumentException if degrees of freedom or chi-square statistic is negative.
+     */
     public static double getChiSquareP(double dof, double chisq) {
         if (dof < 0) {
             throw new IllegalArgumentException("Degrees of freedom for chi square must be non-negative: " + dof);

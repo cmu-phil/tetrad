@@ -111,21 +111,26 @@ public class PostnonlinearCausalModel {
     private boolean coefSymmetric = false;
 
     /**
-     * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
-     * coefficient bounds, and Taylor series degree.
-     * <p>
-     * This is a private constructor that initializes the simulation with the specified parameters and parent
-     * functions.
+     * Constructs a PostnonlinearCausalModel object. This model generates synthetic data based on a directed
+     * acyclic graph (DAG) with causal relationships, utilizing post-nonlinear causal mechanisms. The model
+     * allows for various parameter configurations to control noise, rescaling, dimensionality, and coefficient
+     * properties.
      *
-     * @param graph             The directed acyclic graph (DAG) that defines the causal relationships among variables.
-     *                          It must be acyclic, otherwise an IllegalArgumentException is thrown.
-     * @param numSamples        The number of samples to generate for the simulation. Must be a positive integer.
-     * @param noiseDistribution The real-valued noise distribution used for simulating additive noise in the causal
-     *                          mechanisms. positive integer.
-     * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
-     *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
-     *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
-     *                                  defined graph structure.
+     * @param graph The directed acyclic graph (DAG) containing the causal structure for the model.
+     *              Must be acyclic; otherwise, an exception will be thrown.
+     * @param numSamples The number of samples to generate for the synthetic data. Must be positive.
+     * @param noiseDistribution The distribution from which noise values are generated. Often a standard
+     *                          distribution, such as Gaussian, but can be user-defined.
+     * @param rescaleMin The minimum value for rescaling the data. Must be less than or equal to rescaleMax.
+     * @param rescaleMax The maximum value for rescaling the data. Must be greater than or equal to rescaleMin.
+     * @param hiddenDimension The dimensionality of the hidden variables affecting the model's behavior.
+     * @param inputScale A scaling factor applied to the input variables before applying post-nonlinear operations.
+     * @param coefLow The lower bound for randomly selected coefficients used in the model.
+     * @param coefHigh The upper bound for randomly selected coefficients used in the model.
+     * @param coefSymmetric A boolean flag indicating whether the randomly selected coefficients should be symmetric
+     *                      around zero.
+     * @throws IllegalArgumentException If the provided graph is not acyclic, the number of samples is less than one,
+     *                                  or rescaleMin is greater than rescaleMax.
      */
     public PostnonlinearCausalModel(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                     double rescaleMin, double rescaleMax,

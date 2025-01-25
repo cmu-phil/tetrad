@@ -3,13 +3,29 @@ package edu.cmu.tetrad.search.utils;
 import java.util.Random;
 import java.util.stream.DoubleStream;
 
+/**
+ * The RandomFourier class generates a random Fourier series with specified cosine and sine amplitudes and frequency
+ * terms. The series is defined as:
+ * <p>
+ * f(x) = Σ [a_i * cos(b_i * x) + c_i * sin(b_i * x)]
+ * <p>
+ * where: - a_i and c_i are randomly chosen amplitudes in the range [-2, 2], - b_i are randomly chosen frequencies
+ * scaled by a given factor.
+ * <p>
+ * This class also provides functionality to adjust the series so that its value at x = 0 is zero.
+ */
 public class RandomFourier {
     private final double[] cosAmplitudes; // Coefficients for cosines
     private final double[] sinAmplitudes; // Coefficients for sines
     private final double[] frequencies;  // Frequencies for each term
     private final int numTerms;
 
-    // Constructor to initialize the amplitudes and frequencies
+    /**
+     * Initializes a RandomFourier instance with the specified number of terms and frequency scale.
+     *
+     * @param numTerms       The number of terms in the Fourier series.
+     * @param frequencyScale The scale factor applied to the randomly generated frequencies.
+     */
     public RandomFourier(int numTerms, double frequencyScale) {
         this.numTerms = numTerms;
         this.cosAmplitudes = new double[numTerms];
@@ -24,7 +40,13 @@ public class RandomFourier {
         }
     }
 
-    // Main method for testing
+    /**
+     * The main method demonstrates the usage of the RandomFourier class. It creates an instance of RandomFourier,
+     * evaluates the adjusted Fourier series over a given range of x values, and verifies that the series is adjusted
+     * such that its value at x = 0 is approximately zero.
+     *
+     * @param args Command-line arguments (not used in this implementation).
+     */
     public static void main(String[] args) {
         int numTerms = 5;
         double frequencyScale = 1.0;
@@ -43,7 +65,12 @@ public class RandomFourier {
         System.out.printf("f(0) = %5.2f (should be 0)%n", zeroCheck);
     }
 
-    // Method to compute the Fourier value at a given x
+    /**
+     * Computes the value of the Fourier series at a given input x.
+     *
+     * @param x The input value for which the Fourier series is evaluated.
+     * @return The calculated result of the Fourier series at the given input x.
+     */
     public double compute(double x) {
         double result = 0.0;
         for (int i = 0; i < numTerms; i++) {
@@ -53,7 +80,13 @@ public class RandomFourier {
         return result;
     }
 
-    // Method to compute the adjusted Fourier value, ensuring f(0) = 0
+    /**
+     * Computes the adjusted value of the Fourier series at the given input x. The adjustment ensures that the computed
+     * value is shifted such that the Fourier series value at x = 0 is zero.
+     *
+     * @param x The input value for which the adjusted Fourier series is evaluated.
+     * @return The adjusted result of the Fourier series at the given input x.
+     */
     public double computeAdjusted(double x) {
         double fAtZero = compute(0); // Compute the value at x = 0
         return compute(x) - fAtZero; // Subtract f(0) to adjust the function

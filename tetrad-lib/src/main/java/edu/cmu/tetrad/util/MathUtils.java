@@ -112,10 +112,24 @@ public class MathUtils {
         return MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b));
     }
 
+    /**
+     * Applies the Rectified Linear Unit (ReLU) activation function to the given input.
+     * ReLU is defined as max(0, x).
+     *
+     * @param x the input value to which the ReLU function is applied
+     * @return the result of applying the ReLU function, which is the input if it is positive, or 0 otherwise
+     */
     public static Double relu(Double x) {
         return Math.max(0, x);
     }
 
+    /**
+     * Applies the Leaky Rectified Linear Unit (Leaky ReLU) activation function to the given input.
+     * Leaky ReLU is defined as max(0.1 * x, x). It allows for a small, non-zero gradient when the unit is not active.
+     *
+     * @param x the input value to which the Leaky ReLU function is applied
+     * @return the result of applying the Leaky ReLU function, which is x if x is positive, or 0.1 * x otherwise
+     */
     public static Double leakyRelu(Double x) {
         return Math.max(0.1 * x, x);
     }

@@ -1284,6 +1284,15 @@ public class DataTransforms {
         return dataSet;
     }
 
+    /**
+     * Scales the values of a specified node in the given dataset to a specified range [scaleMin, scaleMax].
+     * This method only processes nodes that are instances of ContinuousVariable.
+     *
+     * @param dataSet the dataset containing the values to be scaled
+     * @param scaleMin the minimum value of the target range
+     * @param scaleMax the maximum value of the target range
+     * @param node the node corresponding to the column in the dataset to be scaled
+     */
     public static void scale(DataSet dataSet, double scaleMin, double scaleMax, Node node) {
         if (node instanceof ContinuousVariable) {
             int j = dataSet.getColumnIndex(node);

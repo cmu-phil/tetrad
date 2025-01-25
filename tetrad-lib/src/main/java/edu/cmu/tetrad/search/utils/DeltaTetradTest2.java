@@ -118,6 +118,16 @@ public class DeltaTetradTest2 {
         return StatUtils.getChiSquareP(df, chisq);
     }
 
+    /**
+     * Calculates the chi-square statistic for a given set of tetrads. The method
+     * computes the T statistic for a set of non-redundant tetrads using either
+     * a covariance matrix or a data set depending on the provided inputs. The T
+     * statistic is significant if it follows a Chi-Square distribution with degrees
+     * of freedom equivalent to the number of non-redundant tetrads.
+     *
+     * @param tetrads A set of TetradInt objects representing the tetrads to evaluate.
+     * @return The chi-square value computed for the given set of tetrads.
+     */
     public double calcChiSquare(Set<TetradInt> tetrads) {
         List<TetradInt> _tetrads = new ArrayList<>(tetrads);
 

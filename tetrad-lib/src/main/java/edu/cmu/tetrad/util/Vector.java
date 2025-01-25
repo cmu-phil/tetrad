@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
@@ -62,6 +62,13 @@ public class Vector implements TetradSerializable {
         this.data = new SimpleMatrix(v.toArray());
     }
 
+    /**
+     * Constructs a new Vector object using a SimpleMatrix instance.
+     *
+     * @param v the SimpleMatrix instance used to initialize the Vector object;
+     *          it must contain exactly one column, otherwise an IllegalArgumentException is thrown
+     * @throws IllegalArgumentException if the number of columns in the provided SimpleMatrix is not equal to one
+     */
     public Vector(SimpleMatrix v) {
         if (v.getNumCols() != 1) {
             throw new IllegalArgumentException("SimpleMatrix must have one column.");
@@ -89,6 +96,14 @@ public class Vector implements TetradSerializable {
         return new Vector(0);
     }
 
+    /**
+     * Generates a diagonal matrix using the elements of the given vector. The vector's
+     * elements will populate the diagonal entries of the resulting square matrix, with
+     * all other entries set to zero.
+     *
+     * @param diag the {@code Vector} containing the diagonal elements of the matrix
+     * @return a square {@code Matrix} with the specified diagonal elements
+     */
     public static Matrix diag(Vector diag) {
         Matrix m = new Matrix(diag.size(), diag.size());
 
@@ -323,10 +338,20 @@ public class Vector implements TetradSerializable {
         }
     }
 
+    /**
+     * Retrieves the SimpleMatrix instance associated with this Vector.
+     *
+     * @return the SimpleMatrix representing the data contained within this Vector
+     */
     public SimpleMatrix getSimpleMatrix() {
         return data;
     }
 
+    /**
+     * Computes the sum of all elements in this vector.
+     *
+     * @return the sum of all elements as a double
+     */
     public double sum() {
         double sum = 0.0;
 
@@ -337,6 +362,14 @@ public class Vector implements TetradSerializable {
         return sum;
     }
 
+    /**
+     * Extracts a subvector from the current vector from specified indices.
+     *
+     * @param from the starting index (inclusive) of the range; must be non-negative and less than or equal to {@code to}
+     * @param to the ending index (exclusive) of the range; must be less than or equal to the size of the vector
+     * @return a new {@code Vector} object containing the elements from the specified range
+     * @throws IllegalArgumentException if {@code from} is negative, {@code to} exceeds the vector size, or {@code from} is greater than {@code to}
+     */
     public Vector getPart(int from, int to) {
         if (from < 0 || to > size() || from > to) {
             throw new IllegalArgumentException("Invalid range: " + from + " to " + to);
@@ -351,6 +384,12 @@ public class Vector implements TetradSerializable {
         return new Vector(part);
     }
 
+    /**
+     * Calculates the Euclidean norm (magnitude) of the vector. The Euclidean norm
+     * is computed as the square root of the sum of the squares of all elements in the vector.
+     *
+     * @return the Euclidean norm of the vector as a double
+     */
     public double euclideanNorm() {
         double sum = 0.0;
 
@@ -362,6 +401,12 @@ public class Vector implements TetradSerializable {
     }
 
 
+    /**
+     * Updates the specified elements of a data structure with values from the given vector.
+     *
+     * @param range1 an array of indices specifying the positions in the data structure to be updated
+     * @param from a Vector containing the values to be added to the elements at the specified indices
+     */
     public void assignPart(int[] range1, Vector from) {
         for (int j = 0; j < range1.length; j++) {
             data.set(range1[j], 0, from.get(j) + data.get(range1[j], 0));

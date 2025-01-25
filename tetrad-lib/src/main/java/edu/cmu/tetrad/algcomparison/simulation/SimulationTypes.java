@@ -46,11 +46,11 @@ public final class SimulationTypes {
      * Constant <code>NONLINEAR_ADDITIVE_NOISE_MODEL="Nonlinear Additive Noise Model"</code>
      */
     public static final String NONLINEAR_ADDITIVE_NOISE_MODEL = "Nonlinear Additive Noise Model";
-    /*
+    /**
      * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
     public static final String POST_NONLINEAR_MODEL = "Post-nonlinear causal Model";
-    /*
+    /**
      * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
      */
     public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) Model";

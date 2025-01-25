@@ -22,6 +22,13 @@ import java.util.Map;
 public class Embedding {
 
     /**
+     * Utility class for embedding data.
+     */
+    private Embedding() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    /**
      * Computes the embedded data representation based on the provided dataset and parameters.
      *
      * @param dataSet          The original dataset to be embedded; must not be null.

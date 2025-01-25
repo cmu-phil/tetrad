@@ -82,9 +82,16 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
     private boolean verbose;
 
     /**
-     * Constructs the test using the given (mixed) data set.
+     * Constructs an instance of IndTestBasisFunctionLrt to perform independence testing.
+     * This method initializes the independence test with the provided dataset, truncation limit,
+     * basis type, and basis scale. It processes the dataset to expand discrete columns into
+     * appropriate representations and sets up necessary configurations for the test.
      *
-     * @param dataSet The data being analyzed.
+     * @param dataSet          The input dataset to be used for the independence test.
+     * @param truncationLimit  An integer representing the truncation limit for the basis functions.
+     * @param basisType        An integer indicating the type of basis to be used in the analysis.
+     * @param basisScale       A double value specifying the scale parameter for the basis functions.
+     * @throws NullPointerException if the provided dataset is null.
      */
     public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit,
                                    int basisType, double basisScale) {
@@ -305,7 +312,10 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
     }
 
     /**
-     * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom for it.
+     * Represents a record that holds results for a log-likelihood ratio test.
+     *
+     * @param lik The log-likelihood ratio.
+     * @param dof The degrees of freedom.
      */
     public record Ret(double lik, double dof) {
     }

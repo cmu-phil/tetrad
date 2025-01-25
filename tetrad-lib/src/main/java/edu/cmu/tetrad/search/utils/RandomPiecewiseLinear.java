@@ -3,11 +3,25 @@ package edu.cmu.tetrad.search.utils;
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * Represents a piecewise linear function with randomly generated breakpoints and values.
+ * This class allows computation of values at any x within or outside the defined range of breakpoints.
+ */
 public class RandomPiecewiseLinear {
     private final double[] xPoints; // Breakpoints for the x-axis
     private final double[] yPoints; // Corresponding values for the y-axis
 
-    // Constructor to initialize random breakpoints and values
+    /**
+     * Constructs a RandomPiecewiseLinear instance. This method generates a piecewise linear
+     * function based on the specified number of points, with x-coordinates randomly distributed
+     * within a specified range and y-coordinates randomly assigned in the range [-2, 2].
+     *
+     * @param numPoints the number of breakpoints to generate for the piecewise linear function;
+     *                  must be greater than or equal to 2
+     * @param minX the minimum value in the range for the x-coordinates of the breakpoints
+     * @param maxX the maximum value in the range for the x-coordinates of the breakpoints
+     * @throws IllegalArgumentException if numPoints is less than 2
+     */
     public RandomPiecewiseLinear(int numPoints, double minX, double maxX) {
         if (numPoints < 2) {
             throw new IllegalArgumentException("At least two points are required for piecewise linear function.");
@@ -30,7 +44,14 @@ public class RandomPiecewiseLinear {
         }
     }
 
-    // Main method for testing
+    /**
+     * The main method serves as the entry point of the program. It demonstrates the usage
+     * of the RandomPiecewiseLinear class by creating an instance and computing the values
+     * of a piecewise linear function at various points within a specified range. The results
+     * are printed to the console with formatted output for each computed value.
+     *
+     * @param args the command-line arguments, which are not used in this implementation
+     */
     public static void main(String[] args) {
         double minX = -2.0;
         double maxX = 2.0;
@@ -46,7 +67,15 @@ public class RandomPiecewiseLinear {
         }
     }
 
-    // Method to compute the value of the piecewise linear function at a given x
+    /**
+     * Computes the value of the piecewise linear function for a given x-value.
+     * If the x-value falls outside the defined range of xPoints, the method performs extrapolation.
+     * Otherwise, it determines the appropriate segment and performs interpolation.
+     *
+     * @param x the x-coordinate for which to compute the corresponding y-value
+     * @return the computed y-value corresponding to the given x-coordinate
+     * @throws IllegalStateException if the provided x-value cannot be handled due to an unexpected condition
+     */
     public double computeValue(double x) {
         // Handle x outside the range by extrapolating
         if (x <= xPoints[0]) {

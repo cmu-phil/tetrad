@@ -23,6 +23,10 @@ import java.util.stream.IntStream;
  */
 public class LgMnarDataSimulator {
 
+    private LgMnarDataSimulator() {
+        throw new IllegalArgumentException("Utility class");
+    }
+
     /**
      * Generates a dataset with Missing Not At a Random (MNAR) data mechanism applied to specific variables in a graph.
      * The method modifies the input graph to include missingness indicators and simulates data based on the modified
@@ -157,6 +161,13 @@ public class LgMnarDataSimulator {
         return dataSet;
     }
 
+    /**
+     * The entry point for the application. This method generates a random graph,
+     * applies a Missing Not At Random (MNAR) mechanism to introduce missing data
+     * into a dataset, and displays the dataset along with the associated graph.
+     *
+     * @param args Command-line arguments (not used for this program).
+     */
     public static void main(String[] args) {
         RandomUtil.getInstance().setSeed(38482834L);
 

@@ -40,8 +40,8 @@ import java.util.stream.IntStream;
  * In either case, we choose random functions fi using multilayer perceptrons from R to R with one hidden layer and tanh
  * activation functions. The number of hidden neurons is a parameter.
  * <p>
- * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., &amp; Schölkopf, B. (2008). Nonlinear causal discovery with additive
- * noise models. Advances in neural information processing systems, 21.
+ * Hoyer, P., Janzing, D., Mooij, J. M., Peters, J., &amp; Schölkopf, B. (2008). Nonlinear causal discovery with
+ * additive noise models. Advances in neural information processing systems, 21.
  * <p>
  * Chu, T., Glymour, C., &amp; Ridgeway, G. (2008). Search for Additive Nonlinear Time Series Causal Models. Journal of
  * Machine Learning Research, 9(5).
@@ -161,21 +161,19 @@ public class NonlinearFunctionOfLinear {
     private DistortionType distortionType = DistortionType.POST_NONLINEAR;
 
     /**
-     * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
-     * coefficient bounds, and Taylor series degree.
-     * <p>
-     * This is a private constructor that initializes the simulation with the specified parameters and parent
-     * functions.
+     * Constructs a NonlinearFunctionOfLinear instance, which generates synthetic data based on a directed acyclic
+     * graph (DAG) using post-nonlinear causal relationships and associated modeling parameters.
      *
-     * @param graph             The directed acyclic graph (DAG) that defines the causal relationships among variables.
-     *                          It must be acyclic, otherwise an IllegalArgumentException is thrown.
-     * @param numSamples        The number of samples to generate for the simulation. Must be a positive integer.
-     * @param noiseDistribution The real-valued noise distribution used for simulating additive noise in the causal
-     *                          mechanisms. positive integer.
-     * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
-     *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
-     *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
-     *                                  defined graph structure.
+     * @param graph The directed acyclic graph defining causal relationships between variables. Must not contain cycles.
+     * @param numSamples The number of samples to be generated. Must be a positive integer.
+     * @param noiseDistribution The distribution from which the random noise will be sampled.
+     * @param rescaleMin The minimum value for rescaling the generated data. Must be less than or equal to rescaleMax.
+     * @param rescaleMax The maximum value for rescaling the generated data. Must be greater than or equal to rescaleMin.
+     * @param coefLow The lower bound for the uniform sampling of coefficients.
+     * @param coefHigh The upper bound for the uniform sampling of coefficients.
+     * @param coefSymmetric Indicates whether coefficient sampling should be symmetric around zero.
+     * @param hiddenDimension The dimensionality of hidden variables in the model.
+     * @param inputScale A scaling factor applied to the inputs of the nonlinear functions.
      */
     public NonlinearFunctionOfLinear(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                      double rescaleMin, double rescaleMax, double coefLow, double coefHigh, boolean coefSymmetric,
@@ -313,6 +311,14 @@ public class NonlinearFunctionOfLinear {
         }
     }
 
+    /**
+     * Sets the type of distortion to be applied in the nonlinear additive causal model.
+     *
+     * @param distortionType The DistortionType to set. Determines the distortion mechanism used to modify the data in
+     *                       the causal model. Valid values are: - NONE: No distortion applied. - PRE_NOISE: Noise added
+     *                       after the nonlinear distortion. - POST_NONLINEAR: Noise added before the nonlinear
+     *                       distortion.
+     */
     public void setDistortionType(DistortionType distortionType) {
         this.distortionType = distortionType;
     }

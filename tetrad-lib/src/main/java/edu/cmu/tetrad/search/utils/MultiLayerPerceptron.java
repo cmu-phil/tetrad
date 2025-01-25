@@ -3,6 +3,11 @@ package edu.cmu.tetrad.search.utils;
 import java.util.Random;
 import java.util.function.Function;
 
+/**
+ * The MultiLayerPerceptron class represents a simple feedforward neural network
+ * with one output and support for multiple hidden layers. The network uses
+ * configurable activation functions and random initialization of weights and biases.
+ */
 public class MultiLayerPerceptron {
     private final double[][][] weights; // Weights for all layers
     private final double[][] biases;   // Biases for all layers
@@ -89,6 +94,13 @@ public class MultiLayerPerceptron {
         return scaledInput;
     }
 
+    /**
+     * The main method serves as the entry point of the application. It demonstrates
+     * the usage of the MultiLayerPerceptron class by initializing a perceptron with specific
+     * parameters, processing sample input data, and outputting the computed results.
+     *
+     * @param args Command-line arguments provided to the application (not used in this implementation).
+     */
     public static void main(String[] args) {
         // Example usage
         MultiLayerPerceptron mlp = new MultiLayerPerceptron(

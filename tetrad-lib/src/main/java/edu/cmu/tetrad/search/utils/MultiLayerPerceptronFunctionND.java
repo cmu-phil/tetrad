@@ -43,6 +43,14 @@ public class MultiLayerPerceptronFunctionND {
         }
     }
 
+    /**
+     * The main method demonstrating the creation and evaluation of a multi-layer perceptron
+     * function with random initialization and specific parameters.
+     * It defines the function, evaluates the function on given sample inputs, and
+     * prints the results to the console.
+     *
+     * @param args Command-line arguments passed to the program.
+     */
     public static void main(String[] args) {
         // Define a random function with 20 hidden neurons, sine activation, and high bumpiness
         MultiLayerPerceptronFunctionND randomFunction = new MultiLayerPerceptronFunctionND(
@@ -103,6 +111,14 @@ public class MultiLayerPerceptronFunctionND {
         return output;
     }
 
+    /**
+     * Evaluates the adjusted output of the function for a given input vector.
+     * The adjustment involves subtracting the output when the input is a zero-filled vector.
+     *
+     * @param doubles Input vector in R^n.
+     * @return The adjusted output value in R, calculated by subtracting the output of the zero-filled vector from
+     *         the output of the provided input vector.
+     */
     public Double evaluateAdjusted(double[] doubles) {
         double zero = evaluate(new double[doubles.length]);
         return evaluate(doubles) - zero;

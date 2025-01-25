@@ -1119,6 +1119,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
     }
 
+    /**
+     * Calculates and returns Fisher's combined p-value based on the specified dependence assumption.
+     *
+     * @param indep A boolean flag indicating whether the calculation assumes independence
+     *              (true for independent assumption, false for dependent assumption).
+     * @return The Fisher's combined p-value calculated under the specified dependence assumption.
+     */
     public double getFisherCombinedP(boolean indep) {
         if (indep) {
             return fisherCombinedPIndep;

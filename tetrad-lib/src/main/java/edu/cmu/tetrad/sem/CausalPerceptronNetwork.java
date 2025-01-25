@@ -124,27 +124,19 @@ public class CausalPerceptronNetwork {
     private Function<Double, Double> activationFunction = Math::tanh;
 
     /**
-     * Constructs a additive model with the specified graph, number of samples, noise distribution, derivative bounds,
-     * coefficient bounds, and Taylor series degree.
-     * <p>
-     * This is a private constructor that initializes the simulation with the specified parameters and parent
-     * functions.
+     * Constructs a CausalPerceptronNetwork that operates on a directed acyclic graph (DAG)
+     * to model causal relationships with post-nonlinear causal mechanisms and custom activation functions.
      *
-     * @param graph             The directed acyclic graph (DAG) that defines the causal relationships among variables.
-     *                          It must be acyclic, otherwise an IllegalArgumentException is thrown.
-     * @param numSamples        The number of samples to generate for the simulation. Must be a positive integer.
-     * @param noiseDistribution The real-valued noise distribution used for simulating additive noise in the causal
-     *                          mechanisms. positive integer.
-     * @param rescaleMin        The lower bound for rescaling data during the simulation. Must be less than or equal to
-     *                          rescaleMax.
-     * @param rescaleMax        The upper bound for rescaling data during the simulation. Must be greater than or equal
-     *                          to rescaleMin.
-     * @param hiddenDimensions   The number of neurons in each hidden layer the MLP functions.
-     * @param inputScale        The scaling factor for the input to create bumpiness.
-     * @throws IllegalArgumentException if the graph contains cycles, if derivMin is greater than derivMax, if
-     *                                  firstDerivMin is greater than firstDerivMax, if numSamples is less than 1, if
-     *                                  taylorSeriesDegree is less than 1, or if parent functions are incomplete for the
-     *                                  defined graph structure.
+     * @param graph The directed acyclic graph (DAG) representing the causal structure.
+     * @param numSamples The number of synthetic data samples to generate.
+     * @param noiseDistribution The noise distribution used for simulating random noise in the causal relationships.
+     * @param rescaleMin The minimum value for rescaling the generated data.
+     * @param rescaleMax The maximum value for rescaling the generated data.
+     * @param hiddenDimensions An array specifying the number of units in each hidden layer of the perceptron network.
+     * @param inputScale A scaling factor to adjust the input to the network.
+     * @param activationFunction The activation function applied within the perceptron network for nonlinearity.
+     * @throws IllegalArgumentException If the graph contains cycles, numSamples is less than 1, rescaleMin is greater
+     *                                  than rescaleMax, or any value in hiddenDimensions is less than 1.
      */
     public CausalPerceptronNetwork(Graph graph, int numSamples, RealDistribution noiseDistribution,
                                    double rescaleMin, double rescaleMax, int[] hiddenDimensions, double inputScale,
