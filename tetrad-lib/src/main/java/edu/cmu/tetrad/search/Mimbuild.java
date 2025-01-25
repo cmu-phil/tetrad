@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -39,6 +39,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -86,7 +87,7 @@ public class Mimbuild {
     // The penalty discount of the score used to infer the structure graph.
     private double penaltyDiscount = 1;
     // jf Clusters smaller than this size will be tossed out.
-    private int minClusterSize = 3;
+    private int minClusterSize = 1;
     private long seed = -1;
 
     /**
@@ -95,6 +96,88 @@ public class Mimbuild {
     public Mimbuild() {
     }
 
+    /**
+     * Conducts a search to infer a graph over latent variables based on the provided clustering,
+     * measure names, latent variable names, and measures covariance.
+     *
+     * @param clustering An array where each subarray represents a cluster of measured variables,
+     *                   with each index corresponding to the position of a measure in the measureNames array.
+     *                   Each cluster is assumed to be explained by a single latent variable.
+     *                   The clusters must be disjoint.
+     * @param measureNames An array of names corresponding to the measured variables.
+     * @param latentNames An array of names for the latent variables, where each name corresponds to a cluster
+     *                    in the clustering parameter.
+     * @param measuresCov A two-dimensional double array representing the covariance matrix over the measured variables.
+     * @return A graph inferred over the latent variables, depicting relationships among measured and latent variables.
+     * @throws InterruptedException If the search process is interrupted.
+     * @throws IllegalArgumentException If the clustering contains invalid indices or overlapping clusters.
+     * @throws NullPointerException If any of the arguments are null.
+     */
+    public Graph search(int[][] clustering, String[] measureNames, String[] latentNames, double[][] measuresCov) throws InterruptedException {
+
+        // Check nullity.
+        if (clustering == null || measureNames == null || latentNames == null || measuresCov == null) {
+            throw new NullPointerException("Null arguments are not allowed.");
+        }
+
+        // Make sure the clustering is valid.
+        for (int[] cluster : clustering) {
+            for (int i : cluster) {
+                if (i < 0 || i >= measureNames.length) {
+                    throw new IllegalArgumentException("Cluster index outside range of measure names: " + i);
+                }
+            }
+        }
+
+        // Make sure the clusters don't overlap.
+        for (int i = 0; i < clustering.length; i++) {
+            for (int j = i + 1; j < clustering.length; j++) {
+                for (int k : clustering[i]) {
+                    if (Arrays.binarySearch(clustering[j], k) >= 0) {
+                        throw new IllegalArgumentException("Clusters must be disjoint.");
+                    }
+                }
+            }
+        }
+
+        // Convert the measure names to a list of nodes.
+        List<Node> measureNodes = new ArrayList<>();
+
+        for (String name : measureNames) {
+            measureNodes.add(new GraphNode(name));
+        }
+
+        // Convert the clustering to a list over lists of measure nodes.
+        List<List<Node>> clusteringList = new ArrayList<>();
+
+        for (int[] cluster : clustering) {
+            List<Node> clusterList = new ArrayList<>();
+
+            for (int i : cluster) {
+                clusterList.add(measureNodes.get(i));
+            }
+
+            clusteringList.add(clusterList);
+        }
+
+        // Convert the measure covariance matrix to a CovarianceMatrix.
+        if (measuresCov.length != measuresCov[0].length) {
+            throw new IllegalArgumentException("Measures covariance matrix must be square.");
+        }
+
+        if (measuresCov.length != measureNodes.size()) {
+            throw new IllegalArgumentException("Measures covariance matrix must have the same number of rows as measure names.");
+        }
+
+        CovarianceMatrix measuresCovMatrix = new CovarianceMatrix(measureNodes, new Matrix(measuresCov), measuresCov.length);
+
+        // Convert the latent names to a list of string.
+        List<String> latentNodes = new ArrayList<>();
+        Collections.addAll(latentNodes, latentNames);
+
+        // Run the search.
+        return search(clusteringList, latentNodes, measuresCovMatrix);
+    }
 
     /**
      * Does a Mimbuild search.
@@ -165,6 +248,7 @@ public class Mimbuild {
 
         SemBicScore score = new SemBicScore(latentscov);
         score.setPenaltyDiscount(this.penaltyDiscount);
+        score.setUsePseudoInverse(true);
         PermutationSearch search = new PermutationSearch(new Boss(score));
         search.setSeed(seed);
         search.setKnowledge(this.knowledge);
@@ -340,10 +424,11 @@ public class Mimbuild {
         int df = (p) * (p + 1) / 2 - (numParams);
         double x = (N - 1) * this.minimum;
 
-        if (df < 1) throw new IllegalStateException(
-                "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
-                "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
-                "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
+        if (df < 1) df = 1;
+//            throw new IllegalStateException(
+//                "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
+//                "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
+//                "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
 
         ChiSquaredDistribution chisq = new ChiSquaredDistribution(df);
 

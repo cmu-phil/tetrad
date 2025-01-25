@@ -24,10 +24,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Model for a conditional histogram for mixed continuous and discrete variables.
@@ -119,6 +116,53 @@ public class Histogram {
         this.numBins = numBins;
     }
 
+//    /**
+//     * <p>getFrequencies.</p>
+//     *
+//     * @return the counts for the histogram, one count for each target, in an integer array.
+//     */
+//    public int[] getFrequencies() {
+//        if (this.target instanceof ContinuousVariable) {
+//            List<Double> _data = getConditionedDataContinuous();
+//            _data = removeZeroPointsPerPlot(_data);
+//            double[] breakpoints = getBreakpoints(_data, this.numBins);
+//
+//            int[] counts = new int[this.numBins];
+//
+//            for (Double d : _data) {
+//                boolean sorted = false;
+//
+//                int h;
+//
+//                for (h = 0; h < breakpoints.length; h++) {
+//                    if (breakpoints[h] > d) {
+//                        counts[h]++;
+//                        sorted = true;
+//                        break;
+//                    }
+//                }
+//
+//                if (!sorted) {
+//                    counts[breakpoints.length]++;
+//                }
+//            }
+//
+//            return counts;
+//        } else if (this.target instanceof DiscreteVariable _var) {
+//            List<Integer> _data = getConditionedDataDiscrete();
+//
+//            int[] counts = new int[_var.getNumCategories()];
+//
+//            for (Integer d : _data) {
+//                counts[d]++;
+//            }
+//
+//            return counts;
+//        } else {
+//            throw new IllegalArgumentException("Unrecognized variable type.");
+//        }
+//    }
+
     /**
      * <p>getFrequencies.</p>
      *
@@ -126,38 +170,39 @@ public class Histogram {
      */
     public int[] getFrequencies() {
         if (this.target instanceof ContinuousVariable) {
-            List<Double> _data = getConditionedDataContinuous();
-            _data = removeZeroPointsPerPlot(_data);
-            double[] breakpoints = getBreakpoints(_data, this.numBins);
+            List<Double> rawData = getConditionedDataContinuous();
+            rawData = removeZeroPointsPerPlot(rawData);
+            double[] breakpoints = getBreakpoints(rawData, this.numBins);
 
             int[] counts = new int[this.numBins];
 
-            for (Double d : _data) {
-                boolean sorted = false;
+            // Convert List<Double> to array for faster access
+            double[] data = rawData.stream().mapToDouble(Double::doubleValue).toArray();
 
-                int h;
-
-                for (h = 0; h < breakpoints.length; h++) {
-                    if (breakpoints[h] > d) {
-                        counts[h]++;
-                        sorted = true;
-                        break;
-                    }
+            // Binary search for optimal performance
+            for (double value : data) {
+                int index = Arrays.binarySearch(breakpoints, value);
+                if (index < 0) {
+                    // If not found, binarySearch returns (-(insertion point) - 1)
+                    index = -(index + 1);
                 }
-
-                if (!sorted) {
-                    counts[breakpoints.length]++;
+                if (index < counts.length) {
+                    counts[index]++;
                 }
             }
 
             return counts;
         } else if (this.target instanceof DiscreteVariable _var) {
-            List<Integer> _data = getConditionedDataDiscrete();
-
+            List<Integer> rawData = getConditionedDataDiscrete();
             int[] counts = new int[_var.getNumCategories()];
 
-            for (Integer d : _data) {
-                counts[d]++;
+            // Use an array for faster access
+            int[] data = rawData.stream().mapToInt(Integer::intValue).toArray();
+
+            for (int value : data) {
+                if (value >= 0 && value < counts.length) {
+                    counts[value]++;
+                }
             }
 
             return counts;
