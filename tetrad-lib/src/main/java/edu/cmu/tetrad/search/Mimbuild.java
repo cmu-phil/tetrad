@@ -88,7 +88,6 @@ public class Mimbuild {
     private double penaltyDiscount = 1;
     // jf Clusters smaller than this size will be tossed out.
     private int minClusterSize = 1;
-    private long seed = -1;
 
     /**
      * Constructs a new Mimbuild search.
@@ -648,15 +647,6 @@ public class Mimbuild {
         }
 
         return sum;
-    }
-
-    /**
-     * <p>Setter for the field <code>seed</code>.</p>
-     *
-     * @param seed a long
-     */
-    public void setSeed(long seed) {
-        this.seed = seed;
     }
 
     private class Function1 implements org.apache.commons.math3.analysis.MultivariateFunction {
