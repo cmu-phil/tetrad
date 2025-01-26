@@ -242,6 +242,23 @@ public class Mimbuild {
         }
 
         Matrix cov = getCov(measuresCov, latents, indicators);
+
+        // Check for nans in cov.
+        for (int i = 0; i < cov.getNumRows(); i++) {
+            for (int j = 0; j < cov.getNumColumns(); j++) {
+                if (Double.isNaN(cov.get(i, j))) {
+                    throw new IllegalArgumentException("NaN in cov search A.");
+                }
+            }
+        }
+
+        // Check if there are any zeros on the diagonal in cov.
+        for (int i = 0; i < cov.getNumRows(); i++) {
+            if (cov.get(i, i) == 0) {
+                throw new IllegalArgumentException("Zero on diagonal of cov.");
+            }
+        }
+
         CovarianceMatrix latentscov = new CorrelationMatrix(latents, cov, measuresCov.getSampleSize());
         this.latentsCov = latentscov;
         Graph graph;
@@ -250,7 +267,8 @@ public class Mimbuild {
         score.setPenaltyDiscount(this.penaltyDiscount);
         score.setUsePseudoInverse(true);
         PermutationSearch search = new PermutationSearch(new Boss(score));
-        search.setSeed(seed);
+//        search.setSeed(seed);
+
         search.setKnowledge(this.knowledge);
         graph = search.search();
 
@@ -327,6 +345,8 @@ public class Mimbuild {
             }
         }
 
+        LayoutUtil.fruchtermanReingoldLayout(graph);
+
         return graph;
     }
 
@@ -373,9 +393,8 @@ public class Mimbuild {
             for (int j = i; j < latentscov.getNumColumns(); j++) {
                 if (i == j) latentscov.set(i, j, 1.0);
                 else {
-                    final double v = .5;
-                    latentscov.set(i, j, v);
-                    latentscov.set(j, i, v);
+                    latentscov.set(i, j, .5);
+                    latentscov.set(j, i, .5);
                 }
             }
         }
@@ -478,7 +497,7 @@ public class Mimbuild {
         }
 
         Function1 function1 = new Function1(indicatorIndices, measurescov, loadings, latentscov);
-        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+        MultivariateOptimizer search = new PowellOptimizer(1e-5, 1e-5);
 
         PointValuePair pair = search.optimize(
                 new InitialGuess(values),
@@ -656,6 +675,28 @@ public class Mimbuild {
 
         @Override
         public double value(double[] values) {
+            for (double value : values) {
+                if (Double.isNaN(value)) {
+                    return Double.POSITIVE_INFINITY;
+                }
+            }
+
+            // We need to make sure these diagonal alements are always >= 0. These are supposed to be variances.
+            // The issue is we're trying to estimate a covariance matrix. The diagonal elements are not free to
+            // become <= 0. jdramsey 2025-1-26
+            int _count = 0;
+
+            for (int i = 0; i < this.loadings.length; i++) {
+                for (int j = i; j < this.loadings.length; j++) {
+                    if (i == j) {
+                        if (values[_count] <= 0) {
+                            return Double.POSITIVE_INFINITY;
+                        }
+                    }
+                    _count++;
+                }
+            }
+
             int count = 0;
 
             for (int i = 0; i < this.loadings.length; i++) {
@@ -697,6 +738,23 @@ public class Mimbuild {
 
         @Override
         public double value(double[] values) {
+
+            // We need to make sure these diagonal alements are always >= 0. These are supposed to be variances.
+            // The issue is we're trying to estimate a covariance matrix. The diagonal elements are not free to
+            // become <= 0. jdramsey 2025-1-26
+            int _count = 0;
+
+            for (int i = 0; i < this.loadings.length; i++) {
+                for (int j = i; j < this.loadings.length; j++) {
+                    if (i == j) {
+                        if (values[_count] <= 0) {
+                            return Double.POSITIVE_INFINITY;
+                        }
+                    }
+                    _count++;
+                }
+            }
+
             int count = 0;
 
             for (int i = 0; i < this.loadings.length; i++) {

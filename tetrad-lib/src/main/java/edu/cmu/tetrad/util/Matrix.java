@@ -358,6 +358,10 @@ public class Matrix implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix pseudoinverse() {
+
+        // Note to self: If this pseudoinverse throws an exception, check to make sure the matrix being inverted
+        // does not contain NaNs. The pseudoinverse will not work if the matrix contains NaNs. jdramsey 2025-1-26
+
         if (zeroDimension()) return new Matrix(getNumColumns(), getNumRows());
         return new Matrix(getData().pseudoInverse());
     }
