@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -458,291 +458,95 @@ public class Fofc {
         Set<Set<Integer>> grown = new HashSet<>();
 
         // Lax grow phase with speedup.
-        if (true) {
-            Set<Integer> t = new HashSet<>();
-            int count = 0;
-            int total = puretriples.size();
+        Set<Integer> t = new HashSet<>();
+        int count = 0;
+        int total = puretriples.size();
 
-            do {
+        do {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            if (!puretriples.iterator().hasNext()) {
+                break;
+            }
+
+            Set<Integer> cluster = puretriples.iterator().next();
+            Set<Integer> _cluster = new HashSet<>(cluster);
+
+            for (int o : _variables) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                if (!puretriples.iterator().hasNext()) {
-                    break;
-                }
+                if (_cluster.contains(o)) continue;
 
-                Set<Integer> cluster = puretriples.iterator().next();
-                Set<Integer> _cluster = new HashSet<>(cluster);
+                List<Integer> _cluster2 = new ArrayList<>(_cluster);
+                int rejected = 0;
+                int accepted = 0;
 
-                for (int o : _variables) {
+                ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 2);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
-
-                    if (_cluster.contains(o)) continue;
-
-                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
-                    int rejected = 0;
-                    int accepted = 0;
-
-                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 2);
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        t.clear();
-                        t.add(_cluster2.get(choice[0]));
-                        t.add(_cluster2.get(choice[1]));
-                        t.add(o);
-
-                        if (!puretriples.contains(t)) {
-                            rejected++;
-                        } else {
-                            accepted++;
-                        }
-                    }
-
-                    if (rejected > accepted) {
-                        continue;
-                    }
-
-                    _cluster.add(o);
-
-                    ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
-                    clusterSignificance.setCheckType(checkType);
-
-                    if (significanceChecked && clusterSignificance.significant(_cluster2, alpha)) {
-                        _cluster2.remove(o);
-                    }
-                }
-
-                // This takes out all pure clusters that are subsets of _cluster.
-                ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
-                int[] choice2;
-                List<Integer> _cluster3 = new ArrayList<>(_cluster);
-
-                while ((choice2 = gen2.next()) != null) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    int n1 = _cluster3.get(choice2[0]);
-                    int n2 = _cluster3.get(choice2[1]);
-                    int n3 = _cluster3.get(choice2[2]);
 
                     t.clear();
-                    t.add(n1);
-                    t.add(n2);
-                    t.add(n3);
+                    t.add(_cluster2.get(choice[0]));
+                    t.add(_cluster2.get(choice[1]));
+                    t.add(o);
 
-                    puretriples.remove(t);
-                }
-
-                if (this.verbose) {
-                    log("Grown " + (++count) + " of " + total + ": "
-                        + ClusterSignificance.variablesForIndices(new ArrayList<>(_cluster), variables));
-                }
-                grown.add(_cluster);
-            } while (!puretriples.isEmpty());
-        }
-
-        // Lax grow phase without speedup.
-        if (false) {
-            int count = 0;
-            int total = puretriples.size();
-
-            // Optimized lax version of grow phase.
-            for (Set<Integer> cluster : new HashSet<>(puretriples)) {
-                Set<Integer> _cluster = new HashSet<>(cluster);
-
-                for (int o : _variables) {
-                    if (_cluster.contains(o)) continue;
-
-                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
-                    int rejected = 0;
-                    int accepted = 0;
-
-                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 4);
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        int n1 = _cluster2.get(choice[0]);
-                        int n2 = _cluster2.get(choice[1]);
-
-                        List<Integer> triple = triple(n1, n2, o);
-
-                        Set<Integer> t = new HashSet<>(triple);
-
-                        if (!puretriples.contains(t)) {
-                            rejected++;
-                        } else {
-                            accepted++;
-                        }
-
-//                        if (avgSumLnP(triple) < -10) continue CLUSTER;
-                    }
-
-                    if (rejected > accepted) {
-                        continue;
-                    }
-
-                    _cluster.add(o);
-                }
-
-                for (Set<Integer> c : new HashSet<>(puretriples)) {
-                    if (_cluster.containsAll(c)) {
-                        puretriples.remove(c);
+                    if (!puretriples.contains(t)) {
+                        rejected++;
+                    } else {
+                        accepted++;
                     }
                 }
 
-                if (this.verbose) {
-                    System.out.println("Grown " + (++count) + " of " + total + ": " + _cluster);
+                if (rejected > accepted) {
+                    continue;
                 }
 
-                grown.add(_cluster);
+                _cluster.add(o);
+
+                ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
+                clusterSignificance.setCheckType(checkType);
+
+                if (significanceChecked && clusterSignificance.significant(_cluster2, alpha)) {
+                    _cluster2.remove(o);
+                }
             }
-        }
 
-        // Strict grow phase.
-        if (false) {
-            Set<Integer> t = new HashSet<>();
-            int count = 0;
-            int total = puretriples.size();
+            // This takes out all pure clusters that are subsets of _cluster.
+            ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
+            int[] choice2;
+            List<Integer> _cluster3 = new ArrayList<>(_cluster);
 
-            do {
-                if (!puretriples.iterator().hasNext()) {
-                    break;
-                }
-
-                Set<Integer> cluster = puretriples.iterator().next();
-                Set<Integer> _cluster = new HashSet<>(cluster);
-
-                VARIABLES:
-                for (int o : _variables) {
-                    if (_cluster.contains(o)) continue;
-
-                    List<Integer> _cluster2 = new ArrayList<>(_cluster);
-
-                    ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 4);
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        int n1 = _cluster2.get(choice[0]);
-                        int n2 = _cluster2.get(choice[1]);
-                        int n3 = _cluster2.get(choice[2]);
-                        int n4 = _cluster2.get(choice[3]);
-
-                        t.clear();
-                        t.add(n1);
-                        t.add(n2);
-                        t.add(n3);
-                        t.add(n4);
-                        t.add(o);
-
-                        if (!puretriples.contains(t)) {
-                            continue VARIABLES;
-                        }
-
-//                        if (avgSumLnP(new ArrayList<Integer>(t)) < -10) continue CLUSTER;
-                    }
-
-                    _cluster.add(o);
-                }
-
-                // This takes out all pure clusters that are subsets of _cluster.
-                ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
-                int[] choice2;
-                List<Integer> _cluster3 = new ArrayList<>(_cluster);
-
-                while ((choice2 = gen2.next()) != null) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    int n1 = _cluster3.get(choice2[0]);
-                    int n2 = _cluster3.get(choice2[1]);
-                    int n3 = _cluster3.get(choice2[2]);
-
-                    t.clear();
-                    t.add(n1);
-                    t.add(n2);
-                    t.add(n3);
-
-                    puretriples.remove(t);
-                }
-
-                if (this.verbose) {
-                    System.out.println("Grown " + (++count) + " of " + total + ": " + _cluster);
-                }
-                grown.add(_cluster);
-            } while (!puretriples.isEmpty());
-        }
-
-        if (false) {
-            System.out.println("# pure triples = " + puretriples.size());
-
-            List<Set<Integer>> clusters = new LinkedList<>(puretriples);
-            Set<Integer> t = new HashSet<>();
-
-            for (int i = 0; i < clusters.size(); i++) {
+            while ((choice2 = gen2.next()) != null) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                System.out.println("I = " + i);
+                int n1 = _cluster3.get(choice2[0]);
+                int n2 = _cluster3.get(choice2[1]);
+                int n3 = _cluster3.get(choice2[2]);
 
-                J:
-                for (int j = i + 1; j < clusters.size(); j++) {
-                    Set<Integer> ci = clusters.get(i);
-                    Set<Integer> cj = clusters.get(j);
+                t.clear();
+                t.add(n1);
+                t.add(n2);
+                t.add(n3);
 
-                    if (ci == null) continue;
-                    if (cj == null) continue;
-
-                    Set<Integer> ck = new HashSet<>(ci);
-                    ck.addAll(cj);
-
-                    List<Integer> cm = new ArrayList<>(ck);
-
-                    ChoiceGenerator gen = new ChoiceGenerator(cm.size(), 3);
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        t.clear();
-                        t.add(cm.get(choice[0]));
-                        t.add(cm.get(choice[1]));
-                        t.add(cm.get(choice[2]));
-
-                        if (!puretriples.contains(t)) {
-                            continue J;
-                        }
-                    }
-
-                    clusters.set(i, ck);
-                    clusters.remove(j);
-                    j--;
-                    System.out.println("Removing " + ci + ", " + cj + ", adding " + ck);
-                }
+                puretriples.remove(t);
             }
 
-            grown = new HashSet<>(clusters);
-        }
+            if (this.verbose) {
+                log("Grown " + (++count) + " of " + total + ": "
+                    + ClusterSignificance.variablesForIndices(new ArrayList<>(_cluster), variables));
+            }
+            grown.add(_cluster);
+        } while (!puretriples.isEmpty());
 
         // Optimized pick phase.
         log("Choosing among grown clusters.");
@@ -838,7 +642,6 @@ public class Fofc {
 
             ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
             int[] choice2;
-//            boolean found = false;
 
             while ((choice2 = gen2.next()) != null) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -1106,9 +909,6 @@ public class Fofc {
      */
     private boolean vanishes(int x, int y, int z, int w) {
         if (this.testType == BpcTestType.TETRAD_DELTA) {
-//            Tetrad t1 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(z), this.variables.get(w));
-//            Tetrad t2 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(w), this.variables.get(z));
-
             TetradInt t1 = new TetradInt(x, y, z, w);
             TetradInt t2 = new TetradInt(x, y, w, z);
 
