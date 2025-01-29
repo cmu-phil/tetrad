@@ -87,8 +87,6 @@ public record TetradInt(int i, int j, int k, int l) implements TetradSerializabl
      */
     @Override
     public String toString() {
-        return String.format("TetradInt(<{%d, %d}, {%d, %d}>)",
-                Math.min(i, j), Math.max(i, j),
-                Math.min(k, l), Math.max(k, l));
+        return String.format("TetradInt(<{%d, %d}, {%d, %d}>)", i, j, k, l);
     }
 }

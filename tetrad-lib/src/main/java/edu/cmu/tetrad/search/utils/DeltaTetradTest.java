@@ -134,6 +134,7 @@ public class DeltaTetradTest {
                 sigmaSS.set(i, j, computeCovarianceOfSampleCovariances(sigmaA, sigmaB));
             }
         }
+
         return sigmaSS;
     }
 

@@ -74,7 +74,7 @@ public class Fofc {
     /**
      * The Delta test. Testing two tetrads simultaneously.
      */
-    private final DeltaTetradTest2 test;
+    private final BollenTing test;
     /**
      * The tetrad test--using Ricardo's. Used only for Wishart.
      */
@@ -130,7 +130,7 @@ public class Fofc {
         this.variables = cov.getVariables();
         this.alpha = alpha;
         this.testType = testType;
-        this.test = new DeltaTetradTest2(cov);
+        this.test = new BollenTing(cov.getMatrix().getDataCopy());
         this.test2 = new TetradTestContinuous(cov, testType, alpha);
         this.dataModel = cov;
         this.algorithm = algorithm;
@@ -155,7 +155,7 @@ public class Fofc {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.testType = testType;
-        this.test = new DeltaTetradTest2(dataSet);
+        this.test = new BollenTing(dataSet.getDoubleData().getDataCopy());
         this.test2 = new TetradTestContinuous(dataSet, testType, alpha);
         this.dataModel = dataSet;
         this.algorithm = algorithm;
@@ -909,10 +909,19 @@ public class Fofc {
      */
     private boolean vanishes(int x, int y, int z, int w) {
         if (this.testType == BpcTestType.TETRAD_DELTA) {
-            TetradInt t1 = new TetradInt(x, y, z, w);
-            TetradInt t2 = new TetradInt(x, y, w, z);
+//            TetradInt t1 = new TetradInt(x, y, z, w);
+//            TetradInt t2 = new TetradInt(x, w, z, y);
 
-            return this.test.getPValue(t1, t2) > this.alpha;
+//            return this.test.tetrads(t1, t2) > this.alpha;
+
+            int[][] ints1 = {{x, y}, {z, w}};
+            int[][] ints2 = {{x, w}, {z, y}};
+
+            List<int[][]> ints = new ArrayList<>();
+            ints.add(ints1);
+            ints.add(ints2);
+
+            return this.test.tetrads(ints) > this.alpha;
         } else if (this.testType == BpcTestType.TETRAD_WISHART) {
             return this.test2.tetradPValue(x, y, z, w) > this.alpha && this.test2.tetradPValue(x, y, w, z) > this.alpha;
         }
