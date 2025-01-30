@@ -103,8 +103,8 @@ public class Ftfc {
      * @param cov       The covariance matrix searched over.
      * @param algorithm The type of FOFC algorithm used.
      * @param alpha     The alpha significance cutoff.
-     * @see BpcTestType
-     * @see Fofc.Algorithm
+//     * @see BpcTestType
+//     * @see Fofc.Algorithm
      */
     public Ftfc(ICovarianceMatrix cov, Algorithm algorithm, double alpha) {
         cov = new CovarianceMatrix(cov);
@@ -123,8 +123,8 @@ public class Ftfc {
      * @param dataSet   The continuous dataset searched over.
      * @param algorithm The type of FOFC algorithm used.
      * @param alpha     The alpha significance cutoff.
-     * @see BpcTestType
-     * @see Fofc.Algorithm
+//     * @see BpcTestType
+//     * @see Fofc.Algorithm
      */
     public Ftfc(DataSet dataSet, Algorithm algorithm, double alpha) {
         this.variables = dataSet.getVariables();

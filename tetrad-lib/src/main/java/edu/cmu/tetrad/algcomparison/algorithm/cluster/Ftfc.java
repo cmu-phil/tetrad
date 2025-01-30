@@ -128,7 +128,7 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
-        parameters.add(Params.USE_WISHART);
+//        parameters.add(Params.TETRAD_TEST);
         parameters.add(Params.USE_GAP);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.VERBOSE);

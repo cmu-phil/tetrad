@@ -65,7 +65,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         System.out.println("alpha = " + parameters.getDouble(Params.ALPHA));
         System.out.println("penaltyDiscount = " + parameters.getDouble(Params.PENALTY_DISCOUNT));
-        System.out.println("useWishart = " + parameters.getBoolean(Params.USE_WISHART));
+        System.out.println("tetradTest = " + parameters.getInt(Params.TETRAD_TEST));
         System.out.println("significanceChecked = " + parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
         System.out.println("useGap = " + parameters.getBoolean(Params.USE_GAP));
         System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
@@ -75,13 +75,15 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         DataSet dataSet = (DataSet) dataModel;
         double alpha = parameters.getDouble(Params.ALPHA);
 
-        boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
+        int tetradTest = parameters.getInt(Params.TETRAD_TEST);
         BpcTestType testType;
 
-        if (wishart) {
+        if (tetradTest == 1) {
             testType = BpcTestType.TETRAD_WISHART;
-        } else {
+        } else if (tetradTest == 2) {
             testType = BpcTestType.TETRAD_DELTA;
+        } else {
+            throw new IllegalArgumentException("Unexpected test type: " + tetradTest);
         }
 
         edu.cmu.tetrad.search.Fofc search
@@ -178,7 +180,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.USE_WISHART);
+        parameters.add(Params.TETRAD_TEST);
         parameters.add(Params.SIGNIFICANCE_CHECKED);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);

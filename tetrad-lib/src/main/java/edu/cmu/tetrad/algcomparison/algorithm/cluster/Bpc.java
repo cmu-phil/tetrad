@@ -57,13 +57,15 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
         ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
         double alpha = parameters.getDouble(Params.ALPHA);
 
-        boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
+        int tetradTest = parameters.getInt(Params.TETRAD_TEST);
         BpcTestType testType;
 
-        if (wishart) {
+        if (tetradTest == 1) {
             testType = BpcTestType.TETRAD_WISHART;
-        } else {
+        } else if (tetradTest == 2) {
             testType = BpcTestType.TETRAD_DELTA;
+        } else {
+            throw new IllegalArgumentException("Unexpected test type: " + tetradTest);
         }
 
         edu.cmu.tetrad.search.Bpc bpc = new edu.cmu.tetrad.search.Bpc(cov, alpha, testType);
@@ -166,7 +168,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.USE_WISHART);
+        parameters.add(Params.TETRAD_TEST);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.CHECK_TYPE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);

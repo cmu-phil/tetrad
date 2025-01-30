@@ -645,9 +645,9 @@ public final class Params {
      */
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     /**
-     * Constant <code>USE_WISHART="useWishart"</code>
+     * Constant <code>TETRAD_TEST="tetrad_test"</code>
      */
-    public static final String USE_WISHART = "useWishart";
+    public static final String TETRAD_TEST = "tetrad_test";
     /**
      * Constant <code>CHECK_TYPE="checkType"</code>
      */
@@ -1043,7 +1043,7 @@ public final class Params {
             Params.STRUCTURE_PRIOR, Params.SYMMETRIC_FIRST_STEP, Params.TARGET_NAME, Params.THR, Params.THRESHOLD_FOR_NUM_EIGENVALUES,
             Params.THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH, Params.THRESHOLD_NO_RANDOM_DATA_SEARCH, Params.TWO_CYCLE_ALPHA,
             Params.UPPER_BOUND, Params.USE_CORR_DIFF_ADJACENCIES, Params.USE_FAS_ADJACENCIES, Params.USE_GAP,
-            Params.USE_MAX_P_ORIENTATION_HEURISTIC, Params.USE_SKEW_ADJACENCIES, Params.USE_WISHART, Params.VAR_HIGH,
+            Params.USE_MAX_P_ORIENTATION_HEURISTIC, Params.USE_SKEW_ADJACENCIES, Params.TETRAD_TEST, Params.VAR_HIGH,
             Params.VAR_LOW, Params.VERBOSE
     ));
     private static final Set<String> BOOTSTRAPPING_PARAMS = new HashSet<>(Arrays.asList(
