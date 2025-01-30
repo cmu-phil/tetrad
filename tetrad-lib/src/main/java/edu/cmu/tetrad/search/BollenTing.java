@@ -1,53 +1,43 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.data.SingularMatrixException;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class BollenTing {
-
+public class BollenTing implements NTadTest {
     private final int n;
-    private final SimpleMatrix df;
-    private SimpleMatrix S;
+    private final SimpleMatrix S;
 
-    public BollenTing(SimpleMatrix df) {
-        this.df = df;
-        this.S = computeCovariance(df);
-        this.n = df.numRows();
+    public BollenTing(DataSet data) {
+        this(new CovarianceMatrix(data));
     }
 
     public BollenTing(ICovarianceMatrix cov) {
-        this.df = null;
         this.S = cov.getMatrix().getDataCopy();
         this.n = cov.getSampleSize();
     }
 
-    public double tetrad(int[][] tet) {//}, boolean resample, double frac) {
+    @Override
+    public double tetrad(int[][] tet) {
         List<int[][]> tetList = new ArrayList<>();
         tetList.add(tet);
-        return tetrads(tetList); ///, resample, frac);
+        return tetrads(tetList);
     }
 
-    public double tetrads(List<int[][]> tets) {//}, boolean resample, double frac) {
-//        SimpleMatrix S;
-//        int n;
-//
-//        if (resample) {
-//            // Assume df.sample(frac) is handled elsewhere
-//            SimpleMatrix dfSample = df.sample(frac);  // Pseudocode: Replace with actual sampling logic
-//            n = dfSample.numRows();
-//            S = computeCovariance(dfSample);
-//        } else {
-//            n = this.n;
-//            S = this.S;
-//        }
+    @Override
+    public double tetrads(int[][]... tets) {
+        List<int[][]> tetList = new ArrayList<>();
+        Collections.addAll(tetList, tets);
+        return tetrads(tetList);
+    }
 
+    @Override
+    public double tetrads(List<int[][]> tets) {
         Set<Integer> V = new HashSet<>();
         for (int[][] tet : tets) {
             for (int i = 0; i < 2; i++) {
@@ -82,16 +72,12 @@ public class BollenTing {
             double detA = A.determinant();
             t.set(i, 0, detA);
 
-//            if (MatrixFeatures_DDRM.isSingular(A.getDDRM())) {
-//                throw new RuntimeException("Matrix is singular, cannot compute inverse.");
-//            }
-
             SimpleMatrix AdjT;
 
             try {
                 AdjT = A.invert().transpose().scale(detA);
             } catch (SingularMatrixException e) {
-                throw new RuntimeException("Singular matrix", e);
+                throw new RuntimeException("AdjT is singular", e);
             }
 
             for (int j = 0; j < lenS; j++) {
@@ -111,7 +97,7 @@ public class BollenTing {
         double T = n * t.transpose().mult(ttInv).mult(t).get(0, 0);
 
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(tets.size());
-        return 1 - chi2.cumulativeProbability(T);
+        return 1.0 - chi2.cumulativeProbability(T);
     }
 
     private boolean contains(int[] array, int value) {
@@ -164,6 +150,5 @@ public class BollenTing {
         }
         return subMatrix;
     }
-
 }
 

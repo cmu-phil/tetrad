@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +39,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class CorrelationMatrix extends CovarianceMatrix {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

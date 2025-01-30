@@ -13,7 +13,6 @@ import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.utils.BpcTestType;
-import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -70,7 +69,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         System.out.println("significanceChecked = " + parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
         System.out.println("useGap = " + parameters.getBoolean(Params.USE_GAP));
         System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
-        System.out.println("checkType = " + parameters.getInt(Params.CHECK_TYPE));
+//        System.out.println("checkType = " + parameters.getInt(Params.CHECK_TYPE));
         System.out.println("precomputeCovariances = " + parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
         System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
 
@@ -88,29 +87,19 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             testType = BpcTestType.TETRAD_DELTA;
         }
 
-        boolean gap = parameters.getBoolean(Params.USE_GAP, true);
+//        boolean gap = parameters.getBoolean(Params.USE_GAP, true);
         edu.cmu.tetrad.search.Fofc.Algorithm algorithm;
 
-        if (gap) {
-            algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.GAP;
-        } else {
-            algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.SAG;
-        }
+//        if (gap) {
+//            algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.GAP;
+//        } else {
+//            algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.SAG;
+//        }
 
         edu.cmu.tetrad.search.Fofc search
-                = new edu.cmu.tetrad.search.Fofc(dataSet, testType, algorithm, alpha);
+                = new edu.cmu.tetrad.search.Fofc(dataSet, testType, alpha);
         search.setSignificanceChecked(parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        if (parameters.getInt(Params.CHECK_TYPE) == 1) {
-            search.setCheckType(ClusterSignificance.CheckType.Significance);
-        } else if (parameters.getInt(Params.CHECK_TYPE) == 2) {
-            search.setCheckType(ClusterSignificance.CheckType.Clique);
-        } else if (parameters.getInt(Params.CHECK_TYPE) == 3) {
-            search.setCheckType(ClusterSignificance.CheckType.None);
-        } else {
-            throw new IllegalArgumentException("Unexpected check type");
-        }
 
         Graph graph = search.search();
 
@@ -202,9 +191,9 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.SIGNIFICANCE_CHECKED);
-        parameters.add(Params.USE_GAP);
+//        parameters.add(Params.USE_GAP);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
-        parameters.add(Params.CHECK_TYPE);
+//        parameters.add(Params.CHECK_TYPE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.VERBOSE);
 
