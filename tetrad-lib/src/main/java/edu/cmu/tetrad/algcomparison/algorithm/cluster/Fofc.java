@@ -70,12 +70,12 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         double alpha = parameters.getDouble(Params.ALPHA);
 
         int tetradTest = parameters.getInt(Params.TETRAD_TEST);
-        BpcTestType testType;
+        edu.cmu.tetrad.search.Fofc.TestType testType;
 
         if (tetradTest == 1) {
-            testType = BpcTestType.TETRAD_WISHART;
+            testType = edu.cmu.tetrad.search.Fofc.TestType.TETRAD_WISHART;
         } else if (tetradTest == 2) {
-            testType = BpcTestType.TETRAD_DELTA;
+            testType = edu.cmu.tetrad.search.Fofc.TestType.TETRAD_DELTA;
         } else {
             throw new IllegalArgumentException("Unexpected test type: " + tetradTest);
         }

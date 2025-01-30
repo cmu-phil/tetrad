@@ -58,7 +58,6 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author josephramsey
  * @version $Id: $Id
  * @see Fofc
- * @see Bpc
  */
 public class Ftfc {
     /**

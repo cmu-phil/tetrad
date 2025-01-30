@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -33,7 +32,10 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
@@ -58,7 +60,6 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author josephramsey
  * @version $Id: $Id
  * @see Ftfc
- * @see Bpc
  */
 public class Fofc {
     /**
@@ -80,7 +81,7 @@ public class Fofc {
     /**
      * The type of test used.
      */
-    private final BpcTestType testType;
+    private final TestType testType;
     /**
      * The Wishart test. This tests a single tetrad.
      */
@@ -104,9 +105,8 @@ public class Fofc {
      * @param dataSet  The continuous dataset searched over.
      * @param testType The type of test used.
      * @param alpha    The alpha significance cutoff.
-     * @see BpcTestType
      */
-    public Fofc(DataSet dataSet, BpcTestType testType, double alpha) {
+    public Fofc(DataSet dataSet, TestType testType, double alpha) {
         if (testType == null) throw new NullPointerException("Null test type.");
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
@@ -469,14 +469,14 @@ public class Fofc {
      * @return True if the quartet vanishes, false otherwise.
      */
     private boolean vanishes(int x, int y, int z, int w) {
-        if (this.testType == BpcTestType.TETRAD_WISHART) {
+        if (this.testType == TestType.TETRAD_WISHART) {
             int[][] ints1 = {{x, y}, {z, w}};
             int[][] ints2 = {{x, z}, {y, w}};
 
             return this.test1.tetrad(ints1) > this.alpha && this.test2.tetrad(ints2) > this.alpha;
         }
 
-        if (this.testType == BpcTestType.TETRAD_DELTA) {
+        if (this.testType == TestType.TETRAD_DELTA) {
             int[][] ints1 = {{x, y}, {z, w}};
             int[][] ints2 = {{x, z}, {y, w}};
 
@@ -497,7 +497,7 @@ public class Fofc {
      * @return A Graph object representing the search graph nodes.
      */
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
-        Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph(this.variables);
 
         List<Node> latents = new ArrayList<>();
         List<Set<Node>> _clusters = new ArrayList<>(clusters);
@@ -564,6 +564,25 @@ public class Fofc {
         if (this.verbose) {
             TetradLogger.getInstance().log(s);
         }
+    }
+
+    /**
+     * Enum representing the types of tests that can be used in the Fofc class. These test types determine the
+     * statistical method applied during the search for clusters or variable relationships.
+     */
+    public enum TestType {
+        /**
+         * Represents the Tetrad Wishart test, a statistical method used for structure discovery or dependency testing
+         * in the Fofc class. This test type is employed in applications requiring the evaluation of relationships or
+         * clusters among variables.
+         */
+        TETRAD_WISHART,
+        /**
+         * Represents the Tetrad Delta test, a statistical method used for structure discovery or dependency testing in
+         * the Fofc class. This test type is utilized to evaluate variable relationships or clusters based on specific
+         * statistical criteria.
+         */
+        TETRAD_DELTA
     }
 }
 
