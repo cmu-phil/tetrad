@@ -112,7 +112,7 @@ public class Fofc {
         this.alpha = alpha;
         this.testType = testType;
         this.test1 = new Wishart(dataSet);
-        this.test2 = new Ark(dataSet);
+        this.test2 = new BollenTing(dataSet);
 //        this.test2 = new Ark(dataSet);
 //        this.test2 = new ArkSplit(dataSet, 0.5);
         this.dataModel = dataSet;
