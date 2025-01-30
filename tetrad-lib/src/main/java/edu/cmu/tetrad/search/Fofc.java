@@ -97,10 +97,6 @@ public class Fofc {
      * Whether verbose output is desired.
      */
     private boolean verbose;
-    /**
-     * Whether the significance of the cluster should be checked for each cluster.
-     */
-    private boolean significanceChecked;
 
     /**
      * Conctructor.
@@ -142,15 +138,6 @@ public class Fofc {
         clusterSignificance.printClusterPValues(allClusters);
 
         return convertToGraph(allClusters);
-    }
-
-    /**
-     * Sets whether the significance of the cluster should be checked for each cluster.
-     *
-     * @param significanceChecked True, if so.
-     */
-    public void setSignificanceChecked(boolean significanceChecked) {
-        this.significanceChecked = significanceChecked;
     }
 
     /**
@@ -197,130 +184,6 @@ public class Fofc {
         allClusters.addAll(mixedClusters);
         return allClusters;
 
-    }
-
-    /**
-     * Combines pure triples with given variables.
-     *
-     * @param pureTriples The set of pure triples.
-     * @param _variables  The list of variables.
-     * @return A set of combined clusters.
-     */
-    private Set<Set<Integer>> combinePureTriples(Set<Set<Integer>> pureTriples, List<Integer> _variables) {
-        log("Growing pure triples.");
-        Set<Set<Integer>> grown = new HashSet<>();
-
-        int count = 0;
-        int total = pureTriples.size();
-
-        do {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            if (!pureTriples.iterator().hasNext()) {
-                break;
-            }
-
-            Set<Integer> cluster = pureTriples.iterator().next();
-            Set<Integer> _cluster = new HashSet<>(cluster);
-
-            CHOICE:
-            for (int o : _variables) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                if (_cluster.contains(o)) continue;
-
-                List<Integer> _cluster2 = new ArrayList<>(_cluster);
-
-                ChoiceGenerator gen = new ChoiceGenerator(_cluster2.size(), 2);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    Set<Integer> t = new HashSet<>();
-                    t.add(_cluster2.get(choice[0]));
-                    t.add(_cluster2.get(choice[1]));
-                    t.add(o);
-
-                    if (!pureTriples.contains(t)) {
-                        continue CHOICE;
-                    }
-                }
-
-                _cluster.add(o);
-
-                ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
-
-                if (significanceChecked && !clusterSignificance.significant(_cluster2, alpha)) {
-                    _cluster2.remove((Object) o);
-                }
-            }
-
-            // This takes out all pure clusters that are subsets of _cluster.
-            ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
-            int[] choice2;
-            List<Integer> _cluster3 = new ArrayList<>(_cluster);
-
-            while ((choice2 = gen2.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                int n1 = _cluster3.get(choice2[0]);
-                int n2 = _cluster3.get(choice2[1]);
-                int n3 = _cluster3.get(choice2[2]);
-
-                Set<Integer> t = new HashSet<>();
-                t.add(n1);
-                t.add(n2);
-                t.add(n3);
-
-                pureTriples.remove(t);
-            }
-
-            if (this.verbose) {
-                log("Grown " + (++count) + " of " + total + ": "
-                    + ClusterSignificance.variablesForIndices(new ArrayList<>(_cluster), variables));
-            }
-            grown.add(_cluster);
-        } while (!pureTriples.isEmpty());
-
-        // Optimized pick phase.
-        log("Choosing among grown clusters.");
-
-        for (Set<Integer> l : grown) {
-            ArrayList<Integer> _l = new ArrayList<>(l);
-            Collections.sort(_l);
-            if (this.verbose) {
-                log("Grown: " + ClusterSignificance.variablesForIndices(_l, variables));
-            }
-        }
-
-        Set<Set<Integer>> out = new HashSet<>();
-
-        List<Set<Integer>> list = new ArrayList<>(grown);
-
-        list.sort((o1, o2) -> o2.size() - o1.size());
-
-        Set<Integer> all = new HashSet<>();
-
-        CLUSTER:
-        for (Set<Integer> cluster : list) {
-            for (Integer i : cluster) {
-                if (all.contains(i)) continue CLUSTER;
-            }
-
-            out.add(cluster);
-            all.addAll(cluster);
-        }
-
-        return out;
     }
 
     // Finds clusters of size 4 or higher for the tetrad-first algorithm.

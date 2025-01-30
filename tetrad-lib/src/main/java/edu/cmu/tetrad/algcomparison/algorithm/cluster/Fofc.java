@@ -61,15 +61,9 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-
         System.out.println("alpha = " + parameters.getDouble(Params.ALPHA));
         System.out.println("penaltyDiscount = " + parameters.getDouble(Params.PENALTY_DISCOUNT));
-        System.out.println("tetradTest = " + parameters.getInt(Params.TETRAD_TEST));
-        System.out.println("significanceChecked = " + parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
-        System.out.println("useGap = " + parameters.getBoolean(Params.USE_GAP));
         System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
-        System.out.println("precomputeCovariances = " + parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
         System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
 
         DataSet dataSet = (DataSet) dataModel;
@@ -88,7 +82,6 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         edu.cmu.tetrad.search.Fofc search
                 = new edu.cmu.tetrad.search.Fofc(dataSet, testType, alpha);
-        search.setSignificanceChecked(parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         Graph graph = search.search();
@@ -181,9 +174,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.TETRAD_TEST);
-        parameters.add(Params.SIGNIFICANCE_CHECKED);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
-        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.VERBOSE);
 
         return parameters;
