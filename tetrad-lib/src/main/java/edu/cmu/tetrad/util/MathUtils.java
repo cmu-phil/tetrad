@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
@@ -113,8 +113,7 @@ public class MathUtils {
     }
 
     /**
-     * Applies the Rectified Linear Unit (ReLU) activation function to the given input.
-     * ReLU is defined as max(0, x).
+     * Applies the Rectified Linear Unit (ReLU) activation function to the given input. ReLU is defined as max(0, x).
      *
      * @param x the input value to which the ReLU function is applied
      * @return the result of applying the ReLU function, which is the input if it is positive, or 0 otherwise
@@ -124,8 +123,8 @@ public class MathUtils {
     }
 
     /**
-     * Applies the Leaky Rectified Linear Unit (Leaky ReLU) activation function to the given input.
-     * Leaky ReLU is defined as max(0.1 * x, x). It allows for a small, non-zero gradient when the unit is not active.
+     * Applies the Leaky Rectified Linear Unit (Leaky ReLU) activation function to the given input. Leaky ReLU is
+     * defined as max(0.1 * x, x). It allows for a small, non-zero gradient when the unit is not active.
      *
      * @param x the input value to which the Leaky ReLU function is applied
      * @return the result of applying the Leaky ReLU function, which is x if x is positive, or 0.1 * x otherwise
@@ -134,6 +133,14 @@ public class MathUtils {
         return Math.max(0.1 * x, x);
     }
 
+    /**
+     * Computes the inverse hyperbolic tangent (arctanh) of the given input. The input value must be strictly between -1
+     * and 1.
+     *
+     * @param x the input value for which to calculate the arctanh. Must be between -1 and 1 (exclusive).
+     * @return the arctanh of the specified input.
+     * @throws IllegalArgumentException if the input is not strictly within the range (-1, 1).
+     */
     public static double arctanh(double x) {
         if (x <= -1 || x >= 1) {
             throw new IllegalArgumentException("Input x must be between -1 and 1 (exclusive).");

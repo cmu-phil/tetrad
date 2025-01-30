@@ -15,7 +15,7 @@ import java.util.*;
  * assessing model constraints. It supports calculating p-values for specific configurations of variables represented as
  * tetrads, subsets of indices defining relationships among variables.
  * <p>
- * Bollen, K. A., & Ting, K. F. (1993). Confirmatory tetrad analysis. Sociological methodology, 147-175.
+ * Bollen, K. A., &amp; Ting, K. F. (1993). Confirmatory tetrad analysis. Sociological methodology, 147-175.
  */
 public class BollenTing implements NTadTest {
     /**
