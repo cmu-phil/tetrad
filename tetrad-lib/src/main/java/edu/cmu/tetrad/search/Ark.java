@@ -19,25 +19,23 @@ import java.util.List;
  */
 public class Ark implements NTadTest {
     /**
-     * The covariance matrix used for statistical computations within the Ark class.
-     * This matrix is typically derived from the input data or covariance matrix provided
-     * during the initialization of the Ark instance.
-     *
-     * S is a final SimpleMatrix object, ensuring its reference cannot be reassigned
-     * after initialization. However, its elements may still be modified if necessary
-     * by operations defined on the SimpleMatrix class.
+     * The covariance matrix used for statistical computations within the Ark class. This matrix is typically derived
+     * from the input data or covariance matrix provided during the initialization of the Ark instance.
+     * <p>
+     * S is a final SimpleMatrix object, ensuring its reference cannot be reassigned after initialization. However, its
+     * elements may still be modified if necessary by operations defined on the SimpleMatrix class.
      */
     private final SimpleMatrix S;
     /**
-     * Represents the number of variables to be analyzed or operated on within the context
-     * of the containing class. This value is typically used to configure or determine
-     * operations involving variable dimensions or counts in matrices or tetrad-related calculations.
+     * Represents the number of variables to be analyzed or operated on within the context of the containing class. This
+     * value is typically used to configure or determine operations involving variable dimensions or counts in matrices
+     * or tetrad-related calculations.
      */
     private final int n;
 
     /**
-     * Constructs an Ark object by initializing the covariance matrix and the number of rows
-     * based on the given DataSet.
+     * Constructs an Ark object by initializing the covariance matrix and the number of rows based on the given
+     * DataSet.
      *
      * @param dataSet the data set used to populate the covariance matrix and determine the number of rows
      */
@@ -49,8 +47,8 @@ public class Ark implements NTadTest {
     /**
      * Constructs an Ark object by initializing the covariance matrix and the sample size.
      *
-     * @param cov the covariance matrix to initialize the Ark object with.
-     *            Must not be an instance of CorrelationMatrix.
+     * @param cov the covariance matrix to initialize the Ark object with. Must not be an instance of
+     *            CorrelationMatrix.
      * @throws IllegalArgumentException if the provided covariance matrix is a CorrelationMatrix.
      */
     public Ark(ICovarianceMatrix cov) {
@@ -63,33 +61,31 @@ public class Ark implements NTadTest {
     }
 
     /**
-     * Calculates a combined p-value for multiple tetrad tests. Each tetrad is represented by two
-     * pairs of nodes, provided as a variable number of two-dimensional arrays.
+     * Calculates a combined p-value for multiple tetrad tests. Each tetrad is represented by two pairs of nodes,
+     * provided as a variable number of two-dimensional arrays.
      *
-     * @param tets a variable number of two-dimensional integer arrays, where each array represents
-     *             a tetrad as two pairs of nodes. Each array must contain exactly two rows, and
-     *             both rows must have the same length.
+     * @param tets a variable number of two-dimensional integer arrays, where each array represents a tetrad as two
+     *             pairs of nodes. Each array must contain exactly two rows, and both rows must have the same length.
      * @return the combined p-value for the input tetrads, computed using a Chi-squared distribution.
-     * @throws IllegalArgumentException if any of the input tetrads do not meet the required format
-     *                                  (two pairs of nodes with equal lengths).
+     * @throws IllegalArgumentException if any of the input tetrads do not meet the required format (two pairs of nodes
+     *                                  with equal lengths).
      */
-    public double tetrads(int[][]...tets) {
+    public double tetrads(int[][]... tets) {
         List<int[][]> tetList = new ArrayList<>();
         Collections.addAll(tetList, tets);
         return tetrads(tetList);
     }
 
     /**
-     * Computes a combined p-value for multiple tetrad tests. Each tetrad is represented
-     * by a pair of node arrays, processed to determine their statistical association.
+     * Computes a combined p-value for multiple tetrad tests. Each tetrad is represented by a pair of node arrays,
+     * processed to determine their statistical association.
      *
-     * @param tets a list of two-dimensional integer arrays, where each array represents
-     *             a tetrad with two pairs of nodes. Each array must contain exactly two rows,
-     *             and both rows must have the same length.
-     * @return the combined p-value for the input tetrads, computed using a Chi-squared
-     *         distribution and the sum of the logarithms of individual p-values.
-     * @throws IllegalArgumentException if any of the input tetrads do not conform to
-     *                                  the required format (two pairs of nodes with equal lengths).
+     * @param tets a list of two-dimensional integer arrays, where each array represents a tetrad with two pairs of
+     *             nodes. Each array must contain exactly two rows, and both rows must have the same length.
+     * @return the combined p-value for the input tetrads, computed using a Chi-squared distribution and the sum of the
+     * logarithms of individual p-values.
+     * @throws IllegalArgumentException if any of the input tetrads do not conform to the required format (two pairs of
+     *                                  nodes with equal lengths).
      */
     public double tetrads(List<int[][]> tets) {
         List<Double> p_values = new ArrayList<>();
@@ -110,7 +106,7 @@ public class Ark implements NTadTest {
 
         double sum = 0.0;
 
-        for (double p : p_values){
+        for (double p : p_values) {
             sum += Math.log(p);
         }
 
@@ -119,15 +115,15 @@ public class Ark implements NTadTest {
     }
 
     /**
-     * Computes the p-value for a tetrad test given a 2D integer array representing two pairs of nodes.
-     * The method performs computations involving submatrices, singular value decomposition,
-     * and statistical tests to determine the association between the nodes in the tetrad.
+     * Computes the p-value for a tetrad test given a 2D integer array representing two pairs of nodes. The method
+     * performs computations involving submatrices, singular value decomposition, and statistical tests to determine the
+     * association between the nodes in the tetrad.
      *
-     * @param tet a two-dimensional integer array where the first row represents the indices of the first pair
-     *            of nodes and the second row represents the indices of the second pair of nodes.
-     *            Both rows must have the same length.
-     * @return the p-value resulting from the tetrad test, computed using a statistical z-score and
-     *         its corresponding cumulative probability value.
+     * @param tet a two-dimensional integer array where the first row represents the indices of the first pair of nodes
+     *            and the second row represents the indices of the second pair of nodes. Both rows must have the same
+     *            length.
+     * @return the p-value resulting from the tetrad test, computed using a statistical z-score and its corresponding
+     * cumulative probability value.
      */
     public double tetrad(int[][] tet) {//}, boolean resample, double frac) {
         int[] a = tet[0];

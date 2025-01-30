@@ -19,7 +19,6 @@ import java.util.List;
  * matrices for each subset, and then uses these matrices for subsequent calculations.
  */
 public class ArkSplit implements NTadTest {
-
     /**
      * Covariance matrix of the first subset of the data.
      */
