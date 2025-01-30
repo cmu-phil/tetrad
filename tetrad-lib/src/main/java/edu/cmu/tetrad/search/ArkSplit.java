@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.util.MathUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.ejml.simple.SimpleMatrix;
@@ -10,12 +11,36 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * The ArkSplit class implements the NTadTest interface and provides functionality for conducting statistical tests
+ * based on tetrad configurations. It primarily operates on covariance matrices derived from split data sets.
+ * <p>
+ * This class takes an input dataset, splits it into two subsets based on a specified fraction, computes the covariance
+ * matrices for each subset, and then uses these matrices for subsequent calculations.
+ */
 public class ArkSplit implements NTadTest {
 
+    /**
+     * Covariance matrix of the first subset of the data.
+     */
     private final SimpleMatrix S1;
+    /**
+     * Covariance matrix of the second subset of the data.
+     */
     private final SimpleMatrix S2;
+    /**
+     * Number of rows in the second subset of the data.
+     */
     private final int n2;
 
+    /**
+     * Constructs an ArkSplit object that splits a given dataset into two parts based on the specified fraction. It
+     * computes the covariance matrices for each part of the split dataset.
+     *
+     * @param dataSet The dataset to be split and analyzed.
+     * @param frac    The fraction of the dataset to be allocated to the first partition. The remaining portion is
+     *                assigned to the second partition.
+     */
     public ArkSplit(DataSet dataSet, double frac) {
         SimpleMatrix D = dataSet.getDoubleData().getDataCopy();
 
@@ -31,16 +56,36 @@ public class ArkSplit implements NTadTest {
         this.n2 = D2.getNumRows();
     }
 
-    public static double arctanh(double x) {
-        return Ark.arctanh(x);
-    }
-
+    /**
+     * Computes a combined p-value for a collection of tetrads represented as variable index pairs. The method first
+     * converts the variable arguments into a list of tetrads and then delegates the computation to another method that
+     * accepts a list as input.
+     *
+     * @param tets A variable-length argument array where each element is a 2D array representing a tetrad. Each 2D
+     *             array must contain two rows of equal length, where each row represents a pair of variable indices.
+     * @return The combined p-value computed using the chi-squared distribution. The result is in the range [0, 1],
+     * where values close to 0 indicate stronger evidence against the null hypothesis.
+     */
     public double tetrads(int[][]... tets) {
         List<int[][]> tetList = new ArrayList<>();
         Collections.addAll(tetList, tets);
         return tetrads(tetList);
     }
 
+    /**
+     * Computes a combined p-value for a list of tetrads, where each tetrad is represented as a 2D array. The method
+     * calculates the p-value for each tetrad individually and then combines them using a chi-squared distribution.
+     * <p>
+     * Each tetrad must consist of two pairs of nodes, represented as two rows of equal length. The combined p-value
+     * provides a measure of statistical significance for the collection of tetrads.
+     *
+     * @param tets A list of 2D arrays, where each array represents a tetrad. Each 2D array must contain two rows of
+     *             equal length, with each row representing a pair of variable indices.
+     * @return The combined p-value for the input tetrads. The result is in the range [0, 1], where values closer to 0
+     * indicate stronger evidence against the null hypothesis.
+     * @throws IllegalArgumentException If a tetrad does not contain exactly two pairs of nodes or if the lengths of the
+     *                                  pairs within a tetrad are not equal.
+     */
     public double tetrads(List<int[][]> tets) {
         List<Double> p_values = new ArrayList<>();
 
@@ -69,6 +114,21 @@ public class ArkSplit implements NTadTest {
         return 1.0 - new ChiSquaredDistribution(2 * p_values.size()).cumulativeProbability(sum);
     }
 
+    /**
+     * Computes the p-value for a single tetrad, where the tetrad is represented as a 2D array with two rows. Each row
+     * contains indices of variables in the covariance matrices.
+     * <p>
+     * This method performs calculations using submatrices of pre-computed covariance matrices and implements various
+     * matrix operations to compute the p-value, measuring the statistical significance of the tetrad's independence
+     * structure.
+     *
+     * @param tet A 2D array representing the tetrad, consisting of two rows of equal length. Each row specifies indices
+     *            of variables involved in the tetrad computation.
+     * @return The computed p-value, which is a double in the range [0, 1]. Values closer to 0 indicate stronger
+     * evidence against the null hypothesis of independence.
+     * @throws IllegalArgumentException If the input array does not consist of exactly two rows or the rows have unequal
+     *                                  lengths.
+     */
     public double tetrad(int[][] tet) {
         int[] a = tet[0];
         int[] b = tet[1];
@@ -115,7 +175,7 @@ public class ArkSplit implements NTadTest {
         SimpleMatrix subR = extractSubMatrix(R, idx, idx).invert();
 
         double p_corr = -subR.get(0, 1) / Math.sqrt(subR.get(0, 0) * subR.get(1, 1));
-        double z_score = arctanh(p_corr) * Math.sqrt(this.n2 - idx.length - 1);
+        double z_score = MathUtils.arctanh(p_corr) * Math.sqrt(this.n2 - idx.length - 1);
 
         NormalDistribution normalDist = new NormalDistribution();
         return 2 * normalDist.cumulativeProbability(-Math.abs(z_score));

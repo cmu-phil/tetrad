@@ -133,6 +133,13 @@ public class MathUtils {
     public static Double leakyRelu(Double x) {
         return Math.max(0.1 * x, x);
     }
+
+    public static double arctanh(double x) {
+        if (x <= -1 || x >= 1) {
+            throw new IllegalArgumentException("Input x must be between -1 and 1 (exclusive).");
+        }
+        return 0.5 * Math.log((1 + x) / (1 - x));
+    }
 }
 
 

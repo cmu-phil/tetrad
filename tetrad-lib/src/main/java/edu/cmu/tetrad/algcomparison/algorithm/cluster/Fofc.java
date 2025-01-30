@@ -69,13 +69,10 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         System.out.println("significanceChecked = " + parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
         System.out.println("useGap = " + parameters.getBoolean(Params.USE_GAP));
         System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
-//        System.out.println("checkType = " + parameters.getInt(Params.CHECK_TYPE));
         System.out.println("precomputeCovariances = " + parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
         System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
 
         DataSet dataSet = (DataSet) dataModel;
-
-//        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
         double alpha = parameters.getDouble(Params.ALPHA);
 
         boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
@@ -86,15 +83,6 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         } else {
             testType = BpcTestType.TETRAD_DELTA;
         }
-
-//        boolean gap = parameters.getBoolean(Params.USE_GAP, true);
-        edu.cmu.tetrad.search.Fofc.Algorithm algorithm;
-
-//        if (gap) {
-//            algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.GAP;
-//        } else {
-//            algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.SAG;
-//        }
 
         edu.cmu.tetrad.search.Fofc search
                 = new edu.cmu.tetrad.search.Fofc(dataSet, testType, alpha);
@@ -133,6 +121,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+
             LayoutUtil.defaultLayout(structureGraph);
             LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
@@ -191,9 +180,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.SIGNIFICANCE_CHECKED);
-//        parameters.add(Params.USE_GAP);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
-//        parameters.add(Params.CHECK_TYPE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.VERBOSE);
 
@@ -213,7 +200,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Sets the knowledge associated with this object.
      *
-     * @param knowledge a knowledge object
+     * @param knowledge Background knowledge.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {

@@ -9,19 +9,54 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
+/**
+ * The BollenTing class implements the NTadTest interface and provides functionality to compute statistical tests based
+ * on tetrad configurations. This is commonly used for evaluating structural relationships between variables or
+ * assessing model constraints. It supports calculating p-values for specific configurations of variables represented as
+ * tetrads, subsets of indices defining relationships among variables.
+ * <p>
+ * Bollen, K. A., & Ting, K. F. (1993). Confirmatory tetrad analysis. Sociological methodology, 147-175.
+ */
 public class BollenTing implements NTadTest {
-    private final int n;
+    /**
+     * Represents the covariance matrix used in the analysis. This matrix is a core component in computations performed
+     * within the BollenTing class, including covariance extraction and related statistical tests.
+     */
     private final SimpleMatrix S;
+    /**
+     * Represents the sample size used in the analysis.
+     */
+    private final int n;
 
+    /**
+     * Constructs an instance of the BollenTing class using a DataSet object. The covariance matrix is computed from the
+     * given DataSet.
+     *
+     * @param data the DataSet object from which the covariance matrix is derived
+     */
     public BollenTing(DataSet data) {
         this(new CovarianceMatrix(data));
     }
 
+    /**
+     * Constructs an instance of the BollenTing class using an ICovarianceMatrix object. The covariance matrix data and
+     * sample size are extracted from the provided ICovarianceMatrix instance.
+     *
+     * @param cov the ICovarianceMatrix object from which the covariance matrix data and sample size are derived
+     */
     public BollenTing(ICovarianceMatrix cov) {
         this.S = cov.getMatrix().getDataCopy();
         this.n = cov.getSampleSize();
     }
 
+    /**
+     * Computes the tetrad statistic for a single tetrad represented by a 2D array. A tetrad is a mathematical construct
+     * used for statistical hypothesis testing.
+     *
+     * @param tet a 2D integer array representing a single tetrad. The array should comprise two rows, each representing
+     *            a set of indices used in the computation.
+     * @return the computed tetrad statistic as a double value.
+     */
     @Override
     public double tetrad(int[][] tet) {
         List<int[][]> tetList = new ArrayList<>();
@@ -29,6 +64,17 @@ public class BollenTing implements NTadTest {
         return tetrads(tetList);
     }
 
+    /**
+     * Computes the p-value of the tetrads statistic for multiple tetrads represented by an array of 2D arrays. Each 2D
+     * array represents a single tetrad, which itself consists of two sets of indices used in the statistical
+     * computation.
+     *
+     * @param tets a variable-length parameter containing one or more 2D integer arrays, where each 2D array represents
+     *             a tetrad. Each tetrad consists of two rows, with each row specifying a set of indices to be used in
+     *             the tetrad computation.
+     * @return the p-value of the computed tetrads statistic as a double value. The p-value provides the probability of
+     * observing the given data under a null hypothesis based on the chi-squared distribution.
+     */
     @Override
     public double tetrads(int[][]... tets) {
         List<int[][]> tetList = new ArrayList<>();
@@ -36,6 +82,21 @@ public class BollenTing implements NTadTest {
         return tetrads(tetList);
     }
 
+    /**
+     * ≈ Computes the p-value for the tetrads statistic based on a set of tetrads provided as a list of 2D arrays. Each
+     * tetrad is represented by a 2D integer array, where the first row contains one set of indices and the second row
+     * contains another set of indices.
+     * <p>
+     * The computation involves determining the determinant of submatrices derived from the covariance matrix,
+     * assembling gradients and sensitivity matrices, and performing statistical testing using the Chi-squared
+     * distribution.
+     *
+     * @param tets a list where each element is a 2D integer array representing a tetrad. Each 2D array must consist of
+     *             two rows, with the first row and the second row representing two sets of indices used in the
+     *             computation.
+     * @return the computed p-value as a double. The p-value quantifies the probability of observing the given data
+     * under the null hypothesis, using the Chi-squared distribution.
+     */
     @Override
     public double tetrads(List<int[][]> tets) {
         Set<Integer> V = new HashSet<>();

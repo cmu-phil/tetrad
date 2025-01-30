@@ -1,23 +1,47 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import org.ejml.simple.SimpleMatrix;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Wishart's test of a tetrad vanishing.
+ * <p>
+ * Wishart, J. (1928). Sampling errors in the theory of two factors. British Journal of Psychology, 19, 180-187.
+ */
 public class Wishart implements NTadTest {
-
+    /**
+     * Sample covariance matrix.
+     */
     private final SimpleMatrix S;
+    /**
+     * Sample size.
+     */
     private final int n;
 
+    /**
+     * Constructs a Wishart object using the provided dataset. Initializes the covariance matrix and the number of rows
+     * from the dataset.
+     *
+     * @param dataSet The dataset from which to compute the covariance matrix and the number of rows. The dataset should
+     *                provide appropriate numerical data for these computations.
+     */
     public Wishart(DataSet dataSet) {
         this.S = computeCovariance(dataSet.getDoubleData().getDataCopy());
         this.n = dataSet.getNumRows();
     }
 
+    /**
+     * Returns the p-value for the tetrad. This constructor is required by the interface, though in truth it will throw
+     * and exception if more than one tetrad is provided.
+     *
+     * @param tets A single tetrad.
+     * @return The p-value for the tetrad.
+     */
     @Override
     public double tetrads(int[][]... tets) {
         List<int[][]> tetList = new ArrayList<>();
@@ -25,6 +49,13 @@ public class Wishart implements NTadTest {
         return tetrads(tetList);
     }
 
+    /**
+     * Returns the p-value for the tetrad. This constructor is required by the interface, though in truth it will throw
+     * and exception if more than one tetrad is provided.
+     *
+     * @param tets A single tetrad.
+     * @return The p-value for the tetrad.
+     */
     @Override
     public double tetrads(List<int[][]> tets) {
         if (tets.size() != 1) {
@@ -34,6 +65,17 @@ public class Wishart implements NTadTest {
         return tetrad(tets.getFirst());
     }
 
+    /**
+     * Computes the p-value for the tetrad test based on the provided indices of variables. The method calculates a
+     * determinant-based statistic to evaluate the partial correlation between variable sets and estimates the
+     * significance using a normal distribution cumulative probability function.
+     *
+     * @param tet A 2D array representing two sets of variable indices to be tested for a tetrad constraint. The first
+     *            row contains indices for the first set of variables, and the second row contains indices for the
+     *            second set of variables.
+     * @return The computed p-value, a double value representing the probability of observing the statistic under the
+     * null hypothesis.
+     */
     public double tetrad(int[][] tet) {
         int[] a = tet[0];
         int[] b = tet[1];

@@ -53,15 +53,14 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * <p>
  * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
  *
- * @author peterspirtes
  * @author erichkummerfeld
+ * @author peterspirtes
  * @author josephramsey
  * @version $Id: $Id
  * @see Ftfc
  * @see Bpc
  */
 public class Fofc {
-
     /**
      * The type of test used.
      */
@@ -82,28 +81,22 @@ public class Fofc {
      * The type of test used.
      */
     private final BpcTestType testType;
-//    /**
-//     * The type of FOFC algorithm used.
-//     */
-//    private final Algorithm algorithm = Algorithm.SAG;
     /**
-     * The Delta test. Testing two tetrads simultaneously.
+     * The Wishart test. This tests a single tetrad.
      */
     private final NTadTest test1;
     /**
-     * The tetrad test--using Ricardo's. Used only for Wishart.
+     * The Delta test. Testing two tetrads simultaneously.
      */
     private final NTadTest test2;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
     private List<List<Node>> clusters;
-
     /**
      * Whether verbose output is desired.
      */
     private boolean verbose;
-
     /**
      * Whether the significance of the cluster should be checked for each cluster.
      */
@@ -116,7 +109,6 @@ public class Fofc {
      * @param testType The type of test used.
      * @param alpha    The alpha significance cutoff.
      * @see BpcTestType
-//     * @see Algorithm
      */
     public Fofc(DataSet dataSet, BpcTestType testType, double alpha) {
         if (testType == null) throw new NullPointerException("Null test type.");
@@ -124,7 +116,8 @@ public class Fofc {
         this.alpha = alpha;
         this.testType = testType;
         this.test1 = new Wishart(dataSet);
-        this.test2 = new Ark(dataSet);
+        this.test2 = new BollenTing(dataSet);
+//        this.test2 = new Ark(dataSet);
 //        this.test2 = new ArkSplit(dataSet, 0.5);
         this.dataModel = dataSet;
 
@@ -140,15 +133,6 @@ public class Fofc {
         Set<List<Integer>> allClusters;
 
         allClusters = estimateClustersSag();
-
-//        if (this.algorithm == Algorithm.SAG) {
-//            allClusters = estimateClustersSag();
-//        } else if (this.algorithm == Algorithm.GAP) {
-//            allClusters = estimateClustersGap();
-//        } else {
-//            throw new IllegalStateException("Expected SAG or GAP: " + this.testType);
-//        }
-
         this.clusters = ClusterSignificance.variablesForIndices(allClusters, variables);
 
         System.out.println("allClusters = " + allClusters);
@@ -187,29 +171,6 @@ public class Fofc {
         this.verbose = verbose;
     }
 
-//    /**
-//     * Estimates clusters using the triples-first algorithm.
-//     *
-//     * @return A set of lists of integers representing the clusters.
-//     */
-//    private Set<List<Integer>> estimateClustersGap() {
-//        List<Integer> _variables = allVariables();
-//
-//        Set<Set<Integer>> triples = findPuretriples(_variables);
-//        Set<Set<Integer>> combined = combinePureTriples(triples, _variables);
-//
-//        Set<List<Integer>> _combined = new HashSet<>();
-//
-//        for (Set<Integer> c : combined) {
-//            List<Integer> a = new ArrayList<>(c);
-//            Collections.sort(a);
-//            _combined.add(a);
-//        }
-//
-//        return _combined;
-//
-//    }
-
     /**
      * Retrieves a list of all variables.
      *
@@ -231,66 +192,12 @@ public class Fofc {
 
         Set<List<Integer>> expandedPureQuartets = findExpandedPureQuartets(_variables);
         Set<Integer> allClusteredVars = union(expandedPureQuartets);
-        Set<List<Integer>> mixedClusters = findMixedClusters(_variables, allClusteredVars);
+        Set<List<Integer>> mixedClusters = findSizeThreeClusters(_variables, allClusteredVars);
         Set<List<Integer>> allClusters = new HashSet<>(expandedPureQuartets);
         allClusters.addAll(mixedClusters);
         return allClusters;
 
     }
-
-//    /**
-//     * Finds pure triples from the given list of variables.
-//     *
-//     * @param allVariables The list of integers representing all variables.
-//     * @return A set of sets of integers representing the pure triples.
-//     */
-//    private Set<Set<Integer>> findPuretriples(List<Integer> allVariables) {
-//        if (allVariables.size() < 4) {
-//            return new HashSet<>();
-//        }
-//
-//        log("Finding pure triples.");
-//
-//        ChoiceGenerator gen = new ChoiceGenerator(allVariables.size(), 3);
-//        int[] choice;
-//        Set<Set<Integer>> puretriples = new HashSet<>();
-//
-//        CHOICE:
-//        while ((choice = gen.next()) != null) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
-//
-//            int n1 = allVariables.get(choice[0]);
-//            int n2 = allVariables.get(choice[1]);
-//            int n3 = allVariables.get(choice[2]);
-//
-//            List<Integer> triple = triple(n1, n2, n3);
-//
-////            if (zeroCorr(triple)) continue;
-//
-//            List<Integer> other = new ArrayList<>(allVariables);
-//            other.removeAll(triple);
-//
-//            for (int o : other) {
-//                if (Thread.currentThread().isInterrupted()) {
-//                    break;
-//                }
-//
-//                List<Integer> quartet = quartet(n1, n2, n3, o);
-//
-//                if (!vanishes(quartet)) {
-//                    continue CHOICE;
-//                }
-//            }
-//
-//            HashSet<Integer> _triple = new HashSet<>(triple);
-//
-//            puretriples.add(_triple);
-//        }
-//
-//        return puretriples;
-//    }
 
     /**
      * Combines pure triples with given variables.
@@ -449,7 +356,35 @@ public class Fofc {
                 // Note that purity needs to be assessed with respect to all the variables to
                 // remove all latent-measure impurities between pairs of latents.
                 if (pure(cluster)) {
-                    addOtherVariables(_variables, cluster);
+
+                    O:
+                    for (int o : _variables) {
+                        if (cluster.contains(o)) continue;
+                        List<Integer> _cluster = new ArrayList<>(cluster);
+
+                        ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
+                        int[] choice2;
+
+                        while ((choice2 = gen2.next()) != null) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
+                            int t1 = _cluster.get(choice2[0]);
+                            int t2 = _cluster.get(choice2[1]);
+                            int t3 = _cluster.get(choice2[2]);
+
+                            List<Integer> quartet = triple(t1, t2, t3);
+                            quartet.add(o);
+
+                            if (!pure(quartet)) {
+                                continue O;
+                            }
+                        }
+
+                        log("Extending by " + this.variables.get(o));
+                        cluster.add(o);
+                    }
 
                     if (this.verbose) {
                         log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, variables));
@@ -469,51 +404,13 @@ public class Fofc {
     }
 
     /**
-     * Add other variables to the given cluster if they satisfy certain conditions.
-     *
-     * @param _variables The list of available variables.
-     * @param cluster    The current cluster.
-     */
-    private void addOtherVariables(List<Integer> _variables, List<Integer> cluster) {
-
-        O:
-        for (int o : _variables) {
-            if (cluster.contains(o)) continue;
-            List<Integer> _cluster = new ArrayList<>(cluster);
-
-            ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
-            int[] choice2;
-
-            while ((choice2 = gen2.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                int t1 = _cluster.get(choice2[0]);
-                int t2 = _cluster.get(choice2[1]);
-                int t3 = _cluster.get(choice2[2]);
-
-                List<Integer> quartet = triple(t1, t2, t3);
-                quartet.add(o);
-
-                if (!pure(quartet)) {
-                    continue O;
-                }
-            }
-
-            log("Extending by " + this.variables.get(o));
-            cluster.add(o);
-        }
-    }
-
-    /**
      * Finds clusters of size 3 for the SAG algorithm.
      *
      * @param remaining The list of remaining variables.
      * @param unionPure The set of union pure variables.
      * @return A set of lists of integers representing the mixed clusters.
      */
-    private Set<List<Integer>> findMixedClusters(List<Integer> remaining, Set<Integer> unionPure) {
+    private Set<List<Integer>> findSizeThreeClusters(List<Integer> remaining, Set<Integer> unionPure) {
         Set<List<Integer>> triples = new HashSet<>();
 
         if (unionPure.isEmpty()) {
@@ -541,10 +438,6 @@ public class Fofc {
                 cluster.add(t3);
                 cluster.add(t4);
 
-                if (zeroCorr(cluster)) {
-                    continue;
-                }
-
                 // Check all x as a cross-check; really only one should be necessary.
                 boolean allVanish = true;
                 boolean someVanish = false;
@@ -558,6 +451,10 @@ public class Fofc {
 
                     List<Integer> _cluster = new ArrayList<>(cluster);
                     _cluster.add(t1);
+
+                    if (zeroCorr(_cluster)) {
+                        continue;
+                    }
 
                     if (vanishes(_cluster)) {
                         someVanish = true;
@@ -678,8 +575,7 @@ public class Fofc {
     }
 
     /**
-     * Checks if a given cluster has a zero correlation among its variables. Legitimate
-     * clusters have zero correlation.
+     * Checks if a given cluster has a zero correlation among its variables. Legitimate clusters have zero correlation.
      *
      * @param cluster The list of integers representing the cluster.
      * @return True if the cluster has zero correlation, false otherwise.
@@ -806,25 +702,6 @@ public class Fofc {
             TetradLogger.getInstance().log(s);
         }
     }
-//
-//    /**
-//     * Gives the options to be used in FOFC to sort through the various possibilities for forming clusters to find the
-//     * best options. SAG (Seed and Grow) looks for good seed clusters and then grows them by adding one variable at a
-//     * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
-//     * generally faster; GAP is generally slower but more accurate.
-//     */
-//    public enum Algorithm {
-//
-//        /**
-//         * The SAG algorithm.
-//         */
-//        SAG,
-//
-//        /**
-//         * The GAP algorithm.
-//         */
-//        GAP
-//    }
 }
 
 
