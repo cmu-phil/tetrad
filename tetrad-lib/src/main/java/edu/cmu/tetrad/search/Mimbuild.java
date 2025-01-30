@@ -140,10 +140,10 @@ public class Mimbuild {
         }
 
         // Convert the measure names to a list of nodes.
-        List<Node> measureNodes = new ArrayList<>();
+        List<Node> measuredNodes = new ArrayList<>();
 
         for (String name : measureNames) {
-            measureNodes.add(new GraphNode(name));
+            measuredNodes.add(new GraphNode(name));
         }
 
         // Convert the clustering to a list over lists of measure nodes.
@@ -153,7 +153,7 @@ public class Mimbuild {
             List<Node> clusterList = new ArrayList<>();
 
             for (int i : cluster) {
-                clusterList.add(measureNodes.get(i));
+                clusterList.add(measuredNodes.get(i));
             }
 
             clusteringList.add(clusterList);
@@ -164,15 +164,19 @@ public class Mimbuild {
             throw new IllegalArgumentException("Measures covariance matrix must be square.");
         }
 
-        if (measuresCov.length != measureNodes.size()) {
+        if (measuresCov.length != measuredNodes.size()) {
             throw new IllegalArgumentException("Measures covariance matrix must have the same number of rows as measure names.");
         }
 
-        CovarianceMatrix measuresCovMatrix = new CovarianceMatrix(measureNodes, new Matrix(measuresCov), measuresCov.length);
+        CovarianceMatrix measuresCovMatrix = new CovarianceMatrix(measuredNodes, new Matrix(measuresCov), measuresCov.length);
 
         // Convert the latent names to a list of string.
         List<String> latentNodes = new ArrayList<>();
         Collections.addAll(latentNodes, latentNames);
+
+        // Convert the measure names to a list of string.
+        List<String> measureNodes = new ArrayList<>();
+        Collections.addAll(measureNodes, measureNames);
 
         // Run the search.
         return search(clusteringList, latentNodes, measuresCovMatrix);
@@ -328,8 +332,14 @@ public class Mimbuild {
      *
      * @return This full graph.
      */
-    public Graph getFullGraph() {
+    public Graph getFullGraph(List<Node> includeNodes) {
         Graph graph = new EdgeListGraph(this.structureGraph);
+
+        for (Node node : includeNodes) {
+            if (graph.getNode(node.getName()) == null) {
+                graph.addNode(new GraphNode(node.getName()));
+            }
+        }
 
         for (int i = 0; i < this.latents.size(); i++) {
             Node latent = this.latents.get(i);

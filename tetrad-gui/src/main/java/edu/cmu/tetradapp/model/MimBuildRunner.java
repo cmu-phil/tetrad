@@ -172,7 +172,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
         TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-        Graph fullGraph = mimbuild.getFullGraph();
+        Graph fullGraph = mimbuild.getFullGraph(data.getVariables());
         LayoutUtil.defaultLayout(fullGraph);
         LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 

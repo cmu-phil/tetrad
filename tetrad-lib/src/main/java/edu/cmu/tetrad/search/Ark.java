@@ -125,6 +125,58 @@ public class Ark implements NTadTest {
      * @return the p-value resulting from the tetrad test, computed using a statistical z-score and its corresponding
      * cumulative probability value.
      */
+//    public double tetrad(int[][] tet) {//}, boolean resample, double frac) {
+//        int[] a = tet[0];
+//        int[] b = tet[1];
+//        int z = a.length;
+//
+//        SimpleMatrix XY = extractSubMatrix(this.S, a, b);
+//        SimpleSVD<SimpleMatrix> svd = XY.svd();
+//        SimpleMatrix U = svd.getU();
+//        SimpleMatrix VT = svd.getV().transpose();
+//
+//        SimpleMatrix XXi = extractSubMatrix(this.S, a, a).invert();
+//        SimpleMatrix YYi = extractSubMatrix(this.S, b, b).invert();
+//
+//        SimpleMatrix A = U.transpose().mult(XXi).mult(U);
+//        SimpleMatrix B = VT.mult(YYi).mult(VT.transpose());
+//        SimpleMatrix C = U.transpose().mult(XXi).mult(XY).mult(YYi).mult(VT.transpose());
+//
+//        int[] indicesA = new int[z];
+//        int[] indicesB = new int[z];
+//        for (int i = 0; i < z; i++) {
+//            indicesA[i] = i;
+//            indicesB[i] = i + z;
+//        }
+//
+//        SimpleMatrix R = new SimpleMatrix(2 * z, 2 * z);
+//        R.insertIntoThis(0, 0, A);
+//        R.insertIntoThis(0, z, C);
+//        R.insertIntoThis(z, 0, C.transpose());
+//        R.insertIntoThis(z, z, B);
+//
+//        SimpleMatrix D = new SimpleMatrix(2 * z, 2 * z);
+//        for (int i = 0; i < 2 * z; i++) {
+//            D.set(i, i, Math.sqrt(R.get(i, i)));
+//        }
+//
+//        SimpleMatrix Di = D.invert();
+//        R = Di.mult(R).mult(Di);
+//
+//        int[] idx = new int[z + 1];
+//        idx[0] = indicesA[z - 1];
+//        idx[1] = indicesB[z - 1];
+//        System.arraycopy(indicesA, 0, idx, 2, z - 1);
+//
+//        SimpleMatrix subR = extractSubMatrix(R, idx, idx).invert();
+//
+//        double p_corr = -subR.get(0, 1) / Math.sqrt(subR.get(0, 0) * subR.get(1, 1));
+//        double z_score = MathUtils.arctanh(p_corr) * Math.sqrt(this.n - idx.length - 1);
+//
+//        NormalDistribution normalDist = new NormalDistribution();
+//        return 2 * normalDist.cumulativeProbability(-Math.abs(z_score));
+//    }
+
     public double tetrad(int[][] tet) {//}, boolean resample, double frac) {
         int[] a = tet[0];
         int[] b = tet[1];

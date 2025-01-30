@@ -118,7 +118,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
 
             TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-            Graph fullGraph = mimbuild.getFullGraph();
+            Graph fullGraph = mimbuild.getFullGraph(dataModel.getVariables());
             LayoutUtil.defaultLayout(fullGraph);
             LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
