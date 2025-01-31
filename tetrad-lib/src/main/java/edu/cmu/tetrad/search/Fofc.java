@@ -186,6 +186,9 @@ public class Fofc {
      */
     private Set<List<Integer>> estimateClustersSag() {
         List<Integer> variables = allVariables();
+        if (new HashSet<Integer>(variables).size() != variables.size()) {
+            throw new IllegalArgumentException("Variables must be unique.");
+        }
 
         Set<List<Integer>> expandedPureQuartets = findPureClusters(variables);
         Set<Integer> allClusteredVars = union(expandedPureQuartets);
@@ -382,32 +385,7 @@ public class Fofc {
         quartet.add(n2);
         quartet.add(n3);
         quartet.add(n4);
-
-        if (new HashSet<>(quartet).size() < 4)
-            throw new IllegalArgumentException("quartet elements must be unique: <" + n1 + ", " + n2 + ", " + n3 + ", " + n4 + ">");
-
         return quartet;
-    }
-
-    /**
-     * Constructs a {@link List} of integers representing a triple.
-     *
-     * @param n1 The first integer.
-     * @param n2 The second integer.
-     * @param n3 The third integer.
-     * @return A {@link List} containing the three integers in the order they were passed in.
-     * @throws IllegalArgumentException If any of the integers are duplicated.
-     */
-    private List<Integer> triple(int n1, int n2, int n3) {
-        List<Integer> triple = new ArrayList<>();
-        triple.add(n1);
-        triple.add(n2);
-        triple.add(n3);
-
-        if (new HashSet<>(triple).size() < 3)
-            throw new IllegalArgumentException("triple elements must be unique: <" + n1 + ", " + n2 + ", " + n3 + ">");
-
-        return triple;
     }
 
     /**
