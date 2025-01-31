@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search.NTadTest;
+package edu.cmu.tetrad.search.ntad_test;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.dense.row.CommonOps_DDRM;
