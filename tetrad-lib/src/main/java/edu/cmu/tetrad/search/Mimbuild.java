@@ -21,12 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -231,7 +229,7 @@ public class Mimbuild {
         this.latents = latents;
 
         // This removes the small clusters and their names.
-        removeSmallClusters(latents, _clustering, getMinClusterSize());
+//        removeSmallClusters(latents, _clustering, getMinClusterSize());
         this.clustering = _clustering;
 
         Node[][] indicators = new Node[latents.size()][];
@@ -257,23 +255,32 @@ public class Mimbuild {
 
         // Check if there are any zeros on the diagonal in cov.
         for (int i = 0; i < cov.getNumRows(); i++) {
-            if (cov.get(i, i) == 0) {
-                throw new IllegalArgumentException("Zero on diagonal of cov.");
+            if (cov.get(i, i) <= 0) {
+                throw new IllegalArgumentException("Diagonal element of cov is <= 0.");
             }
         }
 
-        CovarianceMatrix latentscov = new CorrelationMatrix(latents, cov, measuresCov.getSampleSize());
+        ICovarianceMatrix latentscov = new CovarianceMatrix(latents, cov, measuresCov.getSampleSize());
         this.latentsCov = latentscov;
         Graph graph;
 
-        SemBicScore score = new SemBicScore(latentscov);
-        score.setPenaltyDiscount(this.penaltyDiscount);
-        score.setUsePseudoInverse(true);
-        PermutationSearch search = new PermutationSearch(new Boss(score));
-//        search.setSeed(seed);
+        System.out.println("Latents cov: " + latentscov);
+
+        IndTestFisherZ independenceTest = new IndTestFisherZ(latentscov, 0.001);
+        Pc search = new Pc(independenceTest);
+
+//        SemBicScore score = new SemBicScore(latentscov);
+//        score.setPenaltyDiscount(this.penaltyDiscount);
+//        score.setUsePseudoInverse(false);
+//        PermutationSearch search = new PermutationSearch(new Boss(score));
+////        search.setSeed(seed);
 
         search.setKnowledge(this.knowledge);
-        graph = search.search();
+        try {
+            graph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Singularity encountered; perhaps that was not a pure model." , e);
+        }
 
         this.structureGraph = new EdgeListGraph(graph);
         LayoutUtil.fruchtermanReingoldLayout(this.structureGraph);
@@ -402,8 +409,8 @@ public class Mimbuild {
             for (int j = i; j < latentscov.getNumColumns(); j++) {
                 if (i == j) latentscov.set(i, j, 1.0);
                 else {
-                    latentscov.set(i, j, .5);
-                    latentscov.set(j, i, .5);
+                    latentscov.set(i, j, 0);
+                    latentscov.set(j, i, 0);
                 }
             }
         }
@@ -418,7 +425,7 @@ public class Mimbuild {
             loadings[i] = new double[indicators[i].length];
 
             for (int j = 0; j < indicators[i].length; j++) {
-                loadings[i][j] = .5;
+                loadings[i][j] = 1;
             }
         }
 
@@ -436,7 +443,9 @@ public class Mimbuild {
         // Variances of the measures.
         double[] delta = new double[measurescov.getNumRows()];
 
-        Arrays.fill(delta, 1);
+        for (int i = 0; i < delta.length; i++) {
+            delta[i] = measurescov.get(i, i);
+        }
 
         double[] allParams1 = getAllParams(indicators, latentscov, loadings, delta);
 
@@ -452,11 +461,11 @@ public class Mimbuild {
         int df = (p) * (p + 1) / 2 - (numParams);
         double x = (N - 1) * this.minimum;
 
-        if (df < 1) df = 1;
-//            throw new IllegalStateException(
-//                "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
-//                "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
-//                "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
+        if (df < 1)
+            throw new IllegalStateException(
+                "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
+                "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
+                "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
 
         ChiSquaredDistribution chisq = new ChiSquaredDistribution(df);
 

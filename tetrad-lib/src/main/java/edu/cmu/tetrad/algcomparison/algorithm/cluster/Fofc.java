@@ -12,11 +12,11 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Mimbuild;
-import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.ejml.data.SingularMatrixException;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -115,6 +115,8 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
                 structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch (SingularMatrixException e) {
+                throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
             }
 
             LayoutUtil.defaultLayout(structureGraph);
