@@ -310,7 +310,7 @@ public class Fofc {
                     List<Integer> _cluster = new ArrayList<>(cluster);
                     _cluster.add(o);
 
-                    if (!zeroCorr(_cluster) && vanishes(_cluster)) {
+                    if (!containsZeroCorrlation(_cluster) && vanishes(_cluster)) {
                         vanishing++;
                     }
 
@@ -343,7 +343,7 @@ public class Fofc {
      * @return True if the quartet is pure, false otherwise.
      */
     private boolean pure(List<Integer> quartet) {
-        if (zeroCorr(quartet)) {
+        if (containsZeroCorrlation(quartet)) {
             return false;
         }
 
@@ -409,7 +409,7 @@ public class Fofc {
      * @param cluster The list of integers representing the cluster.
      * @return True if the cluster has zero correlation, false otherwise.
      */
-    private boolean zeroCorr(List<Integer> cluster) {
+    private boolean containsZeroCorrlation(List<Integer> cluster) {
         int count = 0;
 
         for (int i = 0; i < cluster.size(); i++) {
@@ -454,7 +454,7 @@ public class Fofc {
             }
             case 4 -> {
                 return this.test4.allGreaterThanAlpha(ints, this.alpha);
-x            }
+            }
         }
 
         throw new IllegalArgumentException("Only the delta and wishart tests are being used: " + this.testType);
