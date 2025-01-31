@@ -53,7 +53,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Kummerfeld, E., &amp; Ramsey, J. (2016, August). Causal clustering for 1-factor measurement models. In Proceedings of
  * the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1655-1664).
  * <p>
- * The algorithm employs tests of vanishing tetrads (list of 4 variables that follow a certain pattern in the
+ * The algorithm uses tests of vanishing tetrads (list of 4 variables that follow a certain pattern in the
  * exchangeability of latent paths with respect to the data). The notion of vanishing tetrads is old one but is
  * explained in this book:
  * <p>
@@ -310,7 +310,7 @@ public class Fofc {
                     List<Integer> _cluster = new ArrayList<>(cluster);
                     _cluster.add(o);
 
-                    if (!containsZeroCorrlation(_cluster) && vanishes(_cluster)) {
+                    if (!containsZeroCorrelation(_cluster) && vanishes(_cluster)) {
                         vanishing++;
                     }
 
@@ -343,7 +343,7 @@ public class Fofc {
      * @return True if the quartet is pure, false otherwise.
      */
     private boolean pure(List<Integer> quartet) {
-        if (containsZeroCorrlation(quartet)) {
+        if (containsZeroCorrelation(quartet)) {
             return false;
         }
 
@@ -409,7 +409,7 @@ public class Fofc {
      * @param cluster The list of integers representing the cluster.
      * @return True if the cluster has zero correlation, false otherwise.
      */
-    private boolean containsZeroCorrlation(List<Integer> cluster) {
+    private boolean containsZeroCorrelation(List<Integer> cluster) {
         int count = 0;
 
         for (int i = 0; i < cluster.size(); i++) {
