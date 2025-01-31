@@ -64,9 +64,6 @@ public class Ark extends NtadTest {
         int[] b = tet[1];
         int z = a.length;
 
-        // if self.sp < 1: XY = S2[np.ix_(a, b)]
-        //        else: XY = S1[np.ix_(a, b)]
-
         SimpleMatrix XY = this.sp < 1 ? extractSubMatrix(S2, a, b) : extractSubMatrix(S1, a, b);
         SimpleSVD<SimpleMatrix> svd = XY.svd();
         SimpleMatrix U = svd.getU();
