@@ -6,6 +6,12 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
+/**
+ * The BollenTing class extends the NtadTest class and provides statistical methods for computing tetrad and tetrads
+ * statistics. These computations are used in hypothesis testing and involve tetrad determinants and p-values derived
+ * from chi-squared distributions. The class supports handling single and multiple tetrads, as well as flexible options
+ * such as resampling and fractional sampling rates.
+ */
 public class BollenTing extends NtadTest {
     public BollenTing(SimpleMatrix df) {
         super(df);
@@ -72,14 +78,6 @@ public class BollenTing extends NtadTest {
         return 1 - new ChiSquaredDistribution(tets.size()).cumulativeProbability(T);
     }
 
-    /**
-     * Computes the tetrad statistic for a single tetrad represented by a 2D array. A tetrad is a mathematical construct
-     * used for statistical hypothesis testing.
-     *
-     * @param tet a 2D integer array representing a single tetrad. The array should comprise two rows, each representing
-     *            a set of indices used in the computation.
-     * @return the computed tetrad statistic as a double value.
-     */
     @Override
     public double tetrad(int[][] tet) {
         List<int[][]> tetList = new ArrayList<>();
@@ -87,17 +85,6 @@ public class BollenTing extends NtadTest {
         return tetrads(tetList);
     }
 
-    /**
-     * Computes the p-value of the tetrads statistic for multiple tetrads represented by an array of 2D arrays. Each 2D
-     * array represents a single tetrad, which itself consists of two sets of indices used in the statistical
-     * computation.
-     *
-     * @param tets a variable-length parameter containing one or more 2D integer arrays, where each 2D array represents
-     *             a tetrad. Each tetrad consists of two rows, with each row specifying a set of indices to be used in
-     *             the tetrad computation.
-     * @return the p-value of the computed tetrads statistic as a double value. The p-value provides the probability of
-     * observing the given data under a null hypothesis based on the chi-squared distribution.
-     */
     @Override
     public double tetrads(int[][]... tets) {
         List<int[][]> tetList = new ArrayList<>();

@@ -10,18 +10,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * The Ark class extends the NtadTest class and provides a mechanism to perform statistical operations based on tetrads
+ * and their probabilities. It leverages covariance computation, sampling, and matrix manipulation to calculate p-values
+ * and z-scores for tetrads. This class is specifically designed to operate on instances of SimpleMatrix for
+ * multivariate analysis.
+ *
+ * @author bryanandrews
+ */
 public class Ark extends NtadTest {
     private final SimpleMatrix S1;
     private final SimpleMatrix S2;
     private final double sp;
 
-    public Ark(SimpleMatrix df) {
-        super(df);
-        this.S1 = computeCovariance(df);
-        this.S2 = computeCovariance(df);
-        this.sp = 1;
-    }
-
+    /**
+     * Constructs an Ark object based on the given data matrix and split proportion. This method initializes the Ark
+     * analysis by splitting the data matrix into two segments based on the given split proportion, and computes the
+     * covariance matrix for each segment.
+     *
+     * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation and each
+     *           column represents a variable.
+     * @param sp the split proportion, a value between 0 and 1, which determines the proportion of the dataset allocated
+     *           to the first segment of the split. If the given value is not valid, it is adjusted towards the
+     *           complementary split (1 - sp instead of sp). Is the value is 1, the full dataset is used throughout.
+     */
     public Ark(SimpleMatrix df, double sp) {
         super(df);
         this.sp = sp > 0 ? sp : 1 - sp;
@@ -107,12 +119,14 @@ public class Ark extends NtadTest {
         return tetrad(tet, false, 1);
     }
 
+    @Override
     public double tetrads(int[][]... tets) {
         List<int[][]> tetList = new ArrayList<>();
         Collections.addAll(tetList, tets);
         return tetrads(tetList);
     }
 
+    @Override
     public double tetrads(List<int[][]> tets) {
         double sum = 0.0;
         int count = 0;
