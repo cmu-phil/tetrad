@@ -6,13 +6,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public abstract class NTadTest {
+public abstract class NtadTest {
     protected SimpleMatrix df;
     protected int n;
     protected int p;
     protected SimpleMatrix S;
 
-    public NTadTest(SimpleMatrix df) {
+    public NtadTest(SimpleMatrix df) {
         this.df = df;
         this.n = df.getNumRows();
         this.p = df.getNumCols();

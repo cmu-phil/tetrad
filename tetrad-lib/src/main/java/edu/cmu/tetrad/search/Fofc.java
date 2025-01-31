@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ntad_test.Ark;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
-import edu.cmu.tetrad.search.ntad_test.NTadTest;
+import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.ntad_test.Wishart;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
@@ -89,19 +89,19 @@ public class Fofc {
     /**
      * The Wishart test. This tests a single tetrad.
      */
-    private final NTadTest test1;
+    private final NtadTest test1;
     /**
      * The Delta test. Testing two tetrads simultaneously.
      */
-    private final NTadTest test2;
+    private final NtadTest test2;
     /**
      * The Delta test. Testing two tetrads simultaneously.
      */
-    private final NTadTest test3;
+    private final NtadTest test3;
     /**
      * The Delta test. Testing two tetrads simultaneously.
      */
-    private final NTadTest test4;
+    private final NtadTest test4;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */

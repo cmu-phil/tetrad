@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Ark extends NTadTest {
+public class Ark extends NtadTest {
     private final SimpleMatrix S1;
     private final SimpleMatrix S2;
     private final double sp;

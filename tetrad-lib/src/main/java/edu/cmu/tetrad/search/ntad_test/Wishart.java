@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Wishart extends NTadTest {
+public class Wishart extends NtadTest {
     public Wishart(SimpleMatrix df) {
         super(df);
     }

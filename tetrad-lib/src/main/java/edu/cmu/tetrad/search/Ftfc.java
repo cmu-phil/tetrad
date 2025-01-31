@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
-import edu.cmu.tetrad.search.ntad_test.NTadTest;
+import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.search.utils.Sextad;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -77,7 +77,7 @@ public class Ftfc {
     /**
      * The Delta test. Testing two sextads simultaneously.
      */
-    private final NTadTest test;
+    private final NtadTest test;
     /**
      * The clusters found.
      */
