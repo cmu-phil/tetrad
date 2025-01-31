@@ -580,25 +580,6 @@ public class Fofc {
             TetradLogger.getInstance().log(s);
         }
     }
-
-    /**
-     * Enum representing the types of tests that can be used in the Fofc class. These test types determine the
-     * statistical method applied during the search for clusters or variable relationships.
-     */
-    public enum TestType {
-        /**
-         * Represents the Tetrad Wishart test, a statistical method used for structure discovery or dependency testing
-         * in the Fofc class. This test type is employed in applications requiring the evaluation of relationships or
-         * clusters among variables.
-         */
-        TETRAD_WISHART,
-        /**
-         * Represents the Tetrad Delta test, a statistical method used for structure discovery or dependency testing in
-         * the Fofc class. This test type is utilized to evaluate variable relationships or clusters based on specific
-         * statistical criteria.
-         */
-        TETRAD_DELTA
-    }
 }
 
 
