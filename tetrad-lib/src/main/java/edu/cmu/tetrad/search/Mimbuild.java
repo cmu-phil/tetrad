@@ -34,6 +34,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
+import org.ejml.data.SingularMatrixException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -267,19 +268,21 @@ public class Mimbuild {
         System.out.println("Latents cov: " + latentscov);
 
         IndTestFisherZ independenceTest = new IndTestFisherZ(latentscov, 0.001);
-        Pc search = new Pc(independenceTest);
+//        Pc search = new Pc(independenceTest);
 
-//        SemBicScore score = new SemBicScore(latentscov);
-//        score.setPenaltyDiscount(this.penaltyDiscount);
-//        score.setUsePseudoInverse(false);
-//        PermutationSearch search = new PermutationSearch(new Boss(score));
-////        search.setSeed(seed);
+        SemBicScore score = new SemBicScore(latentscov);
+        score.setPenaltyDiscount(this.penaltyDiscount);
+        score.setUsePseudoInverse(false);
+        PermutationSearch search = new PermutationSearch(new Boss(score));
+//        search.setSeed(seed);
 
-        search.setKnowledge(this.knowledge);
+//        search.setKnowledge(this.knowledge);
         try {
             graph = search.search();
         } catch (InterruptedException e) {
-            throw new RuntimeException("Singularity encountered; perhaps that was not a pure model." , e);
+            throw new RuntimeException(e);
+        } catch (NullPointerException e) {
+            throw new RuntimeException("Mimbuild could not find a graph over the latents; perhaps that was not a pure model." , e);
         }
 
         this.structureGraph = new EdgeListGraph(graph);
