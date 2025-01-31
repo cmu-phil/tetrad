@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.NTadTest;
 
 import edu.cmu.tetrad.util.MathUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;

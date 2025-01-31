@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.NTadTest;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -6,8 +6,8 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
-class BollenTing2 extends NTadTest {
-    public BollenTing2(SimpleMatrix df) {
+public class BollenTing extends NTadTest {
+    public BollenTing(SimpleMatrix df) {
         super(df);
     }
 

@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.NTadTest;
 
 import org.ejml.simple.SimpleMatrix;
 

@@ -24,6 +24,8 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.NTadTest.BollenTing;
+import edu.cmu.tetrad.search.NTadTest.NTadTest;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.search.utils.Sextad;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -94,7 +96,7 @@ public class Ftfc {
     public Ftfc(DataSet dataSet, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
-        this.test = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
+        this.test = new BollenTing(dataSet.getDoubleData().getDataCopy());
         this.corr = new CorrelationMatrix(dataSet);
     }
 

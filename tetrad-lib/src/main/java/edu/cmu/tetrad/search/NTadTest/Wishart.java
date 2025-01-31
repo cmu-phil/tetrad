@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.NTadTest;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-class Wishart extends NTadTest {
+public class Wishart extends NTadTest {
     public Wishart(SimpleMatrix df) {
         super(df);
     }
