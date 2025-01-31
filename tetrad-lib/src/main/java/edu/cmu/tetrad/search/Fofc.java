@@ -81,7 +81,7 @@ public class Fofc {
     /**
      * The type of test used.
      */
-    private final TestType testType;
+    private final int testType;
     /**
      * The Wishart test. This tests a single tetrad.
      */
@@ -90,6 +90,14 @@ public class Fofc {
      * The Delta test. Testing two tetrads simultaneously.
      */
     private final NTadTest test2;
+    /**
+     * The Delta test. Testing two tetrads simultaneously.
+     */
+    private final NTadTest test3;
+    /**
+     * The Delta test. Testing two tetrads simultaneously.
+     */
+    private final NTadTest test4;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -106,15 +114,14 @@ public class Fofc {
      * @param testType The type of test used.
      * @param alpha    The alpha significance cutoff.
      */
-    public Fofc(DataSet dataSet, TestType testType, double alpha) {
-        if (testType == null) throw new NullPointerException("Null test type.");
+    public Fofc(DataSet dataSet, int testType, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.testType = testType;
-        this.test1 = new Wishart2(dataSet.getDoubleData().getDataCopy());
+        this.test1 = new Wishart(dataSet.getDoubleData().getDataCopy());
         this.test2 = new BollenTing2(dataSet.getDoubleData().getDataCopy());
-//        this.test2 = new Ark(dataSet);
-//        this.test2 = new ArkSplit(dataSet, 0.5);
+        this.test3 = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
+        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 0.3);
         this.dataModel = dataSet;
 
         this.corr = new CorrelationMatrix(dataSet);
@@ -469,22 +476,26 @@ public class Fofc {
      * @return True if the quartet vanishes, false otherwise.
      */
     private boolean vanishes(int x, int y, int z, int w) {
-        if (this.testType == TestType.TETRAD_WISHART) {
-            int[][] ints1 = {{x, y}, {z, w}};
-            int[][] ints2 = {{x, z}, {y, w}};
+        int[][] ints1 = {{x, y}, {z, w}};
+        int[][] ints2 = {{x, z}, {y, w}};
 
-            return this.test1.tetrad(ints1) > this.alpha && this.test2.tetrad(ints2) > this.alpha;
-        }
+        List<int[][]> ints = new ArrayList<>();
+        ints.add(ints1);
+        ints.add(ints2);
 
-        if (this.testType == TestType.TETRAD_DELTA) {
-            int[][] ints1 = {{x, y}, {z, w}};
-            int[][] ints2 = {{x, z}, {y, w}};
-
-            List<int[][]> ints = new ArrayList<>();
-            ints.add(ints1);
-            ints.add(ints2);
-
-            return this.test2.tetrads(ints) > this.alpha;
+        switch (this.testType) {
+            case 1 -> {
+                return this.test1.tetrad(ints1) > this.alpha && this.test1.tetrad(ints2) > this.alpha;
+            }
+            case 2 -> {
+                return this.test2.tetrads(ints) > this.alpha;
+            }
+            case 3 -> {
+                return this.test3.tetrads(ints) > this.alpha;
+            }
+            case 4 -> {
+                return this.test4.tetrads(ints) > this.alpha;
+            }
         }
 
         throw new IllegalArgumentException("Only the delta and wishart tests are being used: " + this.testType);

@@ -18,7 +18,7 @@ import java.util.List;
  * This class takes an input dataset, splits it into two subsets based on a specified fraction, computes the covariance
  * matrices for each subset, and then uses these matrices for subsequent calculations.
  */
-public class ArkSplit implements NTadTest {
+public class ArkSplit {
     /**
      * Covariance matrix of the first subset of the data.
      */

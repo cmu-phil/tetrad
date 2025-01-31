@@ -94,7 +94,7 @@ public class Ftfc {
     public Ftfc(DataSet dataSet, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
-        this.test = new Ark(dataSet);
+        this.test = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
         this.corr = new CorrelationMatrix(dataSet);
     }
 

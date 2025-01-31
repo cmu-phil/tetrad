@@ -17,7 +17,7 @@ import java.util.*;
  * <p>
  * Bollen, K. A., &amp; Ting, K. F. (1993). Confirmatory tetrad analysis. Sociological methodology, 147-175.
  */
-public class BollenTing implements NTadTest {
+public class BollenTing {
     /**
      * Represents the covariance matrix used in the analysis. This matrix is a core component in computations performed
      * within the BollenTing class, including covariance extraction and related statistical tests.
@@ -57,7 +57,6 @@ public class BollenTing implements NTadTest {
      *            a set of indices used in the computation.
      * @return the computed tetrad statistic as a double value.
      */
-    @Override
     public double tetrad(int[][] tet) {
         List<int[][]> tetList = new ArrayList<>();
         tetList.add(tet);
@@ -75,7 +74,6 @@ public class BollenTing implements NTadTest {
      * @return the p-value of the computed tetrads statistic as a double value. The p-value provides the probability of
      * observing the given data under a null hypothesis based on the chi-squared distribution.
      */
-    @Override
     public double tetrads(int[][]... tets) {
         List<int[][]> tetList = new ArrayList<>();
         Collections.addAll(tetList, tets);
@@ -97,7 +95,6 @@ public class BollenTing implements NTadTest {
      * @return the computed p-value as a double. The p-value quantifies the probability of observing the given data
      * under the null hypothesis, using the Chi-squared distribution.
      */
-    @Override
     public double tetrads(List<int[][]> tets) {
         Set<Integer> V = new HashSet<>();
         for (int[][] tet : tets) {

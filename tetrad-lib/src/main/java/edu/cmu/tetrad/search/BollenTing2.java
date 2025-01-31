@@ -6,7 +6,7 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
-class BollenTing2 extends NTadTest2 {
+class BollenTing2 extends NTadTest {
     public BollenTing2(SimpleMatrix df) {
         super(df);
     }
