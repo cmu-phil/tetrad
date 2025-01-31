@@ -142,8 +142,7 @@ public class Fofc {
         allClusters = estimateClustersSag();
         this.clusters = ClusterSignificance.variablesForIndices(allClusters, variables);
 
-        System.out.println("allClusters = " + allClusters);
-        System.out.println("this.clusters = " + this.clusters);
+        System.out.println("clusters = " + this.clusters);
 
         ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
         clusterSignificance.printClusterPValues(allClusters);
@@ -186,11 +185,11 @@ public class Fofc {
      * @return A set of lists of integers representing the clusters.
      */
     private Set<List<Integer>> estimateClustersSag() {
-        List<Integer> _variables = allVariables();
+        List<Integer> variables = allVariables();
 
-        Set<List<Integer>> expandedPureQuartets = findExpandedPureQuartets(_variables);
+        Set<List<Integer>> expandedPureQuartets = findPureClusters(variables);
         Set<Integer> allClusteredVars = union(expandedPureQuartets);
-        Set<List<Integer>> mixedClusters = findSizeThreeClusters(_variables, allClusteredVars);
+        Set<List<Integer>> mixedClusters = findMixedClusters(variables, allClusteredVars);
         Set<List<Integer>> allClusters = new HashSet<>(expandedPureQuartets);
         allClusters.addAll(mixedClusters);
         return allClusters;
@@ -198,17 +197,18 @@ public class Fofc {
     }
 
     // Finds clusters of size 4 or higher for the tetrad-first algorithm.
-    private Set<List<Integer>> findExpandedPureQuartets(List<Integer> _variables) {
+    private Set<List<Integer>> findPureClusters(List<Integer> variables) {
         Set<List<Integer>> clusters = new HashSet<>();
 
         VARIABLES:
-        while (!_variables.isEmpty()) {
+        while (!variables.isEmpty()) {
             if (this.verbose) {
-                System.out.println(_variables);
+                System.out.println(variables);
             }
-            if (_variables.size() < 4) break;
 
-            ChoiceGenerator gen = new ChoiceGenerator(_variables.size(), 4);
+            if (variables.size() < 4) break;
+
+            ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 4);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -216,40 +216,25 @@ public class Fofc {
                     break;
                 }
 
-                int n1 = _variables.get(choice[0]);
-                int n2 = _variables.get(choice[1]);
-                int n3 = _variables.get(choice[2]);
-                int n4 = _variables.get(choice[3]);
+                int n1 = variables.get(choice[0]);
+                int n2 = variables.get(choice[1]);
+                int n3 = variables.get(choice[2]);
+                int n4 = variables.get(choice[3]);
 
                 List<Integer> cluster = quartet(n1, n2, n3, n4);
-
-                if (zeroCorr(cluster)) {
-                    continue;
-                }
 
                 // Note that purity needs to be assessed with respect to all the variables to
                 // remove all latent-measure impurities between pairs of latents.
                 if (pure(cluster)) {
 
                     O:
-                    for (int o : _variables) {
+                    for (int o : variables) {
                         if (cluster.contains(o)) continue;
-                        List<Integer> _cluster = new ArrayList<>(cluster);
 
-                        ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 3);
-                        int[] choice2;
-
-                        while ((choice2 = gen2.next()) != null) {
-                            if (Thread.currentThread().isInterrupted()) {
-                                break;
-                            }
-
-                            int t1 = _cluster.get(choice2[0]);
-                            int t2 = _cluster.get(choice2[1]);
-                            int t3 = _cluster.get(choice2[2]);
-
-                            List<Integer> quartet = triple(t1, t2, t3);
-                            quartet.add(o);
+                        for (int i = 0; i < cluster.size(); i++) {
+                            List<Integer> quartet = new ArrayList<>(cluster);
+                            quartet.remove(quartet.get(i));
+                            quartet.add(i, o);
 
                             if (!pure(quartet)) {
                                 continue O;
@@ -261,11 +246,11 @@ public class Fofc {
                     }
 
                     if (this.verbose) {
-                        log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, variables));
+                        log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
                     }
 
                     clusters.add(cluster);
-                    _variables.removeAll(cluster);
+                    variables.removeAll(cluster);
 
                     continue VARIABLES;
                 }
@@ -284,7 +269,7 @@ public class Fofc {
      * @param unionPure The set of union pure variables.
      * @return A set of lists of integers representing the mixed clusters.
      */
-    private Set<List<Integer>> findSizeThreeClusters(List<Integer> remaining, Set<Integer> unionPure) {
+    private Set<List<Integer>> findMixedClusters(List<Integer> remaining, Set<Integer> unionPure) {
         Set<List<Integer>> triples = new HashSet<>();
 
         if (unionPure.isEmpty()) {
@@ -303,42 +288,33 @@ public class Fofc {
                     break;
                 }
 
-                int t2 = remaining.get(choice[0]);
-                int t3 = remaining.get(choice[1]);
-                int t4 = remaining.get(choice[2]);
-
                 List<Integer> cluster = new ArrayList<>();
-                cluster.add(t2);
-                cluster.add(t3);
-                cluster.add(t4);
+                cluster.add(remaining.get(choice[0]));
+                cluster.add(remaining.get(choice[1]));
+                cluster.add(remaining.get(choice[2]));
 
                 // Check all x as a cross-check; really only one should be necessary.
-                boolean allVanish = true;
-                boolean someVanish = false;
+                int vanishing = 0;
+                int count = 0;
 
-                for (int t1 : allVariables()) {
+                for (int o : allVariables()) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
 
-                    if (cluster.contains(t1)) continue;
+                    if (cluster.contains(o)) continue;
 
                     List<Integer> _cluster = new ArrayList<>(cluster);
-                    _cluster.add(t1);
+                    _cluster.add(o);
 
-                    if (zeroCorr(_cluster)) {
-                        continue;
+                    if (!zeroCorr(_cluster) && vanishes(_cluster)) {
+                        vanishing++;
                     }
 
-                    if (vanishes(_cluster)) {
-                        someVanish = true;
-                    } else {
-                        allVanish = false;
-                        break;
-                    }
+                    count++;
                 }
 
-                if (someVanish && allVanish) {
+                if (vanishing == count) {
                     triples.add(cluster);
                     unionPure.addAll(cluster);
                     remaining.removeAll(cluster);
@@ -369,15 +345,16 @@ public class Fofc {
         }
 
         if (vanishes(quartet)) {
-            for (int o : allVariables()) {
+            List<Integer> vars = allVariables();
+
+            for (int o : vars) {
                 if (quartet.contains(o)) continue;
 
-                for (int i = 0; i < quartet.size(); i++) {
+                for (int j = 0; j < quartet.size(); j++) {
                     List<Integer> _quartet = new ArrayList<>(quartet);
-                    _quartet.remove(quartet.get(i));
-                    _quartet.add(o);
+                    _quartet.set(j, o);
 
-                    if (!(vanishes(_quartet))) {
+                    if (!vanishes(_quartet)) {
                         return false;
                     }
                 }
