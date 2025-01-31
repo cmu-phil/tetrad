@@ -445,21 +445,16 @@ public class Fofc {
         switch (this.testType) {
             case 1 -> {
                 return this.test1.allGreaterThanAlpha(ints, this.alpha);
-//                return this.test1.tetrad(ints1) > this.alpha && this.test1.tetrad(ints2) > this.alpha;
             }
             case 2 -> {
                 return this.test2.tetrads(ints) > this.alpha;
             }
             case 3 -> {
                 return this.test3.allGreaterThanAlpha(ints, this.alpha);
-//                return this.test3.tetrad(ints1) > this.alpha && this.test3.tetrad(ints2) > this.alpha;
-//                return this.test3.tetrads(ints) > this.alpha;
             }
             case 4 -> {
                 return this.test4.allGreaterThanAlpha(ints, this.alpha);
-//                return this.test4.tetrad(ints1) > this.alpha && this.test4.tetrad(ints2) > this.alpha;
-//                return this.test4.tetrads(ints) > this.alpha;
-            }
+x            }
         }
 
         throw new IllegalArgumentException("Only the delta and wishart tests are being used: " + this.testType);
