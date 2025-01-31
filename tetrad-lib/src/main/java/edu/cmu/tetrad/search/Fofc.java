@@ -195,8 +195,8 @@ public class Fofc {
         Set<List<Integer>> mixedClusters = findMixedClusters(variables, allClusteredVars);
         Set<List<Integer>> allClusters = new HashSet<>(expandedPureQuartets);
         allClusters.addAll(mixedClusters);
-        return allClusters;
 
+        return allClusters;
     }
 
     // Finds clusters of size 4 or higher for the tetrad-first algorithm.
