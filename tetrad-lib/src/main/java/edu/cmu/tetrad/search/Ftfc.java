@@ -96,7 +96,7 @@ public class Ftfc {
     public Ftfc(DataSet dataSet, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
-        this.test = new BollenTing(dataSet.getDoubleData().getDataCopy());
+        this.test = new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
         this.corr = new CorrelationMatrix(dataSet);
     }
 

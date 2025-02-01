@@ -22,18 +22,16 @@ public abstract class NtadTest {
     protected int p;
     protected SimpleMatrix S;
 
-    /**
-     * Constructs an NtadTest object based on the given data matrix. This method initializes the instance by computing
-     * the number of rows, number of columns, and the covariance matrix of the given data.
-     *
-     * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation and each
-     *           column represents a variable.
-     */
-    public NtadTest(SimpleMatrix df) {
+    public NtadTest(SimpleMatrix df, boolean covariances) {
         this.df = df;
         this.n = df.getNumRows();
         this.p = df.getNumCols();
-        this.S = computeCovariance(df);
+
+        if (covariances) {
+            this.S = df;
+        } else {
+            this.S = computeCovariance(df);
+        }
     }
 
     /**

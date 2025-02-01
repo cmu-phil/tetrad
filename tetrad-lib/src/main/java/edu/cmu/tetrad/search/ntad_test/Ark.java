@@ -35,7 +35,7 @@ public class Ark extends NtadTest {
      *           complementary split (1 - sp instead of sp). Is the value is 1, the full dataset is used throughout.
      */
     public Ark(SimpleMatrix df, double sp) {
-        super(df);
+        super(df, false);
         this.sp = sp > 0 ? sp : 1 - sp;
         int splitIndex = (int) (this.sp * df.getNumRows());
 

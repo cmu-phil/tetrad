@@ -14,7 +14,11 @@ import java.util.*;
  */
 public class BollenTing extends NtadTest {
     public BollenTing(SimpleMatrix df) {
-        super(df);
+        this(df, false);
+    }
+
+    public BollenTing(SimpleMatrix df, boolean covariances) {
+        super(df, covariances);
     }
 
     @Override

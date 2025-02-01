@@ -18,15 +18,14 @@ import java.util.List;
 public class Wishart extends NtadTest {
 
     /**
-     * Constructs a Wishart test object based on the given data matrix. This method initializes the Wishart statistical
-     * test by leveraging the input matrix to compute necessary parameters such as the covariance matrix, number of
-     * rows, and number of columns.
+     * Constructs a Wishart test object based on the given data matrix and covariance option. This method initializes
      *
-     * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation and each
-     *           column represents a variable.
+     * @param df          the input data matrix as a SimpleMatrix object, where each row represents an observation and
+     *                    each
+     * @param covariances a boolean flag indicating whether to compute covariances.
      */
-    public Wishart(SimpleMatrix df) {
-        super(df);
+    public Wishart(SimpleMatrix df, boolean covariances) {
+        super(df, covariances);
     }
 
     @Override

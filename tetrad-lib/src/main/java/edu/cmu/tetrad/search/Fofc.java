@@ -122,8 +122,8 @@ public class Fofc {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.testType = testType;
-        this.test1 = new Wishart(dataSet.getDoubleData().getDataCopy());
-        this.test2 = new BollenTing(dataSet.getDoubleData().getDataCopy());
+        this.test1 = new Wishart(dataSet.getDoubleData().getDataCopy(), false);
+        this.test2 = new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
         this.test3 = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
         this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 0.25);
         this.dataModel = dataSet;
