@@ -25,10 +25,7 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.ntad_test.Ark;
-import edu.cmu.tetrad.search.ntad_test.BollenTing;
-import edu.cmu.tetrad.search.ntad_test.NtadTest;
-import edu.cmu.tetrad.search.ntad_test.Wishart;
+import edu.cmu.tetrad.search.ntad_test.*;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -124,8 +121,9 @@ public class Fofc {
         this.testType = testType;
         this.test1 = new Wishart(dataSet.getDoubleData().getDataCopy(), false);
         this.test2 = new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
-        this.test3 = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
-        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 0.25);
+        this.test3 = new Cca(dataSet.getDoubleData().getDataCopy(), false);
+        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
+//        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 0.25);
         this.dataModel = dataSet;
 
         this.corr = new CorrelationMatrix(dataSet);

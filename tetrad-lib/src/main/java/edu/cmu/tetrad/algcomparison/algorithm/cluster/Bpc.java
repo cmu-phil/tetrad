@@ -57,7 +57,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
         ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
         double alpha = parameters.getDouble(Params.ALPHA);
 
-        int tetradTest = parameters.getInt(Params.TETRAD_TEST);
+        int tetradTest = parameters.getInt(Params.TETRAD_TEST_BPC);
         BpcTestType testType;
 
         if (tetradTest == 1) {
@@ -168,7 +168,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.TETRAD_TEST);
+        parameters.add(Params.TETRAD_TEST_BPC);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.CHECK_TYPE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);

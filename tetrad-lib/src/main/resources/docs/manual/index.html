@@ -10007,24 +10007,42 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 <span id="useSkewAdjacencies_value_type">Boolean</span></li>
         </ul>
 
-        <h3 class="parameter_description" id="tetrad_test">tetrad_test</h3>
+        <h3 class="parameter_description" id="tetrad_test_bpc">tetrad_test_bpc</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span id="tetrad_test_short_desc">
+            <li>Short Description: <span id="tetrad_test_bpc_short_desc">
                 The tetrad test used: 1 = Wishart, 2 = Delta (Bollen-Ting)
                 </span></li>
             <li>Long Description:
-                <span id="tetrad_test_long_desc"> This is a parameter for the FOFC
-        (Find One Factor Clusters) algorithm. There are two tests implemented
-        there for testing for tetrads being zero, Wishart and Delta (Bollen-Ting). This
-        parameter picks which of these tests should be used.</span></li>
+                <span id="tetrad_test_bpc_long_desc">
+                The tetrad test used: 1 = Wishart, 2 = Delta
+        		</span></li>
             <li>Default Value: <span
-                    id="tetrad_test_default_value">2</span></li>
+                    id="tetrad_test_bpc_default_value">2</span></li>
             <li>Lower Bound:
-                <span id="tetrad_test_lower_bound">1</span></li>
+                <span id="tetrad_test_bpc_lower_bound">1</span></li>
             <li>Upper Bound: <span
-                    id="tetrad_test_upper_bound">4</span></li>
+                    id="tetrad_test_bpc_upper_bound">2</span></li>
             <li>Value Type: <span
-                    id="tetrad_test_value_type">Integer</span></li>
+                    id="tetrad_test_bpc_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="tetrad_test_fofc">tetrad_test_fofc</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="tetrad_test_fofc_short_desc">
+                The tetrad test used: 1 = Wishart, 2 = Delta (Bollen-Ting), 3 = CCA
+                </span></li>
+            <li>Long Description:
+                <span id="tetrad_test_fofc_long_desc">
+                  The tetrad test used: 1 = Wishart, 2 = Delta (Bollen-Ting), 3 = CCA
+        		</span></li>
+            <li>Default Value: <span
+                    id="tetrad_test_fofc_default_value">2</span></li>
+            <li>Lower Bound:
+                <span id="tetrad_test_fofc_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="tetrad_test_fofc_upper_bound">4</span></li>
+            <li>Value Type: <span
+                    id="tetrad_test_fofc_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="checkType">checkType</h3>
