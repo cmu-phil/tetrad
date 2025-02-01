@@ -252,7 +252,8 @@ public final class Bpc {
             if (this.dataSet != null) {
                 this.tetradTest = new TetradTestContinuous(this.dataSet, type, alpha);
             } else {
-                this.tetradTest = new TetradTestContinuous(getCovarianceMatrix(), type, alpha);
+                throw new IllegalArgumentException("Expecting a dataset.");
+//                this.tetradTest = new TetradTestContinuous(getCovarianceMatrix(), type, alpha);
             }
         }
         this.labels = new int[numVariables()];

@@ -54,7 +54,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1655-1664).
  * <p>
  * The algorithm uses tests of vanishing tetrads (list of 4 variables that follow a certain pattern in the
- * exchangeability of latent paths with respect to the data). The notion of vanishing tetrads is old one but is
+ * exchangeability of latent paths with respect to the data). The notion of vanishing tetrads is an old one but is
  * explained in this book:
  * <p>
  * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
@@ -186,7 +186,7 @@ public class Fofc {
      */
     private Set<List<Integer>> estimateClustersSag() {
         List<Integer> variables = allVariables();
-        if (new HashSet<Integer>(variables).size() != variables.size()) {
+        if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
@@ -310,7 +310,7 @@ public class Fofc {
                     List<Integer> _cluster = new ArrayList<>(cluster);
                     _cluster.add(o);
 
-                    if (!containsZeroCorrelation(_cluster) && vanishes(_cluster)) {
+                    if (!containsZeroCorrlation(_cluster) && vanishes(_cluster)) {
                         vanishing++;
                     }
 
@@ -343,7 +343,7 @@ public class Fofc {
      * @return True if the quartet is pure, false otherwise.
      */
     private boolean pure(List<Integer> quartet) {
-        if (containsZeroCorrelation(quartet)) {
+        if (containsZeroCorrlation(quartet)) {
             return false;
         }
 
@@ -409,7 +409,7 @@ public class Fofc {
      * @param cluster The list of integers representing the cluster.
      * @return True if the cluster has zero correlation, false otherwise.
      */
-    private boolean containsZeroCorrelation(List<Integer> cluster) {
+    private boolean containsZeroCorrlation(List<Integer> cluster) {
         int count = 0;
 
         for (int i = 0; i < cluster.size(); i++) {

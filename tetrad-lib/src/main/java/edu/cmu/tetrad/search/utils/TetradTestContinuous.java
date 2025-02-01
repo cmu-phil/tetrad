@@ -94,10 +94,11 @@ public final class TetradTestContinuous implements TetradTest {
             throw new NullPointerException("Data set must not be null.");
         }
 
+        this.dataSet = dataSet;
+
 //        deltaTest = new DeltaTetradTest(dataSet);
 
         this.covMatrix = new CovarianceMatrix(dataSet);
-        this.dataSet = dataSet;
         this.sigTestType = sigTestType;
         setSignificance(sig);
         this.sampleSize = dataSet.getNumRows();
@@ -106,33 +107,33 @@ public final class TetradTestContinuous implements TetradTest {
         initialization();
     }
 
-    /**
-     * <p>Constructor for TetradTestContinuous.</p>
-     *
-     * @param covMatrix   a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
-     * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
-     * @param sig         a double
-     */
-    public TetradTestContinuous(ICovarianceMatrix covMatrix,
-                                BpcTestType sigTestType, double sig) {
-        if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
-              sigTestType == BpcTestType.TETRAD_DELTA ||
-              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
-            throw new IllegalArgumentException("Unexpected type: " + sigTestType);
-        }
-        this.dataSet = null;
-
-        this.deltaTest = new DeltaTetradTest2(covMatrix);
-
-//        this.corrMatrix = new CorrelationMatrix(covMatrix);
-        this.setCovMatrix(covMatrix);
-        this.sigTestType = sigTestType;
-        setSignificance(sig);
-        this.sampleSize = covMatrix.getSize();
-        initialization();
-
-        this.variables = covMatrix.getVariables();
-    }
+//    /**
+//     * <p>Constructor for TetradTestContinuous.</p>
+//     *
+//     * @param covMatrix   a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+//     * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+//     * @param sig         a double
+//     */
+//    public TetradTestContinuous(ICovarianceMatrix covMatrix,
+//                                BpcTestType sigTestType, double sig) {
+//        if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
+//              sigTestType == BpcTestType.TETRAD_DELTA ||
+//              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
+//            throw new IllegalArgumentException("Unexpected type: " + sigTestType);
+//        }
+//        this.dataSet = null;
+//
+//        this.deltaTest = new DeltaTetradTest2(covMatrix);
+//
+////        this.corrMatrix = new CorrelationMatrix(covMatrix);
+//        this.setCovMatrix(covMatrix);
+//        this.sigTestType = sigTestType;
+//        setSignificance(sig);
+//        this.sampleSize = covMatrix.getSize();
+//        initialization();
+//
+//        this.variables = covMatrix.getVariables();
+//    }
 
     /**
      * <p>Constructor for TetradTestContinuous.</p>
