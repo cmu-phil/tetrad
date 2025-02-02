@@ -2777,29 +2777,8 @@ public final class StatUtils {
      */
     public int estimateRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int maxRank, int n, double pThreshold) {
 
-        // Check inputs.
-        if (xIndices.length == 0 || yIndices.length == 0) {
-            throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
-        }
-
-        for (int xIndex : xIndices) {
-            if (xIndex < 0 || xIndex >= S.getNumRows()) {
-                throw new IllegalArgumentException("xIndices out of bounds.");
-            }
-        }
-
-        for (int yIndex : yIndices) {
-            if (yIndex < 0 || yIndex >= S.getNumRows()) {
-                throw new IllegalArgumentException("yIndices out of bounds.");
-            }
-        }
-
         if (maxRank <= 0) {
             throw new IllegalArgumentException("maxRank must be positive.");
-        }
-
-        if (n <= 0) {
-            throw new IllegalArgumentException("n must be positive.");
         }
 
         if (pThreshold <= 0 || pThreshold >= 1) {
