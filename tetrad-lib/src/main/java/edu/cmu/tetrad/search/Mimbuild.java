@@ -193,11 +193,18 @@ public class Mimbuild {
      * @param clustering  The clustering to use--this clusters the measured variables in such a way that each cluster is
      *                    explained by a single latent variables.
      * @param latentNames The names of the latent variables corresponding in order ot each cluster in the clustering.
-     * @param measuresCov The covariance matrix over the measured variables.
+     * @param measurescov The covariance matrix over the measured variables.
      * @return The inferred graph over the latent variables.
      * @throws InterruptedException If the search is interrupted.
      */
-    public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) throws InterruptedException {
+    public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measurescov) throws InterruptedException {
+
+        // Check nullity.
+        if (clustering == null || latentNames == null || measurescov == null) {
+            throw new NullPointerException("Null arguments are not allowed.");
+        }
+
+        // Make sure the clusters are disjoint.
         for (List<Node> cluster1 : clustering) {
             for (List<Node> cluster2 : clustering) {
                 if (cluster1 != cluster2) {
@@ -210,33 +217,45 @@ public class Mimbuild {
             }
         }
 
-        List<String> _latentNames = new ArrayList<>(latentNames);
-
-        List<String> allVarNames = new ArrayList<>();
-
-        for (List<Node> cluster : clustering) {
-            for (Node node : cluster) allVarNames.add(node.getName());
+        // Make sure the latent name are distinct.
+        for (int i = 0; i < latentNames.size(); i++) {
+            for (int j = i + 1; j < latentNames.size(); j++) {
+                if (latentNames.get(i).equals(latentNames.get(j))) {
+                    throw new IllegalArgumentException("Latent names must be distinct.");
+                }
+            }
         }
 
-        measuresCov = measuresCov.getSubmatrix(allVarNames);
+        // Grab the names of the clustered measures.
+        List<String> custeredVarNames = new ArrayList<>();
 
+        for (List<Node> cluster : clustering) {
+            for (Node node : cluster) custeredVarNames.add(node.getName());
+        }
+
+        // Make the covariance matrix over the clustered measures.
+        measurescov = measurescov.getSubmatrix(custeredVarNames);
+
+        // Grab the variables for the clusters.
         List<List<Node>> _clustering = new ArrayList<>();
 
         for (List<Node> cluster : clustering) {
             List<Node> _cluster = new ArrayList<>();
 
             for (Node node : cluster) {
-                _cluster.add(measuresCov.getVariable(node.getName()));
+                _cluster.add(measurescov.getVariable(node.getName()));
             }
 
             _clustering.add(_cluster);
         }
 
-        List<Node> latents = defineLatents(_latentNames);
-        this.latents = latents;
-
         this.clustering = _clustering;
 
+        // Define the latents.
+        List<Node> latents = defineLatents(latentNames);
+        this.latents = latents;
+
+        // Define the indicators.
         Node[][] indicators = new Node[latents.size()][];
 
         for (int i = 0; i < latents.size(); i++) {
@@ -247,47 +266,44 @@ public class Mimbuild {
             }
         }
 
-        Matrix cov = getCov(measuresCov, latents, indicators);
+        // Calculate the covariance matrix over the latents.
+        Matrix latentcov = getCov(measurescov, latents, indicators);
 
-        // Check for nans in cov.
-        for (int i = 0; i < cov.getNumRows(); i++) {
-            for (int j = 0; j < cov.getNumColumns(); j++) {
-                if (Double.isNaN(cov.get(i, j))) {
-                    throw new IllegalArgumentException("NaN in cov search A.");
+        // Check for nans in latentcov.
+        for (int i = 0; i < latentcov.getNumRows(); i++) {
+            for (int j = 0; j < latentcov.getNumColumns(); j++) {
+                if (Double.isNaN(latentcov.get(i, j))) {
+                    throw new IllegalArgumentException("NaN in latentcov search A.");
                 }
             }
         }
 
-        // Check if there are any zeros on the diagonal in cov.
-        for (int i = 0; i < cov.getNumRows(); i++) {
-            if (cov.get(i, i) <= 0) {
-                throw new IllegalArgumentException("Diagonal element of cov is <= 0.");
+        // Check if there are any zeros on the diagonal in latentcov.
+        for (int i = 0; i < latentcov.getNumRows(); i++) {
+            if (latentcov.get(i, i) <= 0) {
+                throw new IllegalArgumentException("Diagonal element of latentcov is <= 0.");
             }
         }
 
-        ICovarianceMatrix latentscov = new CovarianceMatrix(latents, cov, measuresCov.getSampleSize());
+        ICovarianceMatrix latentscov = new CovarianceMatrix(latents, latentcov, measurescov.getSampleSize());
         this.latentsCov = latentscov;
-        Graph graph;
-
-        System.out.println("Latents cov: " + latentscov);
-
-        SemBicScore score = new SemBicScore(latentscov);
-        score.setPenaltyDiscount(this.penaltyDiscount);
-        score.setUsePseudoInverse(true);
-        PermutationSearch search = new PermutationSearch(new Boss(score));
+        System.out.println("Latents latentcov: " + latentscov);
 
         try {
-            graph = search.search();
+            SemBicScore score = new SemBicScore(latentscov);
+            score.setPenaltyDiscount(this.penaltyDiscount);
+            PermutationSearch search = new PermutationSearch(new Boss(score));
+
+            Graph graph = search.search();
+            this.structureGraph = new EdgeListGraph(graph);
+            LayoutUtil.fruchtermanReingoldLayout(this.structureGraph);
+
+            return this.structureGraph;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (NullPointerException e) {
             throw new RuntimeException("Mimbuild could not find a graph over the latents; perhaps that was not a pure model.", e);
         }
-
-        this.structureGraph = new EdgeListGraph(graph);
-        LayoutUtil.fruchtermanReingoldLayout(this.structureGraph);
-
-        return this.structureGraph;
     }
 
     /**
