@@ -2702,8 +2702,8 @@ public final class StatUtils {
      * threshold.
      *
      * @param S        The input matrix for which the rank is to be estimated.
-     * @param xIndices Array of row/column indices for matrix X.
-     * @param yIndices Array of row/column indices for matrix Y.
+     * @param xIndices The indices representing the subset of variables in the first group.
+     * @param yIndices The indices representing the subset of variables in the second group.
      * @param maxRank  The maximum rank to test for the matrix.
      * @param n        A parameter used to adjust the rank estimation statistics.
      * @return The estimated rank of the input matrix, which is the highest rank that satisfies the significance
@@ -2724,6 +2724,18 @@ public final class StatUtils {
         return maxRank;  // If all ranks pass, return the maximum rank
     }
 
+    /**
+     * Computes the p-value for Canonical Correlation Analysis (CCA) based on a rank-d hypothesis.
+     * This method calculates the test statistic using the last d singular values of a product matrix
+     * derived from the input covariance matrix and performs a chi-squared test to return the p-value.
+     *
+     * @param S The input covariance matrix represented as a SimpleMatrix object.
+     * @param xIndices The indices representing the subset of variables in the first group.
+     * @param yIndices The indices representing the subset of variables in the second group.
+     * @param n The sample size used in the analysis.
+     * @param d The hypothesized rank which defines the number of singular values to consider.
+     * @return The calculated p-value of the test based on the given inputs.
+     */
     public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
         // Step 1: Extract submatrices based on given indices
         SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
