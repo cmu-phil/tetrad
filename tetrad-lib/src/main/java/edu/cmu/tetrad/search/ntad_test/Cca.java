@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search.ntad_test;
 
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
@@ -35,6 +34,15 @@ public class Cca extends NtadTest {
      */
     public Cca(SimpleMatrix df, boolean covariances) {
         super(df, covariances);
+    }
+
+    public static SimpleMatrix chol(SimpleMatrix A) {
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(A.getNumRows(), true);
+
+        if (!chol.decompose(A.getMatrix()))
+            throw new RuntimeException("Cholesky failed!");
+
+        return SimpleMatrix.wrap(chol.getT(null));
     }
 
     @Override
@@ -83,14 +91,5 @@ public class Cca extends NtadTest {
         }
 
         return tetrad(tets.getFirst());
-    }
-
-    public static SimpleMatrix chol(SimpleMatrix A) {
-        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(A.getNumRows(), true);
-
-        if (!chol.decompose(A.getMatrix()))
-            throw new RuntimeException("Cholesky failed!");
-
-        return SimpleMatrix.wrap(chol.getT(null));
     }
 }
