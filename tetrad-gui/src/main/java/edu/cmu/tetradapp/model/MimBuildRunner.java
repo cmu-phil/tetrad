@@ -145,14 +145,6 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
         Mimbuild mimbuild = new Mimbuild();
         mimbuild.setPenaltyDiscount(getParams().getDouble(Params.PENALTY_DISCOUNT));
-        mimbuild.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
-
-        if (getParams().getBoolean("includeThreeClusters", true)) {
-            mimbuild.setMinClusterSize(3);
-        } else {
-            mimbuild.setMinClusterSize(4);
-        }
-
         Clusters clusters = (Clusters) getParams().get("clusters", null);
 
         List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, data.getVariables());

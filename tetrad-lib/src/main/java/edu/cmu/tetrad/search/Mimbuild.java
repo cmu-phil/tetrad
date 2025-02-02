@@ -230,8 +230,6 @@ public class Mimbuild {
         List<Node> latents = defineLatents(_latentNames);
         this.latents = latents;
 
-        // This removes the small clusters and their names.
-//        removeSmallClusters(latents, _clustering, getMinClusterSize());
         this.clustering = _clustering;
 
         Node[][] indicators = new Node[latents.size()][];
@@ -268,16 +266,11 @@ public class Mimbuild {
 
         System.out.println("Latents cov: " + latentscov);
 
-        IndTestFisherZ independenceTest = new IndTestFisherZ(latentscov, 0.001);
-//        Pc search = new Pc(independenceTest);
-
         SemBicScore score = new SemBicScore(latentscov);
         score.setPenaltyDiscount(this.penaltyDiscount);
-        score.setUsePseudoInverse(false);
+        score.setUsePseudoInverse(true);
         PermutationSearch search = new PermutationSearch(new Boss(score));
-//        search.setSeed(seed);
 
-//        search.setKnowledge(this.knowledge);
         try {
             graph = search.search();
         } catch (InterruptedException e) {
@@ -536,7 +529,7 @@ public class Mimbuild {
                                                  int[][] indicatorIndices, double[] delta) {
         double[] values = getAllParams(indicators, latentscov, loadings, delta);
 
-        Function4 function = new Function4(indicatorIndices, measurescov, loadings, latentscov, delta);
+        Function2 function = new Function2(indicatorIndices, measurescov, loadings, latentscov, delta);
         MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
 
         PointValuePair pair = search.optimize(
@@ -599,26 +592,6 @@ public class Mimbuild {
         }
 
         return values;
-    }
-
-    /**
-     * jf Clusters smaller than this size will be tossed out.
-     *
-     * @return a int
-     */
-    public int getMinClusterSize() {
-        return this.minClusterSize;
-    }
-
-    /**
-     * <p>Setter for the field <code>minClusterSize</code>.</p>
-     *
-     * @param minClusterSize a int
-     */
-    public void setMinClusterSize(int minClusterSize) {
-        if (minClusterSize < 3)
-            throw new IllegalArgumentException("Minimum cluster size must be >= 3: " + minClusterSize);
-        this.minClusterSize = minClusterSize;
     }
 
     private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
@@ -700,8 +673,8 @@ public class Mimbuild {
             // become <= 0. jdramsey 2025-1-26
             int _count = 0;
 
-            for (int i = 0; i < this.loadings.length; i++) {
-                for (int j = i; j < this.loadings.length; j++) {
+            for (int i = 0; i < this.latentscov.getNumRows(); i++) {
+                for (int j = i; j < this.latentscov.getNumColumns(); j++) {
                     if (i == j) {
                         if (values[_count] <= 0) {
                             return Double.POSITIVE_INFINITY;
@@ -713,8 +686,8 @@ public class Mimbuild {
 
             int count = 0;
 
-            for (int i = 0; i < this.loadings.length; i++) {
-                for (int j = i; j < this.loadings.length; j++) {
+            for (int i = 0; i < this.latentscov.getNumRows(); i++) {
+                for (int j = i; j < this.latentscov.getNumColumns(); j++) {
                     this.latentscov.set(i, j, values[count]);
                     this.latentscov.set(j, i, values[count]);
                     count++;
@@ -732,7 +705,7 @@ public class Mimbuild {
         }
     }
 
-    private class Function4 implements org.apache.commons.math3.analysis.MultivariateFunction {
+    private class Function2 implements org.apache.commons.math3.analysis.MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;
         private final Matrix measuresCovInverse;
@@ -740,7 +713,7 @@ public class Mimbuild {
         private final Matrix latentscov;
         private final double[] delta;
 
-        public Function4(int[][] indicatorIndices, Matrix measurescov, double[][] loadings, Matrix latentscov,
+        public Function2(int[][] indicatorIndices, Matrix measurescov, double[][] loadings, Matrix latentscov,
                          double[] delta) {
             this.indicatorIndices = indicatorIndices;
             this.measurescov = measurescov;
@@ -758,8 +731,8 @@ public class Mimbuild {
             // become <= 0. jdramsey 2025-1-26
             int _count = 0;
 
-            for (int i = 0; i < this.loadings.length; i++) {
-                for (int j = i; j < this.loadings.length; j++) {
+            for (int i = 0; i < this.latentscov.getNumRows(); i++) {
+                for (int j = i; j < this.latentscov.getNumColumns(); j++) {
                     if (i == j) {
                         if (values[_count] <= 0) {
                             return Double.POSITIVE_INFINITY;
@@ -771,8 +744,8 @@ public class Mimbuild {
 
             int count = 0;
 
-            for (int i = 0; i < this.loadings.length; i++) {
-                for (int j = i; j < this.loadings.length; j++) {
+            for (int i = 0; i < this.latentscov.getNumRows(); i++) {
+                for (int j = i; j < this.latentscov.getNumColumns(); j++) {
                     this.latentscov.set(i, j, values[count]);
                     this.latentscov.set(j, i, values[count]);
                     count++;
@@ -794,7 +767,7 @@ public class Mimbuild {
             Matrix implied = impliedCovariance(this.indicatorIndices, this.loadings, this.measurescov, this.latentscov, this.delta);
 
             Matrix I = Matrix.identity(implied.getNumRows());
-            Matrix diff = I.minus((implied.times(this.measuresCovInverse)));  // time hog. times().
+            Matrix diff = I.minus((implied.times(this.measuresCovInverse)));
 
             return 0.5 * (diff.times(diff)).trace();
         }

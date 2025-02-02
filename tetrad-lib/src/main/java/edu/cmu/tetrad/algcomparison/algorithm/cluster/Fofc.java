@@ -85,13 +85,6 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
             Mimbuild mimbuild = new Mimbuild();
             mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            mimbuild.setKnowledge((Knowledge) parameters.get("knowledge", new Knowledge()));
-
-            if (parameters.getBoolean("includeThreeClusters", true)) {
-                mimbuild.setMinClusterSize(3);
-            } else {
-                mimbuild.setMinClusterSize(4);
-            }
 
             List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
 
