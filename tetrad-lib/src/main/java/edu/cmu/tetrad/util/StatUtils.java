@@ -2697,46 +2697,43 @@ public final class StatUtils {
     }
 
     /**
-     * Estimates the rank of a matrix based on a statistical hypothesis testing approach. The method evaluates singular
-     * values and uses a chi-squared distribution to determine the highest rank that satisfies a predefined significance
-     * threshold.
+     * Computes the p-value for Canonical Correlation Analysis (CCA) based on a rank-d hypothesis. This method
+     * calculates the test statistic using the last d singular values of a product matrix derived from the input
+     * covariance matrix and performs a chi-squared test to return the p-value.
      *
-     * @param S        The input matrix for which the rank is to be estimated.
+     * @param S        The input covariance matrix represented as a SimpleMatrix object.
      * @param xIndices The indices representing the subset of variables in the first group.
      * @param yIndices The indices representing the subset of variables in the second group.
-     * @param maxRank  The maximum rank to test for the matrix.
-     * @param n        A parameter used to adjust the rank estimation statistics.
-     * @return The estimated rank of the input matrix, which is the highest rank that satisfies the significance
-     * threshold. Returns maxRank if all ranks pass the test.
-     */
-    public int estimateRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int maxRank, int n) {
-        double pThreshold = 0.05;  // Set significance threshold for failure
-
-        for (int d = 1; d <= maxRank; d++) {
-            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d);
-
-            // Step 6: Stop when p-value is below the threshold
-            if (pValue < pThreshold) {
-                return d - 1;  // Return the highest rank that passed the test
-            }
-        }
-
-        return maxRank;  // If all ranks pass, return the maximum rank
-    }
-
-    /**
-     * Computes the p-value for Canonical Correlation Analysis (CCA) based on a rank-d hypothesis.
-     * This method calculates the test statistic using the last d singular values of a product matrix
-     * derived from the input covariance matrix and performs a chi-squared test to return the p-value.
-     *
-     * @param S The input covariance matrix represented as a SimpleMatrix object.
-     * @param xIndices The indices representing the subset of variables in the first group.
-     * @param yIndices The indices representing the subset of variables in the second group.
-     * @param n The sample size used in the analysis.
-     * @param d The hypothesized rank which defines the number of singular values to consider.
+     * @param n        The sample size used in the analysis.
+     * @param d        The hypothesized rank which defines the number of singular values to consider.
      * @return The calculated p-value of the test based on the given inputs.
      */
     public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
+        // Check inputs.
+        if (xIndices.length == 0 || yIndices.length == 0) {
+            throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
+        }
+
+        for (int xIndex : xIndices) {
+            if (xIndex < 0 || xIndex >= S.getNumRows()) {
+                throw new IllegalArgumentException("xIndices out of bounds.");
+            }
+        }
+
+        for (int yIndex : yIndices) {
+            if (yIndex < 0 || yIndex >= S.getNumRows()) {
+                throw new IllegalArgumentException("yIndices out of bounds.");
+            }
+        }
+
+        if (n <= 0) {
+            throw new IllegalArgumentException("n must be positive.");
+        }
+
+        if (d <= 0) {
+            throw new IllegalArgumentException("d must be positive.");
+        }
+
         // Step 1: Extract submatrices based on given indices
         SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
         SimpleMatrix YY = extractSubMatrix(S, yIndices, yIndices);
@@ -2762,6 +2759,63 @@ public final class StatUtils {
         // Step 5: Chi-squared test for current d
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(d * d);
         return 1 - chi2.cumulativeProbability(stat);
+    }
+
+    /**
+     * Estimates the rank of a matrix based on a statistical hypothesis testing approach. The method evaluates singular
+     * values and uses a chi-squared distribution to determine the highest rank that satisfies a predefined significance
+     * threshold.
+     *
+     * @param S          The input matrix for which the rank is to be estimated.
+     * @param xIndices   The indices representing the subset of variables in the first group.
+     * @param yIndices   The indices representing the subset of variables in the second group.
+     * @param maxRank    The maximum rank to test for the matrix.
+     * @param n          The sample size used in the analysis.
+     * @param pThreshold The significance threshold for the hypothesis test.
+     * @return The estimated rank of the input matrix, which is the highest rank that satisfies the significance
+     * threshold. Returns maxRank if all ranks pass the test.
+     */
+    public int estimateRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int maxRank, int n, double pThreshold) {
+
+        // Check inputs.
+        if (xIndices.length == 0 || yIndices.length == 0) {
+            throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
+        }
+
+        for (int xIndex : xIndices) {
+            if (xIndex < 0 || xIndex >= S.getNumRows()) {
+                throw new IllegalArgumentException("xIndices out of bounds.");
+            }
+        }
+
+        for (int yIndex : yIndices) {
+            if (yIndex < 0 || yIndex >= S.getNumRows()) {
+                throw new IllegalArgumentException("yIndices out of bounds.");
+            }
+        }
+
+        if (maxRank <= 0) {
+            throw new IllegalArgumentException("maxRank must be positive.");
+        }
+
+        if (n <= 0) {
+            throw new IllegalArgumentException("n must be positive.");
+        }
+
+        if (pThreshold <= 0 || pThreshold >= 1) {
+            throw new IllegalArgumentException("pThreshold must be between 0 and 1.");
+        }
+
+        for (int d = 1; d <= maxRank; d++) {
+            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d);
+
+            // Step 6: Stop when p-value is below the threshold
+            if (pValue < pThreshold) {
+                return d - 1;  // Return the highest rank that passed the test
+            }
+        }
+
+        return maxRank;  // If all ranks pass, return the maximum rank
     }
 }
 
