@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -173,10 +172,6 @@ public class Mimbuild {
         // Convert the latent names to a list of string.
         List<String> latentNodes = new ArrayList<>();
         Collections.addAll(latentNodes, latentNames);
-
-        // Convert the measure names to a list of string.
-        List<String> measureNodes = new ArrayList<>();
-        Collections.addAll(measureNodes, measureNames);
 
         // Run the search.
         return search(clusteringList, latentNodes, measuresCovMatrix);
