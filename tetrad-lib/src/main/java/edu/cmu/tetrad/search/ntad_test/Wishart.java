@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.ntad_test;
 
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
@@ -35,10 +36,10 @@ public class Wishart extends NtadTest {
         int[] b = tet[1];
         int n = resample ? (int) (frac * this.n) : this.n;
 
-        double sigma2 = (double) (n + 1) / (n - 1) * determinant(extractSubMatrix(S, a, a)) * determinant(extractSubMatrix(S, b, b))
-                        - determinant(extractSubMatrix(S, concat(a, b), concat(a, b))) / (n - 2);
+        double sigma2 = (double) (n + 1) / (n - 1) * determinant(StatUtils.extractSubMatrix(S, a, a)) * determinant(StatUtils.extractSubMatrix(S, b, b))
+                        - determinant(StatUtils.extractSubMatrix(S, concat(a, b), concat(a, b))) / (n - 2);
 
-        double z_score = determinant(extractSubMatrix(S, a, b)) / Math.sqrt(sigma2);
+        double z_score = determinant(StatUtils.extractSubMatrix(S, a, b)) / Math.sqrt(sigma2);
         return 2 * new NormalDistribution().cumulativeProbability(-Math.abs(z_score));
     }
 

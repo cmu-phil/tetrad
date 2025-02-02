@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search.ntad_test;
 
 import edu.cmu.tetrad.util.MathUtils;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.ejml.simple.SimpleMatrix;
@@ -64,13 +65,13 @@ public class Ark extends NtadTest {
         int[] b = tet[1];
         int z = a.length;
 
-        SimpleMatrix XY = this.sp < 1 ? extractSubMatrix(S2, a, b) : extractSubMatrix(S1, a, b);
+        SimpleMatrix XY = this.sp < 1 ? StatUtils.extractSubMatrix(S2, a, b) : StatUtils.extractSubMatrix(S1, a, b);
         SimpleSVD<SimpleMatrix> svd = XY.svd();
         SimpleMatrix U = svd.getU();
         SimpleMatrix VT = svd.getV().transpose();
 
-        SimpleMatrix XXi = extractSubMatrix(S1, a, a).invert();
-        SimpleMatrix YYi = extractSubMatrix(S1, b, b).invert();
+        SimpleMatrix XXi = StatUtils.extractSubMatrix(S1, a, a).invert();
+        SimpleMatrix YYi = StatUtils.extractSubMatrix(S1, b, b).invert();
 
         SimpleMatrix A = U.transpose().mult(XXi).mult(U);
         SimpleMatrix B = VT.mult(YYi).mult(VT.transpose());
@@ -102,7 +103,7 @@ public class Ark extends NtadTest {
         idx[1] = indicesB[z - 1];
         System.arraycopy(indicesA, 0, idx, 2, z - 1);
 
-        SimpleMatrix subR = extractSubMatrix(R, idx, idx).invert();
+        SimpleMatrix subR = StatUtils.extractSubMatrix(R, idx, idx).invert();
 
         double p_corr = -subR.get(0, 1) / Math.sqrt(subR.get(0, 0) * subR.get(1, 1));
         double z_score = MathUtils.arctanh(p_corr) * Math.sqrt(n - idx.length - 1);

@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.ntad_test;
 
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
@@ -13,10 +14,30 @@ import java.util.*;
  * such as resampling and fractional sampling rates.
  */
 public class BollenTing extends NtadTest {
+
+    /**
+     * Constructs a BollenTing object for performing statistical operations based on the given data matrix.
+     * This constructor initializes the instance using the input data matrix and sets a default value for
+     * the covariances flag (false), meaning the covariance matrices will be computed from the input data.
+     *
+     * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation
+     *           and each column represents a variable.
+     */
     public BollenTing(SimpleMatrix df) {
         this(df, false);
     }
 
+    /**
+     * Constructs a BollenTing object for performing statistical operations. This constructor
+     * initializes the instance using a data matrix and a boolean flag indicating whether
+     * covariance matrices should be used directly or computed from the input data.
+     *
+     * @param df the input data matrix as a SimpleMatrix object, where each row represents an
+     *           observation and each column represents a variable.
+     * @param covariances a boolean flag that determines whether the input matrix is treated
+     *                    as a covariance matrix (true) or as raw data from which covariances
+     *                    should be calculated (false).
+     */
     public BollenTing(SimpleMatrix df, boolean covariances) {
         super(df, covariances);
     }
@@ -58,7 +79,7 @@ public class BollenTing extends NtadTest {
             int[][] tet = tets.get(i);
             int[] a = tet[0];
             int[] b = tet[1];
-            SimpleMatrix A = extractSubMatrix(S, a, b);
+            SimpleMatrix A = StatUtils.extractSubMatrix(S, a, b);
             double detA = CommonOps_DDRM.det(A.getDDRM());
             t.set(i, 0, detA);
 

@@ -2614,7 +2614,7 @@ public final class StatUtils {
     /**
      * Calculates the p-value for the given chi-square statistic and degrees of freedom.
      *
-     * @param dof Degrees of freedom; must be non-negative.
+     * @param dof   Degrees of freedom; must be non-negative.
      * @param chisq Chi-square statistic; must be non-negative.
      * @return The p-value corresponding to the chi-square statistic and degrees of freedom.
      * @throws IllegalArgumentException if degrees of freedom or chi-square statistic is negative.
@@ -2631,6 +2631,125 @@ public final class StatUtils {
         }
 
         return 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chisq);
+    }
+
+    /**
+     * Extracts a submatrix from the specified matrix by selecting the rows and columns indicated by the provided
+     * indices. The resulting submatrix is composed of values at the intersection of the specified rows and columns.
+     *
+     * @param matrix the input matrix as a SimpleMatrix object from which the submatrix will be extracted
+     * @param rows   an array of integers representing the row indices to include in the submatrix
+     * @param cols   an array of integers representing the column indices to include in the submatrix
+     * @return a SimpleMatrix object representing the extracted submatrix
+     */
+    public static SimpleMatrix extractSubMatrix(SimpleMatrix matrix, int[] rows, int[] cols) {
+        SimpleMatrix subMatrix = new SimpleMatrix(rows.length, cols.length);
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                subMatrix.set(i, j, matrix.get(rows[i], cols[j]));
+            }
+        }
+        return subMatrix;
+    }
+
+    /**
+     * Extracts a submatrix from the given matrix within the specified row and column bounds.
+     *
+     * @param matrix   The input matrix.
+     * @param rowStart The starting row index (inclusive).
+     * @param rowEnd   The ending row index (exclusive).
+     * @param colStart The starting column index (inclusive).
+     * @param colEnd   The ending column index (exclusive).
+     * @return The extracted submatrix.
+     */
+    public static SimpleMatrix extractSubMatrix(SimpleMatrix matrix, int rowStart, int rowEnd, int colStart, int colEnd) {
+        // Ensure valid ranges
+        if (rowStart < 0 || rowEnd > matrix.getNumRows() || colStart < 0 || colEnd > matrix.getNumCols()) {
+            throw new IllegalArgumentException("Submatrix indices are out of bounds.");
+        }
+
+        SimpleMatrix subMatrix = new SimpleMatrix(rowEnd - rowStart, colEnd - colStart);
+
+        for (int i = rowStart; i < rowEnd; i++) {
+            for (int j = colStart; j < colEnd; j++) {
+                subMatrix.set(i - rowStart, j - colStart, matrix.get(i, j));
+            }
+        }
+
+        return subMatrix;
+    }
+
+    /**
+     * Computes the Cholesky decomposition of the given matrix and returns its lower triangular matrix.
+     *
+     * @param A The input positive definite matrix.
+     * @return The lower triangular matrix from the Cholesky decomposition.
+     */
+    public static SimpleMatrix chol(SimpleMatrix A) {
+        org.ejml.interfaces.decomposition.CholeskyDecomposition_F64<org.ejml.data.DMatrixRMaj> chol =
+                org.ejml.dense.row.factory.DecompositionFactory_DDRM.chol(A.getNumRows(), true);
+
+        if (!chol.decompose(A.getDDRM())) {
+            throw new RuntimeException("Cholesky decomposition failed!");
+        }
+
+        return SimpleMatrix.wrap(chol.getT(null));
+    }
+
+    /**
+     * Estimates the rank of a matrix based on a statistical hypothesis testing approach. The method evaluates singular
+     * values and uses a chi-squared distribution to determine the highest rank that satisfies a predefined significance
+     * threshold.
+     *
+     * @param S        The input matrix for which the rank is to be estimated.
+     * @param xIndices Array of row/column indices for matrix X.
+     * @param yIndices Array of row/column indices for matrix Y.
+     * @param maxRank  The maximum rank to test for the matrix.
+     * @param n        A parameter used to adjust the rank estimation statistics.
+     * @return The estimated rank of the input matrix, which is the highest rank that satisfies the significance
+     * threshold. Returns maxRank if all ranks pass the test.
+     */
+    public int estimateRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int maxRank, int n) {
+        double pThreshold = 0.05;  // Set significance threshold for failure
+
+        for (int d = 1; d <= maxRank; d++) {
+            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d);
+
+            // Step 6: Stop when p-value is below the threshold
+            if (pValue < pThreshold) {
+                return d - 1;  // Return the highest rank that passed the test
+            }
+        }
+
+        return maxRank;  // If all ranks pass, return the maximum rank
+    }
+
+    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
+        // Step 1: Extract submatrices based on given indices
+        SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
+        SimpleMatrix YY = extractSubMatrix(S, yIndices, yIndices);
+        SimpleMatrix XY = extractSubMatrix(S, xIndices, yIndices);
+
+        // Step 2: Perform Cholesky decompositions and their inverses
+        SimpleMatrix XXir = chol(XX).invert();
+        SimpleMatrix YYir = chol(YY).invert();
+        SimpleMatrix product = XXir.mult(XY).mult(YYir);
+
+        // Step 3: Get singular values of product
+        double[] singularValues = product.svd().getSingularValues();
+
+        // Step 4: Compute test statistic using last d singular values
+        double stat = 0.0;
+        for (int i = singularValues.length - d; i < singularValues.length; i++) {
+            double adjustedValue = 1 - Math.pow(singularValues[i], 2);
+            adjustedValue = Math.max(adjustedValue, 1e-6);  // Clip to avoid log(0)
+            stat += Math.log(adjustedValue);
+        }
+        stat *= (d + 3.0 / 2.0 - n);
+
+        // Step 5: Chi-squared test for current d
+        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(d * d);
+        return 1 - chi2.cumulativeProbability(stat);
     }
 }
 

@@ -22,6 +22,15 @@ public abstract class NtadTest {
     protected int p;
     protected SimpleMatrix S;
 
+    /**
+     * Constructs an NtadTest object with the provided data matrix and a flag indicating whether
+     * the input matrix represents covariances or raw data.
+     *
+     * @param df           the input data matrix as a SimpleMatrix object, where each row represents
+     *                     an observation and each column represents a variable
+     * @param covariances  a boolean flag indicating whether the provided matrix is a covariance matrix (true)
+     *                     or raw data requiring covariance computation (false)
+     */
     public NtadTest(SimpleMatrix df, boolean covariances) {
         this.df = df;
         this.n = df.getNumRows();
@@ -32,25 +41,6 @@ public abstract class NtadTest {
         } else {
             this.S = computeCovariance(df);
         }
-    }
-
-    /**
-     * Extracts a submatrix from the specified matrix by selecting the rows and columns indicated by the provided
-     * indices. The resulting submatrix is composed of values at the intersection of the specified rows and columns.
-     *
-     * @param matrix the input matrix as a SimpleMatrix object from which the submatrix will be extracted
-     * @param rows   an array of integers representing the row indices to include in the submatrix
-     * @param cols   an array of integers representing the column indices to include in the submatrix
-     * @return a SimpleMatrix object representing the extracted submatrix
-     */
-    protected static SimpleMatrix extractSubMatrix(SimpleMatrix matrix, int[] rows, int[] cols) {
-        SimpleMatrix subMatrix = new SimpleMatrix(rows.length, cols.length);
-        for (int i = 0; i < rows.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                subMatrix.set(i, j, matrix.get(rows[i], cols[j]));
-            }
-        }
-        return subMatrix;
     }
 
     /**

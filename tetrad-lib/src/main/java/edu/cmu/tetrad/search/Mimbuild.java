@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -34,7 +36,6 @@ import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
-import org.ejml.data.SingularMatrixException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,21 +96,21 @@ public class Mimbuild {
     }
 
     /**
-     * Conducts a search to infer a graph over latent variables based on the provided clustering,
-     * measure names, latent variable names, and measures covariance.
+     * Conducts a search to infer a graph over latent variables based on the provided clustering, measure names, latent
+     * variable names, and measures covariance.
      *
-     * @param clustering An array where each subarray represents a cluster of measured variables,
-     *                   with each index corresponding to the position of a measure in the measureNames array.
-     *                   Each cluster is assumed to be explained by a single latent variable.
-     *                   The clusters must be disjoint.
+     * @param clustering   An array where each subarray represents a cluster of measured variables, with each index
+     *                     corresponding to the position of a measure in the measureNames array. Each cluster is assumed
+     *                     to be explained by a single latent variable. The clusters must be disjoint.
      * @param measureNames An array of names corresponding to the measured variables.
-     * @param latentNames An array of names for the latent variables, where each name corresponds to a cluster
-     *                    in the clustering parameter.
-     * @param measuresCov A two-dimensional double array representing the covariance matrix over the measured variables.
+     * @param latentNames  An array of names for the latent variables, where each name corresponds to a cluster in the
+     *                     clustering parameter.
+     * @param measuresCov  A two-dimensional double array representing the covariance matrix over the measured
+     *                     variables.
      * @return A graph inferred over the latent variables, depicting relationships among measured and latent variables.
-     * @throws InterruptedException If the search process is interrupted.
+     * @throws InterruptedException     If the search process is interrupted.
      * @throws IllegalArgumentException If the clustering contains invalid indices or overlapping clusters.
-     * @throws NullPointerException If any of the arguments are null.
+     * @throws NullPointerException     If any of the arguments are null.
      */
     public Graph search(int[][] clustering, String[] measureNames, String[] latentNames, double[][] measuresCov) throws InterruptedException {
 
@@ -282,7 +283,7 @@ public class Mimbuild {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (NullPointerException e) {
-            throw new RuntimeException("Mimbuild could not find a graph over the latents; perhaps that was not a pure model." , e);
+            throw new RuntimeException("Mimbuild could not find a graph over the latents; perhaps that was not a pure model.", e);
         }
 
         this.structureGraph = new EdgeListGraph(graph);
@@ -340,6 +341,7 @@ public class Mimbuild {
      * The full graph inferred, including the edges from latents to measures. And all fo the edges inferred among
      * latents.
      *
+     * @param includeNodes The nodes to include.
      * @return This full graph.
      */
     public Graph getFullGraph(List<Node> includeNodes) {
@@ -466,9 +468,9 @@ public class Mimbuild {
 
         if (df < 1)
             throw new IllegalStateException(
-                "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
-                "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
-                "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
+                    "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
+                    "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
+                    "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
 
         ChiSquaredDistribution chisq = new ChiSquaredDistribution(df);
 
