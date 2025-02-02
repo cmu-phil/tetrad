@@ -69,24 +69,34 @@ import java.util.List;
  * @see Knowledge
  */
 public class Mimbuild {
-    // The clustering from BPC or equivalent. Small clusters are removed.
+    /**
+     * The clustering from BPC or equivalent. Small clusters are removed.
+     */
     private List<List<Node>> clustering;
-    // The graph over the latents.
+    /**
+     * The graph over the latents.
+     */
     private Graph structureGraph;
-    // Background knowledge for CPC.
-    private Knowledge knowledge = new Knowledge();
-    // The covariance matrix over the latent variables.
+    /**
+     * The covariance matrix over the latent variables.
+     */
     private ICovarianceMatrix latentsCov;
-    // The minimum function (Fgsl) value achieved.
+    /**
+     * The minimum function (Fgsl) value achieved.
+     */
     private double minimum;
-    // The p value of the optimization.
+    /**
+     * The p value of the optimization.
+     */
     private double pValue;
-    // The latents.
+    /**
+     * The latents.
+     */
     private List<Node> latents;
-    // The penalty discount of the score used to infer the structure graph.
+    /**
+     * The penalty discount of the score used to infer the structure graph.
+     */
     private double penaltyDiscount = 1;
-    // jf Clusters smaller than this size will be tossed out.
-    private int minClusterSize = 1;
 
     /**
      * Constructs a new Mimbuild search.
@@ -287,15 +297,6 @@ public class Mimbuild {
      */
     public List<List<Node>> getClustering() {
         return this.clustering;
-    }
-
-    /**
-     * Sets the knowledge to be used in the search.
-     *
-     * @param knowledge This knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
     }
 
     /**
