@@ -180,7 +180,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
         this.covMatrix = latentsCov;
 
-        double p = mimbuild.getpValue();
+        double p = mimbuild.getPValue();
 
         TetradLogger.getInstance().log("\nStructure graph = " + structureGraph);
         TetradLogger.getInstance().log(getLatentClustersString(fullGraph).toString());
