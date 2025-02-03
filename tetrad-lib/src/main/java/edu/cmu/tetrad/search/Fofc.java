@@ -188,17 +188,18 @@ public class Fofc {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
-        Set<List<Integer>> expandedPureQuartets = findPureClusters(variables);
-        Set<Integer> allClusteredVars = union(expandedPureQuartets);
-        Set<List<Integer>> mixedClusters = findMixedClusters(variables, allClusteredVars);
-        Set<List<Integer>> allClusters = new HashSet<>(expandedPureQuartets);
+        Set<List<Integer>> pureClusters = findPureClusters();
+        Set<Integer> unionClustered = union(pureClusters);
+        Set<List<Integer>> mixedClusters = findMixedClusters(unionClustered);
+        Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
 
         return allClusters;
     }
 
     // Finds clusters of size 4 or higher for the tetrad-first algorithm.
-    private Set<List<Integer>> findPureClusters(List<Integer> variables) {
+    private Set<List<Integer>> findPureClusters() {
+        List<Integer> variables = allVariables();
         Set<List<Integer>> clusters = new HashSet<>();
 
         VARIABLES:
@@ -227,24 +228,10 @@ public class Fofc {
                 // Note that purity needs to be assessed with respect to all the variables to
                 // remove all latent-measure impurities between pairs of latents.
                 if (pure(cluster)) {
+                    List<Integer> unclustered = new ArrayList<>(variables);
+                    unclustered.removeAll(union(clusters));
 
-                    O:
-                    for (int o : variables) {
-                        if (cluster.contains(o)) continue;
-
-                        for (int i = 0; i < cluster.size(); i++) {
-                            List<Integer> quartet = new ArrayList<>(cluster);
-                            quartet.remove(quartet.get(i));
-                            quartet.add(i, o);
-
-                            if (!pure(quartet)) {
-                                continue O;
-                            }
-                        }
-
-                        log("Extending by " + this.variables.get(o));
-                        cluster.add(o);
-                    }
+                    growCluster(unclustered, cluster);
 
                     if (this.verbose) {
                         log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
@@ -263,25 +250,51 @@ public class Fofc {
         return clusters;
     }
 
+    private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
+
+        O:
+        for (int o : unclustered) {
+            if (cluster.contains(o)) continue;
+
+            for (int i = 0; i < cluster.size(); i++) {
+                List<Integer> quartet = new ArrayList<>(cluster);
+                quartet.remove(quartet.get(i));
+                quartet.add(i, o);
+
+                if (!pure(quartet)) {
+                    continue O;
+                }
+            }
+
+            log("Extending by " + this.variables.get(o));
+            cluster.add(o);
+        }
+    }
+
     /**
-     * Finds clusters of size 3 for the SAG algorithm.
+     * Finds clusters of size 3 for the SAG algorithm. If a 3-cluster is found, we attempt to grow it into
+     * a larger cluster.
      *
-     * @param remaining The list of remaining variables.
-     * @param unionPure The set of union pure variables.
+     * @param unionClustered The set of union pure variables.
      * @return A set of lists of integers representing the mixed clusters.
      */
-    private Set<List<Integer>> findMixedClusters(List<Integer> remaining, Set<Integer> unionPure) {
-        Set<List<Integer>> triples = new HashSet<>();
+    private Set<List<Integer>> findMixedClusters(Set<Integer> unionClustered) {
+        List<Integer> variables = allVariables();
+        Set<List<Integer>> mixedClusters = new HashSet<>();
 
-        if (unionPure.isEmpty()) {
+        if (unionClustered.isEmpty()) {
             return new HashSet<>();
         }
 
-        REMAINING:
-        while (true) {
-            if (remaining.size() < 3) break;
+        Set<Integer> _unionClustered;
 
-            ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 3);
+        DO:
+        do {
+            _unionClustered = new HashSet<>(unionClustered);
+            List<Integer> unclustered = new ArrayList<>(variables);
+            unclustered.removeAll(unionClustered);
+
+            ChoiceGenerator gen = new ChoiceGenerator(unclustered.size(), 3);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -290,15 +303,11 @@ public class Fofc {
                 }
 
                 List<Integer> cluster = new ArrayList<>();
-                cluster.add(remaining.get(choice[0]));
-                cluster.add(remaining.get(choice[1]));
-                cluster.add(remaining.get(choice[2]));
+                cluster.add(unclustered.get(choice[0]));
+                cluster.add(unclustered.get(choice[1]));
+                cluster.add(unclustered.get(choice[2]));
 
-                // Check all x as a cross-check; really only one should be necessary.
-                int vanishing = 0;
-                int count = 0;
-
-                for (int o : allVariables()) {
+                for (int o : unclustered) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
@@ -309,29 +318,37 @@ public class Fofc {
                     _cluster.add(o);
 
                     if (!containsZeroCorrlation(_cluster) && vanishes(_cluster)) {
-                        vanishing++;
+                        for (int _o : unclustered) {
+                            if (_cluster.contains(_o)) continue;
+
+                            List<Integer> __cluster = new ArrayList<>(_cluster);
+                            __cluster.add(_o);
+
+                            if (pure(__cluster)) {
+                                growCluster(unclustered, __cluster);
+                                mixedClusters.add(__cluster);
+                                unionClustered.addAll(__cluster);
+
+                                if (this.verbose) {
+                                    log("3-cluster found and grown: " + ClusterSignificance.variablesForIndices(__cluster, this.variables));
+                                }
+
+                                continue DO;
+                            }
+                        }
+
+                        mixedClusters.add(_cluster);
+                        unionClustered.addAll(_cluster);
+
+                        if (this.verbose) {
+                            log("3-cluster found: " + ClusterSignificance.variablesForIndices(_cluster, this.variables));
+                        }
                     }
-
-                    count++;
-                }
-
-                if (vanishing == count) {
-                    triples.add(cluster);
-                    unionPure.addAll(cluster);
-                    remaining.removeAll(cluster);
-
-                    if (this.verbose) {
-                        log("3-cluster found: " + ClusterSignificance.variablesForIndices(cluster, variables));
-                    }
-
-                    continue REMAINING;
                 }
             }
+        } while(!unionClustered.equals(_unionClustered));
 
-            break;
-        }
-
-        return triples;
+        return mixedClusters;
     }
 
     /**

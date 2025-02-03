@@ -25,6 +25,8 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.BasisFunctionBicScore;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -267,8 +269,9 @@ public class Mimbuild {
         Node[][] indicators = new Node[latents.size()][];
 
         for (int i = 0; i < _clustering.size(); i++) {
+            indicators[i] = new Node[_clustering.get(i).size()];
+
             for (int j = 0; j < _clustering.get(i).size(); j++) {
-                indicators[i] = new Node[_clustering.get(i).size()];
                 indicators[i][j] = _clustering.get(i).get(j);
             }
         }
@@ -339,8 +342,8 @@ public class Mimbuild {
     }
 
     /**
-     * Returns the p-value associated with the resulting statistical test or computation.
-     * The p-value helps to determine the statistical significance of the result.
+     * Returns the p-value associated with the resulting statistical test or computation. The p-value helps to determine
+     * the statistical significance of the result.
      *
      * @return The p-value as a double.
      */
@@ -426,10 +429,6 @@ public class Mimbuild {
 
         for (int i = 0; i < indicators.length; i++) {
             loadings[i] = new double[indicators[i].length];
-        }
-
-        for (int i = 0; i < indicators.length; i++) {
-            loadings[i] = new double[indicators[i].length];
 
             for (int j = 0; j < indicators[i].length; j++) {
                 loadings[i][j] = 1;
@@ -454,18 +453,12 @@ public class Mimbuild {
             delta[i] = measurescov.get(i, i);
         }
 
-        double[] allParams1 = getAllParams(indicators, latentscov, loadings, delta);
-
-        optimizeNonMeasureVariancesQuick(latentscov, loadings, indicators, measurescov, indicatorIndices);
-
-        int numParams = allParams1.length;
-
-        optimizeAllParamsSimultaneously(indicators, measurescov, latentscov, loadings, indicatorIndices, delta);
+        int numParams = optimizeAllParamsSimultaneously(indicators, measurescov, latentscov, loadings, indicatorIndices, delta);
 
         double N = _measurescov.getSampleSize();
         int p = _measurescov.getDimension();
 
-        int df = (p) * (p + 1) / 2 - (numParams);
+        int df = (p) * (p + 1) / 2 - numParams;
         double x = (N - 1) * this.minimum;
 
         if (df < 1)
@@ -539,9 +532,9 @@ public class Mimbuild {
         this.minimum = pair.getValue();
     }
 
-    private void optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
-                                                 Matrix latentscov, double[][] loadings,
-                                                 int[][] indicatorIndices, double[] delta) {
+    private int optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
+                                                Matrix latentscov, double[][] loadings,
+                                                int[][] indicatorIndices, double[] delta) {
         double[] values = getAllParams(indicators, latentscov, loadings, delta);
 
         Function2 function = new Function2(latentscov, loadings, delta, indicatorIndices, measurescov);
@@ -554,6 +547,7 @@ public class Mimbuild {
                 new MaxEval(100000));
 
         this.minimum = pair.getValue();
+        return values.length;
     }
 
     private double[] getAllParams(Node[][] indicators, Matrix latentscov, double[][] loadings, double[] delta) {
