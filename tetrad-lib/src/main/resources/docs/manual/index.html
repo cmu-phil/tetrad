@@ -10029,20 +10029,39 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <h3 class="parameter_description" id="tetrad_test_fofc">tetrad_test_fofc</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="tetrad_test_fofc_short_desc">
-                The tetrad test used: 1 = Wishart, 2 = Delta (Bollen-Ting), 3 = CCA
+                The tetrad test used: 1 = CCA, 2 = Bollen-Ting, 3 = Wishart
                 </span></li>
             <li>Long Description:
                 <span id="tetrad_test_fofc_long_desc">
-                  The tetrad test used: 1 = Wishart, 2 = Delta (Bollen-Ting), 3 = CCA
+                The tetrad test used: 1 = CCA, 2 = Bollen-Ting, 3 = Wishart
         		</span></li>
             <li>Default Value: <span
-                    id="tetrad_test_fofc_default_value">2</span></li>
+                    id="tetrad_test_fofc_default_value">1</span></li>
             <li>Lower Bound:
                 <span id="tetrad_test_fofc_lower_bound">1</span></li>
             <li>Upper Bound: <span
                     id="tetrad_test_fofc_upper_bound">4</span></li>
             <li>Value Type: <span
                     id="tetrad_test_fofc_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="fofcAlpha">fofcAlpha</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="fofcAlpha_short_desc">Cutoff for p values (alpha) (min =
+        0.0)</span></li>
+            <li>Long Description: <span
+                    id="fofcAlpha_long_desc">Alpha level (0 to 1)</span></li>
+            <li>Default Value: <span
+                    id="fofcAlpha_default_value">0.001</span></li>
+            <li>Lower Bound:
+                <span id="fofcAlpha_lower_bound">0.0</span></li>
+            <li>Upper Bound:
+                <span id="fofcAlpha_upper_bound">1.0</span></li>
+            <li>Value Type:
+                <span id="fofcAlpha_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description" id="checkType">checkType</h3>

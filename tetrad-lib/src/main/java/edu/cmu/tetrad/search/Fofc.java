@@ -112,16 +112,16 @@ public class Fofc {
      * Conctructor.
      *
      * @param dataSet  The continuous dataset searched over.
-     * @param testType The type of test used.
+     * @param testType The type of test used. 1 = CCA, 2 = Bollen-Ting, 3 = Wishart
      * @param alpha    The alpha significance cutoff.
      */
     public Fofc(DataSet dataSet, int testType, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.testType = testType;
-        this.test1 = new Wishart(dataSet.getDoubleData().getDataCopy(), false);
+        this.test1 = new Cca(dataSet.getDoubleData().getDataCopy(), false);
         this.test2 = new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
-        this.test3 = new Cca(dataSet.getDoubleData().getDataCopy(), false);
+        this.test3 = new Wishart(dataSet.getDoubleData().getDataCopy(), false);
         this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
 //        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 0.25);
         this.dataModel = dataSet;

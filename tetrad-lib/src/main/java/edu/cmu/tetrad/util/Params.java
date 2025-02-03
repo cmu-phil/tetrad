@@ -45,6 +45,10 @@ public final class Params {
      */
     public static final String ALPHA = "alpha";
     /**
+     * Constant <code>FOFC_ALPHA="fofcAlpha"</code>
+     */
+    public static final String FOFC_ALPHA = "fofcAlpha";
+    /**
      * Constant <code>APPLY_R1="applyR1"</code>
      */
     public static final String APPLY_R1 = "applyR1";
