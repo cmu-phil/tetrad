@@ -568,6 +568,25 @@ public class SemBicScore implements Score {
         }
     }
 
+    public LikelihoodResult getLikelihoodAndDof(int i, int... parents) {
+        int k = parents.length;
+        double lik;
+
+        Arrays.sort(parents);
+
+        try {
+            lik = getLikelihood(i, parents);
+        } catch (SingularMatrixException e) {
+            System.out.println("Singularity encountered when scoring " +
+                               LogUtilsSearch.getScoreFact(i, parents, variables));
+            return new LikelihoodResult(Double.NaN, -1, penaltyDiscount, sampleSize);
+        }
+
+        return new LikelihoodResult(lik, k, penaltyDiscount, sampleSize);
+    }
+
+    public record LikelihoodResult(double lik, int dof, double penaltyDiscount, int sampleSize) {}
+
     /**
      * Computes the Akaike Information Criterion (AIC) score for the given variable and its parent variables
      * in a probabilistic graphical model such as a Bayesian network.

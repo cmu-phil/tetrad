@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.log;
+
 /**
  * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
  * score by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
@@ -85,13 +87,16 @@ public class BasisFunctionBicScore implements Score {
      * @return The calculated local score as a double value.
      */
     public double localScore(int i, int... parents) {
-        double score = 0;
-
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
         }
+
+        double sumLik = 0.0;
+        int sumDof = 0;
+        double c = 0.0;
+        int n = 0;
 
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
@@ -99,17 +104,16 @@ public class BasisFunctionBicScore implements Score {
                 parents_[i__] = B.get(i__);
             }
 
-            double score1 = this.bic.localScore(i_, parents_);
+            SemBicScore.LikelihoodResult result = this.bic.getLikelihoodAndDof(i_, parents_);
 
-            if (Double.isNaN(score1)) {
-                continue;
-            }
-
-            score += score1;
+            sumLik += result.lik();
+            sumDof += result.dof();
+            c = result.penaltyDiscount();
+            n = result.sampleSize();
             B.add(i_);
         }
 
-        return score;
+        return 2 * sumLik - embedding.get(i).size() * c * sumDof * log(n);
     }
 
     /*
