@@ -36,15 +36,6 @@ public class Cca extends NtadTest {
         super(df, covariances);
     }
 
-    public static SimpleMatrix chol(SimpleMatrix A) {
-        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(A.getNumRows(), true);
-
-        if (!chol.decompose(A.getMatrix()))
-            throw new RuntimeException("Cholesky failed!");
-
-        return SimpleMatrix.wrap(chol.getT(null));
-    }
-
     @Override
     public double tetrad(int[][] tet, boolean resample, double frac) {
         // Determine S (either resample or use the default covariance matrix)

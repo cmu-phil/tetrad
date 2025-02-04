@@ -568,6 +568,17 @@ public class SemBicScore implements Score {
         }
     }
 
+    /**
+     * Computes the likelihood and degrees of freedom (dof) for a given variable and its parent variables.
+     * The likelihood is calculated based on the provided variable index and parent indices.
+     * In case of a singular matrix during likelihood computation, it returns a result with NaN likelihood
+     * and -1 for degrees of freedom.
+     *
+     * @param i The index of the variable for which the likelihood is calculated.
+     * @param parents The indices of the parent variables of the variable `i`.
+     * @return A {@code LikelihoodResult} object containing the likelihood value, the degrees of freedom (dof),
+     * and other related penalty and sample size information.
+     */
     public LikelihoodResult getLikelihoodAndDof(int i, int... parents) {
         int k = parents.length;
         double lik;
@@ -585,6 +596,16 @@ public class SemBicScore implements Score {
         return new LikelihoodResult(lik, k, penaltyDiscount, sampleSize);
     }
 
+    /**
+     * A record that encapsulates the result of a likelihood computation.
+     * This record stores the likelihood value, degrees of freedom, penalty discount,
+     * and the sample size associated with the computation.
+     *
+     * @param lik The computed likelihood value.
+     * @param dof The degrees of freedom used in the computation.
+     * @param penaltyDiscount The penalty discount applied to the computation.
+     * @param sampleSize The size of the sample used in the likelihood computation.
+     */
     public record LikelihoodResult(double lik, int dof, double penaltyDiscount, int sampleSize) {}
 
     /**
