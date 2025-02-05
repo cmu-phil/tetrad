@@ -49,13 +49,20 @@ public class MathUtils {
     }
 
     /**
-     * <p>factorial.</p>
+     * Calculates the factorial of a non-negative integer n.
+     * The factorial of n (denoted as n!) is the product of all positive integers
+     * less than or equal to n. By definition, the factorial of 0 is 1.
      *
-     * @param n a int
-     * @return a int
+     * @param n the non-negative integer for which the factorial is to be calculated
+     * @return the factorial of the given integer n as a long value
+     * @throws IllegalArgumentException if n is negative
      */
-    public static int factorial(int n) {
-        int i = 1;
+    public static long factorial(int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("n must be non-negative.");
+        }
+
+        long i = 1;
 
         for (int j = 1; j <= n; j++) {
             i *= j;

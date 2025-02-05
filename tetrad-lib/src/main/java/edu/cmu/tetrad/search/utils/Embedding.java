@@ -111,6 +111,19 @@ public class Embedding {
                         functional[j] = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
                     }
 
+                    // If basis type is not 1, center the functional
+                    if (basisType != 1) {
+                        double mean = 0;
+                        for (int j = 0; j < n; j++) {
+                            mean += functional[j];
+                        }
+                        mean /= n;
+
+                        for (int j = 0; j < n; j++) {
+                            functional[j] -= mean;
+                        }
+                    }
+
                     B.add(functional);
                     indexList.add(i);
                 }

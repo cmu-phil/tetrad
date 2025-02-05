@@ -897,9 +897,13 @@ public final class Params {
      */
     public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
     /**
-     * Constant <code>COMPARE_GRAPH_ALGCOMP="compareGraphAlgcomp"</code>
+     * Constant <code>MIN_SAMPLE_SIZE_PER_CELL="minSampleSizePerCell"</code>
      */
     public static final String MIN_SAMPLE_SIZE_PER_CELL = "minSampleSizePerCell";
+    /**
+     * Constant <code>MIN_PARAM_SAMPLE_SIZE="minParamSampleSize"</code>
+     */
+    public static final String MIN_PARAM_SAMPLE_SIZE = "minParamSampleSize";
     /**
      * Constant <code>MAX_SCORE_DROP="maxScoreDrop"</code>
      */

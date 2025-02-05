@@ -38,6 +38,11 @@ public class BasisFunctionBicScore implements Score {
      */
     private final SemBicScore bic;
     /**
+     * The suggested minimum number of samples required per parameter in the model. If the sample size per
+     * parameter is smaller than this, complaints will be lodged.
+     */
+    private final int minSamplePerParameter;
+    /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
      * adjustments in the likelihood penalty term.
@@ -55,8 +60,10 @@ public class BasisFunctionBicScore implements Score {
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
-                                 int basisType, double basisScale) {
+                                 int basisType, double basisScale,
+                                 int minSamplePerParameter) {
         this.variables = dataSet.getVariables();
+        this.minSamplePerParameter = minSamplePerParameter;
 
         boolean usePseudoInverse = false;
 
@@ -97,6 +104,7 @@ public class BasisFunctionBicScore implements Score {
         int sumDof = 0;
         double c = 0.0;
         int n = 0;
+        double sumBic = 0.0;
 
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
@@ -108,12 +116,27 @@ public class BasisFunctionBicScore implements Score {
 
             sumLik += result.lik();
             sumDof += result.dof();
+//            sumDof += result.reducedDof() + 1;
             c = result.penaltyDiscount();
             n = result.sampleSize();
-            B.add(i_);
+
+            sumBic += 2 * result.lik() - c * result.dof() * log(n);
+
+//            B.add(i_);
         }
 
-        return 2 * sumLik - embedding.get(i).size() * c * sumDof * log(n);
+        int m = parents.length;
+        int q = embedding.get(i).size();
+
+        int numParams = m == 0 ? q : q * sumDof;
+
+//        if (n / (numParams) < minSamplePerParameter) {
+//            System.out.println("Warning: Sample size is too small for the number of parameters.");
+////            return Double.NaN;
+//        }
+
+//        return sumBic;
+        return 2 * sumLik - c * sumDof * parents.length * log(n);
     }
 
     /*
