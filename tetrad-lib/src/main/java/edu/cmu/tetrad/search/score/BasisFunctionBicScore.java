@@ -38,11 +38,6 @@ public class BasisFunctionBicScore implements Score {
      */
     private final SemBicScore bic;
     /**
-     * The suggested minimum number of samples required per parameter in the model. If the sample size per
-     * parameter is smaller than this, complaints will be lodged.
-     */
-    private final int minSamplePerParameter;
-    /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
      * adjustments in the likelihood penalty term.
@@ -60,10 +55,8 @@ public class BasisFunctionBicScore implements Score {
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
-                                 int basisType, double basisScale,
-                                 int minSamplePerParameter) {
+                                 int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
-        this.minSamplePerParameter = minSamplePerParameter;
 
         boolean usePseudoInverse = false;
 

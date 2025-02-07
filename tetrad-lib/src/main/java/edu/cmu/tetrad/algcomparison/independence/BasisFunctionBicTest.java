@@ -45,8 +45,8 @@ public class BasisFunctionBicTest implements IndependenceWrapper {
         edu.cmu.tetrad.search.score.BasisFunctionBicScore score
                 = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT),
-                parameters.getInt(Params.BASIS_TYPE), parameters.getDouble(Params.BASIS_SCALE),
-                parameters.getInt(Params.MIN_PARAM_SAMPLE_SIZE));
+                parameters.getInt(Params.BASIS_TYPE), parameters.getDouble(Params.BASIS_SCALE)
+        );
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return new ScoreIndTest(score, dataSet);
     }
