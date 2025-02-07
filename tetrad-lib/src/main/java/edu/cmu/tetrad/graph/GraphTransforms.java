@@ -411,12 +411,12 @@ public class GraphTransforms {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            // If not x ~~> y put an arrow at y. If not y ~~> x put an arrow at x.
-            if (!ancestorMap.get(y).contains(x) && !dag.paths().isAncestor(x, selection)) {
+            // If not y ~~> x put an arrow at y. If not x ~~> y put an arrow at x.
+            if (!ancestorMap.get(y).contains(x) && !dag.paths().isAncestor(y, selection)) {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
             }
 
-            if (!ancestorMap.get(x).contains(y) && !dag.paths().isAncestor(y, selection)) {
+            if (!ancestorMap.get(x).contains(y) && !dag.paths().isAncestor(x, selection)) {
                 graph.setEndpoint(y, x, Endpoint.ARROW);
             }
         }
