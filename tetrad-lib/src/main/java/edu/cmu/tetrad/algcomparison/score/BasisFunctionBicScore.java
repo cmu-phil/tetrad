@@ -102,7 +102,6 @@ public class BasisFunctionBicScore implements ScoreWrapper {
         parameters.add(Params.BASIS_TYPE);
         parameters.add(Params.BASIS_SCALE);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.MIN_PARAM_SAMPLE_SIZE);
 
         return parameters;
     }
