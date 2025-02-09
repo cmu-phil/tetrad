@@ -2599,8 +2599,6 @@ public final class StatUtils {
                 g *= x;
             }
 
-            g /= MathUtils.factorial(index);
-
             return g;
         } else if (type == 1) {
             return legendre(index, x);
