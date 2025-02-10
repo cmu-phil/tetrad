@@ -2936,7 +2936,7 @@ public final class GraphUtils {
      * @return a list of integers containing the elements of the array
      */
     public static @NotNull List<Integer> asList(int[] choice) {
-        return ClusterSignificance.getInts(choice);
+        return MathUtils.getInts(choice);
     }
 
     /**

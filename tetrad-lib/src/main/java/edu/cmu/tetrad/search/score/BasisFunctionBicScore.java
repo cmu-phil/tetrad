@@ -93,10 +93,6 @@ public class BasisFunctionBicScore implements Score {
             B.addAll(this.embedding.get(i_));
         }
 
-        double sumLik = 0.0;
-        int sumDof = 0;
-        double c = 0.0;
-        int n = 0;
         double sumBic = 0.0;
 
         for (Integer i_ : A) {
@@ -107,29 +103,12 @@ public class BasisFunctionBicScore implements Score {
 
             SemBicScore.LikelihoodResult result = this.bic.getLikelihoodAndDof(i_, parents_);
 
-            sumLik += result.lik();
-            sumDof += result.dof();
-//            sumDof += result.reducedDof() + 1;
-            c = result.penaltyDiscount();
-            n = result.sampleSize();
+            sumBic += 2 * result.lik() - penaltyDiscount * result.dof() * log(getSampleSize());
 
-            sumBic += 2 * result.lik() - c * result.dof() * log(n);
-
-//            B.add(i_);
+            B.add(i_);
         }
 
-        int m = parents.length;
-        int q = embedding.get(i).size();
-
-        int numParams = m == 0 ? q : q * sumDof;
-
-//        if (n / (numParams) < minSamplePerParameter) {
-//            System.out.println("Warning: Sample size is too small for the number of parameters.");
-////            return Double.NaN;
-//        }
-
-//        return sumBic;
-        return 2 * sumLik - c * sumDof * parents.length * log(n);
+        return sumBic;
     }
 
     /*

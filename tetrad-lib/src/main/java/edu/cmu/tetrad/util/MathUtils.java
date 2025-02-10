@@ -23,6 +23,9 @@ package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.util.FastMath;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Some extra mathematical functions not contained in org.apache.commons.math3.util.FastMath.
  *
@@ -153,6 +156,18 @@ public class MathUtils {
             throw new IllegalArgumentException("Input x must be between -1 and 1 (exclusive).");
         }
         return 0.5 * Math.log((1 + x) / (1 - x));
+    }
+
+    /**
+     * Converts a list of indices into a list of Integers representing a cluster.
+     *
+     * @param indices The indices of the variables.
+     * @return The extracted index list.
+     */
+    public static List<Integer> getInts(int[] indices) {
+        List<Integer> cluster = new ArrayList<>();
+        for (int i : indices) cluster.add(i);
+        return cluster;
     }
 }
 
