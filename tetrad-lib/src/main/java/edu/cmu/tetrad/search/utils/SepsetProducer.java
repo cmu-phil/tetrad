@@ -42,10 +42,11 @@ public interface SepsetProducer {
      * @param a     the first node
      * @param b     the second node
      * @param depth the depth of the search
+     * @param order
      * @return the set of common neighbors between nodes a and b
      * @throws InterruptedException if any
      */
-    Set<Node> getSepset(Node a, Node b, int depth) throws InterruptedException;
+    Set<Node> getSepset(Node a, Node b, int depth, List<Node> order) throws InterruptedException;
 
     /**
      * Retrieves a sepset containing nodes in s from the given set of nodes.

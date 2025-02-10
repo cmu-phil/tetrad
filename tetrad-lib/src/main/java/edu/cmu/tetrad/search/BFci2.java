@@ -64,7 +64,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Fges
  * @see Knowledge
  */
-public final class BFci implements IGraphSearch {
+public final class BFci2 implements IGraphSearch {
 
     /**
      * The conditional independence test.
@@ -94,8 +94,8 @@ public final class BFci implements IGraphSearch {
      * the search algorithm will be restarted.
      * </p>
      *
-     * @see BFci#setNumStarts(int)
-     * @see BFci#search()
+     * @see BFci2#setNumStarts(int)
+     * @see BFci2#search()
      */
     private int numStarts = 1;
     /**
@@ -142,7 +142,7 @@ public final class BFci implements IGraphSearch {
      * @see IndependenceTest
      * @see Score
      */
-    public BFci(IndependenceTest test, Score score) {
+    public BFci2(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException("Test is null");
         }
@@ -187,6 +187,8 @@ public final class BFci implements IGraphSearch {
 
         Graph pag = alg.search();
 
+        List<Node> order = alg.getOrder();
+
         if (verbose) {
             TetradLogger.getInstance().log("Finished BOSS.");
         }
@@ -212,7 +214,7 @@ public final class BFci implements IGraphSearch {
 
         Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, null, verbose);
+        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, order, verbose);
         GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
 
         if (verbose) {
@@ -240,7 +242,7 @@ public final class BFci implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("BFCI finished.");
+            TetradLogger.getInstance().log("BFCI2 finished.");
         }
 
         return pag;

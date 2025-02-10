@@ -29,9 +29,10 @@ public class SepsetFinder {
      * @param containing the set of nodes that must be contained in the sepset (optional)
      * @param test       the independence test to use
      * @param depth      the depth of the search
+     * @param order
      * @return the sepset containing the greedy test for variables x and y, or null if no sepset is found
      */
-    public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
+    public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
         adjx.remove(y);
@@ -48,6 +49,16 @@ public class SepsetFinder {
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
                 .filter(subset -> {
                     try {
+                        if (order != null) {
+                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+
+                            for (Node node : subset) {
+                                if (order.indexOf(node) > order.indexOf(_y)) {
+                                    return false;
+                                }
+                            }
+                        }
+
                         return separates(x, y, subset, test);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);

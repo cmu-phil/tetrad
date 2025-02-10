@@ -61,10 +61,11 @@ public class SepsetsSet implements SepsetProducer {
      * @param a     the first node
      * @param b     the second node
      * @param depth the depth of the search
+     * @param order
      * @return the set of nodes in the sepset between a and b
      */
     @Override
-    public Set<Node> getSepset(Node a, Node b, int depth) {
+    public Set<Node> getSepset(Node a, Node b, int depth, List<Node> order) {
         return this.sepsets.get(a, b);
     }
 

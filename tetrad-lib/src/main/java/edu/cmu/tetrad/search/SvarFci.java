@@ -191,7 +191,7 @@ public final class SvarFci implements IGraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            Set<Node> sepset = sp.getSepset(x, y, depth);
+            Set<Node> sepset = sp.getSepset(x, y, depth, null);
 
             if (sepset != null) {
                 this.graph.removeEdge(x, y);

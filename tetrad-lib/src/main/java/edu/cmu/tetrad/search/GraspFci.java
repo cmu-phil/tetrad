@@ -215,7 +215,7 @@ public final class GraspFci implements IGraphSearch {
 
         Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, verbose);
+        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, null, verbose);
         GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
 
         if (verbose) {

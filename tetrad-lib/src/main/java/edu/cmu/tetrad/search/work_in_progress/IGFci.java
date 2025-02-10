@@ -154,7 +154,7 @@ public final class IGFci implements IGraphSearch {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    if (sepsets.getSepset(a, c, -1) != null) {
+                    if (sepsets.getSepset(a, c, -1, null) != null) {
                         graph.removeEdge(a, c);
                     }
                 }
@@ -238,7 +238,7 @@ public final class IGFci implements IGraphSearch {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c, -1);
+                    Set<Node> sepset = sepsets.getSepset(a, c, -1, null);
 
                     if (sepset != null && !sepset.contains(b)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);

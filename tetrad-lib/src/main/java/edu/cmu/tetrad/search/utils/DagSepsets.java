@@ -54,7 +54,7 @@ public class DagSepsets implements SepsetProducer {
      * Returns the list of sepset for {a, b}.
      */
     @Override
-    public Set<Node> getSepset(Node a, Node b, int depth) {
+    public Set<Node> getSepset(Node a, Node b, int depth, List<Node> order) {
         return this.dag.getSepset(a, b, new MsepTest(dag));
     }
 

@@ -1775,11 +1775,12 @@ public final class GraphUtils {
      * @param nodes   The nodes in the graph.
      * @param sepsets A SepsetProducer that will do the sepset search operation described.
      * @param depth   The depth of the sepset search.
+     * @param order
      * @param verbose Whether to print verbose output.
      * @throws InterruptedException if any
      */
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes,
-                                                SepsetProducer sepsets, int depth, boolean verbose) throws InterruptedException {
+                                                SepsetProducer sepsets, int depth, List<Node> order, boolean verbose) throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting extra-edge removal step.");
         }
@@ -1807,7 +1808,7 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c, depth);
+                    Set<Node> sepset = sepsets.getSepset(a, c, depth, order);
 
                     if (sepset != null) {
                         graph.removeEdge(a, c);
@@ -2380,7 +2381,7 @@ public final class GraphUtils {
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
                     if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsets.getSepset(x, z, -1);
+                        Set<Node> sepset = sepsets.getSepset(x, z, -1, null);
 
                         if (sepset != null) {
                             pag.removeEdge(x, z);

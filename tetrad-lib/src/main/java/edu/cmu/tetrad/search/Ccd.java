@@ -297,7 +297,7 @@ public final class Ccd implements IGraphSearch {
                 }
 
                 //...X is not in sepset<A, Y>...
-                Set<Node> sepset = sepsets.getSepset(a, y, -1);
+                Set<Node> sepset = sepsets.getSepset(a, y, -1, null);
 
                 if (sepset == null) {
                     continue;
@@ -361,7 +361,7 @@ public final class Ccd implements IGraphSearch {
 
             if (!psi.isDefCollider(a, b, c)) continue;
 
-            Set<Node> S = sepsets.getSepset(a, c, -1);
+            Set<Node> S = sepsets.getSepset(a, c, -1, null);
             if (S == null) continue;
             ArrayList<Node> TT = new ArrayList<>(local.get(a));
             TT.removeAll(S);

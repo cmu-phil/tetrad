@@ -76,9 +76,10 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * @param i     The first node
      * @param k     The second node
      * @param depth The depth of the search
+     * @param order
      * @return The set of nodes that form the sepset between node i and node k, or null if no sepset exists
      */
-    public Set<Node> getSepset(Node i, Node k, int depth) throws InterruptedException {
+    public Set<Node> getSepset(Node i, Node k, int depth, List<Node> order) throws InterruptedException {
         Set<Node> condSet = getCondSetContaining(i, k, null, this.maxDiscriminatingPathLength);
 
         if (condSet == null) {
@@ -114,7 +115,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * {@inheritDoc}
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException {
-        Set<Node> sepset = getSepset(i, k, this.depth);
+        Set<Node> sepset = getSepset(i, k, this.depth, null);
         return sepset != null && !sepset.contains(j);
     }
 

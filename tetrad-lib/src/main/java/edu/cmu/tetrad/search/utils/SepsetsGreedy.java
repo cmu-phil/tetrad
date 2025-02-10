@@ -70,10 +70,11 @@ public class SepsetsGreedy implements SepsetProducer {
      * @param i     The first node
      * @param k     The second node
      * @param depth The depth of the search
+     * @param order
      * @return The sepset between the two nodes
      */
-    public Set<Node> getSepset(Node i, Node k, int depth) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, i, k, null, this.independenceTest, depth);
+    public Set<Node> getSepset(Node i, Node k, int depth, List<Node> order) {
+        return SepsetFinder.getSepsetContainingGreedy(graph, i, k, new HashSet<>(), this.independenceTest, depth, order);
     }
 
     /**
@@ -88,14 +89,14 @@ public class SepsetsGreedy implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, i, k, s, this.independenceTest, depth);
+        return SepsetFinder.getSepsetContainingGreedy(graph, i, k, s, this.independenceTest, depth, null);
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
-        Set<Node> set = SepsetFinder.getSepsetContainingGreedy(graph, i, k, null, this.independenceTest, depth);
+        Set<Node> set = SepsetFinder.getSepsetContainingGreedy(graph, i, k, null, this.independenceTest, depth, null);
         return set != null && !set.contains(j);
     }
 

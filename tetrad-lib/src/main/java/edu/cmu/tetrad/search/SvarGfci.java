@@ -153,7 +153,7 @@ public final class SvarGfci implements IGraphSearch {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (this.graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    if (this.sepsets.getSepset(a, c, -1) != null) {
+                    if (this.sepsets.getSepset(a, c, -1, null) != null) {
                         this.graph.removeEdge(a, c);
                         removeSimilarEdges(a, c);
                     }
@@ -323,7 +323,7 @@ public final class SvarGfci implements IGraphSearch {
                     //  **/
 
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = this.sepsets.getSepset(a, c, -1);
+                    Set<Node> sepset = this.sepsets.getSepset(a, c, -1, null);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
