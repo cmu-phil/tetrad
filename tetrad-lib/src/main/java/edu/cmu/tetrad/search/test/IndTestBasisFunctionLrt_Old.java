@@ -42,10 +42,14 @@ import static java.lang.Double.NaN;
  * <p>
  * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2019, July). Learning high-dimensional directed acyclic graphs with
  * mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21). PMLR.
+ * <p>
+ * This version does not yield uniform p-values under the null and has been replaced by a new version of
+ * IndTestBasisFunctionLrt that uses generalized likelihood ratio tests and does.
  *
  * @author Bryan Andrews
  * @author Joseph Ramsey refactoring 2024-12-26
  * @version $Id: $Id
+ * @see IndTestBasisFunctionLrt
  */
 public class IndTestBasisFunctionLrt_Old implements IndependenceTest {
     /**
@@ -82,15 +86,15 @@ public class IndTestBasisFunctionLrt_Old implements IndependenceTest {
     private boolean verbose;
 
     /**
-     * Constructs an instance of IndTestBasisFunctionLrt to perform independence testing.
-     * This method initializes the independence test with the provided dataset, truncation limit,
-     * basis type, and basis scale. It processes the dataset to expand discrete columns into
-     * appropriate representations and sets up necessary configurations for the test.
+     * Constructs an instance of IndTestBasisFunctionLrt to perform independence testing. This method initializes the
+     * independence test with the provided dataset, truncation limit, basis type, and basis scale. It processes the
+     * dataset to expand discrete columns into appropriate representations and sets up necessary configurations for the
+     * test.
      *
-     * @param dataSet          The input dataset to be used for the independence test.
-     * @param truncationLimit  An integer representing the truncation limit for the basis functions.
-     * @param basisType        An integer indicating the type of basis to be used in the analysis.
-     * @param basisScale       A double value specifying the scale parameter for the basis functions.
+     * @param dataSet         The input dataset to be used for the independence test.
+     * @param truncationLimit An integer representing the truncation limit for the basis functions.
+     * @param basisType       An integer indicating the type of basis to be used in the analysis.
+     * @param basisScale      A double value specifying the scale parameter for the basis functions.
      * @throws NullPointerException if the provided dataset is null.
      */
     public IndTestBasisFunctionLrt_Old(DataSet dataSet, int truncationLimit,
