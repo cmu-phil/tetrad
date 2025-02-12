@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for BF LRT.
+ * Wrapper for BF-LRT.
  *
  * @author josephramsey
  * @version $Id: $Id
