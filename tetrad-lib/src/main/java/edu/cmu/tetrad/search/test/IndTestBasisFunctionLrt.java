@@ -22,6 +22,18 @@ import java.util.*;
  */
 public class IndTestBasisFunctionLrt implements IndependenceTest {
     /**
+     * A static cache used to store the precomputed pseudo-inverses of matrices. The key is an integer representing a
+     * specific identifier (e.g., matrix dimensions or hash of the matrix contents), and the value is the associated
+     * precomputed pseudo-inverse stored as a SimpleMatrix.
+     * <p>
+     * This cache is utilized to avoid redundant and computationally expensive operations of recalculating
+     * pseudo-inverses for the same matrices during repeated computations.
+     * <p>
+     * The use of this cache enhances performance, particularly in iterative processes or in scenarios where
+     * pseudo-inverse calculations are frequently required for matrices that remain unchanged.
+     */
+    private static final Map<Integer, SimpleMatrix> pseudoInverseCache = new HashMap<>();
+    /**
      * The `dataSet` field holds a reference to the DataSet object used as the primary data structure for representing
      * and processing data within the `IndTestBasisFunctionLrt` class.
      * <p>
@@ -78,6 +90,14 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      * The default value of alpha is 0.01.
      */
     private double alpha = 0.01;
+    /**
+     * A small regularization parameter used in statistical and mathematical computations to stabilize matrix inversions
+     * or other numerical operations. This value helps to avoid issues such as singularity or overfitting in models such
+     * as ridge regression.
+     * <p>
+     * Default value: 1e-10.
+     */
+    private double lambda = 1e-10;
     /**
      * A boolean flag indicating whether verbose mode is enabled for the class. When set to true, verbose mode may
      * result in detailed logging or diagnostic output during the execution of methods in the class. When set to false,
@@ -174,19 +194,29 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         return mat;
     }
 
-    private static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X) {
+    /**
+     * Computes OLS coefficients: beta = (B^T B + lambda I)^(-1) B^T X (Ridge Regression for Stability)
+     */
+    private static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
         SimpleMatrix BtB = B.transpose().mult(B);
-        if (BtB.determinant() < 1e-10) {  // Check if matrix is nearly singular
-            return BtB.pseudoInverse().mult(B.transpose()).mult(X);
-        } else {
-            return BtB.invert().mult(B.transpose()).mult(X);
+        int hash = BtB.hashCode();  // Cache key
+
+        if (pseudoInverseCache.containsKey(hash)) {
+            return pseudoInverseCache.get(hash).mult(B.transpose()).mult(X);
         }
+
+        SimpleMatrix regularization = SimpleMatrix.identity(BtB.getNumCols()).scale(lambda);
+        SimpleMatrix inverse = BtB.plus(regularization).invert();
+        pseudoInverseCache.put(hash, inverse);
+
+        return inverse.mult(B.transpose()).mult(X);
     }
 
-    // Compute variance of residuals: Var(R) = sum(R^2) / N
+    /**
+     * Computes variance of residuals: Var(R) = sum(R^2) / N
+     */
     private static double computeVariance(SimpleMatrix residuals) {
-        double sumSquares = residuals.elementMult(residuals).elementSum();
-        return sumSquares / residuals.getNumRows();
+        return residuals.elementMult(residuals).elementSum() / residuals.getNumRows();
     }
 
     // Compute column-wise mean as a matrix
@@ -346,44 +376,49 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         int df = Y_basis.getNumCols(); // Degrees of freedom
         int N = X_basis.getNumRows();
         int p_Z = Z_basis.getNumCols();
-
         double sigma0_sq, sigma1_sq;
 
+        // Ensure Z_basis always includes an intercept
         if (Z_basis.getNumCols() == 0) {
-            // Null Model: X ~ mean(X)
-            SimpleMatrix meanX = columnMean(X_basis);
-            SimpleMatrix residualsNull = X_basis.minus(meanX);
-            sigma0_sq = computeVariance(residualsNull);
-
-            // Full Model: X ~ Y
-            SimpleMatrix betaFull = computeOLS(Y_basis, X_basis);
-            SimpleMatrix residualsFull = X_basis.minus(Y_basis.mult(betaFull));
-            sigma1_sq = computeVariance(residualsFull);
-        } else {
-            SimpleMatrix betaZ = computeOLS(Z_basis, X_basis);
-            SimpleMatrix residualsNull = X_basis.minus(Z_basis.mult(betaZ));
-            sigma0_sq = computeVariance(residualsNull);
-
-            // Compute residual variance for the full model (X ~ Z + Y)
-            SimpleMatrix B_full = Z_basis.combine(0, p_Z, Y_basis);  // Concatenation
-            SimpleMatrix betaFull = computeOLS(B_full, X_basis);
-            SimpleMatrix residualsFull = X_basis.minus(B_full.mult(betaFull));
-            sigma1_sq = computeVariance(residualsFull);
+            Z_basis = new SimpleMatrix(N, 1);
+            for (int i = 0; i < N; i++) {
+                Z_basis.set(i, 0, 1);  // Adds intercept
+            }
         }
 
+        // Null Model: X ~ Z
+        SimpleMatrix betaZ = computeOLS(Z_basis, X_basis, lambda);
+        SimpleMatrix residualsNull = X_basis.minus(Z_basis.mult(betaZ));
+        sigma0_sq = computeVariance(residualsNull);
+
+        // Full Model: X ~ Z + Y
+        SimpleMatrix B_full = Z_basis.combine(0, p_Z, Y_basis);
+        SimpleMatrix betaFull = computeOLS(B_full, X_basis, lambda);
+        SimpleMatrix residualsFull = X_basis.minus(B_full.mult(betaFull));
+        sigma1_sq = computeVariance(residualsFull);
+
         // Compute Likelihood Ratio Statistic
-        double epsilon = 1e-10;  // Small regularization
+        double epsilon = 1e-10;
         double LR_stat = N * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
 
         // Compute p-value using chi-square distribution
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
 
-        // Output results
         if (verbose) {
             System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
         }
-
         return p_value;
+    }
+
+    /**
+     * Sets the value of the lambda parameter. This parameter is often used as a regularization term or weight in
+     * various computations within the class. The default value is 1e-10.
+     *
+     * @param lambda the value to set for the lambda parameter, typically a non-negative double value used to adjust the
+     *               impact of regularization or weighting in statistical computations.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 }
