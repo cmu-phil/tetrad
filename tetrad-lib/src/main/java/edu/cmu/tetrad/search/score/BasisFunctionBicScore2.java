@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
@@ -66,7 +69,8 @@ public class BasisFunctionBicScore2 implements Score {
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
      *
-     * @param dataSet         the data set on which the score is to be calculated.
+     * @param dataSet         the data set on which the score is to be calculated. May contain a mixture of discrete
+     *                        and continuous variables.
      * @param truncationLimit the truncation limit of the basis.
      * @param basisType       the type of basis function used in the BIC score computation.
      * @param basisScale      the basisScale factor used in the calculation of the BIC score for basis functions. All
@@ -178,7 +182,7 @@ public class BasisFunctionBicScore2 implements Score {
      */
     @Override
     public boolean isEffectEdge(double bump) {
-        return false;
+        return bump > 0;
     }
 
     /**
@@ -198,7 +202,7 @@ public class BasisFunctionBicScore2 implements Score {
      */
     @Override
     public int getMaxDegree() {
-        return 1000;
+        return (int) FastMath.ceil(log(getSampleSize()));
     }
 
     /**
@@ -255,7 +259,7 @@ public class BasisFunctionBicScore2 implements Score {
         double sigma_sq = computeVariance(residuals);
 
         // Compute log-likelihood
-        double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
+        double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq));// + 1);
 
         // Compute BIC score
         return 2 * logLikelihood - penaltyDiscount * k * Math.log(N);
