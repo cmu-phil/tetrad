@@ -49,6 +49,7 @@ import static java.lang.Double.NaN;
  * @author Bryan Andrews
  * @author Joseph Ramsey refactoring 2024-12-26
  * @version $Id: $Id
+ * @deprecated
  * @see IndTestBasisFunctionLrt
  */
 public class IndTestBasisFunctionLrt_Old implements IndependenceTest {
