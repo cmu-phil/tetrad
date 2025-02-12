@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.Embedding;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -95,9 +96,9 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      * or other numerical operations. This value helps to avoid issues such as singularity or overfitting in models such
      * as ridge regression.
      * <p>
-     * Default value: 1e-10.
+     * Default value: 1e-6.
      */
-    private double lambda = 1e-10;
+    private double lambda = 1e-6;
     /**
      * A boolean flag indicating whether verbose mode is enabled for the class. When set to true, verbose mode may
      * result in detailed logging or diagnostic output during the execution of methods in the class. When set to false,
@@ -197,17 +198,37 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
     /**
      * Computes OLS coefficients: beta = (B^T B + lambda I)^(-1) B^T X (Ridge Regression for Stability)
      */
-    private static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
+//    private static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
+//        SimpleMatrix BtB = B.transpose().mult(B);
+//        int hash = BtB.hashCode();  // Cache key
+//
+//        if (pseudoInverseCache.containsKey(hash)) {
+//            return pseudoInverseCache.get(hash).mult(B.transpose()).mult(X);
+//        }
+//
+//        SimpleMatrix regularization = SimpleMatrix.identity(BtB.getNumCols()).scale(lambda);
+//        SimpleMatrix inverse = BtB.plus(regularization).invert();
+//        pseudoInverseCache.put(hash, inverse);
+//
+//        return inverse.mult(B.transpose()).mult(X);
+//    }
+    public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
+        int numCols = B.getNumCols();
         SimpleMatrix BtB = B.transpose().mult(B);
-        int hash = BtB.hashCode();  // Cache key
+        int hash = BtB.hashCode();
 
         if (pseudoInverseCache.containsKey(hash)) {
             return pseudoInverseCache.get(hash).mult(B.transpose()).mult(X);
         }
 
-        SimpleMatrix regularization = SimpleMatrix.identity(BtB.getNumCols()).scale(lambda);
-        SimpleMatrix inverse = BtB.plus(regularization).invert();
+        SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
+
+        // Parallelized inversion using EJML's lower-level operations
+        SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
+
         pseudoInverseCache.put(hash, inverse);
+
+        CommonOps_DDRM.invert(BtB.plus(regularization).getDDRM(), inverse.getDDRM());
 
         return inverse.mult(B.transpose()).mult(X);
     }
@@ -217,20 +238,6 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      */
     private static double computeVariance(SimpleMatrix residuals) {
         return residuals.elementMult(residuals).elementSum() / residuals.getNumRows();
-    }
-
-    // Compute column-wise mean as a matrix
-    private static SimpleMatrix columnMean(SimpleMatrix X) {
-        int rows = X.getNumRows();
-        int cols = X.getNumCols();
-        SimpleMatrix meanMat = new SimpleMatrix(rows, cols);
-        for (int j = 0; j < cols; j++) {
-            double mean = X.extractVector(false, j).elementSum() / rows;
-            for (int i = 0; i < rows; i++) {
-                meanMat.set(i, j, mean);
-            }
-        }
-        return meanMat;
     }
 
     /**

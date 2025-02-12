@@ -1,0 +1,270 @@
+package edu.cmu.tetrad.search.score;
+
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.StatUtils;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.simple.SimpleMatrix;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
+ * score by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
+ * discrete variables by adding indicator variables per category.
+ *
+ * @author bandrews
+ * @author josephramsey
+ * @see DegenerateGaussianScore
+ */
+public class BasisFunctionBicScore2 implements Score {
+    /**
+     * A static cache used to store the precomputed pseudo-inverses of matrices. The key is an integer representing a
+     * specific identifier (e.g., matrix dimensions or hash of the matrix contents), and the value is the associated
+     * precomputed pseudo-inverse stored as a SimpleMatrix.
+     * <p>
+     * This cache is utilized to avoid redundant and computationally expensive operations of recalculating
+     * pseudo-inverses for the same matrices during repeated computations.
+     * <p>
+     * The use of this cache enhances performance, particularly in iterative processes or in scenarios where
+     * pseudo-inverse calculations are frequently required for matrices that remain unchanged.
+     */
+    private static final Map<Integer, SimpleMatrix> pseudoInverseCache = new HashMap<>();
+    /**
+     * A list containing nodes that represent the variables in the basis function score.
+     */
+    private final List<Node> variables;
+    /**
+     * A mapping used to store the embeddings of basis functions for continuous variables and indicator variables per
+     * category for discrete variables. The key is an integer representing the index of the basis function variable or
+     * indicator variable.
+     */
+    private final Map<Integer, List<Integer>> embedding;
+    /**
+     * A private and immutable field that stores a reference to the dataset used in the computation of the Basis
+     * Function BIC score. This dataset serves as the foundational data against which various scoring calculations and
+     * operations are performed. It is initialized during the creation of the containing object and remains constant
+     * thereafter.
+     */
+    private final DataSet embeddedData;
+    /**
+     * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
+     * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
+     * adjustments in the likelihood penalty term.
+     */
+    private double penaltyDiscount = 2;
+    /**
+     * The lambda variable is used in the context of regularization for the OLS (Ordinary Least Squares) regression
+     * calculations. It helps to prevent overfitting by adding a penalty term to the loss function.
+     */
+    private double lambda = 1e-6;
+
+    /**
+     * Constructs a BasisFunctionBicScore object with the specified parameters.
+     *
+     * @param dataSet         the data set on which the score is to be calculated.
+     * @param truncationLimit the truncation limit of the basis.
+     * @param basisType       the type of basis function used in the BIC score computation.
+     * @param basisScale      the basisScale factor used in the calculation of the BIC score for basis functions. All
+     *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
+     * @see StatUtils#basisFunctionValue(int, int, double)
+     */
+    public BasisFunctionBicScore2(DataSet dataSet, int truncationLimit, int basisType, double basisScale) {
+        this.variables = dataSet.getVariables();
+
+        boolean usePseudoInverse = true;
+
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
+                usePseudoInverse);
+        this.embedding = result.embedding();
+        embeddedData = result.embeddedData();
+    }
+
+    /**
+     * Computes OLS coefficients: beta = (Z^T Z + lambda I)^(-1) Z^T X
+     */
+    public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
+        int numCols = B.getNumCols();
+        SimpleMatrix BtB = B.transpose().mult(B);
+        int hash = BtB.hashCode();
+
+        if (pseudoInverseCache.containsKey(hash)) {
+            return pseudoInverseCache.get(hash).mult(B.transpose()).mult(X);
+        }
+
+        SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
+
+        // Parallelized inversion using EJML's lower-level operations
+        SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
+
+        pseudoInverseCache.put(hash, inverse);
+
+        CommonOps_DDRM.invert(BtB.plus(regularization).getDDRM(), inverse.getDDRM());
+
+        return inverse.mult(B.transpose()).mult(X);
+    }
+
+    /**
+     * Calculates the local score for a given node and its parent nodes.
+     *
+     * @param i       The index of the node whose score is being calculated.
+     * @param parents The indices for the parent nodes of the given node.
+     * @return The calculated local score as a double value.
+     */
+    public double localScore(int i, int... parents) {
+
+        // Grab the embedded data for _x, _y, and _z. These are columns in the embeddedData dataset.
+        List<Integer> embedded_x = embedding.get(i);
+        List<Integer> embedded_z = new ArrayList<>();
+        for (int value : parents) {
+            embedded_z.addAll(embedding.get(value));
+        }
+
+        // For i and for the parents, form a SimpleMatrix of the embedded data.
+        SimpleMatrix X_basis = new SimpleMatrix(embeddedData.getNumRows(), embedded_x.size());
+        for (int _i = 0; _i < embedded_x.size(); _i++) {
+            for (int j = 0; j < embeddedData.getNumRows(); j++) {
+                X_basis.set(j, _i, embeddedData.getDouble(j, embedded_x.get(_i)));
+            }
+        }
+
+        SimpleMatrix Z_basis = new SimpleMatrix(embeddedData.getNumRows(), embedded_z.size() + 1);
+
+        for (int _i = 0; _i < embedded_z.size(); _i++) {
+            for (int j = 0; j < embeddedData.getNumRows(); j++) {
+                Z_basis.set(j, _i, embeddedData.getDouble(j, embedded_z.get(_i)));
+            }
+        }
+
+        for (int j = 0; j < embeddedData.getNumRows(); j++) {
+            Z_basis.set(j, embedded_z.size(), 1);
+        }
+
+        return getLocalScore_Private(X_basis, Z_basis);
+    }
+
+    /*
+     * Calculates the difference in the local score when a node `x` is added to the set of parent nodes `z` for a node
+     * `y`.
+     *
+     * @param x The index of the node to be added.
+     * @param y The index of the node whose score difference is being calculated.
+     * @param z The indices of the parent nodes of the node `y`.
+     * @return The difference in the local score as a double value.
+     */
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+    /**
+     * Retrieves the list of nodes representing the variables in the basis function score.
+     *
+     * @return a list containing the nodes that represent the variables in the basis function score.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    /**
+     * Determines if the given bump value represents an effect edge.
+     *
+     * @param bump the bump value to be evaluated.
+     * @return true if the bump is an effect edge, false otherwise.
+     */
+    @Override
+    public boolean isEffectEdge(double bump) {
+        return false;
+    }
+
+    /**
+     * Retrieves the sample size from the underlying BIC score component.
+     *
+     * @return the sample size as an integer
+     */
+    @Override
+    public int getSampleSize() {
+        return embeddedData.getNumRows();
+    }
+
+    /**
+     * Retrieves the maximum degree from the underlying BIC score component.
+     *
+     * @return the maximum degree as an integer.
+     */
+    @Override
+    public int getMaxDegree() {
+        return 1000;
+    }
+
+    /**
+     * Returns a string representation of the BasisFunctionBicScore object.
+     *
+     * @return A string detailing the degenerate Gaussian score penalty with the penalty discount formatted to two
+     * decimal places.
+     */
+    @Override
+    public String toString() {
+        return "Basis Function Score (BFS) 2";
+    }
+
+    /**
+     * Sets the penalty discount value, which is used to adjust the penalty term in the BIC score calculation.
+     *
+     * @param penaltyDiscount The multiplier on the penalty term for this score.
+     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    /**
+     * Sets the regularization parameter lambda, which is used in the OLS coefficient computation to control
+     * overfitting.
+     *
+     * @param lambda The regularization parameter value to be used. A higher value applies more regularization.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
+    }
+
+    /**
+     * Computes the local score for X given parent variables Z. Calculates the Gaussian likelihood and returns the BIC
+     * score.
+     */
+    private double getLocalScore_Private(SimpleMatrix X_basis, SimpleMatrix Z_basis) {
+        int N = X_basis.getNumRows();  // Number of samples
+        int k = Z_basis.getNumCols() + 1;  // Number of parameters (including intercept)
+
+        // Ensure Z_basis has an intercept
+        if (Z_basis.getNumCols() == 0) {
+            Z_basis = new SimpleMatrix(N, 1);
+            for (int i = 0; i < N; i++) {
+                Z_basis.set(i, 0, 1);
+            }
+        }
+
+        // Fit regression: X ~ Z
+        SimpleMatrix betaZ = computeOLS(Z_basis, X_basis, lambda);
+        SimpleMatrix residuals = X_basis.minus(Z_basis.mult(betaZ));
+
+        // Compute residual variance
+        double sigma_sq = computeVariance(residuals);
+
+        // Compute log-likelihood
+        double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
+
+        // Compute BIC score
+        return 2 * logLikelihood - penaltyDiscount * k * Math.log(N);
+    }
+
+    /**
+     * Computes variance of residuals: Var(R) = sum(R^2) / N
+     */
+    private double computeVariance(SimpleMatrix residuals) {
+        return residuals.elementMult(residuals).elementSum() / residuals.getNumRows();
+    }
+}
