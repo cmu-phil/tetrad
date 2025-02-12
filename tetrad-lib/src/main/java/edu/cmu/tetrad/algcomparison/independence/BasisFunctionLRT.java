@@ -6,9 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.BasisFunctionTestScratch;
 import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrt;
-import edu.cmu.tetrad.search.test.IndTestDegenerateGaussianLrt;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -44,11 +42,7 @@ public class BasisFunctionLRT implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-//        IndTestBasisFunctionLrt test = new IndTestBasisFunctionLrt(SimpleDataLoader.getMixedDataSet(dataSet),
-//                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
-//                parameters.getDouble(Params.BASIS_SCALE));
-
-        BasisFunctionTestScratch test = new BasisFunctionTestScratch(SimpleDataLoader.getMixedDataSet(dataSet),
+        IndTestBasisFunctionLrt test = new IndTestBasisFunctionLrt(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE));
         test.setAlpha(parameters.getDouble(Params.ALPHA));

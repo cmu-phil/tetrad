@@ -1,98 +1,27 @@
-/// ////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
-//                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.Embedding;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.ejml.simple.SimpleMatrix;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Double.NaN;
-
-/**
- * Implements degenerate Gaussian test as a likelihood ratio test. The reference is here:
- * <p>
- * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2019, July). Learning high-dimensional directed acyclic graphs with
- * mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21). PMLR.
- *
- * @author Bryan Andrews
- * @author Joseph Ramsey refactoring 2024-12-26
- * @version $Id: $Id
- */
 public class IndTestBasisFunctionLrt implements IndependenceTest {
-    /**
-     * A hash of nodes to indices.
-     */
-    private final Map<Node, Integer> nodeHash;
-    /**
-     * The data set.
-     */
     private final DataSet dataSet;
-    /**
-     * The mixed variables of the original dataset.
-     */
     private final List<Node> variables;
-    /**
-     * The embedding map.
-     */
+    private final Map<Node, Integer> nodeHash;
     private final Map<Integer, List<Integer>> embedding;
-    /**
-     * The SEM BIC score, used to calculate local likelihoods.
-     */
     private final SemBicScore bic;
-    /**
-     * The alpha level.
-     */
+    private final DataSet embeddedData;
     private double alpha = 0.01;
-    /**
-     * The p value.
-     */
-    private double pValue = NaN;
-    /**
-     * True if verbose output should be printed.
-     */
-    private boolean verbose;
+    private boolean verbose = false;
 
-    /**
-     * Constructs an instance of IndTestBasisFunctionLrt to perform independence testing.
-     * This method initializes the independence test with the provided dataset, truncation limit,
-     * basis type, and basis scale. It processes the dataset to expand discrete columns into
-     * appropriate representations and sets up necessary configurations for the test.
-     *
-     * @param dataSet          The input dataset to be used for the independence test.
-     * @param truncationLimit  An integer representing the truncation limit for the basis functions.
-     * @param basisType        An integer indicating the type of basis to be used in the analysis.
-     * @param basisScale       A double value specifying the scale parameter for the basis functions.
-     * @throws NullPointerException if the provided dataset is null.
-     */
     public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit,
                                    int basisType, double basisScale) {
         if (dataSet == null) {
@@ -114,111 +43,164 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         // we're not using the pseudoinverse option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, truncationLimit, basisType, basisScale, usePseudoInverse);
-        DataSet convertedData = embeddedData.embeddedData();
+        this.embeddedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
-        this.bic = new SemBicScore(convertedData, false);
+        this.bic = new SemBicScore(this.embeddedData, false);
         this.bic.setUsePseudoInverse(usePseudoInverse);
         this.bic.setStructurePrior(0);
     }
 
-    /**
-     * Subsets the variables used in the independence test.
-     *
-     * @param vars The sublist of variables.
-     * @return The IndependenceTest object with subset of variables.
-     * @throws UnsupportedOperationException if the method is not implemented.
-     */
-    public IndependenceTest indTestSubset(List<Node> vars) {
-        throw new UnsupportedOperationException("This method is not implemented.");
+    public IndTestBasisFunctionLrt() {
+        this.dataSet = null;
+        this.variables = null;
+        this.nodeHash = null;
+        this.embedding = null;
+        this.embeddedData = null;
+        this.bic = null;
     }
 
-    /**
-     * Returns an independence result specifying whether x _||_ y | Z and what its p-values are.
-     *
-     * @param x  the first node.
-     * @param y  the second node.
-     * @param _z the conditioning set.
-     * @return an independence result specifying whether x _||_ y | Z and what its p-values are.
-     * @see IndependenceResult
-     */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
-        List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+    public static void main(String[] args) {
+        // Simulation Parameters
+        int N = 100;  // Number of samples
+        int p_X = 5, p_Y = 5, p_Z = 5;  // Basis function dimensions
+        Random rand = new Random();
+
+        // Generate random basis matrices for X, Y, Z
+        SimpleMatrix Y_basis = randomMatrix(N, p_Y, rand);
+        SimpleMatrix Z_basis = randomMatrix(N, p_Z, rand);
+
+        // True beta coefficients for X ~ Z (Null Model)
+        SimpleMatrix trueBeta_Z = randomMatrix(p_Z, p_X, rand);
+        SimpleMatrix X_basis = Z_basis.mult(trueBeta_Z).plus(randomMatrix(N, p_X, rand).scale(0.5));  // Add noise
+
+        IndTestBasisFunctionLrt test = new IndTestBasisFunctionLrt();
+        test.getPValue(X_basis, Y_basis, Z_basis);
+    }
+
+    // Generate a random matrix of size (rows x cols) with standard normal values
+    private static SimpleMatrix randomMatrix(int rows, int cols, Random rand) {
+        SimpleMatrix mat = new SimpleMatrix(rows, cols);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                mat.set(i, j, rand.nextGaussian());  // Standard normal distribution
+            }
+        }
+        return mat;
+    }
+
+    private static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X) {
+        SimpleMatrix BtB = B.transpose().mult(B);
+        if (BtB.determinant() < 1e-10) {  // Check if matrix is nearly singular
+            return BtB.pseudoInverse().mult(B.transpose()).mult(X);
+        } else {
+            return BtB.invert().mult(B.transpose()).mult(X);
+        }
+    }
+
+    // Compute variance of residuals: Var(R) = sum(R^2) / N
+    private static double computeVariance(SimpleMatrix residuals) {
+        double sumSquares = residuals.elementMult(residuals).elementSum();
+        return sumSquares / residuals.getNumRows();
+    }
+
+    // Compute column-wise mean as a matrix
+    private static SimpleMatrix columnMean(SimpleMatrix X) {
+        int rows = X.getNumRows();
+        int cols = X.getNumCols();
+        SimpleMatrix meanMat = new SimpleMatrix(rows, cols);
+        for (int j = 0; j < cols; j++) {
+            double mean = X.extractVector(false, j).elementSum() / rows;
+//            meanMat.setColumn(j, 0, new double[rows]);
+//            meanMat.setColumn(j, 0, mean);
+
+            for (int i = 0; i < rows; i++) {
+                meanMat.set(i, j, mean);
+            }
+
+        }
+        return meanMat;
+    }
+
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        List<Node> zList = new ArrayList<>(z);
+        Collections.sort(zList);
 
         int _x = this.nodeHash.get(x);
         int _y = this.nodeHash.get(y);
-
-        int[] list0 = new int[z.size()];
-        int[] list1 = new int[z.size() + 1];
-
-        list1[0] = _x;
-
-        for (int i = 0; i < z.size(); i++) {
-            int __z = this.nodeHash.get(z.get(i));
-            list0[i] = __z;
-            list1[i + 1] = __z;
+        int[] _z = new int[zList.size()];
+        for (int i = 0; i < zList.size(); i++) {
+            _z[i] = this.nodeHash.get(zList.get(i));
         }
 
-        Ret ret0 = getlldof(_y, list0);
-        Ret ret1 = getlldof(_y, list1);
+        // Grab the embedded data for _x, _y, and _z. These are columns in the embeddedData dataset.
+        List<Integer> embedded_x = embedding.get(_x);
+        List<Integer> embedded_y = embedding.get(_y);
+        List<Integer> embedded_z = new ArrayList<>();
+        for (int value : _z) {
+            embedded_z.addAll(embedding.get(value));
+        }
 
-        double lik_diff = ret0.lik() - ret1.lik();
-        double dof_diff = ret1.dof() - ret0.dof();
-
-        if (dof_diff <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false, NaN, NaN);
-        if (lik_diff == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false, NaN, NaN);
-
-        double pValue;
-
-        if (Double.isNaN(lik_diff)) {
-            throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
-        } else {
-            try {
-                pValue = StatUtils.getChiSquareP(dof_diff, -2 * lik_diff);
-            } catch (Exception e) {
-                TetradLogger.getInstance().log("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z)
-                                               + " with lik_diff = " + lik_diff + " and dof_diff = " + dof_diff
-                                               + " (" + e.getMessage() + ")");
-                throw new RuntimeException("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z), e);
+        // For each variable, form a SimpleMatrix of the embedded data for that variable.
+        SimpleMatrix X_basis = new SimpleMatrix(embeddedData.getNumRows(), embedded_x.size());
+        for (int i = 0; i < embedded_x.size(); i++) {
+            for (int j = 0; j < embeddedData.getNumRows(); j++) {
+                X_basis.set(j, i, embeddedData.getDouble(j, embedded_x.get(i)));
             }
         }
 
-        this.pValue = pValue;
+        SimpleMatrix Y_basis = new SimpleMatrix(embeddedData.getNumRows(), embedded_y.size());
 
-        boolean independent = this.pValue > this.alpha;
-
-        if (this.verbose) {
-            if (independent) {
-                TetradLogger.getInstance().log(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
+        for (int i = 0; i < embedded_y.size(); i++) {
+            for (int j = 0; j < embeddedData.getNumRows(); j++) {
+                Y_basis.set(j, i, embeddedData.getDouble(j, embedded_y.get(i)));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z),
+        SimpleMatrix Z_basis = new SimpleMatrix(embeddedData.getNumRows(), embedded_z.size() + 1);
+
+        for (int i = 0; i < embedded_z.size(); i++) {
+            for (int j = 0; j < embeddedData.getNumRows(); j++) {
+                Z_basis.set(j, i, embeddedData.getDouble(j, embedded_z.get(i)));
+            }
+        }
+
+        for (int j = 0; j < embeddedData.getNumRows(); j++) {
+            Z_basis.set(j, embedded_z.size(), 1);
+        }
+
+//        System.out.println("Z_basis: " + Z_basis);
+
+        double pValue = getPValue(X_basis, Y_basis, Z_basis);
+        boolean independent = pValue > alpha;
+
+        return new IndependenceResult(new IndependenceFact(x, y, z),
                 independent, pValue, alpha - pValue);
     }
 
-    /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for this test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
+    @Override
+    public List<Node> getVariables() {
+        return new ArrayList<>(variables);
     }
 
-    /**
-     * Returns the list of variables over which this independence checker is capable of determinining independence
-     * relations.
-     *
-     * @return This list.
-     */
-    public List<Node> getVariables() {
-        return new ArrayList<>(this.variables);
+    @Override
+    public DataModel getData() {
+        return dataSet;
     }
+
+    @Override
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    // Compute OLS coefficients: beta = (B^T B)^(-1) B^T X
+//    private static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X) {
+//        return B.transpose().mult(B).invert().mult(B.transpose()).mult(X);
+//    }
 
     /**
      * Returns the significance level of the independence test.
@@ -239,84 +221,51 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         this.alpha = alpha;
     }
 
-    /**
-     * Returns a copy of the dataset being analyzed.
-     *
-     * @return This data.
-     */
-    public DataSet getData() {
-        return this.dataSet.copy();
-    }
+    private double getPValue(SimpleMatrix X_basis, SimpleMatrix Y_basis, SimpleMatrix Z_basis) {
 
-    /**
-     * Returns a string representation of this test.
-     *
-     * @return This string.
-     */
-    public String toString() {
-        NumberFormat nf = new DecimalFormat("0.0000");
-        return "Degenerate Gaussian, alpha = " + nf.format(getAlpha());
-    }
+        int df = Y_basis.getNumCols(); // Degrees of freedom
+        int N = X_basis.getNumRows();
+        int p_Z = Z_basis.getNumCols();
 
-    /**
-     * Returns true iff verbose output should be printed.
-     */
-    @Override
-    public boolean isVerbose() {
-        return this.verbose;
-    }
+        double sigma0_sq, sigma1_sq;
 
-    /**
-     * Sets whether verbose output should be printed.
-     */
-    @Override
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
+        if (Z_basis.getNumCols() == 0) {
+            // Null Model: X ~ mean(X)
+            SimpleMatrix meanX = columnMean(X_basis);
+            SimpleMatrix residualsNull = X_basis.minus(meanX);
+            sigma0_sq = computeVariance(residualsNull);
 
-    /**
-     * Calculates the sample log likelihood
-     */
-    private Ret getlldof(int i, int... parents) {
-        double score = 0;
+            // Full Model: X ~ Y
+            SimpleMatrix betaFull = computeOLS(Y_basis, X_basis);
+            SimpleMatrix residualsFull = X_basis.minus(Y_basis.mult(betaFull));
+            sigma1_sq = computeVariance(residualsFull);
+        } else {
+            SimpleMatrix betaZ = computeOLS(Z_basis, X_basis);
+            SimpleMatrix residualsNull = X_basis.minus(Z_basis.mult(betaZ));
+            sigma0_sq = computeVariance(residualsNull);
 
-        List<Integer> A = new ArrayList<>(this.embedding.get(i));
-        List<Integer> B = new ArrayList<>();
-        for (int p : parents) {
-            B.addAll(this.embedding.get(p));
+            // Compute residual variance for the full model (X ~ Z + Y)
+            SimpleMatrix B_full = Z_basis.combine(0, p_Z, Y_basis);  // Concatenation
+            SimpleMatrix betaFull = computeOLS(B_full, X_basis);
+            SimpleMatrix residualsFull = X_basis.minus(B_full.mult(betaFull));
+            sigma1_sq = computeVariance(residualsFull);
         }
 
-        int aLength = A.size();
-        int bLength = B.size();
+        // Compute Likelihood Ratio Statistic
+//        double LR_stat = N * Math.log(sigma0_sq / sigma1_sq);
+        double epsilon = 1e-10;  // Small regularization
+        double LR_stat = N * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
 
-        double dof = (bLength * (bLength + 1) - aLength * (aLength + 1)) / 2.0;
 
-        for (int a : A) {
-            int[] parents_ = new int[B.size()];
-            for (int b = 0; b < B.size(); b++) {
-                parents_[b] = B.get(b);
-            }
+        // Compute p-value using chi-square distribution
+        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
+        double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
 
-            double likelihood = this.bic.getLikelihood(a, parents_);
-
-            if (Double.isNaN(likelihood)) {
-                break;
-            }
-
-            score += likelihood;
-//            B.add(a);
+        // Output results
+        if (verbose) {
+            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
         }
 
-        double lik = score;
-        return new Ret(lik, dof);
-    }
-
-    /**
-     * Represents a record that holds results for a log-likelihood ratio test.
-     *
-     * @param lik The log-likelihood ratio.
-     * @param dof The degrees of freedom.
-     */
-    public record Ret(double lik, double dof) {
+        return p_value;
     }
 }
