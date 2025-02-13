@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.Embedding;
@@ -21,7 +22,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public class IndTestBasisFunctionLrt implements IndependenceTest {
+public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
      * A static cache used to store the precomputed pseudo-inverses of matrices. The key is an integer representing a
      * specific identifier (e.g., matrix dimensions or hash of the matrix contents), and the value is the associated
@@ -105,6 +106,9 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      * verbose output is suppressed.
      */
     private boolean verbose = false;
+    private int sampleSize;
+    private List<Integer> rows;
+    private List<Integer> allRows;
 
     /**
      * Constructs an instance of the IndTestBasisFunctionLrt class. This constructor initializes the object using the
@@ -145,54 +149,8 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         this.bic = new SemBicScore(this.embeddedData, false);
         this.bic.setUsePseudoInverse(usePseudoInverse);
         this.bic.setStructurePrior(0);
-    }
-
-    /**
-     * A private no-argument constructor for the IndTestBasisFunctionLrt class. This constructor initializes the fields
-     * of the class to null, effectively creating an uninitialized state. This is typically used to prevent direct
-     * instantiation of the class without proper initialization. Used for testing.
-     */
-    private IndTestBasisFunctionLrt() {
-        this.dataSet = null;
-        this.variables = null;
-        this.nodeHash = null;
-        this.embedding = null;
-        this.embeddedData = null;
-        this.bic = null;
-    }
-
-    /**
-     * Main method for testing the IndTestBasisFunctionLrt class.
-     *
-     * @param args Command line arguments (not used).
-     */
-    public static void main(String[] args) {
-        // Simulation Parameters
-        int N = 100;  // Number of samples
-        int p_X = 5, p_Y = 5, p_Z = 5;  // Basis function dimensions
-        Random rand = new Random();
-
-        // Generate random basis matrices for X, Y, Z
-        SimpleMatrix Y_basis = randomMatrix(N, p_Y, rand);
-        SimpleMatrix Z_basis = randomMatrix(N, p_Z, rand);
-
-        // True beta coefficients for X ~ Z (Null Model)
-        SimpleMatrix trueBeta_Z = randomMatrix(p_Z, p_X, rand);
-        SimpleMatrix X_basis = Z_basis.mult(trueBeta_Z).plus(randomMatrix(N, p_X, rand).scale(0.5));  // Add noise
-
-        IndTestBasisFunctionLrt test = new IndTestBasisFunctionLrt();
-        test.getPValue(X_basis, Y_basis, Z_basis);
-    }
-
-    // Generate a random matrix of size (rows x cols) with standard normal values
-    private static SimpleMatrix randomMatrix(int rows, int cols, Random rand) {
-        SimpleMatrix mat = new SimpleMatrix(rows, cols);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                mat.set(i, j, rand.nextGaussian());  // Standard normal distribution
-            }
-        }
-        return mat;
+        this.sampleSize = dataSet.getNumRows();
+        this.allRows = listRows();
     }
 
     /**
@@ -236,8 +194,8 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
     /**
      * Computes variance of residuals: Var(R) = sum(R^2) / N
      */
-    private static double computeVariance(SimpleMatrix residuals) {
-        return residuals.elementMult(residuals).elementSum() / residuals.getNumRows();
+    private double computeVariance(SimpleMatrix residuals) {
+        return residuals.elementMult(residuals).elementSum() / this.sampleSize;
     }
 
     /**
@@ -253,6 +211,8 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<Node> zList = new ArrayList<>(z);
         Collections.sort(zList);
+
+        List<Integer> rows = this.rows == null ? allRows : this.rows;
 
         int _x = this.nodeHash.get(x);
         int _y = this.nodeHash.get(y);
@@ -270,30 +230,30 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         }
 
         // For each variable, form a SimpleMatrix of the embedded data for that variable.
-        SimpleMatrix X_basis = new SimpleMatrix(embeddedData.getNumRows(), embedded_x.size());
+        SimpleMatrix X_basis = new SimpleMatrix(rows.size(), embedded_x.size());
         for (int i = 0; i < embedded_x.size(); i++) {
-            for (int j = 0; j < embeddedData.getNumRows(); j++) {
-                X_basis.set(j, i, embeddedData.getDouble(j, embedded_x.get(i)));
+            for (int j = 0; j < rows.size(); j++) {
+                X_basis.set(j, i, embeddedData.getDouble(rows.get(j), embedded_x.get(i)));
             }
         }
 
-        SimpleMatrix Y_basis = new SimpleMatrix(embeddedData.getNumRows(), embedded_y.size());
+        SimpleMatrix Y_basis = new SimpleMatrix(rows.size(), embedded_y.size());
 
         for (int i = 0; i < embedded_y.size(); i++) {
-            for (int j = 0; j < embeddedData.getNumRows(); j++) {
-                Y_basis.set(j, i, embeddedData.getDouble(j, embedded_y.get(i)));
+            for (int j = 0; j < rows.size(); j++) {
+                Y_basis.set(j, i, embeddedData.getDouble(rows.get(j), embedded_y.get(i)));
             }
         }
 
         SimpleMatrix Z_basis = new SimpleMatrix(embeddedData.getNumRows(), embedded_z.size() + 1);
 
         for (int i = 0; i < embedded_z.size(); i++) {
-            for (int j = 0; j < embeddedData.getNumRows(); j++) {
-                Z_basis.set(j, i, embeddedData.getDouble(j, embedded_z.get(i)));
+            for (int j = 0; j < rows.size(); j++) {
+                Z_basis.set(j, i, embeddedData.getDouble(rows.get(j), embedded_z.get(i)));
             }
         }
 
-        for (int j = 0; j < embeddedData.getNumRows(); j++) {
+        for (int j = 0; j < rows.size(); j++) {
             Z_basis.set(j, embedded_z.size(), 1);
         }
 
@@ -406,7 +366,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
 
         // Compute Likelihood Ratio Statistic
         double epsilon = 1e-10;
-        double LR_stat = N * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
+        double LR_stat = this.sampleSize * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
 
         // Compute p-value using chi-square distribution
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
@@ -427,5 +387,67 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;
+    }
+
+    /**
+     * Sets the sample size to use for the independence test, which may be different from the sample size of the data
+     * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
+     *
+     * @param effectiveSampleSize The sample size to use.
+     */
+    @Override
+    public void setEffectiveSampleSize(int effectiveSampleSize) {
+        if (effectiveSampleSize < 1) {
+            throw new IllegalArgumentException("Sample size must be positive.");
+        }
+
+        this.sampleSize = effectiveSampleSize;
+    }
+
+    /**
+     * Returns the rows used in the test.
+     *
+     * @return The rows used in the test.
+     */
+    @Override
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    /**
+     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
+     * values.
+     */
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            }
+
+            this.rows = rows;
+        }
+    }
+
+    /**
+     * Retrieves the rows from the dataSet that contain valid values for all variables.
+     *
+     * @return a list of row indices that contain valid values for all variables
+     */
+    private List<Integer> listRows() {
+        if (this.rows != null) {
+            return this.rows;
+        }
+
+        List<Integer> rows = new ArrayList<>();
+
+        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
+            rows.add(k);
+        }
+
+        return rows;
     }
 }

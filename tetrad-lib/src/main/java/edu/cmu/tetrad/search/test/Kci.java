@@ -97,7 +97,7 @@ public class Kci implements IndependenceTest, RowsSettable {
     /**
      * Epsilon for Proposition 5. We are fixing this to 0.001.
      */
-    private final double epsilon = 0.001;
+    private final static double epsilon = 0.001;
     /**
      * The alpha level of the test.
      */
