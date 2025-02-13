@@ -129,9 +129,10 @@ public class BasisFunctionBicScoreTabular implements Score {
         }
 
         // For the tabular formulation, it doesn't matter whether we use the sum-likelihood or the sum-BIC
-        // formulation. The two are equivalent. We use the sum-BIC formulation here to be consistent with
-        // the covariance-based score (where it does matter). jdramsey 2025-2-13
-        return getSequentialLocalScoreSumBic(X_basis, Z_basis);
+        // formulation. The two given identical performance for the test cases we tried. However, Chat thinks
+        // the sum likelihood formulation is more correct, so we will use that. We will revisit this issue
+        // later as light dawns. jdramsey 2025-2-13
+        return getSequentialLocalScoreSumLikelihood(X_basis, Z_basis);
     }
 
     /*
