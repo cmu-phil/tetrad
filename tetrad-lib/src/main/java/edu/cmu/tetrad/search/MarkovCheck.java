@@ -1475,6 +1475,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 try {
                     result = independenceTest.checkIndependence(x, y, z);
                 } catch (Exception e) {
+                    e.printStackTrace();
                     TetradLogger.getInstance().log("Error in independence test; not adding result: " + e.getMessage());
                     return;
                 }

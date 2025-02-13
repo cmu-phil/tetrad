@@ -204,6 +204,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
         return inverse.mult(B.transpose()).mult(X);
     }
 
+
     /**
      * Computes variance of residuals: Var(R) = sum(R^2) / N
      */
@@ -258,7 +259,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
             }
         }
 
-        SimpleMatrix Z_basis = new SimpleMatrix(embeddedData.getNumRows(), embedded_z.size() + 1);
+        SimpleMatrix Z_basis = new SimpleMatrix(rows.size(), embedded_z.size() + 1);
 
         for (int i = 0; i < embedded_z.size(); i++) {
             for (int j = 0; j < rows.size(); j++) {
@@ -360,8 +361,8 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
 
         // Ensure Z_basis always includes an intercept
         if (Z_basis.getNumCols() == 0) {
-            Z_basis = new SimpleMatrix(N, 1);
-            for (int i = 0; i < N; i++) {
+            Z_basis = new SimpleMatrix(rows.size(), 1);
+            for (int i = 0; i < rows.size(); i++) {
                 Z_basis.set(i, 0, 1);  // Adds intercept
             }
         }
