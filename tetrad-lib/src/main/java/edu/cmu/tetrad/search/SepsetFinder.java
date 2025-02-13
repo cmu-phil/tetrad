@@ -29,7 +29,7 @@ public class SepsetFinder {
      * @param containing the set of nodes that must be contained in the sepset (optional)
      * @param test       the independence test to use
      * @param depth      the depth of the search
-     * @param order
+     * @param order      An order of the nodes in the graph, used for some implementations.
      * @return the sepset containing the greedy test for variables x and y, or null if no sepset is found
      */
     public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {

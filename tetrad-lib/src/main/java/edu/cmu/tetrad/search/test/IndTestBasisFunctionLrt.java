@@ -153,9 +153,6 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
         this.allRows = listRows();
     }
 
-    /**
-     * Computes OLS coefficients: beta = (B^T B + lambda I)^(-1) B^T X (Ridge Regression for Stability)
-     */
 //    private static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
 //        SimpleMatrix BtB = B.transpose().mult(B);
 //        int hash = BtB.hashCode();  // Cache key
@@ -170,6 +167,22 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
 //
 //        return inverse.mult(B.transpose()).mult(X);
 //    }
+
+    /**
+     * Computes the Ordinary Least Squares (OLS) solution for a linear system. The method applies
+     * regularization to the OLS problem to stabilize the solution, particularly in cases where
+     * the design matrix B is ill-conditioned or near singular. Regularization is controlled by
+     * the lambda parameter, which adds a scaled identity matrix to the design matrix's
+     * normal equation.
+     *
+     * @param B       the design matrix, where rows correspond to observations and columns
+     *                correspond to features.
+     * @param X       the response matrix, where rows correspond to observations and columns
+     *                to dependent variable outputs.
+     * @param lambda  the regularization parameter used to stabilize the solution. Larger
+     *                values result in stronger regularization.
+     * @return the computed OLS solution as a SimpleMatrix object.
+     */
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
         int numCols = B.getNumCols();
         SimpleMatrix BtB = B.transpose().mult(B);

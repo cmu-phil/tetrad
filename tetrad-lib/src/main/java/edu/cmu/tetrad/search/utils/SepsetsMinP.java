@@ -95,7 +95,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @param i     The first node
      * @param k     The second node
      * @param depth The depth of the search
-     * @param order
+     * @param order The order of the nodes, used for some implementations.
      * @return The sepset between the two nodes
      */
     public Set<Node> getSepset(Node i, Node k, int depth, List<Node> order) throws InterruptedException {

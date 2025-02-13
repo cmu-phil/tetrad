@@ -27,7 +27,10 @@ import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -1775,7 +1778,7 @@ public final class GraphUtils {
      * @param nodes   The nodes in the graph.
      * @param sepsets A SepsetProducer that will do the sepset search operation described.
      * @param depth   The depth of the sepset search.
-     * @param order
+     * @param order   The order of the nodes, used for some implementations.
      * @param verbose Whether to print verbose output.
      * @throws InterruptedException if any
      */
@@ -3555,7 +3558,7 @@ public final class GraphUtils {
      * @return The percentage of p-values that are less than the significance level (alpha) used in the test. Returns
      * 0.0 if the number of p-values is less than 5 or if ensureMarkov is false or test instance is invalid.
      * @throws IllegalArgumentException if ensureMarkov is false.
-     * @throws InterruptedException if any
+     * @throws InterruptedException     if any
      */
     public static double localMarkovInitializePValues(Graph dag, boolean ensureMarkov, IndependenceTest test,
                                                       Map<Pair<Node, Node>, Set<Double>> pValues) throws InterruptedException {

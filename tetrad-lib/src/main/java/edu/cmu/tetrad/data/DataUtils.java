@@ -427,6 +427,15 @@ public final class DataUtils {
         return prod;
     }
 
+    /**
+     * Computes the covariance matrix for the given data.
+     * This method centers the columns of the input matrix,
+     * calculates the covariance, and returns the covariance matrix.
+     *
+     * @param data The input data matrix where rows represent observations
+     *             and columns represent variables.
+     * @return The covariance matrix of the given data.
+     */
     public static SimpleMatrix cov(SimpleMatrix data) {
         for (int j = 0; j < data.getNumCols(); j++) {
             double sum = 0.0;

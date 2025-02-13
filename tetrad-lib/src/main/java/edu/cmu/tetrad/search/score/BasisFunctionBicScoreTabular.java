@@ -78,7 +78,12 @@ public class BasisFunctionBicScoreTabular implements Score {
     }
 
     /**
-     * Computes OLS coefficients: beta = (Z^T Z + lambda I)^(-1) Z^T X
+     * Computes the Ordinary Least Squares (OLS) regression coefficients with L2 regularization.
+     *
+     * @param B The design matrix where each row represents a sample and each column represents a feature.
+     * @param X The matrix containing the target values for corresponding samples.
+     * @param lambda The regularization parameter to control overfitting (L2 regularization).
+     * @return A matrix representing the OLS regression coefficients.
      */
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
         int numCols = B.getNumCols();
@@ -276,13 +281,5 @@ public class BasisFunctionBicScoreTabular implements Score {
      */
     private double computeVariance(SimpleMatrix residuals) {
         return residuals.elementMult(residuals).elementSum() / residuals.getNumRows();
-    }
-
-    // Compute the covariance matrix of a dataset
-    public SimpleMatrix computeCovarianceMatrix(SimpleMatrix data) {
-        int N = data.getNumRows();
-        SimpleMatrix mean = data.transpose().mult(new SimpleMatrix(N, 1, true, new double[N]).divide(N));
-        SimpleMatrix centered = data.minus(mean.transpose());
-        return centered.transpose().mult(centered).divide(N - 1);
     }
 }

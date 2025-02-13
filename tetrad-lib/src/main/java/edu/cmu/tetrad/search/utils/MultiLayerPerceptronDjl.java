@@ -14,20 +14,37 @@ import ai.djl.nn.SequentialBlock;
 import ai.djl.nn.core.Linear;
 import ai.djl.training.ParameterStore;
 import ai.djl.training.initializer.NormalInitializer;
-import ai.djl.training.initializer.XavierInitializer;
 import ai.djl.translate.NoopTranslator;
 import ai.djl.translate.TranslateException;
 import ai.djl.translate.Translator;
-import edu.cmu.tetrad.data.DataTransforms;
 
 import java.util.List;
 
+/**
+ * The MultiLayerPerceptronDjl class provides a customizable implementation of a
+ * Multi-Layer Perceptron (MLP) for tasks like regression or classification using
+ * the Deep Java Library (DJL). This class allows the user to define the network
+ * architecture, including the input dimension, hidden layers, and type of output.
+ */
 public class MultiLayerPerceptronDjl {
 
     private final SequentialBlock net;
     private final float inputScale;
     private final NDManager manager;
 
+    /**
+     * Constructs a MultiLayerPerceptronDjl object with the specified input dimension, hidden layers,
+     * variable type, and input scaling factor. This builds the architecture of a neural network based
+     * on provided configurations such as the number of input features, hidden layer specifications,
+     * and the output type (e.g., continuous, multinomial, or binary).
+     *
+     * @param inputDim    the number of input features or dimensions.
+     * @param hiddenLayers a list of integers defining the number of neurons in each hidden layer.
+     * @param variableType the type of prediction target, such as "continuous", "binary",
+     *                     or "multinomial". For multinomial, it should specify the number
+     *                     of categories as "multinomial,numCategories".
+     * @param inputScale  a scaling factor applied to the input data.
+     */
     public MultiLayerPerceptronDjl(int inputDim, List<Integer> hiddenLayers,
                                    String variableType, float inputScale) {
         this.inputScale = inputScale;
@@ -66,22 +83,14 @@ public class MultiLayerPerceptronDjl {
         Translator<NDList, NDList> translator = new NoopTranslator();
     }
 
-    public static void main(String[] args) {
-        try (NDManager manager = NDManager.newBaseManager()) {
-            // Define the MLP: input dimension 3, hidden layers [10, 10], ReLU activation, and continuous output
-            MultiLayerPerceptronDjl mlp = new MultiLayerPerceptronDjl(3, List.of(10, 10), "continuous", 1.0f);
-
-            // Create dummy input data
-            NDArray input = manager.create(new float[]{1.0f, 2.0f, 3.0f});
-
-            // Perform forward pass
-            NDArray output = mlp.forward(manager, input);
-            System.out.println("Output: " + output);
-        } catch (TranslateException e) {
-            e.printStackTrace();
-        }
-    }
-
+    /**
+     * Computes the forward pass of the neural network for a given input.
+     *
+     * @param manager the {@code NDManager} used to manage the computational resources.
+     * @param input   the input {@code NDArray} to process through the neural network.
+     * @return the resulting {@code NDArray} after the forward pass through the network.
+     * @throws TranslateException if there is an issue during computation or data translation.
+     */
     public NDArray forward(NDManager manager, NDArray input) throws TranslateException {
         // Scale the input if needed
         if (inputScale != 1.0f) {
@@ -94,6 +103,11 @@ public class MultiLayerPerceptronDjl {
         return net.forward(parameterStore, new NDList(input), false).singletonOrThrow();
     }
 
+    /**
+     * Returns the NDManager used for managing computational resources.
+     *
+     * @return the NDManager instance.
+     */
     public NDManager getManager() {
         return manager;
     }
