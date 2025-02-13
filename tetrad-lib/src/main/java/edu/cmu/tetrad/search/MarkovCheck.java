@@ -64,6 +64,14 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     private final List<ModelObserver> observers = new ArrayList<>();
     /**
+     * The Anderson-Darling p-value for the independent case.
+     */
+    private final double fisherCombinedPIndep = Double.NaN;
+    /**
+     * The Anderson-Darling p-value for the dependent case.
+     */
+    private final double fisherCombinedPDep = Double.NaN;
+    /**
      * The independence test.
      */
     private IndependenceTest independenceTest;
@@ -115,14 +123,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * The Anderson-Darling p-value for the dependent case.
      */
     private double andersonDarlingPDep = Double.NaN;
-    /**
-     * The Anderson-Darling p-value for the independent case.
-     */
-    private final double fisherCombinedPIndep = Double.NaN;
-    /**
-     * The Anderson-Darling p-value for the dependent case.
-     */
-    private final double fisherCombinedPDep = Double.NaN;
     /**
      * The Binomial p-value for the independent case.
      */
@@ -884,17 +884,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                             break;
                         case ORDERED_LOCAL_MARKOV:
                             if (order == null) throw new IllegalArgumentException("No valid order found.");
-
-//                            if (dag != null) {
-//                                if (dag.paths().isAncestorOf(x, y)) {
-//                                    continue;
-//                                }
-//
-//                                z = new HashSet<>(dag.getParents(x));
-//                            } else {
                             z = new HashSet<>(graph.getAdjacentNodes(x));
 
-                            // Keep only the parents in Prefix(x).
+                            // Keep only the parents in Prefix(x)--i.e., nodes adjacent to x that are in Prefix(X)
                             for (Node w : new ArrayList<>(z)) {
                                 int i1 = order.indexOf(x);
                                 int i2 = order.indexOf(w);
@@ -903,7 +895,22 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                                     z.remove(w);
                                 }
                             }
-//                            }
+
+                            break;
+                        case ORDERED_LOCAL_MARKOV_MB:
+                            if (order == null) throw new IllegalArgumentException("No valid order found.");
+
+                            z = new HashSet<>(graph.paths().markovBlanket(x));
+
+                            // Keep only the nodes in Prefix(x) that are in MB(X)
+                            for (Node w : new ArrayList<>(z)) {
+                                int i1 = order.indexOf(x);
+                                int i2 = order.indexOf(w);
+
+                                if (i2 >= i1) {
+                                    z.remove(w);
+                                }
+                            }
 
                             break;
                         case MARKOV_BLANKET:
@@ -1122,8 +1129,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * Calculates and returns Fisher's combined p-value based on the specified dependence assumption.
      *
-     * @param indep A boolean flag indicating whether the calculation assumes independence
-     *              (true for independent assumption, false for dependent assumption).
+     * @param indep A boolean flag indicating whether the calculation assumes independence (true for independent
+     *              assumption, false for dependent assumption).
      * @return The Fisher's combined p-value calculated under the specified dependence assumption.
      */
     public double getFisherCombinedP(boolean indep) {
