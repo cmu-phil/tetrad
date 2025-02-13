@@ -8,10 +8,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.log;
 
@@ -25,18 +22,6 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @see DegenerateGaussianScore
  */
 public class BasisFunctionBicScore2 implements Score {
-    /**
-     * A static cache used to store the precomputed pseudo-inverses of matrices. The key is an integer representing a
-     * specific identifier (e.g., matrix dimensions or hash of the matrix contents), and the value is the associated
-     * precomputed pseudo-inverse stored as a SimpleMatrix.
-     * <p>
-     * This cache is utilized to avoid redundant and computationally expensive operations of recalculating
-     * pseudo-inverses for the same matrices during repeated computations.
-     * <p>
-     * The use of this cache enhances performance, particularly in iterative processes or in scenarios where
-     * pseudo-inverse calculations are frequently required for matrices that remain unchanged.
-     */
-    private static final Map<Integer, SimpleMatrix> pseudoInverseCache = new HashMap<>();
     /**
      * A list containing nodes that represent the variables in the basis function score.
      */
@@ -94,19 +79,10 @@ public class BasisFunctionBicScore2 implements Score {
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
         int numCols = B.getNumCols();
         SimpleMatrix BtB = B.transpose().mult(B);
-        int hash = BtB.hashCode();
-
-        if (pseudoInverseCache.containsKey(hash)) {
-            return pseudoInverseCache.get(hash).mult(B.transpose()).mult(X);
-        }
-
         SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
 
         // Parallelized inversion using EJML's lower-level operations
         SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
-
-        pseudoInverseCache.put(hash, inverse);
-
         CommonOps_DDRM.invert(BtB.plus(regularization).getDDRM(), inverse.getDDRM());
 
         return inverse.mult(B.transpose()).mult(X);
@@ -256,14 +232,39 @@ public class BasisFunctionBicScore2 implements Score {
         SimpleMatrix residuals = X_basis.minus(Z_basis.mult(betaZ));
 
         // Compute residual variance
-        double sigma_sq = computeVariance(residuals);
+        double sigma_sq = computeVariance(residuals) + 1e-10;
 
         // Compute log-likelihood
-        double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq));// + 1);
+        double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq + 1));
 
         // Compute BIC score
         return 2 * logLikelihood - penaltyDiscount * k * Math.log(N);
     }
+
+    public double getSequentialLocalScore(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
+        int N = X_basis.numRows();
+        int pX = X_basis.numCols();
+        double totalScore = 0;
+
+        for (int i = 0; i < pX; i++) {
+            // Define parent variables for Xi
+            SimpleMatrix Z = (i == 0) ? Y_basis : Y_basis.combine(0, Y_basis.numCols(), X_basis.extractMatrix(0, N, 0, i));
+
+            // Fit regression: Xi ~ Z
+            SimpleMatrix betaZ = computeOLS(Z, X_basis.extractMatrix(0, N, i, i + 1), 1e-6);
+            SimpleMatrix residuals = X_basis.extractMatrix(0, N, i, i + 1).minus(Z.mult(betaZ));
+
+            // Compute residual variance with epsilon
+            double sigma_sq = computeVariance(residuals) + 1e-10;
+
+            // Compute log-likelihood
+            double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
+            totalScore += logLikelihood;
+        }
+
+        return totalScore;
+    }
+
 
     /**
      * Computes variance of residuals: Var(R) = sum(R^2) / N

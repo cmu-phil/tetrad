@@ -33,7 +33,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      * The use of this cache enhances performance, particularly in iterative processes or in scenarios where
      * pseudo-inverse calculations are frequently required for matrices that remain unchanged.
      */
-    private static final Map<Integer, SimpleMatrix> pseudoInverseCache = new HashMap<>();
+    private static final Map<SimpleMatrix, SimpleMatrix> pseudoInverseCache = new HashMap<>();
     /**
      * The `dataSet` field holds a reference to the DataSet object used as the primary data structure for representing
      * and processing data within the `IndTestBasisFunctionLrt` class.
@@ -215,18 +215,18 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
         int numCols = B.getNumCols();
         SimpleMatrix BtB = B.transpose().mult(B);
-        int hash = BtB.hashCode();
+//        int hash = BtB.hashCode();
 
-        if (pseudoInverseCache.containsKey(hash)) {
-            return pseudoInverseCache.get(hash).mult(B.transpose()).mult(X);
-        }
+//        if (pseudoInverseCache.containsKey(BtB)) {
+//            return pseudoInverseCache.get(BtB).mult(B.transpose()).mult(X);
+//        }
 
         SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
 
         // Parallelized inversion using EJML's lower-level operations
         SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
 
-        pseudoInverseCache.put(hash, inverse);
+//        pseudoInverseCache.put(BtB, inverse);
 
         CommonOps_DDRM.invert(BtB.plus(regularization).getDDRM(), inverse.getDDRM());
 

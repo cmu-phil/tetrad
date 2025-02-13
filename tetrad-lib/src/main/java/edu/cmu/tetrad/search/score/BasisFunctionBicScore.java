@@ -59,7 +59,7 @@ public class BasisFunctionBicScore implements Score {
                                  int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
 
-        boolean usePseudoInverse = false;
+        boolean usePseudoInverse = true;
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
                 usePseudoInverse);
