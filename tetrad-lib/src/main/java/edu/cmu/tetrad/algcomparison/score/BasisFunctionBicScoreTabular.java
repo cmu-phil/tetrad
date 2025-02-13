@@ -35,15 +35,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Basis Function BIC Score (Basis-BIC).
+ * Wrapper for Basis Function BIC Score Tabular (BFS-Tabular), which calculates likelihoods using tabular data rather than
+ * covariance matrices.
  *
  * @author bandrews
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BFS (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BFS-Tab (Basis Function BIC Tabular)", command = "bf-bic-score-tab", dataType = DataType.Mixed)
 @Mixed
-public class BasisFunctionBicScore implements ScoreWrapper {
+public class BasisFunctionBicScoreTabular implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -56,7 +57,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     /**
      * Initializes a new instance of the BasisFunctionBicScore class.
      */
-    public BasisFunctionBicScore() {
+    public BasisFunctionBicScoreTabular() {
 
     }
 
@@ -66,7 +67,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
+        edu.cmu.tetrad.search.score.BasisFunctionBicScoreTabular score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreTabular(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE)
@@ -80,7 +81,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function BIC Score (Basis-BIC)";
+        return "Basis Function BIC Score Tabular (BFS-Tab)";
     }
 
     /**

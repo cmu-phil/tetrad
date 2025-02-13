@@ -35,15 +35,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Basis Function BIC Score (Basis-BIC) 2 (using generalized likelihood ratio test formalism).
+ * Wrapper for Basis Function BIC Score (Basis-BIC).
  *
  * @author bandrews
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BFS-2 (Basis Function BIC)", command = "bf-bic-score-2", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BFS-Cov (Basis Function BIC Covariance)", command = "bf-bic-score-cov", dataType = DataType.Mixed)
 @Mixed
-public class BasisFunctionBicScore2 implements ScoreWrapper {
+public class BasisFunctionBicScoreCovariance implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -56,7 +56,7 @@ public class BasisFunctionBicScore2 implements ScoreWrapper {
     /**
      * Initializes a new instance of the BasisFunctionBicScore class.
      */
-    public BasisFunctionBicScore2() {
+    public BasisFunctionBicScoreCovariance() {
 
     }
 
@@ -66,7 +66,7 @@ public class BasisFunctionBicScore2 implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BasisFunctionBicScore2 score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore2(
+        edu.cmu.tetrad.search.score.BasisFunctionBicScoreCovariance score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreCovariance(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE)
@@ -80,7 +80,7 @@ public class BasisFunctionBicScore2 implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function BIC Score (Basis-BIC) 2";
+        return "Basis Function BIC Score Covariance (BFS-Cov)";
     }
 
     /**

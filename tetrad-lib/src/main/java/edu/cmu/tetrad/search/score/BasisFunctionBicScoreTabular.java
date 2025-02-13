@@ -8,7 +8,9 @@ import org.apache.commons.math3.util.FastMath;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.commons.math3.util.FastMath.log;
 
@@ -16,12 +18,14 @@ import static org.apache.commons.math3.util.FastMath.log;
  * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
  * score by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
  * discrete variables by adding indicator variables per category.
+ * <p>
+ * This version uses a tabular approach to calculate the score rather than using covariance matrices.
  *
  * @author bandrews
  * @author josephramsey
  * @see DegenerateGaussianScore
  */
-public class BasisFunctionBicScore2 implements Score {
+public class BasisFunctionBicScoreTabular implements Score {
     /**
      * A list containing nodes that represent the variables in the basis function score.
      */
@@ -54,15 +58,15 @@ public class BasisFunctionBicScore2 implements Score {
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
      *
-     * @param dataSet         the data set on which the score is to be calculated. May contain a mixture of discrete
-     *                        and continuous variables.
+     * @param dataSet         the data set on which the score is to be calculated. May contain a mixture of discrete and
+     *                        continuous variables.
      * @param truncationLimit the truncation limit of the basis.
      * @param basisType       the type of basis function used in the BIC score computation.
      * @param basisScale      the basisScale factor used in the calculation of the BIC score for basis functions. All
      *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
-    public BasisFunctionBicScore2(DataSet dataSet, int truncationLimit, int basisType, double basisScale) {
+    public BasisFunctionBicScoreTabular(DataSet dataSet, int truncationLimit, int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
 
         boolean usePseudoInverse = true;
@@ -124,6 +128,9 @@ public class BasisFunctionBicScore2 implements Score {
             Z_basis.set(j, embedded_z.size(), 1);
         }
 
+        // For the tabular formulation, it doesn't matter whether we use the sum-likelihood or the sum-BIC
+        // formulation. The two are equivalent. We use the sum-BIC formulation here to be consistent with
+        // the covariance-based score (where it does matter). jdramsey 2025-2-13
         return getSequentialLocalScoreSumBic(X_basis, Z_basis);
     }
 
@@ -189,7 +196,7 @@ public class BasisFunctionBicScore2 implements Score {
      */
     @Override
     public String toString() {
-        return "Basis Function Score (BFS) 2";
+        return "Basis Function Score Tabular (BFS-Tab)";
     }
 
     /**
@@ -211,37 +218,7 @@ public class BasisFunctionBicScore2 implements Score {
         this.lambda = lambda;
     }
 
-    /**
-     * Computes the local score for X given parent variables Z. Calculates the Gaussian likelihood and returns the BIC
-     * score.
-     */
-    private double getLocalScore_Private(SimpleMatrix X_basis, SimpleMatrix Z_basis) {
-        int N = X_basis.getNumRows();  // Number of samples
-        int k = Z_basis.getNumCols() + 1;  // Number of parameters (including intercept)
-
-        // Ensure Z_basis has an intercept
-        if (Z_basis.getNumCols() == 0) {
-            Z_basis = new SimpleMatrix(N, 1);
-            for (int i = 0; i < N; i++) {
-                Z_basis.set(i, 0, 1);
-            }
-        }
-
-        // Fit regression: X ~ Z
-        SimpleMatrix betaZ = computeOLS(Z_basis, X_basis, lambda);
-        SimpleMatrix residuals = X_basis.minus(Z_basis.mult(betaZ));
-
-        // Compute residual variance
-        double sigma_sq = computeVariance(residuals) + 1e-10;
-
-        // Compute log-likelihood
-        double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq + 1));
-
-        // Compute BIC score
-        return 2 * logLikelihood - penaltyDiscount * k * Math.log(N);
-    }
-
-    public double getSequentialLocalScoreSumBic(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
+    private double getSequentialLocalScoreSumBic(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
         int N = X_basis.getNumRows();
         int pX = X_basis.getNumCols();
         double totalBic = 0;
@@ -260,13 +237,14 @@ public class BasisFunctionBicScore2 implements Score {
             // Compute log-likelihood
             double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
             int k = Z.getNumCols() + 1;
-            totalBic += 2 * logLikelihood - penaltyDiscount * k * Math.log(N);;
+            totalBic += 2 * logLikelihood - penaltyDiscount * k * Math.log(N);
+            ;
         }
 
         return totalBic;
     }
 
-    public double getSequentialLocalScoreSumLikelihood(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
+    private double getSequentialLocalScoreSumLikelihood(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
         int N = X_basis.getNumRows();
         int pX = X_basis.getNumCols();
         double totalLikelihood = 0;

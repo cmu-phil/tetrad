@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search.score;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
@@ -17,12 +16,14 @@ import static java.lang.Math.log;
  * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
  * score by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
  * discrete variables by adding indicator variables per category.
+ * <p>
+ * This version uses covariance matrices to calculate likelihoods.
  *
  * @author bandrews
  * @author josephramsey
  * @see DegenerateGaussianScore
  */
-public class BasisFunctionBicScore implements Score {
+public class BasisFunctionBicScoreCovariance implements Score {
     /**
      * A list containing nodes that represent the variables in the basis function score.
      */
@@ -55,8 +56,8 @@ public class BasisFunctionBicScore implements Score {
      *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
-    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
-                                 int basisType, double basisScale) {
+    public BasisFunctionBicScoreCovariance(DataSet dataSet, int truncationLimit,
+                                           int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
 
         boolean usePseudoInverse = true;
@@ -176,7 +177,7 @@ public class BasisFunctionBicScore implements Score {
      */
     @Override
     public String toString() {
-        return "Basis Function Score (BFS)";
+        return "Basis Function Score Covariance (BFS-Cov)";
     }
 
     /**
