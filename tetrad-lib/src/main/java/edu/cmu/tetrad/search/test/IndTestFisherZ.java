@@ -693,7 +693,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
-//        Collections.sort(z);
 
         int[] indices = new int[z.size() + 2];
         indices[0] = this.indexMap.get(x.getName());
