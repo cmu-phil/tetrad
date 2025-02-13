@@ -162,7 +162,7 @@ public class ZsbScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
+            varRy = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));

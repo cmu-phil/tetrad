@@ -124,7 +124,7 @@ public class BasisFunctionBicScore2 implements Score {
             Z_basis.set(j, embedded_z.size(), 1);
         }
 
-        return getLocalScore_Private(X_basis, Z_basis);
+        return getSequentialLocalScoreSumBic(X_basis, Z_basis);
     }
 
     /*
@@ -241,10 +241,10 @@ public class BasisFunctionBicScore2 implements Score {
         return 2 * logLikelihood - penaltyDiscount * k * Math.log(N);
     }
 
-    public double getSequentialLocalScore(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
-        int N = X_basis.numRows();
-        int pX = X_basis.numCols();
-        double totalScore = 0;
+    public double getSequentialLocalScoreSumBic(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
+        int N = X_basis.getNumRows();
+        int pX = X_basis.getNumCols();
+        double totalBic = 0;
 
         for (int i = 0; i < pX; i++) {
             // Define parent variables for Xi
@@ -259,17 +259,51 @@ public class BasisFunctionBicScore2 implements Score {
 
             // Compute log-likelihood
             double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
-            totalScore += logLikelihood;
+            int k = Z.getNumCols() + 1;
+            totalBic += 2 * logLikelihood - penaltyDiscount * k * Math.log(N);;
         }
 
-        return totalScore;
+        return totalBic;
     }
 
+    public double getSequentialLocalScoreSumLikelihood(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
+        int N = X_basis.getNumRows();
+        int pX = X_basis.getNumCols();
+        double totalLikelihood = 0;
+        int totalDof = 0;
+
+        for (int i = 0; i < pX; i++) {
+            // Define parent variables for Xi
+            SimpleMatrix Z = (i == 0) ? Y_basis : Y_basis.combine(0, Y_basis.getNumCols(), X_basis.extractMatrix(0, N, 0, i));
+
+            // Fit regression: Xi ~ Z
+            SimpleMatrix betaZ = computeOLS(Z, X_basis.extractMatrix(0, N, i, i + 1), 1e-6);
+            SimpleMatrix residuals = X_basis.extractMatrix(0, N, i, i + 1).minus(Z.mult(betaZ));
+
+            // Compute residual variance with epsilon
+            double sigma_sq = computeVariance(residuals) + 1e-10;
+
+            // Compute log-likelihood
+            double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
+            totalLikelihood += logLikelihood;
+            totalDof += Z.getNumCols() + 1;
+        }
+
+        return 2 * totalLikelihood - penaltyDiscount * totalDof * Math.log(N);
+    }
 
     /**
      * Computes variance of residuals: Var(R) = sum(R^2) / N
      */
     private double computeVariance(SimpleMatrix residuals) {
         return residuals.elementMult(residuals).elementSum() / residuals.getNumRows();
+    }
+
+    // Compute the covariance matrix of a dataset
+    public SimpleMatrix computeCovarianceMatrix(SimpleMatrix data) {
+        int N = data.getNumRows();
+        SimpleMatrix mean = data.transpose().mult(new SimpleMatrix(N, 1, true, new double[N]).divide(N));
+        SimpleMatrix centered = data.minus(mean.transpose());
+        return centered.transpose().mult(centered).divide(N - 1);
     }
 }

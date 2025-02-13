@@ -427,6 +427,38 @@ public final class DataUtils {
         return prod;
     }
 
+    public static SimpleMatrix cov(SimpleMatrix data) {
+        for (int j = 0; j < data.getNumCols(); j++) {
+            double sum = 0.0;
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                sum += data.get(i, j);
+            }
+
+            double mean = sum / data.getNumRows();
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                data.set(i, j, data.get(i, j) - mean);
+            }
+        }
+
+        SimpleMatrix q = new SimpleMatrix(data);
+
+        SimpleMatrix q1 = q.transpose();
+        SimpleMatrix q2 = q1.mult(q);
+        SimpleMatrix prod = new SimpleMatrix(q2);
+
+        double factor = 1.0 / (data.getNumRows() - 1);
+
+        for (int i = 0; i < prod.getNumRows(); i++) {
+            for (int j = 0; j < prod.getNumCols(); j++) {
+                prod.set(i, j, prod.get(i, j) * factor);
+            }
+        }
+
+        return prod;
+    }
+
     /**
      * <p>mean.</p>
      *

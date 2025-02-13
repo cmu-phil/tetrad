@@ -88,6 +88,10 @@ public class BasisFunctionBicScore implements Score {
      * @return The calculated local score as a double value.
      */
     public double localScore(int i, int... parents) {
+
+        // Note that this needs to be the sum of the individual BIC scores, not a BIC score calculated from
+        // the sums of the likelihoods and degrees of freedom. A test case to try is with nonlinear variables
+        // embedded as Legendre polynomials. jdramsey 2025-2-13
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
@@ -103,9 +107,7 @@ public class BasisFunctionBicScore implements Score {
             }
 
             SemBicScore.LikelihoodResult result = this.bic.getLikelihoodAndDof(i_, parents_);
-
             sumBic += 2 * result.lik() - penaltyDiscount * result.dof() * log(getSampleSize());
-
             B.add(i_);
         }
 

@@ -135,7 +135,7 @@ public class PoissonPriorScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
+            varRy = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets,
                     this.usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +

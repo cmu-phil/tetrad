@@ -145,7 +145,7 @@ public class GicScores implements Score {
         double varry;
 
         try {
-            varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, this.usePseudoInverse);
+            varry = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, this.usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
