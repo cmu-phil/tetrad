@@ -15,6 +15,7 @@ import java.io.Serial;
 public class MarkovCheckKsPassesBestOf10 implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    private double mcAlpha = 0.05;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -56,7 +57,7 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         double p = new MarkovCheckKolmogorovSmirnoffPBestOf10().getValue(trueGraph, estGraph, dataModel);
-        return p > 0.05 ? 1 : 0;
+        return p > getMcAlpha() ? 1 : 0;
     }
 
     /**
@@ -68,5 +69,13 @@ public class MarkovCheckKsPassesBestOf10 implements Statistic {
     @Override
     public double getNormValue(double value) {
         return value;
+    }
+
+    public double getMcAlpha() {
+        return mcAlpha;
+    }
+
+    public void setMcAlpha(double mcAlpha) {
+        this.mcAlpha = mcAlpha;
     }
 }

@@ -42,10 +42,9 @@ public final class SimulationUtils {
         return switch (simulationType) {
             case SimulationTypes.BAYS_NET -> new BayesNetSimulation(randomGraph);
             case SimulationTypes.STRUCTURAL_EQUATION_MODEL -> new SemSimulation(randomGraph);
-            case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL -> new NLSemSimulation(randomGraph);
+            case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL -> new GpSemSimulation(randomGraph);
             case SimulationTypes.NONLINEAR_ADDITIVE_NOISE_MODEL -> new NonlinearAdditiveNoiseModel(randomGraph);
             case SimulationTypes.POST_NONLINEAR_MODEL -> new PostnonlinearCausalModel(randomGraph);
-            case SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR -> new NonlinearFunctionsOfLinear(randomGraph);
             case SimulationTypes.CAUSAL_PERCEPTRON_NETWORK -> new CausalPerceptronNetwork(randomGraph);
             case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL -> new GeneralSemSimulationSpecial1(randomGraph);
             case SimulationTypes.LEE_AND_HASTIE -> new LeeHastieSimulation(randomGraph);
@@ -53,6 +52,8 @@ public final class SimulationUtils {
             case SimulationTypes.TIME_SERIES -> new TimeSeriesSemSimulation(randomGraph);
             default -> throw new IllegalArgumentException(
                     String.format("Unknown simulation type %s.", simulationType));
+
+
         };
     }
 

@@ -26,7 +26,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author bryanandrews
  * @version $Id: $Id
  */
-public class NLSemSimulation implements Simulation {
+public class GpSemSimulation implements Simulation {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -51,7 +51,7 @@ public class NLSemSimulation implements Simulation {
      *
      * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
      */
-    public NLSemSimulation(RandomGraph graph) {
+    public GpSemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 

@@ -62,15 +62,24 @@ public class ParameterTab extends JPanel {
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
-//            SimulationTypes.NONLINEAR_ADDITIVE_NOISE_MODEL,
-//            SimulationTypes.POST_NONLINEAR_MODEL,
-            SimulationTypes.NONLINEAR_FUNCTIONS_OF_LINEAR,
             SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
-            SimulationTypes.LG_MNAR_SIMULATION,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
     };
+
+
+    //                    public static final String[] MODEL_TYPE_ITEMS = {
+//                            SimulationTypes.BAYS_NET,
+//                            SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+//                            SimulationTypes.LINEAR_FISHER_MODEL,
+//                            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
+//                            SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
+//                            SimulationTypes.LEE_AND_HASTIE,
+//                            SimulationTypes.CONDITIONAL_GAUSSIAN,
+//                            SimulationTypes.TIME_SERIES
+
+
     @Serial
     private static final long serialVersionUID = 7074205549192562786L;
     private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
@@ -194,7 +203,7 @@ public class ParameterTab extends JPanel {
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
-                        this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
+                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.NONLINEAR_ADDITIVE_NOISE_MODEL:
                         this.simulation.setSimulation(new NonlinearAdditiveNoiseModel(randomGraph), this.simulation.getParams());
@@ -232,6 +241,17 @@ public class ParameterTab extends JPanel {
                     default:
                         throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
                 }
+
+                //                    public static final String[] MODEL_TYPE_ITEMS = {
+//                            SimulationTypes.BAYS_NET,
+//                            SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+//                            SimulationTypes.LINEAR_FISHER_MODEL,
+//                            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
+//                            SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
+//                            SimulationTypes.LEE_AND_HASTIE,
+//                            SimulationTypes.CONDITIONAL_GAUSSIAN,
+//                            SimulationTypes.TIME_SERIES
+
             } else {
                 switch (simulationItem) {
                     case SimulationTypes.BAYS_NET:
@@ -241,7 +261,7 @@ public class ParameterTab extends JPanel {
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
-                        this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
+                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.NONLINEAR_ADDITIVE_NOISE_MODEL:
                         this.simulation.setSimulation(new NonlinearAdditiveNoiseModel(randomGraph), this.simulation.getParams());

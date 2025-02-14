@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -1416,7 +1416,7 @@ public class Comparison implements TetradSerializable {
 
             truth[0] = new EdgeListGraph(comparisonGraph);
 
-                if (data.isMixed()) {
+            if (data.isMixed()) {
                 truth[1] = getSubgraph(comparisonGraph, true, true, simulationWrapper.getDataModel(run.runIndex()));
                 truth[2] = getSubgraph(comparisonGraph, true, false, simulationWrapper.getDataModel(run.runIndex()));
                 truth[3] = getSubgraph(comparisonGraph, false, false, simulationWrapper.getDataModel(run.runIndex()));
@@ -1567,7 +1567,9 @@ public class Comparison implements TetradSerializable {
 
                         for (String name : parameterNames) {
                             if (name.equals(statName)) {
-                                if (parameters.get(name) instanceof Boolean) {
+                                if (parameters.get(name) instanceof String) {
+                                    // ignore, this doesn't go in the table.
+                                } else if (parameters.get(name) instanceof Boolean) {
                                     boolean b = parameters.getBoolean(name);
                                     stat = b ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
                                 } else {

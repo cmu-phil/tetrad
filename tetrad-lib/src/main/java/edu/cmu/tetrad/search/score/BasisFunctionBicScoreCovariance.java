@@ -100,6 +100,8 @@ public class BasisFunctionBicScoreCovariance implements Score {
         }
 
         double sumBic = 0.0;
+        double sumLik = 0.0;
+        int sumDof = 0;
 
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
@@ -109,10 +111,16 @@ public class BasisFunctionBicScoreCovariance implements Score {
 
             SemBicScore.LikelihoodResult result = this.bic.getLikelihoodAndDof(i_, parents_);
             sumBic += 2 * result.lik() - penaltyDiscount * result.dof() * log(getSampleSize());
+
+            sumLik += result.lik();
+            sumDof += result.dof();
+
             B.add(i_);
         }
 
-        return sumBic;
+        return 2 * sumLik - penaltyDiscount * sumDof * log(getSampleSize());
+
+//        return sumBic;
     }
 
     /*

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.algcomparison.simulation.SimulationTypes;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
@@ -1498,8 +1499,14 @@ public class GridSearchEditor extends JPanel {
                     1, 1000));
 
             Box horiz6 = Box.createHorizontalBox();
-            horiz6.add(new JLabel("Comparison Graph Type:"));
+            horiz6.add(new JLabel("Markov Checker Alpha:"));
             horiz6.add(Box.createHorizontalGlue());
+            horiz6.add(getDoubleTextField("mcAlpha", model.getParameters(),
+                    model.getParameters().getDouble("mcAlpha", 0.05),  0, 1));
+
+            Box horiz7 = Box.createHorizontalBox();
+            horiz7.add(new JLabel("Comparison Graph Type:"));
+            horiz7.add(Box.createHorizontalGlue());
             JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
 
             for (GridSearchModel.ComparisonGraphType comparisonGraphType : GridSearchModel.ComparisonGraphType.values()) {
@@ -1525,6 +1532,7 @@ public class GridSearchEditor extends JPanel {
             parameterBox.add(horiz4c);
             parameterBox.add(horiz5);
             parameterBox.add(horiz6);
+            parameterBox.add(horiz7);
 
             parameterBox.setBorder(new EmptyBorder(10, 10, 10, 10));
 
@@ -1941,16 +1949,27 @@ public class GridSearchEditor extends JPanel {
                 case 2:
                     yield edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel.class;
                 case 3:
-                    yield edu.cmu.tetrad.algcomparison.simulation.NLSemSimulation.class;
+                    yield edu.cmu.tetrad.algcomparison.simulation.GpSemSimulation.class;
                 case 4:
-                    yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
+                    yield edu.cmu.tetrad.algcomparison.simulation.CausalPerceptronNetwork.class;
                 case 5:
-                    yield edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation.class;
+                    yield edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation.class;
                 case 6:
+                    yield edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation.class;
+                case 7:
                     yield edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation.class;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + simulationString);
             };
+
+//                     SimulationTypes.BAYS_NET,
+//                    SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+//                    SimulationTypes.LINEAR_FISHER_MODEL,
+//                    SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
+//                    SimulationTypes.CAUSAL_PERCEPTRON_NETWORK,
+//                    SimulationTypes.LEE_AND_HASTIE,
+//                    SimulationTypes.CONDITIONAL_GAUSSIAN,
+//                    SimulationTypes.TIME_SERIES
 
             GridSearchModel.SimulationSpec spec = new GridSearchModel.SimulationSpec("name", graphClazz, simulationClass);
             model.addSimulationSpec(spec);

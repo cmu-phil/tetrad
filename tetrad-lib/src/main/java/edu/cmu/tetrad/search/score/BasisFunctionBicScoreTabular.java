@@ -244,7 +244,6 @@ public class BasisFunctionBicScoreTabular implements Score {
             double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
             int k = Z.getNumCols() + 1;
             totalBic += 2 * logLikelihood - penaltyDiscount * k * Math.log(N);
-            ;
         }
 
         return totalBic;
