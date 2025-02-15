@@ -19,7 +19,7 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class MarkovCheckAndersonDarlingP implements Statistic {
+public class MarkovCheckFractionDependentH0 implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -27,7 +27,7 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
      * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
      * distributed as U(0, 1).
      */
-    public MarkovCheckAndersonDarlingP() {
+    public MarkovCheckFractionDependentH0() {
 
     }
 
@@ -38,7 +38,7 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "MC-ADP";
+        return "MC-f_dep_H0";
     }
 
     /**
@@ -48,7 +48,7 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Markov Check Anderson Darling P";
+        return "Markov Check Fraction Dependent H0";
     }
 
     /**
@@ -83,7 +83,7 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
         MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
 
         markovCheck.generateResults(true, true);
-        return markovCheck.getAndersonDarlingP(true);
+        return markovCheck.getFractionDependent(true);
     }
 
     /**
