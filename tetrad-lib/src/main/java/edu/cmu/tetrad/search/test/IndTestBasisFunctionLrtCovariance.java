@@ -21,8 +21,12 @@ import java.util.*;
  * <p>
  * This class is designed to work with a given dataset, perform embedding transformations based on specified basis
  * function parameters, and efficiently compute the required statistics for hypothesis testing over sets of variables.
+ * <p>
+ * Note that compared to the tabular version of this class (see), this class uses a covariance matrix as a sufficient
+ * statistic and thus cannot do random row subsetting per test.
  *
  * @author josephramsey
+ * @see IndTestBasisFunctionLrtTabular
  */
 public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
     /**
@@ -186,20 +190,6 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
 
         // Compute residual variance
         return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
-    }
-
-    /**
-     * Extracts a submatrix given row and column indices.
-     */
-    private SimpleMatrix getSubmatrix(SimpleMatrix matrix, int[] indices) {
-        int n = indices.length;
-        SimpleMatrix subMatrix = new SimpleMatrix(n, n);
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                subMatrix.set(i, j, matrix.get(indices[i], indices[j]));
-            }
-        }
-        return subMatrix;
     }
 
     /**

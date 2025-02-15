@@ -157,7 +157,6 @@ public class IndTestBasisFunctionLrtTabular implements IndependenceTest, Effecti
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, truncationLimit, basisType, basisScale, usePseudoInverse);
 
-
         this.embeddedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
