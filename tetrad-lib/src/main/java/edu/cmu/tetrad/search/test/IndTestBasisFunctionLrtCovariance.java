@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -15,13 +14,50 @@ import org.ejml.simple.SimpleMatrix;
 import java.util.*;
 
 /**
- * Optimized version of IndTestBasisFunctionLrt using covariance matrices for GLRT computation.
+ * The IndTestBasisFunctionLrtCovariance class implements the IndependenceTest interface and provides functionality to
+ * perform conditional independence tests using basis functions and likelihood ratio tests based on residual variances
+ * and covariance matrices. It handles the transformations, embeddings, and statistical computations required to compute
+ * p-values for testing conditional independence of variables.
+ * <p>
+ * This class is designed to work with a given dataset, perform embedding transformations based on specified basis
+ * function parameters, and efficiently compute the required statistics for hypothesis testing over sets of variables.
+ *
+ * @author josephramsey
  */
 public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
+    /**
+     * Represents the dataset used within the class for statistical analyses and computations.
+     * <p>
+     * The dataset contains variables and their associated data, which are utilized in various methods to perform tasks
+     * such as conditional independence testing, covariance matrix computation, residual variance calculation, and
+     * embedding transformations.
+     * <p>
+     * This variable is final, indicating that the dataset is immutable and cannot be reassigned once initialized.
+     */
     private final DataSet dataSet;
+    /**
+     * A list of Node objects representing the set of variables associated with the current instance. These variables
+     * are derived from the input dataset and are used internally for computations such as conditional independence
+     * testing and variance analysis.
+     */
     private final List<Node> variables;
+    /**
+     * Stores a mapping between Node objects and their associated integer identifiers or values, used internally within
+     * this class to represent nodes and manage their relationships or properties. This structure facilitates efficient
+     * lookups and manipulations in computations and tests related to the functionality of this class.
+     */
     private final Map<Node, Integer> nodeHash;
+    /**
+     * Represents the covariance matrix of the dataset, which is computed based on the processed input data and used for
+     * various statistical computations within the class. This matrix encapsulates the covariances between pairs of
+     * variables in the dataset and is essential for determining relationships among variables, such as conditional
+     * independence.
+     */
     private final SimpleMatrix covarianceMatrix;
+    /**
+     * Represents the sample size of the dataset being analyzed. This variable is used in statistical computations, such
+     * as variance and covariance calculations, to determine the scale and reliability of the analysis.
+     */
     private final int sampleSize;
     /**
      * A mapping structure used to represent the embedding of variables or indices for specific computations in the
@@ -32,22 +68,22 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
      */
     private final Map<Integer, List<Integer>> embedding;
     /**
-     * Represents a dataset embedded within the context of the independence test. This data is used internally by the
-     * `IndTestBasisFunctionLrt` class to support testing for conditional independence and related computations.
-     * <p>
-     * The `embeddedData` field stores a `DataSet` object that may contain information such as the variables and
-     * observations relevant to the test. It is a final field, indicating that its reference cannot be changed after
-     * initialization, ensuring consistency and immutability with respect to its reference.
+     * Represents the significance level for statistical tests within the class. It is used to determine the threshold
+     * for rejecting the null hypothesis in various statistical computations and hypothesis testing methods. The default
+     * value is set to 0.01.
      */
-    private final SimpleMatrix embeddedData;
     private double alpha = 0.01;
+    /**
+     * A boolean flag indicating whether verbose output is enabled or not. When set to true, additional logging or
+     * diagnostic information may be produced by the methods in this class to aid in debugging or understanding the
+     * internal processing steps.
+     */
     private boolean verbose = false;
-    private List<Integer> rows;
 
     /**
      * Constructs an instance of IndTestBasisFunctionLrtCovariance. This constructor initializes the object using a
-     * dataset and parameters related to truncation limit, basis type, and basis scale. It processes the input data
-     * into an embedded format, computes its covariance matrix, and sets up internal variables for further use.
+     * dataset and parameters related to truncation limit, basis type, and basis scale. It processes the input data into
+     * an embedded format, computes its covariance matrix, and sets up internal variables for further use.
      *
      * @param dataSet         the input dataset containing the variables and data rows to be analyzed.
      * @param truncationLimit the limit to truncate the embeddings or basis functions in the data.
@@ -71,13 +107,25 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
         // we're not using the pseudoinverse option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, truncationLimit, basisType, basisScale, usePseudoInverse);
-        this.embeddedData = embeddedData.embeddedData().getDoubleData().getDataCopy();
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
 
-        this.covarianceMatrix = DataUtils.cov(this.embeddedData);
+        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
     }
 
+    /**
+     * Computes the p-value for the null hypothesis that two variables, represented as nodes, are conditionally
+     * independent given a set of conditioning variables.
+     * <p>
+     * The method transforms the input nodes and conditioning set into their respective embedded representations and
+     * computes the likelihood ratio statistic based on residual variances. It then calculates the corresponding p-value
+     * using a Chi-squared distribution.
+     *
+     * @param x the first node representing one of the variables to be tested.
+     * @param y the second node representing the other variable to be tested.
+     * @param z the set of nodes representing the conditioning variables.
+     * @return the computed p-value for the hypothesis test of conditional independence.
+     */
     private double getPValue(Node x, Node y, Set<Node> z) {
         List<Node> zList = new ArrayList<>(z);
         Collections.sort(zList);
@@ -212,6 +260,15 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
     }
 
     /**
+     * Retrieves the significance level (alpha) for the statistical tests performed by this instance.
+     *
+     * @return the current significance level as a double.
+     */
+    public double getAlpha() {
+        return alpha;
+    }
+
+    /**
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -219,28 +276,5 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
             throw new IllegalArgumentException("Alpha must be between 0 and 1.");
         }
         this.alpha = alpha;
-    }
-
-    public double getAlpha() {
-        return alpha;
-    }
-
-    /**
-     * Retrieves the rows from the dataSet that contain valid values for all variables.
-     *
-     * @return a list of row indices that contain valid values for all variables
-     */
-    private List<Integer> listRows() {
-        if (this.rows != null) {
-            return this.rows;
-        }
-
-        List<Integer> rows = new ArrayList<>();
-
-        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            rows.add(k);
-        }
-
-        return rows;
     }
 }

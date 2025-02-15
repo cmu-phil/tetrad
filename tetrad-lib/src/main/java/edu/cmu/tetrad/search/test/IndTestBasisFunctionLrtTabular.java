@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
@@ -19,8 +18,13 @@ import java.util.*;
  * of a generalized likelihood ratio test (GLRT). This class is designed for evaluating whether two variables are
  * conditionally independent given a set of conditioning variables, leveraging statistical and matrix-based
  * computations.
+ * <p>
+ * This class may be compared to the covariance version (see), which is more scalable to large sample sizes. The
+ * advantage of this implementation is that rows may be subsetted randomly for individual conditional independence
+ * tests. This is not something that can be done using a covariance matrix as a sufficient statistic.
  *
  * @author josephramsey
+ * @see IndTestBasisFunctionLrtCovariance
  */
 public class IndTestBasisFunctionLrtTabular implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
@@ -76,6 +80,14 @@ public class IndTestBasisFunctionLrtTabular implements IndependenceTest, Effecti
      */
     private final DataSet embeddedData;
     /**
+     * A list holding all indices of rows that are considered during data processing or analysis. This typically
+     * includes all rows from the dataset except those with missing or invalid values for the required variables.
+     * <p>
+     * This field is immutable and represents the default set of rows to be used in analysis unless explicitly modified
+     * by other methods.
+     */
+    private final List<Integer> allRows;
+    /**
      * Represents the significance level (alpha) used for statistical tests in the IndTestBasisFunctionLrt class. This
      * value determines the threshold for rejecting the null hypothesis in conditional independence testing, where lower
      * values indicate stricter criteria for rejecting the null hypothesis.
@@ -97,9 +109,18 @@ public class IndTestBasisFunctionLrtTabular implements IndependenceTest, Effecti
      * verbose output is suppressed.
      */
     private boolean verbose = false;
+    /**
+     * The sample size used in computations within the class. This variable may represent an effective sample size that
+     * differs from the original dataset size, depending on configurations or preprocessing steps. It is particularly
+     * relevant to statistical and independence testing procedures where the sample size influences the results.
+     */
     private int sampleSize;
+    /**
+     * Represents the specific rows being utilized during the independence test. This field holds a list of integers
+     * corresponding to the indices of the rows from the data set. If not explicitly set, all rows without missing
+     * values will be used by default.
+     */
     private List<Integer> rows;
-    private final List<Integer> allRows;
 
     /**
      * Constructs an instance of the IndTestBasisFunctionLrt class. This constructor initializes the object using the
@@ -144,18 +165,16 @@ public class IndTestBasisFunctionLrtTabular implements IndependenceTest, Effecti
     }
 
     /**
-     * Computes the Ordinary Least Squares (OLS) solution for a linear system. The method applies
-     * regularization to the OLS problem to stabilize the solution, particularly in cases where
-     * the design matrix B is ill-conditioned or near singular. Regularization is controlled by
-     * the lambda parameter, which adds a scaled identity matrix to the design matrix's
-     * normal equation.
+     * Computes the Ordinary Least Squares (OLS) solution for a linear system. The method applies regularization to the
+     * OLS problem to stabilize the solution, particularly in cases where the design matrix B is ill-conditioned or near
+     * singular. Regularization is controlled by the lambda parameter, which adds a scaled identity matrix to the design
+     * matrix's normal equation.
      *
-     * @param B       the design matrix, where rows correspond to observations and columns
-     *                correspond to features.
-     * @param X       the response matrix, where rows correspond to observations and columns
-     *                to dependent variable outputs.
-     * @param lambda  the regularization parameter used to stabilize the solution. Larger
-     *                values result in stronger regularization.
+     * @param B      the design matrix, where rows correspond to observations and columns correspond to features.
+     * @param X      the response matrix, where rows correspond to observations and columns to dependent variable
+     *               outputs.
+     * @param lambda the regularization parameter used to stabilize the solution. Larger values result in stronger
+     *               regularization.
      * @return the computed OLS solution as a SimpleMatrix object.
      */
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
