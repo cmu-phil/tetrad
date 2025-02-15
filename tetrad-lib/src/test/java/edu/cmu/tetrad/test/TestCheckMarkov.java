@@ -149,12 +149,12 @@ public class TestCheckMarkov {
         testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(data, trueGraph, estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~Full Graph~~~~~~~~~~~~~~~");
         estimatedCpdag = GraphUtils.replaceNodes(estimatedCpdag, trueGraph.getNodes());
-        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null);
-        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedCpdag, null);
-        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedCpdag, null);
-        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null);
-        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null);
-        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null);
+        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         System.out.println("whole_ap: " + whole_ap);
         System.out.println("whole_ar: " + whole_ar );
         System.out.println("whole_ahp: " + whole_ahp);

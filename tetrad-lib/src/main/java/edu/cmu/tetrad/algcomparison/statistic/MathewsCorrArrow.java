@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
@@ -51,7 +52,7 @@ public class MathewsCorrArrow implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
         int arrowsTp = adjConfusion.getTp();
         int arrowsFp = adjConfusion.getFp();

@@ -1445,7 +1445,7 @@ public class Comparison implements TetradSerializable {
                     if (_stat instanceof ElapsedCpuTime) {
                         stat = taskCpuTime / 1000.0;
                     } else {
-                        stat = _stat.getValue(truth[u], est[u], data);
+                        stat = _stat.getValue(truth[u], est[u], data, new Parameters());
                     }
 
                     synchronized (this) {
@@ -1478,7 +1478,7 @@ public class Comparison implements TetradSerializable {
                     stat = taskCpuTime / 1000.0;
                 } else {
                     try {
-                        stat = _stat.getValue(null, graphOut, data);
+                        stat = _stat.getValue(null, graphOut, data, simulationWrapper.getSimulationSpecificParameters());
                     } catch (Exception e) {
                         stat = Double.NaN;
                     }

@@ -7,8 +7,8 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.work_in_progress.MagDgBicScore;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 import java.util.List;
@@ -49,7 +49,7 @@ public class MagSemScore implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet)) throw new IllegalArgumentException("Expecting a dataset for MAG DG Score.");
 
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);

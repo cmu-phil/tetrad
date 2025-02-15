@@ -21,12 +21,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
-        command = "bf-lr-test",
+        name = "BF-LRT-Tab (Basis Function Likelihood Ratio Test Tabular)",
+        command = "bf-lr-test-tab",
         dataType = DataType.Mixed
 )
 @Mixed
-public class BasisFunctionLrt implements IndependenceWrapper {
+public class BasisFunctionLrtTabular implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -34,7 +34,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
     /**
      * Initializes a new instance of the DegenerateGaussianLRT class.
      */
-    public BasisFunctionLrt() {
+    public BasisFunctionLrtTabular() {
     }
 
     /**
@@ -54,7 +54,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function Likelihood Ratio Test";
+        return "Basis Function Likelihood Ratio Test Tabular";
     }
 
     /**

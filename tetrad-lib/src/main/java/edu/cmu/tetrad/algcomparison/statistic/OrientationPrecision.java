@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utils.OrientationConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -43,7 +44,7 @@ public class OrientationPrecision implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         OrientationConfusion oriConfusion = new OrientationConfusion(trueGraph, estGraph);
         int oriTp = oriConfusion.getTp();
         int oriFp = oriConfusion.getFp();

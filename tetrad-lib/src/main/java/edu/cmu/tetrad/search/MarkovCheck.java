@@ -5,10 +5,7 @@ import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.*;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.UniformityTest;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.util.FastMath;
@@ -684,10 +681,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
         // TODO VBC: validate
-        double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
-        double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
-        double ahp = new ArrowheadPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
-        double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
+        double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
+        double ahp = new ArrowheadPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
+        double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
         System.out.println("Node " + x + "'s statistics: " + " \n" +
@@ -712,10 +709,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
         System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
-        double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
-        double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
-        double ahp = new ArrowheadPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
-        double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double ap = new AdjacencyPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
+        double ar = new AdjacencyRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
+        double ahp = new ArrowheadPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
+        double ahr = new ArrowheadRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         return Arrays.asList(ap, ar, ahp, ahr);
     }
 
@@ -735,8 +732,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
         System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
-        double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
-        double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
+        double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
         System.out.println("Node " + x + "'s statistics: " + " \n" +
@@ -759,8 +756,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
         System.out.println("xMBEstimatedGraph:" + xMBEstimatedGraph);
 
-        double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
-        double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null);
+        double lgp = new LocalGraphPrecision().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
+        double lgr = new LocalGraphRecall().getValue(xMBLookupGraph, xMBEstimatedGraph, null, new Parameters());
         return Arrays.asList(lgp, lgr);
     }
 

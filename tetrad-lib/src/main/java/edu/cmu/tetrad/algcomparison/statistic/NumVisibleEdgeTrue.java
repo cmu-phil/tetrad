@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
@@ -51,10 +52,11 @@ public class NumVisibleEdgeTrue implements Statistic {
      * @param trueGraph  The true PAG graph.
      * @param estGraph   The estimated PAG graph.
      * @param dataModel  The data model.
+     * @param parameters
      * @return The number of X-->Y edges that are visible in the true PAG.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         Graph pag = GraphTransforms.dagToPag(trueGraph);

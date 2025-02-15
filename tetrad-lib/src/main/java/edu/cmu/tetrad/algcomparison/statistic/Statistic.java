@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serializable;
 
@@ -34,12 +35,48 @@ public interface Statistic extends Serializable {
     /**
      * Returns the value of this statistic, given the true graph and the estimated graph.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model (can be null).
+     * @param parameters The parameters (can be null).
      * @return The value of the statistic.
      */
-    double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel);
+    double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters);
+
+    /**
+     * Returns the value of this statistic, given the true graph and the estimated graph.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model (can be null).
+     * @return The value of the statistic.
+     */
+    default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        return getValue(trueGraph, estGraph, dataModel, null);
+    }
+
+    /**
+     * Returns the value of this statistic, given the true graph and the estimated graph.
+     *
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param parameters The parameters (can be null).
+     * @return The value of the statistic.
+     */
+    default double getValue(Graph trueGraph, Graph estGraph, Parameters parameters) {
+        return getValue(trueGraph, estGraph, null, parameters);
+    }
+
+    /**
+     * Returns the value of this statistic, given the true graph and the estimated graph.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @return The value of the statistic.
+     */
+    default double getValue(Graph trueGraph, Graph estGraph) {
+        return getValue(trueGraph, estGraph, null, null);
+    }
 
     /**
      * Returns a mapping of the statistic to the interval [0, 1], with higher being better. This is used for a

@@ -217,8 +217,8 @@ public class TestFges {
 
         System.out.println("true = " + trueCPDAG + " est = " + estCPDAG);
 
-        double ap = new AdjacencyPrecision().getValue(trueCPDAG, estCPDAG, data);
-        double ar = new AdjacencyRecall().getValue(trueCPDAG, estCPDAG, data);
+        double ap = new AdjacencyPrecision().getValue(trueCPDAG, estCPDAG, data, new Parameters());
+        double ar = new AdjacencyRecall().getValue(trueCPDAG, estCPDAG, data, new Parameters());
 
         System.out.println("ap = " + ap + " ar = " + ar);
     }

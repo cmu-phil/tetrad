@@ -5,7 +5,6 @@ import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.algcomparison.simulation.SimulationTypes;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
@@ -30,8 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
@@ -1499,15 +1496,16 @@ public class GridSearchEditor extends JPanel {
                     1, 1000));
 
             Box horiz6 = Box.createHorizontalBox();
-            horiz6.add(new JLabel("Markov Checker Alpha:"));
+            horiz6.add(new JLabel("Comparison Graph Type:"));
             horiz6.add(Box.createHorizontalGlue());
-            horiz6.add(getDoubleTextField("mcAlpha", model.getParameters(),
-                    model.getParameters().getDouble("mcAlpha", 0.05),  0, 1));
+            JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
 
             Box horiz7 = Box.createHorizontalBox();
-            horiz7.add(new JLabel("Comparison Graph Type:"));
+            horiz7.add(new JLabel("Markov Checker Alpha:"));
             horiz7.add(Box.createHorizontalGlue());
-            JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
+            horiz7.add(getDoubleTextField(Params.MC_ALPHA, model.getParameters(),
+                    model.getParameters().getDouble(Params.MC_ALPHA),
+                    0.0, 1.0));
 
             for (GridSearchModel.ComparisonGraphType comparisonGraphType : GridSearchModel.ComparisonGraphType.values()) {
                 comparisonGraphTypeComboBox.addItem(comparisonGraphType.toString());
@@ -1581,7 +1579,6 @@ public class GridSearchEditor extends JPanel {
 //                refreshGraphSelectionContent(sourceTabbedPane);
 //            }
 //        });
-
 
 
         JPanel comparisonPanel = new JPanel();
@@ -2407,7 +2404,7 @@ public class GridSearchEditor extends JPanel {
         } else if (simulations.size() == 1) {
             simulationChoiceTextArea.append("""
                     The following simulation has been selected. This simulations will be run with the selected algorithms.
-                                        
+                    
                     """);
 
             Simulation simulation = simulations.get(0);
@@ -2444,7 +2441,7 @@ public class GridSearchEditor extends JPanel {
         } else if (selectedAlgorithms.size() == 1) {
             algorithmChoiceTextArea.append("""
                     The following algorithm has been selected. This algorithm will be run with the selected simulations.
-                                        
+                    
                     """);
 
             GridSearchModel.AlgorithmSpec algorithm = selectedAlgorithms.get(0);
@@ -2614,37 +2611,37 @@ public class GridSearchEditor extends JPanel {
     private void setHelpText() {
         helpChoiceTextArea.setText("""
                 This tool may be used to do a comparison of multiple algorithms (in Tetrad for now) for a range of simulations types, algorithms, table columns, and parameter settings.
-
+                
                 To run a Grid Search comparison, select one or more simulations, one or more algorithms, and one or more table columns (statistics or parameter columns). Then in the Comparison tab, click the "Run Comparison" button.
-
+                
                 The comparison will be displayed in the "comparison" tab.
-
+                
                 Some combinations you may select could take a very long time to run; you may need to experiment. One problem is that you may select too many combinations of parameters, and the tool will try every combination of these parameters that is sensible, and perhaps this may take a very long time to do. Or you may, for instance, opt for graphs that have too many variables or are too dense. Or, some of the algorithms may simply take a very long time to run, even for small graphs. We will run your request in a thread with a stop button so you can gracefully exit and try a smaller problem. In fact, it may not make sense to run larger comparisons in this interface at all; you may wish to use the command line tool or Python to do it.
-
+                
                 If you think the problem is that you need more memory, you can increase the memory available to the JVM by starting Tetrad from the command line changing the -Xmx option in at startup. That is, you can start Tetrad with a command like this:
-                                
+                
                     java -Xmx4g -jar [tetrad.jar]
-                    
+                
                 Here, "[tetrad.jar]" should be replaced by the name of the Tetrad jar you have downloaded. This would set the maximum memory available to the JVM to 4 gigabytes. You can increase this number to increase the memory available to the JVM up to the limit of what you have available on your machine. The default is 1 gigabyte.
-
+                
                 In the Simulation tab, simulations may be added by clicking the Add Simulation button. The last one in the list may be removed by clicking the Remove Last Simulation button.
-
+                
                 A simulation selection requires one to select a graph type and a simulation type.
-
+                
                 This selection implies a list of parameters for all of the simulations. These parameters may be edited by clicking the Edit Parameters button. Note that parameters may be given a list of comma-separated values; each combination of parameters will be explored in the comparison.
-
+                
                 The Algorithm tab and TableColumns tab work similarly. An algorithm selection requires one to select an algorithm type and then an independence test and/or a score depending on the requirements of the algorithm.
-
+                
                 For the Algorithm tab, once one has selected all algorithms, one may edit the parameters for these algorithms.
-
+                
                 For the TableColumns tab, one may select the columns to be included in the comparison table. These columns may be selected by clicking the Add Table Column button. The last column in the list may be removed by clicking the Remove Last Table Column button. For parameter columns, parameters that have been set by the user may be selected by clicking the Select Parameters Used button. For statistic columns, the last statistics used may be selected by clicking the Select Last Statistics Used button. This will select all statistics that were used in the last comparison.
-
+                
                 In the Comparison tab, there is a button to run the comparison and display the results.
-                                
+                
                 Full results are saved to the user's hard drive. The location of these files is displayed in the comparison tab, at the top of the page. This includes all the output from the comparison, including the true dataset and graphs for all simulations, the estimated graph, elapsed times for all algorithm runs, and the results displayed in the Comparison tab for the comparison. These datasets and graphs may be used for analayis by other tools, such as in R or Python.
-                                
+                
                 The reference is here:
-                                
+                
                 Ramsey, J. D., Malinsky, D., &amp; Bui, K. V. (2020). Algcomparison: Comparing the performance of graphical structure learning algorithms with tetrad. Journal of Machine Learning Research, 21(238), 1-6.
                 """);
     }

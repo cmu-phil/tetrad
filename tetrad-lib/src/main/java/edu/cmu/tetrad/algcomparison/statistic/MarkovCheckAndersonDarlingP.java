@@ -7,9 +7,9 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -55,14 +55,15 @@ public class MarkovCheckAndersonDarlingP implements Statistic {
      * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
      * distributed as U(0, 1).
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters
      * @return The Anderson Darling P value.
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
 
         if (dataModel == null) {
             throw new IllegalArgumentException("Data model is null.");

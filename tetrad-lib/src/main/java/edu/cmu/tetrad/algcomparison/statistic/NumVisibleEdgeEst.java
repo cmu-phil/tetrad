@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
@@ -47,13 +48,14 @@ public class NumVisibleEdgeEst implements Statistic {
     /**
      * Returns the number of X-->Y edges that are visible in the estimated PAG.
      *
-     * @param trueGraph The true graph.
-     * @param estGraph  The estimated graph.
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph.
+     * @param estGraph   The estimated graph.
+     * @param dataModel  The data model.
+     * @param parameters
      * @return The number of X-->Y edges that are visible in the estimated PAG.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         GraphUtils.addEdgeSpecializationMarkup(estGraph);

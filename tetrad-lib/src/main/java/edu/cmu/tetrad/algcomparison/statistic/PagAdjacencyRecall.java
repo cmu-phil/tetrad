@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -46,13 +47,14 @@ public class PagAdjacencyRecall implements Statistic {
     /**
      * Calculates the adjacency recall compared to the true PAG (Partial Ancestral Graph).
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG of the true DAG).
-     * @param estGraph  The estimated graph (same type as trueGraph).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG of the true DAG).
+     * @param estGraph   The estimated graph (same type as trueGraph).
+     * @param dataModel  The data model.
+     * @param parameters
      * @return The adjacency recall value as a double.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
 
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(pag, estGraph);

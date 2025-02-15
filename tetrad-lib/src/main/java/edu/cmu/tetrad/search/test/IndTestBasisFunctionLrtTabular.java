@@ -1,12 +1,12 @@
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.Embedding;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -22,7 +22,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
+public class IndTestBasisFunctionLrtTabular implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
      * A static cache used to store the precomputed pseudo-inverses of matrices. The key is an integer representing a
      * specific identifier (e.g., matrix dimensions or hash of the matrix contents), and the value is the associated
@@ -67,15 +67,6 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
      */
     private final Map<Integer, List<Integer>> embedding;
     /**
-     * The bic (Bayesian Information Criterion) score used for evaluating the fit of a statistical model. This score is
-     * typically utilized in the context of model selection and comparison when applying the test for independence among
-     * variables in the associated dataset.
-     * <p>
-     * This field is immutable and is initialized during the construction of the {@code IndTestBasisFunctionLrt} class.
-     * The bic object encapsulates scoring computations based on the given data and constraints.
-     */
-    private final SemBicScore bic;
-    /**
      * Represents a dataset embedded within the context of the independence test. This data is used internally by the
      * `IndTestBasisFunctionLrt` class to support testing for conditional independence and related computations.
      * <p>
@@ -108,7 +99,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
     private boolean verbose = false;
     private int sampleSize;
     private List<Integer> rows;
-    private List<Integer> allRows;
+    private final List<Integer> allRows;
 
     /**
      * Constructs an instance of the IndTestBasisFunctionLrt class. This constructor initializes the object using the
@@ -123,8 +114,8 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
      * @param basisScale      a scaling factor for the basis functions used in the embeddings.
      * @throws NullPointerException if the provided dataSet is null.
      */
-    public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit,
-                                   int basisType, double basisScale) {
+    public IndTestBasisFunctionLrtTabular(DataSet dataSet, int truncationLimit,
+                                          int basisType, double basisScale) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -144,29 +135,13 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
         // we're not using the pseudoinverse option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, truncationLimit, basisType, basisScale, usePseudoInverse);
+
+
         this.embeddedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
-        this.bic = new SemBicScore(this.embeddedData, false);
-        this.bic.setUsePseudoInverse(usePseudoInverse);
-        this.bic.setStructurePrior(0);
         this.sampleSize = dataSet.getNumRows();
         this.allRows = listRows();
     }
-
-//    private static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
-//        SimpleMatrix BtB = B.transpose().mult(B);
-//        int hash = BtB.hashCode();  // Cache key
-//
-//        if (pseudoInverseCache.containsKey(hash)) {
-//            return pseudoInverseCache.get(hash).mult(B.transpose()).mult(X);
-//        }
-//
-//        SimpleMatrix regularization = SimpleMatrix.identity(BtB.getNumCols()).scale(lambda);
-//        SimpleMatrix inverse = BtB.plus(regularization).invert();
-//        pseudoInverseCache.put(hash, inverse);
-//
-//        return inverse.mult(B.transpose()).mult(X);
-//    }
 
     /**
      * Computes the Ordinary Least Squares (OLS) solution for a linear system. The method applies
@@ -186,18 +161,11 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
         int numCols = B.getNumCols();
         SimpleMatrix BtB = B.transpose().mult(B);
-//        int hash = BtB.hashCode();
-
-//        if (pseudoInverseCache.containsKey(BtB)) {
-//            return pseudoInverseCache.get(BtB).mult(B.transpose()).mult(X);
-//        }
 
         SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
 
         // Parallelized inversion using EJML's lower-level operations
         SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
-
-//        pseudoInverseCache.put(BtB, inverse);
 
         CommonOps_DDRM.invert(BtB.plus(regularization).getDDRM(), inverse.getDDRM());
 

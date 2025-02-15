@@ -2,6 +2,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 
@@ -14,7 +16,6 @@ import java.io.Serial;
 public class MarkovCheckKsPasses implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
-    private double mcAlpha = 0.05;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
@@ -47,16 +48,17 @@ public class MarkovCheckKsPasses implements Statistic {
     /**
      * Calculates whether Kolmogorov-Smirnoff P > 0.05.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters The parameters.
      * @return 1 if p > 0.05, 0 if not.
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double p = new MarkovCheckKolmogorovSmirnoffP().getValue(trueGraph, estGraph, dataModel);
-        return p > getMcAlpha() ? 1 : 0;
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        double p = new MarkovCheckKolmogorovSmirnoffP().getValue(trueGraph, estGraph, dataModel, new Parameters());
+        return p > parameters.getDouble(Params.MC_ALPHA) ? 1.0 : 0.0;
     }
 
     /**
@@ -68,13 +70,5 @@ public class MarkovCheckKsPasses implements Statistic {
     @Override
     public double getNormValue(double value) {
         return value;
-    }
-
-    public double getMcAlpha() {
-        return mcAlpha;
-    }
-
-    public void setMcAlpha(double mcAlpha) {
-        this.mcAlpha = mcAlpha;
     }
 }

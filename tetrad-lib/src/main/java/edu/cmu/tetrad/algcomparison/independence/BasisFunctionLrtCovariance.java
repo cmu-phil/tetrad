@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrtCovariance;
 import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrtTabular;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -15,18 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for BF-LRT.
+ * Wrapper for BF-LRT-Cov.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
-        command = "bf-lr-test",
+        name = "BF-LRT-Cov (Basis Function Likelihood Ratio Test Covariance)",
+        command = "bf-lr-test-cov",
         dataType = DataType.Mixed
 )
 @Mixed
-public class BasisFunctionLrt implements IndependenceWrapper {
+public class BasisFunctionLrtCovariance implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -34,7 +35,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
     /**
      * Initializes a new instance of the DegenerateGaussianLRT class.
      */
-    public BasisFunctionLrt() {
+    public BasisFunctionLrtCovariance() {
     }
 
     /**
@@ -42,7 +43,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestBasisFunctionLrtTabular test = new IndTestBasisFunctionLrtTabular(SimpleDataLoader.getMixedDataSet(dataSet),
+        IndTestBasisFunctionLrtCovariance test = new IndTestBasisFunctionLrtCovariance(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
@@ -54,7 +55,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function Likelihood Ratio Test";
+        return "Basis Function Likelihood Ratio Test Covariance";
     }
 
     /**

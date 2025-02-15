@@ -1088,6 +1088,10 @@ public final class Params {
      * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
      */
     public static String CELL_TABLE_TYPE = "cellTableType";
+    /**
+     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
+     */
+    public static String MC_ALPHA = "mcAlpha";
 
     private Params() {
     }

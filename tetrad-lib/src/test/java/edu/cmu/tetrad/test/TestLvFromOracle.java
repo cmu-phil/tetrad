@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.LvLite;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.File;
 import java.util.Date;
@@ -116,12 +117,12 @@ public class TestLvFromOracle {
             File file2 = new File(dir2, "rep_" + rep + "_" + algorithm + ".txt");
             GraphSaveLoadUtils.saveGraph(estimated, file2, false);
 
-            double ap = new AdjacencyPrecision().getValue(truePag, estimated, null);
-            double ar = new AdjacencyRecall().getValue(truePag, estimated, null);
-            double ahp = new ArrowheadPrecision().getValue(truePag, estimated, null);
-            double ahr = new ArrowheadRecall().getValue(truePag, estimated, null);
-            double ahpc = new ArrowheadPrecisionCommonEdges().getValue(truePag, estimated, null);
-            double ahprc = new ArrowheadRecallCommonEdges().getValue(truePag, estimated, null);
+            double ap = new AdjacencyPrecision().getValue(truePag, estimated, null, new Parameters());
+            double ar = new AdjacencyRecall().getValue(truePag, estimated, null, new Parameters());
+            double ahp = new ArrowheadPrecision().getValue(truePag, estimated, null, new Parameters());
+            double ahr = new ArrowheadRecall().getValue(truePag, estimated, null, new Parameters());
+            double ahpc = new ArrowheadPrecisionCommonEdges().getValue(truePag, estimated, null, new Parameters());
+            double ahprc = new ArrowheadRecallCommonEdges().getValue(truePag, estimated, null, new Parameters());
 
             System.out.printf("AP = %5.2f, AR = %5.2f, AHP = %5.2f, AHR = %5.2f, AHPC = %5.2f, AHRC = %5.2f\n",
                     ap, ar, ahp, ahr, ahpc, ahprc);

@@ -3,9 +3,9 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.PagCache;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
-import java.util.List;
 
 /**
  * The BidirectedLatentPrecision class implements the Statistic interface and represents a statistic that calculates
@@ -44,16 +44,17 @@ public class BidirectedLatentPrecision implements Statistic {
     }
 
     /**
-     * Calculates the percentage of correctly identified bidirected edges in an estimated graph
-     * for which a latent confounder exists in the true graph.
+     * Calculates the percentage of correctly identified bidirected edges in an estimated graph for which a latent
+     * confounder exists in the true graph.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters
      * @return The percentage of correctly identified bidirected edges.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         Graph dag = PagCache.getInstance().getDag(trueGraph);
 
         int tp = 0;

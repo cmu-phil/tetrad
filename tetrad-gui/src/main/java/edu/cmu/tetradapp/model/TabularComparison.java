@@ -193,7 +193,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         for (int j = 0; j < this.statistics.size(); j++) {
             Statistic statistic = this.statistics.get(j);
-            double value = statistic.getValue(this.referenceGraph, this.targetGraph, null);
+            double value = statistic.getValue(this.referenceGraph, this.targetGraph, null, new Parameters());
             this.dataSet.setDouble(newRow, j, value);
         }
     }

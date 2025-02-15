@@ -6,8 +6,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -15,12 +13,12 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -100,7 +98,7 @@ public class TestJoeMarkovCheckExploration {
 
 //        if (ad < 0.001) return;
 
-        double bicDiffValue = new BicDiff().getValue(trueGraph, cpdag, dataSet);
+        double bicDiffValue = new BicDiff().getValue(trueGraph, cpdag, dataSet, new Parameters());
 
         System.out.println("penalty " + penalty + " p-value = " + nf.format(_pValue)
                            + " FDR = " + fdr + " AD = " + nf.format(ad) + " KS = "

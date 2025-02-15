@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -46,9 +47,9 @@ public class NoSemidirectedF1 implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double precision = new NoSemidirectedPrecision().getValue(trueGraph, estGraph, dataModel);
-        double recall = new NoSemidirectedRecall().getValue(trueGraph, estGraph, dataModel);
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        double precision = new NoSemidirectedPrecision().getValue(trueGraph, estGraph, dataModel, new Parameters());
+        double recall = new NoSemidirectedRecall().getValue(trueGraph, estGraph, dataModel, new Parameters());
         return 2 * (precision * recall) / (precision + recall);
     }
 

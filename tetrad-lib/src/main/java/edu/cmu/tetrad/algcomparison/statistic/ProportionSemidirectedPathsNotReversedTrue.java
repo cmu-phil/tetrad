@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 import java.util.List;
@@ -49,13 +50,14 @@ public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
      * Calculates the proportion of semi(X, Y) paths in the true graph for which there is no semi(Y, Z) path in the
      * estimated graph.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters
      * @return The proportion of semi(X, Y) paths that do not have a semi(Y, Z) path in the estimated graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         List<Node> nodes = estGraph.getNodes();
         nodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 

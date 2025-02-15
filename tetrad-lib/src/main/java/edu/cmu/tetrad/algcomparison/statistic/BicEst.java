@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.DiscreteBicScore;
 import edu.cmu.tetrad.search.score.SemBicScorer;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 import java.util.List;
@@ -60,7 +61,7 @@ public class BicEst implements Statistic {
      * Returns the value of the statistic.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (dataModel.isDiscrete()) {
             DiscreteBicScore score = new DiscreteBicScore((DataSet) dataModel);
 
