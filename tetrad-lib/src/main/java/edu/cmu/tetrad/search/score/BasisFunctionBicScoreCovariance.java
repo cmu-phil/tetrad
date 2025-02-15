@@ -99,7 +99,6 @@ public class BasisFunctionBicScoreCovariance implements Score {
             B.addAll(this.embedding.get(i_));
         }
 
-        double sumBic = 0.0;
         double sumLik = 0.0;
         int sumDof = 0;
 
@@ -110,7 +109,6 @@ public class BasisFunctionBicScoreCovariance implements Score {
             }
 
             SemBicScore.LikelihoodResult result = this.bic.getLikelihoodAndDof(i_, parents_);
-            sumBic += 2 * result.lik() - penaltyDiscount * result.dof() * log(getSampleSize());
 
             sumLik += result.lik();
             sumDof += result.dof();
@@ -119,8 +117,6 @@ public class BasisFunctionBicScoreCovariance implements Score {
         }
 
         return 2 * sumLik - penaltyDiscount * sumDof * log(getSampleSize());
-
-//        return sumBic;
     }
 
     /*

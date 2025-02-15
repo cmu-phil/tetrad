@@ -35,15 +35,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Basis Function BIC Score (Basis-BIC).
+ * Wrapper for Basis Function BIC Score Tabular (BFS-Tabular), which calculates likelihoods using tabular data rather than
+ * covariance matrices.
  *
  * @author bandrews
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BFS-Cov (Basis Function BIC Covariance)", command = "bf-bic-score-cov", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BFS-FS (Basis Function BIC Full Sample)", command = "bf-bic-score", dataType = DataType.Mixed)
 @Mixed
-public class BasisFunctionBicScoreCovariance implements ScoreWrapper {
+public class BasisFunctionBicScoreFullSample implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -56,7 +57,7 @@ public class BasisFunctionBicScoreCovariance implements ScoreWrapper {
     /**
      * Initializes a new instance of the BasisFunctionBicScore class.
      */
-    public BasisFunctionBicScoreCovariance() {
+    public BasisFunctionBicScoreFullSample() {
 
     }
 
@@ -66,7 +67,7 @@ public class BasisFunctionBicScoreCovariance implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BasisFunctionBicScoreCovariance score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreCovariance(
+        edu.cmu.tetrad.search.score.BasisFunctionBicScoreTabular score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreTabular(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE)
@@ -80,7 +81,7 @@ public class BasisFunctionBicScoreCovariance implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function BIC Score Covariance (BFS-Cov)";
+        return "Basis Function BIC Score Tabular Full Sample (BFS-FS)";
     }
 
     /**

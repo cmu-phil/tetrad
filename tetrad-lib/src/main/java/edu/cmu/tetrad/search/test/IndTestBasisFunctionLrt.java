@@ -2,66 +2,67 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
 /**
- * The IndTestBasisFunctionLrt class performs conditional independence testing using basis functions within the context
- * of a generalized likelihood ratio test (GLRT). This class is designed for evaluating whether two variables are
- * conditionally independent given a set of conditioning variables, leveraging statistical and matrix-based
- * computations.
+ * The IndTestBasisFunctionLrtCovariance class implements the IndependenceTest interface and provides functionality to
+ * perform conditional independence tests using basis functions and likelihood ratio tests based on residual variances
+ * and covariance matrices. It handles the transformations, embeddings, and statistical computations required to compute
+ * p-values for testing conditional independence of variables.
  * <p>
- * This class may be compared to the covariance version (see), which is more scalable to large sample sizes. The
- * advantage of this implementation is that rows may be subsetted randomly for individual conditional independence
- * tests. This is not something that can be done using a covariance matrix as a sufficient statistic.
+ * This class is designed to work with a given dataset, perform embedding transformations based on specified basis
+ * function parameters, and efficiently compute the required statistics for hypothesis testing over sets of variables.
+ * <p>
+ * Note that compared to the full sample version of this class (see), this class uses a covariance matrix as a
+ * sufficient statistic and thus cannot do random row subsetting per test.
  *
  * @author josephramsey
- * @see IndTestBasisFunctionLrtCovariance
+ * @see IndTestBasisFunctionLrtFullSample
  */
-public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
+public class IndTestBasisFunctionLrt implements IndependenceTest {
     /**
-     * A static cache used to store the precomputed pseudo-inverses of matrices. The key is an integer representing a
-     * specific identifier (e.g., matrix dimensions or hash of the matrix contents), and the value is the associated
-     * precomputed pseudo-inverse stored as a SimpleMatrix.
+     * Represents the dataset used within the class for statistical analyses and computations.
      * <p>
-     * This cache is utilized to avoid redundant and computationally expensive operations of recalculating
-     * pseudo-inverses for the same matrices during repeated computations.
+     * The dataset contains variables and their associated data, which are utilized in various methods to perform tasks
+     * such as conditional independence testing, covariance matrix computation, residual variance calculation, and
+     * embedding transformations.
      * <p>
-     * The use of this cache enhances performance, particularly in iterative processes or in scenarios where
-     * pseudo-inverse calculations are frequently required for matrices that remain unchanged.
-     */
-    private static final Map<SimpleMatrix, SimpleMatrix> pseudoInverseCache = new HashMap<>();
-    /**
-     * The `dataSet` field holds a reference to the DataSet object used as the primary data structure for representing
-     * and processing data within the `IndTestBasisFunctionLrt` class.
-     * <p>
-     * It serves as the main data source for independence testing and related computations performed by methods of the
-     * class. This field is immutable once initialized via the constructor and cannot be modified thereafter.
+     * This variable is final, indicating that the dataset is immutable and cannot be reassigned once initialized.
      */
     private final DataSet dataSet;
     /**
-     * A list of Node objects representing the variables of interest for the independence test. These variables are used
-     * throughout the class to perform statistical computations, evaluate dependencies, and maintain information about
-     * the data structure being analyzed.
+     * A list of Node objects representing the set of variables associated with the current instance. These variables
+     * are derived from the input dataset and are used internally for computations such as conditional independence
+     * testing and variance analysis.
      */
     private final List<Node> variables;
     /**
-     * A map that associates a Node with its corresponding unique identifier (integer value). This mapping is used for
-     * managing and referencing nodes efficiently within the context of the independence test computations in the
-     * `IndTestBasisFunctionLrt` class.
-     * <p>
-     * It is a final field, meaning its reference is immutable once initialized. This map plays a crucial role in
-     * maintaining the structure and relationships of nodes during the analysis process.
+     * Stores a mapping between Node objects and their associated integer identifiers or values, used internally within
+     * this class to represent nodes and manage their relationships or properties. This structure facilitates efficient
+     * lookups and manipulations in computations and tests related to the functionality of this class.
      */
     private final Map<Node, Integer> nodeHash;
+    /**
+     * Represents the covariance matrix of the dataset, which is computed based on the processed input data and used for
+     * various statistical computations within the class. This matrix encapsulates the covariances between pairs of
+     * variables in the dataset and is essential for determining relationships among variables, such as conditional
+     * independence.
+     */
+    private final SimpleMatrix covarianceMatrix;
+    /**
+     * Represents the sample size of the dataset being analyzed. This variable is used in statistical computations, such
+     * as variance and covariance calculations, to determine the scale and reliability of the analysis.
+     */
+    private final int sampleSize;
     /**
      * A mapping structure used to represent the embedding of variables or indices for specific computations in the
      * IndTestBasisFunctionLrt class. The keys are integers representing certain identifiers or indices, while the
@@ -71,76 +72,30 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
      */
     private final Map<Integer, List<Integer>> embedding;
     /**
-     * Represents a dataset embedded within the context of the independence test. This data is used internally by the
-     * `IndTestBasisFunctionLrt` class to support testing for conditional independence and related computations.
-     * <p>
-     * The `embeddedData` field stores a `DataSet` object that may contain information such as the variables and
-     * observations relevant to the test. It is a final field, indicating that its reference cannot be changed after
-     * initialization, ensuring consistency and immutability with respect to its reference.
-     */
-    private final DataSet embeddedData;
-    /**
-     * A list holding all indices of rows that are considered during data processing or analysis. This typically
-     * includes all rows from the dataset except those with missing or invalid values for the required variables.
-     * <p>
-     * This field is immutable and represents the default set of rows to be used in analysis unless explicitly modified
-     * by other methods.
-     */
-    private final List<Integer> allRows;
-    /**
-     * Represents the significance level (alpha) used for statistical tests in the IndTestBasisFunctionLrt class. This
-     * value determines the threshold for rejecting the null hypothesis in conditional independence testing, where lower
-     * values indicate stricter criteria for rejecting the null hypothesis.
-     * <p>
-     * The default value of alpha is 0.01.
+     * Represents the significance level for statistical tests within the class. It is used to determine the threshold
+     * for rejecting the null hypothesis in various statistical computations and hypothesis testing methods. The default
+     * value is set to 0.01.
      */
     private double alpha = 0.01;
     /**
-     * A small regularization parameter used in statistical and mathematical computations to stabilize matrix inversions
-     * or other numerical operations. This value helps to avoid issues such as singularity or overfitting in models such
-     * as ridge regression.
-     * <p>
-     * Default value: 1e-6.
-     */
-    private double lambda = 1e-6;
-    /**
-     * A boolean flag indicating whether verbose mode is enabled for the class. When set to true, verbose mode may
-     * result in detailed logging or diagnostic output during the execution of methods in the class. When set to false,
-     * verbose output is suppressed.
+     * A boolean flag indicating whether verbose output is enabled or not. When set to true, additional logging or
+     * diagnostic information may be produced by the methods in this class to aid in debugging or understanding the
+     * internal processing steps.
      */
     private boolean verbose = false;
-    /**
-     * The sample size used in computations within the class. This variable may represent an effective sample size that
-     * differs from the original dataset size, depending on configurations or preprocessing steps. It is particularly
-     * relevant to statistical and independence testing procedures where the sample size influences the results.
-     */
-    private int sampleSize;
-    /**
-     * Represents the specific rows being utilized during the independence test. This field holds a list of integers
-     * corresponding to the indices of the rows from the data set. If not explicitly set, all rows without missing
-     * values will be used by default.
-     */
-    private List<Integer> rows;
 
     /**
-     * Constructs an instance of the IndTestBasisFunctionLrt class. This constructor initializes the object using the
-     * provided dataset and configuration parameters for truncation limit, basis type, and basis scale. It processes the
-     * input dataset to create the necessary embeddings and initializes key components such as the BIC score for later
-     * use in independence testing.
+     * Constructs an instance of IndTestBasisFunctionLrtCovariance. This constructor initializes the object using a
+     * dataset and parameters related to truncation limit, basis type, and basis scale. It processes the input data into
+     * an embedded format, computes its covariance matrix, and sets up internal variables for further use.
      *
-     * @param dataSet         the input data set to be used for the analysis. It must not be null. May contain a mixture
-     *                        of continuous and discrete variables.
-     * @param truncationLimit the maximum number of basis function truncations to be used.
-     * @param basisType       an integer indicating the type of basis function to use in the embeddings.
-     * @param basisScale      a scaling factor for the basis functions used in the embeddings.
-     * @throws NullPointerException if the provided dataSet is null.
+     * @param dataSet         the input dataset containing the variables and data rows to be analyzed.
+     * @param truncationLimit the limit to truncate the embeddings or basis functions in the data.
+     * @param basisType       the type of basis functions to use for transformation.
+     * @param basisScale      the scale factor associated with the basis functions.
      */
     public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit,
                                    int basisType, double basisScale) {
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
-
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -156,63 +111,28 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
         // we're not using the pseudoinverse option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, truncationLimit, basisType, basisScale, usePseudoInverse);
-
-        this.embeddedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
-        this.allRows = listRows();
+
+        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
     }
 
     /**
-     * Computes the Ordinary Least Squares (OLS) solution for a linear system. The method applies regularization to the
-     * OLS problem to stabilize the solution, particularly in cases where the design matrix B is ill-conditioned or near
-     * singular. Regularization is controlled by the lambda parameter, which adds a scaled identity matrix to the design
-     * matrix's normal equation.
+     * Computes the p-value for the null hypothesis that two variables, represented as nodes, are conditionally
+     * independent given a set of conditioning variables.
+     * <p>
+     * The method transforms the input nodes and conditioning set into their respective embedded representations and
+     * computes the likelihood ratio statistic based on residual variances. It then calculates the corresponding p-value
+     * using a Chi-squared distribution.
      *
-     * @param B      the design matrix, where rows correspond to observations and columns correspond to features.
-     * @param X      the response matrix, where rows correspond to observations and columns to dependent variable
-     *               outputs.
-     * @param lambda the regularization parameter used to stabilize the solution. Larger values result in stronger
-     *               regularization.
-     * @return the computed OLS solution as a SimpleMatrix object.
+     * @param x the first node representing one of the variables to be tested.
+     * @param y the second node representing the other variable to be tested.
+     * @param z the set of nodes representing the conditioning variables.
+     * @return the computed p-value for the hypothesis test of conditional independence.
      */
-    public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
-        int numCols = B.getNumCols();
-        SimpleMatrix BtB = B.transpose().mult(B);
-
-        SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
-
-        // Parallelized inversion using EJML's lower-level operations
-        SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
-
-        CommonOps_DDRM.invert(BtB.plus(regularization).getDDRM(), inverse.getDDRM());
-
-        return inverse.mult(B.transpose()).mult(X);
-    }
-
-
-    /**
-     * Computes variance of residuals: Var(R) = sum(R^2) / N
-     */
-    private double computeVariance(SimpleMatrix residuals) {
-        return residuals.elementMult(residuals).elementSum() / this.sampleSize;
-    }
-
-    /**
-     * Tests for the conditional independence of two nodes, x and y, given a set of conditioning nodes z. The method
-     * evaluates the independence using a generalized likelihood ratio test and p-value computation.
-     *
-     * @param x the first Node to test for independence.
-     * @param y the second Node to test for independence.
-     * @param z a set of conditioning nodes; the test checks the independence of x and y conditioned on these nodes.
-     * @return an IndependenceResult object containing the result of the independence test, including whether x and y
-     * are independent, the computed p-value, and other associated data.
-     */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+    private double getPValue(Node x, Node y, Set<Node> z) {
         List<Node> zList = new ArrayList<>(z);
         Collections.sort(zList);
-
-        List<Integer> rows = this.rows == null ? allRows : this.rows;
 
         int _x = this.nodeHash.get(x);
         int _y = this.nodeHash.get(y);
@@ -221,47 +141,81 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
             _z[i] = this.nodeHash.get(zList.get(i));
         }
 
-        // Grab the embedded data for _x, _y, and _z. These are columns in the embeddedData dataset.
+        // Grab the embedded data for _x, _y, and _z.
         List<Integer> embedded_x = embedding.get(_x);
         List<Integer> embedded_y = embedding.get(_y);
         List<Integer> embedded_z = new ArrayList<>();
+
         for (int value : _z) {
-            embedded_z.addAll(embedding.get(value));
-        }
-
-        // For each variable, form a SimpleMatrix of the embedded data for that variable.
-        SimpleMatrix X_basis = new SimpleMatrix(rows.size(), embedded_x.size());
-        for (int i = 0; i < embedded_x.size(); i++) {
-            for (int j = 0; j < rows.size(); j++) {
-                X_basis.set(j, i, embeddedData.getDouble(rows.get(j), embedded_x.get(i)));
+            List<Integer> embeddedValues = embedding.get(value);
+            if (embeddedValues != null) {
+                embedded_z.addAll(embeddedValues);
             }
         }
 
-        SimpleMatrix Y_basis = new SimpleMatrix(rows.size(), embedded_y.size());
+        // Convert to index arrays
+        int[] xIndices = embedded_x.stream().mapToInt(Integer::intValue).toArray();
+        int[] yIndices = embedded_y.stream().mapToInt(Integer::intValue).toArray();
+        int[] zIndices = embedded_z.stream().mapToInt(Integer::intValue).toArray();
 
-        for (int i = 0; i < embedded_y.size(); i++) {
-            for (int j = 0; j < rows.size(); j++) {
-                Y_basis.set(j, i, embeddedData.getDouble(rows.get(j), embedded_y.get(i)));
-            }
+        // Compute variance estimates
+        double eps = 1e-10;
+        double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices));
+        double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
+
+        // Log-likelihood ratio statistic
+        double LR_stat = sampleSize * Math.log(sigma0_sq / sigma1_sq);
+
+        // Degrees of freedom is the number of additional basis columns in Y
+        int df = yIndices.length;
+        if (df == 0) return 1.0;
+
+        // Compute p-value
+        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
+        double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
+
+        if (verbose) {
+            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
         }
 
-        SimpleMatrix Z_basis = new SimpleMatrix(rows.size(), embedded_z.size() + 1);
+        return p_value;
+    }
 
-        for (int i = 0; i < embedded_z.size(); i++) {
-            for (int j = 0; j < rows.size(); j++) {
-                Z_basis.set(j, i, embeddedData.getDouble(rows.get(j), embedded_z.get(i)));
-            }
+    /**
+     * Computes the variance of residuals given the indices of predictors.
+     */
+    private double computeResidualVariance(int[] xIndices, int[] predictorIndices) {
+        if (predictorIndices.length == 0) {
+            return StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices).trace() / xIndices.length;
         }
 
-        for (int j = 0; j < rows.size(); j++) {
-            Z_basis.set(j, embedded_z.size(), 1);
-        }
+        SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
+        SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
+        SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
 
-        double pValue = getPValue(X_basis, Y_basis, Z_basis);
+        // Compute OLS estimate of X given predictors P
+        SimpleMatrix beta = Sigma_PP.pseudoInverse().mult(Sigma_XP.transpose());
+
+        // Compute residual variance
+        return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
+    }
+
+    /**
+     * Concatenates two integer arrays.
+     */
+    private int[] concatArrays(int[] first, int[] second) {
+        int[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
+    }
+
+    /**
+     * Tests for the conditional independence of two nodes given a set of conditioning nodes.
+     */
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        double pValue = getPValue(x, y, z);
         boolean independent = pValue > alpha;
-
-        return new IndependenceResult(new IndependenceFact(x, y, z),
-                independent, pValue, alpha - pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
     }
 
     /**
@@ -296,24 +250,19 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
     }
 
     /**
-     * Sets the verbose mode for logging or output behavior. When verbose mode is enabled, detailed information about
-     * the processing can be printed or logged, depending on the implementation.
-     *
-     * @param verbose a boolean flag indicating whether to enable or disable verbose mode. If true, verbose mode is
-     *                enabled; if false, it is disabled.
+     * Enables or disables verbose output.
      */
-    @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Returns the significance level of the independence test.
+     * Retrieves the significance level (alpha) for the statistical tests performed by this instance.
      *
-     * @return this level, default 0.01.
+     * @return the current significance level as a double.
      */
     public double getAlpha() {
-        return this.alpha;
+        return alpha;
     }
 
     /**
@@ -324,130 +273,5 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampl
             throw new IllegalArgumentException("Alpha must be between 0 and 1.");
         }
         this.alpha = alpha;
-    }
-
-    /**
-     * Computes the p-value for the generalized likelihood ratio test (GLRT) to compare two nested models. The method
-     * calculates the p-value based on the residual variances of the null model (X predicted by Z) and the full model (X
-     * predicted by both Z and Y).
-     *
-     * @param X_basis the data matrix for the dependent variable (X), where rows correspond to observations and columns
-     *                correspond to variables/features.
-     * @param Y_basis the data matrix for the additional predictors (Y), where rows correspond to observations and
-     *                columns correspond to variables/features.
-     * @param Z_basis the data matrix for the baseline predictors (Z), where rows correspond to observations and columns
-     *                correspond to variables/features. It can be an empty matrix if there is no baseline model.
-     * @return the computed p-value for the likelihood ratio test.
-     */
-    private double getPValue(SimpleMatrix X_basis, SimpleMatrix Y_basis, SimpleMatrix Z_basis) {
-        int df = Y_basis.getNumCols(); // Degrees of freedom
-        int N = X_basis.getNumRows();
-        int p_Z = Z_basis.getNumCols();
-        double sigma0_sq, sigma1_sq;
-
-        // Ensure Z_basis always includes an intercept
-        if (Z_basis.getNumCols() == 0) {
-            Z_basis = new SimpleMatrix(rows.size(), 1);
-            for (int i = 0; i < rows.size(); i++) {
-                Z_basis.set(i, 0, 1);  // Adds intercept
-            }
-        }
-
-        // Null Model: X ~ Z
-        SimpleMatrix betaZ = computeOLS(Z_basis, X_basis, lambda);
-        SimpleMatrix residualsNull = X_basis.minus(Z_basis.mult(betaZ));
-        sigma0_sq = computeVariance(residualsNull);
-
-        // Full Model: X ~ Z + Y
-        SimpleMatrix B_full = Z_basis.combine(0, p_Z, Y_basis);
-        SimpleMatrix betaFull = computeOLS(B_full, X_basis, lambda);
-        SimpleMatrix residualsFull = X_basis.minus(B_full.mult(betaFull));
-        sigma1_sq = computeVariance(residualsFull);
-
-        // Compute Likelihood Ratio Statistic
-        double epsilon = 1e-10;
-        double LR_stat = this.sampleSize * Math.log((sigma0_sq + epsilon) / (sigma1_sq + epsilon));
-
-        // Compute p-value using chi-square distribution
-        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-        double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
-
-        if (verbose) {
-            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
-        }
-        return p_value;
-    }
-
-    /**
-     * Sets the value of the lambda parameter. This parameter is often used as a regularization term or weight in
-     * various computations within the class. The default value is 1e-10.
-     *
-     * @param lambda the value to set for the lambda parameter, typically a non-negative double value used to adjust the
-     *               impact of regularization or weighting in statistical computations.
-     */
-    public void setLambda(double lambda) {
-        this.lambda = lambda;
-    }
-
-    /**
-     * Sets the sample size to use for the independence test, which may be different from the sample size of the data
-     * set or covariance matrix. If not set, the sample size of the data set or covariance matrix is used.
-     *
-     * @param effectiveSampleSize The sample size to use.
-     */
-    @Override
-    public void setEffectiveSampleSize(int effectiveSampleSize) {
-        if (effectiveSampleSize < 1) {
-            throw new IllegalArgumentException("Sample size must be positive.");
-        }
-
-        this.sampleSize = effectiveSampleSize;
-    }
-
-    /**
-     * Returns the rows used in the test.
-     *
-     * @return The rows used in the test.
-     */
-    @Override
-    public List<Integer> getRows() {
-        return rows;
-    }
-
-    /**
-     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
-     * values.
-     */
-    @Override
-    public void setRows(List<Integer> rows) {
-        if (rows == null) {
-            this.rows = null;
-        } else {
-            for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
-                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
-            }
-
-            this.rows = rows;
-        }
-    }
-
-    /**
-     * Retrieves the rows from the dataSet that contain valid values for all variables.
-     *
-     * @return a list of row indices that contain valid values for all variables
-     */
-    private List<Integer> listRows() {
-        if (this.rows != null) {
-            return this.rows;
-        }
-
-        List<Integer> rows = new ArrayList<>();
-
-        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            rows.add(k);
-        }
-
-        return rows;
     }
 }

@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrt;
+import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrtFullSample;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -21,8 +21,8 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "BF-LRT-Cov (Basis Function Likelihood Ratio Test, Covariance)",
-        command = "bf-lr-test-cov",
+        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
+        command = "bf-lr-test",
         dataType = DataType.Mixed
 )
 @Mixed
@@ -42,7 +42,7 @@ public class BasisFunctionLrtCov implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestBasisFunctionLrt test = new IndTestBasisFunctionLrt(SimpleDataLoader.getMixedDataSet(dataSet),
+        IndTestBasisFunctionLrtFullSample test = new IndTestBasisFunctionLrtFullSample(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
@@ -54,7 +54,7 @@ public class BasisFunctionLrtCov implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function Likelihood Ratio Test Covariance";
+        return "Basis Function Likelihood Ratio Test";
     }
 
     /**
