@@ -19,7 +19,7 @@ import static java.lang.Math.log;
  * <p>
  * This version uses covariance matrices to calculate likelihoods.
  *
- * @author bandrews
+ * @author bryanandrews
  * @author josephramsey
  * @see DegenerateGaussianScore
  */

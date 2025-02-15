@@ -26,6 +26,7 @@ import java.util.*;
  * sufficient statistic and thus cannot do random row subsetting per test.
  *
  * @author josephramsey
+ * @author bryanandrews
  * @see IndTestBasisFunctionLrtFullSample
  */
 public class IndTestBasisFunctionLrt implements IndependenceTest {

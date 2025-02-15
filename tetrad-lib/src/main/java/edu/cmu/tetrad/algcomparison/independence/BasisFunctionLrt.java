@@ -18,6 +18,7 @@ import java.util.List;
  * Wrapper for BF-LRT.
  *
  * @author josephramsey
+ * @author bryanandrews
  * @version $Id: $Id
  */
 @TestOfIndependence(

@@ -37,8 +37,8 @@ import java.util.List;
 /**
  * Wrapper for Basis Function BIC Score (Basis-BIC) version.
  *
- * @author bandrews
  * @author josephramsey
+ * @author bryanandrews
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(name = "BFS (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)

@@ -21,8 +21,8 @@ import static org.apache.commons.math3.util.FastMath.log;
  * <p>
  * This version uses a tabular approach to calculate the score rather than using covariance matrices.
  *
- * @author bandrews
  * @author josephramsey
+ * @author bryanandrews
  * @see DegenerateGaussianScore
  * @see BasisFunctionBicScore
  */

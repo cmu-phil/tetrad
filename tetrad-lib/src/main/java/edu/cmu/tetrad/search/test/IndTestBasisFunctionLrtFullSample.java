@@ -24,6 +24,7 @@ import java.util.*;
  * tests. This is not something that can be done using a covariance matrix as a sufficient statistic.
  *
  * @author josephramsey
+ * @author bryanandrews
  * @see IndTestBasisFunctionLrt
  */
 public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
