@@ -42,7 +42,7 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BFS-FS (Basis Function BIC Full Sample)", command = "bf-bic-score", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BFS-FS (Basis Function BIC Full Sample)", command = "bf-bic-score-fs", dataType = DataType.Mixed)
 @Mixed
 public class BasisFunctionBicScoreFullSample implements ScoreWrapper {
 
