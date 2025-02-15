@@ -52,7 +52,7 @@ public class NumVisibleEdgeTrue implements Statistic {
      * @param trueGraph  The true PAG graph.
      * @param estGraph   The estimated PAG graph.
      * @param dataModel  The data model.
-     * @param parameters
+     * @param parameters The parameters
      * @return The number of X-->Y edges that are visible in the true PAG.
      */
     @Override

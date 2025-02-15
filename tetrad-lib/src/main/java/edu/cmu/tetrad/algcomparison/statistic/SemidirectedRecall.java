@@ -50,7 +50,7 @@ public class SemidirectedRecall implements Statistic {
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
      * @param dataModel  The data model.
-     * @param parameters
+     * @param parameters The parameters
      * @return The Semidirected-Rec statistic.
      */
     @Override

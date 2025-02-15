@@ -210,7 +210,7 @@ public class GeneralAndersonDarlingTest {
 
     /**
      * Computes the probability of the tail for a given value of sample size and AD test statistic values as given in
-     * Marsaglia, G., & Marsaglia, J. (2004). Evaluating the anderson-darling distribution. Journal of statistical
+     * Marsaglia, G., &amp; Marsaglia, J. (2004). Evaluating the anderson-darling distribution. Journal of statistical
      * software, 9, 1-5.
      *
      * @param n the sample size.

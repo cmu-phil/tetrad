@@ -44,6 +44,16 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
     private boolean verbose = false;
     private List<Integer> rows;
 
+    /**
+     * Constructs an instance of IndTestBasisFunctionLrtCovariance. This constructor initializes the object using a
+     * dataset and parameters related to truncation limit, basis type, and basis scale. It processes the input data
+     * into an embedded format, computes its covariance matrix, and sets up internal variables for further use.
+     *
+     * @param dataSet         the input dataset containing the variables and data rows to be analyzed.
+     * @param truncationLimit the limit to truncate the embeddings or basis functions in the data.
+     * @param basisType       the type of basis functions to use for transformation.
+     * @param basisScale      the scale factor associated with the basis functions.
+     */
     public IndTestBasisFunctionLrtCovariance(DataSet dataSet, int truncationLimit,
                                              int basisType, double basisScale) {
         this.dataSet = dataSet;

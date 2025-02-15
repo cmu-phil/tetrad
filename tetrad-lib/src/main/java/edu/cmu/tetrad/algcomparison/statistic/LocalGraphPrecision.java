@@ -44,7 +44,7 @@ public class LocalGraphPrecision implements Statistic {
      * @param trueGraph  The true graph.
      * @param estGraph   The estimated graph.
      * @param dataModel  The data model.
-     * @param parameters
+     * @param parameters The parameters
      * @return The local graph precision.
      */
     @Override

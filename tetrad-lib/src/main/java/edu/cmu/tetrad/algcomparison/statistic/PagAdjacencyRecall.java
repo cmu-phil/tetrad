@@ -50,7 +50,7 @@ public class PagAdjacencyRecall implements Statistic {
      * @param trueGraph  The true graph (DAG, CPDAG, PAG of the true DAG).
      * @param estGraph   The estimated graph (same type as trueGraph).
      * @param dataModel  The data model.
-     * @param parameters
+     * @param parameters The parameters
      * @return The adjacency recall value as a double.
      */
     @Override
