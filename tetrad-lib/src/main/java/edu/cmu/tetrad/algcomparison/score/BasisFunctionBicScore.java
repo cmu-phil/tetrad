@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Basis Function BIC Score (Basis-BIC), covariance version.
+ * Wrapper for Basis Function BIC Score (Basis-BIC) version.
  *
  * @author bandrews
  * @author josephramsey
@@ -66,7 +66,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BasisFunctionBicScoreCovariance score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreCovariance(
+        edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE)

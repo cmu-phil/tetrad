@@ -24,8 +24,9 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @author bandrews
  * @author josephramsey
  * @see DegenerateGaussianScore
+ * @see BasisFunctionBicScore
  */
-public class BasisFunctionBicScoreTabular implements Score {
+public class BasisFunctionBicScoreFullSample implements Score {
     /**
      * A list containing nodes that represent the variables in the basis function score.
      */
@@ -66,7 +67,7 @@ public class BasisFunctionBicScoreTabular implements Score {
      *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
-    public BasisFunctionBicScoreTabular(DataSet dataSet, int truncationLimit, int basisType, double basisScale) {
+    public BasisFunctionBicScoreFullSample(DataSet dataSet, int truncationLimit, int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
 
         boolean usePseudoInverse = true;

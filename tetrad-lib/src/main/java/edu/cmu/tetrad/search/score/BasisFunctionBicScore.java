@@ -23,7 +23,7 @@ import static java.lang.Math.log;
  * @author josephramsey
  * @see DegenerateGaussianScore
  */
-public class BasisFunctionBicScoreCovariance implements Score {
+public class BasisFunctionBicScore implements Score {
     /**
      * A list containing nodes that represent the variables in the basis function score.
      */
@@ -56,8 +56,8 @@ public class BasisFunctionBicScoreCovariance implements Score {
      *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
-    public BasisFunctionBicScoreCovariance(DataSet dataSet, int truncationLimit,
-                                           int basisType, double basisScale) {
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
+                                 int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
 
         boolean usePseudoInverse = true;
@@ -181,7 +181,7 @@ public class BasisFunctionBicScoreCovariance implements Score {
      */
     @Override
     public String toString() {
-        return "Basis Function Score Covariance (BFS-Cov)";
+        return "Basis Function Score Covariance (BFS)";
     }
 
     /**

@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrtFullSample;
+import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrt;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -21,12 +21,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "BF-LRT-Tab (Basis Function Likelihood Ratio Test Tabular)",
-        command = "bf-lr-test-tab",
+        name = "BF-LRT (Basis Function Likelihood Ratio Test)",
+        command = "bf-lr-test",
         dataType = DataType.Mixed
 )
 @Mixed
-public class BasisFunctionLrtTabular implements IndependenceWrapper {
+public class BasisFunctionLrt implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -34,7 +34,7 @@ public class BasisFunctionLrtTabular implements IndependenceWrapper {
     /**
      * Initializes a new instance of the DegenerateGaussianLRT class.
      */
-    public BasisFunctionLrtTabular() {
+    public BasisFunctionLrt() {
     }
 
     /**
@@ -42,7 +42,7 @@ public class BasisFunctionLrtTabular implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestBasisFunctionLrtFullSample test = new IndTestBasisFunctionLrtFullSample(SimpleDataLoader.getMixedDataSet(dataSet),
+        IndTestBasisFunctionLrt test = new IndTestBasisFunctionLrt(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
@@ -54,7 +54,7 @@ public class BasisFunctionLrtTabular implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function Likelihood Ratio Test Tabular";
+        return "Basis Function Likelihood Ratio Test";
     }
 
     /**

@@ -67,7 +67,7 @@ public class BasisFunctionBicScoreFullSample implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BasisFunctionBicScoreTabular score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreTabular(
+        edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
                 parameters.getDouble(Params.BASIS_SCALE)
