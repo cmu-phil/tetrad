@@ -147,7 +147,10 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
         List<Integer> embedded_z = new ArrayList<>();
 
         for (int value : _z) {
-            embedded_z.addAll(embedding.get(value));
+            List<Integer> embeddedValues = embedding.get(value);
+            if (embeddedValues != null) {
+                embedded_z.addAll(embeddedValues);
+            }
         }
 
         // Convert to index arrays
@@ -156,8 +159,9 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
         int[] zIndices = embedded_z.stream().mapToInt(Integer::intValue).toArray();
 
         // Compute variance estimates
-        double sigma0_sq = computeResidualVariance(xIndices, zIndices);
-        double sigma1_sq = computeResidualVariance(xIndices, concatArrays(yIndices, zIndices));
+        double eps = 1e-10;
+        double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices));
+        double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
 
         // Log-likelihood ratio statistic
         double LR_stat = sampleSize * Math.log(sigma0_sq / sigma1_sq);
@@ -181,6 +185,10 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
      * Computes the variance of residuals given the indices of predictors.
      */
     private double computeResidualVariance(int[] xIndices, int[] predictorIndices) {
+        if (predictorIndices.length == 0) {
+            return StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices).trace() / xIndices.length;
+        }
+
         SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
         SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
         SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
@@ -196,8 +204,7 @@ public class IndTestBasisFunctionLrtCovariance implements IndependenceTest {
      * Concatenates two integer arrays.
      */
     private int[] concatArrays(int[] first, int[] second) {
-        int[] result = new int[first.length + second.length];
-        System.arraycopy(first, 0, result, 0, first.length);
+        int[] result = Arrays.copyOf(first, first.length + second.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
     }
