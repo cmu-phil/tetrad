@@ -42,9 +42,9 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BFS-Tab (Basis Function BIC Tabular)", command = "bf-bic-score-tab", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BFS-Tab (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
 @Mixed
-public class BasisFunctionBicScoreTabular implements ScoreWrapper {
+public class BasisFunctionBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -57,7 +57,7 @@ public class BasisFunctionBicScoreTabular implements ScoreWrapper {
     /**
      * Initializes a new instance of the BasisFunctionBicScore class.
      */
-    public BasisFunctionBicScoreTabular() {
+    public BasisFunctionBicScore() {
 
     }
 
@@ -81,7 +81,7 @@ public class BasisFunctionBicScoreTabular implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function BIC Score Tabular (BFS-Tab)";
+        return "Basis Function BIC Score Tabular (BFS)";
     }
 
     /**

@@ -7,7 +7,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrtCovariance;
-import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrtTabular;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 

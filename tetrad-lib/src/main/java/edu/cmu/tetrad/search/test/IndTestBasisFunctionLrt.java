@@ -26,7 +26,7 @@ import java.util.*;
  * @author josephramsey
  * @see IndTestBasisFunctionLrtCovariance
  */
-public class IndTestBasisFunctionLrtTabular implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
+public class IndTestBasisFunctionLrt implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
      * A static cache used to store the precomputed pseudo-inverses of matrices. The key is an integer representing a
      * specific identifier (e.g., matrix dimensions or hash of the matrix contents), and the value is the associated
@@ -135,8 +135,8 @@ public class IndTestBasisFunctionLrtTabular implements IndependenceTest, Effecti
      * @param basisScale      a scaling factor for the basis functions used in the embeddings.
      * @throws NullPointerException if the provided dataSet is null.
      */
-    public IndTestBasisFunctionLrtTabular(DataSet dataSet, int truncationLimit,
-                                          int basisType, double basisScale) {
+    public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit,
+                                   int basisType, double basisScale) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
