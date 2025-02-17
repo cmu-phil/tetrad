@@ -1642,7 +1642,7 @@ public class Comparison implements TetradSerializable {
         int numTables = statTables.length;
         int numStats = statistics.size();
 
-        NumberFormat nf = new DecimalFormat("0.00");
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         NumberFormat smallNf = new DecimalFormat("0.00E0");
 
         println();

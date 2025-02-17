@@ -759,7 +759,7 @@ public class GridSearchEditor extends JPanel {
         StringBuilder paramText = new StringBuilder();
 
         ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
-        NumberFormat nf = new DecimalFormat("0.####");
+        NumberFormat nf = NumberFormat.getInstance();
 
         for (String name : paramNames) {
             ParamDescription description = paramDescriptions.get(name);

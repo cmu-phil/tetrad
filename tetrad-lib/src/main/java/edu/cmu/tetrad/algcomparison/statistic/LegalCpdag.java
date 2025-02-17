@@ -17,14 +17,14 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class LegalPag implements Statistic {
+public class LegalCpdag implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * <p>Constructor for LegalPag.</p>
+     * <p>Constructor for LegalCpdag.</p>
      */
-    public LegalPag() {
+    public LegalCpdag() {
     }
 
     /**
@@ -32,7 +32,7 @@ public class LegalPag implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "LegalPAG";
+        return "LegalCPDAG";
     }
 
     /**
@@ -40,7 +40,7 @@ public class LegalPag implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "1 if the estimated graph is Legal PAG, 0 if not";
+        return "1 if the estimated graph is Legal CPPAG, 0 if not";
     }
 
     /**
@@ -48,7 +48,7 @@ public class LegalPag implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        if (estGraph.paths().isLegalPag()) {
+        if (estGraph.paths().isLegalCpdag()) {
             return 1.0;
         } else {
             return 0.0;
