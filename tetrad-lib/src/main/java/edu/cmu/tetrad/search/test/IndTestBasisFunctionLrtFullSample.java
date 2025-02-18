@@ -92,7 +92,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * <p>
      * Default value: 1e-6.
      */
-    private double lambda = 1e-6;
+    private double lambda;
     /**
      * A boolean flag indicating whether verbose mode is enabled for the class. When set to true, verbose mode may
      * result in detailed logging or diagnostic output during the execution of methods in the class. When set to false,
