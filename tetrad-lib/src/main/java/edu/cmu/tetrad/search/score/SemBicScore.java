@@ -650,8 +650,8 @@ public class SemBicScore implements Score {
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets,
                 usePseudoInverse);
-        return -0.5 * this.sampleSize * (Math.log(2 * Math.PI * sigmaSquared) + 1);
-//        return -(double) (this.sampleSize / 2.0) * log(sigmaSquared);
+//        return -0.5 * this.sampleSize * (Math.log(2 * Math.PI * sigmaSquared) + 1);
+        return -(double) (this.sampleSize / 2.0) * log(sigmaSquared);
     }
 
     /**
