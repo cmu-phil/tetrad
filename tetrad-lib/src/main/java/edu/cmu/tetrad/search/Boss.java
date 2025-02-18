@@ -436,7 +436,7 @@ public class Boss implements SuborderSearch {
 
         for (i = scores.length - 1; i >= 0; i--) {
             if (this.knowledge.isRequired(suborder.get(i).getName(), x.getName())) break;
-            if (Double.isFinite(scores[i]) && scores[i] + 1e-6 > scores[best]) best = i;
+            if (scores[i] + 1e-6 > scores[best]) best = i;
         }
 
         if (scores[best] == Double.POSITIVE_INFINITY) {

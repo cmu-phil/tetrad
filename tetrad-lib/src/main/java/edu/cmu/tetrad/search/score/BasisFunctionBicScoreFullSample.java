@@ -70,10 +70,10 @@ public class BasisFunctionBicScoreFullSample implements Score {
     public BasisFunctionBicScoreFullSample(DataSet dataSet, int truncationLimit, int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
 
-        boolean usePseudoInverse = true;
+        boolean enableRegularization = true;
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
-                usePseudoInverse);
+                enableRegularization);
         this.embedding = result.embedding();
         embeddedData = result.embeddedData();
     }

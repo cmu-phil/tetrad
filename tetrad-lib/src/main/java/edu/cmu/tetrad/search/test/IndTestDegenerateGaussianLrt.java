@@ -100,16 +100,16 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         }
 
         this.nodeHash = nodesHash;
-        boolean usePseudoInverse = false;
+        boolean enableRegularization = true;
 
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
-        // we're not using the pseudoinverse option.
+        // we're not using the enable regularization option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, usePseudoInverse);
+                dataSet, 1, 1, -1, enableRegularization);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
         this.bic = new SemBicScore(convertedData, false);
-        this.bic.setUsePseudoInverse(usePseudoInverse);
+        this.bic.setEnableRegularization(enableRegularization);
         this.bic.setStructurePrior(0);
     }
 

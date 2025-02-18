@@ -29,18 +29,6 @@ import java.util.*;
  */
 public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
     /**
-     * A static cache used to store the precomputed pseudo-inverses of matrices. The key is an integer representing a
-     * specific identifier (e.g., matrix dimensions or hash of the matrix contents), and the value is the associated
-     * precomputed pseudo-inverse stored as a SimpleMatrix.
-     * <p>
-     * This cache is utilized to avoid redundant and computationally expensive operations of recalculating
-     * pseudo-inverses for the same matrices during repeated computations.
-     * <p>
-     * The use of this cache enhances performance, particularly in iterative processes or in scenarios where
-     * pseudo-inverse calculations are frequently required for matrices that remain unchanged.
-     */
-    private static final Map<SimpleMatrix, SimpleMatrix> pseudoInverseCache = new HashMap<>();
-    /**
      * The `dataSet` field holds a reference to the DataSet object used as the primary data structure for representing
      * and processing data within the `IndTestBasisFunctionLrt` class.
      * <p>
@@ -151,12 +139,11 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         }
 
         this.nodeHash = nodesHash;
-        boolean usePseudoInverse = false;
+        boolean enableRegularization = true;
 
-        // Expand the discrete columns to give indicators for each category. We want to leave a category out if
-        // we're not using the pseudoinverse option.
+        // Expand the discrete columns to give category indicators.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, truncationLimit, basisType, basisScale, usePseudoInverse);
+                dataSet, truncationLimit, basisType, basisScale, enableRegularization);
 
         this.embeddedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();

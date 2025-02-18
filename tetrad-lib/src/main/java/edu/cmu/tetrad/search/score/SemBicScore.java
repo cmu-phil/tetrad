@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.score;
 
@@ -126,9 +126,9 @@ public class SemBicScore implements Score {
      */
     private RuleType ruleType = RuleType.CHICKERING;
     /**
-     * True iff the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+     * True iff regularization should be used to avoid exceptions.
      */
-    private boolean usePseudoInverse = false;
+    private boolean enableRegularization = true;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -185,19 +185,17 @@ public class SemBicScore implements Score {
     /**
      * Returns the variance of the residual of the regression of the ith variable on its parents.
      *
-     * @param i                   The index of the variable.
-     * @param parents             The indices of the parents.
-     * @param covariances         The covariance matrix.
-     * @param calculateRowSubsets True if row subsets should be calculated.
-     * @param data                a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param usePseudoInverse    a boolean
+     * @param i                    The index of the variable.
+     * @param parents              The indices of the parents.
+     * @param covariances          The covariance matrix.
+     * @param calculateRowSubsets  True if row subsets should be calculated.
+     * @param data                 a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param enableRegularization true, if regularization should be enabled ot avoid singularity exceptions.
      * @return The variance of the residual of the regression of the ith variable on its parents.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
-    public static double getResidualVariance(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
-                                             boolean calculateRowSubsets, boolean usePseudoInverse)
-            throws SingularMatrixException {
-        CovAndCoefs covAndcoefs = getCovAndCoefs(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
+    public static double getResidualVariance(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets, boolean enableRegularization) throws SingularMatrixException {
+        CovAndCoefs covAndcoefs = getCovAndCoefs(i, parents, data, covariances, calculateRowSubsets, enableRegularization);
         return (bStar(covAndcoefs.b()).transpose().times(covAndcoefs.cov()).times(bStar(covAndcoefs.b())).get(0, 0));
     }
 
@@ -205,55 +203,54 @@ public class SemBicScore implements Score {
      * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
      * coefficients.
      *
-     * @param i                   The index of the variable.
-     * @param parents             The indices of the parents.
-     * @param data                The data matrix.
-     * @param covariances         The covariance matrix.
-     * @param calculateRowSubsets True if row subsets should be calculated.
-     * @param usePseudoInverse    True if the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+     * @param i                    The index of the variable.
+     * @param parents              The indices of the parents.
+     * @param data                 The data matrix.
+     * @param covariances          The covariance matrix.
+     * @param calculateRowSubsets  True if row subsets should be calculated.
+     * @param enableRegularization True if regularization should be used to avoid exceptions.
      * @return The covariance matrix of the regression of the ith variable on its parents and the regression
      * coefficients.
      */
     @NotNull
-    public static SemBicScore.CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets, boolean usePseudoInverse) {
+    public static SemBicScore.CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
+                                                         boolean calculateRowSubsets, boolean enableRegularization) {
         List<Integer> rows = SemBicScore.getRows(data, calculateRowSubsets);
-        return getCovAndCoefs(i, parents, data, covariances, usePseudoInverse, rows);
+        return getCovAndCoefs(i, parents, data, covariances, enableRegularization, rows);
     }
 
     /**
      * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
      *
-     * @param i                The index of the variable.
-     * @param parents          The indices of the parents.
-     * @param data             The data matrix.
-     * @param covariances      The covariance matrix.
-     * @param usePseudoInverse True if the pseudo-inverse should be used instead of the inverse to avoid exceptions.
-     * @param rows             The rows to use.
+     * @param i                    The index of the variable.
+     * @param parents              The indices of the parents.
+     * @param data                 The data matrix.
+     * @param covariances          The covariance matrix.
+     * @param enableRegularization True, if the pseudo-inverse should be used instead of the inverse to avoid
+     *                             exceptions.
+     * @param rows                 The rows to use.
      * @return The covariance matrix of the regression of the ith variable on its parents and the regression
      */
     @NotNull
     public static CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
-                                             boolean usePseudoInverse, List<Integer> rows) {
+                                             boolean enableRegularization, List<Integer> rows) {
         int[] all = SemBicScore.concat(i, parents);
         Matrix cov = SemBicScore.getCov(rows, all, all, data, covariances);
         int[] pp = SemBicScore.indexedParents(parents);
 //        Matrix covxx = cov.view(pp, pp).mat();
 
         Matrix covxx = cov.view(pp, pp).mat();
-        double lambda = 1e-6; // Regularization strength, tune as needed
-        Matrix identity = Matrix.identity(covxx.getNumRows());
-        covxx = covxx.plus(identity.scale(lambda)); // Regularize diagonal
+
+        if (enableRegularization) {
+            double lambda = 1e-6; // Regularization strength, tune as needed
+            Matrix identity = Matrix.identity(covxx.getNumRows());
+            covxx = covxx.plus(identity.scale(lambda)); // Regularize diagonal
+        }
 
         Matrix covxy = cov.view(pp, new int[]{0}).mat();
 
         // The regression coefficient vector.
-        Matrix b;
-
-        if (usePseudoInverse) {
-            b = covxx.pseudoinverse().times(covxy);
-        } else {
-            b = covxx.inverse().times(covxy);
-        }
+        Matrix b = covxx.inverse().times(covxy);
 
         return new CovAndCoefs(cov, b);
     }
@@ -359,12 +356,14 @@ public class SemBicScore implements Score {
     /**
      * Computes the covariance matrix for the given subset of rows and columns in the provided data set.
      *
-     * @param rows A list of the row indices to consider for computing the covariance.
-     * @param cols An array of the column indices for which to compute the covariance matrix.
-     * @param all An array of all column indices to check for NaN values.
-     * @param dataSet The dataset containing the values to be used in computation. If null, the method returns a selection from the provided covariance matrix.
-     * @param cov If dataSet is null, this covariance matrix is used to return the selected covariances.
-     * @return A Matrix representing the covariance computed from the given rows and columns of the dataset or a selection from the provided covariance matrix.
+     * @param rows    A list of the row indices to consider for computing the covariance.
+     * @param cols    An array of the column indices for which to compute the covariance matrix.
+     * @param all     An array of all column indices to check for NaN values.
+     * @param dataSet The dataset containing the values to be used in computation. If null, the method returns a
+     *                selection from the provided covariance matrix.
+     * @param cov     If dataSet is null, this covariance matrix is used to return the selected covariances.
+     * @return A Matrix representing the covariance computed from the given rows and columns of the dataset or a
+     * selection from the provided covariance matrix.
      * @throws IllegalArgumentException If both dataSet and cov are null.
      */
     public static Matrix getCov(List<Integer> rows, int[] cols, int[] all, DataSet dataSet, Matrix cov) {
@@ -487,10 +486,10 @@ public class SemBicScore implements Score {
      * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
      * coefficients.
      *
-     * @param usePseudoInverse True if the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+     * @param enableRegularization True if regularization should be enabled to avoid exceptions.
      */
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
+    public void setEnableRegularization(boolean enableRegularization) {
+        this.enableRegularization = enableRegularization;
     }
 
     /**
@@ -531,8 +530,7 @@ public class SemBicScore implements Score {
 
         double c = getPenaltyDiscount();
 
-        return -this.sampleSize * log(1.0 - r * r) - c * log(this.sampleSize)
-               - 2.0 * (sp1 - sp2);
+        return -this.sampleSize * log(1.0 - r * r) - c * log(this.sampleSize) - 2.0 * (sp1 - sp2);
     }
 
     /**
@@ -551,8 +549,7 @@ public class SemBicScore implements Score {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " +
-                               LogUtilsSearch.getScoreFact(i, parents, variables));
+            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
             return Double.NaN;
         }
 
@@ -575,15 +572,14 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * Computes the likelihood and degrees of freedom (dof) for a given variable and its parent variables.
-     * The likelihood is calculated based on the provided variable index and parent indices.
-     * In case of a singular matrix during likelihood computation, it returns a result with NaN likelihood
-     * and -1 for degrees of freedom.
+     * Computes the likelihood and degrees of freedom (dof) for a given variable and its parent variables. The
+     * likelihood is calculated based on the provided variable index and parent indices. In case of a singular matrix
+     * during likelihood computation, it returns a result with NaN likelihood and -1 for degrees of freedom.
      *
-     * @param i The index of the variable for which the likelihood is calculated.
+     * @param i       The index of the variable for which the likelihood is calculated.
      * @param parents The indices of the parent variables of the variable `i`.
-     * @return A {@code LikelihoodResult} object containing the likelihood value, the degrees of freedom (dof),
-     * and other related penalty and sample size information.
+     * @return A {@code LikelihoodResult} object containing the likelihood value, the degrees of freedom (dof), and
+     * other related penalty and sample size information.
      */
     public LikelihoodResult getLikelihoodAndDof(int i, int... parents) {
         int k = parents.length;
@@ -594,8 +590,7 @@ public class SemBicScore implements Score {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " +
-                               LogUtilsSearch.getScoreFact(i, parents, variables));
+            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
             return new LikelihoodResult(Double.NaN, -1, penaltyDiscount, sampleSize);
         }
 
@@ -603,13 +598,13 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * Computes the Akaike Information Criterion (AIC) score for the given variable and its parent variables
-     * in a probabilistic graphical model such as a Bayesian network.
+     * Computes the Akaike Information Criterion (AIC) score for the given variable and its parent variables in a
+     * probabilistic graphical model such as a Bayesian network.
      *
-     * @param i The index of the variable for which the AIC score is being computed.
+     * @param i       The index of the variable for which the AIC score is being computed.
      * @param parents The indices of the parent variables of the variable specified by index i.
-     * @return The computed AIC score as a double value. Returns Double.NaN if a singular matrix is encountered
-     *         or the score is undefined. Throws an exception if the rule type is unsupported.
+     * @return The computed AIC score as a double value. Returns Double.NaN if a singular matrix is encountered or the
+     * score is undefined. Throws an exception if the rule type is unsupported.
      */
     public double getAic(int i, int... parents) {
         int k = parents.length;
@@ -620,8 +615,7 @@ public class SemBicScore implements Score {
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            System.out.println("Singularity encountered when scoring " +
-                               LogUtilsSearch.getScoreFact(i, parents, variables));
+            System.out.println("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
             return Double.NaN;
         }
 
@@ -644,18 +638,17 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * Calculates the likelihood for the given variable and its parent variables based on the provided data
-     * and covariance matrices. This method computes the variance for the residuals and uses it to
-     * determine the likelihood score.
+     * Calculates the likelihood for the given variable and its parent variables based on the provided data and
+     * covariance matrices. This method computes the variance for the residuals and uses it to determine the likelihood
+     * score.
      *
-     * @param i        The index of the variable for which the likelihood is being calculated.
-     * @param parents  An array of indices representing the parent variables of the variable at index i.
+     * @param i       The index of the variable for which the likelihood is being calculated.
+     * @param parents An array of indices representing the parent variables of the variable at index i.
      * @return The negative log-likelihood score for the specified variable and its parent variables.
      * @throws SingularMatrixException if the covariance matrix is singular and cannot be inverted.
      */
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
-        double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets,
-                usePseudoInverse);
+        double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, enableRegularization);
         return -0.5 * this.sampleSize * (Math.log(2 * Math.PI * sigmaSquared) + 1);
 //        return -(double) (this.sampleSize / 2.0) * log(sigmaSquared);
     }
@@ -911,7 +904,7 @@ public class SemBicScore implements Score {
             all[1] = this.indexMap.get(y);
             for (int i = 0; i < z.size(); i++) all[i + 2] = this.indexMap.get(z.get(i));
 
-            return StatUtils.partialCorrelation(convertCovToCorr(getCov(rows, indices(x, y, z), all, (DataSet) this.dataModel, this.matrix)));
+            return StatUtils.partialCorrelation(convertCovToCorr(getCov(rows, indices(x, y, z), all, (DataSet) this.dataModel, this.matrix)), enableRegularization);
         } catch (Exception e) {
             return NaN;
         }
@@ -946,14 +939,13 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * A record that encapsulates the result of a likelihood computation.
-     * This record stores the likelihood value, degrees of freedom, penalty discount,
-     * and the sample size associated with the computation.
+     * A record that encapsulates the result of a likelihood computation. This record stores the likelihood value,
+     * degrees of freedom, penalty discount, and the sample size associated with the computation.
      *
-     * @param lik The computed likelihood value.
-     * @param dof The degrees of freedom used in the computation.
+     * @param lik             The computed likelihood value.
+     * @param dof             The degrees of freedom used in the computation.
      * @param penaltyDiscount The penalty discount applied to the computation.
-     * @param sampleSize The size of the sample used in the likelihood computation.
+     * @param sampleSize      The size of the sample used in the likelihood computation.
      */
     public record LikelihoodResult(double lik, int dof, double penaltyDiscount, int sampleSize) {
     }

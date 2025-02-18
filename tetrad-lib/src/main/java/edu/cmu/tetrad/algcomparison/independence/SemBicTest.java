@@ -57,7 +57,7 @@ public class SemBicTest implements IndependenceWrapper {
         }
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
+        score.setEnableRegularization(parameters.getBoolean(Params.ENABLE_REGULARIZATION));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -93,7 +93,7 @@ public class SemBicTest implements IndependenceWrapper {
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
         params.add(Params.PRECOMPUTE_COVARIANCES);
-        params.add(Params.USE_PSEUDOINVERSE);
+        params.add(Params.ENABLE_REGULARIZATION);
         return params;
     }
 }

@@ -53,8 +53,8 @@ public class DegenerateGaussianScore implements Score {
     private final Map<Integer, List<Integer>> embedding;
     // The SEM BIC score.
     private final SemBicScore bic;
-    // The use pseudo inverse flag.
-    private boolean usePseudoInverse = false;
+    // The enable regularization flag
+    private boolean enableRegularization = true;
 
     /**
      * Constructs the score using a dataset.
@@ -70,14 +70,14 @@ public class DegenerateGaussianScore implements Score {
         this.variables = dataSet.getVariables();
 
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
-        // we're not using the pseudoinverse option.
+        // we're not using the regularization option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, usePseudoInverse);
+                dataSet, 1, 1, -1, enableRegularization);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
 
         this.bic = new SemBicScore(convertedData, precomputeCovariances);
-        this.bic.setUsePseudoInverse(usePseudoInverse);
+        this.bic.setEnableRegularization(enableRegularization);
         this.bic.setStructurePrior(0);
     }
 
@@ -191,11 +191,11 @@ public class DegenerateGaussianScore implements Score {
     }
 
     /**
-     * Sets the flag to indicate whether to use pseudo inverse in the score calculations.
+     * Sets the flag to indicate whether to enable regularization in the score calculations.
      *
-     * @param usePseudoInverse True if pseudo inverse should be used, false otherwise.
+     * @param enableRegularization True if regularization should be enabled, false otherwise.
      */
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
+    public void setEnableRegularization(boolean enableRegularization) {
+        this.enableRegularization = enableRegularization;
     }
 }

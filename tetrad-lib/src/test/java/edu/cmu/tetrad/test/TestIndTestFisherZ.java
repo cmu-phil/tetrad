@@ -153,8 +153,10 @@ public class TestIndTestFisherZ {
             int yi = _cov.getVariableNames().indexOf(y.getName());
             int ri = _cov.getVariableNames().indexOf(r.getName());
 
-            double xy = StatUtils.partialCorrelation(cov, xi, yi);
-            double xyr = StatUtils.partialCorrelation(cov, xi, yi, ri);
+            boolean enableRegularization = true;
+
+            double xy = StatUtils.partialCorrelation(cov, enableRegularization, xi, yi);
+            double xyr = StatUtils.partialCorrelation(cov, enableRegularization, xi, yi, ri);
 
             double f1 = 0.5 * sqrt(N - 3) * log(1. + xy) - log(1. - xy);
             double f2 = 0.5 * sqrt(N - 3 - 1) * log(1. + xyr) - log(1. - xyr);

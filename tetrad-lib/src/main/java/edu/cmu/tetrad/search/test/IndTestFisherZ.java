@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,15 +17,15 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Vector;
@@ -104,9 +104,9 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     private List<Integer> rows = null;
     /**
-     * Use pseudoinverse instead of correlation matrix.
+     * Use regularization instead of correlation matrix.
      */
-    private boolean usePseudoinverse = false;
+    private boolean enableRegularization = true;
 
 
     /**
@@ -222,165 +222,31 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             return _result;
         }
 
-        if (usePseudoinverse) {
-            IndependenceResult result = checkIndependencePseudoinverse(x, y, z);
+
+        double p;
+
+        try {
+            p = getPValue(x, y, z);
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
+        }
+
+        boolean independent = p > this.alpha;
+
+        if (Double.isNaN(p)) {
+            throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
+        } else {
+            IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
             facts.put(new IndependenceFact(x, y, z), result);
+
+            if (this.verbose) {
+                if (independent) {
+                    TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, p));
+                }
+            }
+
             return result;
-        } else { // Use inverse.
-
-            double p;
-
-            try {
-                p = getPValue(x, y, z);
-            } catch (SingularMatrixException e) {
-                throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
-            }
-
-            boolean independent = p > this.alpha;
-
-            if (Double.isNaN(p)) {
-                throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
-            } else {
-                IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
-                facts.put(new IndependenceFact(x, y, z), result);
-
-                if (this.verbose) {
-                    if (independent) {
-                        TetradLogger.getInstance().log(
-                                LogUtilsSearch.independenceFactMsg(x, y, z, p));
-                    }
-                }
-
-                return result;
-            }
-
-
-
         }
-    }
-
-    /**
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
-     *
-     * @param xVar the one variable being compared.
-     * @param yVar the second variable being compared.
-     * @param _z   the list of conditioning variables.
-     * @return True iff x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
-     */
-    private IndependenceResult checkIndependencePseudoinverse(Node xVar, Node yVar, Set<Node> _z) {
-
-        if (this.data == null) this.data = dataSet.getDoubleData();
-
-        if (_z == null) {
-            throw new NullPointerException();
-        }
-
-        for (Node node : _z) {
-            if (node == null) {
-                throw new NullPointerException();
-            }
-        }
-
-        List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
-
-        int size = z.size();
-        int[] zCols = new int[size];
-
-        int xIndex = getVariables().indexOf(xVar);
-        int yIndex = getVariables().indexOf(yVar);
-
-        for (int i = 0; i < z.size(); i++) {
-            zCols[i] = getVariables().indexOf(z.get(i));
-        }
-
-        List<Node> allVars = new ArrayList<>(z);
-        allVars.add(xVar);
-        allVars.add(yVar);
-        allVars.addAll(_z);
-
-        List<Integer> _rows = listRows();
-
-        if (_rows == null) {
-            _rows = new ArrayList<>();
-            for (int i = 0; i < this.data.getNumRows(); i++) {
-                _rows.add(i);
-            }
-        }
-
-        for (Integer row : new ArrayList<>(_rows)) {
-            for (Node node : allVars) {
-                if (node instanceof ContinuousVariable) {
-                    if (Double.isNaN(dataSet.getDouble(row, dataSet.getColumnIndex(node)))) {
-                        _rows.remove(row);
-                    }
-                }
-
-                if (node instanceof DiscreteVariable) {
-                    if (dataSet.getInt(row, dataSet.getColumnIndex(node)) == -99) {
-                        _rows.remove(row);
-                    }
-                }
-            }
-        }
-
-        int[] rows;
-
-        rows = new int[_rows.size()];
-        for (int i = 0; i < _rows.size(); i++) {
-            rows[i] = _rows.get(i);
-        }
-
-        int[] allCols = new int[allVars.size()];
-        for (int i = 0; i < allVars.size(); i++) {
-            allCols[i] = getVariables().indexOf(allVars.get(i));
-        }
-
-        Matrix cov = SemBicScore.getCov(_rows, allCols, allCols, this.dataSet, null);
-
-        ICovarianceMatrix covMatrix = new CovarianceMatrix(allVars, cov, _rows.size());
-
-        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                covMatrix, true, usePseudoinverse);
-        SemBicScore.CovAndCoefs covAndCoefsY = SemBicScore.getCovAndCoefs(yIndex, zCols, this.data,
-                covMatrix, true, usePseudoinverse);
-
-        Matrix selection = data.view(rows, zCols).mat();
-        edu.cmu.tetrad.util.Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
-        edu.cmu.tetrad.util.Vector yPred = selection.times(covAndCoefsY.b()).getColumn(0);
-
-        Vector x = this.data.view(rows, new int[]{xIndex}).mat().getColumn(0);
-        Vector y = this.data.view(rows, new int[]{yIndex}).mat().getColumn(0);
-
-        Vector xRes = xPred.minus(x);
-        Vector yRes = yPred.minus(y);
-
-        // Note that r will be NaN if either xRes or yRes is constant.
-        double r = StatUtils.correlation(xRes.toArray(), yRes.toArray());
-
-        double df = rows.length - z.size() - 3.0;
-        double fisherZ = FastMath.sqrt(df) * 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
-
-        double p = 2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ)));
-
-        if (df < 0) {
-            throw new IllegalArgumentException("The degrees of freedom for independence fact " + xVar + " _||_ " + yVar +
-                                               " | " + z + " is negative.");
-        } else if (Double.isNaN(fisherZ)) {
-            throw new IllegalArgumentException("The Fisher's Z " +
-                                               "score for independence fact " + xVar + " _||_ " + yVar +
-                                               " | " + z + " is undefined.");
-        }
-
-
-        if (this.verbose) {
-            if (p > alpha) {
-                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, p));
-            }
-        }
-
-        return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), p > alpha, p, getAlpha() - p);
     }
 
     /**
@@ -397,7 +263,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         int n;
 
         if (covMatrix() != null) {
-            r = partialCorrelation(x, y, z, rows);
+            r = partialCorrelation(x, y, z, rows, enableRegularization);
             n = sampleSize();
         } else {
             List<Integer> rows = listRows();
@@ -412,7 +278,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
 
         if (df < 1) {
             throw new IllegalArgumentException("The degrees of freedom for independence fact " + x + " _||_ " + y +
-                    " | " + z + " nonpositive.");
+                                               " | " + z + " nonpositive.");
         }
 
         double fisherZ = sqrt(df) * q;
@@ -564,31 +430,28 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * @throws UnsupportedOperationException if the operation is not supported
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        if (usePseudoinverse) {
-            return determinesPseudoinverse(z, x);
-        } else {
+        int[] parents = new int[z.size()];
 
-            int[] parents = new int[z.size()];
-
-            for (int j = 0; j < parents.length; j++) {
-                parents[j] = indexMap.get(z.get(j).getName());
-            }
-
-            if (parents.length > 0) {
-
-                // Regress z onto i, yielding regression coefficients b.
-                Matrix Czz = this.cor.getSelection(parents, parents);
-
-                try {
-                    Czz.inverse();
-                } catch (SingularMatrixException e) {
-                    System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
-                    return true;
-                }
-            }
-
-            return false;
+        for (int j = 0; j < parents.length; j++) {
+            parents[j] = indexMap.get(z.get(j).getName());
         }
+
+        if (parents.length > 0) {
+
+            // Regress z onto i, yielding regression coefficients b.
+            Matrix Czz = this.cor.getSelection(parents, parents);
+
+            try {
+
+                // Don't do regularization here; we're trying to test determination.
+                Czz.inverse();
+            } catch (SingularMatrixException e) {
+                System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -638,7 +501,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         }
 
         SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                cov, true, usePseudoinverse);
+                cov, true, enableRegularization);
 
         Matrix selection = data.view(rows, zCols).mat();
         Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
@@ -684,14 +547,15 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * If the correlation matrix is already available, it selects the necessary subset. Otherwise, it calculates the
      * covariance matrix from the provided rows and converts it to a correlation matrix.
      *
-     * @param x    The first node.
-     * @param y    The second node.
-     * @param _z   The set of conditioning variables.
-     * @param rows The list of rows to use for calculating the covariance matrix, if necessary.
+     * @param x                    The first node.
+     * @param y                    The second node.
+     * @param _z                   The set of conditioning variables.
+     * @param rows                 The list of rows to use for calculating the covariance matrix, if necessary.
+     * @param enableRegularization True, if regularization is enabled, false if not.
      * @return The partial correlation value.
      * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
      */
-    private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
+    private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows, boolean enableRegularization) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
 
         int[] indices = new int[z.size() + 2];
@@ -708,7 +572,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             cor = MatrixUtils.convertCovToCorr(cov);
         }
 
-        return StatUtils.partialCorrelationPrecisionMatrix(cor);
+        return StatUtils.partialCorrelationPrecisionMatrix(cor, this.enableRegularization);
     }
 
     /**
@@ -723,7 +587,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
      */
     private double getR(Node x, Node y, Set<Node> z, List<Integer> rows) {
-        return partialCorrelation(x, y, z, rows);
+        return partialCorrelation(x, y, z, rows, enableRegularization);
     }
 
     /**
@@ -827,12 +691,12 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Sets whether or not to use the pseudoinverse method for determining independence.
+     * Sets whether or not to enable regularization for determining independence.
      *
-     * @param usePseudoinverse true to use the pseudoinverse method, false otherwise.
+     * @param enableRegularization true to use regularization, false otherwise.
      */
-    public void setUsePseudoinverse(boolean usePseudoinverse) {
-        this.usePseudoinverse = usePseudoinverse;
+    public void setEnableRegularization(boolean enableRegularization) {
+        this.enableRegularization = enableRegularization;
     }
 }
 

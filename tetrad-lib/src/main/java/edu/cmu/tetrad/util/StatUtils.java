@@ -1950,13 +1950,14 @@ public final class StatUtils {
      * direction) is X, Y, Z1, ..., Zn, where the partial correlation one wants is correlation(X, Y | Z1,...,Zn). This
      * may be extracted using DataUtils.submatrix().
      *
-     * @param submatrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param submatrix            a {@link Matrix} object
+     * @param enableRegularization
      * @return the given partial correlation.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
-    public static synchronized double partialCorrelation(Matrix submatrix) throws SingularMatrixException {
+    public static synchronized double partialCorrelation(Matrix submatrix, boolean enableRegularization) throws SingularMatrixException {
 //        try {
-        return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
+        return StatUtils.partialCorrelationPrecisionMatrix(submatrix, enableRegularization);
 //        } catch (SingularMatrixException e) {
 //            return NaN;
 //        }
@@ -1965,11 +1966,18 @@ public final class StatUtils {
     /**
      * <p>partialCorrelationPrecisionMatrix.</p>
      *
-     * @param submatrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param submatrix            a {@link Matrix} object
+     * @param enableRegularization True, if regularization is enabled.
      * @return a double
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
-    public static double partialCorrelationPrecisionMatrix(Matrix submatrix) throws SingularMatrixException {
+    public static double partialCorrelationPrecisionMatrix(Matrix submatrix, boolean enableRegularization) throws SingularMatrixException {
+        if (enableRegularization) {
+            double lambda = 1e-6; // Regularization strength, tune as needed
+            Matrix identity = Matrix.identity(submatrix.getNumRows());
+            submatrix = submatrix.plus(identity.scale(lambda)); // Regularize diagonal
+        }
+
         Matrix inverse = submatrix.inverse();
         double r = (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
         if (r < -1) r = -1;
@@ -1980,14 +1988,15 @@ public final class StatUtils {
     /**
      * <p>partialCorrelation.</p>
      *
-     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param x          a int
-     * @param y          a int
-     * @param z          a int
+     * @param covariance           a {@link Matrix} object
+     * @param enableRegularization
+     * @param x                    a int
+     * @param y                    a int
+     * @param z                    a int
      * @return the partial correlation(x, y | z) where these represent the column/row indices of the desired variables
      * in <code>covariance</code>
      */
-    public static double partialCorrelation(Matrix covariance, int x, int y, int... z) {
+    public static double partialCorrelation(Matrix covariance, boolean enableRegularization, int x, int y, int... z) {
         if (x > covariance.getNumRows()) throw new IllegalArgumentException();
         if (y > covariance.getNumRows()) throw new IllegalArgumentException();
         for (int aZ : z) if (aZ > covariance.getNumRows()) throw new IllegalArgumentException();
@@ -1998,7 +2007,7 @@ public final class StatUtils {
         selection[1] = y;
         System.arraycopy(z, 0, selection, 2, z.length);
 
-        return StatUtils.partialCorrelation(covariance.view(selection, selection).mat());
+        return StatUtils.partialCorrelation(covariance.view(selection, selection).mat(), enableRegularization);
     }
 
     /**

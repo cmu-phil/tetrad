@@ -145,9 +145,11 @@ public final class IndTestPositiveCorr implements IndependenceTest {
             _Z[f] = this.data[column];
         }
 
-        double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY);
-        double pc1 = partialCorrelation(x, y, _Z, x, 0);
-        double pc2 = partialCorrelation(x, y, _Z, y, 0);
+        boolean enableRegularization = true;
+
+        double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, enableRegularization);
+        double pc1 = partialCorrelation(x, y, _Z, x, 0, enableRegularization);
+        double pc2 = partialCorrelation(x, y, _Z, y, 0, enableRegularization);
 
         int nc = StatUtils.getRows(x, Double.NEGATIVE_INFINITY, +1).size();
         int nc1 = StatUtils.getRows(x, 0, +1).size();
@@ -369,10 +371,10 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         this.verbose = verbose;
     }
 
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, boolean enableRegularization) throws SingularMatrixException {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, 1);
         Matrix m = new Matrix(cv).transpose();
-        return StatUtils.partialCorrelation(m);
+        return StatUtils.partialCorrelation(m, enableRegularization);
     }
 }
 

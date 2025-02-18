@@ -106,12 +106,12 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         }
 
         this.nodeHash = nodesHash;
-        boolean usePseudoInverse = false;
+        boolean enableRegularization = true;
 
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
-        // we're not using the pseudoinverse option.
+        // we're not using the enable regularization option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, truncationLimit, basisType, basisScale, usePseudoInverse);
+                dataSet, truncationLimit, basisType, basisScale, enableRegularization);
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
 

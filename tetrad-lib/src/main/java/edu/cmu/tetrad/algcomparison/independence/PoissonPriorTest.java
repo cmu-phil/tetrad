@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.LinearGaussian;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -56,7 +54,7 @@ public class PoissonPriorTest implements IndependenceWrapper {
             score = new PoissonPriorScore((DataSet) dataSet, precomputeCovariances);
         }
         score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
-        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
+        score.setEnableRegularization(parameters.getBoolean(Params.ENABLE_REGULARIZATION));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -91,7 +89,7 @@ public class PoissonPriorTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.PRECOMPUTE_COVARIANCES);
         params.add(Params.POISSON_LAMBDA);
-        params.add(Params.USE_PSEUDOINVERSE);
+        params.add(Params.ENABLE_REGULARIZATION);
         return params;
     }
 }

@@ -887,13 +887,12 @@ public final class Params {
      * Constant <code>BOOTSTRAPPING_NUM_THEADS="bootstrappingNumThreads"</code>
      */
     public static final String BOOTSTRAPPING_NUM_THREADS = "bootstrappingNumThreads";
-
     /**
-     * Constant <code>USE_PSEUDOINVERSE="usePseudoinverse"</code>
+     * Constant <code>ENABLE_REGULARIZATION="enableRegularization"</code>
      */
-    public static final String USE_PSEUDOINVERSE = "usePseudoinverse";
+    public static final String ENABLE_REGULARIZATION = "enableRegularization";
     /**
-     * Constant <code>USE_PSEUDOINVERSE_FOR_LATENT="usePseudoinverseForLatent"</code>
+     * Constant <code>COMPARE_GRAPH_ALGCOMP="compareGraphAlgcomp"</code>
      */
     public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
     /**

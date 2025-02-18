@@ -79,8 +79,8 @@ public class ZsbScore implements Score {
     private List<Double> lambdas;
     // The data, if it is set.
     private Matrix data;
-    // True if the pseudo-inverse should be used.
-    private boolean usePseudoInverse;
+    // True if regularization should be enabled.
+    private boolean enableRegularization;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -162,7 +162,7 @@ public class ZsbScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
+            varRy = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, enableRegularization);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -297,10 +297,10 @@ public class ZsbScore implements Score {
     /**
      * Sets whether to use the pseudo-inverse in place of the inverse in the score.
      *
-     * @param usePseudoInverse True if the pseudo-inverse should be used.
+     * @param enableRegularization True if the pseudo-inverse should be used.
      */
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
+    public void setEnableRegularization(boolean enableRegularization) {
+        this.enableRegularization = enableRegularization;
     }
 
     private double getLambda(int m0, int pn) {

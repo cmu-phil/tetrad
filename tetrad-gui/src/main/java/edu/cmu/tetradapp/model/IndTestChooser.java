@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
@@ -144,20 +144,11 @@ final class IndTestChooser {
             return new IndTestConditionalCorrelation(dataSet, params.getDouble(Params.ALPHA),
                     params.getDouble(Params.SCALING_FACTOR), params.getInt(Params.BASIS_TYPE),
                     params.getInt(Params.NUM_BASIS_FUNCTIONS), params.getDouble(Params.BASIS_SCALE));
-        }
-        if (IndTestType.FISHER_Z == testType) {
+        } else if (IndTestType.FISHER_Z == testType) {
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
-        }
-//        if (IndTestType.FISHER_ZD == testType) {
-//            IndTestFisherZ test = new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
-////            test.setUsePseudoinverse(true);
-//            return test;
-//        }
-        if (IndTestType.SEM_BIC == testType) {
+        } else if (IndTestType.SEM_BIC == testType) {
             return new ScoreIndTest(new SemBicScore(new CovarianceMatrix(dataSet)));
-        }
-
-        {
+        } else {
             params.set("indTestType", IndTestType.FISHER_Z);
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
         }

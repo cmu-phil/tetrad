@@ -60,10 +60,10 @@ public class BasisFunctionBicScore implements Score {
                                  int basisType, double basisScale) {
         this.variables = dataSet.getVariables();
 
-        boolean usePseudoInverse = true;
+        boolean enableRegularization = true;
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
-                usePseudoInverse);
+                enableRegularization);
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
@@ -73,8 +73,8 @@ public class BasisFunctionBicScore implements Score {
         this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
 
-        // We will be using the pseudo-inverse in the BIC score calculation so we don't get singularity exceptions.
-        this.bic.setUsePseudoInverse(usePseudoInverse);
+        // We will be using regularization in the BIC score calculation so we don't get singularity exceptions.
+        this.bic.setEnableRegularization(enableRegularization);
 
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
         this.bic.setStructurePrior(0);

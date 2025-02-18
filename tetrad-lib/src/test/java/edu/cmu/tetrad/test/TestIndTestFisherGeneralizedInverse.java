@@ -79,8 +79,10 @@ public class TestIndTestFisherGeneralizedInverse {
         IndTestFisherZ test1 = new IndTestFisherZ(data1, 0.05);
         IndTestFisherZ test2 = new IndTestFisherZ(data2, 0.05);
 
-        test1.setUsePseudoinverse(true);
-        test2.setUsePseudoinverse(true);
+        boolean enableRegularization = true;
+
+        test1.setEnableRegularization(enableRegularization);
+        test2.setEnableRegularization(enableRegularization);
 
         double p1 = 0;
         double p2 = 0;

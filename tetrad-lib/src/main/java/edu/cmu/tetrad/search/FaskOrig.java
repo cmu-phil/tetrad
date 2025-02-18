@@ -931,10 +931,12 @@ public final class FaskOrig implements IGraphSearch {
             double pc1;
             double pc2;
 
+            boolean enableRegularization = true;
+
             try {
-                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY);
-                pc1 = partialCorrelation(x, y, _Z, x, 0);
-                pc2 = partialCorrelation(x, y, _Z, y, 0);
+                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, enableRegularization);
+                pc1 = partialCorrelation(x, y, _Z, x, 0, enableRegularization);
+                pc2 = partialCorrelation(x, y, _Z, y, 0, enableRegularization);
             } catch (SingularMatrixException e) {
                 TetradLogger.getInstance().log("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
                 continue;
@@ -990,9 +992,11 @@ public final class FaskOrig implements IGraphSearch {
         double pc1;
         double pc2;
 
+        boolean enableRegularization = true;
+
         try {
-            pc1 = partialCorrelation(x, y, new double[0][], x, 0);
-            pc2 = partialCorrelation(x, y, new double[0][], y, 0);
+            pc1 = partialCorrelation(x, y, new double[0][], x, 0, enableRegularization);
+            pc2 = partialCorrelation(x, y, new double[0][], y, 0, enableRegularization);
         } catch (SingularMatrixException e) {
             List<Node> nodes = dataSet.getVariables();
             throw new RuntimeException("Singularity encountered (conditioning on X > 0, Y > 0) for variables "
@@ -1013,18 +1017,19 @@ public final class FaskOrig implements IGraphSearch {
     /**
      * Calculates the partial correlation coefficient between two variables while controlling for other variables.
      *
-     * @param x         the first variable
-     * @param y         the second variable
-     * @param z         the matrix containing the control variables
-     * @param condition the control variables for partial correlation
-     * @param threshold the threshold for excluding cases
+     * @param x                    the first variable
+     * @param y                    the second variable
+     * @param z                    the matrix containing the control variables
+     * @param condition            the control variables for partial correlation
+     * @param threshold            the threshold for excluding cases
+     * @param enableRegularization True if regularization should be enabled.
      * @return the partial correlation coefficient
      * @throws SingularMatrixException if the covariance matrix is singular and cannot be inverted
      */
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, boolean enableRegularization) throws SingularMatrixException {
         double[][] cv = covMatrix(x, y, z, condition, threshold, 1);
         Matrix m = new Matrix(cv).transpose();
-        return StatUtils.partialCorrelation(m);
+        return StatUtils.partialCorrelation(m, enableRegularization);
     }
 
     /**
