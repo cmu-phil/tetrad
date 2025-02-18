@@ -79,6 +79,14 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      */
     private double alpha = 0.01;
     /**
+     * Indicates whether regularization is enabled in the statistical tests performed by this instance.
+     * <p>
+     * Regularization, when enabled, helps to prevent overfitting and improve the stability of results by applying
+     * constraints or penalties during computation, particularly in situations with high-dimensional data or limited
+     * sample sizes.
+     */
+    private final boolean enableRegularization;
+    /**
      * A boolean flag indicating whether verbose output is enabled or not. When set to true, additional logging or
      * diagnostic information may be produced by the methods in this class to aid in debugging or understanding the
      * internal processing steps.
@@ -96,7 +104,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      * @param basisScale      the scale factor associated with the basis functions.
      */
     public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit,
-                                   int basisType, double basisScale) {
+                                   int basisType, double basisScale, boolean enableRegularization) {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -106,10 +114,10 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         }
 
         this.nodeHash = nodesHash;
-        boolean enableRegularization = true;
+        this.enableRegularization = enableRegularization;
 
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
-        // we're not using the enable regularization option.
+        // we're not using the enable-regularization option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, truncationLimit, basisType, basisScale, enableRegularization);
         this.embedding = embeddedData.embedding();
@@ -192,12 +200,13 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
 
         SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
         SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
-//        SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
-
         SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
-        double lambda = 1e-6; // Regularization strength, tune as needed
-        SimpleMatrix identity = SimpleMatrix.identity(Sigma_PP.getNumRows());
-        Sigma_PP = Sigma_PP.plus(identity.scale(lambda)); // Regularize diagonal
+
+        if (enableRegularization) {
+            double lambda = 1e-6; // Regularization strength, tune as needed
+            SimpleMatrix identity = SimpleMatrix.identity(Sigma_PP.getNumRows());
+            Sigma_PP = Sigma_PP.plus(identity.scale(lambda)); // Regularize diagonal
+        }
 
         // Compute OLS estimate of X given predictors P
         SimpleMatrix beta = Sigma_PP.invert().mult(Sigma_XP.transpose());

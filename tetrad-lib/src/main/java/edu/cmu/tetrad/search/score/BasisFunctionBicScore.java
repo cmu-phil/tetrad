@@ -57,10 +57,8 @@ public class BasisFunctionBicScore implements Score {
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
-                                 int basisType, double basisScale) {
+                                 int basisType, double basisScale, boolean enableRegularization) {
         this.variables = dataSet.getVariables();
-
-        boolean enableRegularization = true;
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
                 enableRegularization);
@@ -72,6 +70,7 @@ public class BasisFunctionBicScore implements Score {
 
         this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
+        this.bic.setEnableRegularization(enableRegularization);
 
         // We will be using regularization in the BIC score calculation so we don't get singularity exceptions.
         this.bic.setEnableRegularization(enableRegularization);
@@ -193,5 +192,4 @@ public class BasisFunctionBicScore implements Score {
         this.penaltyDiscount = penaltyDiscount;
         this.bic.setPenaltyDiscount(penaltyDiscount);
     }
-
 }

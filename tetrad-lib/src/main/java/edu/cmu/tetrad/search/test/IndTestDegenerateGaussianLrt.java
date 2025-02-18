@@ -84,9 +84,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     /**
      * Constructs the test using the given (mixed) data set.
      *
-     * @param dataSet The data being analyzed.
+     * @param dataSet              The data being analyzed.
+     * @param enableRegularization True if regularization is enabled.
      */
-    public IndTestDegenerateGaussianLrt(DataSet dataSet) {
+    public IndTestDegenerateGaussianLrt(DataSet dataSet, boolean enableRegularization) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -100,10 +101,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         }
 
         this.nodeHash = nodesHash;
-        boolean enableRegularization = true;
 
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
-        // we're not using the enable regularization option.
+        // we're not using the enable-regularization option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, 1, 1, -1, enableRegularization);
         DataSet convertedData = embeddedData.embeddedData();

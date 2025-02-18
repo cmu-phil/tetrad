@@ -51,26 +51,32 @@ public class BasisFunctionBicScoreFullSample implements Score {
      */
     private double penaltyDiscount = 2;
     /**
-     * The lambda variable is used in the context of regularization for the OLS (Ordinary Least Squares) regression
-     * calculations. It helps to prevent overfitting by adding a penalty term to the loss function.
+     * Indicates whether regularization should be enabled for certain computations such as Ordinary Least Squares (OLS)
+     * regression with L2 regularization.
+     * <p>
+     * When set to true, regularization techniques are applied to improve model generalization and control overfitting.
+     * If set to false, computations are performed without regularization.
+     * <p>
+     * This variable is primarily used in the context of calculating regression coefficients, BIC scores, or other
+     * statistical assessments where regularization can influence the outcome.
      */
-    private double lambda = 1e-6;
+    private boolean enableRegularization;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
      *
-     * @param dataSet         the data set on which the score is to be calculated. May contain a mixture of discrete and
-     *                        continuous variables.
-     * @param truncationLimit the truncation limit of the basis.
-     * @param basisType       the type of basis function used in the BIC score computation.
-     * @param basisScale      the basisScale factor used in the calculation of the BIC score for basis functions. All
-     *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
+     * @param dataSet              the data set on which the score is to be calculated. May contain a mixture of
+     *                             discrete and continuous variables.
+     * @param truncationLimit      the truncation limit of the basis.
+     * @param basisType            the type of basis function used in the BIC score computation.
+     * @param basisScale           the basisScale factor used in the calculation of the BIC score for basis functions.
+     *                             All variables are scaled to [-basisScale, basisScale], or standardized if 0.
+     * @param enableRegularization True if regularization is enabled.
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
-    public BasisFunctionBicScoreFullSample(DataSet dataSet, int truncationLimit, int basisType, double basisScale) {
+    public BasisFunctionBicScoreFullSample(DataSet dataSet, int truncationLimit, int basisType,
+                                           double basisScale, boolean enableRegularization) {
         this.variables = dataSet.getVariables();
-
-        boolean enableRegularization = true;
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
                 enableRegularization);
@@ -81,19 +87,24 @@ public class BasisFunctionBicScoreFullSample implements Score {
     /**
      * Computes the Ordinary Least Squares (OLS) regression coefficients with L2 regularization.
      *
-     * @param B The design matrix where each row represents a sample and each column represents a feature.
-     * @param X The matrix containing the target values for corresponding samples.
+     * @param B      The design matrix where each row represents a sample and each column represents a feature.
+     * @param X      The matrix containing the target values for corresponding samples.
      * @param lambda The regularization parameter to control overfitting (L2 regularization).
      * @return A matrix representing the OLS regression coefficients.
      */
-    public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
+    public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda, boolean enableRegularization) {
         int numCols = B.getNumCols();
         SimpleMatrix BtB = B.transpose().mult(B);
-        SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
+
+        if (enableRegularization) {
+            SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
+            BtB = BtB.plus(regularization);
+        }
 
         // Parallelized inversion using EJML's lower-level operations
         SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
-        CommonOps_DDRM.invert(BtB.plus(regularization).getDDRM(), inverse.getDDRM());
+
+        CommonOps_DDRM.invert(BtB.getDDRM(), inverse.getDDRM());
 
         return inverse.mult(B.transpose()).mult(X);
     }
@@ -215,41 +226,6 @@ public class BasisFunctionBicScoreFullSample implements Score {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    /**
-     * Sets the regularization parameter lambda, which is used in the OLS coefficient computation to control
-     * overfitting.
-     *
-     * @param lambda The regularization parameter value to be used. A higher value applies more regularization.
-     */
-    public void setLambda(double lambda) {
-        this.lambda = lambda;
-    }
-
-    private double getSequentialLocalScoreSumBic(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
-        int N = X_basis.getNumRows();
-        int pX = X_basis.getNumCols();
-        double totalBic = 0;
-
-        for (int i = 0; i < pX; i++) {
-            // Define parent variables for Xi
-            SimpleMatrix Z = (i == 0) ? Y_basis : Y_basis.combine(0, Y_basis.numCols(), X_basis.extractMatrix(0, N, 0, i));
-
-            // Fit regression: Xi ~ Z
-            SimpleMatrix betaZ = computeOLS(Z, X_basis.extractMatrix(0, N, i, i + 1), 1e-6);
-            SimpleMatrix residuals = X_basis.extractMatrix(0, N, i, i + 1).minus(Z.mult(betaZ));
-
-            // Compute residual variance with epsilon
-            double sigma_sq = computeVariance(residuals) + 1e-10;
-
-            // Compute log-likelihood
-            double logLikelihood = -0.5 * N * (Math.log(2 * Math.PI * sigma_sq) + 1);
-            int k = Z.getNumCols() + 1;
-            totalBic += 2 * logLikelihood - penaltyDiscount * k * Math.log(N);
-        }
-
-        return totalBic;
-    }
-
     private double getSequentialLocalScoreSumLikelihood(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
         int N = X_basis.getNumRows();
         int pX = X_basis.getNumCols();
@@ -261,7 +237,7 @@ public class BasisFunctionBicScoreFullSample implements Score {
             SimpleMatrix Z = (i == 0) ? Y_basis : Y_basis.combine(0, Y_basis.getNumCols(), X_basis.extractMatrix(0, N, 0, i));
 
             // Fit regression: Xi ~ Z
-            SimpleMatrix betaZ = computeOLS(Z, X_basis.extractMatrix(0, N, i, i + 1), 1e-6);
+            SimpleMatrix betaZ = computeOLS(Z, X_basis.extractMatrix(0, N, i, i + 1), 1e-6, enableRegularization);
             SimpleMatrix residuals = X_basis.extractMatrix(0, N, i, i + 1).minus(Z.mult(betaZ));
 
             // Compute residual variance with epsilon
