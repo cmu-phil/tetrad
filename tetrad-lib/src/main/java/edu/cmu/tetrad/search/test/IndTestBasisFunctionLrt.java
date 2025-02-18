@@ -192,10 +192,15 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
 
         SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
         SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
+//        SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
+
         SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
+        double lambda = 1e-6; // Regularization strength, tune as needed
+        SimpleMatrix identity = SimpleMatrix.identity(Sigma_PP.getNumRows());
+        Sigma_PP = Sigma_PP.plus(identity.scale(lambda)); // Regularize diagonal
 
         // Compute OLS estimate of X given predictors P
-        SimpleMatrix beta = Sigma_PP.pseudoInverse().mult(Sigma_XP.transpose());
+        SimpleMatrix beta = Sigma_PP.invert().mult(Sigma_XP.transpose());
 
         // Compute residual variance
         return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;

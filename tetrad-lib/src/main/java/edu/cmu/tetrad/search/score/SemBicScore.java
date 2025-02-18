@@ -237,7 +237,13 @@ public class SemBicScore implements Score {
         int[] all = SemBicScore.concat(i, parents);
         Matrix cov = SemBicScore.getCov(rows, all, all, data, covariances);
         int[] pp = SemBicScore.indexedParents(parents);
+//        Matrix covxx = cov.view(pp, pp).mat();
+
         Matrix covxx = cov.view(pp, pp).mat();
+        double lambda = 1e-6; // Regularization strength, tune as needed
+        Matrix identity = Matrix.identity(covxx.getNumRows());
+        covxx = covxx.plus(identity.scale(lambda)); // Regularize diagonal
+
         Matrix covxy = cov.view(pp, new int[]{0}).mat();
 
         // The regression coefficient vector.
@@ -650,8 +656,8 @@ public class SemBicScore implements Score {
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets,
                 usePseudoInverse);
-//        return -0.5 * this.sampleSize * (Math.log(2 * Math.PI * sigmaSquared) + 1);
-        return -(double) (this.sampleSize / 2.0) * log(sigmaSquared);
+        return -0.5 * this.sampleSize * (Math.log(2 * Math.PI * sigmaSquared) + 1);
+//        return -(double) (this.sampleSize / 2.0) * log(sigmaSquared);
     }
 
     /**
