@@ -80,7 +80,7 @@ public class ZsbScore implements Score {
     // The data, if it is set.
     private Matrix data;
     // True if regularization should be enabled.
-    private boolean enableRegularization;
+    private double lambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -162,7 +162,7 @@ public class ZsbScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, enableRegularization);
+            varRy = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, lambda);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -294,15 +294,6 @@ public class ZsbScore implements Score {
         this.riskBound = riskBound;
     }
 
-    /**
-     * Sets whether to use the pseudo-inverse in place of the inverse in the score.
-     *
-     * @param enableRegularization True if the pseudo-inverse should be used.
-     */
-    public void setEnableRegularization(boolean enableRegularization) {
-        this.enableRegularization = enableRegularization;
-    }
-
     private double getLambda(int m0, int pn) {
         if (lambdas == null) {
             lambdas = new ArrayList<>();
@@ -322,6 +313,15 @@ public class ZsbScore implements Score {
         int[] indices = new int[__adj.size()];
         for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
         return indices;
+    }
+
+    /**
+     * Sets the regularization constant.
+     *
+     * @param lambda The new value for the lambda parameter.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 }
 

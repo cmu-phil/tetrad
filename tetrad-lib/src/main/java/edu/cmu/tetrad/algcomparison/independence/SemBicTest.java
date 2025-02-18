@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.LinearGaussian;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -57,7 +55,7 @@ public class SemBicTest implements IndependenceWrapper {
         }
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-        score.setEnableRegularization(parameters.getBoolean(Params.ENABLE_REGULARIZATION));
+        score.setLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -93,7 +91,7 @@ public class SemBicTest implements IndependenceWrapper {
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
         params.add(Params.PRECOMPUTE_COVARIANCES);
-        params.add(Params.ENABLE_REGULARIZATION);
+        params.add(Params.REGULARIZATION_LAMBDA);
         return params;
     }
 }

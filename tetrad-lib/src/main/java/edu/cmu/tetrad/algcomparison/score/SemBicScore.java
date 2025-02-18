@@ -62,7 +62,7 @@ public class SemBicScore implements ScoreWrapper {
 
         semBicScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         semBicScore.setStructurePrior(parameters.getDouble(Params.SEM_BIC_STRUCTURE_PRIOR));
-        semBicScore.setEnableRegularization(parameters.getBoolean(Params.ENABLE_REGULARIZATION));
+        semBicScore.setLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
 
         switch (parameters.getInt(Params.SEM_BIC_RULE)) {
             case 1:
@@ -110,7 +110,7 @@ public class SemBicScore implements ScoreWrapper {
         parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         parameters.add(Params.SEM_BIC_RULE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
-        parameters.add(Params.ENABLE_REGULARIZATION);
+        parameters.add(Params.REGULARIZATION_LAMBDA);
         return parameters;
     }
 

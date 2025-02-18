@@ -71,9 +71,9 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-        DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances);
+        DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances,
+                parameters.getDouble(Params.REGULARIZATION_LAMBDA));
         degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        degenerateGaussianScore.setEnableRegularization(parameters.getBoolean(Params.ENABLE_REGULARIZATION));
         return degenerateGaussianScore;
     }
 
@@ -102,7 +102,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.STRUCTURE_PRIOR);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
-        parameters.add(Params.ENABLE_REGULARIZATION);
+        parameters.add(Params.REGULARIZATION_LAMBDA);
         return parameters;
     }
 

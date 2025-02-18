@@ -54,7 +54,7 @@ public class PoissonPriorTest implements IndependenceWrapper {
             score = new PoissonPriorScore((DataSet) dataSet, precomputeCovariances);
         }
         score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
-        score.setEnableRegularization(parameters.getBoolean(Params.ENABLE_REGULARIZATION));
+        score.setLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -89,7 +89,7 @@ public class PoissonPriorTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.PRECOMPUTE_COVARIANCES);
         params.add(Params.POISSON_LAMBDA);
-        params.add(Params.ENABLE_REGULARIZATION);
+        params.add(Params.REGULARIZATION_LAMBDA);
         return params;
     }
 }

@@ -126,9 +126,9 @@ public class SemBicScore implements Score {
      */
     private RuleType ruleType = RuleType.CHICKERING;
     /**
-     * True iff regularization should be used to avoid exceptions.
+     * Regularization lambda.
      */
-    private boolean enableRegularization = true;
+    private double lambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -185,17 +185,18 @@ public class SemBicScore implements Score {
     /**
      * Returns the variance of the residual of the regression of the ith variable on its parents.
      *
-     * @param i                    The index of the variable.
-     * @param parents              The indices of the parents.
-     * @param covariances          The covariance matrix.
-     * @param calculateRowSubsets  True if row subsets should be calculated.
-     * @param data                 a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param enableRegularization true, if regularization should be enabled ot avoid singularity exceptions.
+     * @param i                   The index of the variable.
+     * @param parents             The indices of the parents.
+     * @param covariances         The covariance matrix.
+     * @param calculateRowSubsets True if row subsets should be calculated.
+     * @param data                a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param lambda              Regularization constant.
      * @return The variance of the residual of the regression of the ith variable on its parents.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
-    public static double getResidualVariance(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets, boolean enableRegularization) throws SingularMatrixException {
-        CovAndCoefs covAndcoefs = getCovAndCoefs(i, parents, data, covariances, calculateRowSubsets, enableRegularization);
+    public static double getResidualVariance(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets,
+                                             double lambda) throws SingularMatrixException {
+        CovAndCoefs covAndcoefs = getCovAndCoefs(i, parents, data, covariances, calculateRowSubsets, lambda);
         return (bStar(covAndcoefs.b()).transpose().times(covAndcoefs.cov()).times(bStar(covAndcoefs.b())).get(0, 0));
     }
 
@@ -203,49 +204,43 @@ public class SemBicScore implements Score {
      * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
      * coefficients.
      *
-     * @param i                    The index of the variable.
-     * @param parents              The indices of the parents.
-     * @param data                 The data matrix.
-     * @param covariances          The covariance matrix.
-     * @param calculateRowSubsets  True if row subsets should be calculated.
-     * @param enableRegularization True if regularization should be used to avoid exceptions.
+     * @param i                   The index of the variable.
+     * @param parents             The indices of the parents.
+     * @param data                The data matrix.
+     * @param covariances         The covariance matrix.
+     * @param calculateRowSubsets True if row subsets should be calculated.
+     * @param lambda              Regularization constant.
      * @return The covariance matrix of the regression of the ith variable on its parents and the regression
      * coefficients.
      */
     @NotNull
     public static SemBicScore.CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
-                                                         boolean calculateRowSubsets, boolean enableRegularization) {
+                                                         boolean calculateRowSubsets, double lambda) {
         List<Integer> rows = SemBicScore.getRows(data, calculateRowSubsets);
-        return getCovAndCoefs(i, parents, data, covariances, enableRegularization, rows);
+        return getCovAndCoefs(i, parents, data, covariances, lambda, rows);
     }
 
     /**
      * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
      *
-     * @param i                    The index of the variable.
-     * @param parents              The indices of the parents.
-     * @param data                 The data matrix.
-     * @param covariances          The covariance matrix.
-     * @param enableRegularization True, if the pseudo-inverse should be used instead of the inverse to avoid
-     *                             exceptions.
-     * @param rows                 The rows to use.
+     * @param i           The index of the variable.
+     * @param parents     The indices of the parents.
+     * @param data        The data matrix.
+     * @param covariances The covariance matrix.
+     * @param lambda      Regularization constant.
+     * @param rows        The rows to use.
      * @return The covariance matrix of the regression of the ith variable on its parents and the regression
      */
     @NotNull
     public static CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
-                                             boolean enableRegularization, List<Integer> rows) {
+                                             double lambda, List<Integer> rows) {
         int[] all = SemBicScore.concat(i, parents);
         Matrix cov = SemBicScore.getCov(rows, all, all, data, covariances);
         int[] pp = SemBicScore.indexedParents(parents);
 //        Matrix covxx = cov.view(pp, pp).mat();
 
         Matrix covxx = cov.view(pp, pp).mat();
-
-        if (enableRegularization) {
-            double lambda = 1e-6; // Regularization strength, tune as needed
-            Matrix identity = Matrix.identity(covxx.getNumRows());
-            covxx = covxx.plus(identity.scale(lambda)); // Regularize diagonal
-        }
+        covxx = StatUtils.regularizeDiagonal(covxx, lambda);
 
         Matrix covxy = cov.view(pp, new int[]{0}).mat();
 
@@ -486,10 +481,10 @@ public class SemBicScore implements Score {
      * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
      * coefficients.
      *
-     * @param enableRegularization True if regularization should be enabled to avoid exceptions.
+     * @param lambda Regularization constant.
      */
-    public void setEnableRegularization(boolean enableRegularization) {
-        this.enableRegularization = enableRegularization;
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 
     /**
@@ -648,7 +643,7 @@ public class SemBicScore implements Score {
      * @throws SingularMatrixException if the covariance matrix is singular and cannot be inverted.
      */
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
-        double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, enableRegularization);
+        double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, lambda);
         return -0.5 * this.sampleSize * (Math.log(2 * Math.PI * sigmaSquared) + 1);
 //        return -(double) (this.sampleSize / 2.0) * log(sigmaSquared);
     }
@@ -904,7 +899,7 @@ public class SemBicScore implements Score {
             all[1] = this.indexMap.get(y);
             for (int i = 0; i < z.size(); i++) all[i + 2] = this.indexMap.get(z.get(i));
 
-            return StatUtils.partialCorrelation(convertCovToCorr(getCov(rows, indices(x, y, z), all, (DataSet) this.dataModel, this.matrix)), enableRegularization);
+            return StatUtils.partialCorrelation(convertCovToCorr(getCov(rows, indices(x, y, z), all, (DataSet) this.dataModel, this.matrix)), lambda);
         } catch (Exception e) {
             return NaN;
         }

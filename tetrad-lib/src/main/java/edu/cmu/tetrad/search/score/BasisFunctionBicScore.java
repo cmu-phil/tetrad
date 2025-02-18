@@ -54,14 +54,15 @@ public class BasisFunctionBicScore implements Score {
      * @param basisType       the type of basis function used in the BIC score computation.
      * @param basisScale      the basisScale factor used in the calculation of the BIC score for basis functions. All
      *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
+     * @param lambda          Regularization constant
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit,
-                                 int basisType, double basisScale, boolean enableRegularization) {
+                                 int basisType, double basisScale, double lambda) {
         this.variables = dataSet.getVariables();
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
-                enableRegularization);
+                lambda);
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
@@ -70,10 +71,10 @@ public class BasisFunctionBicScore implements Score {
 
         this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
-        this.bic.setEnableRegularization(enableRegularization);
+        this.bic.setLambda(lambda);
 
         // We will be using regularization in the BIC score calculation so we don't get singularity exceptions.
-        this.bic.setEnableRegularization(enableRegularization);
+        this.bic.setLambda(lambda);
 
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
         this.bic.setStructurePrior(0);

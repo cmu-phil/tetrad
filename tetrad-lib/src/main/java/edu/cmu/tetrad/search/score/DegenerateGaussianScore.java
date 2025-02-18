@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,11 +17,11 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.score;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 
@@ -54,30 +54,32 @@ public class DegenerateGaussianScore implements Score {
     // The SEM BIC score.
     private final SemBicScore bic;
     // The enable regularization flag
-    private boolean enableRegularization = true;
+    private double lambda = 0.0;
 
     /**
      * Constructs the score using a dataset.
      *
      * @param dataSet               The dataset.
      * @param precomputeCovariances True if covariances should be precomputed.
+     * @param lambda                Regularization constant
      */
-    public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances) {
+    public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances, double lambda) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.variables = dataSet.getVariables();
+        this.lambda = lambda;
 
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
         // we're not using the regularization option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, enableRegularization);
+                dataSet, 1, 1, -1, this.lambda);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
 
         this.bic = new SemBicScore(convertedData, precomputeCovariances);
-        this.bic.setEnableRegularization(enableRegularization);
+        this.bic.setLambda(this.lambda);
         this.bic.setStructurePrior(0);
     }
 
@@ -188,14 +190,5 @@ public class DegenerateGaussianScore implements Score {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
-    }
-
-    /**
-     * Sets the flag to indicate whether to enable regularization in the score calculations.
-     *
-     * @param enableRegularization True if regularization should be enabled, false otherwise.
-     */
-    public void setEnableRegularization(boolean enableRegularization) {
-        this.enableRegularization = enableRegularization;
     }
 }

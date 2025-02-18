@@ -531,11 +531,11 @@ public final class Fask {
                 _Z[f] = data[column];
             }
 
-            boolean enableRegularization = true;
+            double lambda = 0.0;
 
-            double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1, enableRegularization);
-            double pc1 = partialCorrelation(x, y, _Z, x, 0, +1, enableRegularization);
-            double pc2 = partialCorrelation(x, y, _Z, y, 0, +1, enableRegularization);
+            double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1, lambda);
+            double pc1 = partialCorrelation(x, y, _Z, x, 0, +1, lambda);
+            double pc2 = partialCorrelation(x, y, _Z, y, 0, +1, lambda);
 
             int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
             int nc1 = StatUtils.getRows(x, x, 0, +1).size();
@@ -658,10 +658,10 @@ public final class Fask {
      *                                 linear dependence between the variables
      */
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold,
-                                      double direction, boolean enableRegularization) throws SingularMatrixException {
+                                      double direction, double lambda) throws SingularMatrixException {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
         Matrix m = new Matrix(cv).transpose();
-        return StatUtils.partialCorrelation(m, enableRegularization);
+        return StatUtils.partialCorrelation(m, lambda);
     }
 
     /**

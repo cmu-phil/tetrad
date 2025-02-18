@@ -84,10 +84,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     /**
      * Constructs the test using the given (mixed) data set.
      *
-     * @param dataSet              The data being analyzed.
-     * @param enableRegularization True if regularization is enabled.
+     * @param dataSet The data being analyzed.
+     * @param lambda  True if regularization is enabled.
      */
-    public IndTestDegenerateGaussianLrt(DataSet dataSet, boolean enableRegularization) {
+    public IndTestDegenerateGaussianLrt(DataSet dataSet, double lambda) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -102,14 +102,13 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
         this.nodeHash = nodesHash;
 
-        // Expand the discrete columns to give indicators for each category. We want to leave a category out if
-        // we're not using the enable-regularization option.
+        // Expand the discrete columns to give indicators for each category.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, enableRegularization);
+                dataSet, 1, 1, -1, lambda);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
         this.bic = new SemBicScore(convertedData, false);
-        this.bic.setEnableRegularization(enableRegularization);
+        this.bic.setLambda(lambda);
         this.bic.setStructurePrior(0);
     }
 

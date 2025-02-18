@@ -51,36 +51,30 @@ public class BasisFunctionBicScoreFullSample implements Score {
      */
     private double penaltyDiscount = 2;
     /**
-     * Indicates whether regularization should be enabled for certain computations such as Ordinary Least Squares (OLS)
-     * regression with L2 regularization.
-     * <p>
-     * When set to true, regularization techniques are applied to improve model generalization and control overfitting.
-     * If set to false, computations are performed without regularization.
-     * <p>
-     * This variable is primarily used in the context of calculating regression coefficients, BIC scores, or other
-     * statistical assessments where regularization can influence the outcome.
+     * Regularization lambda.
      */
-    private boolean enableRegularization;
+    private double lambda;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
      *
-     * @param dataSet              the data set on which the score is to be calculated. May contain a mixture of
-     *                             discrete and continuous variables.
-     * @param truncationLimit      the truncation limit of the basis.
-     * @param basisType            the type of basis function used in the BIC score computation.
-     * @param basisScale           the basisScale factor used in the calculation of the BIC score for basis functions.
-     *                             All variables are scaled to [-basisScale, basisScale], or standardized if 0.
-     * @param enableRegularization True if regularization is enabled.
+     * @param dataSet         the data set on which the score is to be calculated. May contain a mixture of discrete and
+     *                        continuous variables.
+     * @param truncationLimit the truncation limit of the basis.
+     * @param basisType       the type of basis function used in the BIC score computation.
+     * @param basisScale      the basisScale factor used in the calculation of the BIC score for basis functions. All
+     *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
+     * @param lambda          Regularization lambda
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScoreFullSample(DataSet dataSet, int truncationLimit, int basisType,
-                                           double basisScale, boolean enableRegularization) {
+                                           double basisScale, double lambda) {
         this.variables = dataSet.getVariables();
 
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
-                enableRegularization);
+                lambda);
         this.embedding = result.embedding();
+        this.lambda = lambda;
         embeddedData = result.embeddedData();
     }
 
@@ -92,14 +86,10 @@ public class BasisFunctionBicScoreFullSample implements Score {
      * @param lambda The regularization parameter to control overfitting (L2 regularization).
      * @return A matrix representing the OLS regression coefficients.
      */
-    public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda, boolean enableRegularization) {
+    public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
         int numCols = B.getNumCols();
         SimpleMatrix BtB = B.transpose().mult(B);
-
-        if (enableRegularization) {
-            SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
-            BtB = BtB.plus(regularization);
-        }
+        BtB = StatUtils.regularizeDiagonal(BtB, lambda);
 
         // Parallelized inversion using EJML's lower-level operations
         SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
@@ -237,7 +227,8 @@ public class BasisFunctionBicScoreFullSample implements Score {
             SimpleMatrix Z = (i == 0) ? Y_basis : Y_basis.combine(0, Y_basis.getNumCols(), X_basis.extractMatrix(0, N, 0, i));
 
             // Fit regression: Xi ~ Z
-            SimpleMatrix betaZ = computeOLS(Z, X_basis.extractMatrix(0, N, i, i + 1), 1e-6, enableRegularization);
+            SimpleMatrix x = X_basis.extractMatrix(0, N, i, i + 1);
+            SimpleMatrix betaZ = computeOLS(Z, x, lambda);
             SimpleMatrix residuals = X_basis.extractMatrix(0, N, i, i + 1).minus(Z.mult(betaZ));
 
             // Compute residual variance with epsilon

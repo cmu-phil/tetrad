@@ -130,7 +130,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
         System.out.println(LogUtilsSearch.independenceFact(x0, y0, _z0));
 
-
         double[] x = this.data[this.dataSet.getColumnIndex(x0)];
         double[] y = this.data[this.dataSet.getColumnIndex(y0)];
 
@@ -145,11 +144,11 @@ public final class IndTestPositiveCorr implements IndependenceTest {
             _Z[f] = this.data[column];
         }
 
-        boolean enableRegularization = true;
+        double lambea = 0.0;
 
-        double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, enableRegularization);
-        double pc1 = partialCorrelation(x, y, _Z, x, 0, enableRegularization);
-        double pc2 = partialCorrelation(x, y, _Z, y, 0, enableRegularization);
+        double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, lambea);
+        double pc1 = partialCorrelation(x, y, _Z, x, 0, lambea);
+        double pc2 = partialCorrelation(x, y, _Z, y, 0, lambea);
 
         int nc = StatUtils.getRows(x, Double.NEGATIVE_INFINITY, +1).size();
         int nc1 = StatUtils.getRows(x, 0, +1).size();
@@ -371,10 +370,10 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         this.verbose = verbose;
     }
 
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, boolean enableRegularization) throws SingularMatrixException {
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double lambda) throws SingularMatrixException {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, 1);
         Matrix m = new Matrix(cv).transpose();
-        return StatUtils.partialCorrelation(m, enableRegularization);
+        return StatUtils.partialCorrelation(m, lambda);
     }
 }
 

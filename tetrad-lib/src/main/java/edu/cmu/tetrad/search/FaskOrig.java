@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -548,48 +548,30 @@ public final class FaskOrig implements IGraphSearch {
                     double lr = lrs[i][j];// leftRight(x, y);
 
                     if (edgeForbiddenByKnowledge(X, Y) && edgeForbiddenByKnowledge(Y, X)) {
-                        TetradLogger.getInstance().log(X + "\t" + Y + "\tknowledge_forbidden"
-                                                       + "\t" + nf.format(lr)
-                                                       + "\t" + X + "<->" + Y
-                        );
+                        TetradLogger.getInstance().log(X + "\t" + Y + "\tknowledge_forbidden" + "\t" + nf.format(lr) + "\t" + X + "<->" + Y);
                         continue;
                     }
 
                     if (knowledgeOrients(X, Y)) {
-                        TetradLogger.getInstance().log(X + "\t" + Y + "\tknowledge"
-                                                       + "\t" + nf.format(lr)
-                                                       + "\t" + X + "-->" + Y
-                        );
+                        TetradLogger.getInstance().log(X + "\t" + Y + "\tknowledge" + "\t" + nf.format(lr) + "\t" + X + "-->" + Y);
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
-                        TetradLogger.getInstance().log(X + "\t" + Y + "\tknowledge"
-                                                       + "\t" + nf.format(lr)
-                                                       + "\t" + X + "<--" + Y
-                        );
+                        TetradLogger.getInstance().log(X + "\t" + Y + "\tknowledge" + "\t" + nf.format(lr) + "\t" + X + "<--" + Y);
                         graph.addDirectedEdge(Y, X);
                     } else {
                         if (passesTwoCycleScreening(x, y)) {
                             if (this.twoCycleScreeningCutoff != 0) {
-                                TetradLogger.getInstance().log(X + "\t" + Y + "\t2-cycle Prescreen"
-                                                               + "\t" + nf.format(lr)
-                                                               + "\t" + X + "...TC?..." + Y
-                                );
+                                TetradLogger.getInstance().log(X + "\t" + Y + "\t2-cycle Prescreen" + "\t" + nf.format(lr) + "\t" + X + "...TC?..." + Y);
                             }
 
                             possibleTwoCycles.add(new NodePair(X, Y));
                         }
 
                         if (lr > 0) {
-                            TetradLogger.getInstance().log(X + "\t" + Y + "\tleft-right"
-                                                           + "\t" + nf.format(lr)
-                                                           + "\t" + X + "-->" + Y
-                            );
+                            TetradLogger.getInstance().log(X + "\t" + Y + "\tleft-right" + "\t" + nf.format(lr) + "\t" + X + "-->" + Y);
                             graph.addDirectedEdge(X, Y);
                         } else if (lr < 0) {
-                            TetradLogger.getInstance().log(Y + "\t" + X + "\tleft-right"
-                                                           + "\t" + nf.format(lr)
-                                                           + "\t" + Y + "-->" + X
-                            );
+                            TetradLogger.getInstance().log(Y + "\t" + X + "\tleft-right" + "\t" + nf.format(lr) + "\t" + Y + "-->" + X);
                             graph.addDirectedEdge(Y, X);
                         }
                     }
@@ -766,8 +748,7 @@ public final class FaskOrig implements IGraphSearch {
      * @param twoCycleScreeningCutoff This cutoff.
      */
     public void setTwoCycleScreeningCutoff(double twoCycleScreeningCutoff) {
-        if (twoCycleScreeningCutoff < 0)
-            throw new IllegalStateException("Two cycle screening threshold must be >= 0");
+        if (twoCycleScreeningCutoff < 0) throw new IllegalStateException("Two cycle screening threshold must be >= 0");
         this.twoCycleScreeningCutoff = twoCycleScreeningCutoff;
     }
 
@@ -931,12 +912,12 @@ public final class FaskOrig implements IGraphSearch {
             double pc1;
             double pc2;
 
-            boolean enableRegularization = true;
+            double lambda = 0.0;
 
             try {
-                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, enableRegularization);
-                pc1 = partialCorrelation(x, y, _Z, x, 0, enableRegularization);
-                pc2 = partialCorrelation(x, y, _Z, y, 0, enableRegularization);
+                pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, lambda);
+                pc1 = partialCorrelation(x, y, _Z, x, 0, lambda);
+                pc2 = partialCorrelation(x, y, _Z, y, 0, lambda);
             } catch (SingularMatrixException e) {
                 TetradLogger.getInstance().log("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
                 continue;
@@ -992,15 +973,14 @@ public final class FaskOrig implements IGraphSearch {
         double pc1;
         double pc2;
 
-        boolean enableRegularization = true;
+        double lambda = 0.0;
 
         try {
-            pc1 = partialCorrelation(x, y, new double[0][], x, 0, enableRegularization);
-            pc2 = partialCorrelation(x, y, new double[0][], y, 0, enableRegularization);
+            pc1 = partialCorrelation(x, y, new double[0][], x, 0, lambda);
+            pc2 = partialCorrelation(x, y, new double[0][], y, 0, lambda);
         } catch (SingularMatrixException e) {
             List<Node> nodes = dataSet.getVariables();
-            throw new RuntimeException("Singularity encountered (conditioning on X > 0, Y > 0) for variables "
-                                       + nodes.get(i) + ", " + nodes.get(j));
+            throw new RuntimeException("Singularity encountered (conditioning on X > 0, Y > 0) for variables " + nodes.get(i) + ", " + nodes.get(j));
         }
 
         int nc1 = getRows(x, x, 0, +1).size();
@@ -1017,19 +997,20 @@ public final class FaskOrig implements IGraphSearch {
     /**
      * Calculates the partial correlation coefficient between two variables while controlling for other variables.
      *
-     * @param x                    the first variable
-     * @param y                    the second variable
-     * @param z                    the matrix containing the control variables
-     * @param condition            the control variables for partial correlation
-     * @param threshold            the threshold for excluding cases
-     * @param enableRegularization True if regularization should be enabled.
+     * @param x         the first variable
+     * @param y         the second variable
+     * @param z         the matrix containing the control variables
+     * @param condition the control variables for partial correlation
+     * @param threshold the threshold for excluding cases
+     * @param lambda    Regulation constant.
      * @return the partial correlation coefficient
      * @throws SingularMatrixException if the covariance matrix is singular and cannot be inverted
      */
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, boolean enableRegularization) throws SingularMatrixException {
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold,
+                                      double lambda) throws SingularMatrixException {
         double[][] cv = covMatrix(x, y, z, condition, threshold, 1);
         Matrix m = new Matrix(cv).transpose();
-        return StatUtils.partialCorrelation(m, enableRegularization);
+        return StatUtils.partialCorrelation(m, lambda);
     }
 
     /**
@@ -1051,10 +1032,7 @@ public final class FaskOrig implements IGraphSearch {
 
         double lr = leftRight(x, y);
 
-        TetradLogger.getInstance().log(X + "\t" + Y + "\t" + type
-                                       + "\t" + nf.format(lr)
-                                       + "\t" + X + "<=>" + Y
-        );
+        TetradLogger.getInstance().log(X + "\t" + Y + "\t" + type + "\t" + nf.format(lr) + "\t" + X + "<=>" + Y);
     }
 
     /**

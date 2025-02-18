@@ -83,7 +83,7 @@ public class GICScoreTests implements IndependenceWrapper {
 
         score.setRuleType(ruleType);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        score.setEnableRegularization(parameters.getBoolean(Params.ENABLE_REGULARIZATION));
+        score.setLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -113,7 +113,7 @@ public class GICScoreTests implements IndependenceWrapper {
         params.add(Params.SEM_GIC_RULE);
         params.add(Params.PENALTY_DISCOUNT_ZS);
         params.add(Params.PRECOMPUTE_COVARIANCES);
-        params.add(Params.ENABLE_REGULARIZATION);
+        params.add(Params.REGULARIZATION_LAMBDA);
         return params;
     }
 }

@@ -67,7 +67,7 @@ public class MagDgBicScore implements Score {
             throw new NullPointerException();
         }
 
-        this.score = new DegenerateGaussianScore(dataSet, true);
+        this.score = new DegenerateGaussianScore(dataSet, true, 0.0);
         this.mag = null;
         this.order = null;
     }
@@ -83,7 +83,7 @@ public class MagDgBicScore implements Score {
             throw new NullPointerException();
         }
 
-        this.score = new DegenerateGaussianScore(dataSet, precomputeCovariances);
+        this.score = new DegenerateGaussianScore(dataSet, precomputeCovariances, 0.0);
         this.score.setPenaltyDiscount(1.0);
         this.mag = null;
         this.order = null;

@@ -82,7 +82,7 @@ public class TestStatUtils {
         ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         Matrix _cov = cov.getMatrix();
 
-        double r2 = StatUtils.partialCorrelation(_cov, true, 0, 1);
+        double r2 = StatUtils.partialCorrelation(_cov, 0.0, 0, 1);
         double s2 = StatUtils.partialCovarianceWhittaker(_cov, 0, 1);
         double v2 = StatUtils.partialVariance(_cov, 0);
         double sd2 = StatUtils.partialStandardDeviation(_cov, 0);

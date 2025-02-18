@@ -1950,34 +1950,25 @@ public final class StatUtils {
      * direction) is X, Y, Z1, ..., Zn, where the partial correlation one wants is correlation(X, Y | Z1,...,Zn). This
      * may be extracted using DataUtils.submatrix().
      *
-     * @param submatrix            a {@link Matrix} object
-     * @param enableRegularization
+     * @param submatrix a {@link Matrix} object
+     * @param lambda    Regularization constant.
      * @return the given partial correlation.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
-    public static synchronized double partialCorrelation(Matrix submatrix, boolean enableRegularization) throws SingularMatrixException {
-//        try {
-        return StatUtils.partialCorrelationPrecisionMatrix(submatrix, enableRegularization);
-//        } catch (SingularMatrixException e) {
-//            return NaN;
-//        }
+    public static synchronized double partialCorrelation(Matrix submatrix, double lambda) throws SingularMatrixException {
+        return StatUtils.partialCorrelationPrecisionMatrix(submatrix, lambda);
     }
 
     /**
      * <p>partialCorrelationPrecisionMatrix.</p>
      *
-     * @param submatrix            a {@link Matrix} object
-     * @param enableRegularization True, if regularization is enabled.
+     * @param submatrix a {@link Matrix} object
+     * @param lambda    Regularisation lamgda, 0 for no regularization.z
      * @return a double
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
-    public static double partialCorrelationPrecisionMatrix(Matrix submatrix, boolean enableRegularization) throws SingularMatrixException {
-        if (enableRegularization) {
-            double lambda = 1e-6; // Regularization strength, tune as needed
-            Matrix identity = Matrix.identity(submatrix.getNumRows());
-            submatrix = submatrix.plus(identity.scale(lambda)); // Regularize diagonal
-        }
-
+    public static double partialCorrelationPrecisionMatrix(Matrix submatrix, double lambda) throws SingularMatrixException {
+        submatrix = regularizeDiagonal(submatrix, lambda);
         Matrix inverse = submatrix.inverse();
         double r = (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
         if (r < -1) r = -1;
@@ -1986,17 +1977,45 @@ public final class StatUtils {
     }
 
     /**
+     * Regularizes the diagonal of the given matrix by adding a scaled identity matrix. The regularization is achieved
+     * by creating an identity matrix of the same dimensions as the original matrix and scaling it by the given lambda
+     * value, then adding it to the original matrix.
+     *
+     * @param m      the matrix to be regularized
+     * @param lambda the scaling factor for the identity matrix to be added to the diagonal
+     * @return the regularized matrix with the scaled identity matrix added to its diagonal
+     */
+    public static Matrix regularizeDiagonal(Matrix m, double lambda) {
+        if (lambda == 0.0) return m;
+        Matrix identity = Matrix.identity(m.getNumRows());
+        return m.plus(identity.scale(lambda));
+    }
+
+    /**
+     * Regularizes the diagonal of the given matrix by adding a scaled identity matrix to it.
+     *
+     * @param m the input matrix to be regularized
+     * @param lambda the scaling factor for the identity matrix; if 0.0, the original matrix is returned
+     * @return the matrix with its diagonal regularized by adding a scaled identity matrix
+     */
+    public static SimpleMatrix regularizeDiagonal(SimpleMatrix m, double lambda) {
+        if (lambda == 0.0) return m;
+        SimpleMatrix identity = SimpleMatrix.identity(m.getNumRows());
+        return m.plus(identity.scale(lambda));
+    }
+
+    /**
      * <p>partialCorrelation.</p>
      *
-     * @param covariance           a {@link Matrix} object
-     * @param enableRegularization
-     * @param x                    a int
-     * @param y                    a int
-     * @param z                    a int
+     * @param covariance a {@link Matrix} object
+     * @param lambda     Regularization lambda
+     * @param x          a int
+     * @param y          a int
+     * @param z          a int
      * @return the partial correlation(x, y | z) where these represent the column/row indices of the desired variables
      * in <code>covariance</code>
      */
-    public static double partialCorrelation(Matrix covariance, boolean enableRegularization, int x, int y, int... z) {
+    public static double partialCorrelation(Matrix covariance, double lambda, int x, int y, int... z) {
         if (x > covariance.getNumRows()) throw new IllegalArgumentException();
         if (y > covariance.getNumRows()) throw new IllegalArgumentException();
         for (int aZ : z) if (aZ > covariance.getNumRows()) throw new IllegalArgumentException();
@@ -2007,7 +2026,7 @@ public final class StatUtils {
         selection[1] = y;
         System.arraycopy(z, 0, selection, 2, z.length);
 
-        return StatUtils.partialCorrelation(covariance.view(selection, selection).mat(), enableRegularization);
+        return StatUtils.partialCorrelation(covariance.view(selection, selection).mat(), lambda);
     }
 
     /**

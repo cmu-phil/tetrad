@@ -888,9 +888,9 @@ public final class Params {
      */
     public static final String BOOTSTRAPPING_NUM_THREADS = "bootstrappingNumThreads";
     /**
-     * Constant <code>ENABLE_REGULARIZATION="enableRegularization"</code>
+     * Constant <code>REGULARIZATION_LAMBDA="regularizationLambda"</code>
      */
-    public static final String ENABLE_REGULARIZATION = "enableRegularization";
+    public static final String REGULARIZATION_LAMBDA = "regularizationLambda";
     /**
      * Constant <code>COMPARE_GRAPH_ALGCOMP="compareGraphAlgcomp"</code>
      */

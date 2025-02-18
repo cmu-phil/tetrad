@@ -65,7 +65,7 @@ public class EbicScore implements Score {
     // The gamma parameter.
     private double gamma = 1;
     // True if the pseudo-inverse should be used.
-    private boolean enableRegularization = true;
+    private double lambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -134,7 +134,7 @@ public class EbicScore implements Score {
 
         try {
             varRy = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets,
-                    this.enableRegularization);
+                    this.lambda);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -221,14 +221,7 @@ public class EbicScore implements Score {
         this.gamma = gamma;
     }
 
-    /**
-     * Returns the gamma parameter for EBIC.
-     *
-     * @param enableRegularization True if the pseudo-inverse should be used.
-     */
-    public void setEnableRegularization(boolean enableRegularization) {
-        this.enableRegularization = enableRegularization;
-    }
+
 
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
@@ -239,6 +232,15 @@ public class EbicScore implements Score {
         int[] indices = new int[__adj.size()];
         for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
         return indices;
+    }
+
+    /**
+     * Sets the regularization lambda.
+     *
+     * @param lambda The regularization lambda.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 }
 

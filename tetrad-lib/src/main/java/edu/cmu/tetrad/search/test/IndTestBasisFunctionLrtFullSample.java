@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
@@ -93,17 +94,6 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      */
     private double lambda = 1e-6;
     /**
-     * A flag that indicates whether regularization is enabled for computations within the class, such as in statistical
-     * modeling or independence testing.
-     * <p>
-     * When set to true, regularization techniques are applied to stabilize calculations, which can be especially
-     * beneficial when handling ill-conditioned matrices or to prevent overfitting in regression models. This variable
-     * works in conjunction with other parameters like the regularization constant `lambda`.
-     * <p>
-     * Default value is true.
-     */
-    private boolean enableRegularization = true;
-    /**
      * A boolean flag indicating whether verbose mode is enabled for the class. When set to true, verbose mode may
      * result in detailed logging or diagnostic output during the execution of methods in the class. When set to false,
      * verbose output is suppressed.
@@ -128,22 +118,23 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * input dataset to create the necessary embeddings and initializes key components such as the BIC score for later
      * use in independence testing.
      *
-     * @param dataSet              the input data set to be used for the analysis. It must not be null. May contain a
-     *                             mixture of continuous and discrete variables.
-     * @param truncationLimit      the maximum number of basis function truncations to be used.
-     * @param basisType            an integer indicating the type of basis function to use in the embeddings.
-     * @param basisScale           a scaling factor for the basis functions used in the embeddings.
-     * @param enableRegularization true if regularization is enabled.
+     * @param dataSet         the input data set to be used for the analysis. It must not be null. May contain a mixture
+     *                        of continuous and discrete variables.
+     * @param truncationLimit the maximum number of basis function truncations to be used.
+     * @param basisType       an integer indicating the type of basis function to use in the embeddings.
+     * @param basisScale      a scaling factor for the basis functions used in the embeddings.
+     * @param lambda          Regularization lambea.
      * @throws NullPointerException if the provided dataSet is null.
      */
     public IndTestBasisFunctionLrtFullSample(DataSet dataSet, int truncationLimit,
-                                             int basisType, double basisScale, boolean enableRegularization) {
+                                             int basisType, double basisScale, double lambda) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
+        this.lambda = lambda;
         Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int j = 0; j < this.variables.size(); j++) {
@@ -151,11 +142,10 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         }
 
         this.nodeHash = nodesHash;
-        this.enableRegularization = enableRegularization;
 
         // Expand the discrete columns to give category indicators.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, truncationLimit, basisType, basisScale, enableRegularization);
+                dataSet, truncationLimit, basisType, basisScale, lambda);
 
         this.embeddedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
@@ -175,17 +165,12 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      *                             variable outputs.
      * @param lambda               the regularization parameter used to stabilize the solution. Larger values result in
      *                             stronger regularization.
-     * @param enableRegularization True if regularization should be enabled.
      * @return the computed OLS solution as a SimpleMatrix object.
      */
-    public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda, boolean enableRegularization) {
+    public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
         int numCols = B.getNumCols();
         SimpleMatrix BtB = B.transpose().mult(B);
-
-        if (enableRegularization) {
-            SimpleMatrix regularization = SimpleMatrix.identity(numCols).scale(lambda);
-            BtB = BtB.plus(regularization);
-        }
+        BtB = StatUtils.regularizeDiagonal(BtB, lambda);
 
         // Parallelized inversion using EJML's lower-level operations
         SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
@@ -358,13 +343,13 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         }
 
         // Null Model: X ~ Z
-        SimpleMatrix betaZ = computeOLS(Z_basis, X_basis, lambda, enableRegularization);
+        SimpleMatrix betaZ = computeOLS(Z_basis, X_basis, lambda);
         SimpleMatrix residualsNull = X_basis.minus(Z_basis.mult(betaZ));
         sigma0_sq = computeVariance(residualsNull);
 
         // Full Model: X ~ Z + Y
         SimpleMatrix B_full = Z_basis.combine(0, p_Z, Y_basis);
-        SimpleMatrix betaFull = computeOLS(B_full, X_basis, lambda, enableRegularization);
+        SimpleMatrix betaFull = computeOLS(B_full, X_basis, lambda);
         SimpleMatrix residualsFull = X_basis.minus(B_full.mult(betaFull));
         sigma1_sq = computeVariance(residualsFull);
 

@@ -64,8 +64,8 @@ public class PoissonPriorScore implements Score {
     private boolean calculateRowSubsets;
     // The lambda parameter.
     private double lambda = 3.;
-    // True if the regularization should be enabled
-    private boolean enableRegularization = true;
+    // Regularization lambda
+    private double regularizationLambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -136,7 +136,7 @@ public class PoissonPriorScore implements Score {
 
         try {
             varRy = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets,
-                    this.enableRegularization);
+                    this.regularizationLambda);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -262,12 +262,12 @@ public class PoissonPriorScore implements Score {
     }
 
     /**
-     * Sets whether regularization should be enabled.
+     * Sets the regularization lambda value used in computations.
      *
-     * @param enableRegularization True if regularization should be enabled.
+     * @param regularizationLambda The regularization lambda parameter to set.
      */
-    public void setEnableRegularization(boolean enableRegularization) {
-        this.enableRegularization = enableRegularization;
+    public void setRegularizationLambda(double regularizationLambda) {
+        this.regularizationLambda = regularizationLambda;
     }
 
     private int[] indices(List<Node> __adj) {

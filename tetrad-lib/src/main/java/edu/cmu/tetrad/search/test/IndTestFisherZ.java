@@ -104,9 +104,9 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     private List<Integer> rows = null;
     /**
-     * Use regularization instead of correlation matrix.
+     * Lambda for regularization.
      */
-    private boolean enableRegularization = true;
+    private double lambda = 0.0;
 
 
     /**
@@ -263,7 +263,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         int n;
 
         if (covMatrix() != null) {
-            r = partialCorrelation(x, y, z, rows, enableRegularization);
+            r = partialCorrelation(x, y, z, rows, lambda);
             n = sampleSize();
         } else {
             List<Integer> rows = listRows();
@@ -501,7 +501,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         }
 
         SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                cov, true, enableRegularization);
+                cov, true, lambda);
 
         Matrix selection = data.view(rows, zCols).mat();
         Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
@@ -547,15 +547,15 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * If the correlation matrix is already available, it selects the necessary subset. Otherwise, it calculates the
      * covariance matrix from the provided rows and converts it to a correlation matrix.
      *
-     * @param x                    The first node.
-     * @param y                    The second node.
-     * @param _z                   The set of conditioning variables.
-     * @param rows                 The list of rows to use for calculating the covariance matrix, if necessary.
-     * @param enableRegularization True, if regularization is enabled, false if not.
+     * @param x      The first node.
+     * @param y      The second node.
+     * @param _z     The set of conditioning variables.
+     * @param rows   The list of rows to use for calculating the covariance matrix, if necessary.
+     * @param lambda Regularization lambda.
      * @return The partial correlation value.
      * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
      */
-    private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows, boolean enableRegularization) throws SingularMatrixException {
+    private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows, double lambda) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
 
         int[] indices = new int[z.size() + 2];
@@ -572,7 +572,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             cor = MatrixUtils.convertCovToCorr(cov);
         }
 
-        return StatUtils.partialCorrelationPrecisionMatrix(cor, this.enableRegularization);
+        return StatUtils.partialCorrelationPrecisionMatrix(cor, this.lambda);
     }
 
     /**
@@ -587,7 +587,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
      */
     private double getR(Node x, Node y, Set<Node> z, List<Integer> rows) {
-        return partialCorrelation(x, y, z, rows, enableRegularization);
+        return partialCorrelation(x, y, z, rows, lambda);
     }
 
     /**
@@ -691,12 +691,12 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Sets whether or not to enable regularization for determining independence.
+     * Sets the regularization constant.
      *
-     * @param enableRegularization true to use regularization, false otherwise.
+     * @param lambda Regularization constant.
      */
-    public void setEnableRegularization(boolean enableRegularization) {
-        this.enableRegularization = enableRegularization;
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 }
 
