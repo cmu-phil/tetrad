@@ -26,7 +26,7 @@ import java.util.List;
         dataType = DataType.Mixed
 )
 @Mixed
-public class DegenerateGaussianLRT implements IndependenceWrapper {
+public class DegenerateGaussianLrt implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -34,7 +34,7 @@ public class DegenerateGaussianLRT implements IndependenceWrapper {
     /**
      * Initializes a new instance of the DegenerateGaussianLRT class.
      */
-    public DegenerateGaussianLRT() {
+    public DegenerateGaussianLrt() {
     }
 
     /**

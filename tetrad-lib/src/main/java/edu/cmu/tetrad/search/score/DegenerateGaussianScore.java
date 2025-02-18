@@ -53,8 +53,6 @@ public class DegenerateGaussianScore implements Score {
     private final Map<Integer, List<Integer>> embedding;
     // The SEM BIC score.
     private final SemBicScore bic;
-    // The enable regularization flag
-    private double lambda = 0.0;
 
     /**
      * Constructs the score using a dataset.
@@ -69,17 +67,16 @@ public class DegenerateGaussianScore implements Score {
         }
 
         this.variables = dataSet.getVariables();
-        this.lambda = lambda;
 
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
         // we're not using the regularization option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, this.lambda);
+                dataSet, 1, 1, -1, lambda);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
 
         this.bic = new SemBicScore(convertedData, precomputeCovariances);
-        this.bic.setLambda(this.lambda);
+        this.bic.setLambda(lambda);
         this.bic.setStructurePrior(0);
     }
 
