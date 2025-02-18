@@ -17,8 +17,8 @@ public class OrderedLocalMarkovProperty {
         Set<IndependenceFact> model = new HashSet<>();
         Map<Node, Set<Node>> de = paths.getDescendantsMap();
         EdgeListGraph mag_ = new EdgeListGraph((mag));
-        List<Node> unprocessed = new ArrayList<>(mag.getNodes());
 
+        List<Node> unprocessed = new ArrayList<>(mag.getNodes());
         while (!unprocessed.isEmpty()) {
             Node sink = unprocessed.getFirst();
             while (!mag_.getChildren(sink).isEmpty()) {
@@ -28,6 +28,7 @@ public class OrderedLocalMarkovProperty {
             Set<Node> dis = GraphUtils.district(sink, mag_);
             processSink(model, de, sink, dis, mag_);
             mag_.removeNode(sink);
+
             unprocessed.remove(sink);
         }
 
@@ -50,6 +51,7 @@ public class OrderedLocalMarkovProperty {
 
             EdgeListGraph mag_ = new EdgeListGraph(mag);
             mag_.removeNodes(new ArrayList<>(de.get(node)));
+
             processSink(model, de, sink, dis_, mag_);
         }
     }
