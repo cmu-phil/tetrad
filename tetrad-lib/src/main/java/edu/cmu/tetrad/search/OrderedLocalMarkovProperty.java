@@ -27,6 +27,8 @@ public class OrderedLocalMarkovProperty {
             Set<Node> dis = GraphUtils.district(sink, mag_);
             processSink(model, de, sink, dis, mag_);
             mag_.removeNode(sink);
+
+            unprocessed.remove(sink);
         }
 
         return model;
