@@ -9,14 +9,15 @@ public class OrderedLocalMarkovProperty {
     private OrderedLocalMarkovProperty() {}
 
     public static Set<IndependenceFact> getModel(Graph mag) {
-        // there should probably be a check to ensure the input is a mag
-        Set<IndependenceFact> model = new HashSet<>();
-
         Paths paths = new Paths(mag);
-        Map<Node, Set<Node>> de = paths.getDescendantsMap();
+        if (!paths.isLegalMag()) {
+            throw new IllegalArgumentException("Input is not a legal MAG");
+        }
 
-        List<Node> unprocessed = new ArrayList<>(mag.getNodes());
+        Set<IndependenceFact> model = new HashSet<>();
+        Map<Node, Set<Node>> de = paths.getDescendantsMap();
         EdgeListGraph mag_ = new EdgeListGraph((mag));
+        List<Node> unprocessed = new ArrayList<>(mag.getNodes());
 
         while (!unprocessed.isEmpty()) {
             Node sink = unprocessed.getFirst();
@@ -27,7 +28,6 @@ public class OrderedLocalMarkovProperty {
             Set<Node> dis = GraphUtils.district(sink, mag_);
             processSink(model, de, sink, dis, mag_);
             mag_.removeNode(sink);
-
             unprocessed.remove(sink);
         }
 
@@ -37,22 +37,19 @@ public class OrderedLocalMarkovProperty {
     private static void processSink(Set<IndependenceFact> model, Map<Node, Set<Node>> de,
                                     Node sink, Set<Node> dis, EdgeListGraph mag) {
         Set<Node> mb = GraphUtils.markovBlanket(sink, mag);
-
         for (Node node : mag.getNodes()) {
             if (node == sink) continue;
             if (mb.contains(node)) continue;
             model.add(new IndependenceFact(sink, node, mb));
         }
 
-        // verify moving this outside the loop is correct
         Set<Node> dis_ = new HashSet<>(dis);
         for (Node node : dis) {
-            // Set<Node> dis_ = new HashSet<>(dis);
+            dis_ = new HashSet<>(dis_);
             dis_.remove((node));
 
             EdgeListGraph mag_ = new EdgeListGraph(mag);
             mag_.removeNodes(new ArrayList<>(de.get(node)));
-
             processSink(model, de, sink, dis_, mag_);
         }
     }
