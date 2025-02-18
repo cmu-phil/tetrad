@@ -44,8 +44,10 @@ public class OrderedLocalMarkovProperty {
             model.add(new IndependenceFact(sink, node, mb));
         }
 
+        // verify moving this outside the loop is correct
+        Set<Node> dis_ = new HashSet<>(dis);
         for (Node node : dis) {
-            Set<Node> dis_ = new HashSet<>(dis);
+            // Set<Node> dis_ = new HashSet<>(dis);
             dis_.remove((node));
 
             EdgeListGraph mag_ = new EdgeListGraph(mag);
