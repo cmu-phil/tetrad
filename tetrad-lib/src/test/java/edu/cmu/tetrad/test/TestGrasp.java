@@ -226,7 +226,7 @@ public final class TestGrasp {
 
         DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data, precomputeCovariances);
 
-        IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data);
+        IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data, false);
         test.setAlpha(0.01);
 
 
