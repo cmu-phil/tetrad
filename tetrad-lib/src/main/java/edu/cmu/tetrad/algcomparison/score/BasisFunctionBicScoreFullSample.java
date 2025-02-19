@@ -35,8 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Basis Function BIC Score Tabular (BFS-Tabular), which calculates likelihoods using tabular data rather than
- * covariance matrices.
+ * Wrapper for Basis Function BIC Score Tabular (BFS-Tabular), which calculates likelihoods using tabular data rather
+ * than covariance matrices.
  *
  * @author josephramsey
  * @author bryanandrews
@@ -67,10 +67,11 @@ public class BasisFunctionBicScoreFullSample implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample(
+        edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample score
+                = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample(
                 SimpleDataLoader.getMixedDataSet(dataSet),
-                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
-                parameters.getDouble(Params.BASIS_SCALE), parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+                parameters.getInt(Params.TRUNCATION_LIMIT),
+                parameters.getDouble(Params.REGULARIZATION_LAMBDA));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return score;
     }
@@ -99,8 +100,6 @@ public class BasisFunctionBicScoreFullSample implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.TRUNCATION_LIMIT);
-        parameters.add(Params.BASIS_TYPE);
-        parameters.add(Params.BASIS_SCALE);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.REGULARIZATION_LAMBDA);
 

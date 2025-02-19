@@ -61,17 +61,13 @@ public class BasisFunctionBicScoreFullSample implements Score {
      * @param dataSet         the data set on which the score is to be calculated. May contain a mixture of discrete and
      *                        continuous variables.
      * @param truncationLimit the truncation limit of the basis.
-     * @param basisType       the type of basis function used in the BIC score computation.
-     * @param basisScale      the basisScale factor used in the calculation of the BIC score for basis functions. All
-     *                        variables are scaled to [-basisScale, basisScale], or standardized if 0.
      * @param lambda          Regularization lambda
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
-    public BasisFunctionBicScoreFullSample(DataSet dataSet, int truncationLimit, int basisType,
-                                           double basisScale, double lambda) {
+    public BasisFunctionBicScoreFullSample(DataSet dataSet, int truncationLimit, double lambda) {
         this.variables = dataSet.getVariables();
 
-        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, basisType, basisScale,
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1,
                 lambda);
         this.embedding = result.embedding();
         this.lambda = lambda;

@@ -121,13 +121,10 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * @param dataSet         the input data set to be used for the analysis. It must not be null. May contain a mixture
      *                        of continuous and discrete variables.
      * @param truncationLimit the maximum number of basis function truncations to be used.
-     * @param basisType       an integer indicating the type of basis function to use in the embeddings.
-     * @param basisScale      a scaling factor for the basis functions used in the embeddings.
      * @param lambda          Regularization lambea.
      * @throws NullPointerException if the provided dataSet is null.
      */
-    public IndTestBasisFunctionLrtFullSample(DataSet dataSet, int truncationLimit,
-                                             int basisType, double basisScale, double lambda) {
+    public IndTestBasisFunctionLrtFullSample(DataSet dataSet, int truncationLimit, double lambda) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -145,7 +142,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
 
         // Expand the discrete columns to give category indicators.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, truncationLimit, basisType, basisScale, lambda);
+                dataSet, truncationLimit, 1, 1, lambda);
 
         this.embeddedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();

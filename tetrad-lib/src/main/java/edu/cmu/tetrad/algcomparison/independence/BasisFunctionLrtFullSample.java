@@ -44,8 +44,7 @@ public class BasisFunctionLrtFullSample implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestBasisFunctionLrtFullSample test = new IndTestBasisFunctionLrtFullSample(SimpleDataLoader.getMixedDataSet(dataSet),
-                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
-                parameters.getDouble(Params.BASIS_SCALE), parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getDouble(Params.REGULARIZATION_LAMBDA));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         return test;
     }
@@ -74,8 +73,6 @@ public class BasisFunctionLrtFullSample implements IndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.TRUNCATION_LIMIT);
-        parameters.add(Params.BASIS_TYPE);
-        parameters.add(Params.BASIS_SCALE);
         parameters.add(Params.REGULARIZATION_LAMBDA);
         return parameters;
     }

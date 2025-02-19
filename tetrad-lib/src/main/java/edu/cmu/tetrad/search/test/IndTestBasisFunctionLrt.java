@@ -96,12 +96,9 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      *
      * @param dataSet         the input dataset containing the variables and data rows to be analyzed.
      * @param truncationLimit the limit to truncate the embeddings or basis functions in the data.
-     * @param basisType       the type of basis functions to use for transformation.
-     * @param basisScale      the scale factor associated with the basis functions.
      * @param lambda          Regularization lambda
      */
-    public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit,
-                                   int basisType, double basisScale, double lambda) {
+    public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit, double lambda) {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -116,7 +113,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
         // we're not using the enable-regularization option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, truncationLimit, basisType, basisScale, lambda);
+                dataSet, truncationLimit, 1, 1, lambda);
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
 
