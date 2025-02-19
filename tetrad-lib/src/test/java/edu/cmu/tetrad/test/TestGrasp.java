@@ -226,9 +226,8 @@ public final class TestGrasp {
 
         DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data, precomputeCovariances, 0.0);
 
-        IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data, 0.0);
+        IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data);
         test.setAlpha(0.01);
-
 
         edu.cmu.tetrad.search.Fges alg = new edu.cmu.tetrad.search.Fges(score);
         Graph pat = null;

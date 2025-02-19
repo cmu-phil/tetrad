@@ -22,14 +22,14 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.Embedding;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.ejml.simple.SimpleMatrix;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -65,9 +65,18 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      */
     private final Map<Integer, List<Integer>> embedding;
     /**
-     * The SEM BIC score, used to calculate local likelihoods.
+     * Covariance matrix over the embedde data.
      */
-    private final SemBicScore bic;
+    private final SimpleMatrix covarianceMatrix;
+    /**
+     * Represents the sample size of the dataset being analyzed. This variable is used in statistical computations, such
+     * as variance and covariance calculations, to determine the scale and reliability of the analysis.
+     */
+    private final int sampleSize;
+    /**
+     * Regularization constant.
+     */
+    private final double lambda;
     /**
      * The alpha level.
      */
@@ -85,9 +94,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * Constructs the test using the given (mixed) data set.
      *
      * @param dataSet The data being analyzed.
-     * @param lambda  True if regularization is enabled.
      */
-    public IndTestDegenerateGaussianLrt(DataSet dataSet, double lambda) {
+    public IndTestDegenerateGaussianLrt(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -101,15 +109,17 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         }
 
         this.nodeHash = nodesHash;
+        double lambda = 0.0; // Per spec, we always use c - 1 columns for c categories.
 
-        // Expand the discrete columns to give indicators for each category.
+        // Expand the discrete columns to give indicators for each category. For the continuous variables, we
+        // wet the truncation limit to 1, on the contract that the first polynomial for any basis will be just
+        // x itself. These are asssumed to be Gaussian for this test. Basis scale -1 will do no scaling.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, 1, 1, -1, lambda);
-        DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
-        this.bic = new SemBicScore(convertedData, false);
-        this.bic.setLambda(lambda);
-        this.bic.setStructurePrior(0);
+        this.sampleSize = dataSet.getNumRows();
+        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
+        this.lambda = lambda;
     }
 
     /**
@@ -124,71 +134,105 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns an independence result specifying whether x _||_ y | Z and what its p-values are.
-     *
-     * @param x  the first node.
-     * @param y  the second node.
-     * @param _z the conditioning set.
-     * @return an independence result specifying whether x _||_ y | Z and what its p-values are.
-     * @see IndependenceResult
+     * Tests for the conditional independence of two nodes given a set of conditioning nodes.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
-        List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        double pValue = getPValue(x, y, z);
+        boolean independent = pValue > alpha;
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
+    }
+
+    /**
+     * Computes the p-value for the null hypothesis that two variables, represented as nodes, are conditionally
+     * independent given a set of conditioning variables.
+     * <p>
+     * The method transforms the input nodes and conditioning set into their respective embedded representations and
+     * computes the likelihood ratio statistic based on residual variances. It then calculates the corresponding p-value
+     * using a Chi-squared distribution.
+     *
+     * @param x the first node representing one of the variables to be tested.
+     * @param y the second node representing the other variable to be tested.
+     * @param z the set of nodes representing the conditioning variables.
+     * @return the computed p-value for the hypothesis test of conditional independence.
+     */
+    private double getPValue(Node x, Node y, Set<Node> z) {
+        List<Node> zList = new ArrayList<>(z);
+        Collections.sort(zList);
 
         int _x = this.nodeHash.get(x);
         int _y = this.nodeHash.get(y);
-
-        int[] list0 = new int[z.size()];
-        int[] list1 = new int[z.size() + 1];
-
-        list1[0] = _x;
-
-        for (int i = 0; i < z.size(); i++) {
-            int __z = this.nodeHash.get(z.get(i));
-            list0[i] = __z;
-            list1[i + 1] = __z;
+        int[] _z = new int[zList.size()];
+        for (int i = 0; i < zList.size(); i++) {
+            _z[i] = this.nodeHash.get(zList.get(i));
         }
 
-        Ret ret0 = getlldof(_y, list0);
-        Ret ret1 = getlldof(_y, list1);
+        // Grab the embedded data for _x, _y, and _z.
+        List<Integer> embedded_x = embedding.get(_x);
+        List<Integer> embedded_y = embedding.get(_y);
+        List<Integer> embedded_z = new ArrayList<>();
 
-        double lik_diff = ret0.lik() - ret1.lik();
-        double dof_diff = ret1.dof() - ret0.dof();
-
-        if (dof_diff <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false, NaN, NaN);
-        if (lik_diff == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false, NaN, NaN);
-
-        double pValue;
-
-        if (Double.isNaN(lik_diff)) {
-            throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
-        } else {
-            try {
-                pValue = StatUtils.getChiSquareP(dof_diff, -2 * lik_diff);
-            } catch (Exception e) {
-                TetradLogger.getInstance().log("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z)
-                                               + " with lik_diff = " + lik_diff + " and dof_diff = " + dof_diff
-                                               + e.getMessage());
-                throw new RuntimeException("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z), e);
+        for (int value : _z) {
+            List<Integer> embeddedValues = embedding.get(value);
+            if (embeddedValues != null) {
+                embedded_z.addAll(embeddedValues);
             }
         }
 
-        this.pValue = pValue;
+        // Convert to index arrays
+        int[] xIndices = embedded_x.stream().mapToInt(Integer::intValue).toArray();
+        int[] yIndices = embedded_y.stream().mapToInt(Integer::intValue).toArray();
+        int[] zIndices = embedded_z.stream().mapToInt(Integer::intValue).toArray();
 
-        boolean independent = this.pValue > this.alpha;
+        // Compute variance estimates
+        double eps = 1e-10;
+        double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices));
+        double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
 
-        if (this.verbose) {
-            if (independent) {
-                TetradLogger.getInstance().log(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
-            }
+        // Log-likelihood ratio statistic
+        double LR_stat = sampleSize * Math.log(sigma0_sq / sigma1_sq);
+
+        // Degrees of freedom is the number of additional basis columns in Y
+        int df = yIndices.length;
+        if (df == 0) return 1.0;
+
+        // Compute p-value
+        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
+        double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
+
+        if (verbose) {
+            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z),
-                independent, pValue, alpha - pValue);
+        return p_value;
+    }
+
+    /**
+     * Computes the variance of residuals given the indices of predictors.
+     */
+    private double computeResidualVariance(int[] xIndices, int[] predictorIndices) {
+        if (predictorIndices.length == 0) {
+            return StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices).trace() / xIndices.length;
+        }
+
+        SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
+        SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
+        SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
+        Sigma_PP = StatUtils.regularizeDiagonal(Sigma_PP, lambda);
+
+        // Compute OLS estimate of X given predictors P
+        SimpleMatrix beta = Sigma_PP.invert().mult(Sigma_XP.transpose());
+
+        // Compute residual variance
+        return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
+    }
+
+    /**
+     * Concatenates two integer arrays.
+     */
+    private int[] concatArrays(int[] first, int[] second) {
+        int[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
     }
 
     /**
@@ -263,54 +307,5 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Calculates the sample log likelihood
-     */
-    private IndTestDegenerateGaussianLrt.Ret getlldof(int i, int... parents) {
-        double score = 0;
-
-        List<Integer> A = new ArrayList<>(this.embedding.get(i));
-        List<Integer> B = new ArrayList<>();
-        for (int p : parents) {
-            B.addAll(this.embedding.get(p));
-        }
-
-        int aLength = A.size();
-        int bLength = B.size();
-
-        for (int a : A) {
-
-            // Includes previous columns for A.
-            int[] parents_ = new int[B.size()];
-            for (int b = 0; b < B.size(); b++) {
-                parents_[b] = B.get(b);
-            }
-
-            // Using the formula BIC = 2L - k ln N; need L - k / 2 ln N
-//            double likelihood = 0.5 * this.bic.localScore(a, parents_);
-            double likelihood = this.bic.getLikelihood(a, parents_);
-
-            if (Double.isNaN(likelihood)) {
-                break;
-            }
-
-            score += likelihood;
-            B.add(a);
-        }
-
-        double lik = score;
-        double dof = (bLength * (bLength + 1) - aLength * (aLength + 1)) / 2.0;
-        return new IndTestDegenerateGaussianLrt.Ret(lik, dof);
-    }
-
-    /**
-     * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom for it.
-     *
-     * @param lik The likelihood value.
-     * @param dof The degrees of freedom.
-     */
-    public record Ret(double lik, double dof) {
     }
 }

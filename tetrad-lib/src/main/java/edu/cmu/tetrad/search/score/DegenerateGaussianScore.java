@@ -68,8 +68,9 @@ public class DegenerateGaussianScore implements Score {
 
         this.variables = dataSet.getVariables();
 
-        // Expand the discrete columns to give indicators for each category. We want to leave a category out if
-        // we're not using the regularization option.
+        // Expand the discrete columns to give indicators for each category. For the continuous variables, we
+        // wet the truncation limit to 1, on the contrqact that the first polynomial for any basis will be just
+        // x itself. These are asssumed to be Gaussian for this test. Basis scale -1 will do no scaling.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
                 dataSet, 1, 1, -1, lambda);
         DataSet convertedData = embeddedData.embeddedData();

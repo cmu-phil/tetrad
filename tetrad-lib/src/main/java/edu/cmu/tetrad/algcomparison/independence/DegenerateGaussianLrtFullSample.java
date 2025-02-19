@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestDegenerateGaussianLrt;
+import edu.cmu.tetrad.search.test.IndTestDegenerateGaussianLrtFullSample;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -21,12 +22,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @TestOfIndependence(
-        name = "DG-LRT (Degenerate Gaussian Likelihood Ratio Test)",
-        command = "dg-lr-test",
+        name = "DG-LRT-FS (Degenerate Gaussian Likelihood Ratio Test Full Sample)",
+        command = "dg-lr-test-fs",
         dataType = DataType.Mixed
 )
 @Mixed
-public class DegenerateGaussianLrt implements IndependenceWrapper {
+public class DegenerateGaussianLrtFullSample implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -34,7 +35,7 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
     /**
      * Initializes a new instance of the DegenerateGaussianLRT class.
      */
-    public DegenerateGaussianLrt() {
+    public DegenerateGaussianLrtFullSample() {
     }
 
     /**
@@ -42,7 +43,8 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt(SimpleDataLoader.getMixedDataSet(dataSet));
+        IndTestDegenerateGaussianLrtFullSample test = new IndTestDegenerateGaussianLrtFullSample(
+                SimpleDataLoader.getMixedDataSet(dataSet));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         return test;
     }
@@ -52,7 +54,7 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Degenerate Gaussian Likelihood Ratio Test";
+        return "Degenerate Gaussian Likelihood Ratio Test Full Sample";
     }
 
     /**
