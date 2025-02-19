@@ -41,7 +41,7 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BFS (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BF-BIC (Basis Function BIC Score)", command = "bf-bic-score", dataType = DataType.Mixed)
 @Mixed
 public class BasisFunctionBicScore implements ScoreWrapper {
 
@@ -80,7 +80,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function BIC Score (BFS)";
+        return "Basis Function BIC Score (BF-BIC)";
     }
 
     /**
@@ -98,6 +98,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.TRUNCATION_LIMIT);
+        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.REGULARIZATION_LAMBDA);
         return parameters;
     }

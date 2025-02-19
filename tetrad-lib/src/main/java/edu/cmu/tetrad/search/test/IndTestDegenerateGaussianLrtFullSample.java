@@ -319,7 +319,6 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      */
     private double getPValue(SimpleMatrix X_basis, SimpleMatrix Y_basis, SimpleMatrix Z_basis) {
         int df = Y_basis.getNumCols(); // Degrees of freedom
-        int N = X_basis.getNumRows();
         int p_Z = Z_basis.getNumCols();
         double sigma0_sq, sigma1_sq;
 
@@ -329,6 +328,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
             for (int i = 0; i < rows.size(); i++) {
                 Z_basis.set(i, 0, 1);  // Adds intercept
             }
+            df++;
         }
 
         double lambda = 0.0; // c - 1 categories per contract.

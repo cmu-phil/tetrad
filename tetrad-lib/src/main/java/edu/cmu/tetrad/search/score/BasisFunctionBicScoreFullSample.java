@@ -200,7 +200,7 @@ public class BasisFunctionBicScoreFullSample implements Score {
      */
     @Override
     public String toString() {
-        return "Basis Function Score Tabular (BFS-Tab)";
+        return "Basis Function Score BIC Full Sample (BF-BIC-FS)";
     }
 
     /**

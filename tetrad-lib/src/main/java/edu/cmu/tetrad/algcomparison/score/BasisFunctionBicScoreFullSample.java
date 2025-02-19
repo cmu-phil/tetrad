@@ -35,14 +35,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Basis Function BIC Score Tabular (BFS-Tabular), which calculates likelihoods using tabular data rather
+ * Wrapper for Basis Function BIC Score Full Sample (BF-BIC-FS), which calculates likelihoods using tabular data rather
  * than covariance matrices.
  *
  * @author josephramsey
  * @author bryanandrews
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BFS-FS (Basis Function BIC Full Sample)", command = "bf-bic-score-fs", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BF-BIC-FS (Basis Function BIC Full Sample)", command = "bf-bic-fs", dataType = DataType.Mixed)
 @Mixed
 public class BasisFunctionBicScoreFullSample implements ScoreWrapper {
 
@@ -81,7 +81,7 @@ public class BasisFunctionBicScoreFullSample implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function BIC Score Tabular Full Sample (BFS-FS)";
+        return "Basis Function BIC Score Full Sample (BF-BIC-FS)";
     }
 
     /**

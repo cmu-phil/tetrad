@@ -178,7 +178,7 @@ public class BasisFunctionBicScore implements Score {
      */
     @Override
     public String toString() {
-        return "Basis Function Score Covariance (BFS)";
+        return "Basis Function BIC Score (BF-BIC)";
     }
 
     /**
