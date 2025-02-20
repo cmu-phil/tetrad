@@ -231,7 +231,7 @@ public class TestGFci {
             variables.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph g = RandomGraph.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
+        Graph g = RandomGraph.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false, -1);
 
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm);

@@ -69,7 +69,7 @@ public class AdTreeTest {
             variables.add(new ContinuousVariable(name));
         }
 
-        Graph graph = RandomGraph.randomGraphRandomForwardEdges(variables, 0, numEdges, 30, 15, 15, false, true);
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(variables, 0, numEdges, 30, 15, 15, false, true, -1);
 
         BayesPm pm = new BayesPm(graph);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);

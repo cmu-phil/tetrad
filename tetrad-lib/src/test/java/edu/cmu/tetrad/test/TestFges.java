@@ -188,7 +188,7 @@ public class TestFges {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+        Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true, -1);
 
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
@@ -238,7 +238,7 @@ public class TestFges {
         }
 
         Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
-                30, 15, 15, false, true);
+                30, 15, 15, false, true, -1);
 
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.InitializationMethod.RANDOM);

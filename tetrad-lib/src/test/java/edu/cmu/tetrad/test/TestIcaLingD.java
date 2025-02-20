@@ -70,6 +70,8 @@ public class TestIcaLingD {
         parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
         parameters.set(Params.SIMULATION_PARAM1, 1);
 
+        parameters.set(Params.SEED, 4023303024L);
+
         SemSimulation sim = new SemSimulation(new RandomForward());
         sim.createData(parameters, true);
         DataSet dataSet = (DataSet) sim.getDataModel(0);

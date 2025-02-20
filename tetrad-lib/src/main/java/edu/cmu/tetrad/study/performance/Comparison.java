@@ -76,7 +76,7 @@ public class Comparison {
                 }
 
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");
@@ -96,7 +96,7 @@ public class Comparison {
                 }
 
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");

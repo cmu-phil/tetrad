@@ -32,7 +32,8 @@ public class RandomGraph {
      * @param connected            Specifies whether the DAG should be connected.
      * @return The randomly generated DAG.
      */
-    public static Graph randomDag(int numNodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
+    public static Graph randomDag(int numNodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree,
+                                  int maxOutdegree, boolean connected) {
         List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
@@ -40,6 +41,17 @@ public class RandomGraph {
         }
 
         return randomDag(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
+    }
+
+    public static Graph randomDag(int numNodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree,
+                                  int maxOutdegree, boolean connected, long seed) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numNodes; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return randomDag(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected, seed);
     }
 
     /**
@@ -54,14 +66,20 @@ public class RandomGraph {
      * @param connected            whether the graph should be connected or not
      * @return a randomly generated DAG representing the causal relationships between the nodes
      */
-    public static Dag randomDag(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
+    public static Dag randomDag(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree,
+                                int maxOutdegree, boolean connected) {
         return new Dag(randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected));
+    }
+
+    public static Dag randomDag(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree,
+                                int maxOutdegree, boolean connected, long seed) {
+        return new Dag(randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected, seed));
     }
 
     /**
      * Generates a random graph based on the given parameters.
      *
-     * @param numMeasures             the number of nodes in the graph
+     * @param numMeasures          the number of nodes in the graph
      * @param numLatentConfounders the number of latent confounders in the graph
      * @param numEdges             the number of edges in the graph
      * @param maxDegree            the maximum degree of each node in the graph
@@ -80,6 +98,17 @@ public class RandomGraph {
         return randomGraph(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree, connected);
     }
 
+    public static Graph randomGraph(int numMeasures, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree,
+                                    int maxOutdegree, boolean connected, long seed) {
+        List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < numMeasures + numLatentConfounders; i++) {
+            nodes.add(new GraphNode("X" + (i + 1)));
+        }
+
+        return randomGraph(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree, connected, seed);
+    }
+
     /**
      * Generates a random graph based on the given parameters.
      *
@@ -92,8 +121,17 @@ public class RandomGraph {
      * @param connected            boolean flag indicating whether the generated graph should be connected or not
      * @return the randomly generated graph
      */
-    public static Graph randomGraph(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
-        return randomGraphRandomForwardEdges(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected, true);
+    public static Graph randomGraph(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree,
+                                    int maxIndegree, int maxOutdegree, boolean connected) {
+        return randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected,
+                -1);
+    }
+
+    public static Graph randomGraph(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree,
+                                    int maxIndegree, int maxOutdegree, boolean connected, long seed) {
+        RandomUtil.getInstance().setSeed(seed);
+        return randomGraphRandomForwardEdges(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree,
+                maxOutdegree, connected, true, seed);
     }
 
     /**
@@ -112,7 +150,8 @@ public class RandomGraph {
      * @throws IllegalArgumentException if the given number of nodes is 0, or the maximum number of edges is out of
      *                                  range, or the maximum number of latent confounders is out of range
      */
-    public static Graph randomGraphUniform(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected, int numIterations) {
+    public static Graph randomGraphUniform(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree,
+                                           int maxIndegree, int maxOutdegree, boolean connected, int numIterations) {
         int numNodes = nodes.size();
 
         if (numNodes == 0) {
@@ -184,7 +223,8 @@ public class RandomGraph {
      * @param connected            indicates whether the graph should be connected
      * @return a random graph object
      */
-    public static Graph randomGraphRandomForwardEdges(int numNodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
+    public static Graph randomGraphRandomForwardEdges(int numNodes, int numLatentConfounders, int numEdges, int maxDegree,
+                                                      int maxIndegree, int maxOutdegree, boolean connected, long seed) {
 
         List<Node> nodes = new ArrayList<>();
 
@@ -192,7 +232,7 @@ public class RandomGraph {
             nodes.add(new GraphNode("X" + (i + 1)));
         }
 
-        return randomGraph(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree, connected);
+        return randomGraph(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree, connected, seed);
     }
 
     /**
@@ -207,8 +247,16 @@ public class RandomGraph {
      * @param connected            if true, ensures that the generated graph is connected
      * @return the random graph with forward edges
      */
-    public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
-        return randomGraphRandomForwardEdges(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree, connected, true);
+    public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree,
+                                                      int maxIndegree, int maxOutdegree, boolean connected) {
+        return randomGraphRandomForwardEdges(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree,
+                connected, true, -1);
+    }
+
+    public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree,
+                                                      int maxIndegree, int maxOutdegree, boolean connected, long seed) {
+        return randomGraphRandomForwardEdges(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree,
+                connected, true, seed);
     }
 
     /**
@@ -222,12 +270,18 @@ public class RandomGraph {
      * @param maxOutdegree         the maximum outdegree of a node in the graph
      * @param connected            indicates if the graph should be connected
      * @param layoutAsCircle       indicates if the graph should be laid out in a circular pattern
+     * @param seed
      * @return a randomly generated graph with forward edges
      * @throws IllegalArgumentException if the number of nodes is less than or equal to 0, the number of edges is
      *                                  negative or exceeds the possible maximum, or the number of latent confounders is
      *                                  negative or exceeds the number of nodes
      */
-    public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected, boolean layoutAsCircle) {
+    public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree,
+                                                      int maxIndegree, int maxOutdegree, boolean connected, boolean layoutAsCircle, long seed) {
+        if (seed != -1) {
+            RandomUtil.getInstance().setSeed(seed);
+        }
+
         if (nodes.isEmpty()) {
             throw new IllegalArgumentException("NumNodes most be > 0");
         }

@@ -37,7 +37,7 @@ public class ErdosRenyi implements RandomGraph {
         int e = (int) (p * t);
 
         return edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(
-                m + l, l, e, max, max, max, false);
+                m + l, l, e, max, max, max, false, -1);
     }
 
     /**

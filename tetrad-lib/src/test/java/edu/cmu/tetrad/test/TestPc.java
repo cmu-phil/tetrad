@@ -315,7 +315,7 @@ public class TestPc {
             }
 
             Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
-                    10, 10, 10, false);
+                    10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(1000, false);
@@ -648,7 +648,7 @@ public class TestPc {
             }
 
             Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
-                    10, 10, 10, false);
+                    10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(10000, false);

@@ -131,11 +131,11 @@ public class Comparison2 {
             }
 
             trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                    nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                    nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
                 trueDag = TsUtils.graphToLagGraph(trueDag, 2);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
@@ -222,11 +222,11 @@ public class Comparison2 {
                 }
 
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                     trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                            nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                            nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
                     trueDag = TsUtils.graphToLagGraph(trueDag, 2);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
                 }
@@ -287,7 +287,7 @@ public class Comparison2 {
                 }
 
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");

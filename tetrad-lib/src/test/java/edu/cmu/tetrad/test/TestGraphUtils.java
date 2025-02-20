@@ -262,7 +262,7 @@
             final int numNodes = 5;
 
             for (int i = 0; i < 100; i++) {
-                Graph graph = RandomGraph.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
+                Graph graph = RandomGraph.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true, -1);
 
                 List<Node> nodes = graph.getNodes();
                 Node x = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
@@ -287,7 +287,7 @@
         public void test9() {
 
             Graph graph = RandomGraph.randomGraphRandomForwardEdges(20, 0, 50,
-                    10, 10, 10, false);
+                    10, 10, 10, false, -1);
             graph = GraphTransforms.dagToCpdag(graph);
 
             int numSmnallestSizes = 2;
@@ -348,7 +348,7 @@
         public void test10() {
 
             Graph graph = RandomGraph.randomGraphRandomForwardEdges(10, 2, 10,
-                    10, 10, 10, false);
+                    10, 10, 10, false, -1);
             graph = GraphTransforms.dagToPag(graph);
 
             int numSmnallestSizes = 2;
@@ -389,7 +389,7 @@
             // 10 times over, make a random DAG
             for (int i = 0; i < 1000; i++) {
                 Graph graph = RandomGraph.randomGraphRandomForwardEdges(5, 0, 5,
-                        100, 100, 100, false);
+                        100, 100, 100, false, -1);
 
                 // Construct its CPDAG
                 Graph cpdag = GraphTransforms.dagToCpdag(graph);
