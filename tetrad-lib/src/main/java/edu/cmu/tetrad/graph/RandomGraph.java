@@ -43,6 +43,19 @@ public class RandomGraph {
         return randomDag(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
     }
 
+    /**
+     * Generates a random Directed Acyclic Graph (DAG) based on specified constraints.
+     *
+     * @param numNodes the number of nodes in the graph.
+     * @param numLatentConfounders the number of latent confounders to include in the graph.
+     * @param maxNumEdges the maximum number of edges that can be added to the graph.
+     * @param maxDegree the maximum degree (number of incoming and outgoing edges) of any node in the graph.
+     * @param maxIndegree the maximum number of incoming edges to any node.
+     * @param maxOutdegree the maximum number of outgoing edges from any node.
+     * @param connected whether the graph should be connected (i.e., a single connected component).
+     * @param seed the random seed for reproducibility in graph generation, -1 for random.
+     * @return a randomly generated DAG that satisfies the given constraints.
+     */
     public static Graph randomDag(int numNodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree,
                                   int maxOutdegree, boolean connected, long seed) {
         List<Node> nodes = new ArrayList<>();
@@ -71,6 +84,19 @@ public class RandomGraph {
         return new Dag(randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected));
     }
 
+    /**
+     * Generates a random Directed Acyclic Graph (DAG) based on the given parameters.
+     *
+     * @param nodes                 the list of nodes that will be included in the DAG
+     * @param numLatentConfounders  the number of latent confounders to include in the DAG
+     * @param maxNumEdges           the maximum number of edges the DAG can have
+     * @param maxDegree             the maximum degree (sum of indegree and outdegree) of any node
+     * @param maxIndegree           the maximum number of incoming edges for any node
+     * @param maxOutdegree          the maximum number of outgoing edges for any node
+     * @param connected             whether the generated graph should ensure connectivity
+     * @param seed                  the seed value for random number generation, -1 for random.
+     * @return a randomly generated DAG based on the specified parameters
+     */
     public static Dag randomDag(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree,
                                 int maxOutdegree, boolean connected, long seed) {
         return new Dag(randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected, seed));
@@ -98,6 +124,19 @@ public class RandomGraph {
         return randomGraph(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree, connected);
     }
 
+    /**
+     * Generates a random graph based on the specified parameters.
+     *
+     * @param numMeasures the number of measured variables (nodes) to include in the graph
+     * @param numLatentConfounders the number of latent confounding variables (nodes) to include in the graph
+     * @param numEdges the total number of edges in the graph
+     * @param maxDegree the maximum degree (number of edges connected) for any node in the graph
+     * @param maxIndegree the maximum number of incoming edges for any node in the graph
+     * @param maxOutdegree the maximum number of outgoing edges for any node in the graph
+     * @param connected whether the graph should be generated as a single connected component
+     * @param seed the random seed to ensure reproducibility of the graph generation, -1 for random.
+     * @return a randomly generated graph that satisfies the input constraints
+     */
     public static Graph randomGraph(int numMeasures, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree,
                                     int maxOutdegree, boolean connected, long seed) {
         List<Node> nodes = new ArrayList<>();
@@ -127,6 +166,19 @@ public class RandomGraph {
                 -1);
     }
 
+    /**
+     * Generates a random graph with the specified parameters and properties.
+     *
+     * @param nodes The list of nodes to include in the graph.
+     * @param numLatentConfounders The number of latent confounders in the graph.
+     * @param maxNumEdges The maximum number of allowable edges in the graph.
+     * @param maxDegree The maximum degree for any node in the graph.
+     * @param maxIndegree The maximum in-degree for any node in the graph.
+     * @param maxOutdegree The maximum out-degree for any node in the graph.
+     * @param connected Whether the graph should be guaranteed to be connected.
+     * @param seed The seed for random number generation to ensure reproducibility, -1 for random.
+     * @return A randomly generated graph adhering to the specified constraints and properties.
+     */
     public static Graph randomGraph(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree,
                                     int maxIndegree, int maxOutdegree, boolean connected, long seed) {
         RandomUtil.getInstance().setSeed(seed);
@@ -221,6 +273,7 @@ public class RandomGraph {
      * @param maxIndegree          the maximum indegree of a node in the graph
      * @param maxOutdegree         the maximum outdegree of a node in the graph
      * @param connected            indicates whether the graph should be connected
+     * @param seed                 Seed for reproducibility, -1 for random.
      * @return a random graph object
      */
     public static Graph randomGraphRandomForwardEdges(int numNodes, int numLatentConfounders, int numEdges, int maxDegree,
@@ -253,6 +306,20 @@ public class RandomGraph {
                 connected, true, -1);
     }
 
+    /**
+     * Generates a random directed acyclic graph with specified properties, including constraints on maximum degree,
+     * indegree, and outdegree, with random forward edges.
+     *
+     * @param nodes                the list of nodes to include in the graph
+     * @param numLatentConfounders the number of latent confounders to add to the graph
+     * @param numEdges             the total number of edges in the graph
+     * @param maxDegree            the maximum degree (indegree plus outdegree) allowed for any node
+     * @param maxIndegree          the maximum number of incoming edges allowed for any node
+     * @param maxOutdegree         the maximum number of outgoing edges allowed for any node
+     * @param connected            whether the graph should be connected
+     * @param seed                 the random seed for the graph generation process
+     * @return a random directed acyclic graph constructed with the specified properties
+     */
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree,
                                                       int maxIndegree, int maxOutdegree, boolean connected, long seed) {
         return randomGraphRandomForwardEdges(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree,
@@ -270,7 +337,7 @@ public class RandomGraph {
      * @param maxOutdegree         the maximum outdegree of a node in the graph
      * @param connected            indicates if the graph should be connected
      * @param layoutAsCircle       indicates if the graph should be laid out in a circular pattern
-     * @param seed
+     * @param seed                 The seed, -1 for random.
      * @return a randomly generated graph with forward edges
      * @throws IllegalArgumentException if the number of nodes is less than or equal to 0, the number of edges is
      *                                  negative or exceeds the possible maximum, or the number of latent confounders is
