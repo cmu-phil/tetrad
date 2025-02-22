@@ -181,7 +181,9 @@ public class RandomGraph {
      */
     public static Graph randomGraph(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree,
                                     int maxIndegree, int maxOutdegree, boolean connected, long seed) {
-        RandomUtil.getInstance().setSeed(seed);
+        if (seed != -1) {
+            RandomUtil.getInstance().setSeed(seed);
+        }
         return randomGraphRandomForwardEdges(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree,
                 maxOutdegree, connected, true, seed);
     }
