@@ -89,6 +89,17 @@ public class Pc implements IGraphSearch {
      */
     private Graph graph;
     /**
+     * Represents the start time of the algorithm or process execution within the PC search implementation.
+     * Tracks the time when the execution begins, typically measured in milliseconds since the epoch.
+     * This is used for calculating execution duration and performance analysis.
+     */
+    private final long startTime = -1L;
+    /**
+     * The timeout duration for the search process, in milliseconds.
+     * If set to -1, it indicates that no timeout is enforced.
+     */
+    private final long timeout = -1L;
+    /**
      * The elapsed time of the most recent search.
      */
     private long elapsedTime;
@@ -166,6 +177,13 @@ public class Pc implements IGraphSearch {
 
         IFas fas = new Fas(getIndependenceTest());
         fas.setVerbose(this.verbose);
+
+        // These only work if you use Fas itself, not other implementations of IFas. This is needed is yo use,
+        // e.g., Kci as a test, which can take a long time. In the interface you can stop the algorithm yourself,
+        // but if you need to run PC/KCI e.g., in a loop, you need a timeout. jdramsey 2025-2-23
+        fas.setStartTime(startTime);
+        fas.setTimeout(timeout);
+
         return search(fas, nodes);
     }
 
@@ -199,6 +217,8 @@ public class Pc implements IGraphSearch {
         }
 
         PcCommon search = getPcCommon();
+        search.setStartTime(this.startTime);
+        search.setTimout(this.timeout);
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();

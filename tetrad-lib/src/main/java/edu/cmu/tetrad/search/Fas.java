@@ -32,11 +32,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.*;
 
 /**
  * Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a useful
@@ -108,6 +104,17 @@ public class Fas implements IFas {
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
+    /**
+     * Represents the start time of a specific operation or process within the algorithm's execution.
+     * This variable is used to measure elapsed time or to enforce time constraints during the execution.
+     */
+    private long startTime;
+    /**
+     * Specifies the timeout value for the search operation or algorithm execution.
+     * The timeout value is used to determine the maximum allowed duration for the
+     * execution, preventing any operation from exceeding this limit.
+     */
+    private long timeout;
 
     /**
      * Constructor.
@@ -340,6 +347,10 @@ public class Fas implements IFas {
 
             @Override
             public Map<Edge, Double> call() {
+                if (System.currentTimeMillis() - getStartTime() > getTimeout()) {
+                    throw new RuntimeException("Timeout");
+                }
+
                 IndependenceResult result;
                 try {
                     result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
@@ -694,6 +705,42 @@ public class Fas implements IFas {
         }
 
         return freeDegree(adjacencies) > depth;
+    }
+
+    /**
+     * Gets the timeout value for the search operation or algorithm execution.
+     * The timeout value determines the maximum duration the process can run before it is terminated.
+     *
+     * @return The timeout value in milliseconds.
+     */
+    public long getTimeout() {
+        return this.timeout;
+    }
+
+    /**
+     * Specifies the timeout value for the search operation or algorithm execution.
+     * The timeout value is used to determine the maximum allowed duration for the
+     * execution, preventing any operation from exceeding this limit.
+     */
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
+
+    /**
+     * Represents the start time of a specific operation or process within the algorithm's execution.
+     * This variable is used to measure elapsed time or to enforce time constraints during the execution.
+     */
+    public long getStartTime() {
+        return this.startTime;
+    }
+
+    /**
+     * Sets the start time for a specific operation or process.
+     *
+     * @param startTime The start time in milliseconds.
+     */
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 }
 

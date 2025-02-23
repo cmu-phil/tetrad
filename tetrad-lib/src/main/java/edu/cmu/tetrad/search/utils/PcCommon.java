@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -127,6 +127,17 @@ public final class PcCommon implements IGraphSearch {
      * Which PC heuristic to use (see Causation, Prediction and Search). Default is PcHeuristicType.NONE.
      */
     private PcHeuristicType pcHeuristicType = PcHeuristicType.NONE;
+    /**
+     * Represents the start time in milliseconds since the Unix epoch (January 1, 1970, 00:00:00 GMT). This variable is
+     * typically used to store the timestamp marking the initiation of a specific event or process.
+     */
+    private long startTime;
+    /**
+     * Specifies the maximum duration, in milliseconds, to wait for an operation to complete before timing out. This
+     * variable can be used to define a limit on how long a process or operation should take. New independence
+     * checks will not be run if the elapsed time exceeds this in millisecond, and an exception will be thrown.
+     */
+    private long timeout;
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -202,15 +213,13 @@ public final class PcCommon implements IGraphSearch {
     public static boolean colliderAllowed(Graph graph, Node x, Node y, Node z, Knowledge knowledge) {
         boolean result = true;
         if (knowledge != null) {
-            result = !knowledge.isRequired(((Object) y).toString(), ((Object) x).toString())
-                     && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
+            result = !knowledge.isRequired(((Object) y).toString(), ((Object) x).toString()) && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
         }
         if (!result) return false;
         if (knowledge == null) {
             return true;
         }
-        boolean allowed = !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString())
-                          && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
+        boolean allowed = !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString()) && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
 
         if (allowed) {
             allowed = !(graph.paths().isAncestorOf(y, z) || graph.paths().isAncestorOf(y, z));
@@ -302,8 +311,7 @@ public final class PcCommon implements IGraphSearch {
         List<Node> allNodes = getIndependenceTest().getVariables();
 
         if (!new HashSet<>(allNodes).containsAll(nodes)) {
-            throw new IllegalArgumentException("All of the given nodes must " +
-                                               "be in the domain of the independence test provided.");
+            throw new IllegalArgumentException("All of the given nodes must " + "be in the domain of the independence test provided.");
         }
 
         Fas fas;
@@ -321,6 +329,8 @@ public final class PcCommon implements IGraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(this.verbose);
+        fas.setStartTime(startTime);
+        fas.setTimeout(timeout);
 
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
@@ -464,8 +474,7 @@ public final class PcCommon implements IGraphSearch {
         }
 
         if (depth == Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                                               "due to a known bug.");
+            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " + "due to a known bug.");
         }
 
         this.depth = depth;
@@ -697,8 +706,7 @@ public final class PcCommon implements IGraphSearch {
      * @param verbose      a flag indicating whether to display verbose output
      * @param conflictRule the conflict resolution rule to use when orienting colliders
      */
-    private void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
-                                             ConflictRule conflictRule) {
+    private void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose, ConflictRule conflictRule) {
         if (verbose) {
             System.out.println("FAS Sepset orientation...");
         }
@@ -737,14 +745,12 @@ public final class PcCommon implements IGraphSearch {
                 if (!sepset.contains(b)) {
                     boolean result1 = true;
                     if (knowledge != null) {
-                        result1 = !knowledge.isRequired(((Object) b).toString(), ((Object) a).toString())
-                                  && !knowledge.isForbidden(((Object) a).toString(), ((Object) b).toString());
+                        result1 = !knowledge.isRequired(((Object) b).toString(), ((Object) a).toString()) && !knowledge.isForbidden(((Object) a).toString(), ((Object) b).toString());
                     }
                     if (result1) {
                         boolean result = true;
                         if (knowledge != null) {
-                            result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString())
-                                     && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
+                            result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString()) && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
                         }
                         if (result) {
                             if (colliderAllowed(graph, a, b, c, knowledge)) {
@@ -762,6 +768,24 @@ public final class PcCommon implements IGraphSearch {
                 }
             }
         }
+    }
+
+    /**
+     * Sets the start time for an operation or event.
+     *
+     * @param startTime the start time in milliseconds since epoch
+     */
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * Sets the timeout value for the operation.
+     *
+     * @param timeout the timeout duration in milliseconds
+     */
+    public void setTimout(long timeout) {
+        this.timeout = timeout;
     }
 
     /**

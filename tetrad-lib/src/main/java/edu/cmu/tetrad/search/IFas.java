@@ -96,6 +96,20 @@ public interface IFas extends IGraphSearch {
      * @param out This print stream.
      */
     void setOut(PrintStream out);
+
+    /**
+     * Sets the start time for the search process.
+     *
+     * @param startTime The start time in milliseconds.
+     */
+    void setStartTime(long startTime);
+
+    /**
+     * Sets the maximum time in milliseconds that a search process is allowed to run.
+     *
+     * @param timeout The timeout duration in milliseconds.
+     */
+    void setTimeout(long timeout);
 }
 
 
