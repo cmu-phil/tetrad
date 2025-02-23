@@ -347,7 +347,7 @@ public class Fas implements IFas {
 
             @Override
             public Map<Edge, Double> call() {
-                if (System.currentTimeMillis() - getStartTime() > getTimeout()) {
+                if (getTimeout() > 0 && System.currentTimeMillis() - getStartTime() > getTimeout()) {
                     throw new RuntimeException("Timeout");
                 }
 
