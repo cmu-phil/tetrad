@@ -131,7 +131,7 @@ public final class PcCommon implements IGraphSearch {
      * Represents the start time in milliseconds since the Unix epoch (January 1, 1970, 00:00:00 GMT). This variable is
      * typically used to store the timestamp marking the initiation of a specific event or process.
      */
-    private long startTime;
+    private long startTime = -1;
     /**
      * Specifies the maximum duration, in milliseconds, to wait for an operation to complete before timing out. This
      * variable can be used to define a limit on how long a process or operation should take. New independence
@@ -306,7 +306,9 @@ public final class PcCommon implements IGraphSearch {
 
         this.independenceTest.setVerbose(this.verbose);
 
-        long startTime = MillisecondTimes.timeMillis();
+        if (startTime <= 0) {
+            startTime = System.currentTimeMillis();
+        }
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -386,7 +388,7 @@ public final class PcCommon implements IGraphSearch {
             meekRules.orientImplied(this.graph);
         }
 
-        long endTime = MillisecondTimes.timeMillis();
+        long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - startTime;
 
         log((this.elapsedTime) / 1000. + " s", verbose);

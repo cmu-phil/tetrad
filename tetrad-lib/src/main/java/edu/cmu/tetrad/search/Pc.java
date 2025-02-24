@@ -93,12 +93,12 @@ public class Pc implements IGraphSearch {
      * Tracks the time when the execution begins, typically measured in milliseconds since the epoch.
      * This is used for calculating execution duration and performance analysis.
      */
-    private final long startTime = -1L;
+    private long startTime = -1L;
     /**
      * The timeout duration for the search process, in milliseconds.
      * If set to -1, it indicates that no timeout is enforced.
      */
-    private final long timeout = -1L;
+    private long timeout = -1L;
     /**
      * The elapsed time of the most recent search.
      */
@@ -181,8 +181,14 @@ public class Pc implements IGraphSearch {
         // These only work if you use Fas itself, not other implementations of IFas. This is needed is yo use,
         // e.g., Kci as a test, which can take a long time. In the interface you can stop the algorithm yourself,
         // but if you need to run PC/KCI e.g., in a loop, you need a timeout. jdramsey 2025-2-23
+        long startTime = System.currentTimeMillis();
+        System.out.println("Start time in PC = " + startTime);
+
+        setStartTime(startTime);
         fas.setStartTime(startTime);
-        fas.setTimeout(timeout);
+        fas.setTimeout(getTimeout());
+
+        System.out.println("Start time = " + startTime + " timeout = " + getTimeout());
 
         return search(fas, nodes);
     }
@@ -204,7 +210,8 @@ public class Pc implements IGraphSearch {
             this.logger.log("Independence test = " + getIndependenceTest() + ".");
         }
 
-        long startTime = MillisecondTimes.timeMillis();
+        long startTime = System.currentTimeMillis();
+        setStartTime(startTime);
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException("Null independence test.");
@@ -217,16 +224,16 @@ public class Pc implements IGraphSearch {
         }
 
         PcCommon search = getPcCommon();
-        search.setStartTime(this.startTime);
-        search.setTimout(this.timeout);
+        search.setStartTime(this.getStartTime());
+        search.setTimout(this.getTimeout());
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
 
-        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
+        this.elapsedTime = System.currentTimeMillis() - startTime;
 
         if (verbose) {
-            this.logger.log("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            this.logger.log("Elapsed Wall time = " + startTime + " ms");
             this.logger.log("Finishing PC Algorithm.");
             this.logger.flush();
         }
@@ -262,6 +269,11 @@ public class Pc implements IGraphSearch {
         search.setConflictRule(conflictRule);
         search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(verbose);
+
+        long startTime = System.currentTimeMillis();
+        setStartTime(startTime);
+        search.setStartTime(startTime);
+
         return search;
     }
 
@@ -429,6 +441,46 @@ public class Pc implements IGraphSearch {
      */
     public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
         this.pcHeuristicType = pcHeuristicType;
+    }
+
+    /**
+     * Represents the start time of the algorithm or process execution within the PC search implementation.
+     * Tracks the time when the execution begins, typically measured in milliseconds since the epoch.
+     * This is used for calculating execution duration and performance analysis.
+     */
+    public long getStartTime() {
+        return startTime;
+    }
+
+    /**
+     * Sets the start time of the algorithm or process execution.
+     * Used to indicate when the execution begins, typically measured in milliseconds since the epoch.
+     * This value is instrumental in tracking execution duration and performance metrics.
+     *
+     * @param startTime The start time of the execution in milliseconds.
+     */
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * The timeout duration for the search process, in milliseconds.
+     * If set to -1, it indicates that no timeout is enforced.
+     */
+    public long getTimeout() {
+        return timeout;
+    }
+
+    /**
+     * Sets the timeout duration for the search process.
+     * The timeout is specified in milliseconds and can be used to limit the execution duration.
+     * A value of -1 indicates that no timeout is enforced.
+     *
+     * @param timeout The timeout value in milliseconds. A non-negative value specifies the maximum allowed
+     *                execution time while -1 disables the timeout.
+     */
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
     }
 }
 

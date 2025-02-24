@@ -27,12 +27,15 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import javax.sound.midi.SysexMessage;
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 /**
  * Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a useful
@@ -105,14 +108,13 @@ public class Fas implements IFas {
      */
     private boolean verbose = false;
     /**
-     * Represents the start time of a specific operation or process within the algorithm's execution.
-     * This variable is used to measure elapsed time or to enforce time constraints during the execution.
+     * Represents the start time of a specific operation or process within the algorithm's execution. This variable is
+     * used to measure elapsed time or to enforce time constraints during the execution.
      */
     private long startTime;
     /**
-     * Specifies the timeout value for the search operation or algorithm execution.
-     * The timeout value is used to determine the maximum allowed duration for the
-     * execution, preventing any operation from exceeding this limit.
+     * Specifies the timeout value for the search operation or algorithm execution. The timeout value is used to
+     * determine the maximum allowed duration for the execution, preventing any operation from exceeding this limit.
      */
     private long timeout;
 
@@ -294,12 +296,15 @@ public class Fas implements IFas {
      *
      * @param nodes A list of nodes to search over.
      * @return An undirected graph that summarizes the conditional independencies in the data.
-     * @throws InterruptedException if any    *
+     * @throws InterruptedException if any
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
         Thread mainThread = Thread.currentThread();
 
-        long startTime = MillisecondTimes.timeMillis();
+        if (startTime <= 0) {
+            startTime = System.currentTimeMillis();
+        }
+
         nodes = new ArrayList<>(nodes);
 
         this.logger.addOutputStream(out);
@@ -347,10 +352,6 @@ public class Fas implements IFas {
 
             @Override
             public Map<Edge, Double> call() {
-                if (getTimeout() > 0 && System.currentTimeMillis() - getStartTime() > getTimeout()) {
-                    throw new RuntimeException("Timeout");
-                }
-
                 IndependenceResult result;
                 try {
                     result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
@@ -375,6 +376,7 @@ public class Fas implements IFas {
             int parallelism = Runtime.getRuntime().availableProcessors();
             ForkJoinPool pool = new ForkJoinPool(parallelism);
             List<Future<Map<Edge, Double>>> theseResults;
+
             theseResults = pool.invokeAll(tasks);
 
             for (Future<Map<Edge, Double>> future : theseResults) {
@@ -394,7 +396,16 @@ public class Fas implements IFas {
 
             pool.shutdown();
         } else {
+            System.out.println("Stable option false");
+
             for (Task task : tasks) {
+                long current = System.currentTimeMillis();
+
+                if (getTimeout() > 0 && current > getStartTime() + getTimeout()) {
+                    throw new RuntimeException("Timeout time = " + current + " startTime = " + getStartTime()
+                                               + " timeout = " + getTimeout());
+                }
+
                 Map<Edge, Double> result = task.call();
 
                 for (Edge edge : result.keySet()) {
@@ -472,7 +483,7 @@ public class Fas implements IFas {
             this.logger.log("Finishing Fast Adjacency Search.");
         }
 
-        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
+        this.elapsedTime = System.currentTimeMillis() - startTime;
 
         return graph;
     }
@@ -708,8 +719,8 @@ public class Fas implements IFas {
     }
 
     /**
-     * Gets the timeout value for the search operation or algorithm execution.
-     * The timeout value determines the maximum duration the process can run before it is terminated.
+     * Gets the timeout value for the search operation or algorithm execution. The timeout value determines the maximum
+     * duration the process can run before it is terminated.
      *
      * @return The timeout value in milliseconds.
      */
@@ -718,17 +729,16 @@ public class Fas implements IFas {
     }
 
     /**
-     * Specifies the timeout value for the search operation or algorithm execution.
-     * The timeout value is used to determine the maximum allowed duration for the
-     * execution, preventing any operation from exceeding this limit.
+     * Specifies the timeout value for the search operation or algorithm execution. The timeout value is used to
+     * determine the maximum allowed duration for the execution, preventing any operation from exceeding this limit.
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
     }
 
     /**
-     * Represents the start time of a specific operation or process within the algorithm's execution.
-     * This variable is used to measure elapsed time or to enforce time constraints during the execution.
+     * Represents the start time of a specific operation or process within the algorithm's execution. This variable is
+     * used to measure elapsed time or to enforce time constraints during the execution.
      */
     public long getStartTime() {
         return this.startTime;
