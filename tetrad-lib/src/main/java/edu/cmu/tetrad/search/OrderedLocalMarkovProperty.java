@@ -60,11 +60,14 @@ public class OrderedLocalMarkovProperty {
         for (Node node : mag.getNodes()) {
             if (node == sink) continue;
             if (mb.contains(node)) continue;
-            model.add(new IndependenceFact(sink, node, mb));
+            IndependenceFact ind_fact = new IndependenceFact(sink, node, mb);
+            model.add(ind_fact);
         }
 
         Set<Node> dis_ = new HashSet<>(dis);
         for (Node node : dis) {
+            if (de.get(node).contains(sink)) continue;
+
             dis_ = new HashSet<>(dis_);
             dis_.remove((node));
 

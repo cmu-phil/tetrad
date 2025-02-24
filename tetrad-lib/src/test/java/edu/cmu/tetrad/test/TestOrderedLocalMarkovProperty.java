@@ -45,7 +45,7 @@ public class TestOrderedLocalMarkovProperty {
 
     @Test
     public void test3() {
-        Graph mag1 = GraphUtils.convert("a-->b,b<->c,d<--c");
+        Graph mag1 = GraphUtils.convert("a-->b,b<->c,c<--d");
 
         System.out.println("\nmag1 = " + mag1);
 
