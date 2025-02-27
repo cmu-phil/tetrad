@@ -182,13 +182,10 @@ public class Pc implements IGraphSearch {
         // e.g., Kci as a test, which can take a long time. In the interface you can stop the algorithm yourself,
         // but if you need to run PC/KCI e.g., in a loop, you need a timeout. jdramsey 2025-2-23
         long startTime = System.currentTimeMillis();
-        System.out.println("Start time in PC = " + startTime);
 
         setStartTime(startTime);
         fas.setStartTime(startTime);
         fas.setTimeout(getTimeout());
-
-        System.out.println("Start time = " + startTime + " timeout = " + getTimeout());
 
         return search(fas, nodes);
     }
