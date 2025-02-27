@@ -441,9 +441,11 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Represents the start time of the algorithm or process execution within the PC search implementation.
-     * Tracks the time when the execution begins, typically measured in milliseconds since the epoch.
-     * This is used for calculating execution duration and performance analysis.
+     * Represents the start time of the algorithm or process execution within the PC search implementation. Tracks the
+     * time when the execution begins, typically measured in milliseconds since the epoch. This is used for calculating
+     * execution duration and performance analysis.
+     *
+     * @return The start time of the process execution in milliseconds since the epoch.
      */
     public long getStartTime() {
         return startTime;
@@ -461,8 +463,10 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * The timeout duration for the search process, in milliseconds.
-     * If set to -1, it indicates that no timeout is enforced.
+     * The timeout duration for the search process, in milliseconds. If set to -1, it indicates that no timeout is
+     * enforced.
+     *
+     * @return The timeout duration in milliseconds, or -1 if timeout is not enforced.
      */
     public long getTimeout() {
         return timeout;

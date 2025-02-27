@@ -278,7 +278,8 @@ public class Fas implements IFas {
      * then three, and so on, until no more edges can be removed from the graph. The edges which remain in the graph
      * after this procedure are the adjacencies in the data.
      *
-     * @return An undirected graph that summarizes the conditional independencies in the data.
+     * @return An undirected graph that summarizes the conditional independencies in the data. This graph
+     *         represents the adjacencies that remain after applying conditional independence tests.
      * @throws InterruptedException if any
      */
     @Override
@@ -515,7 +516,7 @@ public class Fas implements IFas {
      * Returns the sepsets that were discovered in the search. A 'sepset' for test X _||_ Y | Z1,...,Zm would be
      * {Z1,...,Zm}
      *
-     * @return A map of these sepsets indexed by {X, Y}.
+     * @return A map of sepsets discovered during the search, indexed by pairs of nodes {X, Y}.
      */
     public SepsetMap getSepsets() {
         return this.sepset;
@@ -533,7 +534,7 @@ public class Fas implements IFas {
     /**
      * Returns the elapsed time of the search.
      *
-     * @return This elapsed time.
+     * @return The elapsed time of the search in milliseconds.
      */
     public long getElapsedTime() {
         return elapsedTime;
@@ -542,7 +543,7 @@ public class Fas implements IFas {
     /**
      * Retrieves the list of nodes in the graph.
      *
-     * @return A List of Node objects representing the nodes in the graph.
+     * @return A list of nodes in the graph being processed by the search algorithm.
      */
     @Override
     public List<Node> getNodes() {
@@ -553,7 +554,8 @@ public class Fas implements IFas {
      * Retrieves the list of ambiguous triples involving the given node.
      *
      * @param node The node for which to retrieve the ambiguous triples.
-     * @return A list of Triple objects representing the ambiguous triples involving the node.
+     * @return A list of Triple objects representing the ambiguous triples involving the specified node, 
+     *         or an empty list if none are found.
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
@@ -722,7 +724,7 @@ public class Fas implements IFas {
      * Gets the timeout value for the search operation or algorithm execution. The timeout value determines the maximum
      * duration the process can run before it is terminated.
      *
-     * @return The timeout value in milliseconds.
+     * @return The timeout value for the search operation in milliseconds.
      */
     public long getTimeout() {
         return this.timeout;
@@ -739,6 +741,10 @@ public class Fas implements IFas {
     /**
      * Represents the start time of a specific operation or process within the algorithm's execution. This variable is
      * used to measure elapsed time or to enforce time constraints during the execution.
+     *
+     * @return The start time of the operation in milliseconds since epoch.
+     * 
+     * 
      */
     public long getStartTime() {
         return this.startTime;
