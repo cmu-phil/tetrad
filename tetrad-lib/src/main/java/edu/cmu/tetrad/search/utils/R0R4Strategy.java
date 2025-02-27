@@ -45,6 +45,7 @@ public interface R0R4Strategy {
      * @return a pair of the discriminating path construct and a boolean indicating whether the orientation was
      * determined.
      * @see DiscriminatingPath
+     * @throws InterruptedException if the operation is interrupted
      */
     Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) throws InterruptedException;
 

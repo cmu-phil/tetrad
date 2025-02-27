@@ -205,6 +205,7 @@ public final class LvLite implements IGraphSearch {
      * Run the search and return s a PAG.
      *
      * @return The PAG.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         List<Node> nodes;
@@ -632,6 +633,7 @@ public final class LvLite implements IGraphSearch {
      * Parameterizes and returns a new BOSS search.
      *
      * @return A new BOSS search.
+     * @throws InterruptedException if any
      */
     private @NotNull PermutationSearch getBossSearch() throws InterruptedException {
         var suborderSearch = new Boss(score);
@@ -648,6 +650,12 @@ public final class LvLite implements IGraphSearch {
         return permutationSearch;
     }
 
+    /**
+     * Returns an SP search.
+     *
+     * @return a PermutationSearch
+     * @throws InterruptedException
+     */
     private @NotNull PermutationSearch getSpSearch() throws InterruptedException {
         var suborderSearch = new Sp(score);
 //        suborderSearch.setResetAfterBM(true);
@@ -785,10 +793,10 @@ public final class LvLite implements IGraphSearch {
     /**
      * Tries removing extra edges from the PAG using a test with sepsets obtained by examining the BOSS/GRaSP DAG.
      *
-     * @param pag The graph in which to remove extra edges.
-     * @param extraSepsets A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning sets used to
-     * remove the edges. These can be used to do orientation of common adjacents, as x *-&gt: b &lt;-* y just in case b
-     * is not in this sepset.
+     * @param pag          The graph in which to remove extra edges.
+     * @param extraSepsets A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning
+     *                     sets used to remove the edges. These can be used to do orientation of common adjacents, as x
+     *                     *-&gt: b &lt;-* y just in case b is not in this sepset.
      */
     private void removeExtraEdgesCommonColliders(Graph pag, Map<Edge, Set<Node>> extraSepsets) {
         if (verbose) {

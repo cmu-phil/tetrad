@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -114,8 +115,7 @@ public class DeltaSextadTest {
     public double getPValue(Sextad... sextads) {
         int df = dofHarman(sextads.length);
         double chisq = calcChiSquare(sextads);
-        double cdf = new ChiSquaredDistribution(df).cumulativeProbability(chisq);
-        return 1.0 - cdf;
+        return StatUtils.getChiSquareP(df, chisq);
     }
 
     /**

@@ -248,6 +248,7 @@ public final class Mmmb implements IMbSearch {
      *
      * @param t a {@link edu.cmu.tetrad.graph.Node} object
      * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
+     * @throws java.lang.InterruptedException if any.
      */
     public List<Node> getPc(Node t) throws InterruptedException {
         if (!this.pc.containsKey(t)) {

@@ -234,10 +234,10 @@ public final class TestBoxDataSet {
 
         I:
         for (int i = 0; i < dataSet.getNumRows(); i++) {
-            Vector v = _dataSet.getDoubleData().getRow(i);
+            Vector v = _dataSet.getDoubleData().row(i);
 
             for (int j = 0; j < dataSet.getNumRows(); j++) {
-                Vector w = dataSet.getDoubleData().getRow(j);
+                Vector w = dataSet.getDoubleData().row(j);
 
                 if (v.equals(w)) {
                     continue I;

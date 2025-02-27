@@ -69,6 +69,7 @@ public class ShiftSearch {
      * <p>search.</p>
      *
      * @return an array of  objects
+     * @throws java.lang.InterruptedException if any.
      */
     public int[] search() throws InterruptedException {
         if (this.maxShift < 1) {
@@ -267,7 +268,7 @@ public class ShiftSearch {
         for (DataModel _dataSet : dataSets) {
             DataSet dataSet = (DataSet) _dataSet;
             Matrix mat = dataSet.getDoubleData();
-            Matrix mat2 = mat.getPart(0, numRows - 1, 0, mat.getNumColumns() - 1);
+            Matrix mat2 = mat.getPart(0, numRows, 0, mat.getNumColumns());
             truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 

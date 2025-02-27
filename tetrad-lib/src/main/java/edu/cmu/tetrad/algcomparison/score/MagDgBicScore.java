@@ -71,11 +71,11 @@ public class MagDgBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-        edu.cmu.tetrad.search.work_in_progress.MagDgBicScore degenerateGaussianScore
+        edu.cmu.tetrad.search.work_in_progress.MagDgBicScore magDbBicScore
                 = new edu.cmu.tetrad.search.work_in_progress.MagDgBicScore(
                         SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances);
-        degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        return degenerateGaussianScore;
+        magDbBicScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        return magDbBicScore;
     }
 
     /**
@@ -103,7 +103,6 @@ public class MagDgBicScore implements ScoreWrapper {
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.STRUCTURE_PRIOR);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
-        parameters.add(Params.USE_PSEUDOINVERSE);
         return parameters;
     }
 

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -51,13 +52,14 @@ public class PercentAmbiguous implements Statistic {
     /**
      * Calculates the percentage of ambiguous triples in the estimated graph compared to the true graph.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters The parameters
      * @return The percentage of ambiguous triples in the estimated graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int numAmbiguous = 0;
         int numTriples = 0;
 

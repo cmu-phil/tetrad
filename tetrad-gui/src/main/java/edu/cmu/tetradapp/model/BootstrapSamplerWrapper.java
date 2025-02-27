@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.util.prefs.Preferences;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on construction from a BayesIm.
@@ -70,7 +71,9 @@ public class BootstrapSamplerWrapper extends DataWrapper {
         for (DataModel dataModel : oldDataSets) {
             DataSet dataSet = (DataSet) dataModel;
             BootstrapSampler sampler = new BootstrapSampler();
-            DataSet bootstrap = sampler.sample(dataSet, params.getInt("sampleSize", 1000));
+            sampler.setWithReplacement(Preferences.userRoot().getBoolean("withReplacement", true));
+            DataSet bootstrap = sampler.sample(dataSet, Preferences.userRoot().getInt("bootstrapSampleSize",
+                    1000));
             bootstraps.add(bootstrap);
             if (oldDataSets.getSelectedModel() == dataModel) {
                 bootstraps.setSelectedModel(bootstrap);
@@ -83,7 +86,9 @@ public class BootstrapSamplerWrapper extends DataWrapper {
         DataModel dataModel = wrapper.getSelectedDataModel();
         DataSet dataSet = (DataSet) dataModel;
         BootstrapSampler sampler = new BootstrapSampler();
-        this.outputDataSet = sampler.sample(dataSet, params.getInt("sampleSize", 1000));
+        sampler.setWithReplacement(params.getBoolean("withReplacement", true));
+        this.outputDataSet = sampler.sample(dataSet,
+                params.getInt("sampleSize", 1000));
 
         LogDataUtils.logDataModelList("Bootstrap sample of data in the parent node.", getDataModelList());
 

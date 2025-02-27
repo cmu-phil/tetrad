@@ -338,7 +338,7 @@ public class TestFci {
             }
 
             Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
-                    10, 10, 10, false);
+                    10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(1000, false);
@@ -351,7 +351,7 @@ public class TestFci {
             RandomUtil.shuffle(variables);
 
             for (int m = 0; m < numVarsToMarginalize; m++) {
-                marginalData.removeColumn(marginalData.getColumn(variables.get(m)));
+                marginalData.removeColumn(marginalData.getColumnIndex(variables.get(m)));
             }
 
             Graph margPag = getPag(marginalData);
@@ -434,7 +434,7 @@ public class TestFci {
 
                 while ((choice = gen.next()) != null) {
                     List<Node> c = GraphUtils.asList(choice, adj);
-                    Node n1 = c.get(0);
+                    Node n1 = c.getFirst();
                     Node n2 = c.get(1);
 
                     if (!pag.isAdjacentTo(n1, n2)) {

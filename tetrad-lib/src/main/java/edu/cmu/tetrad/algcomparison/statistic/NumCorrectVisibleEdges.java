@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.PagCache;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 import java.util.List;
@@ -42,7 +43,7 @@ public class NumCorrectVisibleEdges implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         Graph dag = PagCache.getInstance().getDag(trueGraph);
 
         GraphUtils.addEdgeSpecializationMarkup(estGraph);

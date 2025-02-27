@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -42,9 +42,11 @@ public interface SepsetProducer {
      * @param a     the first node
      * @param b     the second node
      * @param depth the depth of the search
+     * @param order the order of the nodes, used for some implementations
      * @return the set of common neighbors between nodes a and b
+     * @throws InterruptedException if any
      */
-    Set<Node> getSepset(Node a, Node b, int depth) throws InterruptedException;
+    Set<Node> getSepset(Node a, Node b, int depth, List<Node> order) throws InterruptedException;
 
     /**
      * Retrieves a sepset containing nodes in s from the given set of nodes.
@@ -54,6 +56,7 @@ public interface SepsetProducer {
      * @param s     the set of nodes
      * @param depth the depth of the search
      * @return the sepset containing nodes a and b from the given set of nodes
+     * @throws InterruptedException if any
      */
     Set<Node> getSepsetContaining(Node a, Node b, Set<Node> s, int depth) throws InterruptedException;
 
@@ -65,6 +68,7 @@ public interface SepsetProducer {
      * @param k     a {@link Node} object
      * @param depth the depth of the search
      * @return a boolean
+     * @throws InterruptedException if any
      */
     boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException;
 
@@ -96,6 +100,7 @@ public interface SepsetProducer {
      * @param c      the second node
      * @param sepset the set of common neighbors between d and c
      * @return true if d is independent of c, false otherwise
+     * @throws InterruptedException if any
      */
     boolean isIndependent(Node d, Node c, Set<Node> sepset) throws InterruptedException;
 
@@ -106,6 +111,7 @@ public interface SepsetProducer {
      * @param b      the second node
      * @param sepset the set of nodes
      * @return the p-value for the statistical test
+     * @throws InterruptedException if any
      */
     double getPValue(Node a, Node b, Set<Node> sepset) throws InterruptedException;
 

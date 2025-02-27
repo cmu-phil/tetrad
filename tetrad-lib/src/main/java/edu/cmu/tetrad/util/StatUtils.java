@@ -21,11 +21,11 @@
 
 package edu.cmu.tetrad.util;
 
-import cern.colt.list.DoubleArrayList;
-import cern.jet.stat.Descriptive;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -143,137 +143,33 @@ public final class StatUtils {
     }
 
     /**
-     * <p>median.</p>
+     * Calculates the median of all the elements in the given SimpleMatrix.
      *
-     * @param array a long array.
-     * @return the median of the values in this array.
+     * @param matrix the input SimpleMatrix containing the elements for which the median is to be calculated
+     * @return the median value of the elements in the input matrix
      */
-    public static double median(long[] array) {
-        return StatUtils.median(array, array.length);
+    public static double median(SimpleMatrix matrix) {
+        double[] elements = matrix.getDDRM().data.clone(); // Copy the elements
+        return median(elements);
     }
 
     /**
-     * <p>median.</p>
+     * Computes the median value of a given array of doubles. The method sorts the array and then calculates the median
+     * based on whether the number of elements in the array is odd or even.
      *
-     * @param array a double array.
-     * @return the median of the values in this array.
+     * @param elements an array of double values for which the median is to be calculated. The input array will be
+     *                 sorted in-place.
+     * @return the median value of the array. If the array is empty, the behavior is undefined.
      */
-    public static double median(double[] array) {
-        return StatUtils.median(array, array.length);
-    }
+    public static double median(double[] elements) {
+        Arrays.sort(elements); // Sort the elements
 
-    /**
-     * <p>median.</p>
-     *
-     * @param array a long array.
-     * @param N     the number of values of array which should be considered.
-     * @return the median of the first N values in this array.
-     */
-    public static long median(long[] array, int N) {
-
-        long[] a = new long[N + 1];
-
-        System.arraycopy(array, 0, a, 0, N);
-
-        a[N] = Long.MAX_VALUE;
-
-        long v, t;
-        int i, j, l = 0;
-        int r = N - 1;
-        int k1 = r / 2;
-        int k2 = r - k1;
-
-        while (r > l) {
-            v = a[l];
-            i = l;
-            j = r + 1;
-
-            for (; ; ) {
-                while (a[++i] < v) {
-                }
-                while (a[--j] > v) {
-                }
-
-                if (i >= j) {
-                    break;
-                }
-
-                t = a[i];
-                a[i] = a[j];
-                a[j] = t;
-            }
-
-            t = a[j];
-            a[j] = a[l];
-            a[l] = t;
-
-            if (j <= k1) {
-                l = j + 1;
-            }
-
-            if (j >= k2) {
-                r = j - 1;
-            }
+        int n = elements.length;
+        if (n % 2 == 0) {
+            return (elements[n / 2 - 1] + elements[n / 2]) / 2.0;
+        } else {
+            return elements[n / 2];
         }
-
-        return (a[k1] + a[k2]) / 2;
-    }
-
-    /**
-     * <p>median.</p>
-     *
-     * @param array a double array.
-     * @param N     the number of values of array which should be considered.
-     * @return the median of the first N values in this array.
-     */
-    public static double median(double[] array, int N) {
-
-        double[] a = new double[N + 1];
-
-        System.arraycopy(array, 0, a, 0, N);
-
-        a[N] = Double.POSITIVE_INFINITY;
-
-        double v, t;
-        int i, j, l = 0;
-        int r = N - 1;
-        int k1 = r / 2;
-        int k2 = r - k1;
-
-        while (r > l) {
-            v = a[l];
-            i = l;
-            j = r + 1;
-
-            for (; ; ) {
-                while (a[++i] < v) {
-                }
-                while (a[--j] > v) {
-                }
-
-                if (i >= j) {
-                    break;
-                }
-
-                t = a[i];
-                a[i] = a[j];
-                a[j] = t;
-            }
-
-            t = a[j];
-            a[j] = a[l];
-            a[l] = t;
-
-            if (j <= k1) {
-                l = j + 1;
-            }
-
-            if (j >= k2) {
-                r = j - 1;
-            }
-        }
-
-        return (a[k1] + a[k2]) / 2;
     }
 
     /**
@@ -1361,6 +1257,14 @@ public final class StatUtils {
         return adev;
     }
 
+    /**
+     * Calculates the i-th moment of the given data array. The i-th moment is computed as the mean of each data value
+     * raised to the power of i.
+     *
+     * @param data the array of data values for which the moment is to be calculated
+     * @param i    the power to which each data value is raised
+     * @return the calculated i-th moment of the data
+     */
     public static double calculateMoment(double[] data, int i) {
         double sum = 0.0;
         for (double value : data) {
@@ -1369,6 +1273,14 @@ public final class StatUtils {
         return sum / data.length; // Mean of powers
     }
 
+    /**
+     * Calculates the central moment of a dataset for a given order. The central moment is derived by raising each
+     * deviation of the data points from the mean to the specified power and averaging the results.
+     *
+     * @param data the array of data points for which the central moment is to be calculated
+     * @param i    the order of the central moment to be calculated
+     * @return the calculated central moment of the dataset
+     */
     public static double calculateCentralMoment(double[] data, int i) {
         double mean = calculateMoment(data, 1); // First moment is the mean
         double sum = 0.0;
@@ -1378,6 +1290,17 @@ public final class StatUtils {
         return sum / data.length; // Average
     }
 
+    /**
+     * Calculates the specified cumulant of a dataset based on the given order. Cumulants provide statistical
+     * descriptions of datasets and are related to moments.
+     *
+     * @param data the array of data points, representing the dataset for which the cumulant is to be calculated
+     * @param i    the order of the cumulant to calculate (e.g., 1 for mean, 2 for variance, 3 for skewness-related
+     *             cumulant, etc.)
+     * @return the calculated cumulant of the specified order
+     * @throws IllegalArgumentException if the order of the cumulant (i) is greater than 5, as calculation for
+     *                                  higher-order cumulants are not implemented
+     */
     public static double calculateCumulant(double[] data, int i) {
         switch (i) {
             case 1: // Mean
@@ -1957,9 +1880,9 @@ public final class StatUtils {
         int[] _z = new int[submatrix.getNumRows() - 2];
         for (int i = 0; i < submatrix.getNumRows() - 2; i++) _z[i] = i + 2;
 
-        Matrix covXz = submatrix.getSelection(new int[]{0}, _z);
-        Matrix covZy = submatrix.getSelection(_z, new int[]{1});
-        Matrix covZ = submatrix.getSelection(_z, _z);
+        Matrix covXz = submatrix.view(new int[]{0}, _z).mat();
+        Matrix covZy = submatrix.view(_z, new int[]{1}).mat();
+        Matrix covZ = submatrix.view(_z, _z).mat();
 
         Matrix _zInverse = covZ.inverse();
 
@@ -1994,7 +1917,7 @@ public final class StatUtils {
         selection[1] = y;
         System.arraycopy(z, 0, selection, 2, z.length);
 
-        return StatUtils.partialCovarianceWhittaker(covariance.getSelection(selection, selection));
+        return StatUtils.partialCovarianceWhittaker(covariance.view(selection, selection).mat());
     }
 
     /**
@@ -2027,26 +1950,25 @@ public final class StatUtils {
      * direction) is X, Y, Z1, ..., Zn, where the partial correlation one wants is correlation(X, Y | Z1,...,Zn). This
      * may be extracted using DataUtils.submatrix().
      *
-     * @param submatrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param submatrix a {@link Matrix} object
+     * @param lambda    Regularization constant.
      * @return the given partial correlation.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
-    public static synchronized double partialCorrelation(Matrix submatrix) throws SingularMatrixException {
-//        try {
-        return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
-//        } catch (SingularMatrixException e) {
-//            return NaN;
-//        }
+    public static synchronized double partialCorrelation(Matrix submatrix, double lambda) throws SingularMatrixException {
+        return StatUtils.partialCorrelationPrecisionMatrix(submatrix, lambda);
     }
 
     /**
      * <p>partialCorrelationPrecisionMatrix.</p>
      *
-     * @param submatrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param submatrix a {@link Matrix} object
+     * @param lambda    Regularisation lamgda, 0 for no regularization.z
      * @return a double
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
-    public static double partialCorrelationPrecisionMatrix(Matrix submatrix) throws SingularMatrixException {
+    public static double partialCorrelationPrecisionMatrix(Matrix submatrix, double lambda) throws SingularMatrixException {
+        submatrix = regularizeDiagonal(submatrix, lambda);
         Matrix inverse = submatrix.inverse();
         double r = (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
         if (r < -1) r = -1;
@@ -2055,16 +1977,45 @@ public final class StatUtils {
     }
 
     /**
+     * Regularizes the diagonal of the given matrix by adding a scaled identity matrix. The regularization is achieved
+     * by creating an identity matrix of the same dimensions as the original matrix and scaling it by the given lambda
+     * value, then adding it to the original matrix.
+     *
+     * @param m      the matrix to be regularized
+     * @param lambda the scaling factor for the identity matrix to be added to the diagonal
+     * @return the regularized matrix with the scaled identity matrix added to its diagonal
+     */
+    public static Matrix regularizeDiagonal(Matrix m, double lambda) {
+        if (lambda == 0.0) return m;
+        Matrix identity = Matrix.identity(m.getNumRows());
+        return m.plus(identity.scale(lambda));
+    }
+
+    /**
+     * Regularizes the diagonal of the given matrix by adding a scaled identity matrix to it.
+     *
+     * @param m the input matrix to be regularized
+     * @param lambda the scaling factor for the identity matrix; if 0.0, the original matrix is returned
+     * @return the matrix with its diagonal regularized by adding a scaled identity matrix
+     */
+    public static SimpleMatrix regularizeDiagonal(SimpleMatrix m, double lambda) {
+        if (lambda == 0.0) return m;
+        SimpleMatrix identity = SimpleMatrix.identity(m.getNumRows());
+        return m.plus(identity.scale(lambda));
+    }
+
+    /**
      * <p>partialCorrelation.</p>
      *
-     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param covariance a {@link Matrix} object
+     * @param lambda     Regularization lambda
      * @param x          a int
      * @param y          a int
      * @param z          a int
      * @return the partial correlation(x, y | z) where these represent the column/row indices of the desired variables
      * in <code>covariance</code>
      */
-    public static double partialCorrelation(Matrix covariance, int x, int y, int... z) {
+    public static double partialCorrelation(Matrix covariance, double lambda, int x, int y, int... z) {
         if (x > covariance.getNumRows()) throw new IllegalArgumentException();
         if (y > covariance.getNumRows()) throw new IllegalArgumentException();
         for (int aZ : z) if (aZ > covariance.getNumRows()) throw new IllegalArgumentException();
@@ -2075,35 +2026,39 @@ public final class StatUtils {
         selection[1] = y;
         System.arraycopy(z, 0, selection, 2, z.length);
 
-        return StatUtils.partialCorrelation(covariance.getSelection(selection, selection));
+        return StatUtils.partialCorrelation(covariance.view(selection, selection).mat(), lambda);
     }
 
     /**
-     * <p>logCoshScore.</p>
+     * Computes the log-cosh score for a given array of data. This method standardizes the input data, applies the
+     * log(cosh) transformation to each value in the dataset, computes the mean of the transformed values, and
+     * calculates the squared difference between the mean and a predefined log-cosh constant.
      *
-     * @param _f an array of  objects
-     * @return a double
+     * @param _f an array of double values representing the input data to be analyzed
+     * @return the computed log-cosh score as a squared difference between the mean of transformed data and a constant
      */
     public static double logCoshScore(double[] _f) {
         _f = StatUtils.standardizeData(_f);
 
-        DoubleArrayList f = new DoubleArrayList(_f);
+        double[] f = _f.clone();
 
         for (int k = 0; k < _f.length; k++) {
-            double v = log(cosh((f.get(k))));
-            f.set(k, v);
+            double v = log(cosh((f[k])));
+            f[k] = v;
         }
 
-        double expected = Descriptive.mean(f);
+        double expected = StatUtils.mean(f);
         double diff = expected - StatUtils.logCoshExp;
         return diff * diff;
     }
 
     /**
-     * <p>meanAbsolute.</p>
+     * Calculates the squared difference between the mean of the absolute values of a standardized dataset and the
+     * theoretical mean of the standard normal distribution.
      *
-     * @param _f an array of  objects
-     * @return a double
+     * @param _f an array of doubles representing the dataset to be processed and analyzed
+     * @return the squared difference between the computed mean of the absolute values and the theoretical mean of the
+     * standard normal distribution
      */
     public static double meanAbsolute(double[] _f) {
         _f = StatUtils.standardizeData(_f);
@@ -2118,57 +2073,37 @@ public final class StatUtils {
     }
 
     /**
-     * <p>pow.</p>
+     * Calculates the average of 1000 random absolute values generated from a normal distribution with a mean of 0 and
+     * standard deviation of 1.
      *
-     * @return a double
+     * @return the average of 1000 absolute values derived from a normal distribution.
      */
     public static double pow() {
         double sum = 0.0;
 
         for (int i = 0; i < 1000; i++) {
-//            sum += FastMath.pow(FastMath.tanh(RandomUtil.getInstance().nextNormal(0, 1)), 2);
-            sum += abs(RandomUtil.getInstance().nextNormal(0, 1));
+            sum += abs(RandomUtil.getInstance().nextGaussian(0, 1));
         }
 
         return sum / 1000;
     }
 
     /**
-     * <p>expScore.</p>
+     * Computes the logarithm of the hyperbolic cosine of an exponential value.
      *
-     * @param _f an array of  objects
-     * @return a double
-     */
-    public static double expScore(double[] _f) {
-//        _f = DataUtils.standardizeData(_f);
-        DoubleArrayList f = new DoubleArrayList(_f);
-
-        for (int k = 0; k < _f.length; k++) {
-            f.set(k, exp(f.get(k)));
-        }
-
-        double expected = Descriptive.mean(f);
-
-        return log(expected);
-
-    }
-
-    /**
-     * <p>logCoshExp.</p>
-     *
-     * @return a double
+     * @return the pre-defined constant value 0.3746764078432371.
      */
     public static double logCoshExp() {
-//        return 0.3745232061467262;
         return 0.3746764078432371;
     }
 
     /**
-     * <p>entropy.</p>
+     * Computes the entropy of a distribution based on the provided data values and number of bins. Entropy is a measure
+     * of the uncertainty or randomness in a dataset.
      *
-     * @param numBins a int
-     * @param _f      an array of  objects
-     * @return a double
+     * @param numBins the number of bins to discretize the range of data into
+     * @param _f      the array of data values to compute the entropy for
+     * @return the calculated entropy value
      */
     public static double entropy(int numBins, double[] _f) {
         double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
@@ -2201,10 +2136,12 @@ public final class StatUtils {
     }
 
     /**
-     * <p>maxEntApprox.</p>
+     * Calculates the maximum entropy approximation of the given data array. This method estimates the negentropy of the
+     * input data after standardizing it, and derives an approximation based on the Gaussian entropy.
      *
-     * @param x an array of  objects
-     * @return a double
+     * @param x the input array of doubles representing the dataset to be analyzed. The array will be standardized
+     *          before calculating the approximation.
+     * @return a double value representing the maximum entropy approximation of the input dataset.
      */
     public static double maxEntApprox(double[] x) {
 
@@ -2238,10 +2175,11 @@ public final class StatUtils {
     }
 
     /**
-     * <p>standardizeData.</p>
+     * Standardizes the provided data array by subtracting the mean and scaling by the standard deviation. This method
+     * transforms the data to have a mean of zero and a standard deviation of one.
      *
-     * @param data an array of  objects
-     * @return an array of  objects
+     * @param data the input array of data to be standardized
+     * @return a new array containing the standardized values
      */
     public static double[] standardizeData(double[] data) {
         double[] data2 = new double[data.length];
@@ -2274,12 +2212,24 @@ public final class StatUtils {
     }
 
     /**
+     * Standardizes the provided vector data by removing the mean and scaling to unit variance.
+     *
+     * @param _data the vector containing the data to be standardized
+     * @return a new vector containing the standardized data
+     */
+    public static Vector standardizeData(Vector _data) {
+        double[] data = _data.toArray();
+        double[] standardized = standardizeData(data);
+        return new Vector(standardized);
+    }
+
+    /**
      * <p>factorial.</p>
      *
      * @param c a int
      * @return a double
      */
-    public static double factorial(int c) {
+    public static long factorial(int c) {
         if (c < 0) throw new IllegalArgumentException("Can't take the factorial of a negative number: " + c);
         if (c == 0) return 1;
         return c * StatUtils.factorial(c - 1);
@@ -2310,7 +2260,7 @@ public final class StatUtils {
 
         double sum = 0.0;
         int N = logs.size() - 1;
-        double loga0 = logs.get(0);
+        double loga0 = logs.getFirst();
 
         for (int i = 1; i <= N; i++) {
             sum += exp(logs.get(i) - loga0);
@@ -2416,7 +2366,8 @@ public final class StatUtils {
                 try {
                     subdata[c][i] = allData[c][rows.get(i)];
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    TetradLogger.getInstance().log("Error = " + e.getMessage());
+                    TetradLogger.getInstance().log("c = " + c + ", i = " + i + ", rows.size() = " + rows.size());
                 }
             }
         }
@@ -2560,54 +2511,16 @@ public final class StatUtils {
     }
 
     /**
-     * Computes the (statitician's) Hermite polynomial of a given index and value. The Hermite polynomials are a
-     * sequence of orthogonal polynomials defined by the Rodrigues formula. They are orthogonal with respect to the
-     * weight function exp(-x^2). The Hermite polynomial of index index is denoted H_n(x).
+     * Computes the probabilist's Hermite polynomial of the given index at the specified point.
      * <p>
-     * These are coded up to index 20.
+     * The Hermite polynomials are defined recursively: He_0(x) = 1, He_1(x) = x, He_{n+1}(x) = x * He_n(x) - n *
+     * He_{n-1}(x).
      *
-     * @param index The index of the Hermite polynomial to be computed. This must be a non-negative integer less than or
-     *              equal to 20.
-     * @param x     The value at which the Hermite polynomial is to be evaluated.
-     * @return The computed value of the Hermite polynomial.
-     * @throws IllegalArgumentException if the index is negative or greater than 20.
+     * @param index the non-negative integer index of the Hermite polynomial. Must be 0 or greater.
+     * @param x     the point at which to evaluate the Hermite polynomial.
+     * @return the value of the Hermite polynomial of the specified index at the given point.
+     * @throws IllegalArgumentException if the index is negative.
      */
-//    public static double hermite1(int index, double x) {
-//        return switch (index) {
-//            case 0 -> 1;
-//            case 1 -> x;
-//            case 2 -> pow(x, 2) - 1;
-//            case 3 -> pow(x, 3) - 3 * x;
-//            case 4 -> pow(x, 4) - 6 * pow(x, 2) + 3;
-//            case 5 -> pow(x, 5) - 10 * pow(x, 3) + 15 * x;
-//            case 6 -> pow(x, 6) - 15 * pow(x, 4) + 45 * pow(x, 2) - 15;
-//            case 7 -> pow(x, 7) - 21 * pow(x, 5) + 105 * pow(x, 3) - 105 * x;
-//            case 8 -> pow(x, 8) - 28 * pow(x, 6) + 210 * pow(x, 4) - 420 * pow(x, 2) + 105;
-//            case 9 -> pow(x, 9) - 36 * pow(x, 7) + 378 * pow(x, 5) - 1260 * pow(x, 3) + 945 * x;
-//            case 10 -> pow(x, 10) - 45 * pow(x, 8) + 630 * pow(x, 6) - 3150 * pow(x, 4) + 4725 * pow(x, 2) - 945;
-//            case 11 -> pow(x, 11) - 55 * pow(x, 9) + 990 * pow(x, 7) - 6930 * pow(x, 5) + 17325 * pow(x, 3) - 10395 * x;
-//            case 12 ->
-//                    pow(x, 12) - 66 * pow(x, 10) + 1485 * pow(x, 8) - 13860 * pow(x, 6) + 51975 * pow(x, 4) - 62370 * pow(x, 2) + 10395;
-//            case 13 ->
-//                    pow(x, 13) - 78 * pow(x, 11) + 2145 * pow(x, 9) - 25740 * pow(x, 7) + 135135 * pow(x, 5) - 270270 * pow(x, 3) + 135135 * x;
-//            case 14 ->
-//                    pow(x, 14) - 91 * pow(x, 12) + 3003 * pow(x, 10) - 45045 * pow(x, 8) + 315315 * pow(x, 6) - 945945 * pow(x, 4) + 945945 * pow(x, 2) - 135135;
-//            case 15 ->
-//                    pow(x, 15) - 105 * pow(x, 13) + 4095 * pow(x, 11) - 72072 * pow(x, 9) + 675675 * pow(x, 7) - 2702700 * pow(x, 5) + 4054050 * pow(x, 3) - 2027025 * x;
-//            case 16 ->
-//                    pow(x, 16) - 120 * pow(x, 14) + 5460 * pow(x, 12) - 120120 * pow(x, 10) + 1351350 * pow(x, 8) - 8108100 * pow(x, 6) + 24324300 * pow(x, 4) - 32432400 * pow(x, 2) + 2027025;
-//            case 17 ->
-//                    pow(x, 17) - 136 * pow(x, 15) + 7140 * pow(x, 13) - 185640 * pow(x, 11) + 2602600 * pow(x, 9) - 20420400 * pow(x, 7) + 81681600 * pow(x, 5) - 163363200 * pow(x, 3) + 81681600 * x;
-//            case 18 ->
-//                    pow(x, 18) - 153 * pow(x, 16) + 8855 * pow(x, 14) - 277134 * pow(x, 12) + 4849845 * pow(x, 10) - 48498450 * pow(x, 8) + 290990700 * pow(x, 6) - 970969000 * pow(x, 4) + 1456463500 * pow(x, 2) - 34459425;
-//            case 19 ->
-//                    pow(x, 19) - 171 * pow(x, 17) + 11628 * pow(x, 15) - 387600 * pow(x, 13) + 7759752 * pow(x, 11) - 96996900 * pow(x, 9) + 775975200 * pow(x, 7) - 3879876000L * pow(x, 5) + 9699690000L * pow(x, 3) - 4849845000L * x;
-//            case 20 ->
-//                    pow(x, 20) - 190 * pow(x, 18) + 14820 * pow(x, 16) - 530530 * pow(x, 14) + 11639628 * pow(x, 12) - 174594420 * pow(x, 10) + 1745944200 * pow(x, 8) - 11639628000L * pow(x, 6) + 46558512000L * pow(x, 4) - 93229224000L * pow(x, 2) + 4849845000L;
-//            default ->
-//                    throw new IllegalArgumentException("Sorry, I only coded up the Hermite polyomials up to number 20. You asked for index " + index + ".");
-//        };
-//    }
     public static double hermite1(int index, double x) {
         if (index < 0) {
             throw new IllegalArgumentException("The index of a Hermite polynomial must be a non-negative integer.");
@@ -2670,8 +2583,9 @@ public final class StatUtils {
 
     /**
      * Computes the value of the Chebyshev polynomial of a given degree at a specified point x.
+     *
      * @param index the degree of the Chebyshev polynomial. Must be a non-negative integer.
-     * @param x the point at which the Chebyshev polynomial is evaluated.
+     * @param x     the point at which the Chebyshev polynomial is evaluated.
      * @return the value of the Chebyshev polynomial of the given degree at the specified point x.
      */
     public static double chebyshev(int index, double x) {
@@ -2688,27 +2602,16 @@ public final class StatUtils {
         }
     }
 
-    private static double pow(double x, int power) {
-        double value = 1;
-
-        for (int i = 1; i <= power; i++) {
-            value *= x;
-        }
-
-        return value;
-    }
-
     /**
      * Performs a calculation that involves repeatedly multiplying an initial value of `1.0` by the product of `0.95`
      * and a given parameter `x`, iterating `index` times. The type of function used in the calculation is determined by
      * the `type` parameter. The function types are as follows:
-     * <ol>
-     *     <li> `g(x) = x^index [Polynomial basis]</li>
-     *     <li> `g(x) = hermite1(index, x) [Statician's Hermite polynomial]</li>
-     *     <li> `g(x) = hermite2(index, x) [Physicist's Hermite polynomial]</li>
-     *     <li> `g(x) = legendre(index, x) [Legendre polynomial]</li>
-     *     <li> `g(x) = chebyshev(index, x) [Chebyshev polynomial]</li>
-     *  </ol>
+     * <ul>
+     *     <li> 0 = `g(x) = x^index [Polynomial basis]</li>
+     *     <li> 1 = `g(x) = hermite1(index, x) [Probabilist's Hermite polynomial]</li>
+     *     <li> 2 = `g(x) = legendre(index, x) [Legendre polynomial]</li>
+     *     <li> 3 = `g(x) = chebyshev(index, x) [Chebyshev polynomial]</li>
+     *  </ul>
      *  Any other value of `type` will result in an `IllegalArgumentException`.
      *
      * @param type  The type of function to be used in the calculation.
@@ -2717,7 +2620,7 @@ public final class StatUtils {
      * @return The result of the iterative multiplication.
      */
     public static double basisFunctionValue(int type, int index, double x) {
-        if (type == 1) {
+        if (type == 0) {
             double g = 1.0;
 
             for (int i = 1; i <= index; i++) {
@@ -2725,17 +2628,203 @@ public final class StatUtils {
             }
 
             return g;
+        } else if (type == 1) {
+            return legendre(index, x);
         } else if (type == 2) {
             return hermite1(index, x);
         } else if (type == 3) {
-            return hermite2(index, x);
-        } else if (type == 4) {
-            return legendre(index, x);
-        } else if (type == 5) {
             return chebyshev(index, x);
         } else {
-            throw new IllegalArgumentException("Unrecognized type: " + type);
+            throw new IllegalArgumentException("Unrecognized basis type: " + type);
         }
+    }
+
+    /**
+     * Calculates the p-value for the given chi-square statistic and degrees of freedom.
+     *
+     * @param dof   Degrees of freedom; must be non-negative.
+     * @param chisq Chi-square statistic; must be non-negative.
+     * @return The p-value corresponding to the chi-square statistic and degrees of freedom.
+     * @throws IllegalArgumentException if degrees of freedom or chi-square statistic is negative.
+     */
+    public static double getChiSquareP(double dof, double chisq) {
+        if (dof < 0) {
+            throw new IllegalArgumentException("Degrees of freedom for chi square must be non-negative: " + dof);
+        } else if (chisq < 0) {
+            throw new IllegalArgumentException("Chi-square value must be non-negative: " + chisq);
+        } else if (Double.isInfinite(chisq)) {
+            return 0.0;
+        } else if (chisq == 0) {
+            return 1.0;
+        }
+
+        return 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chisq);
+    }
+
+    /**
+     * Extracts a submatrix from the specified matrix by selecting the rows and columns indicated by the provided
+     * indices. The resulting submatrix is composed of values at the intersection of the specified rows and columns.
+     *
+     * @param matrix the input matrix as a SimpleMatrix object from which the submatrix will be extracted
+     * @param rows   an array of integers representing the row indices to include in the submatrix
+     * @param cols   an array of integers representing the column indices to include in the submatrix
+     * @return a SimpleMatrix object representing the extracted submatrix
+     */
+    public static SimpleMatrix extractSubMatrix(SimpleMatrix matrix, int[] rows, int[] cols) {
+        SimpleMatrix subMatrix = new SimpleMatrix(rows.length, cols.length);
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                subMatrix.set(i, j, matrix.get(rows[i], cols[j]));
+            }
+        }
+        return subMatrix;
+    }
+
+    /**
+     * Extracts a submatrix from the given matrix within the specified row and column bounds.
+     *
+     * @param matrix   The input matrix.
+     * @param rowStart The starting row index (inclusive).
+     * @param rowEnd   The ending row index (exclusive).
+     * @param colStart The starting column index (inclusive).
+     * @param colEnd   The ending column index (exclusive).
+     * @return The extracted submatrix.
+     */
+    public static SimpleMatrix extractSubMatrix(SimpleMatrix matrix, int rowStart, int rowEnd, int colStart, int colEnd) {
+        // Ensure valid ranges
+        if (rowStart < 0 || rowEnd > matrix.getNumRows() || colStart < 0 || colEnd > matrix.getNumCols()) {
+            throw new IllegalArgumentException("Submatrix indices are out of bounds.");
+        }
+
+        SimpleMatrix subMatrix = new SimpleMatrix(rowEnd - rowStart, colEnd - colStart);
+
+        for (int i = rowStart; i < rowEnd; i++) {
+            for (int j = colStart; j < colEnd; j++) {
+                subMatrix.set(i - rowStart, j - colStart, matrix.get(i, j));
+            }
+        }
+
+        return subMatrix;
+    }
+
+    /**
+     * Computes the Cholesky decomposition of the given matrix and returns its lower triangular matrix.
+     *
+     * @param A The input positive definite matrix.
+     * @return The lower triangular matrix from the Cholesky decomposition.
+     */
+    public static SimpleMatrix chol(SimpleMatrix A) {
+        org.ejml.interfaces.decomposition.CholeskyDecomposition_F64<org.ejml.data.DMatrixRMaj> chol =
+                org.ejml.dense.row.factory.DecompositionFactory_DDRM.chol(A.getNumRows(), true);
+
+        if (!chol.decompose(A.getDDRM())) {
+            throw new RuntimeException("Cholesky decomposition failed!");
+        }
+
+        return SimpleMatrix.wrap(chol.getT(null));
+    }
+
+    /**
+     * Computes the p-value for Canonical Correlation Analysis (CCA) based on a rank-d hypothesis. This method
+     * calculates the test statistic using the last d singular values of a product matrix derived from the input
+     * covariance matrix and performs a chi-squared test to return the p-value.
+     *
+     * @param S        The input covariance matrix represented as a SimpleMatrix object.
+     * @param xIndices The indices representing the subset of variables in the first group.
+     * @param yIndices The indices representing the subset of variables in the second group.
+     * @param n        The sample size used in the analysis.
+     * @param d        The hypothesized rank which defines the number of singular values to consider.
+     * @return The calculated p-value of the test based on the given inputs.
+     */
+    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
+
+        // Check inputs.
+
+        if (xIndices.length == 0 || yIndices.length == 0) {
+            throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
+        }
+
+        for (int xIndex : xIndices) {
+            if (xIndex < 0 || xIndex >= S.getNumRows()) {
+                throw new IllegalArgumentException("xIndices out of bounds.");
+            }
+        }
+
+        for (int yIndex : yIndices) {
+            if (yIndex < 0 || yIndex >= S.getNumRows()) {
+                throw new IllegalArgumentException("yIndices out of bounds.");
+            }
+        }
+
+        if (n <= 0) {
+            throw new IllegalArgumentException("n must be positive.");
+        }
+
+        if (d <= 0) {
+            throw new IllegalArgumentException("d must be positive.");
+        }
+
+        // Step 1: Extract submatrices based on given indices
+        SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
+        SimpleMatrix YY = extractSubMatrix(S, yIndices, yIndices);
+        SimpleMatrix XY = extractSubMatrix(S, xIndices, yIndices);
+
+        // Step 2: Perform Cholesky decompositions and their inverses
+        SimpleMatrix XXir = chol(XX).invert();
+        SimpleMatrix YYir = chol(YY).invert();
+        SimpleMatrix product = XXir.mult(XY).mult(YYir);
+
+        // Step 3: Get singular values of product
+        double[] singularValues = product.svd().getSingularValues();
+
+        // Step 4: Compute test statistic using last d singular values
+        double stat = 0.0;
+        for (int i = singularValues.length - d; i < singularValues.length; i++) {
+            double adjustedValue = 1 - Math.pow(singularValues[i], 2);
+            adjustedValue = Math.max(adjustedValue, 1e-6);  // Clip to avoid log(0)
+            stat += Math.log(adjustedValue);
+        }
+        stat *= (d + 3.0 / 2.0 - n);
+
+        // Step 5: Chi-squared test for current d
+        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(d * d);
+        return 1 - chi2.cumulativeProbability(stat);
+    }
+
+    /**
+     * Estimates the rank of a matrix based on a statistical hypothesis testing approach. The method evaluates singular
+     * values and uses a chi-squared distribution to determine the highest rank that satisfies a predefined significance
+     * threshold.
+     *
+     * @param S          The input matrix for which the rank is to be estimated.
+     * @param xIndices   The indices representing the subset of variables in the first group.
+     * @param yIndices   The indices representing the subset of variables in the second group.
+     * @param maxRank    The maximum rank to test for the matrix.
+     * @param n          The sample size used in the analysis.
+     * @param pThreshold The significance threshold for the hypothesis test.
+     * @return The estimated rank of the input matrix, which is the highest rank that satisfies the significance
+     * threshold. Returns maxRank if all ranks pass the test.
+     */
+    public int estimateRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int maxRank, int n, double pThreshold) {
+
+        if (maxRank <= 0) {
+            throw new IllegalArgumentException("maxRank must be positive.");
+        }
+
+        if (pThreshold <= 0 || pThreshold >= 1) {
+            throw new IllegalArgumentException("pThreshold must be between 0 and 1.");
+        }
+
+        for (int d = 1; d <= maxRank; d++) {
+            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d);
+
+            // Step 6: Stop when p-value is below the threshold
+            if (pValue < pThreshold) {
+                return d - 1;  // Return the highest rank that passed the test
+            }
+        }
+
+        return maxRank;  // If all ranks pass, return the maximum rank
     }
 }
 

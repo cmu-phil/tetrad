@@ -94,7 +94,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
             throw new NullPointerException("It looks like you have not done a simulation.");
         }
 
-        semPm = ims.get(0).getGeneralizedSemPm();
+        semPm = ims.getFirst().getGeneralizedSemPm();
 
         this.semPm = semPm;
     }

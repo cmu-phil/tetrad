@@ -47,7 +47,7 @@ public class ScoreAnnotationsTest {
     @Test
     public void testAnnotatedCommandAttributeForUniqueness() {
         List<AnnotatedClass<Score>> scores = ScoreAnnotations.getInstance().getAnnotatedClasses();
-        List<String> values = scores.stream().map(e -> e.annotation().command().toLowerCase()).collect(Collectors.toList());
+        List<String> values = scores.stream().map(e -> e.annotation().command().toLowerCase()).toList();
 
         long actual = values.size();
         long expected = values.stream().distinct().count();

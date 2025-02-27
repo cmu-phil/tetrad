@@ -27,16 +27,15 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import javax.sound.midi.SysexMessage;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a useful
@@ -108,6 +107,16 @@ public class Fas implements IFas {
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
+    /**
+     * Represents the start time of a specific operation or process within the algorithm's execution. This variable is
+     * used to measure elapsed time or to enforce time constraints during the execution.
+     */
+    private long startTime;
+    /**
+     * Specifies the timeout value for the search operation or algorithm execution. The timeout value is used to
+     * determine the maximum allowed duration for the execution, preventing any operation from exceeding this limit.
+     */
+    private long timeout;
 
     /**
      * Constructor.
@@ -129,6 +138,7 @@ public class Fas implements IFas {
      * @param y           The second node.
      * @param mainThread  The main thread. Needed to try to interrupt the search if it takes too long.
      * @return True if there is an adjacency between x and y at the given depth, false otherwise.
+     * @throws InterruptedException if any
      */
     private static boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies,
                                      int depth, Node x, Node y,
@@ -224,6 +234,7 @@ public class Fas implements IFas {
      * @param knowledge The knowledge object that provides information about conditional independencies.
      * @param y         Another node in the graph.
      * @return A list of nodes that are possible parents of the node x.
+     * @throws InterruptedException if any
      */
     private static List<Node> possibleParents(Node x, List<Node> adjx, Knowledge knowledge, Node y) throws InterruptedException {
         List<Node> possibleParents = new LinkedList<>();
@@ -267,7 +278,9 @@ public class Fas implements IFas {
      * then three, and so on, until no more edges can be removed from the graph. The edges which remain in the graph
      * after this procedure are the adjacencies in the data.
      *
-     * @return An undirected graph that summarizes the conditional independencies in the data.
+     * @return An undirected graph that summarizes the conditional independencies in the data. This graph
+     *         represents the adjacencies that remain after applying conditional independence tests.
+     * @throws InterruptedException if any
      */
     @Override
     public Graph search() throws InterruptedException {
@@ -284,11 +297,15 @@ public class Fas implements IFas {
      *
      * @param nodes A list of nodes to search over.
      * @return An undirected graph that summarizes the conditional independencies in the data.
+     * @throws InterruptedException if any
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
         Thread mainThread = Thread.currentThread();
 
-        long startTime = MillisecondTimes.timeMillis();
+        if (startTime <= 0) {
+            startTime = System.currentTimeMillis();
+        }
+
         nodes = new ArrayList<>(nodes);
 
         this.logger.addOutputStream(out);
@@ -360,6 +377,7 @@ public class Fas implements IFas {
             int parallelism = Runtime.getRuntime().availableProcessors();
             ForkJoinPool pool = new ForkJoinPool(parallelism);
             List<Future<Map<Edge, Double>>> theseResults;
+
             theseResults = pool.invokeAll(tasks);
 
             for (Future<Map<Edge, Double>> future : theseResults) {
@@ -370,7 +388,8 @@ public class Fas implements IFas {
                         scores.put(edge, result.get(edge));
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    TetradLogger.getInstance().log(e.getMessage());
+                    e.printStackTrace();
+//                    TetradLogger.getInstance().log(e.getMessage());
                     pool.shutdown();
                     return null;
                 }
@@ -378,7 +397,16 @@ public class Fas implements IFas {
 
             pool.shutdown();
         } else {
+            System.out.println("Stable option false");
+
             for (Task task : tasks) {
+                long current = System.currentTimeMillis();
+
+                if (getTimeout() > 0 && current > getStartTime() + getTimeout()) {
+                    throw new RuntimeException("Timeout time = " + current + " startTime = " + getStartTime()
+                                               + " timeout = " + getTimeout());
+                }
+
                 Map<Edge, Double> result = task.call();
 
                 for (Edge edge : result.keySet()) {
@@ -456,7 +484,7 @@ public class Fas implements IFas {
             this.logger.log("Finishing Fast Adjacency Search.");
         }
 
-        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
+        this.elapsedTime = System.currentTimeMillis() - startTime;
 
         return graph;
     }
@@ -488,7 +516,7 @@ public class Fas implements IFas {
      * Returns the sepsets that were discovered in the search. A 'sepset' for test X _||_ Y | Z1,...,Zm would be
      * {Z1,...,Zm}
      *
-     * @return A map of these sepsets indexed by {X, Y}.
+     * @return A map of sepsets discovered during the search, indexed by pairs of nodes {X, Y}.
      */
     public SepsetMap getSepsets() {
         return this.sepset;
@@ -506,7 +534,7 @@ public class Fas implements IFas {
     /**
      * Returns the elapsed time of the search.
      *
-     * @return This elapsed time.
+     * @return The elapsed time of the search in milliseconds.
      */
     public long getElapsedTime() {
         return elapsedTime;
@@ -515,7 +543,7 @@ public class Fas implements IFas {
     /**
      * Retrieves the list of nodes in the graph.
      *
-     * @return A List of Node objects representing the nodes in the graph.
+     * @return A list of nodes in the graph being processed by the search algorithm.
      */
     @Override
     public List<Node> getNodes() {
@@ -526,7 +554,8 @@ public class Fas implements IFas {
      * Retrieves the list of ambiguous triples involving the given node.
      *
      * @param node The node for which to retrieve the ambiguous triples.
-     * @return A list of Triple objects representing the ambiguous triples involving the node.
+     * @return A list of Triple objects representing the ambiguous triples involving the specified node, 
+     *         or an empty list if none are found.
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
@@ -602,6 +631,7 @@ public class Fas implements IFas {
      * @param depth       The maximum depth to search.
      * @param mainThread  The main thread. Needed to try to interrupt the search if it takes too long.
      * @return true if there are adjacencies at the given depth, false otherwise.
+     * @throws InterruptedException if any
      */
     private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Thread mainThread) throws InterruptedException {
         if (mainThread.isInterrupted()) {
@@ -688,6 +718,45 @@ public class Fas implements IFas {
         }
 
         return freeDegree(adjacencies) > depth;
+    }
+
+    /**
+     * Gets the timeout value for the search operation or algorithm execution. The timeout value determines the maximum
+     * duration the process can run before it is terminated.
+     *
+     * @return The timeout value for the search operation in milliseconds.
+     */
+    public long getTimeout() {
+        return this.timeout;
+    }
+
+    /**
+     * Specifies the timeout value for the search operation or algorithm execution. The timeout value is used to
+     * determine the maximum allowed duration for the execution, preventing any operation from exceeding this limit.
+     */
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
+
+    /**
+     * Represents the start time of a specific operation or process within the algorithm's execution. This variable is
+     * used to measure elapsed time or to enforce time constraints during the execution.
+     *
+     * @return The start time of the operation in milliseconds since epoch.
+     * 
+     * 
+     */
+    public long getStartTime() {
+        return this.startTime;
+    }
+
+    /**
+     * Sets the start time for a specific operation or process.
+     *
+     * @param startTime The start time in milliseconds.
+     */
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 }
 

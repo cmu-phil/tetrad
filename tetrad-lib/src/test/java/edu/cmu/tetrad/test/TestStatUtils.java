@@ -82,7 +82,7 @@ public class TestStatUtils {
         ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         Matrix _cov = cov.getMatrix();
 
-        double r2 = StatUtils.partialCorrelation(_cov, 0, 1);
+        double r2 = StatUtils.partialCorrelation(_cov, 0.0, 0, 1);
         double s2 = StatUtils.partialCovarianceWhittaker(_cov, 0, 1);
         double v2 = StatUtils.partialVariance(_cov, 0);
         double sd2 = StatUtils.partialStandardDeviation(_cov, 0);
@@ -185,7 +185,7 @@ public class TestStatUtils {
                         col1[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
                         col1[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
@@ -203,7 +203,7 @@ public class TestStatUtils {
                         col2[i] = signum(v) * pow(abs(v), d2);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
                         col2[i] = signum(v1) * pow(abs(v1), d2);
                         break;
                     case 2:
@@ -259,7 +259,7 @@ public class TestStatUtils {
                             col1[i] = RandomUtil.getInstance().nextUniform(0, 1);
                             break;
                         case 1:
-                            col1[i] = RandomUtil.getInstance().nextNormal(0, 1);
+                            col1[i] = RandomUtil.getInstance().nextGaussian(0, 1);
                             break;
                         case 2:
                             col1[i] = RandomUtil.getInstance().nextBeta(2, 5);
@@ -276,7 +276,7 @@ public class TestStatUtils {
                             col2[i] = RandomUtil.getInstance().nextUniform(0, 1);
                             break;
                         case 1:
-                            col2[i] = RandomUtil.getInstance().nextNormal(0, 1);
+                            col2[i] = RandomUtil.getInstance().nextGaussian(0, 1);
                             break;
                         case 2:
                             col2[i] = RandomUtil.getInstance().nextBeta(2, 5);
@@ -327,8 +327,8 @@ public class TestStatUtils {
             double e2 = RandomUtil.getInstance().nextUniform(0, 3);
 
             for (int i = 0; i < n; i++) {
-                col1[i] = pow(RandomUtil.getInstance().nextNormal(0, 1), e1);
-                col2[i] = pow(RandomUtil.getInstance().nextNormal(0, 1), e2);
+                col1[i] = pow(RandomUtil.getInstance().nextGaussian(0, 1), e1);
+                col2[i] = pow(RandomUtil.getInstance().nextGaussian(0, 1), e2);
                 sum[i] = d1 * col1[i] + d2 * col2[i];
             }
 
@@ -428,7 +428,7 @@ public class TestStatUtils {
                         col1[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
                         col1[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
@@ -446,7 +446,7 @@ public class TestStatUtils {
                         col2[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
                         col2[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
@@ -464,7 +464,7 @@ public class TestStatUtils {
                         col3[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
                         col3[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
@@ -555,13 +555,13 @@ public class TestStatUtils {
                         ez[i] = signum(v) * pow(abs(v), c);
                         break;
                     case 1:
-                        double v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        double v1 = RandomUtil.getInstance().nextGaussian(0, 1);
                         ex[i] = signum(v1) * pow(abs(v1), c);
 
-                        v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        v1 = RandomUtil.getInstance().nextGaussian(0, 1);
                         ey[i] = signum(v1) * pow(abs(v1), c);
 
-                        v1 = RandomUtil.getInstance().nextNormal(0, 1);
+                        v1 = RandomUtil.getInstance().nextGaussian(0, 1);
                         ez[i] = signum(v1) * pow(abs(v1), c);
                         break;
                     case 2:
@@ -614,7 +614,7 @@ public class TestStatUtils {
         final int numSamples = 100;
 
         for (int i = 0; i < numSamples; i++) {
-            double randNorm = RandomUtil.getInstance().nextNormal(0, 1);
+            double randNorm = RandomUtil.getInstance().nextGaussian(0, 1);
 
             double a = log(cosh(randNorm));
 

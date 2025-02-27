@@ -56,30 +56,11 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public Graph runSearch(DataModel dataSet, Parameters parameters) {
-        ICovarianceMatrix cov;
-
-        if (dataSet instanceof DataSet) {
-            boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-            cov = SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
-        } else if (dataSet instanceof ICovarianceMatrix) {
-            cov = (ICovarianceMatrix) dataSet;
-        } else {
-            throw new IllegalArgumentException("Expected a dataset or a covariance matrix.");
-        }
-
         double alpha = parameters.getDouble(Params.ALPHA);
 
-        boolean gap = parameters.getBoolean(Params.USE_GAP, true);
-        edu.cmu.tetrad.search.Ftfc.Algorithm algorithm;
-
-        if (gap) {
-            algorithm = edu.cmu.tetrad.search.Ftfc.Algorithm.GAP;
-        } else {
-            algorithm = edu.cmu.tetrad.search.Ftfc.Algorithm.SAG;
-        }
-
+        assert dataSet instanceof DataSet;
         edu.cmu.tetrad.search.Ftfc search
-                = new edu.cmu.tetrad.search.Ftfc(cov, algorithm, alpha);
+                = new edu.cmu.tetrad.search.Ftfc((DataSet) dataSet, alpha);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return search.search();
@@ -128,9 +109,6 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
-        parameters.add(Params.USE_WISHART);
-        parameters.add(Params.USE_GAP);
-        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.VERBOSE);
 
         return parameters;

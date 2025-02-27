@@ -60,7 +60,7 @@ public class FisherZ implements IndependenceWrapper {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
-        test.setUsePseudoinverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
+        test.setLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
         return test;
     }
 
@@ -93,7 +93,7 @@ public class FisherZ implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
-        params.add(Params.USE_PSEUDOINVERSE);
+        params.add(Params.REGULARIZATION_LAMBDA);
         return params;
     }
 }

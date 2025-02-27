@@ -2,6 +2,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 
@@ -46,16 +48,21 @@ public class MarkovCheckAdPasses implements Statistic {
     /**
      * Calculates the Anderson Darling p-value > 0.05.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters The parameters.
      * @return 1 if p > 0.05, 0 if not.
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double p = new MarkovCheckAndersonDarlingP().getValue(trueGraph, estGraph, dataModel);
-        return p > 0.05 ? 1.0 : 0.0;
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        double p = new MarkovCheckAndersonDarlingP().getValue(trueGraph, estGraph, dataModel, new Parameters());
+        double alpha = parameters.getDouble(Params.MC_ALPHA);
+
+        System.out.println("Markov check alpha = " + alpha);
+
+        return p > alpha ? 1.0 : 0.0;
     }
 
     /**

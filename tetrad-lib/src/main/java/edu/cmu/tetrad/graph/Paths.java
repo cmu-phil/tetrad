@@ -512,7 +512,7 @@ public class Paths implements TetradSerializable {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
-            Node a = path.get(0);
+            Node a = path.getFirst();
             Node b = path.get(1);
 
             if (!graph.getEdge(a, b).pointsTowards(b)) {
@@ -538,7 +538,7 @@ public class Paths implements TetradSerializable {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
-            Node a = path.get(0);
+            Node a = path.getFirst();
             Node b = path.get(1);
 
             boolean visible = graph.paths().defVisible(graph.getEdge(a, b));
@@ -1616,6 +1616,7 @@ public class Paths implements TetradSerializable {
      * @param test    The independence test to use to remove edges.
      * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
      *                recorded.
+     * @throws InterruptedException if any
      */
     public void removeByPossibleMsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
         for (Edge edge : graph.getEdges()) {
@@ -1753,7 +1754,7 @@ public class Paths implements TetradSerializable {
      * @return A sepset for x and y, if there is one; otherwise, null.
      */
     public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test, int depth) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test, depth);
+        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test, depth, null);
     }
 
     /**
@@ -1897,7 +1898,7 @@ public class Paths implements TetradSerializable {
 
         if (path.size() - 1 <= 1) return true;
 
-        edge2 = graph.getEdge(path.get(0), path.get(1));
+        edge2 = graph.getEdge(path.getFirst(), path.get(1));
 
         for (int i = 0; i < path.size() - 2; i++) {
             edge1 = edge2;
@@ -1943,7 +1944,7 @@ public class Paths implements TetradSerializable {
     public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         Edge edge1, edge2;
 
-        edge2 = graph.getEdge(path.get(0), path.get(1));
+        edge2 = graph.getEdge(path.getFirst(), path.get(1));
 
         for (int i = 0; i < path.size() - 2; i++) {
             edge1 = edge2;
@@ -2663,7 +2664,7 @@ public class Paths implements TetradSerializable {
                 amenable.remove(path);
             }
 
-            Node a = path.get(0);
+            Node a = path.getFirst();
             Node b = path.get(1);
             Edge e = graph.getEdge(a, b);
 
@@ -2680,13 +2681,13 @@ public class Paths implements TetradSerializable {
 
         if (mpdag || mag) {
             backdoorPaths.removeIf(path -> path.size() < 2 ||
-                                           !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
+                                           !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
         } else {
             backdoorPaths.removeIf(path -> {
                 if (path.size() < 2) {
                     return false;
                 }
-                Node x = path.get(0);
+                Node x = path.getFirst();
                 Node w = path.get(1);
                 Node y = target;
                 return !(graph.getEdge(x, w).pointsTowards(x)
@@ -2827,7 +2828,23 @@ public class Paths implements TetradSerializable {
         }
     }
 
-    // Helper class to represent an element in the BFS queue
+    /**
+     * Determines whether the graph is acyclic, meaning it does not contain any directed cycles.
+     *
+     * @return true if the graph is acyclic; false otherwise
+     */
+    public boolean isAcyclic() {
+        return !existsDirectedCycle();
+    }
+
+    /**
+     * Represents an element in a navigation path consisting of a current node
+     * and the previous node.
+     *
+     * This class is primarily used to track the traversal history in a pathfinding
+     * context or similar scenarios where the relationship between nodes in a path
+     * needs to be maintained.
+     */
     static class PathElement {
         Node current;  // The current node
         Node previous; // The previous node on the path

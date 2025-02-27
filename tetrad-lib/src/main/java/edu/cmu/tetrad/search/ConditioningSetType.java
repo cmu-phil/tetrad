@@ -55,6 +55,13 @@ public enum ConditioningSetType {
      * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph, in a
      * causal order of the graph. Some independence facts obtained in this way may be for implied dependencies.
      */
-    ORDERED_LOCAL_MARKOV
+    ORDERED_LOCAL_MARKOV,
+
+    /**
+     * Testing independence facts implied by the graph, conditioning on the predecessors of each variable in the graph
+     * in the Markov blanket for a node, in a causal order of the graph. Some independence facts obtained in this way
+     * may be for implied dependencies.
+     */
+    ORDERED_LOCAL_MARKOV_MB
 
 }

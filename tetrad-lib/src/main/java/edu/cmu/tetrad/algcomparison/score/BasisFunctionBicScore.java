@@ -35,14 +35,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Basis Function BIC Score (Basis-BIC).
+ * Wrapper for Basis Function BIC Score (Basis-BIC) version.
  *
- * @author bandrews
  * @author josephramsey
+ * @author bryanandrews
  * @version $Id: $Id
  */
-//@edu.cmu.tetrad.annotation.Score(name = "Basis-BIC (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
-//@Mixed
+@edu.cmu.tetrad.annotation.Score(name = "BF-BIC (Basis Function BIC Score)", command = "bf-bic-score", dataType = DataType.Mixed)
+@Mixed
 public class BasisFunctionBicScore implements ScoreWrapper {
 
     @Serial
@@ -66,11 +66,11 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
         edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
-                SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances,
-                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
-                parameters.getDouble(Params.BASIS_SCALE));
+                SimpleDataLoader.getMixedDataSet(dataSet),
+                parameters.getInt(Params.TRUNCATION_LIMIT),
+                parameters.getDouble(Params.REGULARIZATION_LAMBDA)
+        );
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return score;
     }
@@ -80,7 +80,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function BIC Score (Basis-BIC)";
+        return "Basis Function BIC Score (BF-BIC)";
     }
 
     /**
@@ -97,13 +97,9 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-
         parameters.add(Params.TRUNCATION_LIMIT);
-        parameters.add(Params.BASIS_TYPE);
-        parameters.add(Params.BASIS_SCALE);
-        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.PENALTY_DISCOUNT);
-
+        parameters.add(Params.REGULARIZATION_LAMBDA);
         return parameters;
     }
 

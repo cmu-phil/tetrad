@@ -1,24 +1,25 @@
 package edu.cmu.tetrad.search.score;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.log;
+
 /**
- * Calculates the basis function BIC score for a given dataset. This is a modification of the Degenerate Gaussian score
- * by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
+ * Calculates the basis function BIC score for a given dataset. This is a generalization of the Degenerate Gaussian
+ * score by adding basis functions of the continuous variables and retains the function of the degenerate Gaussian for
  * discrete variables by adding indicator variables per category.
+ * <p>
+ * This version uses covariance matrices to calculate likelihoods.
  *
- * @author bandrews
+ * @author bryanandrews
  * @author josephramsey
  * @see DegenerateGaussianScore
  */
@@ -39,10 +40,6 @@ public class BasisFunctionBicScore implements Score {
      */
     private final SemBicScore bic;
     /**
-     * Represents the truncation limit of the basis.
-     */
-    private final int truncationLimit;
-    /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
      * adjustments in the likelihood penalty term.
@@ -52,103 +49,33 @@ public class BasisFunctionBicScore implements Score {
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
      *
-     * @param dataSet               the data set on which the score is to be calculated.
-     * @param precomputeCovariances flag indicating whether covariances should be precomputed.
-     * @param truncationLimit       the truncation limit of the basis.
-     * @param basisType             the type of basis function used in the BIC score computation.
-     * @param basisScale                 the basisScale factor used in the calculation of the BIC score for basis functions.
-     *                              All variables are scaled to [-basisScale, basisScale], or standardized if 0.
+     * @param dataSet         the data set on which the score is to be calculated.
+     * @param truncationLimit the truncation limit of the basis.
+     * @param lambda          Regularization constant
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
-    public BasisFunctionBicScore(DataSet dataSet, boolean precomputeCovariances, int truncationLimit,
-                                 int basisType, double basisScale) {
-        Map<Integer, List<Integer>> embedding;
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
-
-        this.truncationLimit = truncationLimit;
-
-        if (basisScale == 0.0) {
-            dataSet = DataTransforms.standardizeData(dataSet);
-        } else if (basisScale > 0.0) {
-            dataSet = DataTransforms.scale(dataSet, basisScale);
-        } else {
-            throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be standardized.");
-        }
-
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda) {
         this.variables = dataSet.getVariables();
-        int n = dataSet.getNumRows();
-        embedding = new HashMap<>();
 
-        List<Node> A = new ArrayList<>();
-        List<double[]> B = new ArrayList<>();
+        // Using the Legendre basis.
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1,
+                lambda);
+        this.embedding = result.embedding();
+        DataSet embeddedData = result.embeddedData();
 
-        int index = 0;
-        int i = 0;
-        int i_ = 0;
-        while (i_ < this.variables.size()) {
-            Node v = this.variables.get(i_);
+        // We will zero out the correlations that are very close to zero.
+        CovarianceMatrix correlationMatrix = new CovarianceMatrix(embeddedData);
 
-            if (v instanceof DiscreteVariable) {
-                Map<List<Integer>, Integer> keys = new HashMap<>();
-                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
-                for (int j = 0; j < n; j++) {
-                    List<Integer> key = new ArrayList<>();
-                    key.add(dataSet.getInt(j, i_));
-                    if (!keys.containsKey(key)) {
-                        keys.put(key, i);
-                        keysReverse.put(i, key);
-                        Node v_ = new ContinuousVariable("V__" + ++index);
-                        A.add(v_);
-                        B.add(new double[n]);
-                        i++;
-                    }
-                    B.get(keys.get(key))[j] = 1;
-                }
-
-                i--;
-                keys.remove(keysReverse.get(i));
-                A.remove(i);
-                B.remove(i);
-
-                embedding.put(i_, new ArrayList<>(keys.values()));
-            } else {
-                List<Integer> indexList = new ArrayList<>();
-                for (int p = 1; p <= truncationLimit; p++) {
-                    Node vPower = new ContinuousVariable("V__" + ++index);
-                    A.add(vPower);
-                    double[] functional = new double[n];
-                    for (int j = 0; j < n; j++) {
-                        functional[j] = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
-                    }
-                    B.add(functional);
-                    indexList.add(i);
-                    i++;
-                }
-                embedding.put(i_, indexList);
-            }
-            i_++;
-        }
-
-        double[][] B_ = new double[n][B.size()];
-        for (int j = 0; j < B.size(); j++) {
-            for (int k = 0; k < n; k++) {
-                B_[k][j] = B.get(j)[k];
-            }
-        }
-
-        RealMatrix D = MatrixUtils.createRealMatrix(B_);
-        BoxDataSet dataSet1 = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        this.bic = new SemBicScore(dataSet1, precomputeCovariances);
+        this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
+        this.bic.setLambda(lambda);
 
-        // We will be using the pseudo-inverse in the BIC score calculation so we don't get exceptions.
-        this.bic.setUsePseudoInverse(true);
+        // We will be using regularization in the BIC score calculation so we don't get singularity exceptions.
+        this.bic.setLambda(lambda);
 
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
         this.bic.setStructurePrior(0);
-        this.embedding = embedding;
+
     }
 
     /**
@@ -159,22 +86,18 @@ public class BasisFunctionBicScore implements Score {
      * @return The calculated local score as a double value.
      */
     public double localScore(int i, int... parents) {
-        double score = 0;
 
-        // Count the number of continuous parents
-        int numContinuousParents = 0;
-
-        for (int parent : parents) {
-            if (variables.get(parent) instanceof ContinuousVariable) {
-                numContinuousParents++;
-            }
-        }
-
+        // Note that this needs to be the sum of the individual BIC scores, not a BIC score calculated from
+        // the sums of the likelihoods and degrees of freedom. A test case to try is with nonlinear variables
+        // embedded as Legendre polynomials. jdramsey 2025-2-13
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
         }
+
+        double sumLik = 0.0;
+        int sumDof = 0;
 
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
@@ -182,38 +105,15 @@ public class BasisFunctionBicScore implements Score {
                 parents_[i__] = B.get(i__);
             }
 
-            double score1 = this.bic.localScore(i_, parents_);
+            SemBicScore.LikelihoodResult result = this.bic.getLikelihoodAndDof(i_, parents_);
 
-            // Extra penalty for higher-degree continuous parents
-            double[] weights1 = new double[numContinuousParents * truncationLimit];
+            sumLik += result.lik();
+            sumDof += result.dof();
 
-            for (int k = 0; k < numContinuousParents; k++) {
-                for (int j = 0; j < truncationLimit; j++) {
-                    weights1[k * truncationLimit + j] = 0.5 * (1 + j);
-                }
-            }
-
-            int n = this.bic.getSampleSize();
-
-            double penalty = 0.0;
-            for (int j = 1; j <= weights1.length; j++) {
-                if (weights1[j - 1] > .5) {
-                    penalty += (weights1[j - 1]) * Math.log(n);
-                }
-            }
-
-            // Return the modified BIC
-            double score2 = score1 + penalty;
-
-            if (!Double.isNaN(score2)) {
-                score += score2;
-                B.add(i_);
-            }
-
-//            score += score2;
+            B.add(i_);
         }
 
-        return score;
+        return 2 * sumLik - penaltyDiscount * sumDof * log(getSampleSize());
     }
 
     /*
@@ -278,8 +178,7 @@ public class BasisFunctionBicScore implements Score {
      */
     @Override
     public String toString() {
-        NumberFormat nf = new DecimalFormat("0.00");
-        return "Basis Function BIC Score (Basis-BIC) Penalty " + nf.format(this.bic.getPenaltyDiscount()) + " truncation = " + this.truncationLimit;
+        return "Basis Function BIC Score (BF-BIC)";
     }
 
     /**
@@ -291,5 +190,4 @@ public class BasisFunctionBicScore implements Score {
         this.penaltyDiscount = penaltyDiscount;
         this.bic.setPenaltyDiscount(penaltyDiscount);
     }
-
 }

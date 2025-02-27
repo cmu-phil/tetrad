@@ -33,8 +33,8 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ProbUtils;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
@@ -282,11 +282,11 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             variables.add(newVar);
 
             dataSet.addVariable(newVar);
-            int newVarIndex = dataSet.getColumn(newVar);
+            int newVarIndex = dataSet.getColumnIndex(newVar);
             int numCases = dataSet.getNumRows();
 
             for (int l = 0; l < numCases; l++) {
-                Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
+                Object dataCell = dataSet.getObject(l, dataSet.getColumnIndex(node));
                 int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
 
                 if (dataCellIndex == ((DiscreteVariable) node).getIndex(cat))
@@ -360,7 +360,8 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             if (sumLnP[i] == Double.NEGATIVE_INFINITY) pVec[i] = 0.0;
             else {
                 int df = 2 * this.variablesPerNode.get(x).size() * this.variablesPerNode.get(yzList.get(i)).size();
-                pVec[i] = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(-2 * sumLnP[i]);
+//                pVec[i] = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(-2 * sumLnP[i]);
+                pVec[i] = StatUtils.getChiSquareP(df, -2 * sumLnP[i]);
             }
         }
 
@@ -455,7 +456,8 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             if (pVec[i] == Double.NEGATIVE_INFINITY)
                 pVec[i] = 0.0;
             else
-                pVec[i] = 1.0 - new ChiSquaredDistribution(2 * curDummy.size()).cumulativeProbability(-2 * pVec[i]);
+//                pVec[i] = 1.0 - new ChiSquaredDistribution(2 * curDummy.size()).cumulativeProbability(-2 * pVec[i]);
+                pVec[i] = StatUtils.getChiSquareP(2 * curDummy.size(), -2 * pVec[i]);
         }
 
         return pVec;

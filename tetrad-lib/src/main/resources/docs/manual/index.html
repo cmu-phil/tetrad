@@ -4752,6 +4752,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="minParamSampleSize">minParamSampleSize</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="minParamSampleSize_short_desc">The minimum sample size per parameter</span>
+            </li>
+            <li>Long Description: <span
+                    id="minParamSampleSize_long_desc">The minimum sample size per parameter</span>
+            </li>
+            <li>Default Value: <span
+                    id="minParamSampleSize_default_value">20</span></li>
+            <li>Lower
+                Bound: <span id="minParamSampleSize_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="minParamSampleSize_upper_bound">100000000</span></li>
+            <li>Value Type:
+                <span id="minParamSampleSize_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="removeEffectNodes">removeEffectNodes</h3>
         <ul
                 class="parameter_description_list">
@@ -5030,21 +5050,19 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="basisType_short_desc">
-                    Basis type (1 = Polynomial, 2 =
-        			Hermite1, 3=Hermite2, 4=Legendre, 5=Chebyshev)
+                    Basis type (0 = Polynomial, 1 = Legendre, 2 = Hermite, 3=Chebyshev)
         </span></li>
             <li>Long Description: <span
                     id="basisType_long_desc">
                     id="basisType_short_desc">
-                    Basis type (1 = Polynomial, 2 =
-        			Hermite1, 3=Hermite2, 4=Legendre, 5=Chebyshev)
+                    Basis type (0 = Polynomial, 1 = Legendre, 2 = Hermite, 3=Chebyshev)
                     </span></li>
             <li>Default
-                Value: <span id="basisType_default_value">4</span></li>
+                Value: <span id="basisType_default_value">1</span></li>
             <li>Lower
-                Bound: <span id="basisType_lower_bound">1</span></li>
+                Bound: <span id="basisType_lower_bound">0</span></li>
             <li>Upper
-                Bound: <span id="basisType_upper_bound">5</span></li>
+                Bound: <span id="basisType_upper_bound">3</span></li>
             <li>Value Type:
                 <span id="basisType_value_type">Integer</span></li>
         </ul>
@@ -5061,8 +5079,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     Variables are scaled to [-b, b] for this b (0 = standardized)
                     </span></li>
             <li>Default
-                Value: <span id="basisScale_default_value">0.9</span></li>
-            <li><Lower></Lower>
+                Value: <span id="basisScale_default_value">1</span></li>
+            <li>
+                <Lower></Lower>
                 Bound: <span id="basisScale_lower_bound">0</span></li>
             <li>Upper
                 Bound: <span id="basisScale_upper_bound">500000</span></li>
@@ -5087,6 +5106,23 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 <span id="cciScoreAlpha_upper_bound">1.0</span></li>
             <li>Value Type:
                 <span id="cciScoreAlpha_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="mcAlpha">mcAlpha</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="mcAlpha_short_desc">Markov Checker Alpha Level (0 to 1)</span></li>
+            <li>Long Description: <span
+                    id="mcAlpha_long_desc">Markov Checker Alpha Level (0 to 1)</span></li>
+            <li>Default
+                Value: <span id="mcAlpha_default_value">0.05</span></li>
+            <li>Lower
+                Bound: <span id="mcAlpha_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span id="mcAlpha_upper_bound">1.0</span></li>
+            <li>Value
+                Type: <span id="mcAlpha_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description" id="cgExact">cgExact</h3>
@@ -6392,29 +6428,27 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="usePseudoinverse">usePseudoinverse</h3>
+            id="regularizationLambda">regularizationLambda</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="usePseudoinverse_short_desc">
-                    Yes if the pseudoinverse should be used to avoid exceptions
+                    id="regularizationLambda_short_desc">
+                    Lambda for regularization (default 0 for no regularization)
         </span></li>
             <li>Long Description: <span
-                    id="usePseudoinverse_long_desc">
-                     Yes if the pseudoinverse should be used in place of the regular
-                     inverse in calculating residual variances to avoid singularity
-                     exceptions
+                    id="regularizationLambda_long_desc">
+                    Lambda for regularization (default 0 for no regularization)
         </span></li>
             <li>Default Value: <span
-                    id="usePseudoinverse_default_value">true</span></li>
+                    id="regularizationLambda_default_value">0</span></li>
             <li>Lower Bound: <span
-                    id="usePseudoinverse_lower_bound"></span></li>
+                    id="regularizationLambda_lower_bound">0</span></li>
             <li>Upper
                 Bound: <span
-                        id="usePseudoinverse_upper_bound"></span></li>
+                        id="regularizationLambda_upper_bound">Infinity</span></li>
             <li>Value
                 Type: <span
-                        id="usePseudoinverse_value_type">Boolean</span></li>
+                        id="regularizationLambda_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6511,6 +6545,491 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                         id="maxBlockingPathLength_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="maxBlockingPathLength_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="mnarNumVariablesWithMissing">mnarNumVariablesWithMissing</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="mnarNumVariablesWithMissing_short_desc">
+                MNAR: The number of variables with missing values.
+            </span></li>
+            <li>Long Description: <span
+                    id="mnarNumVariablesWithMissing_long_desc">
+                         id="mnarNumVariablesWithMissing_short_desc">
+                MNAR: The number of variables with missing values.
+                </span></li>
+            <li>Default
+                Value: <span
+                        id="mnarNumVariablesWithMissing_default_value">5</span></li>
+            <li>Lower Bound:
+                <spa
+                        id="mnarNumVariablesWithMissing_lower_bound">0</span>
+            </li>
+            <li>Upper
+                Bound: <span
+                        id="mnarNumVariablesWithMissing_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="mnarNumVariablesWithMissing_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="mnarNumExtraInfluences">mnarNumExtraInfluences</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="mnarNumExtraInfluences_short_desc">
+                MNAR: The number of extra influences on missing value selection.
+            </span></li>
+            <li>Long Description: <span
+                    id="mnarNumExtraInfluences_long_desc">
+                         id="mnarNumExtraInfluences_short_desc">
+                MNAR: The number of extra influences on missing value selection.
+            </span></li>
+            <li>Default
+                Value: <span
+                        id="mnarNumExtraInfluences_default_value">0</span></li>
+            <li>Lower Bound: <span
+                    id="mnarNumExtraInfluences_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="mnarNumExtraInfluences_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="mnarNumExtraInfluences_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="mnarThreshold">mnarThreshold</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="mnarThreshold_short_desc">
+                MNAR: Remove this fraction upper tail values for columns with missing values
+            </span></li>
+            <li>Long Description: <span
+                    id="mnarThreshold_long_desc">
+                         id="mnarThreshold_short_desc">
+               MNAR: Remove this fraction upper tail values for columns with missing values
+                 </span></li>
+            <li>Default
+                Value: <span
+                        id="mnarThreshold_default_value">0.1</span></li>
+            <li>Lower Bound: <span
+                    id="mnarThreshold_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="mnarThreshold_upper_bound">1.0</span></li>
+            <li>Value Type: <span
+                    id="mnarThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amNumPostNonlinearFunctions">amNumPostNonlinearFunctions</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amNumPostNonlinearFunctions_short_desc">
+                The number of random post-nonlinear functions to choose from
+            </span></li>
+            <li>Long Description: <span
+                    id="amNumPostNonlinearFunctions_long_desc">
+                    The number of random post-nonlinear functions to choose from
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amNumPostNonlinearFunctions_default_value">3</span></li>
+            <li>Lower Bound: <span
+                    id="amNumPostNonlinearFunctions_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amNumPostNonlinearFunctions_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="amNumPostNonlinearFunctions_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amTaylorSeriesDegree">amTaylorSeriesDegree</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amTaylorSeriesDegree_short_desc">
+                The maximum exponent for a Taylor series to use as a random
+                post-nonlinear function
+            </span></li>
+            <li>Long Description: <span
+                    id="amTaylorSeriesDegree_long_desc">
+                    The maximum exponent for a Taylor series to use as a random
+                post-nonlinear function. The f(0) term is set to 0.
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amTaylorSeriesDegree_default_value">10</span></li>
+            <li>Lower Bound: <span
+                    id="amTaylorSeriesDegree_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amTaylorSeriesDegree_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="amTaylorSeriesDegree_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amRescaleMin">amRescaleMin</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amRescaleMin_short_desc">
+                Variables will be rescaled to [min, max] for this min; if min = max
+                no rescaling will be done
+            </span></li>
+            <li>Long Description: <span
+                    id="amRescaleMin_long_desc">
+                Variables will be rescaled to [min, max] for this min; if min = max
+                no rescaling will be done
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amRescaleMin_default_value">-1</span></li>
+            <li>Lower Bound: <span
+                    id="amRescaleMin_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amRescaleMin_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="amRescaleMin_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amRescaleMax">amRescaleMax</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amRescaleMax_short_desc">
+                Variables will be rescaled to [min, max] for this max; if min = max
+                no rescaling will be done
+            </span></li>
+            <li>Long Description: <span
+                    id="amRescaleMax_long_desc">
+                Variables will be rescaled to [min, max] for this max; if min = max
+                no rescaling will be done
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amRescaleMax_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="amRescaleMax_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amRescaleMax_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="amRescaleMax_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amBetaAlpha">amBetaAlpha</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amBetaAlpha_short_desc">
+                The 'alpha' shape parameter for the Beta noise terms.
+            </span></li>
+            <li>Long Description: <span
+                    id="amBetaAlpha_long_desc">
+                The 'alpha' shape parameter for the Beta noise terms.
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amBetaAlpha_default_value">2</span></li>
+            <li>Lower Bound: <span
+                    id="amBetaAlpha_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amBetaAlpha_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="amBetaAlpha_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amBetaBeta">amBetaBeta</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amBetaBeta_short_desc">
+                The 'beta' shape parameter for the Beta noise terms.
+            </span></li>
+            <li>Long Description: <span
+                    id="amBetaBeta_long_desc">
+                The 'beta' shape parameter for the Beta noise terms.
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amBetaBeta_default_value">5</span></li>
+            <li>Lower Bound: <span
+                    id="amBetaBeta_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amBetaBeta_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="amBetaBeta_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amDerivativeMin">amDerivativeMin</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amDerivativeMin_short_desc">
+                'Min' for the U(min, max) range for random derivative values (with f(0) = 0)
+            </span></li>
+            <li>Long Description: <span
+                    id="amDerivativeMin_long_desc">
+                'Min' for the U(min, max) range for random derivative values (with f(0) = 0)
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amDerivativeMin_default_value">-1</span></li>
+            <li>Lower Bound: <span
+                    id="amDerivativeMin_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amDerivativeMin_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="amDerivativeMin_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amDerivativeMax">amDerivativeMax</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amDerivativeMax_short_desc">
+                'Max' for the U(min, max) range for random derivative values (with f(0) = 0)
+            </span></li>
+            <li>Long Description: <span
+                    id="amDerivativeMax_long_desc">
+                'Max' for the U(min, max) range for random derivative values (with f(0) = 0)
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amDerivativeMax_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="amDerivativeMax_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amDerivativeMax_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="amDerivativeMax_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amFirstDerivMin">amFirstDerivMin</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amFirstDerivMin_short_desc">
+                'Min' for the U(min, max) range for f'(0) for the causal function
+            </span></li>
+            <li>Long Description: <span
+                    id="amFirstDerivMin_long_desc">
+                'Min' for the U(min, max) range for f'(0) for the causal function
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amFirstDerivMin_default_value">-1.0</span></li>
+            <li>Lower Bound: <span
+                    id="amFirstDerivMin_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amFirstDerivMin_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="amFirstDerivMin_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amFirstDerivMax">amFirstDerivMax</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amFirstDerivMax_short_desc">
+                'Max' for the U(min, max) range for f'(0) for the causal function
+            </span></li>
+            <li>Long Description: <span
+                    id="amFirstDerivMax_long_desc">
+                'Max' for the U(min, max) range for f'(0) for the causal function
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amFirstDerivMax_default_value">1.0</span></li>
+            <li>Lower Bound: <span
+                    id="amFirstDerivMax_lower_bound">-Infinity</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amFirstDerivMax_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="amFirstDerivMax_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amDistortionType">amDistortionType</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amDistortionType_short_desc">
+				Add distortion: 1 = Before noise (additive) or 2 = After noise (post-nonlinear)
+            </span></li>
+            <li>Long Description: <span
+                    id="amDistortionType_long_desc">
+				Add distortion: 1 = Before noise (additive) or 2 = After noise (post-nonlinear)
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="amDistortionType_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="amDistortionType_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="amDistortionType_upper_bound">2</span></li>
+            <li>Value Type: <span
+                    id="amDistortionType_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="amCoefHigh">amCoefHigh</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amCoefHigh_short_desc">High end of coefficient range (min =
+        0.0)</span></li>
+            <li>Long Description: <span id="amCoefHigh_long_desc">
+        Value m2 for coefficients drawn from U(-m2, -m1) U U(m1, m2).</span>
+            </li>
+            <li>Default Value: <span
+                    id="amCoefHigh_default_value">1.0</span></li>
+            <li>Lower Bound: <span
+                    id="amCoefHigh_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span
+                    id="amCoefHigh_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="amCoefHigh_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="amCoefLow">amCoefLow</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amCoefLow_short_desc">Low end of coefficient range (min =
+        0.0)</span></li>
+            <li>Long Description: <span id="amCoefLow_long_desc">
+        The parameter m1 for coefficients drawn from U(-m2, -m1) U U(m1,
+        m2).</span></li>
+            <li>Default Value: <span
+                    id="amCoefLow_default_value">0.2</span></li>
+            <li>Lower Bound: <span
+                    id="amCoefLow_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span
+                    id="amCoefLow_upper_bound">Infinity</span></li>
+            <li>Value
+                Type: <span id="amCoefLow_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amCoefSymmetric">amCoefSymmetric</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amCoefSymmetric_short_desc">Yes if negative coefficient values
+        should be considered</span></li>
+            <li>Long Description: <span
+                    id="amCoefSymmetric_long_desc">Yes if coefficients should be drawn
+        from +/-(a, b); No if from +(a, b).</span></li>
+            <li>Default Value:
+                <span id="amCoefSymmetric_default_value">true</span></li>
+            <li>Lower
+                Bound: <span id="amCoefSymmetric_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span id="amCoefSymmetric_upper_bound"></span></li>
+            <li>Value
+                Type: <span id="amCoefSymmetric_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="amEnsureInvertibility">amEnsureInvertibility</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="amEnsureInvertibility_short_desc">
+                Ensure that functions are invertible
+            </span></li>
+            <li>Long Description: <span
+                    id="amEnsureInvertibility_long_desc">
+                         id="amEnsureInvertibility_short_desc">
+                Ensure that functions are invertible
+                </span></li>
+            <li>Default
+                Value: <span
+                        id="amEnsureInvertibility_default_value">false</span></li>
+            <li>Lower Bound:
+                <spa
+                        id="amEnsureInvertibility_lower_bound"></span>
+            </li>
+            <li>Upper
+                Bound: <span
+                        id="amEnsureInvertibility_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="amEnsureInvertibility_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="hiddenDimension">hiddenDimension</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="hiddenDimension_short_desc">
+                For a shallow multilayer perception (MLP), the number of nodes in the hidden layer
+            </span></li>
+            <li>Long Description: <span
+                    id="hiddenDimension_long_desc">
+                For a shallow multilayer perception (MLP), the number of nodes in the hidden layer
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="hiddenDimension_default_value">20</span></li>
+            <li>Lower Bound: <span
+                    id="hiddenDimension_lower_bound">1</span></li>
+            <li>Upper
+                Bound: <span
+                        id="hiddenDimension_upper_bound">2147483647</span></li>
+            <li>Value Type: <span
+                    id="hiddenDimension_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="hiddenDimensions">hiddenDimensions</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="hiddenDimensions_short_desc">
+                For perceptrons, the number of nodes in hidden layers (comma separated)
+           </span></li>
+            <li>Long Description: <span
+                    id="hiddenDimensions_long_desc">
+                For perceptrons, the number of nodes in hidden layers (comma separated)
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="hiddenDimensions_default_value">20</span></li>
+            <li>Lower Bound: <span
+                    id="hiddenDimensions_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="hiddenDimensions_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="hiddenDimensions_value_type">String</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="inputScale">inputScale</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="inputScale_short_desc">
+                For a shallow multilayer perception (MLP), the input scale (affects bumpiness)
+            </span></li>
+            <li>Long Description: <span
+                    id="inputScale_long_desc">
+                For a shallow multilayer perception (MLP), the input scale (affects bumpiness)
+        </span></li>
+            <li>Default
+                Value: <span
+                        id="inputScale_default_value">5.0</span></li>
+            <li>Lower Bound: <span
+                    id="inputScale_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="inputScale_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="inputScale_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6864,10 +7383,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="scalingFactor_short_desc">For Gaussian kernel: The scaling factor.</span></li>
+                    id="scalingFactor_short_desc">For Gaussian kernel: The scaling factor * Silverman bandwidth.</span>
+            </li>
             <li>Long
                 Description: <span id="scalingFactor_long_desc">
-                    Kernel scaling factor.                </span></li>
+                    For Gaussian kernel: The scaling factor * Silverman bandwidth.
+                </span></li>
             <li>Default Value: <span
                     id="scalingFactor_default_value">1.0</span></li>
             <li>Lower Bound:
@@ -9521,25 +10042,61 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 <span id="useSkewAdjacencies_value_type">Boolean</span></li>
         </ul>
 
-        <h3 class="parameter_description" id="useWishart">useWishart</h3>
+        <h3 class="parameter_description" id="tetrad_test_bpc">tetrad_test_bpc</h3>
         <ul class="parameter_description_list">
-            <li>Short Description: <span
-                    id="useWishart_short_desc">Yes if the Wishart test should be used. Not
-        if the Delta test should be used</span></li>
+            <li>Short Description: <span id="tetrad_test_bpc_short_desc">
+                The tetrad test used: 1 = Wishart, 2 = Delta (Bollen-Ting)
+                </span></li>
             <li>Long Description:
-                <span id="useWishart_long_desc"> This is a parameter for the FOFC
-        (Find One Factor Clusters) algorithm. There are two tests implemented
-        there for testing for tetrads being zero, Wishart and Delta. This
-        parameter picks which of these tests should be used: ‘Yes’ for Wishart
-        and ‘No’ for Delta.</span></li>
+                <span id="tetrad_test_bpc_long_desc">
+                The tetrad test used: 1 = Wishart, 2 = Delta
+        		</span></li>
             <li>Default Value: <span
-                    id="useWishart_default_value">false</span></li>
+                    id="tetrad_test_bpc_default_value">2</span></li>
             <li>Lower Bound:
-                <span id="useWishart_lower_bound"></span></li>
+                <span id="tetrad_test_bpc_lower_bound">1</span></li>
             <li>Upper Bound: <span
-                    id="useWishart_upper_bound"></span></li>
+                    id="tetrad_test_bpc_upper_bound">2</span></li>
             <li>Value Type: <span
-                    id="useWishart_value_type">Boolean</span></li>
+                    id="tetrad_test_bpc_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="tetrad_test_fofc">tetrad_test_fofc</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="tetrad_test_fofc_short_desc">
+                The tetrad test used: 1 = CCA, 2 = Bollen-Ting, 3 = Wishart
+                </span></li>
+            <li>Long Description:
+                <span id="tetrad_test_fofc_long_desc">
+                The tetrad test used: 1 = CCA, 2 = Bollen-Ting, 3 = Wishart
+        		</span></li>
+            <li>Default Value: <span
+                    id="tetrad_test_fofc_default_value">1</span></li>
+            <li>Lower Bound:
+                <span id="tetrad_test_fofc_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="tetrad_test_fofc_upper_bound">4</span></li>
+            <li>Value Type: <span
+                    id="tetrad_test_fofc_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="fofcAlpha">fofcAlpha</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="fofcAlpha_short_desc">Cutoff for p values (alpha) (min =
+        0.0)</span></li>
+            <li>Long Description: <span
+                    id="fofcAlpha_long_desc">Alpha level (0 to 1)</span></li>
+            <li>Default Value: <span
+                    id="fofcAlpha_default_value">0.001</span></li>
+            <li>Lower Bound:
+                <span id="fofcAlpha_lower_bound">0.0</span></li>
+            <li>Upper Bound:
+                <span id="fofcAlpha_upper_bound">1.0</span></li>
+            <li>Value Type:
+                <span id="fofcAlpha_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description" id="checkType">checkType</h3>

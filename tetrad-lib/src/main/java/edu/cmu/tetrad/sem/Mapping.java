@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.sem;
 
-//import cern.colt.matrix.DoubleMatrix2D;
-
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -41,6 +39,7 @@ import java.io.Serial;
  * @version $Id: $Id
  */
 public class Mapping implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

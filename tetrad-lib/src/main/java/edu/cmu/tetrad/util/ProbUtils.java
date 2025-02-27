@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.util;
 
-import cern.jet.stat.Probability;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 /**
@@ -708,8 +708,7 @@ public class ProbUtils {
      * @return a double
      */
     public static double chisqCdf(double x, double df) {
-        return Probability.chiSquare(df, x);
-//
+        return new ChiSquaredDistribution(df).cumulativeProbability(x);
 //        return gammaCdf(0.5 * df, 0.5 * x);
     }
 

@@ -39,7 +39,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * Here is the Wikipedia page for the Poisson distribution, for reference:
  * <p>
- * https://en.wikipedia.org/wiki/Poisson_distribution
+ * <a href="https://en.wikipedia.org/wiki/Poisson_distribution">...</a>
  * <p>
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
@@ -64,8 +64,8 @@ public class PoissonPriorScore implements Score {
     private boolean calculateRowSubsets;
     // The lambda parameter.
     private double lambda = 3.;
-    // True if the pseudo-inverse should be used.
-    private boolean usePseudoInverse = false;
+    // Regularization lambda
+    private double regularizationLambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -135,8 +135,8 @@ public class PoissonPriorScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
-                    this.usePseudoInverse);
+            varRy = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets,
+                    this.regularizationLambda);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -262,12 +262,12 @@ public class PoissonPriorScore implements Score {
     }
 
     /**
-     * Sets whether the pseudo-inverse should be used.
+     * Sets the regularization lambda value used in computations.
      *
-     * @param usePseudoInverse True if the pseudo-inverse should be used.
+     * @param regularizationLambda The regularization lambda parameter to set.
      */
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
+    public void setRegularizationLambda(double regularizationLambda) {
+        this.regularizationLambda = regularizationLambda;
     }
 
     private int[] indices(List<Node> __adj) {

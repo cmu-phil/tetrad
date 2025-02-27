@@ -140,7 +140,7 @@ public class Normal implements Distribution {
      * @return the next random sample from the distribution.
      */
     public double nextRandom() {
-        return RandomUtil.getInstance().nextNormal(this.mean, this.sd);
+        return RandomUtil.getInstance().nextGaussian(this.mean, this.sd);
     }
 
     /**

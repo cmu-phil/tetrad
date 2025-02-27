@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utils.LocalGraphConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * LocalGraphRecall implements the Statistic interface and represents the local graph recall statistic.
@@ -29,7 +30,7 @@ public class LocalGraphRecall implements Statistic {
     }
 
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         LocalGraphConfusion lgConfusion = new LocalGraphConfusion(trueGraph, estGraph);
         int lgTp = lgConfusion.getTp();
         int lgFn = lgConfusion.getFn();

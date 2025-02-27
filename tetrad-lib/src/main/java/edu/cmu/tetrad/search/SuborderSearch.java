@@ -35,6 +35,7 @@ public interface SuborderSearch {
      * @param suborder The suborder.
      * @param gsts     The GrowShrinkTree being used to do caching of scores.
      * @see GrowShrinkTree
+     * @throws InterruptedException If the search is interrupted.
      */
     void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) throws InterruptedException;
 

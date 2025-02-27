@@ -141,7 +141,7 @@ public class Cstar {
             double medianPis = StatUtils.median(pis);
             double medianEffects = StatUtils.median(effects);
 
-            Record record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, recordList.get(0).getNumCauses(), recordList.get(0).getNumEffects());
+            Record record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, recordList.getFirst().getNumCauses(), recordList.getFirst().getNumEffects());
             cstar.add(record);
         }
 
@@ -315,10 +315,10 @@ public class Cstar {
                         TetradLogger.getInstance().log("Sampling data for index " + (this.subsample + 1));
 
                         if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
-                            sampler.setWithoutReplacements(false);
+                            sampler.setWithReplacement(true);
                             sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
                         } else if (Cstar.this.sampleStyle == SampleStyle.SUBSAMPLE) {
-                            sampler.setWithoutReplacements(true);
+                            sampler.setWithReplacement(false);
                             sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
                         } else {
                             throw new IllegalArgumentException("That type of sample is not configured: " + Cstar.this.sampleStyle);
@@ -649,8 +649,8 @@ public class Cstar {
             throw new IllegalArgumentException("There were no CSTaR records generated. Perhaps the parameters are wrong.");
         }
 
-        String header = "# Potential Causes = " + records.get(0).getNumCauses() + "\n"
-                        + "# Potential Effects = " + records.get(0).getNumEffects() + "\n" +
+        String header = "# Potential Causes = " + records.getFirst().getNumCauses() + "\n"
+                        + "# Potential Effects = " + records.getFirst().getNumEffects() + "\n" +
                         "Top Bracket (‘q’) = " + this.topBracket +
                         "\n\n";
 
@@ -697,6 +697,7 @@ public class Cstar {
      *
      * @param sample the dataset to use for the PC algorithm
      * @return the graph representing the stable pattern
+     * @throws InterruptedException if any
      */
     private Graph getPatternPcStable(DataSet sample) throws InterruptedException {
         IndependenceTest test = this.test.getTest(sample, parameters);
@@ -729,6 +730,7 @@ public class Cstar {
      *
      * @param sample the dataset to use for the BOSS algorithm
      * @return the graph representing the pattern
+     * @throws InterruptedException if any
      */
     private Graph getPatternBoss(DataSet sample) throws InterruptedException {
         Score score = this.score.getScore(sample, parameters);
@@ -743,6 +745,7 @@ public class Cstar {
      * @param sample the dataset to use for the Restricted BOSS algorithm
      * @param data   the dataset containing the variables for replacing the nodes in the resulting graph
      * @return the graph representing the pattern
+     * @throws InterruptedException if any
      */
     private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) throws InterruptedException {
         RestrictedBoss restrictedBoss = new RestrictedBoss(score);
@@ -795,6 +798,7 @@ public class Cstar {
      * @param tasks        a List of Callables that return double[][] arrays.
      * @param parallelized a boolean indicating whether to execute the tasks in parallel.
      * @return a List of double[][] arrays representing the results of the executed tasks.
+     * @throws InterruptedException if any
      */
     private List<double[][]> runCallablesDoubleArray(List<Callable<double[][]>> tasks, boolean parallelized) throws InterruptedException {
         if (tasks.isEmpty()) return new ArrayList<>();

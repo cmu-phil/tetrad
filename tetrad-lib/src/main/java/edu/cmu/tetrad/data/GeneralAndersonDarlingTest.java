@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.data;
 
@@ -209,11 +209,13 @@ public class GeneralAndersonDarlingTest {
     }
 
     /**
-     * <p>getProbTail.</p>
+     * Computes the probability of the tail for a given value of sample size and AD test statistic values as given in
+     * Marsaglia, G., &amp; Marsaglia, J. (2004). Evaluating the anderson-darling distribution. Journal of statistical
+     * software, 9, 1-5.
      *
-     * @param n a double
-     * @param z a double
-     * @return a double
+     * @param n the sample size.
+     * @param z the test statistic value.
+     * @return the computed tail probability as a double.
      */
     public double getProbTail(double n, double z) {
         return adinf(z) + errfix(n, adinf(z));

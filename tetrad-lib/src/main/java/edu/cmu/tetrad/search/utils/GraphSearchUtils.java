@@ -129,6 +129,7 @@ public final class GraphSearchUtils {
      * @param test      a {@link edu.cmu.tetrad.search.IndependenceTest} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.lang.InterruptedException if any.
      */
     public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) throws InterruptedException {
         TetradLogger.getInstance().log("Starting Collider Orientation:");
@@ -799,6 +800,7 @@ public final class GraphSearchUtils {
      * @param depth a int
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.search.utils.GraphSearchUtils.CpcTripleType} object
+     * @throws java.lang.InterruptedException if any.
      */
     public static CpcTripleType getCpcTripleType(Node x, Node y, Node z,
                                                  IndependenceTest test, int depth,

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -32,8 +32,8 @@ import edu.cmu.tetrad.search.utils.NRooks;
 import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.linear.EigenDecomposition;
-import org.apache.commons.math3.linear.MatrixUtils;
+import org.ejml.simple.SimpleEVD;
+import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -200,13 +200,11 @@ public class IcaLingD {
      * @return True iff the model is stable.
      */
     public static boolean isStable(Matrix bHat) {
-        EigenDecomposition eigen = new EigenDecomposition(MatrixUtils.createRealMatrix(bHat.toArray()));
-        double[] realEigenvalues = eigen.getRealEigenvalues();
-        double[] imagEigenvalues = eigen.getImagEigenvalues();
+        SimpleEVD<SimpleMatrix> eig = bHat.getDataCopy().eig();
 
-        for (int i = 0; i < realEigenvalues.length; i++) {
-            double realEigenvalue = realEigenvalues[i];
-            double imagEigenvalue = imagEigenvalues[i];
+        for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
+            double realEigenvalue = eig.getEigenvalue(i).getReal();
+            double imagEigenvalue = eig.getEigenvalue(i).getImaginary();
             double modulus = sqrt(pow(realEigenvalue, 2) + pow(imagEigenvalue, 2));
 
             if (modulus >= 1.0) {

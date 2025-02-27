@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,10 +21,10 @@
 
 package edu.cmu.tetradapp.editor;
 
-import cern.jet.random.engine.MersenneTwister;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -129,11 +129,11 @@ class QQPlot {
      * @param searchCap Desired maximum number of searches -- too high and the stack might overflow!
      * @return an estimation of the point in a Normal distribution at a specific quantile.
      */
-    private static double findQuantile(double quantile, double low, double high, cern.jet.random.Normal n, double precision, int count, int searchCap) {
+    private static double findQuantile(double quantile, double low, double high, NormalDistribution n, double precision, int count, int searchCap) {
         //System.out.println("Low: " + low + "High: " + high);
         double mid = low + ((high - low) / 2.);
         //System.out.println("Mid: " + mid);
-        double cdfResult = n.cdf(mid);
+        double cdfResult = n.cumulativeProbability(mid);
         //System.out.println("CDF: " + cdfResult + " Abs value of difference: " + FastMath.abs(cdfResult - quantile) + " Count: " + count);
         if (
                 FastMath.abs(cdfResult - quantile) < precision || count > searchCap) {
@@ -221,7 +221,7 @@ class QQPlot {
      * @param n    Normal distribution generated from the dataset.
      * @param data Dataset that n is generated from, and whose normality is in question.
      */
-    private void calculateComparisonSet(cern.jet.random.Normal n, DataSet data) {
+    private void calculateComparisonSet(NormalDistribution n, DataSet data) {
         this.comparisonVariable = new double[data.getNumRows()];
 
         for (int i = 0; i < data.getNumRows(); i++) {
@@ -241,7 +241,7 @@ class QQPlot {
      * Builds the q-q data if required, otherwise does nothing
      */
     private void buildQQPlotData(Node selectedNode) {
-        int columnIndex = this.dataSet.getColumn(selectedNode);
+        int columnIndex = this.dataSet.getColumnIndex(selectedNode);
 
         double mean = 0.0;
         double sd = 0.0;
@@ -335,7 +335,7 @@ class QQPlot {
 
         //System.out.println("Mean: " + mean + " SD: " + sd + " Min: " + this.minData + " Max: " + this.maxData);
 
-        cern.jet.random.Normal comparison = new cern.jet.random.Normal(mean, sd, new MersenneTwister());
+        NormalDistribution comparison = new NormalDistribution(mean, sd);
 
         calculateComparisonSet(comparison, this.dataSet);
 

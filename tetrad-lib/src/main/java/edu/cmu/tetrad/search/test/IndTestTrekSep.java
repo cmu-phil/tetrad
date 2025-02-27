@@ -276,7 +276,7 @@ public final class IndTestTrekSep implements IndependenceTest {
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            Matrix Czz = matrix2D.getSelection(parents, parents);
+            Matrix Czz = matrix2D.view(parents, parents).mat();
             Matrix inverse;
 
             try {

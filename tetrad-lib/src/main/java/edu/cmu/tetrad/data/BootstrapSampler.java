@@ -36,13 +36,10 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public final class BootstrapSampler {
-
-
-    // private TetradLogger logger = TetradLogger.getInstance();
-
-    private boolean withoutReplacements;
-
-
+    /**
+     * Whether to sample with replacement.
+     */
+    private boolean withReplacement;
     /**
      * Constructs a sample that does not do any logging.
      */
@@ -66,7 +63,7 @@ public final class BootstrapSampler {
         if (dataSet.getNumRows() < 1) {
             throw new IllegalArgumentException("Dataset must contain samples.");
         }
-        //   this.logger.log("sampleSize", String.valueOf(newSampleSize));
+
         //Number of samples in input dataset
         int oldSampleSize = dataSet.getNumRows();
         int ncols = dataSet.getNumColumns();
@@ -74,11 +71,15 @@ public final class BootstrapSampler {
         DataSet newDataSet = new BoxDataSet(new VerticalDoubleDataBox(newSampleSize, dataSet.getVariables().size()), dataSet.getVariables());
         Set<Integer> oldCases = new HashSet<>();
 
+        if (!isWithReplacement() && newSampleSize > oldSampleSize) {
+            throw new IllegalArgumentException("For without replacement, sample size must be <= the number of samples in the dataset.");
+        }
+
         // (not keeping order)
         for (int row = 0; row < newSampleSize; row++) {
             int oldCase = RandomUtil.getInstance().nextInt(oldSampleSize);
 
-            if (isWithoutReplacements()) {
+            if (!isWithReplacement()) {
                 if (oldCases.contains(oldCase)) {
                     row--;
                     continue;
@@ -101,18 +102,18 @@ public final class BootstrapSampler {
      *
      * @return the sample size
      */
-    public boolean isWithoutReplacements() {
-        return this.withoutReplacements;
+    public boolean isWithReplacement() {
+        return this.withReplacement;
     }
 
     /**
      * This method takes a dataset and a sample size and creates a new dataset containing that number of samples by
      * drawing with replacement from the original dataset.
      *
-     * @param withoutReplacements the sample size
+     * @param withReplacement the sample size
      */
-    public void setWithoutReplacements(boolean withoutReplacements) {
-        this.withoutReplacements = withoutReplacements;
+    public void setWithReplacement(boolean withReplacement) {
+        this.withReplacement = withReplacement;
     }
 }
 

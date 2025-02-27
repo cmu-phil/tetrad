@@ -86,6 +86,7 @@ public class PossibleMsepFci {
      * constructor is directly changed.
      *
      * @return a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
+     * @throws java.lang.InterruptedException if any.
      */
     public SepsetMap search() throws InterruptedException {
 
@@ -119,6 +120,7 @@ public class PossibleMsepFci {
      * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
      * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.util.Set} object
+     * @throws java.lang.InterruptedException if any.
      */
     public Set<Node> getSepset(IndependenceTest test, Node node1, Node node2) throws InterruptedException {
         Set<Node> condSet = getCondSet(test, node1, node2, this.maxReachablePathLength);

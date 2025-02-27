@@ -184,9 +184,9 @@ public class MixtureOfGaussians implements Distribution {
         double r = RandomUtil.getInstance().nextDouble();
 
         if (r < this.a) {
-            return RandomUtil.getInstance().nextNormal(this.mean1, this.sd1);
+            return RandomUtil.getInstance().nextGaussian(this.mean1, this.sd1);
         } else {
-            return RandomUtil.getInstance().nextNormal(this.mean2, this.sd2);
+            return RandomUtil.getInstance().nextGaussian(this.mean2, this.sd2);
         }
     }
 

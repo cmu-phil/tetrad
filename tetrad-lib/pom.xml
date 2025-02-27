@@ -71,11 +71,6 @@
             <artifactId>commons-collections4</artifactId>
             <version>4.4</version>
         </dependency>
-        <!--        <dependesncy>-->
-        <!--            <groupId>org.apache.commons</groupId>-->
-        <!--            <artifactId>commons-lang3</artifactId>-->
-        <!--            <version>3.14.0</version>-->
-        <!--        </dependency>-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
@@ -145,6 +140,40 @@
             <artifactId>ejml-all</artifactId>
             <version>0.43</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.pytorch</groupId>-->
+<!--            <artifactId>pytorch_android</artifactId> &lt;!&ndash; Works on desktops too &ndash;&gt;-->
+<!--            <version>1.10.0</version>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>ai.djl</groupId>
+            <artifactId>api</artifactId>
+            <version>0.32.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ai.djl.pytorch</groupId>
+            <artifactId>pytorch-engine</artifactId>
+            <version>0.32.0</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>ai.djl.pytorch</groupId>-->
+<!--            <artifactId>pytorch-engine</artifactId>-->
+<!--            <version>0.24.0</version> &lt;!&ndash; Use the latest version &ndash;&gt;-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>ai.djl.pytorch</groupId>-->
+<!--            <artifactId>pytorch-native-auto</artifactId>-->
+<!--            <version>2.0.0</version> &lt;!&ndash; Metal support &ndash;&gt;-->
+<!--        </dependency>-->
+
+
+
+<!--        &lt;!&ndash; Optional: If using PyTorch native bindings for macOS &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>ai.djl.pytorch</groupId>-->
+<!--            <artifactId>pytorch-native-auto</artifactId>-->
+<!--            <version>2.0.0</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <properties>

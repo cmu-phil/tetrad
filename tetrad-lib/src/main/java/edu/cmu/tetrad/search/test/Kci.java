@@ -32,10 +32,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * <p>
  * Please see that paper, especially Theorem 4 and Proposition 5.
  * <p>
- * Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):
- * <p>
- * Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel approach with
- * S-Plus illustrations (Vol. 18). OUP Oxford.
+ * Using optimal kernel bandwidths suggested by Silverman:
  *
  * @author kunzhang
  * @author Vineet Raghu on 7/3/2016
@@ -98,6 +95,10 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     private final Thread mainThread;
     /**
+     * Epsilon for Proposition 5. We are fixing this to 0.001.
+     */
+    private final static double epsilon = 0.001;
+    /**
      * The alpha level of the test.
      */
     private double alpha;
@@ -117,10 +118,6 @@ public class Kci implements IndependenceTest, RowsSettable {
      * Azzalini optimal kernel widths will be multiplied by this.
      */
     private double scalingFactor = 1.0;
-    /**
-     * Epsilon for Proposition 5. We are fixing this to 0.001.
-     */
-    private final double epsilon = 0.001;
     /**
      * True if verbose output is enabled.
      */
@@ -163,30 +160,12 @@ public class Kci implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Converts a SimpleMatrix to a 1D array.
+     * Standardizes the data by centering (subtracting the mean) and scaling
+     * (dividing by the standard deviation) each column of the input matrix.
      *
-     * @param matrix The matrix to convert.
-     * @return The 1D array.
+     * @param data the input matrix where standardization will be applied column-wise
+     * @return a new matrix with the standardized data
      */
-    public static double[] convertTo1DArray(SimpleMatrix matrix) {
-        if (matrix.getNumCols() != 1) {
-            throw new IllegalArgumentException("The matrix must have exactly one column:" + matrix.getNumCols());
-        }
-
-        // Get the number of rows
-        int rows = matrix.getNumRows();
-
-        // Create a 1D array to hold the values
-        double[] result = new double[rows];
-
-        // Extract values from the matrix
-        for (int row = 0; row < rows; row++) {
-            result[row] = matrix.get(row, 0); // Access each row in the single column
-        }
-
-        return result;
-    }
-
     public static SimpleMatrix standardizeData(SimpleMatrix data) {
         SimpleMatrix data2 = data.copy();
 
@@ -249,8 +228,8 @@ public class Kci implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) method suggested by Bowman
-     * and Azzalini (1997) q.31.
+     * Calculates the optimal bandwidth for node x using the Median Absolute Deviation (MAD) rule of thumb suggested by
+     * Silverman.
      *
      * @param x         The node for which the optimal bandwidth is calculated.
      * @param data      The dataset from which the node's values are extracted.
@@ -259,21 +238,17 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     private static double h(Node x, SimpleMatrix data, Map<Node, Integer> nodesHash) {
         var _x = data.getColumn(nodesHash.get(x));
-//        var s = sd(_x.toArray2()[0]);
-//        _x = standardizeData(_x); // Already standardized.
         var N = _x.getNumRows();
-        var g = new Vector(N);
-        var central = median(convertTo1DArray(_x));
-        for (var j = 0; j < N; j++) g.set(j, abs(_x.get(j) - central));
-        var mad = median(g.toArray());
-//        var sigmaRobust = 1.4826 * mad;
-//        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
-        return 1.5716 * mad * FastMath.pow(N, -0.2);
+        var central = median(_x);
+        for (var j = 0; j < N; j++) _x.set(j, abs(_x.get(j) - central));
+        var mad = median(_x);
+        var sigmaRobust = 1.4826 * mad;
+        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
     }
 
     /**
-     * Retrieves an identity matrix of size N. If the matrix is not already cached,
-     * it creates a new identity matrix, caches it, and then returns it.
+     * Retrieves an identity matrix of size N. If the matrix is not already cached, it creates a new identity matrix,
+     * caches it, and then returns it.
      *
      * @param N the size of the identity matrix to retrieve or create
      * @return the identity matrix of size N
@@ -290,9 +265,8 @@ public class Kci implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Retrieves or computes a specific matrix H based on the input value N.
-     * If the matrix is already cached, it will return the cached value.
-     * Otherwise, it computes the matrix, stores it in the cache, and returns it.
+     * Retrieves or computes a specific matrix H based on the input value N. If the matrix is already cached, it will
+     * return the cached value. Otherwise, it computes the matrix, stores it in the cache, and returns it.
      *
      * @param N the dimension used to compute the matrix H
      * @return the computed or cached SimpleMatrix H
@@ -341,6 +315,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param y The second node.
      * @param z The set of conditioning variables.
      * @return The result of the independence test.
+     * @throws InterruptedException if any
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
@@ -386,15 +361,12 @@ public class Kci implements IndependenceTest, RowsSettable {
                 TetradLogger.getInstance().log(fact + " dependent p = " + p);
             }
 
-            return new IndependenceResult(fact, result.isIndependent(),
-                    result.getPValue(), getAlpha() - result.getPValue());
+            return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when testing " +
-                                       LogUtilsSearch.independenceFact(x, y, z));
+            throw new RuntimeException("Singularity encountered when testing " + LogUtilsSearch.independenceFact(x, y, z));
         } catch (Exception e) {
             TetradLogger.getInstance().log(e.getMessage());
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    false, Double.NaN, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
         }
     }
 
@@ -532,15 +504,6 @@ public class Kci implements IndependenceTest, RowsSettable {
         this.threshold = threshold;
     }
 
-//    /**
-//     * Sets the epsilon.
-//     *
-//     * @param epsilon This number.
-//     */
-//    public void setEpsilon(double epsilon) {
-//        this.epsilon = epsilon;
-//    }
-
     /**
      * Returns the value of the verbose flag.
      *
@@ -571,9 +534,9 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param fact The independence fact used to contextualize the test result.
      * @return An IndependenceResult object that encapsulates the result of the independence test, including whether the
      * variables are considered independent and the associated p-value.
+     * @throws InterruptedException if any
      */
-    private @NotNull IndependenceResult getIndependenceResultApproximate(SimpleMatrix kx, SimpleMatrix ky, double kx1, double kx2,
-                                                                         IndependenceFact fact) throws InterruptedException {
+    private @NotNull IndependenceResult getIndependenceResultApproximate(SimpleMatrix kx, SimpleMatrix ky, double kx1, double kx2, IndependenceFact fact) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
             mainThread.interrupt();
             throw new InterruptedException();
@@ -596,9 +559,9 @@ public class Kci implements IndependenceTest, RowsSettable {
      * Returns the KCI independence result for the unconditional case. Uses Theorem 4 from the paper.
      *
      * @return true, just in case independence holds.
+     * @throws InterruptedException if any
      */
-    private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, SimpleMatrix _data,
-                                                          SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
+    private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, SimpleMatrix _data, SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
             mainThread.interrupt();
             throw new InterruptedException();
@@ -633,9 +596,9 @@ public class Kci implements IndependenceTest, RowsSettable {
      * Returns the KCI independence result for the conditional case. Uses Theorem 3 from the paper.
      *
      * @return true just in case independence holds.
+     * @throws InterruptedException if any
      */
-    private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, SimpleMatrix _data,
-                                                        SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
+    private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, SimpleMatrix _data, SimpleMatrix _h, Map<Node, Integer> hash) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
             mainThread.interrupt();
             throw new InterruptedException();
@@ -682,6 +645,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param fact  The independence fact.
      * @param N     The sample size.
      * @return The independence result.
+     * @throws InterruptedException if any
      */
     private IndependenceResult theorem4(SimpleMatrix kernx, SimpleMatrix kerny, IndependenceFact fact, int N) throws InterruptedException {
 
@@ -735,6 +699,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param fact The independence fact.
      * @param N    The size of the input dataset.
      * @return The independence result.
+     * @throws InterruptedException if any
      */
     private IndependenceResult proposition5(SimpleMatrix kx, SimpleMatrix ky, IndependenceFact fact, int N) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
@@ -824,9 +789,9 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param _h            the bandwidth vector
      * @param _rows         the list of rows to use
      * @return the calculated kernel matrix
+     * @throws InterruptedException if any
      */
-    private SimpleMatrix kernelMatrix(SimpleMatrix _data, Node x, List<Node> z, double scalingFactor,
-                                      Map<Node, Integer> hash, SimpleMatrix _h, List<Integer> _rows) throws InterruptedException {
+    private SimpleMatrix kernelMatrix(SimpleMatrix _data, Node x, List<Node> z, double scalingFactor, Map<Node, Integer> hash, SimpleMatrix _h, List<Integer> _rows) throws InterruptedException {
 
         if (Thread.currentThread().isInterrupted()) {
             mainThread.interrupt();
@@ -910,8 +875,7 @@ public class Kci implements IndependenceTest, RowsSettable {
      * @param polyConstant The constant term added to the dot product before applying the power function.
      * @return The polynomial kernel value between the two specified data points.
      */
-    private double getPolynomialKernel(SimpleMatrix _data, List<Integer> _z, int i, int j,
-                                       double polyDegree, double polyConstant) {
+    private double getPolynomialKernel(SimpleMatrix _data, List<Integer> _z, int i, int j, double polyDegree, double polyConstant) {
         double d = dot(_data, _z, i, j);
         return Math.pow(d + polyConstant, polyDegree);
     }
@@ -1153,7 +1117,25 @@ public class Kci implements IndependenceTest, RowsSettable {
      * </ul>
      */
     public enum KernelType {
-        GAUSSIAN, LINEAR, POLYNOMIAL
+        /**
+         * Indicates the use of a Gaussian kernel, commonly used in various machine learning algorithms for its smooth
+         * and bell-shaped curve characteristics.
+         */
+        GAUSSIAN,
+
+        /**
+         * Represents the use of a linear kernel, typically employed when data is linearly separable or for problems
+         * that require linear decision boundaries.
+         */
+        LINEAR,
+
+        /**
+         * Represents a polynomial kernel, which is useful for situations requiring the transformation of input data
+         * into a higher-dimensional space. This type of kernel computes the similarity between data points as a
+         * polynomial function of their attributes, allowing for the modeling of more complex patterns or structures in
+         * the data.
+         */
+        POLYNOMIAL
     }
 
     /**
@@ -1172,6 +1154,4 @@ public class Kci implements IndependenceTest, RowsSettable {
      */
     public record EigenReturn(SimpleMatrix D, SimpleMatrix V, List<Double> topEigenvalues) {
     }
-
-
 }

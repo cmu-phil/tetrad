@@ -103,6 +103,7 @@ public final class SvarGfci implements IGraphSearch {
      * Runs the search and returns a PAG.
      *
      * @return a PAG.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         independenceTest.setVerbose(verbose);
@@ -152,7 +153,7 @@ public final class SvarGfci implements IGraphSearch {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (this.graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    if (this.sepsets.getSepset(a, c, -1) != null) {
+                    if (this.sepsets.getSepset(a, c, -1, null) != null) {
                         this.graph.removeEdge(a, c);
                         removeSimilarEdges(a, c);
                     }
@@ -291,6 +292,7 @@ public final class SvarGfci implements IGraphSearch {
      * Modifies the R0 structure of the given graph according to the FGES algorithm.
      *
      * @param fgesGraph The graph to modify.
+     * @throws InterruptedException if any
      */
     private void modifiedR0(Graph fgesGraph) throws InterruptedException {
         this.graph.reorientAllWith(Endpoint.CIRCLE);
@@ -321,7 +323,7 @@ public final class SvarGfci implements IGraphSearch {
                     //  **/
 
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = this.sepsets.getSepset(a, c, -1);
+                    Set<Node> sepset = this.sepsets.getSepset(a, c, -1, null);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);

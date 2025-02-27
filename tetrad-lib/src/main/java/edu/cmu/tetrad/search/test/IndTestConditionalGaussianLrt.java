@@ -181,7 +181,19 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
         if (Double.isNaN(lik_diff)) {
             throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
         } else {
-            pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(-2 * lik_diff);
+
+            double x1 = -2 * lik_diff;
+//            pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(x1);
+
+            ChiSquaredDistribution chisq = new ChiSquaredDistribution(dof_diff);
+
+            if (Double.isInfinite(x1)) {
+                pValue = 0.0;
+            } else if (x1 == 0.0) {
+                pValue = 1.0;
+            } else {
+                pValue = 1.0 - chisq.cumulativeProbability(x1);
+            }
         }
 
         this.pValue = pValue;

@@ -80,7 +80,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         if (basisScale == 0.0) {
             dataSet = DataTransforms.standardizeData(dataSet);
         } else if (basisScale > 0.0) {
-            dataSet = DataTransforms.scale(dataSet, basisScale);
+            dataSet = DataTransforms.scale(dataSet, -basisScale, basisScale);
         } else {
             throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be standardized.");
         }
@@ -121,7 +121,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
     private static double gaussianKernel(Matrix z, int i, int j, double h, double scalingFactor) {
         double _h = h * scalingFactor;
 
-        Vector difference = z.getRow(i).minus(z.getRow(j));
+        Vector difference = z.row(i).minus(z.row(j));
         double squaredDistance = difference.dotProduct(difference);
 
         return FastMath.exp(-squaredDistance / (2 * _h * _h));
@@ -289,7 +289,7 @@ public final class ConditionalCorrelationIndependence implements RowsSettable {
         var _rows = rows.stream().mapToInt(i -> i).toArray();
         var _cols = z.stream().mapToInt(nodesHash::get).toArray();
 
-        var _z = data.getSelection(_rows, _cols);
+        var _z = data.view(_rows, _cols).mat();
         var __x = _x.getSelection(_rows);
         return kernelRegressionResiduals(__x, _z);
     }

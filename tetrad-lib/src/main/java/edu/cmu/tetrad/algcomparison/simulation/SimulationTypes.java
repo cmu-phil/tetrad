@@ -39,9 +39,29 @@ public final class SimulationTypes {
      */
     public static final String LINEAR_FISHER_MODEL = "Linear Fisher Model";
     /**
-     * Constant <code>NON_LINEAR_STRUCTURAL_EQUATION_MODEL="Non-Linear Structural Equation Model"</code>
+     * Constant <code>NON_LINEAR_STRUCTURAL_EQUATION_MODEL="GP Nonlinear Structural Equation Model"</code>
      */
-    public static final String NON_LINEAR_STRUCTURAL_EQUATION_MODEL = "Non-Linear Structural Equation Model";
+    public static final String GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL = "Gaussian Process Structural Equation Model";
+    /**
+     * Constant <code>NONLINEAR_ADDITIVE_NOISE_MODEL="Nonlinear Additive Noise Model"</code>
+     */
+    public static final String NONLINEAR_ADDITIVE_NOISE_MODEL = "Nonlinear Additive Noise Model";
+    /**
+     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
+     */
+    public static final String POST_NONLINEAR_MODEL = "Post-nonlinear causal Model";
+    /**
+     * Constant <code>POST_NONLINEAR_MODEL="Post-nonlinear causal model"</code>
+     */
+    public static final String NONLINEAR_FUNCTIONS_OF_LINEAR = "Nonlinear Functions of Linear (NFL) Model";
+    /**
+     * Constant <code>CAUSAL_PERCEPTRON_NETWORK="Causal Peceptron Network (CPN)"</code>
+     */
+    public static final String CAUSAL_PERCEPTRON_NETWORK = "Causal Peceptron Network (CPN)";
+    /**
+     * Constant <code>LG_MNAR_SIMULATION="LG MNAR Simulation"</code>
+     */
+    public static final String LG_MNAR_SIMULATION = "LG MNAR Simulation";
     /**
      * Constant <code>LEE_AND_HASTIE="Mixed Lee &amp; Hastie"</code>
      */

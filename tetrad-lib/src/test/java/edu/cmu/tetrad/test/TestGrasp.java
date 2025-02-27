@@ -112,10 +112,10 @@ public final class TestGrasp {
     }
 
     private static boolean printFailed(Graph g, Graph dag, String alg) {
-        double ap = new AdjacencyPrecision().getValue(g, dag, null);
-        double ar = new AdjacencyRecall().getValue(g, dag, null);
-        double ahp = new ArrowheadPrecision().getValue(g, dag, null);
-        double ahr = new ArrowheadRecall().getValue(g, dag, null);
+        double ap = new AdjacencyPrecision().getValue(g, dag, null, new Parameters());
+        double ar = new AdjacencyRecall().getValue(g, dag, null, new Parameters());
+        double ahp = new ArrowheadPrecision().getValue(g, dag, null, new Parameters());
+        double ahr = new ArrowheadRecall().getValue(g, dag, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
 
@@ -224,11 +224,10 @@ public final class TestGrasp {
         double structurePrior = 1.0;
         boolean discretize = true;
 
-        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data, precomputeCovariances);
+        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data, precomputeCovariances, 0.0);
 
         IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data);
         test.setAlpha(0.01);
-
 
         edu.cmu.tetrad.search.Fges alg = new edu.cmu.tetrad.search.Fges(score);
         Graph pat = null;
@@ -2709,12 +2708,12 @@ public final class TestGrasp {
                 }
 
                 for (Statistic statistic : dagStats.getStatistics()) {
-                    double stat = statistic.getValue(trueGraph, estGraph, null);
+                    double stat = statistic.getValue(trueGraph, estGraph, null, new Parameters());
                     algNameMap.get(algName).put(statistic, stat);
                 }
 
                 for (Statistic statistic : pagStats.getStatistics()) {
-                    double stat = statistic.getValue(truePag, estGraph, null);
+                    double stat = statistic.getValue(truePag, estGraph, null, new Parameters());
                     algNameMap.get(algName).put(statistic, stat);
                 }
             }

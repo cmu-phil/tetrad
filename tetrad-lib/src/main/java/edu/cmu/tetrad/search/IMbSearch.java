@@ -38,6 +38,7 @@ public interface IMbSearch {
      *
      * @param target a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.util.Set} object
+     * @throws InterruptedException if any
      */
     Set<Node> findMb(Node target) throws InterruptedException;
 

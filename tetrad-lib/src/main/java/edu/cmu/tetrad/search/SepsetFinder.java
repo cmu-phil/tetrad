@@ -29,9 +29,10 @@ public class SepsetFinder {
      * @param containing the set of nodes that must be contained in the sepset (optional)
      * @param test       the independence test to use
      * @param depth      the depth of the search
+     * @param order      An order of the nodes in the graph, used for some implementations.
      * @return the sepset containing the greedy test for variables x and y, or null if no sepset is found
      */
-    public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) {
+    public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
         adjx.remove(y);
@@ -48,6 +49,16 @@ public class SepsetFinder {
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
                 .filter(subset -> {
                     try {
+                        if (order != null) {
+                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+
+                            for (Node node : subset) {
+                                if (order.indexOf(node) > order.indexOf(_y)) {
+                                    return false;
+                                }
+                            }
+                        }
+
                         return separates(x, y, subset, test);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
@@ -92,6 +103,7 @@ public class SepsetFinder {
      * @param test       the independence test used to calculate the p-values
      * @param depth      the maximum depth to explore for each separating set
      * @return the set of nodes that act as a separating set, or null if such set is not found
+     * @throws InterruptedException if any
      */
     public static Set<Node> getSepsetContainingMaxPHybrid(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) throws InterruptedException {
         List<Node> adjx = graph.getAdjacentNodes(x);
@@ -158,6 +170,7 @@ public class SepsetFinder {
      * @param test       the independence test to use for calculating the p-value
      * @param depth      the depth of the search for the sepset
      * @return the sepset containing the minimum p-value, or null if no sepset is found
+     * @throws InterruptedException if any
      */
     public static Set<Node> getSepsetContainingMinPHybrid(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth) throws InterruptedException {
         List<Node> adjx = graph.getAdjacentNodes(x);
@@ -703,6 +716,7 @@ public class SepsetFinder {
      * @param allowSelectionBias A boolean flag indicating whether to allow selection bias.
      * @param blacklist          The set of nodes to blacklist.
      * @return The sepset if independence holds, otherwise null.
+     * @throws InterruptedException if any
      */
     public static Set<Node> getSepsetPathBlockingOutOfX(Graph mpdag, Node x, Node y, IndependenceTest test,
                                                         int maxLength, int depth, boolean allowSelectionBias,

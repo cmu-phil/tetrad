@@ -67,7 +67,7 @@ public class RfciBsc implements IGraphSearch {
     /**
      * <p>Constructor for RfciBsc.</p>
      *
-     * @param rfci a {@link edu.cmu.tetrad.search.Rfci} object
+     * @param rfci a {@link Rfci} object
      */
     public RfciBsc(Rfci rfci) {
         this.rfci = rfci;

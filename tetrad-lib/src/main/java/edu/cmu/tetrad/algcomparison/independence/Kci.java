@@ -29,7 +29,6 @@ public class Kci implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
-    private boolean verbose = true;
 
     /**
      * `Kci` constructor.
@@ -111,14 +110,5 @@ public class Kci implements IndependenceWrapper {
         params.add(Params.POLYNOMIAL_DEGREE);
         params.add(Params.POLYNOMIAL_CONSTANT);
         return params;
-    }
-
-    /**
-     * Sets the verbosity level of the KCI test. By default true for this (slow) test.
-     *
-     * @param verbose a boolean indicating whether verbose output should be enabled (true) or disabled (false).
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 }

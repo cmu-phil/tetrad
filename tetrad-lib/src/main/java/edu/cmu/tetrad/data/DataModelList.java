@@ -188,7 +188,7 @@ public final class DataModelList extends AbstractList<DataModel>
         if (this.modelList.isEmpty()) {
             return true;
         } else {
-            return this.modelList.get(0).getVariableNames().isEmpty();
+            return this.modelList.getFirst().getVariableNames().isEmpty();
         }
     }
 
@@ -226,7 +226,7 @@ public final class DataModelList extends AbstractList<DataModel>
         if (this.selectedModel != null) {
             return this.selectedModel;
         } else if (this.modelList.size() > 0) {
-            return this.modelList.get(0);
+            return this.modelList.getFirst();
         } else {
             return null;
         }

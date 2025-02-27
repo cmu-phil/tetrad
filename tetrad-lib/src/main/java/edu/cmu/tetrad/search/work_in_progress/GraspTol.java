@@ -94,6 +94,7 @@ public class GraspTol {
      *
      * @param order a {@link java.util.List} object
      * @return a {@link java.util.List} object
+     * @throws java.lang.InterruptedException if any.
      */
     public List<Node> bestOrder(@NotNull List<Node> order) throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
@@ -158,6 +159,7 @@ public class GraspTol {
      * <p>betterMutation.</p>
      *
      * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
+     * @throws java.lang.InterruptedException if any.
      */
     public void betterMutation(@NotNull TeyssierScorer scorer) throws InterruptedException {
         List<Node> pi = scorer.getPi();
@@ -277,6 +279,7 @@ public class GraspTol {
      *
      * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
      * @return a {@link java.util.List} object
+     * @throws java.lang.InterruptedException if any.
      */
     public List<Node> grasp(@NotNull TeyssierScorer scorer) throws InterruptedException {
         scorer.clearBookmarks();

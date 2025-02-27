@@ -66,7 +66,7 @@ public class FgesMeasurement extends AbstractBootstrapAlgorithm implements Algor
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 for (int j = 0; j < dataSet.getNumColumns(); j++) {
                     double d = dataSet.getDouble(i, j);
-                    double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
+                    double norm = RandomUtil.getInstance().nextGaussian(0, FastMath.sqrt(variance));
                     dataSet.setDouble(i, j, d + norm);
                 }
             }

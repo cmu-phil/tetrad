@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.DiscreteBicScore;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 import java.util.List;
@@ -49,7 +50,7 @@ public class NumParametersEst implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (dataModel.isDiscrete()) {
             DiscreteBicScore score = new DiscreteBicScore((DataSet) dataModel);
 

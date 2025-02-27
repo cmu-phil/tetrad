@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -46,7 +47,7 @@ public class NumGenuineAdjacenciesInPag implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int numInducedAdjacenciesInPag = GraphUtils.getNumInducedAdjacenciesInPag(trueGraph, estGraph);
         int numCoveringAdjacenciesInPag = GraphUtils.getNumCoveringAdjacenciesInPag(trueGraph, estGraph);
         int numEdges = estGraph.getNumEdges();

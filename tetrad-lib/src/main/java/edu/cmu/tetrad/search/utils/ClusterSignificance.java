@@ -70,7 +70,7 @@ public class ClusterSignificance {
      * @param _variables The variables.
      * @return The extracted node list.
      */
-    public static List<List<Node>> variablesForIndices2(Set<List<Integer>> clusters, List<Node> _variables) {
+    public static List<List<Node>> variablesForIndices(Set<List<Integer>> clusters, List<Node> _variables) {
         List<List<Node>> variables = new ArrayList<>();
 
         for (List<Integer> cluster : clusters) {
@@ -80,21 +80,9 @@ public class ClusterSignificance {
         return variables;
     }
 
-    /**
-     * Converts a list of indices into a list of Integers representing a cluster.
-     *
-     * @param indices The indices of the variables.
-     * @return The extracted index list.
-     */
-    public static List<Integer> getInts(int[] indices) {
-        List<Integer> cluster = new ArrayList<>();
-        for (int i : indices) cluster.add(i);
-        return cluster;
-    }
-
     private static int dofHarman(int n) {
         int dof = n * (n - 5) / 2 + 1;
-        if (dof < 0) dof = 0;
+        if (dof < 1) dof = 1;
         return dof;
     }
 

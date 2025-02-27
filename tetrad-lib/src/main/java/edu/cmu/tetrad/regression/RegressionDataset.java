@@ -243,8 +243,8 @@ public class RegressionDataset implements Regression {
             _regressors[i] = this.variables.indexOf(regressors.get(i));
         }
 
-        Matrix y = this.data.getSelection(getRows(), new int[]{_target}).copy();
-        Matrix xSub = this.data.getSelection(getRows(), _regressors);
+        Matrix y = this.data.view(getRows(), new int[]{_target}).mat().copy();
+        Matrix xSub = this.data.view(getRows(), _regressors).mat();
 
         Matrix x;
 

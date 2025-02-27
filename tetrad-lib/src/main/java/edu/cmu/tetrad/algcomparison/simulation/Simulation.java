@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -20,6 +21,7 @@ public interface Simulation extends HasParameters, TetradSerializable {
     /**
      * Constant <code>serialVersionUID=23L</code>
      */
+    @Serial
     long serialVersionUID = 23L;
 
     /**

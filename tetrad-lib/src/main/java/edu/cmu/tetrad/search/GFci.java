@@ -141,6 +141,7 @@ public final class GFci implements IGraphSearch {
      * Runs the graph and returns the search PAG.
      *
      * @return This PAG.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         this.independenceTest.setVerbose(verbose);
@@ -193,7 +194,7 @@ public final class GFci implements IGraphSearch {
 
         Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, verbose);
+        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, null, verbose);
         GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
 
         if (verbose) {

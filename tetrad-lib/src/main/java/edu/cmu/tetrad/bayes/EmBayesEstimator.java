@@ -216,7 +216,7 @@ public final class EmBayesEstimator {
             } else {
                 String name = this.bayesPm.getVariable(this.nodes[j]).getName();
                 Node variable = this.dataSet.getVariable(name);
-                int index = this.dataSet.getColumn(variable);
+                int index = this.dataSet.getColumnIndex(variable);
 
                 for (int i = 0; i < numFullCases; i++) {
                     dsMixed.setInt(i, j, this.dataSet.getInt(i, index));

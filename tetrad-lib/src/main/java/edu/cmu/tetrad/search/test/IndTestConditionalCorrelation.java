@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.Collections;
@@ -53,41 +52,36 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * Stores a reference to the data set passed in through the constructor.
      */
     private final DataSet dataSet;
-    private int basisType;
-    /**
-     * Represents the scaling factor applied to the basis functions in the independence test. This variable adjusts the
-     * influence of the basis functions, which can affect the flexibility and accuracy of the independence tests
-     * performed within the IndTestConditionalCorrelation class. The value is initialized to 0.0, indicating no
-     * standardization by default.
-     */
-    private double basisScale = 0.0;
-    /**
-     * The bandwidth adjustment factor.
-     */
-    private double scalingFactor = 2.0;
-    /**
-     * The significance level of the independence tests.
-     */
-    private double alpha;
     /**
      * True if verbose output should be printed.
      */
     private boolean verbose;
     /**
-     * True if permutation test should be used.
+     * Represents the significance level (alpha) used for statistical testing within the
+     * {@code IndTestConditionalCorrelation} framework. The value of this variable must lie within the range [0, 1],
+     * inclusive.
+     * <p>
+     * A lower value of alpha generally indicates a stricter threshold for determining statistical independence, while a
+     * higher value allows for greater tolerance for potential dependencies.
      */
-    private boolean usePermutation = false;
+    private double alpha;
 
     /**
-     * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
-     * given data set (must be continuous). The given significance level is used.
+     * Constructs a new {@code IndTestConditionalCorrelation} to check independence based on conditional correlations
+     * derived from the given continuous data set. The test uses the specified significance level and allows
+     * customization of basis settings and a scaling factor.
      *
-     * @param dataSet    A data set containing only continuous columns.
-     * @param alpha      The q level of the test.
-     * @param basisScale
+     * @param dataSet       The continuous data set for performing independence tests.
+     * @param alpha         The significance level for the test (must be between 0 and 1 inclusive).
+     * @param scalingFactor The scaling factor applied in the independence test computations.
+     * @param basisType     The type of basis functions used in the computations.
+     * @param numFunctions  The number of orthogonal functions used for the calculations.
+     * @param basisScale    The scale of the basis functions applied in computations.
+     * @throws IllegalArgumentException if the data set is not continuous.
+     * @throws IllegalArgumentException if the significance level (alpha) is not in the range [0, 1].
      */
     public IndTestConditionalCorrelation(DataSet dataSet, double alpha, double scalingFactor,
-                                         int basisType, int numFunctions, double basisScale) {
+                                         int basisType, double basisScale, int numFunctions) {
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
         }
@@ -101,12 +95,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
         this.variables = Collections.unmodifiableList(nodes);
 
         this.cci = new ConditionalCorrelationIndependence(dataSet, basisType, basisScale, numFunctions);
-        this.cci.setScalingFactor(this.scalingFactor);
-        this.alpha = alpha;
-        this.scalingFactor = scalingFactor;
-        this.basisType = basisType;
-        this.basisScale = basisScale;
+        this.cci.setScalingFactor(scalingFactor);
         this.dataSet = dataSet;
+        this.setAlpha(alpha);
     }
 
     /**
@@ -127,14 +118,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        double p;
-
-//        if (usePermutation) {
-//            p = this.cci.permutationTest(x, y, z, 20);
-//        } else {
-        p = this.cci.isIndependent(x, y, z);
-//            p = cci.getPValue(score);
-//        }
+        double p = this.cci.isIndependent(x, y, z);
 
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
@@ -158,6 +142,18 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
      */
     public double getAlpha() {
         return this.alpha;
+    }
+
+    /**
+     * Sets the significance level for the test. The significance level (alpha) must be a value between 0 and 1,
+     * inclusive.
+     *
+     * @param alpha The new significance level to be set for the test. This value determines the threshold for
+     *              statistical significance in the independence test computations.
+     */
+    @Override
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
     /**

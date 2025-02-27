@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.CombinationIterator;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.List;
@@ -254,7 +255,7 @@ public class ChiSquareTest {
         } else {
 
             // Otherwise, we can calculate a p-value for the test.
-            double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
+            double pValue = StatUtils.getChiSquareP(df, xSquare);
             return new Result(xSquare, pValue, df, (pValue > getAlpha()), true);
         }
     }

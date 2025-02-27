@@ -104,7 +104,7 @@ public final class GraphSampling {
         }
 
         // create new graph
-        Graph graph = createNewGraph(graphs.get(0).getNodes());
+        Graph graph = createNewGraph(graphs.getFirst().getNodes());
         for (NodePair nodePair : getEdgeNodePairs(graphs)) {
             String node1 = nodePair.getNode1();
             String node2 = nodePair.getNode2();

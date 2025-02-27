@@ -45,6 +45,10 @@ public final class Params {
      */
     public static final String ALPHA = "alpha";
     /**
+     * Constant <code>FOFC_ALPHA="fofcAlpha"</code>
+     */
+    public static final String FOFC_ALPHA = "fofcAlpha";
+    /**
      * Constant <code>APPLY_R1="applyR1"</code>
      */
     public static final String APPLY_R1 = "applyR1";
@@ -645,9 +649,13 @@ public final class Params {
      */
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     /**
-     * Constant <code>USE_WISHART="useWishart"</code>
+     * Constant <code>TETRAD_TEST_BPC="tetrad_test_bpc"</code>
      */
-    public static final String USE_WISHART = "useWishart";
+    public static final String TETRAD_TEST_BPC = "tetrad_test_bpc";
+    /**
+     * Constant <code>TETRAD_TEST_FOFC="tetrad_test_fofc"</code>
+     */
+    public static final String TETRAD_TEST_FOFC = "tetrad_test_fofc";
     /**
      * Constant <code>CHECK_TYPE="checkType"</code>
      */
@@ -765,7 +773,8 @@ public final class Params {
     /**
      * Constant <code>TIMEOUT="timeout"</code>
      */
-    public static final String TIMEOUT = "timeout";    /**
+    public static final String TIMEOUT = "timeout";
+    /**
      * Constant <code>TEST_TIMEOUT="testTimeout"</code>
      */
     public static final String TEST_TIMEOUT = "testTimeout";
@@ -878,19 +887,22 @@ public final class Params {
      * Constant <code>BOOTSTRAPPING_NUM_THEADS="bootstrappingNumThreads"</code>
      */
     public static final String BOOTSTRAPPING_NUM_THREADS = "bootstrappingNumThreads";
-
     /**
-     * Constant <code>USE_PSEUDOINVERSE="usePseudoinverse"</code>
+     * Constant <code>REGULARIZATION_LAMBDA="regularizationLambda"</code>
      */
-    public static final String USE_PSEUDOINVERSE = "usePseudoinverse";
-    /**
-     * Constant <code>USE_PSEUDOINVERSE_FOR_LATENT="usePseudoinverseForLatent"</code>
-     */
-    public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
+    public static final String REGULARIZATION_LAMBDA = "regularizationLambda";
     /**
      * Constant <code>COMPARE_GRAPH_ALGCOMP="compareGraphAlgcomp"</code>
      */
+    public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";
+    /**
+     * Constant <code>MIN_SAMPLE_SIZE_PER_CELL="minSampleSizePerCell"</code>
+     */
     public static final String MIN_SAMPLE_SIZE_PER_CELL = "minSampleSizePerCell";
+    /**
+     * Constant <code>MIN_PARAM_SAMPLE_SIZE="minParamSampleSize"</code>
+     */
+    public static final String MIN_PARAM_SAMPLE_SIZE = "minParamSampleSize";
     /**
      * Constant <code>MAX_SCORE_DROP="maxScoreDrop"</code>
      */
@@ -912,17 +924,69 @@ public final class Params {
      */
     public static final String ENSURE_MARKOV = "ensureMarkov";
     /**
-     * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
+     * Constant <code>AM_TAYLOR_SERIES_DEGREE="amTaylorSeriesDegree"</code>
      */
-    public static String PC_HEURISTIC = "pcHeuristic";
+    public static final String AM_TAYLOR_SERIES_DEGREE = "amTaylorSeriesDegree";
     /**
-     * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
+     * Constant <code>AM_RESCALE_MIN="amRescaleMin"</code>
      */
-    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
+    public static final String AM_RESCALE_MIN = "amRescaleMin";
     /**
-     * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
+     * Constant <code>AM_RESCALE_MAX="amRescaleMax"</code>
      */
-    public static String EXTRA_EDGE_REMOVAL_STEP = "extraEdgeRemovalStep";
+    public static final String AM_RESCALE_MAX = "amRescaleMax";
+    /**
+     * Constant <code>AM_BETA_ALPHA="amBetaAlpha"</code>
+     */
+    public static final String AM_BETA_ALPHA = "amBetaAlpha";
+    /**
+     * Constant <code>AM_BETA_BETA="amBetaBeta"</code>
+     */
+    public static final String AM_BETA_BETA = "amBetaBeta";
+    /**
+     * Constant <code>AM_DERIVATIVE_MIN="amDerivativeMin"</code>
+     */
+    public static final String AM_DERIVATIVE_MIN = "amDerivativeMin";
+    /**
+     * Constant <code>AM_DERIVATIVE_MAX="amDerivativeMax"</code>
+     */
+    public static final String AM_DERIVATIVE_MAX = "amDerivativeMax";
+    /**
+     * Constant <code>AM_FIRST_DERIVATIVE_MIN="amFirstDerivMin"</code>
+     */
+    public static final String AM_FIRST_DERIVATIVE_MIN = "amFirstDerivMin";
+    /**
+     * Constant <code>AM_FIRST_DERIVATIVE_MAX="amFirstDerivMax"</code>
+     */
+    public static final String AM_FIRST_DERIVATIVE_MAX = "amFirstDerivMax";
+    /**
+     * Constant <code>AM_DISTORT_PRE_ERROR="amDistortPreError"</code>
+     */
+    public static final String AM_DISTORTION_TYPE = "amDistortionType";
+    /**
+     * /** Constant <code>AM_DISTORT_PRE_ERROR="amDistortPreError"</code>
+     */
+    public static final String DISTORT_PRE_NOISE = "distortPreNoise";
+    /**
+     * Constant <code>AM_DISTORT_POST_ERROR="amdistortPostNoise"</code>
+     */
+    public static final String DISTORT_POST_NONLINEAR = "distortPostNonlinear";
+    /**
+     * Constant <code>AM_COEF_HIGH="amCoefHigh"</code>
+     */
+    public static final String AM_COEF_HIGH = "amCoefHigh";
+    /**
+     * Constant <code>AM_COEF_LOW="amCoefLow"</code>
+     */
+    public static final String AM_COEF_LOW = "amCoefLow";
+    /**
+     * Constant <code>AM_COEF_SYMMETRIC="amCoefSymmetric"</code>
+     */
+    public static final String AM_COEF_SYMMETRIC = "amCoefSymmetric";
+    /**
+     * Constant <code>AM_ENSURE_INVERTIBILITY="amEnsureInvertibility"</code>
+     */
+    public static final String AM_ENSURE_INVERTIBILITY = "amEnsureInvertibility";
     /**
      * Constant <code>MAX_BLOCKING_PATH_LENGTH="maxBlockingPathLength"</code>
      */
@@ -932,18 +996,29 @@ public final class Params {
      */
     public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
     /**
-     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
+     * Constant <code>MNAR_NUM_EXTRA_INFLUENCES="mnarNumExtraInfluences"</code>
      */
-    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
+    public static final String MNAR_NUM_EXTRA_INFLUENCES = "mnarNumExtraInfluences";
     /**
-     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
+     * Constant <code>MNAR_THRESHOLD="mnarThreshold"</code>
      */
-    public static String CELL_TABLE_TYPE = "cellTableType";
-
-
-    private Params() {
-    }
-
+    public static final String MNAR_THRESHOLD = "mnarThreshold";
+    /**
+     * Constant <code>MNAR_NUM_VARIABLES_WITH_MISSING="mnarNumVariablesWithMissing"</code>
+     */
+    public static final String MNAR_NUM_VARIABLES_WITH_MISSING = "mnarNumVariablesWithMissing";
+    /**
+     * Constant <code>HIDDEN_DIMENSION="hiddenDimension"</code>
+     */
+    public static final String HIDDEN_DIMENSION = "hiddenDimension";
+    /**
+     * Constant <code>HIDDEN_DIMENSION="hiddenDimension"</code>
+     */
+    public static final String HIDDEN_DIMENSIONS = "hiddenDimensions";
+    /**
+     * Constant <code>INPUT_SCALE="inputScale"</code>
+     */
+    public static final String INPUT_SCALE = "inputScale";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -979,7 +1054,7 @@ public final class Params {
             Params.STRUCTURE_PRIOR, Params.SYMMETRIC_FIRST_STEP, Params.TARGET_NAME, Params.THR, Params.THRESHOLD_FOR_NUM_EIGENVALUES,
             Params.THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH, Params.THRESHOLD_NO_RANDOM_DATA_SEARCH, Params.TWO_CYCLE_ALPHA,
             Params.UPPER_BOUND, Params.USE_CORR_DIFF_ADJACENCIES, Params.USE_FAS_ADJACENCIES, Params.USE_GAP,
-            Params.USE_MAX_P_ORIENTATION_HEURISTIC, Params.USE_SKEW_ADJACENCIES, Params.USE_WISHART, Params.VAR_HIGH,
+            Params.USE_MAX_P_ORIENTATION_HEURISTIC, Params.USE_SKEW_ADJACENCIES, Params.TETRAD_TEST_BPC, Params.VAR_HIGH,
             Params.VAR_LOW, Params.VERBOSE
     ));
     private static final Set<String> BOOTSTRAPPING_PARAMS = new HashSet<>(Arrays.asList(
@@ -992,6 +1067,33 @@ public final class Params {
             Params.SAVE_BOOTSTRAP_GRAPHS,
             Params.SEED
     ));
+    /**
+     * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
+     */
+    public static String PC_HEURISTIC = "pcHeuristic";
+    /**
+     * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
+     */
+    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
+    /**
+     * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
+     */
+    public static String EXTRA_EDGE_REMOVAL_STEP = "extraEdgeRemovalStep";
+    /**
+     * Constant <code>MIN_COUNT_PER_CELL="minCountPerCell"</code>
+     */
+    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
+    /**
+     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
+     */
+    public static String CELL_TABLE_TYPE = "cellTableType";
+    /**
+     * Constant <code>CELL_COUNT_TYPE="cellCountType"</code>
+     */
+    public static String MC_ALPHA = "mcAlpha";
+
+    private Params() {
+    }
 
     /**
      * <p>getAlgorithmParameters.</p>

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -45,13 +46,14 @@ public class PagAdjacencyPrecision implements Statistic {
     /**
      * Calculates the adjacency precision of the estimated graph compared to the true graph.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters The parameters
      * @return The adjacency precision value.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
 
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(pag, estGraph);

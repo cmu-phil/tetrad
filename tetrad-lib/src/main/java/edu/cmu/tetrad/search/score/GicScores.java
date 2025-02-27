@@ -67,8 +67,8 @@ public class GicScores implements Score {
     private boolean calculateRowSubsets = false;
     //    private boolean calculateSquareEuclideanNorms = false;
     private double penaltyDiscount = 1;
-    // True if the pseudo-inverse should be used.
-    private boolean usePseudoInverse = false;
+    // Regularization constant.
+    private double regularizationConstant = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -145,7 +145,7 @@ public class GicScores implements Score {
         double varry;
 
         try {
-            varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, this.usePseudoInverse);
+            varry = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, this.regularizationConstant);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -355,12 +355,12 @@ public class GicScores implements Score {
     }
 
     /**
-     * Sets whether to use the pseudo-inverse when calculating the score.
+     * Sets the regularization constant for the model.
      *
-     * @param usePseudoInverse True if so.
+     * @param regularizationConstant The regularization constant to be set.
      */
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
+    public void setRegularizationConstant(double regularizationConstant) {
+        this.regularizationConstant = regularizationConstant;
     }
 
     /**

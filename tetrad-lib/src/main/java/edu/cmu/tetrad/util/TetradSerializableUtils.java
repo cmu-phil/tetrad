@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,14 +21,7 @@
 
 package edu.cmu.tetrad.util;
 
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.jet.random.Beta;
-import cern.jet.random.BreitWigner;
-import cern.jet.random.Normal;
-import cern.jet.random.Uniform;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+import org.ejml.simple.SimpleMatrix;
 
 import javax.swing.text.Document;
 import java.io.*;
@@ -68,10 +61,9 @@ public class TetradSerializableUtils {
      */
     private static final Class<?>[] safelySerializableTypes = {
             String.class, Class.class, Date.class, Collection.class, Map.class,
-            Matrix.class, Document.class, Normal.class, Uniform.class,
-            BreitWigner.class, Beta.class, Vector.class, Number.class,
-            DoubleMatrix2D.class, DoubleMatrix1D.class, RealMatrix.class,
-            NumberFormat.class, RealVector.class
+            Matrix.class, Document.class,
+            Vector.class, Number.class, SimpleMatrix.class,
+            SimpleMatrix.class, NumberFormat.class
     };
 
     /**

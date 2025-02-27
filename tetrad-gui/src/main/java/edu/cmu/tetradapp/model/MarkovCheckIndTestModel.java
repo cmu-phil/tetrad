@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SessionModel;
 
@@ -61,7 +62,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     /**
      * The parameters.
      */
-    private final Parameters parameters;
+    private final Parameters /**/parameters;
     /**
      * The name of this model.
      */
@@ -104,6 +105,8 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
         this.dataModel = dataModel.getSelectedDataModel();
         this.graph = graphSource.getGraph();
         this.parameters = parameters;
+
+        this.parameters.set(Params.MC_ALPHA, 0.05);
 
         if (knowlegeBox != null) {
             this.knowledge = knowlegeBox.getKnowledge();

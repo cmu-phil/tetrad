@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
@@ -59,13 +60,14 @@ public class IdaAverageSquaredDistance implements Statistic {
      * Calculates the value of the IDA Average Squared Distance statistic. Assumes the true SEM IM has been passed in
      * through the constructor.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters The parameters
      * @return The calculated value of the IDA Average Squared Distance statistic.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (!estGraph.paths().isLegalMpdag()) {
             return Double.NaN;
         }

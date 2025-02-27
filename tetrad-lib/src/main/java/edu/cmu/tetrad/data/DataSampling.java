@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -87,8 +88,9 @@ public final class DataSampling {
                     : getRowIndexesWithoutReplacement(dataSet, sampleSize, randomGenerator);
 
             // create a new dataset containing selected rows and selected columns
+            Matrix matrix = dataSet.getDoubleData();
             BoxDataSet boxDataSet = new BoxDataSet(
-                    new VerticalDoubleDataBox(dataSet.getDoubleData().getSelection(selectedRows, selectedColumns).transpose().toArray()),
+                    new VerticalDoubleDataBox(matrix.view(selectedRows, selectedColumns).mat().transpose().toArray()),
                     dataSet.getVariables());
             boxDataSet.setKnowledge(dataSet.getKnowledge());
             datasets.add(boxDataSet);

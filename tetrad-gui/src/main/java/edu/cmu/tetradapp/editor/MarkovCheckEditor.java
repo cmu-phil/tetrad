@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
@@ -184,6 +183,14 @@ public class MarkovCheckEditor extends JPanel {
      */
     private JLabel andersonDarlingPLabelIndep;
     /**
+     * The label for the Fisher combined p.
+     */
+    private JLabel fisherCombinedPLabelDep;
+    /**
+     * The label for the Fisher combined p.
+     */
+    private JLabel fisherCombinedLabelIndep;
+    /**
      * Sort direction.
      */
     private int sortDir;
@@ -225,6 +232,7 @@ public class MarkovCheckEditor extends JPanel {
         setPreferredSize(new Dimension(1100, 600));
 
         conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
+        conditioningSetTypeJComboBox.addItem("Ordered Local Markov using MBs");
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
@@ -242,6 +250,9 @@ public class MarkovCheckEditor extends JPanel {
                     break;
                 case "Ordered Local Markov":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
+                    break;
+                case "Ordered Local Markov using MBs":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MB);
                     break;
                 case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.MARKOV_BLANKET);
@@ -606,33 +617,64 @@ public class MarkovCheckEditor extends JPanel {
     private void refreshResult(MarkovCheckIndTestModel model, JTable tableIndep, JTable tableDep,
                                AbstractTableModel tableModelIndep, AbstractTableModel tableModelDep,
                                DoubleTextField percent, boolean clear) {
-        SwingUtilities.invokeLater(() -> {
-            setTest();
+        new WatchedProcess() {
+            @Override
+            public void watch() {
+                setTest();
 
-            tableModelIndep.fireTableDataChanged();
-            tableModelDep.fireTableDataChanged();
+                tableModelIndep.fireTableDataChanged();
+                tableModelDep.fireTableDataChanged();
 
-            model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
+                model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
 
-            model.getMarkovCheck().setPercentResample(percent.getValue());
-            model.getMarkovCheck().generateResults(true, clear);
-
-            if (checkDependentDistribution.isSelected()) {
-                if (clear) {
-                    model.getMarkovCheck().generateResults(true, true);
-                    model.getMarkovCheck().generateResults(false, false);
-                } else {
-                    model.getMarkovCheck().generateResults(false, false);
-                    model.getMarkovCheck().generateResults(false, false);
-                }
-            } else {
+                model.getMarkovCheck().setPercentResample(percent.getValue());
                 model.getMarkovCheck().generateResults(true, clear);
-            }
 
-            tableModelIndep.fireTableDataChanged();
-            tableModelDep.fireTableDataChanged();
-            updateTables(model, tableIndep, tableDep);
-        });
+                if (checkDependentDistribution.isSelected()) {
+                    if (clear) {
+                        model.getMarkovCheck().generateResults(true, true);
+                        model.getMarkovCheck().generateResults(false, false);
+                    } else {
+                        model.getMarkovCheck().generateResults(false, false);
+                        model.getMarkovCheck().generateResults(false, false);
+                    }
+                } else {
+                    model.getMarkovCheck().generateResults(true, clear);
+                }
+
+                tableModelIndep.fireTableDataChanged();
+                tableModelDep.fireTableDataChanged();
+                updateTables(model, tableIndep, tableDep);
+            }
+        };
+
+//        SwingUtilities.invokeLater(() -> {
+//            setTest();
+//
+//            tableModelIndep.fireTableDataChanged();
+//            tableModelDep.fireTableDataChanged();
+//
+//            model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
+//
+//            model.getMarkovCheck().setPercentResample(percent.getValue());
+//            model.getMarkovCheck().generateResults(true, clear);
+//
+//            if (checkDependentDistribution.isSelected()) {
+//                if (clear) {
+//                    model.getMarkovCheck().generateResults(true, true);
+//                    model.getMarkovCheck().generateResults(false, false);
+//                } else {
+//                    model.getMarkovCheck().generateResults(false, false);
+//                    model.getMarkovCheck().generateResults(false, false);
+//                }
+//            } else {
+//                model.getMarkovCheck().generateResults(true, clear);
+//            }
+//
+//            tableModelIndep.fireTableDataChanged();
+//            tableModelDep.fireTableDataChanged();
+//            updateTables(model, tableIndep, tableDep);
+//        });
     }
 
     private void setTest() {
@@ -833,6 +875,11 @@ public class MarkovCheckEditor extends JPanel {
         a9.add(andersonDarlingPLabelIndep);
         a4.add(a9);
 
+        Box a10 = Box.createHorizontalBox();
+        a10.add(Box.createHorizontalGlue());
+        a10.add(fisherCombinedLabelIndep);
+        a4.add(a10);
+
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
@@ -963,6 +1010,10 @@ public class MarkovCheckEditor extends JPanel {
                         "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
                 );
 
+                fisherCombinedLabelIndep.setText(
+                        "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
+                );
+
                 histogramPanelIndep.removeAll();
                 histogramPanelIndep.add(createHistogramPanel(visiblePairs), BorderLayout.CENTER);
                 histogramPanelIndep.validate();
@@ -1003,6 +1054,10 @@ public class MarkovCheckEditor extends JPanel {
 
                 andersonDarlingPLabelDep.setText(
                         "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
+                );
+
+                fisherCombinedPLabelDep.setText(
+                        "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
                 );
 
                 histogramPanelDep.removeAll();
@@ -1189,6 +1244,11 @@ public class MarkovCheckEditor extends JPanel {
         a9.add(andersonDarlingPLabelDep);
         a4.add(a9);
 
+        Box a10 = Box.createHorizontalBox();
+        a10.add(Box.createHorizontalGlue());
+        a10.add(fisherCombinedPLabelDep);
+        a4.add(a9);
+
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
@@ -1254,6 +1314,14 @@ public class MarkovCheckEditor extends JPanel {
             andersonDarlingPLabelDep = new JLabel();
         }
 
+        if (fisherCombinedLabelIndep == null) {
+            fisherCombinedLabelIndep = new JLabel();
+        }
+
+        if (fisherCombinedPLabelDep == null) {
+            fisherCombinedPLabelDep = new JLabel();
+        }
+
         if (fractionDepLabelIndep == null) {
             fractionDepLabelIndep = new JLabel();
         }
@@ -1277,6 +1345,14 @@ public class MarkovCheckEditor extends JPanel {
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
         andersonDarlingPLabelDep.setText("P-value of the Anderson-Darling test = "
                                          + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
+        fisherCombinedLabelIndep.setText("Fisher combined p= "
+                                         + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
+        fisherCombinedPLabelDep.setText("Fisher combined p = "
+                                        + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "

@@ -269,6 +269,16 @@ public class SvarFas implements IFas {
         this.out = out;
     }
 
+    @Override
+    public void setStartTime(long startTime) {
+
+    }
+
+    @Override
+    public void setTimeout(long timeout) {
+
+    }
+
     /**
      * Searches for nodes at depth 0.
      *

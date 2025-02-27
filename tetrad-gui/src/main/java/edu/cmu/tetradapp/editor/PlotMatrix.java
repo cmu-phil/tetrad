@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -109,7 +109,6 @@ public class PlotMatrix extends JPanel {
         List<Node> nodes = dataSet.getVariables();
         Collections.sort(nodes);
 
-        Collections.sort(nodes);
         Node[] _vars = new Node[nodes.size()];
         for (int i = 0; i < nodes.size(); i++) _vars[i] = nodes.get(i);
 
@@ -331,7 +330,6 @@ public class PlotMatrix extends JPanel {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-//                if (e.getClickCount() == 1) {
                 if (rowSelector.getSelectedIndices().length == 1
                     && colSelector.getSelectedIndices().length == 1) {
                     rowSelector.setSelectedIndices(lastRows);
@@ -346,7 +344,6 @@ public class PlotMatrix extends JPanel {
                     colSelector.setSelectedIndex(colIndex);
                     constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
                 }
-//                }
             }
         });
     }

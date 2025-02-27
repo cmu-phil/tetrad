@@ -21,6 +21,7 @@ public interface Algorithm extends HasParameters, TetradSerializable {
      * @param dataSet    The data set to run to the search on.
      * @param parameters The paramters of the search.
      * @return The result graph.
+     * @throws InterruptedException if any.
      */
     Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException;
 

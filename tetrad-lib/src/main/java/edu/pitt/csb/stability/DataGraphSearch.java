@@ -58,6 +58,7 @@ public abstract class DataGraphSearch {
      *
      * @param data a {@link edu.cmu.tetrad.data.DataSet} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.lang.InterruptedException if any.
      */
     public abstract Graph search(DataSet data) throws InterruptedException;
 }

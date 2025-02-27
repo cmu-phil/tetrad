@@ -366,7 +366,7 @@ public class GeneralizedSemIm implements Im, Simulator {
             value = variableValues.get(term);
 
             return Objects.requireNonNullElseGet(value, () ->
-                    RandomUtil.getInstance().nextNormal(0, 1));
+                    RandomUtil.getInstance().nextGaussian(0, 1));
         };
 
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {

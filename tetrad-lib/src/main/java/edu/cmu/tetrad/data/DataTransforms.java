@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.data;
 
 
-import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
@@ -289,7 +288,7 @@ public class DataTransforms {
             totalSampleSize += dataSet.getNumRows();
         }
 
-        int numColumns = dataSets.get(0).getNumColumns();
+        int numColumns = dataSets.getFirst().getNumColumns();
         Matrix allData = new Matrix(totalSampleSize, numColumns);
         int q = 0;
         int r;
@@ -307,7 +306,7 @@ public class DataTransforms {
             q += r;
         }
 
-        return new BoxDataSet(new VerticalDoubleDataBox(allData.transpose().toArray()), dataSets.get(0).getVariables());
+        return new BoxDataSet(new VerticalDoubleDataBox(allData.transpose().toArray()), dataSets.getFirst().getVariables());
     }
 
     /**
@@ -369,7 +368,8 @@ public class DataTransforms {
         int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        return new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()), data.getVariables());
+        Matrix matrix = data.getDoubleData();
+        return new BoxDataSet(new VerticalDoubleDataBox(matrix.view(rows, cols).mat().transpose().toArray()), data.getVariables());
     }
 
     /**
@@ -413,7 +413,8 @@ public class DataTransforms {
             cols[i] = i;
         }
 
-        return new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()), data.getVariables());
+        Matrix matrix = data.getDoubleData();
+        return new BoxDataSet(new VerticalDoubleDataBox(matrix.view(rows, cols).mat().transpose().toArray()), data.getVariables());
     }
 
     /**
@@ -435,7 +436,8 @@ public class DataTransforms {
         int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
+        Matrix matrix = data.getDoubleData();
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix.view(rows, cols).mat().transpose().toArray()),
                 data.getVariables());
         boxDataSet.setKnowledge(data.getKnowledge());
         return boxDataSet;
@@ -461,8 +463,9 @@ public class DataTransforms {
             cols[i] = i;
         }
 
+        Matrix matrix = data.getDoubleData();
         BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(
-                data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
+                matrix.view(rows, cols).mat().transpose().toArray()),
                 data.getVariables());
         boxDataSet.setKnowledge(data.getKnowledge());
 
@@ -506,12 +509,14 @@ public class DataTransforms {
         int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
+        Matrix matrix1 = data.getDoubleData();
         BoxDataSet boxDataSet1 = new BoxDataSet(new VerticalDoubleDataBox(
-                data.getDoubleData().getSelection(_rows1, cols).transpose().toArray()),
+                matrix1.view(_rows1, cols).mat().transpose().toArray()),
                 data.getVariables());
 
+        Matrix matrix = data.getDoubleData();
         BoxDataSet boxDataSet2 = new BoxDataSet(new VerticalDoubleDataBox(
-                data.getDoubleData().getSelection(_rows2, cols).transpose().toArray()),
+                matrix.view(_rows2, cols).mat().transpose().toArray()),
                 data.getVariables());
 
         List<DataSet> ret = new ArrayList<>();
@@ -592,11 +597,11 @@ public class DataTransforms {
     public static List<DataSet> shuffleColumns2(List<DataSet> dataSets) {
         List<Node> vars = new ArrayList<>();
 
-        List<Node> variables = dataSets.get(0).getVariables();
+        List<Node> variables = dataSets.getFirst().getVariables();
         RandomUtil.shuffle(variables);
 
         for (Node node : variables) {
-            Node _node = dataSets.get(0).getVariable(node.getName());
+            Node _node = dataSets.getFirst().getVariable(node.getName());
 
             if (_node != null) {
                 vars.add(_node);
@@ -881,7 +886,7 @@ public class DataTransforms {
 
         for (int j = 0; j < data2.getNumColumns(); j++) {
             double sum = 0.0;
-             int count = 0;
+            int count = 0;
 
             for (int i = 0; i < data2.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {
@@ -920,6 +925,18 @@ public class DataTransforms {
         return data2;
     }
 
+    /**
+     * Standardizes the columns of the given data matrix by centering and scaling. For each column representing a
+     * continuous variable, the method calculates the mean and standard deviation, subtracts the mean from each value,
+     * and divides by the standard deviation. Discrete variables are ignored.
+     *
+     * @param data      The input data matrix to be standardized. Each column corresponds to a variable, and each row
+     *                  represents an observation.
+     * @param variables A list of nodes representing the variables in the data. The type of each variable (e.g.,
+     *                  continuous or discrete) determines whether the variable will be standardized.
+     * @return A new standardized data matrix where each continuous variable has been mean-centered and normalized by
+     * its standard deviation.
+     */
     public static Matrix standardizeData(Matrix data, List<Node> variables) {
         Matrix data2 = data.copy();
 
@@ -1005,47 +1022,10 @@ public class DataTransforms {
     }
 
     /**
-     * <p>standardizeData.</p>
+     * Centers the values in the given array by subtracting the mean of the array from each element.
      *
-     * @param data a {@link cern.colt.list.DoubleArrayList} object
-     * @return a {@link cern.colt.list.DoubleArrayList} object
-     */
-    public static DoubleArrayList standardizeData(DoubleArrayList data) {
-        DoubleArrayList data2 = new DoubleArrayList(data.size());
-
-        double sum = 0.0;
-
-        for (int i = 0; i < data.size(); i++) {
-            sum += data.get(i);
-        }
-
-        double mean = sum / data.size();
-
-        for (int i = 0; i < data.size(); i++) {
-            data2.add(data.get(i) - mean);
-        }
-
-        double norm = 0.0;
-
-        for (int i = 0; i < data2.size(); i++) {
-            double v = data2.get(i);
-            norm += v * v;
-        }
-
-        norm = FastMath.sqrt(norm / (data2.size() - 1));
-
-        for (int i = 0; i < data2.size(); i++) {
-            data2.set(i, data2.get(i) / norm);
-        }
-
-        return data2;
-    }
-
-    /**
-     * <p>center.</p>
-     *
-     * @param d an array of  objects
-     * @return an array of  objects
+     * @param d the array of double values to be centered
+     * @return a new array where each element is the original value minus the mean of the input array
      */
     public static double[] center(double[] d) {
         double sum = 0.0;
@@ -1142,7 +1122,7 @@ public class DataTransforms {
         int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        return data.getSelection(rows, cols);
+        return data.view(rows, cols).mat();
     }
 
     /**
@@ -1153,8 +1133,8 @@ public class DataTransforms {
      * @param dest   a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static void copyColumn(Node node, DataSet source, DataSet dest) {
-        int sourceColumn = source.getColumn(node);
-        int destColumn = dest.getColumn(node);
+        int sourceColumn = source.getColumnIndex(node);
+        int destColumn = dest.getColumnIndex(node);
         if (sourceColumn < 0) {
             throw new NullPointerException("The given node was not in the source dataset");
         }
@@ -1282,57 +1262,95 @@ public class DataTransforms {
 
     /**
      * Scales the continuous variables in the given DataSet to have values in the range [-1, 1].
-     *
-     * For each continuous column, the method computes the maximum of the absolute values of the minimum and maximum
-     * of the column, and divides all values in that column by this maximum value. Discrete columns are not affected.
+     * <p>
+     * For each continuous column, the method computes the maximum of the absolute values of the minimum and maximum of
+     * the column, and divides all values in that column by this maximum value. Discrete columns are not affected.
      *
      * @param dataSet The DataSet containing variables to be scaled.
+     * @param scaleMin The minimum value to scale to.
+     * @param scaleMax The maximum value to scale to.
      * @return A new DataSet with scaled continuous variables, while discrete variables remain unchanged.
      */
-    public static DataSet scale(DataSet dataSet, double scale) {
+    public static DataSet scale(DataSet dataSet, double scaleMin, double scaleMax) {
         dataSet = dataSet.copy();
 
         // For each continuous column, find the min and max of the column, then max(abs(min, max)), then divide the column by that value.
         // Ignore the discrete columns.
 
         for (Node node : dataSet.getVariables()) {
-            if (node instanceof ContinuousVariable) {
-                int j = dataSet.getColumn(node);
-
-                double min = Double.POSITIVE_INFINITY;
-                double max = Double.NEGATIVE_INFINITY;
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    double value = dataSet.getDouble(i, j);
-                    if (value < min) {
-                        min = value;
-                    }
-                    if (value > max) {
-                        max = value;
-                    }
-                }
-
-//                double _max = Math.max(Math.abs(min), Math.abs(max)) * scale;
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    double value = dataSet.getDouble(i, j);
-                    dataSet.setDouble(i, j, scaleToMinusOneToOne(value, min, max, scale));
-
-//                    dataSet.setDouble(i, j, (value / _max) * scale);
-                }
-            }
+            scale(dataSet, scaleMin, scaleMax, node);
         }
 
         return dataSet;
     }
 
-    private static double scaleToMinusOneToOne(double value, double a, double b, double scale) {
-        if (a == b) {
-            throw new IllegalArgumentException("Lower and upper bounds must not be the same.");
+    /**
+     * Scales the values of a specified node in the given dataset to a specified range [scaleMin, scaleMax].
+     * This method only processes nodes that are instances of ContinuousVariable.
+     *
+     * @param dataSet the dataset containing the values to be scaled
+     * @param scaleMin the minimum value of the target range
+     * @param scaleMax the maximum value of the target range
+     * @param node the node corresponding to the column in the dataset to be scaled
+     */
+    public static void scale(DataSet dataSet, double scaleMin, double scaleMax, Node node) {
+        if (node instanceof ContinuousVariable) {
+            int j = dataSet.getColumnIndex(node);
+
+            double min = Double.POSITIVE_INFINITY;
+            double max = Double.NEGATIVE_INFINITY;
+
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                double value = dataSet.getDouble(i, j);
+                if (value < min) {
+                    min = value;
+                }
+                if (value > max) {
+                    max = value;
+                }
+            }
+
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                double value = dataSet.getDouble(i, j);
+                dataSet.setDouble(i, j, scale(value, min, max, scaleMin, scaleMax));
+            }
         }
-        return 2 * scale * (value - a) / (b - a) - scale;
     }
 
+//    private static double scale(double value, double a, double b, double scaleMin, double scaleMax) {
+//        if (a == b) {
+//            throw new IllegalArgumentException("Lower and upper bounds must not be the same.");
+//        }
+//        return 2 * scaleMax * (value - a) / (b - a) - scaleMin;
+//    }
+
+    /**
+     * Scales a value from one range to another.
+     *
+     * @param value     The value to scale
+     * @param dataMin   The minimum value of the data range
+     * @param dataMax   The maximum value of the data range
+     * @param scaleMin  The minimum value of the scale range
+     * @param scaleMax  The maximum value of the scale range
+     * @return          The scaled value
+     * @throws IllegalArgumentException if dataMin is equal to dataMax
+     */
+    public static double scale(double value, double dataMin, double dataMax, double scaleMin, double scaleMax) {
+        if (dataMax == dataMin) {
+            throw new IllegalArgumentException("dataMin and dataMax cannot be the same (division by zero).");
+        }
+        return scaleMin + (value - dataMin) * (scaleMax - scaleMin) / (dataMax - dataMin);
+    }
+
+    /**
+     * Scales the columns of the provided dataset based on the given scale factors. Only continuous variables in the
+     * dataset are scaled. Discrete variables are ignored. The method returns a new dataset with scaled values, leaving
+     * the original dataset unmodified.
+     *
+     * @param dataSet the input dataset to be scaled
+     * @param scales  an array of scale factors, where each scale corresponds to a column in the dataset
+     * @return a new dataset with the continuous columns scaled by the given factors
+     */
     public static DataSet scale(DataSet dataSet, double[] scales) {
         dataSet = dataSet.copy();
 
@@ -1341,7 +1359,7 @@ public class DataTransforms {
 
         for (Node node : dataSet.getVariables()) {
             if (node instanceof ContinuousVariable) {
-                int j = dataSet.getColumn(node);
+                int j = dataSet.getColumnIndex(node);
 
                 double scale = scales[j];
 

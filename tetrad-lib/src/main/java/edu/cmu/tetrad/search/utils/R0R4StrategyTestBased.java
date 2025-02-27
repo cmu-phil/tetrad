@@ -171,7 +171,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
-        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, new HashSet<>(), test, depth);
+        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, new HashSet<>(), test, depth, null);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -211,7 +211,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         if (blockingType == BlockingType.RECURSIVE) {
             blocking = SepsetFinder.getPathBlockingSetRecursive(graph, x, y, new HashSet<>(path), maxLength, Set.of());
         } else if (blockingType == BlockingType.GREEDY) {
-            blocking = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(path), test, depth);
+            blocking = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(path), test, depth, null);
         } else {
             throw new IllegalArgumentException("Unknown blocking type.");
         }

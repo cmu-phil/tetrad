@@ -32,8 +32,8 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -176,11 +176,11 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             variables.add(newVar);
 
             dataSet.addVariable(newVar);
-            int newVarIndex = dataSet.getColumn(newVar);
+            int newVarIndex = dataSet.getColumnIndex(newVar);
             int numCases = dataSet.getNumRows();
 
             for (int l = 0; l < numCases; l++) {
-                Object dataCell = dataSet.getObject(l, dataSet.getColumn(node));
+                Object dataCell = dataSet.getObject(l, dataSet.getColumnIndex(node));
                 int dataCellIndex = ((DiscreteVariable) node).getIndex(dataCell.toString());
 
                 if (dataCellIndex == ((DiscreteVariable) node).getIndex(cat))
@@ -239,7 +239,8 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
             double chisq = (ll0 - ll1);
             int df = this.variablesPerNode.get(y).size();
-            double p = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(chisq);
+//            double p = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(chisq);
+            double p = StatUtils.getChiSquareP(df, chisq);
 
             if (Double.isNaN(p)) {
                 throw new RuntimeException("Undefined p-value encountered when testing " +

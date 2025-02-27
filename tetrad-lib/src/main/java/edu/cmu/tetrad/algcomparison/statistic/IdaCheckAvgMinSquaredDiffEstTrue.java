@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.IdaCheck;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -50,14 +51,15 @@ public class IdaCheckAvgMinSquaredDiffEstTrue implements Statistic {
      * Calculates the average minimum squared difference between the estimated and true values for a given data model
      * and graphs.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters The parameters
      * @return The average minimum squared difference between the estimated and true values.
      * @throws IllegalArgumentException if the data model is null.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (!estGraph.paths().isLegalMpdag()) {
             return Double.NaN;
         }

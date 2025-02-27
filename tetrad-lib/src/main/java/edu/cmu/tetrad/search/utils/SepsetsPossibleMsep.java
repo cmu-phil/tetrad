@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -76,9 +76,10 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * @param i     The first node
      * @param k     The second node
      * @param depth The depth of the search
+     * @param order The order of the nodes, used for some implementations.
      * @return The set of nodes that form the sepset between node i and node k, or null if no sepset exists
      */
-    public Set<Node> getSepset(Node i, Node k, int depth) throws InterruptedException {
+    public Set<Node> getSepset(Node i, Node k, int depth, List<Node> order) throws InterruptedException {
         Set<Node> condSet = getCondSetContaining(i, k, null, this.maxDiscriminatingPathLength);
 
         if (condSet == null) {
@@ -114,7 +115,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * {@inheritDoc}
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException {
-        Set<Node> sepset = getSepset(i, k, this.depth);
+        Set<Node> sepset = getSepset(i, k, this.depth, null);
         return sepset != null && !sepset.contains(j);
     }
 

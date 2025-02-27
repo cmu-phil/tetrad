@@ -67,6 +67,7 @@ public class DataForCalibrationRfci {
      *
      * @param args an array of {@link java.lang.String} objects
      * @throws java.io.IOException if any.
+     * @throws java.lang.InterruptedException if any.
      */
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -390,7 +391,8 @@ public class DataForCalibrationRfci {
         }
 
         System.out.println("Making dag");
-        return RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, numEdges, 30, 15, 15, false, true);//randomGraphRandomForwardEdges(vars, 0,numEdges);
+        return RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, numEdges,
+                30, 15, 15, false, true, -1);//randomGraphRandomForwardEdges(vars, 0,numEdges);
     }
 
     /**
@@ -411,6 +413,7 @@ public class DataForCalibrationRfci {
      * @param depth           a int
      * @param truePag         a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.lang.InterruptedException if any.
      */
     public Graph learnBNRFCI(DataSet bootstrapSample, int depth, Graph truePag) throws InterruptedException {
         final IndTestFisherZ test = new IndTestFisherZ(bootstrapSample, 0.001);

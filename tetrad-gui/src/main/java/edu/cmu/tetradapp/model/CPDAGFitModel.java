@@ -115,24 +115,24 @@ public final class CPDAGFitModel implements SessionModel {
             throw new IllegalArgumentException("Sorry, I was expecting the same number of data sets as result graphs.");
         }
 
-        if (dataModels.get(0).isDiscrete()) {
+        if (dataModels.getFirst().isDiscrete()) {
             this.bayesPms = new ArrayList<>();
             this.bayesIms = new ArrayList<>();
 
             for (int i = 0; i < dataModels.size(); i++) {
-                DataSet dataSet = (DataSet) dataModels.get(0);
-                Graph dag = GraphTransforms.dagFromCpdag(graphs.get(0), null);
+                DataSet dataSet = (DataSet) dataModels.getFirst();
+                Graph dag = GraphTransforms.dagFromCpdag(graphs.getFirst(), null);
                 BayesPm pm = new BayesPmWrapper(dag, new DataWrapper(dataSet)).getBayesPm();
                 this.bayesPms.add(pm);
                 this.bayesIms.add(estimate(dataSet, pm));
             }
-        } else if (dataModels.get(0).isContinuous()) {
+        } else if (dataModels.getFirst().isContinuous()) {
             this.semPms = new ArrayList<>();
             List<SemIm> semIms = new ArrayList<>();
 
             for (int i = 0; i < dataModels.size(); i++) {
-                DataSet dataSet = (DataSet) dataModels.get(0);
-                Graph dag = GraphTransforms.dagFromCpdag(graphs.get(0), null);
+                DataSet dataSet = (DataSet) dataModels.getFirst();
+                Graph dag = GraphTransforms.dagFromCpdag(graphs.getFirst(), null);
 
                 try {
                     SemPm pm = new SemPm(dag);
@@ -141,7 +141,7 @@ public final class CPDAGFitModel implements SessionModel {
                 } catch (Exception e) {
                     e.printStackTrace();
 
-                    Graph mag = GraphTransforms.zhangMagFromPag(graphs.get(0));
+                    Graph mag = GraphTransforms.zhangMagFromPag(graphs.getFirst());
 //                    Ricf.RicfResult result = estimatePag(dataSet, mag);
 
                     SemGraph graph = new SemGraph(mag);

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -145,7 +145,7 @@ public class Lofs {
         }
 
         this.cpdag = graph;
-        this.variables = dataSets.get(0).getVariables();
+        this.variables = dataSets.getFirst().getVariables();
 
         List<DataSet> dataSets2 = new ArrayList<>();
 
@@ -219,8 +219,8 @@ public class Lofs {
             graph = GraphUtils.undirectedGraph(skeleton);
             return patelTauOrientation(graph, 0.90);
         } else if (this.rule == Rule.FastICA) {
-            FastIca fastIca = new FastIca(this.dataSets.get(0).getDoubleData(),
-                    this.dataSets.get(0).getNumColumns());
+            FastIca fastIca = new FastIca(this.dataSets.getFirst().getDoubleData(),
+                    this.dataSets.getFirst().getNumColumns());
             FastIca.IcaResult result = fastIca.findComponents();
             System.out.println(result.getW());
             return new EdgeListGraph();
@@ -297,7 +297,7 @@ public class Lofs {
     private List<Regression> getRegressions() {
         if (this.regressions == null) {
             List<Regression> regressions = new ArrayList<>();
-            this.variables = this.dataSets.get(0).getVariables();
+            this.variables = this.dataSets.getFirst().getVariables();
 
             for (DataSet dataSet : this.dataSets) {
                 regressions.add(new RegressionDataset(dataSet));
@@ -1315,8 +1315,8 @@ public class Lofs {
      * @return A List of double arrays containing the extracted x and y data.
      */
     private List<double[]> extractData(DataSet data, Node _x, Node _y) {
-        int xIndex = data.getColumn(_x);
-        int yIndex = data.getColumn(_y);
+        int xIndex = data.getColumnIndex(_x);
+        int yIndex = data.getColumnIndex(_y);
 
         double[][] _data = data.getDoubleData().transpose().toArray();
 
@@ -1370,8 +1370,8 @@ public class Lofs {
      * @return A list containing the X-values and Y-values as double arrays.
      */
     private List<double[]> prepareData(DataSet concatData, Node _x, Node _y) {
-        int xIndex = concatData.getColumn(_x);
-        int yIndex = concatData.getColumn(_y);
+        int xIndex = concatData.getColumnIndex(_x);
+        int yIndex = concatData.getColumnIndex(_y);
 
         double[] xData = concatData.getDoubleData().getColumn(xIndex).toArray();
         double[] yData = concatData.getDoubleData().getColumn(yIndex).toArray();
@@ -1508,7 +1508,7 @@ public class Lofs {
     private Graph igci(Graph graph) {
         if (this.dataSets.size() > 1) throw new IllegalArgumentException("Expecting exactly one data set for IGCI.");
 
-        DataSet dataSet = this.dataSets.get(0);
+        DataSet dataSet = this.dataSets.getFirst();
         Matrix matrix = dataSet.getDoubleData();
 
         Graph _graph = new EdgeListGraph(graph.getNodes());
@@ -1831,7 +1831,7 @@ public class Lofs {
 
             DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumn(target);
+            int targetCol = dataSet.getColumnIndex(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -1844,7 +1844,7 @@ public class Lofs {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumn(regressor);
+                int regressorCol = dataSet.getColumnIndex(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -1934,7 +1934,7 @@ public class Lofs {
 
             DataSet dataSet = this.dataSets.get(m);
 
-            int targetCol = dataSet.getColumn(target);
+            int targetCol = dataSet.getColumnIndex(target);
 
             for (int i = 0; i < dataSet.getNumRows(); i++) {
                 if (isNaN(dataSet.getDouble(i, targetCol))) {
@@ -1947,7 +1947,7 @@ public class Lofs {
                     break;
                 }
 
-                int regressorCol = dataSet.getColumn(regressor);
+                int regressorCol = dataSet.getColumnIndex(regressor);
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     if (isNaN(dataSet.getDouble(i, regressorCol))) {
@@ -2043,8 +2043,8 @@ public class Lofs {
         if (this._data == null) {
             this._data = DataTransforms.centerData(this.matrices.get(0));
         }
-        int xIndex = this.dataSets.get(0).getColumn(this.dataSets.get(0).getVariable(x.getName()));
-        int yIndex = this.dataSets.get(0).getColumn(this.dataSets.get(0).getVariable(y.getName()));
+        int xIndex = this.dataSets.getFirst().getColumnIndex(this.dataSets.getFirst().getVariable(x.getName()));
+        int yIndex = this.dataSets.getFirst().getColumnIndex(this.dataSets.getFirst().getVariable(y.getName()));
         double[] xCol = this._data.getColumn(xIndex).toArray();
         double[] yCol = this._data.getColumn(yIndex).toArray();
         int N = xCol.length;
@@ -2142,20 +2142,20 @@ public class Lofs {
     }
 
     /**
-     * Computes the optimal bandwidth for kernel density estimation using the method suggested by Bowman and Azzalini
-     * (1997). The optimal bandwidth is computed as the geometric mean across variables.
+     * Computes the optimal bandwidth for kernel density estimation using the method suggested by Silverman. The
+     * optimal bandwidth is computed as the geometric mean across variables.
      *
-     * @param xCol the input array of values for which the optimal bandwidth needs to be computed
+     * @param x the input array of values for which the optimal bandwidth needs to be computed
      * @return the optimal bandwidth value
      */
-    private double h(double[] xCol) {
-//        % optimal bandwidth suggested by Bowman and Azzalini (1997) p.31 (rks code Matlab)
-//        h *= median(abs(x-median(x)))/0.6745*(4/3/r.h)^0.2, geometric mean across variables.
-
-        double[] g = new double[xCol.length];
-        double median = median(xCol);
-        for (int j = 0; j < xCol.length; j++) g[j] = abs(xCol[j] - median);
-        return median(g) / 0.6745 * pow((4.0 / 3.0) / xCol.length, 0.2);
+    private double h(double[] x) {
+        x = x.clone();
+        var N = x.length;
+        var central = median(x);
+        for (var j = 0; j < N; j++) x[j] = abs(x[j] - central);
+        var mad = median(x);
+        var sigmaRobust = 1.4826 * mad;
+        return 1.06 * sigmaRobust * FastMath.pow(N, -0.20);
     }
 
     /**

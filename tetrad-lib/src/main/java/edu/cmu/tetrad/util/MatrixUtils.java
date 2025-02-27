@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,15 +17,14 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.util;
 
-import cern.colt.matrix.impl.DenseDoubleMatrix1D;
-import cern.colt.matrix.linalg.Property;
-import org.apache.commons.math3.exception.NotStrictlyPositiveException;
-import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
+import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
+import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
 import java.text.DecimalFormat;
@@ -53,44 +52,6 @@ public final class MatrixUtils {
      */
     private MatrixUtils() {
 
-    }
-
-    /**
-     * Make a repeat copy of matrix mat.
-     *
-     * @param mat     matrix to copy
-     * @param nRow    number of repeat copy of row
-     * @param mColumn number of repeat copy of column
-     * @return an array of  objects
-     */
-    public static double[][] repmat(double[][] mat, int nRow, int mColumn) {
-        int numOfRow = mat.length;
-        double[][] repMat = new double[numOfRow * nRow][];
-        for (int row = 0; row < numOfRow; row++) {
-            repMat[row] = MatrixUtils.repeatCopyVector(mat[row], mColumn);
-        }
-
-        MatrixUtils.repeatCopyRow(repMat, --nRow, numOfRow, numOfRow);
-
-        return repMat;
-    }
-
-    /**
-     * Make a n repeat copy of the rows and columns of the matrix mat.
-     *
-     * @param n   number of repeat copy
-     * @param mat an array of  objects
-     * @return an array of  objects
-     */
-    public static double[][] repmat(double[][] mat, int n) {
-        int numOfRow = mat.length;
-        double[][] repMat = new double[numOfRow * n][];
-        for (int row = 0; row < numOfRow; row++) {
-            repMat[row] = MatrixUtils.repeatCopyVector(mat[row], n);
-        }
-
-        MatrixUtils.repeatCopyRow(repMat, --n, numOfRow, numOfRow);
-        return repMat;
     }
 
     /**
@@ -173,8 +134,7 @@ public final class MatrixUtils {
      * @param tolerance A double &gt;= 0.
      * @return Ibid.
      */
-    public static boolean equals(double[][] ma, double[][] mb,
-                                 double tolerance) {
+    public static boolean equals(double[][] ma, double[][] mb, double tolerance) {
         return new Matrix(ma).equals(new Matrix(mb), tolerance);
     }
 
@@ -188,8 +148,17 @@ public final class MatrixUtils {
      * @return Ibid.
      */
     public static boolean equals(double[] va, double[] vb, double tolerance) {
-        return new Property(tolerance).equals(new DenseDoubleMatrix1D(va),
-                new DenseDoubleMatrix1D(vb));
+        if (va.length != vb.length) {
+            return false;
+        }
+
+        for (int i = 0; i < va.length; i++) {
+            if (FastMath.abs(va[i] - vb[i]) > tolerance) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -252,8 +221,8 @@ public final class MatrixUtils {
             indices[i] = j;
         }
 
-        return new Matrix(m).getSelection(indices,
-                indices).toArray();
+        Matrix matrix = new Matrix(m);
+        return matrix.view(indices, indices).mat().toArray();
     }
 
     /**
@@ -311,17 +280,6 @@ public final class MatrixUtils {
      */
     public static double[] product(double[][] ma, double[] mb) {
         return new Matrix(ma).times(new Vector(mb)).toArray();
-    }
-
-    /**
-     * <p>outerProduct.</p>
-     *
-     * @param ma an array of  objects
-     * @param mb an array of  objects
-     * @return an array of  objects
-     */
-    public static double[][] outerProduct(double[] ma, double[] mb) {
-        return TetradAlgebra.multOuter(new Vector(ma), new Vector(mb)).toArray();
     }
 
     /**
@@ -460,7 +418,7 @@ public final class MatrixUtils {
      */
     public static double[][] scalarProduct(double scalar, double[][] m) {
         Matrix _m = new Matrix(m);
-        return _m.scalarMult(scalar).toArray();
+        return _m.scale(scalar).toArray();
     }
 
     /**
@@ -517,18 +475,27 @@ public final class MatrixUtils {
         return arr;
     }
 
+    /**
+     * Calculates the implied covariance matrix from the given edge coefficient matrix and error covariance matrix. This
+     * method assumes that the provided matrices satisfy the necessary mathematical properties for the computation.
+     *
+     * @param edgeCoef the edge coefficient matrix, representing direct effects among variables. Must not contain
+     *                 undefined (NaN) values.
+     * @param errCovar the error covariance matrix, representing variances and covariances of errors. Must not contain
+     *                 undefined (NaN) values.
+     * @return the implied covariance matrix, computed as ((I - B)⁻¹) Cov(e) ((I - B)⁻¹)ᵀ, where B is the edge
+     * coefficient matrix and Cov(e) is the error covariance matrix.
+     * @throws IllegalArgumentException if either the edge coefficient matrix or the error covariance matrix contains
+     *                                  undefined (NaN) values.
+     */
     public static Matrix impliedCovar(Matrix edgeCoef, Matrix errCovar) {
         if (MatrixUtils.containsNaN(edgeCoef)) {
             System.out.println(edgeCoef);
-            throw new IllegalArgumentException("Edge coefficient matrix must not "
-                                               + "contain undefined values. Probably the search put them "
-                                               + "there.");
+            throw new IllegalArgumentException("Edge coefficient matrix must not " + "contain undefined values. Probably the search put them " + "there.");
         }
 
         if (MatrixUtils.containsNaN(errCovar)) {
-            throw new IllegalArgumentException("Error covariance matrix must not "
-                                               + "contain undefined values. Probably the search put them "
-                                               + "there.");
+            throw new IllegalArgumentException("Error covariance matrix must not " + "contain undefined values. Probably the search put them " + "there.");
         }
 
 //        TetradMatrix g = TetradMatrix.identity(edgeCoef.rows()).minus(edgeCoef);
@@ -712,14 +679,14 @@ public final class MatrixUtils {
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isPositiveDefinite(Matrix matrix) {
-        RealMatrix realMatrix = org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(matrix.toArray());
-        EigenDecomposition eigenDecomposition = new EigenDecomposition(realMatrix);
-        double[] eigenvalues = eigenDecomposition.getRealEigenvalues();
-        for (double eigenvalue : eigenvalues) {
-            if (eigenvalue <= 0) {
+        SimpleEVD<SimpleMatrix> eig = matrix.getDataCopy().eig();
+
+        for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
+            if (eig.getEigenvalue(i).getReal() <= 0) {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -730,9 +697,12 @@ public final class MatrixUtils {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix cholesky(Matrix covar) {
-        RealMatrix L = new org.apache.commons.math3.linear.CholeskyDecomposition(
-                org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(covar.toArray())).getL();
-        return new Matrix(L.getData());
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+        DMatrixRMaj _M = covar.getDataCopy().getMatrix();
+        DMatrixRMaj L = new DMatrixRMaj(_M.getNumRows(), _M.getNumCols());
+        chol.decompose(_M);
+        chol.getT(L);
+        return new Matrix(new SimpleMatrix(L));
     }
 
     /**
@@ -814,15 +784,34 @@ public final class MatrixUtils {
         return MatrixUtils.toString(m, nf, variables);
     }
 
-    private static String toString(double[][] m, NumberFormat nf) {
+    /**
+     * Converts a 2D array of doubles into a String representation using the specified
+     * NumberFormat. This method delegates the formatting process to MatrixUtils.toString.
+     *
+     * @param m the 2D double array to be converted to a string
+     * @param nf the NumberFormat to use for formatting the numbers in the array
+     * @return a String representation of the 2D array formatted using the specified NumberFormat
+     */
+    public static String toString(double[][] m, NumberFormat nf) {
         return MatrixUtils.toString(m, nf, null);
     }
 
     /**
-     * Copies the given array, using a standard scientific notation number formatter and beginning each line with the
-     * given lineInit. The number format is DecimalFormat(" 0.0000;-0.0000").
+     * Converts a two-dimensional array representing a matrix into a string
+     * representation using the specified number format and variable names.
+     *
+     * @param m the matrix to convert, represented as a two-dimensional array
+     *          of double values. Can be null.
+     * @param nf the number format to use for formatting the individual matrix
+     *           elements. Must not be null.
+     * @param variables a list of variable names corresponding to the columns
+     *                  of the matrix. If null, default variable names will
+     *                  be generated.
+     * @return a string representation of the matrix. If the matrix is null
+     *         or empty, a default message is returned.
+     * @throws NullPointerException if the provided number format is null.
      */
-    private static String toString(double[][] m, NumberFormat nf, List<String> variables) {
+    public static String toString(double[][] m, NumberFormat nf, List<String> variables) {
         String result;
         if (nf == null) {
             throw new NullPointerException("NumberFormat must not be null.");
@@ -1090,9 +1079,7 @@ public final class MatrixUtils {
 
     //=========================PRIVATE METHODS===========================//
     private static String nullMessage() {
-        return "\n"
-               + "\t"
-               + "<Matrix is null>";
+        return "\n" + "\t" + "<Matrix is null>";
     }
 
     /**
@@ -1106,8 +1093,7 @@ public final class MatrixUtils {
         while (difference > 0) {
             difference -= (++order);
             if (difference < 0) {
-                throw new IllegalArgumentException(
-                        "Illegal length for vech: " + vech.length);
+                throw new IllegalArgumentException("Illegal length for vech: " + vech.length);
             }
         }
         return order;
@@ -1141,46 +1127,4 @@ public final class MatrixUtils {
 
         return copy;
     }
-
-    /**
-     * <p>transposeWithoutCopy.</p>
-     *
-     * @param apacheData a {@link org.apache.commons.math3.linear.RealMatrix} object
-     * @return a {@link org.apache.commons.math3.linear.RealMatrix} object
-     */
-    public static RealMatrix transposeWithoutCopy(RealMatrix apacheData) {
-        return new AbstractRealMatrix(apacheData.getColumnDimension(), apacheData.getRowDimension()) {
-            @Override
-            public int getRowDimension() {
-                return apacheData.getColumnDimension();
-            }
-
-            @Override
-            public int getColumnDimension() {
-                return apacheData.getRowDimension();
-            }
-
-            @Override
-            public RealMatrix createMatrix(int rowDimension, int columnDimension) throws NotStrictlyPositiveException {
-                return apacheData.createMatrix(rowDimension, columnDimension);
-            }
-
-            @Override
-            public RealMatrix copy() {
-                throw new IllegalArgumentException("Can't copy");
-            }
-
-            @Override
-            public double getEntry(int i, int j) throws OutOfRangeException {
-                //                throw new UnsupportedOperationException();
-                return apacheData.getEntry(j, i);
-            }
-
-            @Override
-            public void setEntry(int i, int j, double v) throws OutOfRangeException {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
 }

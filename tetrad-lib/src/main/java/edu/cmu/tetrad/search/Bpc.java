@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndTestGSquare;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
@@ -139,6 +140,7 @@ public final class Bpc {
      * their latents as parents.
      *
      * @return This graph.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
@@ -251,7 +253,8 @@ public final class Bpc {
             if (this.dataSet != null) {
                 this.tetradTest = new TetradTestContinuous(this.dataSet, type, alpha);
             } else {
-                this.tetradTest = new TetradTestContinuous(getCovarianceMatrix(), type, alpha);
+//                throw new IllegalArgumentException("Expecting a dataset.");
+                this.tetradTest = new TetradTestContinuous(new CorrelationMatrix(this.covarianceMatrix), type, alpha);
             }
         }
         this.labels = new int[numVariables()];
@@ -893,7 +896,7 @@ public final class Bpc {
 
                 ClusterSignificance clusterSignificance = new ClusterSignificance(variables, covarianceMatrix);
                 clusterSignificance.setCheckType(checkType);
-                List<Integer> cluster = ClusterSignificance.getInts(currentCluster);
+                List<Integer> cluster = MathUtils.getInts(currentCluster);
                 if (!clusterSignificance.significant(cluster, alpha)) {
                     continue;
                 }

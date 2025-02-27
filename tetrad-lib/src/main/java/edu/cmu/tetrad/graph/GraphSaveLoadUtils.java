@@ -824,13 +824,13 @@ public class GraphSaveLoadUtils {
                         }
 
                         List<Edge.Property> properties = edgeTypeProbability.getProperties();
-                        if (properties != null && properties.size() > 0) {
+                        if (properties != null && !properties.isEmpty()) {
                             for (Edge.Property property : properties) {
                                 edgeTypeString.append(" ").append(property.toString());
                             }
                         }
 
-                        NumberFormat nf = new DecimalFormat("0.000");
+                        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
                         label.append("\\n[").append(edgeTypeString).append("]:").append(nf.format(edgeTypeProbability.getProbability()));
                     }

@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.LinearGaussian;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -16,10 +14,10 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on
-// * Poisosn Prior algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
-// */
+/**
+ * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on
+ * Poisosn Prior algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
+ */
 //@TestOfIndependence(
 //        name = "Poisson Prior Test",
 //        command = "poisson-test",
@@ -56,7 +54,7 @@ public class PoissonPriorTest implements IndependenceWrapper {
             score = new PoissonPriorScore((DataSet) dataSet, precomputeCovariances);
         }
         score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
-        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
+        score.setLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -91,7 +89,7 @@ public class PoissonPriorTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.PRECOMPUTE_COVARIANCES);
         params.add(Params.POISSON_LAMBDA);
-        params.add(Params.USE_PSEUDOINVERSE);
+        params.add(Params.REGULARIZATION_LAMBDA);
         return params;
     }
 }

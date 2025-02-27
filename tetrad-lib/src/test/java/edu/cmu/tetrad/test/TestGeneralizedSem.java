@@ -414,7 +414,7 @@ public class TestGeneralizedSem {
         Vector e = new Vector(5);
 
         for (int i = 0; i < e.size(); i++) {
-            e.set(i, RandomUtil.getInstance().nextNormal(0, 1));
+            e.set(i, RandomUtil.getInstance().nextGaussian(0, 1));
         }
 
         Vector record1 = semIm.simulateOneRecord(e);
@@ -438,7 +438,7 @@ public class TestGeneralizedSem {
         List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < numVars; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
-        Graph graph = RandomGraph.randomGraphRandomForwardEdges(nodes, 0, numVars, 30, 15, 15, false, true);
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(nodes, 0, numVars, 30, 15, 15, false, true, -1);
 
         SemPm spm = new SemPm(graph);
 

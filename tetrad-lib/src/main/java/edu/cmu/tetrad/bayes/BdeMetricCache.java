@@ -471,7 +471,7 @@ public final class BdeMetricCache {
      * in the above code the name comes from a node in the graph of the BayesPm.
      */
     private int getVarIndex(String name) {
-        return this.dataSet.getColumn(this.dataSet.getVariable(name));
+        return this.dataSet.getColumnIndex(this.dataSet.getVariable(name));
     }
 
     /**

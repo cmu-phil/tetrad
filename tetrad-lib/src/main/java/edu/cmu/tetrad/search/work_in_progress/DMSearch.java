@@ -258,6 +258,7 @@ public class DMSearch {
      * <p>search.</p>
      *
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.lang.InterruptedException if any.
      */
     public Graph search() throws InterruptedException {
 

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -25,8 +25,9 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleMatrix;
+import org.ejml.simple.SimpleSVD;
 
 import static org.apache.commons.math3.util.FastMath.*;
 
@@ -236,7 +237,7 @@ public class FastIca {
      */
     public static void center(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
-            Vector u = x.getRow(i);
+            Vector u = x.row(i);
             double mean = mean(u);
 
             for (int j = 0; j < x.getNumColumns(); j++) {
@@ -322,9 +323,9 @@ public class FastIca {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * Sets whether verbose output should be enabled or disabled for the algorithm.
      *
-     * @param verbose True, if so.
+     * @param verbose A boolean value. If true, verbose output will be enabled; if false, it will be disabled.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -360,7 +361,7 @@ public class FastIca {
             this.wInit = new Matrix(this.numComponents, this.numComponents);
             for (int i = 0; i < this.wInit.getNumRows(); i++) {
                 for (int j = 0; j < this.wInit.getNumColumns(); j++) {
-                    this.wInit.set(i, j, RandomUtil.getInstance().nextNormal(0, 1));
+                    this.wInit.set(i, j, RandomUtil.getInstance().nextGaussian(0, 1));
                 }
             }
         } else if (this.wInit.getNumRows() != this.wInit.getNumColumns()) {
@@ -382,11 +383,12 @@ public class FastIca {
         }
 
         // Whiten.
-        Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
+        Matrix cov = this.X.times(this.X.transpose()).scale(1.0 / n);
 
-        SingularValueDecomposition s = new SingularValueDecomposition(cov.getApacheData());
-        Matrix D = new Matrix(s.getS().getData());
-        Matrix U = new Matrix(s.getU().getData());
+        SimpleSVD<SimpleMatrix> s = cov.getDataCopy().svd();
+
+        Matrix D = new Matrix(s.getW());
+        Matrix U = new Matrix(s.getU());
 
         for (int i = 0; i < D.getNumRows(); i++) {
 
@@ -397,7 +399,7 @@ public class FastIca {
         cov.sqrt();
 
         Matrix K = D.times(U.transpose());
-        K = K.getPart(0, this.numComponents - 1, 0, p - 1);
+        K = K.getPart(0, this.numComponents, 0, p);
 
         Matrix X1 = K.times(this.X);
 
@@ -437,12 +439,12 @@ public class FastIca {
                 TetradLogger.getInstance().log("Component " + (i + 1));
             }
 
-            Vector w = wInit.getRow(i);
+            Vector w = wInit.row(i);
 
             if (i > 0) {
                 for (int u = 0; u < i; u++) {
-                    double k = w.dotProduct(W.getRow(u));
-                    w = w.minus(W.getRow(u).scalarMult(k));
+                    double k = w.dotProduct(W.row(u));
+                    w = w.minus(W.row(u).scalarMult(k));
                 }
             }
 
@@ -478,7 +480,7 @@ public class FastIca {
                 Vector v1 = new Vector(X.getNumRows());
 
                 for (int k = 0; k < X.getNumRows(); k++) {
-                    v1.set(k, mean(xgwx.getRow(k)));
+                    v1.set(k, mean(xgwx.row(k)));
                 }
 
                 Vector g_wx = new Vector(X.getNumColumns());
@@ -601,8 +603,9 @@ public class FastIca {
         int p = X.getNumColumns();
         Matrix W = wInit;
 
-        SingularValueDecomposition sW = new SingularValueDecomposition(W.getApacheData());
-        Matrix D = new Matrix(sW.getS().getData());
+        SimpleSVD<SimpleMatrix> sW = W.getDataCopy().svd();
+
+        Matrix D = new Matrix(sW.getW());
         for (int i = 0; i < D.getNumRows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
         Matrix WTemp = new Matrix(sW.getU()).times(D);
@@ -628,7 +631,7 @@ public class FastIca {
                 }
             }
 
-            Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
+            Matrix v1 = gwx.times(X.transpose().scale(1.0 / p));
             Matrix g_wx = gwx.like();
 
             for (int i = 0; i < g_wx.getNumRows(); i++) {
@@ -642,16 +645,16 @@ public class FastIca {
             Vector V20 = new Vector(numComponents);
 
             for (int k = 0; k < numComponents; k++) {
-                V20.set(k, mean(g_wx.getRow(k)));
+                V20.set(k, mean(g_wx.row(k)));
             }
 
             Matrix v2 = V20.diag();
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getApacheData());
+            SimpleSVD<SimpleMatrix> sW1 = (W1.getDataCopy()).svd();
             Matrix U = new Matrix(sW1.getU());
-            Matrix sD = new Matrix(sW1.getS());
+            Matrix sD = new Matrix(sW1.getW());
             for (int i = 0; i < sD.getNumRows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 
@@ -688,7 +691,7 @@ public class FastIca {
      */
     private void scale(Matrix x) {
         for (int i = 0; i < x.getNumRows(); i++) {
-            Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
+            Vector u = x.row(i).scalarMult(1.0 / rms(x.row(i)));
             x.assignRow(i, u);
         }
     }

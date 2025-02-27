@@ -396,6 +396,17 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
+            <model name="Expand Discrete Columns" acronym="Expand Columns" help="expandColumns"
+                   category="Manipulation of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>
+                    edu.cmu.tetradapp.model.datamanip.ExpandColumnsWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+            </model>
             <!--<model name="Expand Case Multipliers" acronym="Expand" help="data"-->
             <!--category="Manipulation of Data">-->
             <!--<logger>-->
@@ -689,6 +700,16 @@
                 <params-editor-class>
                     edu.cmu.tetradapp.editor.MissingDataInjectorParamsEditor
                 </params-editor-class>
+            </model>
+            <model name="Add Missingness Indicators" acronym="Missingness Indicators"
+                   help="data" category="Missing Values">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.AddMissingnessIndicatorsWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
             <model name="Standardize Data" acronym="Standardized"
                    help="data" category="Conversion of Data">

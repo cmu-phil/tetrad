@@ -70,7 +70,7 @@ public class PermutationMatrixPair {
      * @return The matrix, permuted columnwise and rowwise, by the specified column and row permutations.
      */
     public Matrix getPermutedMatrix() {
-        return M.getSelection(rowPerm, colPerm);
+        return M.view(rowPerm, colPerm).mat();
     }
 
     /**

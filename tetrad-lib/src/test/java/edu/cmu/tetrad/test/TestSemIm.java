@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
+import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -236,6 +237,9 @@ public class TestSemIm {
         double[][] l = MatrixUtils.cholesky(new Matrix(a)).toArray();
         double[][] lT = MatrixUtils.transpose(l);
         double[][] product = MatrixUtils.product(l, lT);
+
+        new SimpleMatrix(a).print();
+        new SimpleMatrix(product).print();
 
         assertTrue(MatrixUtils.equals(a, product, 1.e-10));
     }

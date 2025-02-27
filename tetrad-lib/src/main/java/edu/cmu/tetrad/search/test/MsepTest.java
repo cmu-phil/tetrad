@@ -31,6 +31,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.Arrays.stream;
+
 /**
  * Checks independence facts for variables associated with the nodes in a given graph by checking m-separation facts on
  * the underlying nodes. We use the IndependenceTest interface here so that this m-separation test can be used in place
@@ -45,6 +47,10 @@ public class MsepTest implements IndependenceTest {
      * A cache of results for independence facts.
      */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    /**
+     * This variable stores a list of selection variables.
+     */
+    private final List<Node> selectionVars;
     /**
      * This variable stores a map that maps each node to a set of its ancestors.
      */
@@ -140,6 +146,9 @@ public class MsepTest implements IndependenceTest {
                 break;
             }
         }
+
+        this.selectionVars = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
     }
 
     /**
@@ -166,6 +175,10 @@ public class MsepTest implements IndependenceTest {
                 break;
             }
         }
+
+        this.selectionVars = facts.getVariables().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
     }
 
     /**
@@ -210,6 +223,7 @@ public class MsepTest implements IndependenceTest {
         } else {
             List<Node> _nodes = new ArrayList<>(nodes);
             _nodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+            _nodes.removeIf(node -> node.getNodeType() == NodeType.SELECTION);
             return _nodes;
         }
     }
@@ -258,10 +272,14 @@ public class MsepTest implements IndependenceTest {
 
         boolean mSeparated;
 
+        Set<Node> _z = new HashSet<>(z);
+
+        if (selectionVars != null) _z.addAll(selectionVars);
+
         if (graph != null) {
-            mSeparated = !getGraph().paths().isMConnectedTo(x, y, z, ancestorMap, isPag);
+            mSeparated = !getGraph().paths().isMConnectedTo(x, y, _z, ancestorMap, isPag);
         } else {
-            mSeparated = independenceFacts.isIndependent(x, y, z);
+            mSeparated = independenceFacts.isIndependent(x, y, _z);
         }
 
         if (this.verbose) {

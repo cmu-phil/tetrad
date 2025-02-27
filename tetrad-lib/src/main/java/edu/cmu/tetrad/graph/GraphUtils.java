@@ -27,7 +27,10 @@ import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -1775,10 +1778,12 @@ public final class GraphUtils {
      * @param nodes   The nodes in the graph.
      * @param sepsets A SepsetProducer that will do the sepset search operation described.
      * @param depth   The depth of the sepset search.
+     * @param order   The order of the nodes, used for some implementations.
      * @param verbose Whether to print verbose output.
+     * @throws InterruptedException if any
      */
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes,
-                                                SepsetProducer sepsets, int depth, boolean verbose) throws InterruptedException {
+                                                SepsetProducer sepsets, int depth, List<Node> order, boolean verbose) throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting extra-edge removal step.");
         }
@@ -1806,7 +1811,7 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c, depth);
+                    Set<Node> sepset = sepsets.getSepset(a, c, depth, order);
 
                     if (sepset != null) {
                         graph.removeEdge(a, c);
@@ -2330,6 +2335,7 @@ public final class GraphUtils {
      * @param knowledge         The knowledge used to determine the orientation of edges.
      * @param verbose           Whether to print verbose output.
      * @param unshieldedTriples A set to store unshielded triples.
+     * @throws InterruptedException if any
      */
     public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, Knowledge knowledge,
                               boolean verbose, Set<Triple> unshieldedTriples) throws InterruptedException {
@@ -2378,7 +2384,7 @@ public final class GraphUtils {
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
                     if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsets.getSepset(x, z, -1);
+                        Set<Node> sepset = sepsets.getSepset(x, z, -1, null);
 
                         if (sepset != null) {
                             pag.removeEdge(x, z);
@@ -2934,7 +2940,7 @@ public final class GraphUtils {
      * @return a list of integers containing the elements of the array
      */
     public static @NotNull List<Integer> asList(int[] choice) {
-        return ClusterSignificance.getInts(choice);
+        return MathUtils.getInts(choice);
     }
 
     /**
@@ -3552,6 +3558,7 @@ public final class GraphUtils {
      * @return The percentage of p-values that are less than the significance level (alpha) used in the test. Returns
      * 0.0 if the number of p-values is less than 5 or if ensureMarkov is false or test instance is invalid.
      * @throws IllegalArgumentException if ensureMarkov is false.
+     * @throws InterruptedException     if any
      */
     public static double localMarkovInitializePValues(Graph dag, boolean ensureMarkov, IndependenceTest test,
                                                       Map<Pair<Node, Node>, Set<Double>> pValues) throws InterruptedException {

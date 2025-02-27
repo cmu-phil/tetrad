@@ -144,7 +144,7 @@ public class TestSepsetMethods {
                         blockingSet = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, -1, graphType == GraphType.PAG);
                     }
                     case BLOCK_PATHS_GREEDY -> {
-                        blockingSet = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(), msepTest, -1);
+                        blockingSet = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(), msepTest, -1, null);
                     }
                     case BLOCK_PATHS_MAX_P -> {
                         try {

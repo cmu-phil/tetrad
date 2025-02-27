@@ -64,6 +64,7 @@ public final class MaxP {
      * Adds colliders to the given graph using the max P rule.
      *
      * @param graph The graph to orient.
+     * @throws InterruptedException if the operation is interrupted
      */
     public synchronized void orient(Graph graph) throws InterruptedException {
         addColliders(graph);

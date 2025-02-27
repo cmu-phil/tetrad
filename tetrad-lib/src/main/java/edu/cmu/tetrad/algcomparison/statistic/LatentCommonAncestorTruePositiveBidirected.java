@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 import java.util.Collections;
@@ -64,7 +65,7 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {

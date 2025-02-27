@@ -214,6 +214,16 @@ public class FasFdr implements IFas {
         this.out = out;
     }
 
+    @Override
+    public void setStartTime(long startTime) {
+
+    }
+
+    @Override
+    public void setTimeout(long timeout) {
+
+    }
+
     /**
      * {@inheritDoc}
      * <p>
@@ -290,7 +300,7 @@ public class FasFdr implements IFas {
             n[i] = variables.indexOf(nodes.get(i));
         }
 
-        Matrix inv = this.cov.getSelection(n, n).inverse();
+        Matrix inv = this.cov.view(n, n).mat().inverse();
         int sampleSize = test.getCov().getSampleSize();
 
         for (int i = 0; i < nodes.size(); i++) {

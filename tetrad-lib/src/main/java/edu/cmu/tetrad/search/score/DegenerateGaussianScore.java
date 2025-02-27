@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,19 +17,17 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.score;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import edu.cmu.tetrad.search.utils.Embedding;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,90 +53,31 @@ public class DegenerateGaussianScore implements Score {
     private final Map<Integer, List<Integer>> embedding;
     // The SEM BIC score.
     private final SemBicScore bic;
-    // The use pseudo inverse flag.
-    private boolean usePseudoInverse = false;
 
     /**
      * Constructs the score using a dataset.
      *
      * @param dataSet               The dataset.
      * @param precomputeCovariances True if covariances should be precomputed.
+     * @param lambda                Regularization constant
      */
-    public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances) {
+    public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances, double lambda) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
         this.variables = dataSet.getVariables();
-        // The number of instances.
-        int n = dataSet.getNumRows();
-        this.embedding = new HashMap<>();
 
-        List<Node> A = new ArrayList<>();
-        List<double[]> B = new ArrayList<>();
+        // Expand the discrete columns to give indicators for each category. For the continuous variables, we
+        // wet the truncation limit to 1, on the contrqact that the first polynomial for any basis will be just
+        // x itself. These are asssumed to be Gaussian for this test. Basis scale -1 will do no scaling.
+        Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
+                dataSet, 1, 1, -1, lambda);
+        DataSet convertedData = embeddedData.embeddedData();
+        this.embedding = embeddedData.embedding();
 
-        int index = 0;
-
-        int i = 0;
-        int i_ = 0;
-        while (i_ < this.variables.size()) {
-
-            Node v = this.variables.get(i_);
-
-            if (v instanceof DiscreteVariable) {
-
-                Map<List<Integer>, Integer> keys = new HashMap<>();
-                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
-                for (int j = 0; j < n; j++) {
-                    List<Integer> key = new ArrayList<>();
-                    key.add(dataSet.getInt(j, i_));
-                    if (!keys.containsKey(key)) {
-                        keys.put(key, i);
-                        keysReverse.put(i, key);
-                        Node v_ = new ContinuousVariable("V__" + ++index);
-                        A.add(v_);
-                        B.add(new double[n]);
-                        i++;
-                    }
-                    B.get(keys.get(key))[j] = 1;
-                }
-
-                // Remove a degenerate dimension.
-                i--;
-                keys.remove(keysReverse.get(i));
-                A.remove(i);
-                B.remove(i);
-//                }
-
-                this.embedding.put(i_, new ArrayList<>(keys.values()));
-
-            } else {
-
-                A.add(v);
-                double[] b = new double[n];
-                for (int j = 0; j < n; j++) {
-                    b[j] = dataSet.getDouble(j, i_);
-                }
-
-                B.add(b);
-                List<Integer> index2 = new ArrayList<>();
-                index2.add(i);
-                this.embedding.put(i_, index2);
-                i++;
-
-            }
-            i_++;
-        }
-        double[][] B_ = new double[n][B.size()];
-        for (int j = 0; j < B.size(); j++) {
-            for (int k = 0; k < n; k++) {
-                B_[k][j] = B.get(j)[k];
-            }
-        }
-
-        RealMatrix D = MatrixUtils.createRealMatrix(B_);
-        this.bic = new SemBicScore(new BoxDataSet(new DoubleDataBox(D.getData()), A), precomputeCovariances);
-        this.bic.setUsePseudoInverse(usePseudoInverse);
+        this.bic = new SemBicScore(convertedData, precomputeCovariances);
+        this.bic.setLambda(lambda);
         this.bic.setStructurePrior(0);
     }
 
@@ -157,7 +96,6 @@ public class DegenerateGaussianScore implements Score {
         for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
         }
-
 
         for (Integer i_ : A) {
             int[] parents_ = new int[B.size()];
@@ -250,14 +188,5 @@ public class DegenerateGaussianScore implements Score {
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
-    }
-
-    /**
-     * Sets the flag to indicate whether to use pseudo inverse in the score calculations.
-     *
-     * @param usePseudoInverse True if pseudo inverse should be used, false otherwise.
-     */
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
     }
 }

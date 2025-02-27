@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -61,10 +61,11 @@ public class SepsetsSet implements SepsetProducer {
      * @param a     the first node
      * @param b     the second node
      * @param depth the depth of the search
+     * @param order The order of the nodes, used for some implementations.
      * @return the set of nodes in the sepset between a and b
      */
     @Override
-    public Set<Node> getSepset(Node a, Node b, int depth) {
+    public Set<Node> getSepset(Node a, Node b, int depth, List<Node> order) {
         return this.sepsets.get(a, b);
     }
 

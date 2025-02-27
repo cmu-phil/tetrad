@@ -188,7 +188,7 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getGraph() {
-        return this.semIms.get(0).getSemPm().getGraph();
+        return this.semIms.getFirst().getSemPm().getGraph();
     }
 
     /**

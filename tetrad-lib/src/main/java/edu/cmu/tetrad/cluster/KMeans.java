@@ -296,8 +296,8 @@ public class KMeans implements ClusteringAlgorithm {
 
         for (int i = 0; i < this.data.getNumRows(); i++) {
             if (this.clusters.get(i) == k) {
-                Vector datum = this.data.getRow(i);
-                Vector center = this.centers.getRow(k);
+                Vector datum = this.data.row(i);
+                Vector center = this.centers.row(k);
                 squaredError += this.metric.dissimilarity(datum, center);
             }
         }
@@ -351,12 +351,12 @@ public class KMeans implements ClusteringAlgorithm {
         int numChanged = 0;
 
         for (int i = 0; i < this.data.getNumRows(); i++) {
-            Vector datum = this.data.getRow(i);
+            Vector datum = this.data.row(i);
             double minDissimilarity = Double.POSITIVE_INFINITY;
             int cluster = -1;
 
             for (int k = 0; k < this.centers.getNumRows(); k++) {
-                Vector center = this.centers.getRow(k);
+                Vector center = this.centers.row(k);
                 double dissimilarity = getMetric().dissimilarity(datum, center);
 
                 if (dissimilarity < minDissimilarity) {
@@ -421,7 +421,7 @@ public class KMeans implements ClusteringAlgorithm {
             cols[j] = j;
         }
 
-        return data.getSelection(rows, cols).copy();
+        return data.view(rows, cols).mat().copy();
     }
 
     private Vector countClusterSizes() {

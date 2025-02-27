@@ -441,7 +441,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
-        Graph graph = graphStack.get(0);
+        Graph graph = graphStack.getFirst();
         for (int i = 1; i < new LinkedList<>(graphStack).size(); i++) {
             graphStack.remove(graphStack.get(i));
         }
@@ -475,7 +475,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         List<DisplayNode> selectedNodes = getSelectedNodes();
 
         if (selectedNodes.size() == 1) {
-            return selectedNodes.get(0);
+            return selectedNodes.getFirst();
         } else {
             return null;
         }
@@ -1002,7 +1002,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return new Rectangle();
         }
 
-        DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(nodes.get(0));
+        DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(nodes.getFirst());
         Rectangle rect = displayNode.getBounds();
 
         for (int i = 1; i < nodes.size(); i++) {
@@ -1027,7 +1027,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
-        DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(nodes.get(0));
+        DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(nodes.getFirst());
         Rectangle rect = displayNode.getBounds();
 
         for (int i = 1; i < nodes.size(); i++) {
@@ -1607,7 +1607,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             firePropertyChange("selectedNodes", null, selection);
         } else {
             if (selection.size() == 1) {
-                firePropertyChange("selectedNode", null, selection.get(0));
+                firePropertyChange("selectedNode", null, selection.getFirst());
             } else {
                 throw new IllegalStateException(
                         "Multiple or null selection detected " + "when single selection mode is set.");
@@ -2110,7 +2110,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     } else if (dragNodes != null) {
                         snapDragGroupFromNegative();
 
-                        Rectangle rect = dragNodes.get(0).getBounds();
+                        Rectangle rect = dragNodes.getFirst().getBounds();
 
                         for (int i = 1; i < dragNodes.size(); i++) {
                             rect = rect.union(dragNodes.get(i).getBounds());
@@ -2227,13 +2227,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     for (EdgeTypeProbability edgeTypeProb : edgeProb) {
                         String type = switch (edgeTypeProb.getEdgeType()) {
                             case nil -> "no edge";
-                            case ta -> nodes.get(0) + " --&gt; " + nodes.get(1);
-                            case at -> nodes.get(0) + " &lt;-- " + nodes.get(1);
-                            case ca -> nodes.get(0) + " o-&gt; " + nodes.get(1);
-                            case ac -> nodes.get(0) + " &lt;-o " + nodes.get(1);
-                            case cc -> nodes.get(0) + " o-o " + nodes.get(1);
-                            case aa -> nodes.get(0) + " &lt;-&gt; " + nodes.get(1);
-                            case tt -> nodes.get(0) + " --- " + nodes.get(1);
+                            case ta -> nodes.getFirst() + " --&gt; " + nodes.get(1);
+                            case at -> nodes.getFirst() + " &lt;-- " + nodes.get(1);
+                            case ca -> nodes.getFirst() + " o-&gt; " + nodes.get(1);
+                            case ac -> nodes.getFirst() + " &lt;-o " + nodes.get(1);
+                            case cc -> nodes.getFirst() + " o-o " + nodes.get(1);
+                            case aa -> nodes.getFirst() + " &lt;-&gt; " + nodes.get(1);
+                            case tt -> nodes.getFirst() + " --- " + nodes.get(1);
                         };
 
                         if (edgeTypeProb.getProbability() > 0d) {

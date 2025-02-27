@@ -153,6 +153,7 @@ public class FasDci {
      * adjacencies in the data.
      *
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
+     * @throws java.lang.InterruptedException if any.
      */
     public SepsetMapDci search() throws InterruptedException {
         TetradLogger.getInstance().log("Starting Fast Adjacency Search (DCI).");

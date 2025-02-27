@@ -312,11 +312,11 @@ public class LinearSineSimulation implements Simulation {
             for (int j = 1; j <= continuousParents.size(); j++) {
                 String key = continuousParents.get(j - 1).toString();
                 if (!bounds.containsKey(key)) {
-                    double m0 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
-                    double m1 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
+                    double m0 = mixedData.getDouble(0, mixedData.getColumnIndex(continuousParents.get(j - 1)));
+                    double m1 = mixedData.getDouble(0, mixedData.getColumnIndex(continuousParents.get(j - 1)));
                     for (int i = 1; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
-                        m0 = FastMath.min(m0, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
-                        m1 = FastMath.max(m1, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
+                        m0 = FastMath.min(m0, mixedData.getDouble(i, mixedData.getColumnIndex(continuousParents.get(j - 1))));
+                        m1 = FastMath.max(m1, mixedData.getDouble(i, mixedData.getColumnIndex(continuousParents.get(j - 1))));
                     }
                     double[] temp = new double[3];
                     temp[0] = m0;
@@ -336,7 +336,7 @@ public class LinearSineSimulation implements Simulation {
                 final String key = "";
 
                 for (int j = 1; j <= continuousParents.size(); j++)
-                    parents[j - 1] = mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1)));
+                    parents[j - 1] = mixedData.getDouble(i, mixedData.getColumnIndex(continuousParents.get(j - 1)));
 
                 if (!intercept.containsKey(key)) {
                     double[] interceptCoefficients = new double[1];
@@ -390,7 +390,7 @@ public class LinearSineSimulation implements Simulation {
 
             double noiseVar = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);
             for (int i = 0; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
-                mixedData.setDouble(i, mixedIndex, mixedData.getDouble(i, mixedIndex) + var * RandomUtil.getInstance().nextNormal(0, noiseVar));
+                mixedData.setDouble(i, mixedIndex, mixedData.getDouble(i, mixedIndex) + var * RandomUtil.getInstance().nextGaussian(0, noiseVar));
             }
         }
         return mixedData;

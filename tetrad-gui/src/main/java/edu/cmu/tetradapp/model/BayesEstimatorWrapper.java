@@ -141,7 +141,7 @@ public class BayesEstimatorWrapper implements SessionModel {
                 this.bayesIms.add(this.bayesIm);
             }
 
-            this.bayesIm = this.bayesIms.get(0);
+            this.bayesIm = this.bayesIms.getFirst();
 //            log(this.bayesIm);
 
         } else {

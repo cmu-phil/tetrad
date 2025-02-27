@@ -44,31 +44,27 @@ import java.util.Set;
 public interface IndependenceTest {
 
     /**
-     * <p>checkIndependence.</p>
+     * Checks the independence between two variables x and y given a conditioning set z.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Set} object
-     * @return an IndependenceResult (see).
-     * @see IndependenceResult
+     * @param x The first variable to test, represented as a Node object.
+     * @param y The second variable to test, represented as a Node object.
+     * @param z The set of conditioning variables, represented as a Set of Node objects.
+     * @return An IndependenceResult object representing the outcome of the independence test.
+     * @throws InterruptedException If the process is interrupted during the execution.
      */
     IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException;
 
     /**
-     * <p>getVariables.</p>
+     * Retrieves the list of variables associated with this independence test.
      *
-     * @return the list of variables over which this independence checker is capable of determining independence
-     * relations.
+     * @return A list of {@link Node} objects representing the variables.
      */
     List<Node> getVariables();
 
     /**
-     * <p>getData.</p>
+     * Retrieves the data model associated with this test.
      *
-     * @return The data model for the independence test, either a DataSet or a CovarianceMatrix.
-     * @see DataSet
-     * @see ICovarianceMatrix
-     * @see DataModel
+     * @return A {@link DataModel} object representing the data model.
      */
     DataModel getData();
 
@@ -112,6 +108,7 @@ public interface IndependenceTest {
      * @param z a {@link edu.cmu.tetrad.graph.Node} object
      * @return The independence result.
      * @see IndependenceResult
+     * @throws java.lang.InterruptedException if any.
      */
     default IndependenceResult checkIndependence(Node x, Node y, Node... z) throws InterruptedException {
         Set<Node> zList = GraphUtils.asSet(z);

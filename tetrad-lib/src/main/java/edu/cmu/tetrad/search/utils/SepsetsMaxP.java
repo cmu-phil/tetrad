@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -65,9 +65,10 @@ public class SepsetsMaxP implements SepsetProducer {
      * @param i     The first node.
      * @param k     The second node.
      * @param depth The depth of the search.
+     * @param order The order of the nodes, used for some implementations.
      * @return The sepset between the two nodes containing the specified set of nodes.
      */
-    public Set<Node> getSepset(Node i, Node k, int depth) throws InterruptedException {
+    public Set<Node> getSepset(Node i, Node k, int depth, List<Node> order) throws InterruptedException {
         return SepsetFinder.getSepsetContainingMaxPHybrid(graph, i, k, null, this.independenceTest, depth);
     }
 
