@@ -75,7 +75,7 @@ public class ConditionalGaussianLikelihood {
     /**
      * Indices of mixedVariables.
      */
-    private final Map<Node, Integer> nodesHash;
+    private Map<Node, Integer> nodesHash;
     /**
      * Continuous data only.
      */
@@ -253,6 +253,13 @@ public class ConditionalGaussianLikelihood {
                     replaced.setInt(i, j, d.getData()[i]);
                 }
             }
+        }
+
+        this.nodesHash = new ConcurrentSkipListMap<>();
+
+        for (int j = 0; j < replaced.getNumColumns(); j++) {
+            Node v = replaced.getVariable(j);
+            this.nodesHash.put(v, j);
         }
 
         return replaced;

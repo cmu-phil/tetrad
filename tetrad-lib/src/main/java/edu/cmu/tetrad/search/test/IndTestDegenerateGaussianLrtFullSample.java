@@ -104,6 +104,10 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
      * values will be used by default.
      */
     private List<Integer> rows;
+    /**
+     * Singularity lambda.
+     */
+    private double lambda;
 
     /**
      * Constructs an instance of the IndTestBasisFunctionLrt class. This constructor initializes the object using the
@@ -163,10 +167,10 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
         BtB = StatUtils.chooseMatrix(BtB, lambda);
 
         // Parallelized inversion using EJML's lower-level operations
-//        SimpleMatrix inverse = new Matrix(BtB).inverse().getData();
+        SimpleMatrix inverse = new Matrix(BtB).chooseInverse(lambda).getData();
 
-        SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
-        CommonOps_DDRM.invert(BtB.getDDRM(), inverse.getDDRM());
+//        SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
+//        CommonOps_DDRM.invert(BtB.getDDRM(), inverse.getDDRM());
 
         return inverse.mult(B.transpose()).mult(X);
     }
@@ -421,5 +425,9 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
         }
 
         return rows;
+    }
+
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 }
