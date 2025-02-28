@@ -45,28 +45,74 @@ public class TestOrderedLocalMarkovProperty {
 
     @Test
     public void test3() {
-        Graph mag1 = GraphUtils.convert("a-->b,b<->c,c<--d");
+        {
+            Graph mag1 = GraphUtils.convert("a-->b,b<->c,c<--d");
 
-        System.out.println("\nmag1 = " + mag1);
+            System.out.println("\nmag1 = " + mag1);
 
-        Set<IndependenceFact> im1 = OrderedLocalMarkovProperty.getModel(mag1);
+            Set<IndependenceFact> im1 = OrderedLocalMarkovProperty.getModel(mag1);
 
-        System.out.println("im1 = ");
+            System.out.println("im1 = ");
 
-        for (IndependenceFact fact : im1) {
-            System.out.println(fact);
+            for (IndependenceFact fact : im1) {
+                System.out.println(fact);
+            }
         }
 
-        Graph mag2 = GraphUtils.convert("a-->b,b<->c,c<->d,b-->d");
+        {
+            Graph mag2 = GraphUtils.convert("a-->b,b<->c,c<->d,b-->d");
 
-        System.out.println("\n\nmag2 = " + mag2);
+            System.out.println("\n\nmag2 = " + mag2);
 
-        Set<IndependenceFact> im2 = OrderedLocalMarkovProperty.getModel(mag2);
+            Set<IndependenceFact> im2 = OrderedLocalMarkovProperty.getModel(mag2);
 
-        System.out.println("im2 = ");
+            System.out.println("im = ");
 
-        for (IndependenceFact fact : im2) {
-            System.out.println(fact);
+            for (IndependenceFact fact : im2) {
+                System.out.println(fact);
+            }
+        }
+
+        {
+            Graph mag3 = GraphUtils.convert("e-->d,a-->b,b<->c,c<->d");
+
+            System.out.println("\n\nmag3 = " + mag3);
+
+            Set<IndependenceFact> im3 = OrderedLocalMarkovProperty.getModel(mag3);
+
+            System.out.println("im = ");
+
+            for (IndependenceFact fact : im3) {
+                System.out.println(fact);
+            }
+        }
+
+        {
+            Graph mag4 = GraphUtils.convert("a-->b,b<->c,c-->d,d<->a");
+
+            System.out.println("\n\nmag4 = " + mag4);
+
+            Set<IndependenceFact> im3 = OrderedLocalMarkovProperty.getModel(mag4);
+
+            System.out.println("im = ");
+
+            for (IndependenceFact fact : im3) {
+                System.out.println(fact);
+            }
+        }
+
+        {
+            Graph mag5 = GraphUtils.convert("a<->b,b<->c,c<->d,d<->e");
+
+            System.out.println("\n\nmag5 = " + mag5);
+
+            Set<IndependenceFact> im3 = OrderedLocalMarkovProperty.getModel(mag5);
+
+            System.out.println("im = ");
+
+            for (IndependenceFact fact : im3) {
+                System.out.println(fact);
+            }
         }
 
     }
