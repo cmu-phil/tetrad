@@ -48,7 +48,7 @@ public class TestOrderedLocalMarkovProperty {
         {
             Graph mag1 = GraphUtils.convert("a-->b,b<->c,c<--d");
 
-            System.out.println("\nmag1 = " + mag1);
+            System.out.println("\nmag = " + mag1);
 
             Set<IndependenceFact> im1 = OrderedLocalMarkovProperty.getModel(mag1);
 
@@ -62,7 +62,7 @@ public class TestOrderedLocalMarkovProperty {
         {
             Graph mag2 = GraphUtils.convert("a-->b,b<->c,c<->d,b-->d");
 
-            System.out.println("\n\nmag2 = " + mag2);
+            System.out.println("\n\nmag = " + mag2);
 
             Set<IndependenceFact> im2 = OrderedLocalMarkovProperty.getModel(mag2);
 
@@ -76,7 +76,7 @@ public class TestOrderedLocalMarkovProperty {
         {
             Graph mag3 = GraphUtils.convert("e-->d,a-->b,b<->c,c<->d");
 
-            System.out.println("\n\nmag3 = " + mag3);
+            System.out.println("\n\nmag = " + mag3);
 
             Set<IndependenceFact> im3 = OrderedLocalMarkovProperty.getModel(mag3);
 
@@ -90,7 +90,7 @@ public class TestOrderedLocalMarkovProperty {
         {
             Graph mag4 = GraphUtils.convert("a-->b,b<->c,c-->d,d<->a");
 
-            System.out.println("\n\nmag4 = " + mag4);
+            System.out.println("\n\nmag = " + mag4);
 
             Set<IndependenceFact> im3 = OrderedLocalMarkovProperty.getModel(mag4);
 
@@ -104,7 +104,7 @@ public class TestOrderedLocalMarkovProperty {
         {
             Graph mag5 = GraphUtils.convert("a<->b,b<->c,c<->d,d<->e");
 
-            System.out.println("\n\nmag5 = " + mag5);
+            System.out.println("\n\nmag = " + mag5);
 
             Set<IndependenceFact> im3 = OrderedLocalMarkovProperty.getModel(mag5);
 
