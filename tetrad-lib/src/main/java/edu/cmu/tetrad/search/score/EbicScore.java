@@ -235,9 +235,9 @@ public class EbicScore implements Score {
     }
 
     /**
-     * Sets the regularization lambda.
+     * Sets the Singularity lambda.
      *
-     * @param lambda The regularization lambda.
+     * @param lambda The Singularity lambda.
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;

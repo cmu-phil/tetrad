@@ -26,6 +26,7 @@ public class OrderedLocalMarkovProperty {
      *            Must be a valid legal MAG; otherwise, an {@code IllegalArgumentException} is thrown.
      * @return A set of {@code IndependenceFact} objects that represent the conditional independencies
      *         for the given input MAG based on the ordered local Markov property.
+     * @throws IllegalArgumentException if the graph is not a legal MAG.
      */
     public static Set<IndependenceFact> getModel(Graph mag) {
         Paths paths = new Paths(mag);

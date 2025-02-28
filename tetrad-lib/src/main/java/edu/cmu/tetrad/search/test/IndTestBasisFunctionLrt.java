@@ -73,7 +73,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      */
     private final Map<Integer, List<Integer>> embedding;
     /**
-     * Regularization lambda.
+     * Singularity lambda.
      */
     private final double lambda;
     /**
@@ -96,7 +96,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      *
      * @param dataSet         the input dataset containing the variables and data rows to be analyzed.
      * @param truncationLimit the limit to truncate the embeddings or basis functions in the data.
-     * @param lambda          Regularization lambda
+     * @param lambda          Singularity lambda
      */
     public IndTestBasisFunctionLrt(DataSet dataSet, int truncationLimit, double lambda) {
         this.dataSet = dataSet;
@@ -113,7 +113,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         // Expand the discrete columns to give indicators for each category. We want to leave a category out if
         // we're not using the enable-regularization option.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, truncationLimit, 1, 1, lambda);
+                dataSet, truncationLimit, 1, 1);
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
 
@@ -195,7 +195,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
         SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
         SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
-        Sigma_PP = StatUtils.regularizeDiagonal(Sigma_PP, lambda);
+        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
 
         // Compute OLS estimate of X given predictors P
         SimpleMatrix beta = Sigma_PP.invert().mult(Sigma_XP.transpose());

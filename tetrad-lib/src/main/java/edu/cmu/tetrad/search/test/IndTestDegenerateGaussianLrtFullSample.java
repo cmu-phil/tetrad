@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -134,7 +135,7 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
         // wet the truncation limit to 1, on the contract that the first polynomial for any basis will be just
         // x itself. These are asssumed to be Gaussian for this test. Basis scale -1 will do no scaling.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, lambda);
+                dataSet, 1, 1, -1);
 
         this.embeddedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
@@ -159,9 +160,11 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
         int numCols = B.getNumCols();
         SimpleMatrix BtB = B.transpose().mult(B);
-        BtB = StatUtils.regularizeDiagonal(BtB, lambda);
+        BtB = StatUtils.chooseMatrix(BtB, lambda);
 
         // Parallelized inversion using EJML's lower-level operations
+//        SimpleMatrix inverse = new Matrix(BtB).inverse().getData();
+
         SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
         CommonOps_DDRM.invert(BtB.getDDRM(), inverse.getDDRM());
 

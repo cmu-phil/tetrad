@@ -110,7 +110,7 @@ public class DeltaTetradTest3 {
         Matrix tetradValues = computeTetradValues(tetrads);
 
         Matrix sigmaTT = derivativeMatrix.transpose().times(sigmaSS).times(derivativeMatrix);
-        Matrix invertedSigmaTT = regularizeAndInvert(sigmaTT);
+        Matrix invertedSigmaTT = sigmaTT.chooseInverse(1e-10);
         Matrix result = tetradValues.transpose().times(invertedSigmaTT).times(tetradValues);
 
         return this.sampleSize * result.get(0, 0);
@@ -323,17 +323,17 @@ public class DeltaTetradTest3 {
         return covariance / array1.length;
     }
 
-    /**
-     * Regularizes and inverts a matrix to prevent singularity issues.
-     *
-     * @param matrix The matrix to invert.
-     * @return The regularized inverse.
-     */
-    private Matrix regularizeAndInvert(Matrix matrix) {
-        double regularization = 1e-10;
-        Matrix regularizedMatrix = matrix.plus(Matrix.identity(matrix.getNumRows()).scale(regularization));
-        return regularizedMatrix.inverse();
-    }
+//    /**
+//     * Regularizes and inverts a matrix to prevent singularity issues.
+//     *
+//     * @param matrix The matrix to invert.
+//     * @return The regularized inverse.
+//     */
+//    private Matrix regularizeAndInvert(Matrix matrix) {
+//        double regularization = 1e-10;
+//        Matrix regularizedMatrix = matrix.plus(Matrix.identity(matrix.getNumRows()).scale(regularization));
+//        return regularizedMatrix.inverse();
+//    }
 
     /**
      * Returns the list of variables in the dataset.

@@ -51,15 +51,15 @@ public class BasisFunctionBicScore implements Score {
      *
      * @param dataSet         the data set on which the score is to be calculated.
      * @param truncationLimit the truncation limit of the basis.
-     * @param lambda          Regularization constant
+     * @param lambda          Singularity lambda
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda) {
         this.variables = dataSet.getVariables();
 
         // Using the Legendre basis.
-        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1,
-                lambda);
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1
+        );
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
@@ -70,7 +70,7 @@ public class BasisFunctionBicScore implements Score {
         this.bic.setPenaltyDiscount(penaltyDiscount);
         this.bic.setLambda(lambda);
 
-        // We will be using regularization in the BIC score calculation so we don't get singularity exceptions.
+        // We will be using a singularity lambda to avoid singularity exceptions.
         this.bic.setLambda(lambda);
 
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.

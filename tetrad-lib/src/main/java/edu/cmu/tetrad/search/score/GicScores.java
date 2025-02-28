@@ -67,8 +67,8 @@ public class GicScores implements Score {
     private boolean calculateRowSubsets = false;
     //    private boolean calculateSquareEuclideanNorms = false;
     private double penaltyDiscount = 1;
-    // Regularization constant.
-    private double regularizationConstant = 0.0;
+    // Singularity lambda.
+    private double singularityLambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -145,7 +145,7 @@ public class GicScores implements Score {
         double varry;
 
         try {
-            varry = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, this.regularizationConstant);
+            varry = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, this.singularityLambda);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -355,12 +355,12 @@ public class GicScores implements Score {
     }
 
     /**
-     * Sets the regularization constant for the model.
+     * Sets the Singularity lambda for the model.
      *
-     * @param regularizationConstant The regularization constant to be set.
+     * @param singularityLambda The Singularity lambda to be set.
      */
-    public void setRegularizationConstant(double regularizationConstant) {
-        this.regularizationConstant = regularizationConstant;
+    public void setSingularityLambda(double singularityLambda) {
+        this.singularityLambda = singularityLambda;
     }
 
     /**

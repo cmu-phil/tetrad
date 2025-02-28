@@ -64,8 +64,8 @@ public class PoissonPriorScore implements Score {
     private boolean calculateRowSubsets;
     // The lambda parameter.
     private double lambda = 3.;
-    // Regularization lambda
-    private double regularizationLambda = 0.0;
+    // Singularity lambda
+    private double singularityLambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -136,7 +136,7 @@ public class PoissonPriorScore implements Score {
 
         try {
             varRy = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets,
-                    this.regularizationLambda);
+                    this.singularityLambda);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -262,12 +262,12 @@ public class PoissonPriorScore implements Score {
     }
 
     /**
-     * Sets the regularization lambda value used in computations.
+     * Sets the Singularity lambda value used in computations.
      *
-     * @param regularizationLambda The regularization lambda parameter to set.
+     * @param singularityLambda The Singularity lambda parameter to set.
      */
-    public void setRegularizationLambda(double regularizationLambda) {
-        this.regularizationLambda = regularizationLambda;
+    public void setSingularityLambda(double singularityLambda) {
+        this.singularityLambda = singularityLambda;
     }
 
     private int[] indices(List<Node> __adj) {

@@ -74,7 +74,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      */
     private final int sampleSize;
     /**
-     * Regularization constant.
+     * Singularity lambda.
      */
     private final double lambda;
     /**
@@ -115,7 +115,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         // wet the truncation limit to 1, on the contract that the first polynomial for any basis will be just
         // x itself. These are asssumed to be Gaussian for this test. Basis scale -1 will do no scaling.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, lambda);
+                dataSet, 1, 1, -1);
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
         this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
@@ -217,7 +217,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
         SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
         SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
-        Sigma_PP = StatUtils.regularizeDiagonal(Sigma_PP, lambda);
+        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
 
         // Compute OLS estimate of X given predictors P
         SimpleMatrix beta = Sigma_PP.invert().mult(Sigma_XP.transpose());

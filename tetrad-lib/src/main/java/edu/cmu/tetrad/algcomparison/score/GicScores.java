@@ -71,7 +71,7 @@ public class GicScores implements ScoreWrapper {
 
         score.setRuleType(ruleType);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        score.setLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+        score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
 
         return score;
     }
@@ -101,7 +101,7 @@ public class GicScores implements ScoreWrapper {
         parameters.add(Params.SEM_GIC_RULE);
         parameters.add(Params.PENALTY_DISCOUNT_ZS);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
-        parameters.add(Params.REGULARIZATION_LAMBDA);
+        parameters.add(Params.SINGULARITY_LAMBDA);
 
         return parameters;
     }

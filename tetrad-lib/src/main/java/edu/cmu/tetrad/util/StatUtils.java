@@ -1951,7 +1951,7 @@ public final class StatUtils {
      * may be extracted using DataUtils.submatrix().
      *
      * @param submatrix a {@link Matrix} object
-     * @param lambda    Regularization constant.
+     * @param lambda    Singularity lambda.
      * @return the given partial correlation.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
@@ -1968,13 +1968,30 @@ public final class StatUtils {
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
     public static double partialCorrelationPrecisionMatrix(Matrix submatrix, double lambda) throws SingularMatrixException {
-        submatrix = regularizeDiagonal(submatrix, lambda);
-        Matrix inverse = submatrix.inverse();
+        Matrix inverse = submatrix.chooseInverse(lambda);
         double r = (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
         if (r < -1) r = -1;
         if (r > 1) r = 1;
         return r;
     }
+
+//    /**
+//     * Regularizes the diagonal of the given matrix by adding a scaled identity matrix. The regularization is achieved
+//     * by creating an identity matrix of the same dimensions as the original matrix and scaling it by the given lambda
+//     * value, then adding it to the original matrix.
+//     *
+//     * @param m      the matrix to be regularized
+//     * @param lambda the scaling factor for the identity matrix to be added to the diagonal
+//     * @return the regularized matrix with the scaled identity matrix added to its diagonal
+//     */
+//    public static Matrix chooseMatrix(Matrix m, double lambda) {
+//        if (lambda <= 0) {
+//            return m;
+//        } else {
+//            Matrix identity = Matrix.identity(m.getNumRows());
+//            return m.plus(identity.scale(lambda));
+//        }
+//    }
 
     /**
      * Regularizes the diagonal of the given matrix by adding a scaled identity matrix. The regularization is achieved
@@ -1985,30 +2002,20 @@ public final class StatUtils {
      * @param lambda the scaling factor for the identity matrix to be added to the diagonal
      * @return the regularized matrix with the scaled identity matrix added to its diagonal
      */
-    public static Matrix regularizeDiagonal(Matrix m, double lambda) {
-        if (lambda == 0.0) return m;
-        Matrix identity = Matrix.identity(m.getNumRows());
-        return m.plus(identity.scale(lambda));
-    }
-
-    /**
-     * Regularizes the diagonal of the given matrix by adding a scaled identity matrix to it.
-     *
-     * @param m the input matrix to be regularized
-     * @param lambda the scaling factor for the identity matrix; if 0.0, the original matrix is returned
-     * @return the matrix with its diagonal regularized by adding a scaled identity matrix
-     */
-    public static SimpleMatrix regularizeDiagonal(SimpleMatrix m, double lambda) {
-        if (lambda == 0.0) return m;
-        SimpleMatrix identity = SimpleMatrix.identity(m.getNumRows());
-        return m.plus(identity.scale(lambda));
+    public static SimpleMatrix chooseMatrix(SimpleMatrix m, double lambda) {
+        if (lambda <= 0) {
+            return m;
+        } else {
+            SimpleMatrix identity = SimpleMatrix.identity(m.getNumRows());
+            return m.plus(identity.scale(lambda));
+        }
     }
 
     /**
      * <p>partialCorrelation.</p>
      *
      * @param covariance a {@link Matrix} object
-     * @param lambda     Regularization lambda
+     * @param lambda     Singularity lambda
      * @param x          a int
      * @param y          a int
      * @param z          a int

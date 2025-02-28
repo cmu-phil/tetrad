@@ -79,7 +79,7 @@ public class ZsbScore implements Score {
     private List<Double> lambdas;
     // The data, if it is set.
     private Matrix data;
-    // True if regularization should be enabled.
+    // Singularity lambda
     private double lambda = 0.0;
 
     /**
@@ -316,7 +316,7 @@ public class ZsbScore implements Score {
     }
 
     /**
-     * Sets the regularization constant.
+     * Sets the Singularity lambda.
      *
      * @param lambda The new value for the lambda parameter.
      */

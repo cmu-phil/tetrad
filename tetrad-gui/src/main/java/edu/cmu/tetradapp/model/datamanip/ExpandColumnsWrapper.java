@@ -69,7 +69,7 @@ public class ExpandColumnsWrapper extends DataWrapper {
             }
 
             DataSet convertedData;
-            convertedData = Embedding.getEmbeddedData(originalData, 1, 1, -1, 0.0).embeddedData();
+            convertedData = Embedding.getEmbeddedData(originalData, 1, 1, -1).embeddedData();
             convertedDataSets.add(convertedData);
         }
 

@@ -551,7 +551,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * @param y      The second node.
      * @param _z     The set of conditioning variables.
      * @param rows   The list of rows to use for calculating the covariance matrix, if necessary.
-     * @param lambda Regularization lambda.
+     * @param lambda Singularity lambda.
      * @return The partial correlation value.
      * @throws SingularMatrixException If a singularity occurs when inverting a matrix.
      */
@@ -691,9 +691,9 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Sets the regularization constant.
+     * Sets the Singularity lambda.
      *
-     * @param lambda Regularization constant.
+     * @param lambda Singularity lambda.
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;
