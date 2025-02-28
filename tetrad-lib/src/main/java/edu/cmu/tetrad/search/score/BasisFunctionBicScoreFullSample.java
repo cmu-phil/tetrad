@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -45,15 +46,15 @@ public class BasisFunctionBicScoreFullSample implements Score {
      */
     private final DataSet embeddedData;
     /**
+     * Singularity lambda.
+     */
+    private final double lambda;
+    /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
      * adjustments in the likelihood penalty term.
      */
     private double penaltyDiscount = 2;
-    /**
-     * Regularization lambda.
-     */
-    private double lambda;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
@@ -61,14 +62,14 @@ public class BasisFunctionBicScoreFullSample implements Score {
      * @param dataSet         the data set on which the score is to be calculated. May contain a mixture of discrete and
      *                        continuous variables.
      * @param truncationLimit the truncation limit of the basis.
-     * @param lambda          Regularization lambda
+     * @param lambda          Singularity lambda
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScoreFullSample(DataSet dataSet, int truncationLimit, double lambda) {
         this.variables = dataSet.getVariables();
 
-        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1,
-                lambda);
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1
+        );
         this.embedding = result.embedding();
         this.lambda = lambda;
         embeddedData = result.embeddedData();
@@ -83,14 +84,25 @@ public class BasisFunctionBicScoreFullSample implements Score {
      * @return A matrix representing the OLS regression coefficients.
      */
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
+        if (lambda < 0) {
+            throw new IllegalArgumentException("The lambda cannot be negative for the basis function");
+        }
+
         int numCols = B.getNumCols();
+
         SimpleMatrix BtB = B.transpose().mult(B);
-        BtB = StatUtils.regularizeDiagonal(BtB, lambda);
+        SimpleMatrix inverse;
 
-        // Parallelized inversion using EJML's lower-level operations
-        SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
+        if (lambda >= 0.0) {
+            BtB = StatUtils.chooseMatrix(BtB, lambda);
+//            inverse = new Matrix(BtB).inverse().getData();
 
-        CommonOps_DDRM.invert(BtB.getDDRM(), inverse.getDDRM());
+//            // Parallelized inversion using EJML's lower-level operations
+            inverse = new SimpleMatrix(numCols, numCols);
+            CommonOps_DDRM.invert(BtB.getDDRM(), inverse.getDDRM());
+        } else {
+            inverse = new Matrix(BtB).chooseInverse(lambda).getData();
+        }
 
         return inverse.mult(B.transpose()).mult(X);
     }

@@ -23,6 +23,7 @@ package edu.cmu.tetrad.util;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
@@ -144,12 +145,14 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * Assigns a part of the given matrix to a specified submatrix while adding the values to the existing data.
-     * The values from the 'from' matrix are added to the corresponding elements of the submatrix defined by the ranges.
+     * Assigns a part of the given matrix to a specified submatrix while adding the values to the existing data. The
+     * values from the 'from' matrix are added to the corresponding elements of the submatrix defined by the ranges.
      *
-     * @param range1 an array of integers representing the row indices of the submatrix to which the values will be assigned
-     * @param range2 an array of integers representing the column indices of the submatrix to which the values will be assigned
-     * @param from a Matrix object providing the values to be added to the specified submatrix
+     * @param range1 an array of integers representing the row indices of the submatrix to which the values will be
+     *               assigned
+     * @param range2 an array of integers representing the column indices of the submatrix to which the values will be
+     *               assigned
+     * @param from   a Matrix object providing the values to be added to the specified submatrix
      */
     public void assignPart(int[] range1, int[] range2, Matrix from) {
         for (int j = 0; j < range1.length; j++) {
@@ -345,11 +348,18 @@ public class Matrix implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix inverse() {
+        if (getData().getNumRows() != getData().getNumCols()) {
+            throw new IllegalArgumentException("Matrix not square.");
+        }
+
         if (getData().getNumRows() == 0) {
             return new Matrix(0, 0);
         }
 
-        return new Matrix(getData().invert());
+        SimpleMatrix inverse = new SimpleMatrix(getNumRows(), getNumColumns());
+        CommonOps_DDRM.invert(data.getDDRM(), inverse.getDDRM());
+
+        return new Matrix(inverse);
     }
 
     /**
@@ -364,6 +374,63 @@ public class Matrix implements TetradSerializable {
 
         if (zeroDimension()) return new Matrix(getNumColumns(), getNumRows());
         return new Matrix(getData().pseudoInverse());
+    }
+
+    /**
+     * Calculates and returns the appropriate inverse of the matrix based on the provided lambda value:
+     * <ul>
+     *     <li>If lambda is <b>0.0</b>, the inverse of the matrix is computed using the standard inversion method.</li>
+     *     <li>If lambda is <b>greater than 0.0</b>, the matrix is regularized by adding lambda to the diagonal,
+     *         ensuring numerical stability for near-singular matrices, and then the inverse is computed.</li>
+     *     <li>If lambda is <b>less than 0.0</b>, the Moore-Penrose pseudoinverse is computed, which is useful for
+     *         non-square or singular matrices.</li>
+     * </ul>
+     * This method is designed to handle a variety of inverse computations depending on the requirements, such as
+     * regularization or handling singular matrices.
+     *
+     * @param lambda A value controlling the method of inversion:
+     *               <ul>
+     *                   <li><code>0.0</code>: Standard matrix inversion.</li>
+     *                   <li><code>&gt; 0.0</code>: Regularized inversion for numerical stabilit. A small value
+     *                   should be chosen.</li>
+     *                   <li><code>&lt; 0.0</code>: Moore-Penrose pseudoinverse.</li>
+     *               </ul>
+     * @return The calculated inverse of the matrix based on the specified lambda value.
+     * @throws IllegalArgumentException If lambda is neither -1.0, 0.0, nor a positive value.
+     */
+    public Matrix chooseInverse(double lambda) {
+        boolean isSquare = getNumRows() == getNumColumns();
+
+        for (int i = 0; i < getData().getNumRows(); i++) {
+            for (int j = 0; j < getData().getNumCols(); j++) {
+                if (Double.isNaN(getData().get(i, j))) {
+                    throw new IllegalArgumentException("Cannot invert a matrix with non-NaN values.");
+                }
+            }
+        }
+
+        if (lambda == 0.0 && isSquare) {
+            try {
+                return inverse();
+            } catch (Exception e) {
+                throw new RuntimeException("Trying to invert a matrix with singularities or NaNs; try regularizing or taking pseudoinverses", e);
+            }
+        } else if (lambda > 0.0 && isSquare) {
+            return regularize(lambda).inverse();
+        } else {
+            return pseudoinverse();
+        }
+    }
+
+    /**
+     * Regularizes the diagonal of the matrix by adding a scaled identity matrix to it.
+     *
+     * @param lambda the scalar value used to scale the identity matrix before adding it to the current matrix
+     * @return a new Matrix object representing the result of adding the scaled identity matrix to the current matrix
+     */
+    public Matrix regularize(double lambda) {
+        Matrix identity = Matrix.identity(getNumRows());
+        return this.plus(identity.scale(lambda));
     }
 
     /**
@@ -514,8 +581,8 @@ public class Matrix implements TetradSerializable {
      * Adds the specified scalar value to each element of the matrix and returns the resulting matrix.
      *
      * @param scalar the scalar value to be added to each element of the matrix
-     * @return a new Matrix instance where each element is the sum of the corresponding element
-     * in the original matrix and the scalar value
+     * @return a new Matrix instance where each element is the sum of the corresponding element in the original matrix
+     * and the scalar value
      */
     public Matrix scalarPlus(double scalar) {
         Matrix newMatrix = copy();
@@ -770,9 +837,11 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * And EJML SimpleMatrix.
+     * Returns the wrapped SimpleMatrix. Be careful with this.
+     *
+     * @return the wrapped SimpleMatrix instance.
      */
-    private SimpleMatrix getData() {
+    public SimpleMatrix getData() {
         return data;
     }
 }

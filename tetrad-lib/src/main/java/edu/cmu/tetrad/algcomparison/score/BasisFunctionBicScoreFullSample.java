@@ -71,7 +71,7 @@ public class BasisFunctionBicScoreFullSample implements ScoreWrapper {
                 = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT),
-                parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+                parameters.getDouble(Params.SINGULARITY_LAMBDA));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         return score;
     }
@@ -101,7 +101,7 @@ public class BasisFunctionBicScoreFullSample implements ScoreWrapper {
 
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.REGULARIZATION_LAMBDA);
+        parameters.add(Params.SINGULARITY_LAMBDA);
 
         return parameters;
     }

@@ -6428,27 +6428,27 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="regularizationLambda">regularizationLambda</h3>
+            id="singularityLambda">singularityLambda</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="regularizationLambda_short_desc">
-                    Lambda for regularization (default 0 for no regularization)
+                    id="singularityLambda_short_desc">
+                    Singularities: Small number >= 0 Add lambda to the the diagonal, < 0 Pseudoinverse
         </span></li>
             <li>Long Description: <span
-                    id="regularizationLambda_long_desc">
-                    Lambda for regularization (default 0 for no regularization)
-        </span></li>
+                    id="singularityLambda_long_desc">
+                    Singularities: Small number >= 0 Add lambda to the the diagonal, < 0 Pseudoinverse
+         </span></li>
             <li>Default Value: <span
-                    id="regularizationLambda_default_value">0</span></li>
+                    id="singularityLambda_default_value">0.0</span></li>
             <li>Lower Bound: <span
-                    id="regularizationLambda_lower_bound">0</span></li>
+                    id="singularityLambda_lower_bound">-Infinity</span></li>
             <li>Upper
                 Bound: <span
-                        id="regularizationLambda_upper_bound">Infinity</span></li>
+                        id="singularityLambda_upper_bound">Infinity</span></li>
             <li>Value
                 Type: <span
-                        id="regularizationLambda_value_type">Double</span></li>
+                        id="singularityLambda_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6563,7 +6563,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 Value: <span
                         id="mnarNumVariablesWithMissing_default_value">5</span></li>
             <li>Lower Bound:
-                <spa
+                <span
                         id="mnarNumVariablesWithMissing_lower_bound">0</span>
             </li>
             <li>Upper
@@ -6953,7 +6953,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 Value: <span
                         id="amEnsureInvertibility_default_value">false</span></li>
             <li>Lower Bound:
-                <spa
+                <span
                         id="amEnsureInvertibility_lower_bound"></span>
             </li>
             <li>Upper

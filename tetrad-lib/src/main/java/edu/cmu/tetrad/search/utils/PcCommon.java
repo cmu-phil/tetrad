@@ -336,7 +336,12 @@ public final class PcCommon implements IGraphSearch {
 
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
-        this.graph = fas.search();
+        try {
+            this.graph = fas.search();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+
         SepsetMap sepsets = fas.getSepsets();
 
         if (this.graph.paths().existsDirectedCycle())

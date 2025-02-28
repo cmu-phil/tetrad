@@ -61,7 +61,7 @@ public class EbicScore implements ScoreWrapper {
         }
 
         score.setGamma(parameters.getDouble(Params.EBIC_GAMMA));
-        score.setLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+        score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
         return score;
     }
 
@@ -89,7 +89,7 @@ public class EbicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.EBIC_GAMMA);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
-        parameters.add(Params.REGULARIZATION_LAMBDA);
+        parameters.add(Params.SINGULARITY_LAMBDA);
         return parameters;
     }
 

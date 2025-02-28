@@ -126,7 +126,7 @@ public class SemBicScore implements Score {
      */
     private RuleType ruleType = RuleType.CHICKERING;
     /**
-     * Regularization lambda.
+     * Singularity lambda.
      */
     private double lambda = 0.0;
 
@@ -190,7 +190,7 @@ public class SemBicScore implements Score {
      * @param covariances         The covariance matrix.
      * @param calculateRowSubsets True if row subsets should be calculated.
      * @param data                a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param lambda              Regularization constant.
+     * @param lambda              Singularity lambda.
      * @return The variance of the residual of the regression of the ith variable on its parents.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
@@ -209,7 +209,7 @@ public class SemBicScore implements Score {
      * @param data                The data matrix.
      * @param covariances         The covariance matrix.
      * @param calculateRowSubsets True if row subsets should be calculated.
-     * @param lambda              Regularization constant.
+     * @param lambda              Singularity lambda.
      * @return The covariance matrix of the regression of the ith variable on its parents and the regression
      * coefficients.
      */
@@ -227,7 +227,7 @@ public class SemBicScore implements Score {
      * @param parents     The indices of the parents.
      * @param data        The data matrix.
      * @param covariances The covariance matrix.
-     * @param lambda      Regularization constant.
+     * @param lambda      Singularity lambda.
      * @param rows        The rows to use.
      * @return The covariance matrix of the regression of the ith variable on its parents and the regression
      */
@@ -237,16 +237,10 @@ public class SemBicScore implements Score {
         int[] all = SemBicScore.concat(i, parents);
         Matrix cov = SemBicScore.getCov(rows, all, all, data, covariances);
         int[] pp = SemBicScore.indexedParents(parents);
-//        Matrix covxx = cov.view(pp, pp).mat();
 
         Matrix covxx = cov.view(pp, pp).mat();
-        covxx = StatUtils.regularizeDiagonal(covxx, lambda);
-
         Matrix covxy = cov.view(pp, new int[]{0}).mat();
-
-        // The regression coefficient vector.
-        Matrix b = covxx.inverse().times(covxy);
-
+        Matrix b = covxx.chooseInverse(lambda).times(covxy);
         return new CovAndCoefs(cov, b);
     }
 
@@ -481,7 +475,7 @@ public class SemBicScore implements Score {
      * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
      * coefficients.
      *
-     * @param lambda Regularization constant.
+     * @param lambda Singularity lambda.
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;

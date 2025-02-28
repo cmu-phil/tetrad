@@ -59,7 +59,7 @@ public class DegenerateGaussianScore implements Score {
      *
      * @param dataSet               The dataset.
      * @param precomputeCovariances True if covariances should be precomputed.
-     * @param lambda                Regularization constant
+     * @param lambda                Singularity lambda
      */
     public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances, double lambda) {
         if (dataSet == null) {
@@ -72,7 +72,7 @@ public class DegenerateGaussianScore implements Score {
         // wet the truncation limit to 1, on the contrqact that the first polynomial for any basis will be just
         // x itself. These are asssumed to be Gaussian for this test. Basis scale -1 will do no scaling.
         Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
-                dataSet, 1, 1, -1, lambda);
+                dataSet, 1, 1, -1);
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
 

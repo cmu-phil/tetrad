@@ -387,11 +387,12 @@ public class Fas implements IFas {
                     for (Edge edge : result.keySet()) {
                         scores.put(edge, result.get(edge));
                     }
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-//                    TetradLogger.getInstance().log(e.getMessage());
+                } catch (InterruptedException e) {
                     pool.shutdown();
-                    return null;
+                    throw e;
+                } catch (ExecutionException e) {
+                    pool.shutdown();
+                    throw new RuntimeException("Possible singularities or NaNs: " + e.getCause());
                 }
             }
 
