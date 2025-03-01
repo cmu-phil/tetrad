@@ -434,7 +434,8 @@ public class Fas implements IFas {
         }
 
         for (Edge edge : new ArrayList<>(edges)) {
-            if (scores.get(edge) != null && scores.get(edge) < 0 || (this.knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()) && (this.knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())))) {
+            if ((scores.get(edge) != null && scores.get(edge) < 0) || (this.knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
+                    && (this.knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())))) {
                 edges.remove(edge);
                 adjacencies.get(edge.getNode1()).remove(edge.getNode2());
                 adjacencies.get(edge.getNode2()).remove(edge.getNode1());
@@ -442,7 +443,7 @@ public class Fas implements IFas {
             }
         }
 
-        for (int d = 1; d <= _depth; d++) {
+        for (int d = 0; d <= _depth; d++) {
             if (verbose) {
                 System.out.println("Depth: " + d);
             }

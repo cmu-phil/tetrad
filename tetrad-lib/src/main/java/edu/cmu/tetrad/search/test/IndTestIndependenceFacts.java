@@ -162,7 +162,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
      * @return The alpha value.
      */
     public double getAlpha() {
-        throw new java.lang.UnsupportedOperationException("Method not implemented");
+        return Double.NaN;
     }
 
     /**

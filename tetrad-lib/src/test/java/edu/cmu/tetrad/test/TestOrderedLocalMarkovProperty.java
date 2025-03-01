@@ -1,8 +1,10 @@
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.OrderedLocalMarkovProperty;
-import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.search.test.IndTestIndependenceFacts;
 import org.junit.Test;
 
 import java.util.Set;
@@ -45,75 +47,60 @@ public class TestOrderedLocalMarkovProperty {
 
     @Test
     public void test3() {
-        {
-            Graph mag1 = GraphUtils.convert("a-->b,b<->c,c<--d");
+        Graph[] mags = new Graph[]{
+                GraphUtils.convert("a-->b,b<->c,c<--d"),
+                GraphUtils.convert("a-->b,b<->c,c<->d,b-->d"),
+                GraphUtils.convert("e-->d,a-->b,b<->c,c<->d"),
+                GraphUtils.convert("a<->b,b<->c,c<->d,d<->e")
+        };
 
-            System.out.println("\nmag = " + mag1);
-
-            Set<IndependenceFact> im1 = OrderedLocalMarkovProperty.getModel(mag1);
-
-            System.out.println("im1 = ");
-
-            for (IndependenceFact fact : im1) {
-                System.out.println(fact);
-            }
-        }
-
-        {
-            Graph mag2 = GraphUtils.convert("a-->b,b<->c,c<->d,b-->d");
-
-            System.out.println("\n\nmag = " + mag2);
-
-            Set<IndependenceFact> im2 = OrderedLocalMarkovProperty.getModel(mag2);
-
+        for (Graph mag : mags) {
+            System.out.println("\nmag = " + mag);
+            Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
             System.out.println("im = ");
 
-            for (IndependenceFact fact : im2) {
+            for (IndependenceFact fact : im) {
                 System.out.println(fact);
             }
         }
+    }
 
-        {
-            Graph mag3 = GraphUtils.convert("e-->d,a-->b,b<->c,c<->d");
+    @Test
+    public void test4() {
 
-            System.out.println("\n\nmag = " + mag3);
+        try {
+            Graph[] mags = new Graph[]{
+                    GraphUtils.convert("a-->b,b<->c,c<--d"),
+                    GraphUtils.convert("a-->b,b<->c,c<->d,b-->d"),
+                    GraphUtils.convert("e-->d,a-->b,b<->c,c<->d"),
+                    GraphUtils.convert("a<->b,b<->c,c<->d,d<->e")
+            };
 
-            Set<IndependenceFact> im3 = OrderedLocalMarkovProperty.getModel(mag3);
+            for (Graph mag : mags) {
+                Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
 
-            System.out.println("im = ");
+                IndependenceFacts facts = new IndependenceFacts();
 
-            for (IndependenceFact fact : im3) {
-                System.out.println(fact);
+                for (IndependenceFact fact : im) {
+                    facts.add(fact);
+                }
+
+                System.out.println("IM:");
+                System.out.println(facts);
+
+                Fci fci = new Fci(new IndTestIndependenceFacts(facts));
+                fci.setStable(false);
+
+                Graph pag = fci.search();
+
+                System.out.println("\npag = " + pag);
+
+                Graph truePag = GraphTransforms.dagToPag(mag);
+
+                System.out.println("truePag = " + truePag);
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-
-        {
-            Graph mag4 = GraphUtils.convert("a-->b,b<->c,c-->d,d<->a");
-
-            System.out.println("\n\nmag = " + mag4);
-
-            Set<IndependenceFact> im3 = OrderedLocalMarkovProperty.getModel(mag4);
-
-            System.out.println("im = ");
-
-            for (IndependenceFact fact : im3) {
-                System.out.println(fact);
-            }
-        }
-
-        {
-            Graph mag5 = GraphUtils.convert("a<->b,b<->c,c<->d,d<->e");
-
-            System.out.println("\n\nmag = " + mag5);
-
-            Set<IndependenceFact> im3 = OrderedLocalMarkovProperty.getModel(mag5);
-
-            System.out.println("im = ");
-
-            for (IndependenceFact fact : im3) {
-                System.out.println(fact);
-            }
-        }
-
     }
 }

@@ -427,6 +427,14 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
         return rows;
     }
 
+    /**
+     * Sets the regularization parameter lambda used in statistical computations or tests.
+     * The lambda parameter often helps to stabilize computations, particularly in the
+     * presence of ill-conditioned problems.
+     *
+     * @param lambda the regularization parameter to be set. Larger values typically result in
+     *               stronger regularization. Must be a non-negative value.
+     */
     public void setLambda(double lambda) {
         this.lambda = lambda;
     }
