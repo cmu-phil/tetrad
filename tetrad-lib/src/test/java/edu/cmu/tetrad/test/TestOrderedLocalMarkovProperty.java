@@ -77,6 +77,8 @@ public class TestOrderedLocalMarkovProperty {
             };
 
             for (Graph mag : mags) {
+                System.out.println("\nTrue MAG = " + mag);
+
                 Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
 
                 IndependenceFacts facts = new IndependenceFacts();
@@ -93,11 +95,13 @@ public class TestOrderedLocalMarkovProperty {
 
                 Graph pag = fci.search();
 
-                System.out.println("\npag = " + pag);
+                System.out.println("\nEstimated PAG = " + pag);
 
                 Graph truePag = GraphTransforms.dagToPag(mag);
 
-                System.out.println("truePag = " + truePag);
+                System.out.println("True PAG = " + truePag);
+
+                System.out.println("\n-----------------------------------------");
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
