@@ -84,9 +84,9 @@ public class BasisFunctionBicScoreFullSample implements Score {
      * @return A matrix representing the OLS regression coefficients.
      */
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
-        if (lambda < 0) {
-            throw new IllegalArgumentException("The lambda cannot be negative for the basis function");
-        }
+//        if (lambda < 0) {
+//            throw new IllegalArgumentException("The lambda cannot be negative for the basis function");
+//        }
 
         int numCols = B.getNumCols();
 

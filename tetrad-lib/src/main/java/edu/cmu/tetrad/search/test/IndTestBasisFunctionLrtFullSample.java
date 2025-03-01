@@ -171,10 +171,9 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         BtB = StatUtils.chooseMatrix(BtB, lambda);
 
         // Parallelized inversion using EJML's lower-level operations
-//        SimpleMatrix inverse = new Matrix(BtB).inverse().getData();
-
-        SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
-        CommonOps_DDRM.invert(BtB.getDDRM(), inverse.getDDRM());
+        SimpleMatrix inverse = new Matrix(BtB).inverse().getData();
+//        SimpleMatrix inverse = new SimpleMatrix(numCols, numCols);
+//        CommonOps_DDRM.invert(BtB.getDDRM(), inverse.getDDRM());
 
         return inverse.mult(B.transpose()).mult(X);
     }

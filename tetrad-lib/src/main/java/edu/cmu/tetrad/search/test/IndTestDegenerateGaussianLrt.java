@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.simple.SimpleMatrix;
@@ -76,7 +77,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     /**
      * Singularity lambda.
      */
-    private final double lambda;
+    private double lambda = 0.0;
     /**
      * The alpha level.
      */
@@ -109,7 +110,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         }
 
         this.nodeHash = nodesHash;
-        double lambda = 0.0; // Per spec, we always use c - 1 columns for c categories.
 
         // Expand the discrete columns to give indicators for each category. For the continuous variables, we
         // wet the truncation limit to 1, on the contract that the first polynomial for any basis will be just
@@ -119,7 +119,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
         this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
-        this.lambda = lambda;
+        this.setLambda(lambda);
     }
 
     /**
@@ -198,6 +198,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         // Compute p-value
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
+        this.pValue = p_value;
 
         if (verbose) {
             System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
@@ -217,10 +218,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
         SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
         SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
-        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
+//        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
 
         // Compute OLS estimate of X given predictors P
-        SimpleMatrix beta = Sigma_PP.invert().mult(Sigma_XP.transpose());
+        SimpleMatrix beta = (new Matrix(Sigma_PP).chooseInverse(lambda)).getData().mult(Sigma_XP.transpose());
 
         // Compute residual variance
         return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
@@ -307,5 +308,14 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * Sets the lambda value for the test.
+     *
+     * @param lambda The singularity lambda parameter to be used in the independence test.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 }
