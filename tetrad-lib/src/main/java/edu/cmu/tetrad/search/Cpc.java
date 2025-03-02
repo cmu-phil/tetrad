@@ -123,13 +123,6 @@ public final class Cpc implements IGraphSearch {
      * Determines whether verbose output should be printed.
      */
     private boolean verbose = false;
-    /**
-     * This variable represents the type of PC heuristic used in the search algorithm. The default value is
-     * PcCommon.PcHeuristicType.NONE.
-     *
-     * @see PcCommon.PcHeuristicType
-     */
-    private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -178,7 +171,6 @@ public final class Cpc implements IGraphSearch {
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
         search.setConflictRule(conflictRule);
-        search.setPcHeuristicType(pcHeuristicType);
         search.setGuaranteeCpdag(guaranteeCpdag);
         search.setKnowledge(this.knowledge);
 
@@ -355,16 +347,6 @@ public final class Cpc implements IGraphSearch {
      */
     public void setConflictRule(PcCommon.ConflictRule conflictRule) {
         this.conflictRule = conflictRule;
-    }
-
-    /**
-     * Sets the PC heuristic type. Default = NONE.
-     *
-     * @param pcHeuristicType The type.
-     * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
-     */
-    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
-        this.pcHeuristicType = pcHeuristicType;
     }
 
     /**

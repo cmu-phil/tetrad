@@ -100,19 +100,9 @@ public class Cpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                     throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
         };
 
-        PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 -> PcCommon.PcHeuristicType.NONE;
-            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
-
         edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setGuaranteeCpdag(parameters.getBoolean(Params.GUARANTEE_CPDAG));
-        search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(knowledge);
         search.setConflictRule(conflictRule);

@@ -93,20 +93,10 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
                     throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
         };
 
-        PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 -> PcCommon.PcHeuristicType.NONE;
-            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
-
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
         search.setUseMaxPHeuristic(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setGuaranteeCpdag(parameters.getBoolean(Params.GUARANTEE_CPDAG));
-        search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
@@ -152,7 +142,6 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.GUARANTEE_CPDAG);
-        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.VERBOSE);

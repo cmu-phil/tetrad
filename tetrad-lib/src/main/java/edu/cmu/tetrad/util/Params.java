@@ -1068,10 +1068,6 @@ public final class Params {
             Params.SEED
     ));
     /**
-     * Constant <code>PC_HEURISTIC="pcHeuristic"</code>
-     */
-    public static String PC_HEURISTIC = "pcHeuristic";
-    /**
      * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
      */
     public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";

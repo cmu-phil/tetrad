@@ -109,10 +109,6 @@ public final class Fci implements IGraphSearch {
      */
     private boolean verbose;
     /**
-     * The PC heuristic type to use.
-     */
-    private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
-    /**
      * Whether the stable options should be used.
      */
     private boolean stable = true;
@@ -186,7 +182,7 @@ public final class Fci implements IGraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
-        fas.setPcHeuristicType(this.heuristic);
+//        fas.setPcHeuristicType(this.heuristic);
         fas.setVerbose(this.verbose);
         fas.setStable(this.stable);
 
@@ -373,16 +369,6 @@ public final class Fci implements IGraphSearch {
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
-    }
-
-    /**
-     * Sets which PC heuristic type should be used in the initial adjacency search.
-     *
-     * @param heuristic The heuristic type.
-     * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
-     */
-    public void setPcHeuristicType(PcCommon.PcHeuristicType heuristic) {
-        this.heuristic = heuristic;
     }
 
     /**
