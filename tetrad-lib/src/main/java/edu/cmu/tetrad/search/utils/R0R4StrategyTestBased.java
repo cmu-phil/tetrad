@@ -37,7 +37,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The type of blocking strategy used in the R0R4StrategyTestBased class.
      * This variable determines whether the strategy will be recursive or greedy.
      */
-    private BlockingType blockingType = BlockingType.RECURSIVE;
+    private BlockingType blockingType = BlockingType.GREEDY;
     /**
      * Private variable representing the knowledge.
      * <p>
