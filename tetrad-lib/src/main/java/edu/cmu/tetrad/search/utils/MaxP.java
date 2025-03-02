@@ -270,7 +270,7 @@ public final class MaxP {
     }
 
     private void orientCollider(Graph graph, Node a, Node b, Node c, PcCommon.ConflictRule conflictRule) {
-        if (PcCommon.colliderAllowed(graph, a, b, c, knowledge)) {
+        if (PcCommon.colliderAllowed(a, b, c, knowledge)) {
             PcCommon.orientCollider(a, b, c, conflictRule, graph, this.verbose);
         }
     }

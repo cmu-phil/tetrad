@@ -28,10 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Provides some common implementation pieces of various PC-like algorithms, with options for collider discovery type,
@@ -141,11 +138,7 @@ public final class PcCommon implements IGraphSearch {
      * @param independenceTest The independence test to use.
      */
     public PcCommon(IndependenceTest independenceTest) {
-        if (independenceTest == null) {
-            throw new NullPointerException();
-        }
-
-        this.independenceTest = independenceTest;
+        this.independenceTest = Objects.requireNonNull(independenceTest, "Independence test cannot be null.");
     }
 
     /**
@@ -198,29 +191,20 @@ public final class PcCommon implements IGraphSearch {
     /**
      * Checks if colliders are allowed based on the given knowledge.
      *
-     * @param graph     The graph containing the nodes.
      * @param x         The first node.
      * @param y         The second node.
      * @param z         The third node.
      * @param knowledge The knowledge object containing the required and forbidden relationships.
      * @return True if colliders are allowed based on the given knowledge, false otherwise.
      */
-    public static boolean colliderAllowed(Graph graph, Node x, Node y, Node z, Knowledge knowledge) {
-        boolean result = true;
-        if (knowledge != null) {
-            result = !knowledge.isRequired(y.toString(), x.toString()) && !knowledge.isForbidden(x.toString(), y.toString());
-        }
-        if (!result) return false;
-        if (knowledge == null) {
-            return true;
-        }
-        boolean allowed = !knowledge.isRequired(y.toString(), z.toString()) && !knowledge.isForbidden(z.toString(), y.toString());
+    public static boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
+        if (knowledge == null) return true;
 
-        if (allowed) {
-            allowed = !(graph.paths().isAncestorOf(y, z) || graph.paths().isAncestorOf(y, z));
+        if (knowledge.isRequired(y.toString(), x.toString()) || knowledge.isForbidden(x.toString(), y.toString())) {
+            return false;
         }
 
-        return allowed;
+        return !(knowledge.isRequired(y.toString(), z.toString()) || knowledge.isForbidden(z.toString(), y.toString()));
     }
 
     /**
@@ -586,7 +570,7 @@ public final class PcCommon implements IGraphSearch {
                 Set<Set<Node>> sepsetsxz = getSepsets(x, z, this.graph);
 
                 if (isColliderSepset(y, sepsetsxz)) {
-                    if (colliderAllowed(graph, x, y, z, knowledge)) {
+                    if (colliderAllowed(x, y, z, knowledge)) {
                         PcCommon.orientCollider(x, y, z, this.conflictRule, this.graph, verbose);
                         this.colliderTriples.add(new Triple(x, y, z));
                     }
@@ -617,32 +601,22 @@ public final class PcCommon implements IGraphSearch {
         List<Node> adjk = new ArrayList<>(g.getAdjacentNodes(k));
         Set<Set<Node>> sepsets = new HashSet<>();
 
-        for (int d = 0; d <= FastMath.max(adji.size(), adjk.size()); d++) {
-            if (adji.size() >= 2 && d <= adji.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+        for (int d = 0; d <= Math.max(adji.size(), adjk.size()); d++) {
+            List<List<Node>> adjLists = List.of(adji, adjk);
+
+            for (List<Node> adj : adjLists) {
+                if (adj.size() < 2 || d > adj.size()) continue;
+
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
+                    if (Thread.currentThread().isInterrupted()) return sepsets;
+
+                    Set<Node> v = GraphUtils.asSet(choice, adj);
+                    if (getIndependenceTest().checkIndependence(i, k, v).isIndependent()) {
+                        sepsets.add(v);
                     }
-
-                    Set<Node> v = GraphUtils.asSet(choice, adji);
-                    if (getIndependenceTest().checkIndependence(i, k, v).isIndependent()) sepsets.add(v);
-                }
-            }
-
-            if (adjk.size() >= 2 && d <= adjk.size()) {
-                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    Set<Node> v = GraphUtils.asSet(choice, adjk);
-                    if (getIndependenceTest().checkIndependence(i, k, v).isIndependent()) sepsets.add(v);
                 }
             }
         }
@@ -741,7 +715,7 @@ public final class PcCommon implements IGraphSearch {
                             result = !knowledge.isRequired(b.toString(), c.toString()) && !knowledge.isForbidden(c.toString(), b.toString());
                         }
                         if (result) {
-                            if (colliderAllowed(graph, a, b, c, knowledge)) {
+                            if (colliderAllowed(a, b, c, knowledge)) {
                                 PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose);
 
                                 if (verbose) {
@@ -772,7 +746,7 @@ public final class PcCommon implements IGraphSearch {
      *
      * @param timeout the timeout duration in milliseconds
      */
-    public void setTimout(long timeout) {
+    public void setTimeout(long timeout) {
         this.timeout = timeout;
     }
 

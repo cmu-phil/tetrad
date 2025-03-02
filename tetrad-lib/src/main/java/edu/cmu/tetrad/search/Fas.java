@@ -86,6 +86,12 @@ public class Fas {
      */
     private PrintStream out = System.out;
 
+    /**
+     * Constructs a new instance of the Fas algorithm using the specified independence test.
+     *
+     * @param test The independence test to be used by the Fas algorithm for conditional independence tests
+     *             during the search process.
+     */
     public Fas(IndependenceTest test) {
         this.test = test;
     }

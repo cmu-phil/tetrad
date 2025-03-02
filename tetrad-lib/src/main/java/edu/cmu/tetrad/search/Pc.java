@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,9 +36,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the Peter/Clark (PC) algorithm, which uses conditional independence testing as an oracle to first of all
- * remove extraneous edges from a complete graph, then to orient the unshielded colliders in the graph, and finally to
- * make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. A version
+ * Implements the Peter/Clark (PC) algorithm, which uses conditional independence testing as an oracle to do three
+ * things: (1) Remove extraneous edges from a complete graph, (2) orient the unshielded colliders in the graph. And, (2)
+ * Make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. A version
  * of this algorithm was proposed earlier than this, but the standard reference for the algorithm is in Chapter 6 of the
  * following book:
  * <p>
@@ -89,16 +88,16 @@ public class Pc implements IGraphSearch {
      */
     private Graph graph;
     /**
-     * Represents the start time of the algorithm or process execution within the PC search implementation.
-     * Tracks the time when the execution begins, typically measured in milliseconds since the epoch.
-     * This is used for calculating execution duration and performance analysis.
+     * Represents the start time of the algorithm or process execution within the PC search implementation. Tracks the
+     * time when the execution begins, typically measured in milliseconds since the epoch. This is used for calculating
+     * execution duration and performance analysis.
      */
-    private long startTime = -1L;
+    private long startTime = -1;
     /**
-     * The timeout duration for the search process, in milliseconds.
-     * If set to -1, it indicates that no timeout is enforced.
+     * The timeout duration for the search process, in milliseconds. If set to -1, it indicates that no timeout is
+     * enforced.
      */
-    private long timeout = -1L;
+    private long timeout = -1;
     /**
      * The elapsed time of the most recent search.
      */
@@ -146,8 +145,8 @@ public class Pc implements IGraphSearch {
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      *
-     * @see Fci
      * @throws InterruptedException if any
+     * @see Fci
      */
     @Override
     public Graph search() throws InterruptedException {
@@ -165,8 +164,8 @@ public class Pc implements IGraphSearch {
      *
      * @param nodes The sublist of nodes to search over.
      * @return The search graph.
-     * @see #search()
      * @throws InterruptedException if any
+     * @see #search()
      */
     public Graph search(Set<Node> nodes) throws InterruptedException {
         nodes = new HashSet<>(nodes);
@@ -178,11 +177,7 @@ public class Pc implements IGraphSearch {
         // e.g., Kci as a test, which can take a long time. In the interface you can stop the algorithm yourself,
         // but if you need to run PC/KCI e.g., in a loop, you need a timeout. jdramsey 2025-2-23
         long startTime = System.currentTimeMillis();
-
         setStartTime(startTime);
-//        fas.setStartTime(startTime);
-//        fas.setTimeout(getTimeout());
-
         return search(fas, nodes);
     }
 
@@ -193,9 +188,9 @@ public class Pc implements IGraphSearch {
      * @param fas   The fast adjacency search to use.
      * @param nodes The sublist of nodes.
      * @return The result graph
+     * @throws InterruptedException if any
      * @see #search()
      * @see IFas
-     * @throws InterruptedException if any
      */
     public Graph search(Fas fas, Set<Node> nodes) throws InterruptedException {
         if (verbose) {
@@ -218,7 +213,7 @@ public class Pc implements IGraphSearch {
 
         PcCommon search = getPcCommon();
         search.setStartTime(this.getStartTime());
-        search.setTimout(this.getTimeout());
+        search.setTimeout(this.getTimeout());
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
@@ -226,7 +221,7 @@ public class Pc implements IGraphSearch {
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
         if (verbose) {
-            this.logger.log("Elapsed Wall time = " + startTime + " ms");
+            this.logger.log("Elapsed Wall time = " + elapsedTime + " ms");
             this.logger.log("Finishing PC Algorithm.");
             this.logger.flush();
         }
@@ -436,9 +431,9 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets the start time of the algorithm or process execution.
-     * Used to indicate when the execution begins, typically measured in milliseconds since the epoch.
-     * This value is instrumental in tracking execution duration and performance metrics.
+     * Sets the start time of the algorithm or process execution. Used to indicate when the execution begins, typically
+     * measured in milliseconds since the epoch. This value is instrumental in tracking execution duration and
+     * performance metrics.
      *
      * @param startTime The start time of the execution in milliseconds.
      */
@@ -457,12 +452,10 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets the timeout duration for the search process.
-     * The timeout is specified in milliseconds and can be used to limit the execution duration.
-     * A value of -1 indicates that no timeout is enforced.
+     * Sets the search timeout in milliseconds (-1 to disable).
      *
-     * @param timeout The timeout value in milliseconds. A non-negative value specifies the maximum allowed
-     *                execution time while -1 disables the timeout.
+     * @param timeout The timeout value in milliseconds. A non-negative value specifies the maximum allowed execution
+     *                time while -1 disables the timeout.
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
