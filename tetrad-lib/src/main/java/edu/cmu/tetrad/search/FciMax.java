@@ -87,10 +87,6 @@ public final class FciMax implements IGraphSearch {
      */
     private long elapsedTime;
     /**
-     * The PC heuristic from PC used in search.
-     */
-    private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
-    /**
      * Whether the stable option will be used for search.
      */
     private boolean stable = false;
@@ -149,10 +145,10 @@ public final class FciMax implements IGraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
-        fas.setPcHeuristicType(this.pcHeuristicType);
+//        fas.setPcHeuristicType(this.pcHeuristicType);
         fas.setVerbose(this.verbose);
         fas.setStable(this.stable);
-        fas.setPcHeuristicType(this.pcHeuristicType);
+//        fas.setPcHeuristicType(this.pcHeuristicType);
 
         //The PAG being constructed.
         Graph pag = fas.search();
@@ -318,16 +314,6 @@ public final class FciMax implements IGraphSearch {
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
-    }
-
-    /**
-     * Sets the FAS heuristic from PC used in search.
-     *
-     * @param pcHeuristicType This heuristic.
-     * @see Pc
-     */
-    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
-        this.pcHeuristicType = pcHeuristicType;
     }
 
     /**

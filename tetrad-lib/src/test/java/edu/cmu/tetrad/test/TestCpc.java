@@ -174,7 +174,7 @@ public class TestCpc {
         System.out.println("true graph = " + trueGraph + " result graph = " + resultGraph + " knowledge = " + knowledge);
 
         // Do test.
-        assertEquals(resultGraph, trueGraph);
+        assertEquals(trueGraph, resultGraph);
     }
 }
 

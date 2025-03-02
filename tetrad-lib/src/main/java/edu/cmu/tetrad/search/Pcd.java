@@ -254,7 +254,7 @@ public class Pcd implements IGraphSearch {
      *                                  provided.
      * @throws InterruptedException if any
      */
-    public Graph search(IFas fas, List<Node> nodes) throws InterruptedException {
+    public Graph search(Fas fas, List<Node> nodes) throws InterruptedException {
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting PC algorithm");

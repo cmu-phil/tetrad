@@ -90,15 +90,6 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             knowledge = timeSeries.getKnowledge();
         }
 
-        PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 -> PcCommon.PcHeuristicType.NONE;
-            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
-
         edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setKnowledge(this.knowledge);
@@ -106,7 +97,6 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setPcHeuristicType(pcHeuristicType);
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
@@ -155,7 +145,6 @@ public class Fci extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.STABLE_FAS);
-        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
         parameters.add(Params.COMPLETE_RULE_SET_USED);

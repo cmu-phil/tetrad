@@ -123,10 +123,6 @@ public class Pc implements IGraphSearch {
      * Whether the max-p heuristic should be used for collider discovery.
      */
     private boolean useMaxPHeuristic = false;
-    /**
-     * The PC heuristic type.
-     */
-    private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
 
     /**
      * Constructs a new PC search using the given independence test as oracle.
@@ -175,7 +171,7 @@ public class Pc implements IGraphSearch {
     public Graph search(Set<Node> nodes) throws InterruptedException {
         nodes = new HashSet<>(nodes);
 
-        IFas fas = new Fas(getIndependenceTest());
+        Fas fas = new Fas(getIndependenceTest());
         fas.setVerbose(this.verbose);
 
         // These only work if you use Fas itself, not other implementations of IFas. This is needed is yo use,
@@ -184,8 +180,8 @@ public class Pc implements IGraphSearch {
         long startTime = System.currentTimeMillis();
 
         setStartTime(startTime);
-        fas.setStartTime(startTime);
-        fas.setTimeout(getTimeout());
+//        fas.setStartTime(startTime);
+//        fas.setTimeout(getTimeout());
 
         return search(fas, nodes);
     }
@@ -201,7 +197,7 @@ public class Pc implements IGraphSearch {
      * @see IFas
      * @throws InterruptedException if any
      */
-    public Graph search(IFas fas, Set<Node> nodes) throws InterruptedException {
+    public Graph search(Fas fas, Set<Node> nodes) throws InterruptedException {
         if (verbose) {
             this.logger.log("Starting PC algorithm");
             this.logger.log("Independence test = " + getIndependenceTest() + ".");
@@ -248,7 +244,6 @@ public class Pc implements IGraphSearch {
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
         search.setGuaranteeCpdag(guaranteeCpdag);
-        search.setPcHeuristicType(pcHeuristicType);
         search.setKnowledge(this.knowledge);
 
         if (stable) {
@@ -264,7 +259,6 @@ public class Pc implements IGraphSearch {
         }
 
         search.setConflictRule(conflictRule);
-        search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(verbose);
 
         long startTime = System.currentTimeMillis();
@@ -428,16 +422,6 @@ public class Pc implements IGraphSearch {
      */
     public void setUseMaxPHeuristic(boolean useMaxPHeuristic) {
         this.useMaxPHeuristic = useMaxPHeuristic;
-    }
-
-    /**
-     * Sets the PC heuristic type. Default = PcHeuristicType.NONE.
-     *
-     * @param pcHeuristicType The type.
-     * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
-     */
-    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
-        this.pcHeuristicType = pcHeuristicType;
     }
 
     /**

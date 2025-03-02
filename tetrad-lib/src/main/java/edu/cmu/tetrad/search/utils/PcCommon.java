@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
@@ -124,18 +123,14 @@ public final class PcCommon implements IGraphSearch {
     private ConflictRule conflictRule = ConflictRule.PRIORITIZE_EXISTING;
 
     /**
-     * Which PC heuristic to use (see Causation, Prediction and Search). Default is PcHeuristicType.NONE.
-     */
-    private PcHeuristicType pcHeuristicType = PcHeuristicType.NONE;
-    /**
      * Represents the start time in milliseconds since the Unix epoch (January 1, 1970, 00:00:00 GMT). This variable is
      * typically used to store the timestamp marking the initiation of a specific event or process.
      */
     private long startTime = -1;
     /**
      * Specifies the maximum duration, in milliseconds, to wait for an operation to complete before timing out. This
-     * variable can be used to define a limit on how long a process or operation should take. New independence
-     * checks will not be run if the elapsed time exceeds this in millisecond, and an exception will be thrown.
+     * variable can be used to define a limit on how long a process or operation should take. New independence checks
+     * will not be run if the elapsed time exceeds this in millisecond, and an exception will be thrown.
      */
     private long timeout;
 
@@ -213,13 +208,13 @@ public final class PcCommon implements IGraphSearch {
     public static boolean colliderAllowed(Graph graph, Node x, Node y, Node z, Knowledge knowledge) {
         boolean result = true;
         if (knowledge != null) {
-            result = !knowledge.isRequired(((Object) y).toString(), ((Object) x).toString()) && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
+            result = !knowledge.isRequired(y.toString(), x.toString()) && !knowledge.isForbidden(x.toString(), y.toString());
         }
         if (!result) return false;
         if (knowledge == null) {
             return true;
         }
-        boolean allowed = !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString()) && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
+        boolean allowed = !knowledge.isRequired(y.toString(), z.toString()) && !knowledge.isForbidden(z.toString(), y.toString());
 
         if (allowed) {
             allowed = !(graph.paths().isAncestorOf(y, z) || graph.paths().isAncestorOf(y, z));
@@ -244,17 +239,6 @@ public final class PcCommon implements IGraphSearch {
      */
     public void setFasType(FasType fasType) {
         this.fasType = fasType;
-    }
-
-    /**
-     * <p>Setter for the field <code>pcHeuristicType</code>.</p>
-     *
-     * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
-     *                    PcHeuristicType.NONE.
-     * @see PcHeuristicType
-     */
-    public void setPcHeuristicType(PcHeuristicType pcHeuristic) {
-        this.pcHeuristicType = pcHeuristic;
     }
 
     /**
@@ -320,19 +304,19 @@ public final class PcCommon implements IGraphSearch {
 
         if (this.fasType == FasType.REGULAR) {
             fas = new Fas(getIndependenceTest());
-            fas.setPcHeuristicType(this.pcHeuristicType);
+//            fas.setPcHeuristicType(this.pcHeuristicType);
             fas.setStable(false);
         } else {
             fas = new Fas(getIndependenceTest());
-            fas.setPcHeuristicType(this.pcHeuristicType);
+//            fas.setPcHeuristicType(this.pcHeuristicType);
             fas.setStable(true);
         }
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(this.verbose);
-        fas.setStartTime(startTime);
-        fas.setTimeout(timeout);
+//        fas.setStartTime(startTime);
+//        fas.setTimeout(timeout);
 
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
@@ -382,9 +366,6 @@ public final class PcCommon implements IGraphSearch {
             meekRules.setVerbose(verbose);
             meekRules.setMeekPreventCycles(true);
             meekRules.orientImplied(this.graph);
-
-//            GraphTransforms.dagFromCpdag(this.graph, true);
-//            graph = GraphTransforms.dagToCpdag(this.graph);
         } else {
             MeekRules meekRules = new MeekRules();
             meekRules.setKnowledge(this.knowledge);
@@ -752,12 +733,12 @@ public final class PcCommon implements IGraphSearch {
                 if (!sepset.contains(b)) {
                     boolean result1 = true;
                     if (knowledge != null) {
-                        result1 = !knowledge.isRequired(((Object) b).toString(), ((Object) a).toString()) && !knowledge.isForbidden(((Object) a).toString(), ((Object) b).toString());
+                        result1 = !knowledge.isRequired(b.toString(), a.toString()) && !knowledge.isForbidden(a.toString(), b.toString());
                     }
                     if (result1) {
                         boolean result = true;
                         if (knowledge != null) {
-                            result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString()) && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
+                            result = !knowledge.isRequired(b.toString(), c.toString()) && !knowledge.isForbidden(c.toString(), b.toString());
                         }
                         if (result) {
                             if (colliderAllowed(graph, a, b, c, knowledge)) {
@@ -793,38 +774,6 @@ public final class PcCommon implements IGraphSearch {
      */
     public void setTimout(long timeout) {
         this.timeout = timeout;
-    }
-
-    /**
-     * The PC heuristic type, where this is taken from Causation, Prediction, and Search.
-     * <p>
-     * NONE = no heuristic, PC-1 = sort nodes alphabetically; PC-1 = sort edges by p-value; PC-3 = additionally sort
-     * edges in reverse order using p-values of associated independence facts. See this reference:
-     * <p>
-     * Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000). Causation, prediction, and search. MIT press.
-     */
-    public enum PcHeuristicType {
-
-        /**
-         * Sort nodes alphabetically.
-         */
-        HEURISTIC_1,
-
-        /**
-         * Sort edges by p-value.
-         */
-        HEURISTIC_2,
-
-        /**
-         * Sort edges in reverse order using p-values of associated independence facts.
-         */
-        HEURISTIC_3,
-
-        /**
-         * No heuristic.
-         */
-        NONE
-
     }
 
     /**

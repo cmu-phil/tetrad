@@ -165,7 +165,7 @@ public final class Rfci implements IGraphSearch {
      * @return The RFCI PAG.
      * @throws InterruptedException If the search is interrupted.
      */
-    public Graph search(IFas fas, List<Node> nodes) throws InterruptedException {
+    public Graph search(Fas fas, List<Node> nodes) throws InterruptedException {
         long beginTime = MillisecondTimes.timeMillis();
         independenceTest.setVerbose(verbose);
 
