@@ -292,11 +292,13 @@ public class Fas {
                         while ((choice = generator.next()) != null) {
                             Set<Node> S = GraphUtils.asSet(choice, ppx);
 
-                            IndependenceResult result = test.checkIndependence(x, y, S);
-                            if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
-                                graph_.removeEdge(x, y);
-                                sepset.set(x, y, S);
-                                break;
+                            if (graph.isAdjacentTo(x, y)) {
+                                IndependenceResult result = test.checkIndependence(x, y, S);
+                                if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
+                                    graph_.removeEdge(x, y);
+                                    sepset.set(x, y, S);
+                                    break;
+                                }
                             }
                         }
                     }
