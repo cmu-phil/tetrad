@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -38,7 +38,10 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -53,6 +56,8 @@ import static org.junit.Assert.assertTrue;
  * @author josephramsey
  */
 public class TestFci {
+
+    private static final Logger log = LoggerFactory.getLogger(TestFci.class);
 
     @Test
     public void testSearch1() {
@@ -272,12 +277,12 @@ public class TestFci {
         IndependenceTest independence = new MsepTest(graph);
         Score score = new GraphScore(graph);
 
-//        Fci fci = new Fci(independence);
-//        fci.setPossibleDsepSearchDone(true);
-//        fci.setCompleteRuleSetUsed(true);
-//        fci.setMaxDiscriminatingPathLength(-1);
-//        fci.setKnowledge(knowledge);
-//        fci.setVerbose(true);
+        Fci fci = new Fci(independence);
+        fci.setPossibleDsepSearchDone(true);
+        fci.setCompleteRuleSetUsed(true);
+        fci.setMaxDiscriminatingPathLength(-1);
+        fci.setKnowledge(knowledge);
+        fci.setVerbose(true);
 
 //        GraspFci fci = new GraspFci(independence, score);
 //        fci.setKnowledge(knowledge);
@@ -287,10 +292,10 @@ public class TestFci {
 //        fci.setKnowledge(knowledge);
 //        fci.setVerbose(true);
 
-        LvLite fci = new LvLite(independence, score);
-//        fci.setKnowledge(knowledge);
-//        fci.setDoDdpEdgeRemovalStep(true);
-        fci.setVerbose(true);
+//        LvLite fci = new LvLite(independence, score);
+////        fci.setKnowledge(knowledge);
+////        fci.setDoDdpEdgeRemovalStep(true);
+//        fci.setVerbose(true);
 
         // Run search
         Graph resultGraph = null;
@@ -416,6 +421,66 @@ public class TestFci {
 
                 System.out.println(table);
             }
+        }
+    }
+
+    /**
+     * This is a "problem MAG" that Peter recommended for testing, from Causation, Prediction,
+     * and Search. In order to get it right, the correct conditioning sets need to be found
+     * for each of the two inducing paths.
+     */
+    @Test
+    public void testSearch16() {
+        final String trueMag = "Graph Nodes:\n" +
+                               "(ep);(g);cd;hd;lc;s;i;ps;mb\n" +
+                               "\n" +
+                               "Graph Edges:\n" +
+                               "1. cd --> lc\n" +
+                               "2. cd --> mb\n" +
+                               "3. ep --> cd\n" +
+                               "4. ep --> hd\n" +
+                               "5. g --> hd\n" +
+                               "6. g --> lc\n" +
+                               "7. hd --> mb\n" +
+                               "8. i --> s\n" +
+                               "9. lc --> mb\n" +
+                               "10. ps --> s\n" +
+                               "11. s --> cd";
+
+        final String correctPag = "Graph Nodes:\n" +
+                                  "cd;hd;lc;s;i;ps;mb\n" +
+                                  "\n" +
+                                  "Graph Edges:\n" +
+                                  "1. cd <-> hd\n" +
+                                  "2. cd --> lc\n" +
+                                  "3. cd --> mb\n" +
+                                  "4. hd --> mb\n" +
+                                  "5. i o-> s\n" +
+                                  "6. lc <-> hd\n" +
+                                  "7. lc o-> mb\n" +
+                                  "8. ps o-> s\n" +
+                                  "9. s --> cd";
+
+        try {
+            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueMag);
+            Graph truePag_ = GraphSaveLoadUtils.readerToGraphTxt(correctPag);
+
+            Fci fci = new Fci(new MsepTest(trueMag_));
+            Graph estPag1 = fci.search();
+            assertEquals(truePag_, estPag1);
+
+            GraspFci graspFci = new GraspFci(new MsepTest(trueMag_), new GraphScore(trueMag_));
+            graspFci.setUseRaskuttiUhler(true);
+            graspFci.setUseScore(false);
+            Graph estPag2 = graspFci.search();
+            assertEquals(truePag_, estPag2);
+
+//            LvLite lvLite = new LvLite(new MsepTest(trueMag_), new GraphScore(trueMag_));
+//            lvLite.setEnsureMarkov(true);
+//            Graph estPag3 = lvLite.search();
+//            assertEquals(truePag_, estPag3);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

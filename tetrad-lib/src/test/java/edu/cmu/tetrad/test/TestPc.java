@@ -135,14 +135,12 @@ public class TestPc {
                                   "1. ABILITY --> CITES\n" +
                                   "2. ABILITY --> GPQ\n" +
                                   "3. ABILITY --> PREPROD\n" +
-                                  "4. ABILITY --> PUBS\n" +
-                                  "5. ABILITY --> QFJ\n" +
-                                  "6. GPQ --> QFJ\n" +
-                                  "7. PREPROD --> CITES\n" +
-                                  "8. PUBS --> CITES\n" +
-                                  "9. QFJ --> CITES\n" +
-                                  "10. QFJ --> PUBS\n" +
-                                  "11. SEX --> PUBS";
+                                  "4. GPQ --> QFJ\n" +
+                                  "5. PREPROD --> CITES\n" +
+                                  "6. PUBS --> CITES\n" +
+                                  "7. QFJ --> CITES\n" +
+                                  "8. QFJ --> PUBS\n" +
+                                  "9. SEX --> PUBS";
 
         try {
             Graph trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
