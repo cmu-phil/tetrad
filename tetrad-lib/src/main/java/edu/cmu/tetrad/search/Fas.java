@@ -224,11 +224,10 @@ public class Fas {
     private boolean searchAtDepth(Graph graph, Graph graph_, int d, boolean stable) throws InterruptedException {
         List<Node> nodes = graph.getNodes();
 
-
         if (stable) {
             nodes.parallelStream().forEach(x -> {
                 for (Node y : nodes) {
-                    if (x == y || nodes.indexOf(x) >= nodes.indexOf(y)) continue;
+                    if (x == y) continue;
 
                     if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
                         synchronized (graph_) {
@@ -246,7 +245,7 @@ public class Fas {
                         throw new RuntimeException(e);
                     }
 
-                    if (adjX.size() >= d) {
+                    if (ppx.size() >= d) {
                         ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
                         int[] choice;
 
@@ -271,10 +270,11 @@ public class Fas {
                 }
             });
         } else {
-            for (int i = 0; i < nodes.size(); i++) {
-                for (int j = i + 1; j < nodes.size(); j++) {
-                    Node x = nodes.get(i);
-                    Node y = nodes.get(j);
+            System.out.println("Depth: " + d);
+
+            for (Node x : nodes) {
+                for (Node y : nodes) {
+                    if (x == y) continue;
 
                     if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
                         graph_.removeEdge(x, y);

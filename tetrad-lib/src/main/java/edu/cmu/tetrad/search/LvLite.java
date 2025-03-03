@@ -126,7 +126,7 @@ public final class LvLite implements IGraphSearch {
     /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
-    private boolean ensureMarkov = false;
+    private boolean ensureMarkov = true;
     /**
      * A helper class to help perserve Markov.
      */
