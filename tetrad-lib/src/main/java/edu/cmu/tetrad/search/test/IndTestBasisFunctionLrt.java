@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.simple.SimpleMatrix;
@@ -162,7 +163,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         int[] zIndices = embedded_z.stream().mapToInt(Integer::intValue).toArray();
 
         // Compute variance estimates
-        double eps = 1e-10;
+        double eps = 1e-20;
         double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices));
         double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
 
@@ -195,10 +196,10 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
         SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
         SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
         SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
-        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
+//        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
 
         // Compute OLS estimate of X given predictors P
-        SimpleMatrix beta = Sigma_PP.invert().mult(Sigma_XP.transpose());
+        SimpleMatrix beta = new Matrix(Sigma_PP).chooseInverse(lambda).getData().mult(Sigma_XP.transpose());
 
         // Compute residual variance
         return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
