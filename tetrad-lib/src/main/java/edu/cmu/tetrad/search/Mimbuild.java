@@ -359,12 +359,6 @@ public class Mimbuild {
     public Graph getFullGraph(List<Node> includeNodes) {
         Graph graph = new EdgeListGraph(this.structureGraph);
 
-        for (Node node : includeNodes) {
-            if (graph.getNode(node.getName()) == null) {
-                graph.addNode(new GraphNode(node.getName()));
-            }
-        }
-
         for (int i = 0; i < this.latents.size(); i++) {
             Node latent = this.latents.get(i);
             List<Node> measuredGuys = getClustering().get(i);
@@ -375,6 +369,12 @@ public class Mimbuild {
                 }
 
                 graph.addDirectedEdge(latent, measured);
+            }
+        }
+
+        for (Node node : includeNodes) {
+            if (graph.getNode(node.getName()) == null) {
+                graph.addNode(new GraphNode(node.getName()));
             }
         }
 

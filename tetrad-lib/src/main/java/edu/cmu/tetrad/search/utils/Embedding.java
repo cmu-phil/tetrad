@@ -106,7 +106,7 @@ public class Embedding {
                     double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
                         functional[j] = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
-                        functional[j] /= StatUtils.factorial(p + 1);
+//                        functional[j] /= StatUtils.factorial(p + 1);
                     }
 
                     B.add(functional);
