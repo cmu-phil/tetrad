@@ -284,23 +284,13 @@ public final class PcCommon implements IGraphSearch {
             throw new IllegalArgumentException("All of the given nodes must " + "be in the domain of the independence test provided.");
         }
 
-        Fas fas;
+        Fas fas = new Fas(getIndependenceTest());
 
-        if (this.fasType == FasType.REGULAR) {
-            fas = new Fas(getIndependenceTest());
-//            fas.setPcHeuristicType(this.pcHeuristicType);
-            fas.setStable(false);
-        } else {
-            fas = new Fas(getIndependenceTest());
-//            fas.setPcHeuristicType(this.pcHeuristicType);
-            fas.setStable(true);
-        }
+        fas.setStable(this.fasType == FasType.STABLE);
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
         fas.setVerbose(this.verbose);
-//        fas.setStartTime(startTime);
-//        fas.setTimeout(timeout);
 
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
@@ -680,10 +670,6 @@ public final class PcCommon implements IGraphSearch {
         for (Node b : nodes) {
             List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
             ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
@@ -707,12 +693,14 @@ public final class PcCommon implements IGraphSearch {
                 if (!sepset.contains(b)) {
                     boolean result1 = true;
                     if (knowledge != null) {
-                        result1 = !knowledge.isRequired(b.toString(), a.toString()) && !knowledge.isForbidden(a.toString(), b.toString());
+                        result1 = !knowledge.isRequired(b.toString(), a.toString())
+                                  && !knowledge.isForbidden(a.toString(), b.toString());
                     }
                     if (result1) {
                         boolean result = true;
                         if (knowledge != null) {
-                            result = !knowledge.isRequired(b.toString(), c.toString()) && !knowledge.isForbidden(c.toString(), b.toString());
+                            result = !knowledge.isRequired(b.toString(), c.toString())
+                                     && !knowledge.isForbidden(c.toString(), b.toString());
                         }
                         if (result) {
                             if (colliderAllowed(a, b, c, knowledge)) {
