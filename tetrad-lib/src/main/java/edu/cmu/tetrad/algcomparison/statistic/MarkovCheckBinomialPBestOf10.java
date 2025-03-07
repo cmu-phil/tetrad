@@ -2,14 +2,10 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
-import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -23,12 +19,35 @@ import java.io.Serial;
 public class MarkovCheckBinomialPBestOf10 implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * Wrapper for independence tests used in statistical computations. This field represents the specific
+     * implementation of the IndependenceWrapper interface that supplies methods for determining independence between
+     * variables, describing the type of data involved, and retrieving test parameters.
+     * <p>
+     * It is used to calculate statistical measures and perform conditional independence tests based on provided data
+     * and parameters.
+     */
     private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set used in the Markov check to assess conditional independence relationships
+     * within the graph. The conditioning set determines the subset of variables to condition on during independence
+     * testing, which impacts how independence and dependence relationships are evaluated based on the causal structure
+     * of the graph.
+     * <p>
+     * This variable is integral to configuring the statistical computation of independence facts in the
+     * MarkovCheckBinomialPBestOf10 class.
+     */
     private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
     public MarkovCheckBinomialPBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
         this.independenceWrapper = independenceWrapper;

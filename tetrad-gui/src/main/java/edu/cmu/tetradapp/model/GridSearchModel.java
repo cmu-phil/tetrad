@@ -821,7 +821,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     String abbreviation = _statistic.getAbbreviation();
                     statisticsNames.add(abbreviation);
                 } else if (MarkovCheckerStatistic.class.isAssignableFrom(statistic)) {
-                    Statistic _statistic = statistic.getConstructor(IndependenceWrapper.class, ConditioningSetType.class).newInstance(markovCheckerIndependenceWrapper, markovCheckerConditioningSetType);
+                    Statistic _statistic = statistic.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
+                            .newInstance(markovCheckerIndependenceWrapper, markovCheckerConditioningSetType);
                     String abbreviation = _statistic.getAbbreviation();
                     statisticsNames.add(abbreviation);
                 }
@@ -993,7 +994,8 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     MyTableColumn column = new MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
                     allTableColumns.add(column);
                 } else if (MarkovCheckerStatistic.class.isAssignableFrom(statisticClass)) {
-                    Statistic _statistic = statisticClass.getConstructor(IndependenceWrapper.class, ConditioningSetType.class).newInstance(markovCheckerIndependenceWrapper, markovCheckerConditioningSetType);
+                    Statistic _statistic = statisticClass.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
+                            .newInstance(markovCheckerIndependenceWrapper, markovCheckerConditioningSetType);
                     MyTableColumn column = new MyTableColumn(_statistic.getAbbreviation(), _statistic.getDescription(), statisticClass);
                     allTableColumns.add(column);
                 }

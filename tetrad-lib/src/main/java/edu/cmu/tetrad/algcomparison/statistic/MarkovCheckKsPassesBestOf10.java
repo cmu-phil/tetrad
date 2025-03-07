@@ -20,12 +20,31 @@ import java.io.Serial;
 public class MarkovCheckKsPassesBestOf10 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * An instance of {@link IndependenceWrapper} used to encapsulate and perform independence
+     * tests on the dataset with specific configurations. This variable is intended to facilitate
+     * independence testing within the context of Markov check calculations and other statistical
+     * operations in the enclosing class.
+     */
     private final IndependenceWrapper independenceWrapper;
+    /**
+     * Represents the type of conditioning set used during the Markov checks in the context of statistical dependence
+     * testing. It specifies how variables are conditioned upon during independence tests and directly influences the
+     * results of the Markov checks. The type is defined by the {@link ConditioningSetType} enumeration, which includes
+     * various strategies for defining the conditioning set, such as GLOBAL_MARKOV, LOCAL_MARKOV, or MARKOV_BLANKET among
+     * others. This field is immutable and must be set during the initialization of the object.
+     */
     private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
     public MarkovCheckKsPassesBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
         this.independenceWrapper = independenceWrapper;

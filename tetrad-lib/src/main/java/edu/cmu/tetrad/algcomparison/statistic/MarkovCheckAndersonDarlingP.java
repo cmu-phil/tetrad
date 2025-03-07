@@ -19,12 +19,29 @@ import java.io.Serial;
 public class MarkovCheckAndersonDarlingP implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * Encapsulates and facilitates the execution of independence tests on datasets with specific configurations. This
+     * variable serves as a key component in determining dependencies or independencies among variables in statistical
+     * models, especially during the computation of the Markov check and Anderson-Darling P-value.
+     */
     private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set employed during Markov checks. This variable determines how variables are
+     * conditioned in independence tests and is represented by the {@link ConditioningSetType} enumeration. The chosen
+     * conditioning set type dictates the methodology used to test for independence relationships in the context of
+     * graphical models.
+     */
     private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
      * distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
     public MarkovCheckAndersonDarlingP(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
         this.independenceWrapper = independenceWrapper;

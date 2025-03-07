@@ -19,12 +19,32 @@ import java.io.Serial;
 public class McGetNumTestsH0 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * Encapsulates an implementation of the {@link IndependenceWrapper} interface used to perform independence tests on
+     * a dataset. This wrapper provides the ability to retrieve a specific implementation of the
+     * {@link IndependenceTest} depending on the given data model and test parameters.
+     * <p>
+     * The {@code independenceWrapper} is used to integrate independence testing logic into classes that require
+     * customizable or interchangeable independence test implementations, such as the determination of conditional
+     * independence relationships in statistical models or algorithms.
+     */
     private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set to use when calculating independence tests within the context of the
+     * Markov check. This variable determines the approach used for conditioning on variables in the graph during
+     * statistical analysis.
+     */
     private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the number of tests for the Markov check of whether the p-values for the estimated graph are
      * distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
     public McGetNumTestsH0(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
         this.independenceWrapper = independenceWrapper;

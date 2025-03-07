@@ -19,12 +19,33 @@ import java.io.Serial;
 public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * An instance of the IndependenceWrapper interface that encapsulates the independence test logic.
+     * Used for generating and applying independence tests within the context of statistical calculations.
+     * The independenceWrapper field supplies a way to determine whether variables in data are independent,
+     * conditional on a provided conditioning set, and produces relevant test results.
+     */
     private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set used in the Markov check.
+     * Determines how independence tests are conducted based on the graph structure
+     * by conditioning on a specific set of variables. The choice of the conditioning
+     * set type impacts the assessment of conditional independence and derived dependencies.
+     *
+     * This field is immutable and initialized during the instantiation of the
+     * {@code MarkovCheckKolmogorovSmirnoffP} class.
+     */
     private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
     public MarkovCheckKolmogorovSmirnoffP(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
         this.independenceWrapper = independenceWrapper;

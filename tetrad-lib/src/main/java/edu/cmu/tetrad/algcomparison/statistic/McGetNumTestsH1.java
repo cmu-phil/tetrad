@@ -19,12 +19,31 @@ import java.io.Serial;
 public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * An instance of the IndependenceWrapper interface used to perform independence tests
+     * in the context of statistical computations and graph evaluations. It provides the
+     * necessary methods to retrieve and configure independence tests, as well as to
+     * obtain a description of the specific independence testing algorithm being employed.
+     */
     private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set used in the Markov check for evaluating independence or dependence
+     * relationships. This variable is associated with the configuration of the independence tests and determines
+     * how the conditioning set is constructed based on the selected type from the {@link ConditioningSetType} enum.
+     * The conditioning set influences the statistical properties of the independence tests performed during
+     * Markov checks.
+     */
     private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the number of tests for the Markov check of whether the p-values for the estimated graph are
      * distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
     public McGetNumTestsH1(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
         this.independenceWrapper = independenceWrapper;
@@ -70,7 +89,7 @@ public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
         }
 
         IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, test, ConditioningSetType.ORDERED_LOCAL_MARKOV);
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
         markovCheck.generateResults(false, true);
         return markovCheck.getNumTests(false);
     }

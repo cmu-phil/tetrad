@@ -19,12 +19,33 @@ import java.io.Serial;
 public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * An instance of the IndependenceWrapper interface used for conducting independence tests. This variable is
+     * critical for determining whether variables in a dataset are independent based on specified conditions. It enables
+     * the evaluation of statistical independence necessary for assessing the structure of causal graphs and for the
+     * execution of Markov-related validation checks.
+     * <p>
+     * IndependenceWrapper provides methods for obtaining independence tests, retrieving test descriptions, handling
+     * parameter requirements, and verifying the compatibility of data types used for independence assessments. This
+     * interface serves as a foundational component in algorithms implementing statistical structure learning and
+     * evaluation.
+     */
     private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set to be used for the Markov check in calculations. The conditioning set
+     * determines how independence facts are tested and is defined by the {@link ConditioningSetType} enum.
+     */
     private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
     public MarkovCheckKolmogorovSmirnoffPBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
         this.independenceWrapper = independenceWrapper;
