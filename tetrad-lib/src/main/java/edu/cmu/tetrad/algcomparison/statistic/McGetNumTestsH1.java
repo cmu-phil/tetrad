@@ -1,14 +1,11 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
-import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -19,16 +16,19 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class McGetNumTestsH1 implements Statistic {
+public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    private final IndependenceWrapper independenceWrapper;
+    private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the number of tests for the Markov check of whether the p-values for the estimated graph are
      * distributed as U(0, 1).
      */
-    public McGetNumTestsH1() {
-
+    public McGetNumTestsH1(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+        this.independenceWrapper = independenceWrapper;
+        this.conditioningSetType = conditioningSetType;
     }
 
     /**
@@ -68,21 +68,9 @@ public class McGetNumTestsH1 implements Statistic {
         if (dataModel == null) {
             throw new IllegalArgumentException("Data model is null.");
         }
-        IndependenceTest independenceTest;
 
-        if (dataModel.isContinuous()) {
-            independenceTest = new IndTestFisherZ((DataSet) dataModel, 0.01);
-//            independenceTest = new IndTestBasisFunctionLrt((DataSet) dataModel, parameters.getInt(Params.TRUNCATION_LIMIT),
-//                    parameters.getInt(Params.BASIS_TYPE), parameters.getInt(Params.BASIS_SCALE));
-        } else if (dataModel.isDiscrete()) {
-            independenceTest = new IndTestChiSquare((DataSet) dataModel, 0.01);
-        } else if (dataModel.isMixed()) {
-            independenceTest = new IndTestConditionalGaussianLrt((DataSet) dataModel, 0.01, true);
-        } else {
-            throw new IllegalArgumentException("Data model is not continuous, discrete, or mixed.");
-        }
-
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
+        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, test, ConditioningSetType.ORDERED_LOCAL_MARKOV);
         markovCheck.generateResults(false, true);
         return markovCheck.getNumTests(false);
     }

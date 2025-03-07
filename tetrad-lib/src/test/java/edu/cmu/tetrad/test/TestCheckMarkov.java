@@ -1,7 +1,11 @@
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -14,11 +18,16 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+
+import static java.lang.Math.log;
 
 public class TestCheckMarkov {
 
@@ -598,5 +607,77 @@ public class TestCheckMarkov {
         List<Node> rejects = accepts_rejects.get(1);
         System.out.println("Accepts size: " + accepts.size());
         System.out.println("Rejects size: " + rejects.size());
+    }
+
+    @Test
+    public void checkMarkovMethod() {
+
+        DataSet data2 = null;
+        Knowledge knowledge = null;
+        try {
+            data2 = SimpleDataLoader.loadContinuousData(new File("/Users/josephramsey/IdeaProjects/bftools/fun_scripts/psp_c_pivot_v8.csv"),
+                    "#", '\"', "*", true, Delimiter.COMMA, false);
+
+            knowledge = SimpleDataLoader.loadKnowledge(new File("/Users/josephramsey/IdeaProjects/bftools/fun_scripts/mike_knowledge.txt"),
+                    DelimiterType.WHITESPACE, "#");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (int i = 0; i < data2.getNumRows(); i++) {
+            for (int j = 0; j < data2.getNumColumns(); j++) {
+                data2.setDouble(i, j, log(1 + data2.getDouble(i, j)));
+            }
+        }
+
+        Graph graph = null;
+        try {
+            SemBicScore score = new SemBicScore(data2, true);
+            score.setPenaltyDiscount(2);
+            PermutationSearch search = new PermutationSearch(new Boss(score));
+//            search.setKnowledge(knowledge);
+            graph = search.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("Test Graph: " + graph);
+
+        ConditioningSetType condType = ConditioningSetType.ORDERED_LOCAL_MARKOV;
+        MarkovCheck markovCheck = new MarkovCheck(graph, new IndTestFisherZ(data2, 0.00001), condType);
+        markovCheck.setKnowledge(knowledge);
+        markovCheck.generateResults(true);
+
+        int numTestsH0 = markovCheck.getNumTests(true);
+        int numTestsH1 = markovCheck.getNumTests(false);
+
+        double fracDepH0 = markovCheck.getFractionDependent(true);
+        double fracDepH1 = markovCheck.getFractionDependent(false);
+
+        System.out.println("numTestsH0: " + numTestsH0);
+        System.out.println("numTestsH1: " + numTestsH1);
+
+        System.out.println("fracDepH0: " + fracDepH0);
+        System.out.println("fracDepH1: " + fracDepH1);
+
+        McGetNumTestsH0 numTestsH0_2 = new McGetNumTestsH0(new FisherZ(), condType);
+        McGetNumTestsH1 numTestsH1_2 = new McGetNumTestsH1(new FisherZ(), condType);
+
+        double numTestsH0_2a = numTestsH0_2.getValue(null, graph, data2, new Parameters());
+        double numTestsH1_2a = numTestsH1_2.getValue(null, graph, data2, new Parameters());
+
+        System.out.println("numTestsH0_2a: " + numTestsH0_2a);
+        System.out.println("numTestsH1_2a: " + numTestsH1_2a);
+
+        MarkovCheckFractionDependentH0 fracDepH0_2 = new MarkovCheckFractionDependentH0(new FisherZ(), condType);
+        MarkovCheckFractionDependentH1 fracDepH1_2 = new MarkovCheckFractionDependentH1(new FisherZ(), condType);
+
+        double fracDepH0_2a = fracDepH0_2.getValue(null, graph, data2, new Parameters());
+        double fracDepH1_2a = fracDepH1_2.getValue(null, graph, data2, new Parameters());
+
+        System.out.println("fracDepH0_2a: " + fracDepH0_2a);
+        System.out.println("fracDepH1_2a: " + fracDepH1_2a);
+
+
     }
 }

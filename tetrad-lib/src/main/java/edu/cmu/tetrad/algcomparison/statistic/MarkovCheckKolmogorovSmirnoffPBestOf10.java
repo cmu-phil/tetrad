@@ -1,14 +1,11 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
-import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -19,16 +16,19 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic {
+public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    private final IndependenceWrapper independenceWrapper;
+    private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
      */
-    public MarkovCheckKolmogorovSmirnoffPBestOf10() {
-
+    public MarkovCheckKolmogorovSmirnoffPBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+        this.independenceWrapper = independenceWrapper;
+        this.conditioningSetType = conditioningSetType;
     }
 
     /**
@@ -69,23 +69,13 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic {
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        IndependenceTest independenceTest;
-
-        if (dataModel.isContinuous()) {
-            independenceTest = new IndTestFisherZ((DataSet) dataModel, 0.01);
-        } else if (dataModel.isDiscrete()) {
-            independenceTest = new IndTestChiSquare((DataSet) dataModel, 0.01);
-        } else if (dataModel.isMixed()) {
-            independenceTest = new IndTestConditionalGaussianLrt((DataSet) dataModel, 0.01, true);
-        } else {
-            throw new IllegalArgumentException("Data model is not continuous, discrete, or mixed.");
-        }
+        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
 
         // Find the best of 11 repetitions
         double max = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < 11; i++) {
-            MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
+            MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
             markovCheck.generateResults(true, true);
             double ksPValue = markovCheck.getKsPValue(true);
             if (ksPValue > max) {

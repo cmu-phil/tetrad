@@ -26,7 +26,7 @@ import java.util.List;
         dataType = DataType.Mixed
 )
 @Mixed
-public class ConditionalGaussianLRT implements IndependenceWrapper {
+public class ConditionalGaussianLrt implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -34,7 +34,7 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
     /**
      * Initializes a new instance of the FisherZ class.
      */
-    public ConditionalGaussianLRT() {
+    public ConditionalGaussianLrt() {
 
     }
 

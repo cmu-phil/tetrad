@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -13,16 +16,19 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class MarkovCheckKsPasses implements Statistic {
+public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    private final IndependenceWrapper independenceWrapper;
+    private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
      */
-    public MarkovCheckKsPasses() {
-
+    public MarkovCheckKsPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+        this.independenceWrapper = independenceWrapper;
+        this.conditioningSetType = conditioningSetType;
     }
 
     /**
@@ -57,7 +63,7 @@ public class MarkovCheckKsPasses implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckKolmogorovSmirnoffP().getValue(trueGraph, estGraph, dataModel, new Parameters());
+        double p = new MarkovCheckKolmogorovSmirnoffP(independenceWrapper, conditioningSetType).getValue(trueGraph, estGraph, dataModel, new Parameters());
         return p > parameters.getDouble(Params.MC_ALPHA) ? 1.0 : 0.0;
     }
 
