@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -13,16 +15,43 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class MarkovCheckKsPasses implements Statistic {
+public class MarkovCheckKsPasses implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * An instance of IndependenceWrapper used to encapsulate an independence testing algorithm for evaluating
+     * conditional independence relationships in statistical models.
+     * <p>
+     * The IndependenceWrapper is responsible for performing independence tests, retrieving test descriptions,
+     * determining the required data types, and managing algorithm-specific parameters.
+     */
+    private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set used to evaluate conditional independence relationships during statistical
+     * tests in the Markov check process.
+     * <p>
+     * The conditioning set determines the set of variables used in independence tests, impacting the assumptions made
+     * and the results of the Markov check. Different ConditioningSetTypes correspond to varying definitions of variable
+     * dependencies and independence implied by the graph, ranging from global to local contexts.
+     * <p>
+     * This variable plays a critical role in selecting the appropriate conditioning technique to align with the
+     * statistical model under analysis.
+     */
+    private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
-    public MarkovCheckKsPasses() {
-
+    public MarkovCheckKsPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+        this.independenceWrapper = independenceWrapper;
+        this.conditioningSetType = conditioningSetType;
     }
 
     /**
@@ -57,7 +86,7 @@ public class MarkovCheckKsPasses implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckKolmogorovSmirnoffP().getValue(trueGraph, estGraph, dataModel, new Parameters());
+        double p = new MarkovCheckKolmogorovSmirnoffP(independenceWrapper, conditioningSetType).getValue(trueGraph, estGraph, dataModel, new Parameters());
         return p > parameters.getDouble(Params.MC_ALPHA) ? 1.0 : 0.0;
     }
 

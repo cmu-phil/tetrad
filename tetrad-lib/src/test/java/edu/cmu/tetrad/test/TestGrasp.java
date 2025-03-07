@@ -251,7 +251,7 @@ public final class TestGrasp {
 
         Parameters parameters = new Parameters();
 
-//        GRaSP grasp = new GRaSP(new ConditionalGaussianBicScore(), new ConditionalGaussianLRT());
+//        GRaSP grasp = new GRaSP(new ConditionalGaussianBicScore(), new ConditionalGaussianLrt());
 //        Graph pat3 = grasp.search(data, parameters);
 
         edu.cmu.tetrad.search.Grasp boss = new edu.cmu.tetrad.search.Grasp(test, score);

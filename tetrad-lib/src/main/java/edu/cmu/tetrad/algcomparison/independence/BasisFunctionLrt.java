@@ -33,7 +33,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Initializes a new instance of the DegenerateGaussianLRT class.
+     * Initializes a new instance of the DegenerateGaussianLrt class.
      */
     public BasisFunctionLrt() {
     }

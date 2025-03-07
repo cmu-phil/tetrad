@@ -372,11 +372,12 @@ public class Mimbuild {
             }
         }
 
-        for (Node node : includeNodes) {
-            if (graph.getNode(node.getName()) == null) {
-                graph.addNode(new GraphNode(node.getName()));
-            }
-        }
+        // These should not be included, as they mess with the counts for degrees of freedom.
+//        for (Node node : includeNodes) {
+//            if (graph.getNode(node.getName()) == null) {
+//                graph.addNode(new GraphNode(node.getName()));
+//            }
+//        }
 
         LayoutUtil.fruchtermanReingoldLayout(graph);
 
@@ -461,9 +462,12 @@ public class Mimbuild {
 
         if (df < 1)
             throw new IllegalStateException(
-                    "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
-                    "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
-                    "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
+                    """
+                            Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)\
+                            
+                            was calculated to be less than 1. Perhaps the model is not a multiple indicator model \
+                            
+                            or doesn't have enough pure nmeasurements to do a proper estimation.""");
 
         ChiSquaredDistribution chisq = new ChiSquaredDistribution(df);
 

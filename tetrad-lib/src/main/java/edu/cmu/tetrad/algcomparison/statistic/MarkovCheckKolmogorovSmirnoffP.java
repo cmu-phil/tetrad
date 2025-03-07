@@ -1,14 +1,11 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
-import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -19,16 +16,40 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
+public class MarkovCheckKolmogorovSmirnoffP implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * An instance of the IndependenceWrapper interface that encapsulates the independence test logic.
+     * Used for generating and applying independence tests within the context of statistical calculations.
+     * The independenceWrapper field supplies a way to determine whether variables in data are independent,
+     * conditional on a provided conditioning set, and produces relevant test results.
+     */
+    private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set used in the Markov check.
+     * Determines how independence tests are conducted based on the graph structure
+     * by conditioning on a specific set of variables. The choice of the conditioning
+     * set type impacts the assessment of conditional independence and derived dependencies.
+     *
+     * This field is immutable and initialized during the instantiation of the
+     * {@code MarkovCheckKolmogorovSmirnoffP} class.
+     */
+    private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
-    public MarkovCheckKolmogorovSmirnoffP() {
-
+    public MarkovCheckKolmogorovSmirnoffP(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+        this.independenceWrapper = independenceWrapper;
+        this.conditioningSetType = conditioningSetType;
     }
 
     /**
@@ -69,19 +90,8 @@ public class MarkovCheckKolmogorovSmirnoffP implements Statistic {
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        IndependenceTest independenceTest;
-
-        if (dataModel.isContinuous()) {
-            independenceTest = new IndTestFisherZ((DataSet) dataModel, 0.01);
-        } else if (dataModel.isDiscrete()) {
-            independenceTest = new IndTestChiSquare((DataSet) dataModel, 0.01);
-        } else if (dataModel.isMixed()) {
-            independenceTest = new IndTestConditionalGaussianLrt((DataSet) dataModel, 0.01, true);
-        } else {
-            throw new IllegalArgumentException("Data model is not continuous, discrete, or mixed.");
-        }
-
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
+        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
         markovCheck.generateResults(true, true);
         return markovCheck.getKsPValue(true);
     }

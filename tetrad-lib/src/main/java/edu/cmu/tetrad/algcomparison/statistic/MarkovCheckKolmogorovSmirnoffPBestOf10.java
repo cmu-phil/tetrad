@@ -1,14 +1,11 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
-import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -19,16 +16,40 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic {
+public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * An instance of the IndependenceWrapper interface used for conducting independence tests. This variable is
+     * critical for determining whether variables in a dataset are independent based on specified conditions. It enables
+     * the evaluation of statistical independence necessary for assessing the structure of causal graphs and for the
+     * execution of Markov-related validation checks.
+     * <p>
+     * IndependenceWrapper provides methods for obtaining independence tests, retrieving test descriptions, handling
+     * parameter requirements, and verifying the compatibility of data types used for independence assessments. This
+     * interface serves as a foundational component in algorithms implementing statistical structure learning and
+     * evaluation.
+     */
+    private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set to be used for the Markov check in calculations. The conditioning set
+     * determines how independence facts are tested and is defined by the {@link ConditioningSetType} enum.
+     */
+    private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Kolmogorov-Smirnoff P value for the Markov check of whether the p-values for the estimated graph
      * are distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
-    public MarkovCheckKolmogorovSmirnoffPBestOf10() {
-
+    public MarkovCheckKolmogorovSmirnoffPBestOf10(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+        this.independenceWrapper = independenceWrapper;
+        this.conditioningSetType = conditioningSetType;
     }
 
     /**
@@ -69,23 +90,13 @@ public class MarkovCheckKolmogorovSmirnoffPBestOf10 implements Statistic {
             throw new IllegalArgumentException("Data model is null.");
         }
 
-        IndependenceTest independenceTest;
-
-        if (dataModel.isContinuous()) {
-            independenceTest = new IndTestFisherZ((DataSet) dataModel, 0.01);
-        } else if (dataModel.isDiscrete()) {
-            independenceTest = new IndTestChiSquare((DataSet) dataModel, 0.01);
-        } else if (dataModel.isMixed()) {
-            independenceTest = new IndTestConditionalGaussianLrt((DataSet) dataModel, 0.01, true);
-        } else {
-            throw new IllegalArgumentException("Data model is not continuous, discrete, or mixed.");
-        }
+        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
 
         // Find the best of 11 repetitions
         double max = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < 11; i++) {
-            MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
+            MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
             markovCheck.generateResults(true, true);
             double ksPValue = markovCheck.getKsPValue(true);
             if (ksPValue > max) {

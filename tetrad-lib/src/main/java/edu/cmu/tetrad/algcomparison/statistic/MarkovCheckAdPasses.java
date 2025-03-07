@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -13,16 +15,40 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class MarkovCheckAdPasses implements Statistic {
+public class MarkovCheckAdPasses implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * Provides an interface to independence tests for evaluating conditional independence relationships
+     * in a data set. It is used as a dependency for statistical computations and Markov checks
+     * within the containing class.
+     */
+    private final IndependenceWrapper independenceWrapper;
+    /**
+     * Represents the type of conditioning set to be used in Markov checks for evaluating independence
+     * relationships in a graph or data set. The conditioning set determines which variables are conditioned
+     * on during independence tests, influencing the nature and scope of the independence facts being tested.
+     *
+     * This variable works in conjunction with {@link IndependenceWrapper} to perform statistical evaluations
+     * related to Markov property testing. Its specific type is defined by the {@link ConditioningSetType} enum,
+     * which provides various options such as GLOBAL_MARKOV, LOCAL_MARKOV, and others, each corresponding to
+     * a particular approach to selecting the conditioning set.
+     */
+    private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the Anderson Darling P value for the Markov check of whether the p-values for the estimated graph are
      * distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
-    public MarkovCheckAdPasses() {
-
+    public MarkovCheckAdPasses(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType   ) {
+        this.independenceWrapper = independenceWrapper;
+        this.conditioningSetType = conditioningSetType;
     }
 
     /**
@@ -57,7 +83,7 @@ public class MarkovCheckAdPasses implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        double p = new MarkovCheckAndersonDarlingP().getValue(trueGraph, estGraph, dataModel, new Parameters());
+        double p = new MarkovCheckAndersonDarlingP(independenceWrapper, conditioningSetType).getValue(trueGraph, estGraph, dataModel, new Parameters());
         double alpha = parameters.getDouble(Params.MC_ALPHA);
 
         System.out.println("Markov check alpha = " + alpha);

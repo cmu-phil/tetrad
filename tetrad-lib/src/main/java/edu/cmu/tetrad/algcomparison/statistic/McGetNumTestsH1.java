@@ -1,14 +1,11 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
-import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -19,16 +16,38 @@ import java.io.Serial;
  *
  * @author josephramsey
  */
-public class McGetNumTestsH1 implements Statistic {
+public class McGetNumTestsH1 implements Statistic, MarkovCheckerStatistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * An instance of the IndependenceWrapper interface used to perform independence tests
+     * in the context of statistical computations and graph evaluations. It provides the
+     * necessary methods to retrieve and configure independence tests, as well as to
+     * obtain a description of the specific independence testing algorithm being employed.
+     */
+    private final IndependenceWrapper independenceWrapper;
+    /**
+     * Specifies the type of conditioning set used in the Markov check for evaluating independence or dependence
+     * relationships. This variable is associated with the configuration of the independence tests and determines
+     * how the conditioning set is constructed based on the selected type from the {@link ConditioningSetType} enum.
+     * The conditioning set influences the statistical properties of the independence tests performed during
+     * Markov checks.
+     */
+    private final ConditioningSetType conditioningSetType;
 
     /**
      * Calculates the number of tests for the Markov check of whether the p-values for the estimated graph are
      * distributed as U(0, 1).
+     *
+     * @param independenceWrapper An instance of {@link IndependenceWrapper} used to encapsulate and perform
+     *                            independence tests on the dataset with specific configurations.
+     * @param conditioningSetType The type of conditioning set employed during Markov checks, represented by the
+     *                            {@link ConditioningSetType} enum; this dictates how variables are conditioned in
+     *                            independence tests.
      */
-    public McGetNumTestsH1() {
-
+    public McGetNumTestsH1(IndependenceWrapper independenceWrapper, ConditioningSetType conditioningSetType) {
+        this.independenceWrapper = independenceWrapper;
+        this.conditioningSetType = conditioningSetType;
     }
 
     /**
@@ -68,21 +87,9 @@ public class McGetNumTestsH1 implements Statistic {
         if (dataModel == null) {
             throw new IllegalArgumentException("Data model is null.");
         }
-        IndependenceTest independenceTest;
 
-        if (dataModel.isContinuous()) {
-            independenceTest = new IndTestFisherZ((DataSet) dataModel, 0.01);
-//            independenceTest = new IndTestBasisFunctionLrt((DataSet) dataModel, parameters.getInt(Params.TRUNCATION_LIMIT),
-//                    parameters.getInt(Params.BASIS_TYPE), parameters.getInt(Params.BASIS_SCALE));
-        } else if (dataModel.isDiscrete()) {
-            independenceTest = new IndTestChiSquare((DataSet) dataModel, 0.01);
-        } else if (dataModel.isMixed()) {
-            independenceTest = new IndTestConditionalGaussianLrt((DataSet) dataModel, 0.01, true);
-        } else {
-            throw new IllegalArgumentException("Data model is not continuous, discrete, or mixed.");
-        }
-
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, independenceTest, ConditioningSetType.LOCAL_MARKOV);
+        IndependenceTest test = independenceWrapper.getTest(dataModel, parameters);
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, test, conditioningSetType);
         markovCheck.generateResults(false, true);
         return markovCheck.getNumTests(false);
     }

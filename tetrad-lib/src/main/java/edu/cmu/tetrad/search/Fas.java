@@ -225,50 +225,97 @@ public class Fas {
         List<Node> nodes = graph.getNodes();
 
         if (stable) {
-            nodes.parallelStream().forEach(x -> {
-                for (Node y : nodes) {
-                    if (x == y) continue;
+            try {
+                nodes.parallelStream().forEach(x -> {
+                    for (Node y : nodes) {
+                        if (x == y) continue;
 
-                    if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
-                        synchronized (graph_) {
-                            graph_.removeEdge(x, y);
-                        }
-                    }
-
-                    List<Node> adjX = graph.getAdjacentNodes(x);
-                    adjX.remove(y);
-
-                    List<Node> ppx = null;
-                    try {
-                        ppx = possibleParents(x, adjX, knowledge, y);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    if (ppx.size() >= d) {
-                        ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
-                        int[] choice;
-
-                        while ((choice = generator.next()) != null) {
-                            Set<Node> S = GraphUtils.asSet(choice, ppx);
-
-                            IndependenceResult result = null;
-                            try {
-                                result = test.checkIndependence(x, y, S);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
+                        if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
+                            synchronized (graph_) {
+                                graph_.removeEdge(x, y);
                             }
-                            if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
-                                synchronized (graph_) {
-                                    graph_.removeEdge(x, y);
-                                    sepset.set(x, y, S);
+                        }
+
+                        List<Node> adjX = graph.getAdjacentNodes(x);
+                        adjX.remove(y);
+
+                        List<Node> ppx = null;
+                        try {
+                            ppx = possibleParents(x, adjX, knowledge, y);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        if (ppx.size() >= d) {
+                            ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
+                            int[] choice;
+
+                            while ((choice = generator.next()) != null) {
+                                Set<Node> S = GraphUtils.asSet(choice, ppx);
+
+                                IndependenceResult result = null;
+                                try {
+                                    result = test.checkIndependence(x, y, S);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
                                 }
-                                break;
+                                if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
+                                    synchronized (graph_) {
+                                        graph_.removeEdge(x, y);
+                                        sepset.set(x, y, S);
+                                    }
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            } catch (Exception e) {
+                nodes.forEach(x -> {
+                    for (Node y : nodes) {
+                        if (x == y) continue;
+
+                        if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
+                            synchronized (graph_) {
+                                graph_.removeEdge(x, y);
+                            }
+                        }
+
+                        List<Node> adjX = graph.getAdjacentNodes(x);
+                        adjX.remove(y);
+
+                        List<Node> ppx = null;
+                        try {
+                            ppx = possibleParents(x, adjX, knowledge, y);
+                        } catch (InterruptedException e2) {
+                            throw new RuntimeException(e2);
+                        }
+
+                        if (ppx.size() >= d) {
+                            ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
+                            int[] choice;
+
+                            while ((choice = generator.next()) != null) {
+                                Set<Node> S = GraphUtils.asSet(choice, ppx);
+
+                                IndependenceResult result = null;
+                                try {
+                                    result = test.checkIndependence(x, y, S);
+                                } catch (InterruptedException e3) {
+                                    throw new RuntimeException(e3);
+                                }
+                                if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
+                                    synchronized (graph_) {
+                                        graph_.removeEdge(x, y);
+                                        sepset.set(x, y, S);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         } else {
             System.out.println("Depth: " + d);
 
