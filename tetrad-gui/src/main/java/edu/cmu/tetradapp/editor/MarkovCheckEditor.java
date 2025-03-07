@@ -1488,7 +1488,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param params              The parameters for the independence test.
      * @return The JPanel containing the parameters panel.
      */
-    private JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
+    private static JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
         Set<String> testParameters = new HashSet<>(independenceWrapper.getParameters());
         return createParamsPanel(testParameters, params);
     }
@@ -1500,7 +1500,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param parameters The Parameters object containing the parameter values.
      * @return The JPanel containing the parameters panel.
      */
-    private JPanel createParamsPanel(Set<String> params, Parameters parameters) {
+    public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
 
@@ -1526,7 +1526,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param parameters The Parameters object containing the parameter values.
      * @return A map of parameter names to Box components.
      */
-    private Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+    private static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
@@ -1547,7 +1547,7 @@ public class MarkovCheckEditor extends JPanel {
      * @return A Box component representing the parameter component.
      * @throws IllegalArgumentException If the default value type is unexpected.
      */
-    private Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
         if (defaultValue instanceof Double) {
@@ -1594,34 +1594,9 @@ public class MarkovCheckEditor extends JPanel {
      * @param upperBound   The upper bound for valid values.
      * @return A DoubleTextField with the specified parameters.
      */
-    private DoubleTextField getDoubleField(String parameter, Parameters parameters,
+    private static DoubleTextField getDoubleField(String parameter, Parameters parameters,
                                            double defaultValue, double lowerBound, double upperBound) {
-        DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
-                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
-
-        field.setFilter((value, oldValue) -> {
-            if (value == field.getValue()) {
-                return oldValue;
-            }
-
-            if (value < lowerBound) {
-                return oldValue;
-            }
-
-            if (value > upperBound) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
+        return ParameterComponents.getDoubleField(parameter, parameters, defaultValue, lowerBound, upperBound);
     }
 
     /**
@@ -1634,33 +1609,9 @@ public class MarkovCheckEditor extends JPanel {
      * @param upperBound   The upper bound for valid values.
      * @return An IntTextField with the specified parameters.
      */
-    private IntTextField getIntTextField(String parameter, Parameters parameters,
+    private static IntTextField getIntTextField(String parameter, Parameters parameters,
                                          int defaultValue, double lowerBound, double upperBound) {
-        IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
-
-        field.setFilter((value, oldValue) -> {
-            if (value == field.getValue()) {
-                return oldValue;
-            }
-
-            if (value < lowerBound) {
-                return oldValue;
-            }
-
-            if (value > upperBound) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
+        return ParameterComponents.getIntTextField(parameter, parameters, defaultValue, lowerBound, upperBound);
     }
 
     /**
@@ -1673,7 +1624,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param upperBound   The upper bound for valid values.
      * @return A LongTextField object with the specified parameters.
      */
-    private LongTextField getLongTextField(String parameter, Parameters parameters,
+    private static LongTextField getLongTextField(String parameter, Parameters parameters,
                                            long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
 
@@ -1709,7 +1660,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param parameters   The Parameters object containing the parameter values.
      * @param defaultValue The default value for the boolean parameter
      */
-    private Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+    private static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
@@ -1760,24 +1711,8 @@ public class MarkovCheckEditor extends JPanel {
      * @param defaultValue The default value for the StringTextField.
      * @return A StringTextField object with the specified parameters.
      */
-    private StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
-        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
-
-        field.setFilter((value, oldValue) -> {
-            if (value.equals(field.getValue().trim())) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
+    private static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        return PathsAction.getStringField(parameter, parameters, defaultValue);
     }
 
     /**

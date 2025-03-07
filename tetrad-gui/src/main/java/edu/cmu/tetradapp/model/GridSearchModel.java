@@ -169,19 +169,24 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     private transient PrintStream verboseOut;
     /**
-     * A wrapper for a statistical independence test used by the Markov checker.
+     * A variable that holds an instance of the IndependenceWrapper implementation used for independence testing.
      * <p>
-     * This instance by default utilizes the Fisher-Z test for determining statistical independence.
+     * In this case, the implementation is `FisherZ`, which is typically employed for assessing statistical independence
+     * based on Fisher's Z-transformation. It serves as the primary tool for conditional independence checks in related
+     * algorithms or workflows.
      */
     private IndependenceWrapper markovCheckerIndependenceWrapper = new FisherZ();
     /**
-     * Represents the type of conditioning set used in a Markov property verification process. This variable identifies
-     * the specific conditioning set type in the context of the Markov checker.
-     * <p>
-     * The value is set to {@code ConditioningSetType.LOCAL_MARKOV} by default, indicating that the local Markov
-     * property is being utilized.
+     * Represents the type of conditioning set used in the Markov checker. The variable defines how the conditioning set
+     * is categorized or scoped, influencing the analysis process in probabilistic or causal models. It is initialized
+     * to `ConditioningSetType.LOCAL_MARKOV`, indicating that the default scope pertains to local Markovity.
      */
     private ConditioningSetType markovCheckerConditioningSetType = ConditioningSetType.LOCAL_MARKOV;
+    /**
+     * Stores the selected independendence test model for the GridSearchEditor. It needs to be stored here in case
+     * the user closes the editor and re-opens it.
+     */
+    private IndependenceTestModel selectedIndependenceTestModel = null;
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -822,7 +827,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     statisticsNames.add(abbreviation);
                 } else if (MarkovCheckerStatistic.class.isAssignableFrom(statistic)) {
                     Statistic _statistic = statistic.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
-                            .newInstance(markovCheckerIndependenceWrapper, markovCheckerConditioningSetType);
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
                     String abbreviation = _statistic.getAbbreviation();
                     statisticsNames.add(abbreviation);
                 }
@@ -873,7 +878,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
                 if (MarkovCheckerStatistic.class.isAssignableFrom(column.getStatistic())) {
                     try {
                         Constructor<? extends Statistic> constructor = column.getStatistic().getConstructor(IndependenceWrapper.class, ConditioningSetType.class);
-                        Statistic statistic = constructor.newInstance(markovCheckerIndependenceWrapper, markovCheckerConditioningSetType);
+                        Statistic statistic = constructor.newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
                         selectedStatistics.add(statistic);
                         lastStatisticsUsed.add(statistic);
                     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
@@ -995,7 +1000,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     allTableColumns.add(column);
                 } else if (MarkovCheckerStatistic.class.isAssignableFrom(statisticClass)) {
                     Statistic _statistic = statisticClass.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
-                            .newInstance(markovCheckerIndependenceWrapper, markovCheckerConditioningSetType);
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
                     MyTableColumn column = new MyTableColumn(_statistic.getAbbreviation(), _statistic.getDescription(), statisticClass);
                     allTableColumns.add(column);
                 }
@@ -1222,16 +1227,38 @@ public class GridSearchModel implements SessionModel, GraphSource {
     }
 
     /**
+     * A wrapper for a statistical independence test used by the Markov checker.
+     * <p>
+     * This instance by default utilizes the Fisher-Z test for determining statistical independence.
+     */
+    public IndependenceWrapper getMarkovCheckerIndependenceWrapper() {
+        return markovCheckerIndependenceWrapper;
+    }
+
+    /**
      * Sets the Markov Checker Independence Wrapper.
      *
-     * @param markovCheckerIndependenceWrapper an instance of IndependenceWrapper to be associated
-     *                                         with the Markov Checker.
+     * @param markovCheckerIndependenceWrapper an instance of IndependenceWrapper to be associated with the Markov
+     *                                         Checker.
      */
     public void setMarkovCheckerIndependenceWrapper(IndependenceWrapper markovCheckerIndependenceWrapper) {
-        if (markovCheckerIndependenceWrapper != null) {
+        if (markovCheckerIndependenceWrapper == null) {
             throw new IllegalArgumentException("markovCheckerIndependenceWrapper cannot be null");
         }
         this.markovCheckerIndependenceWrapper = markovCheckerIndependenceWrapper;
+
+        System.out.println("Setting independence wrapper to " + markovCheckerIndependenceWrapper);
+    }
+
+    /**
+     * Represents the type of conditioning set used in a Markov property verification process. This variable identifies
+     * the specific conditioning set type in the context of the Markov checker.
+     * <p>
+     * The value is set to {@code ConditioningSetType.LOCAL_MARKOV} by default, indicating that the local Markov
+     * property is being utilized.
+     */
+    public ConditioningSetType getMarkovCheckerConditioningSetType() {
+        return markovCheckerConditioningSetType;
     }
 
     /**
@@ -1240,10 +1267,18 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * @param markovCheckerConditioningSetType the conditioning set type to be set for the Markov checker
      */
     public void setMarkovCheckerConditioningSetType(ConditioningSetType markovCheckerConditioningSetType) {
-        if (markovCheckerConditioningSetType != null) {
+        if (markovCheckerConditioningSetType == null) {
             throw new IllegalArgumentException("markovCheckerConditioningSetType cannot be null");
         }
         this.markovCheckerConditioningSetType = markovCheckerConditioningSetType;
+    }
+
+    public IndependenceTestModel getSelectedIndependenceTestModel() {
+        return selectedIndependenceTestModel;
+    }
+
+    public void setSelectedIndependenceTestModel(IndependenceTestModel selectedIndependenceTestModel) {
+        this.selectedIndependenceTestModel = selectedIndependenceTestModel;
     }
 
     /**

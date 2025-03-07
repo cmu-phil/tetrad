@@ -37,6 +37,8 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -184,17 +186,11 @@ public class GridSearchEditor extends JPanel {
      * @param parameters the Parameters object containing the parameter values
      * @return a map of parameter names to corresponding Box components
      */
-    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters,
-                                                             boolean listOptionAllowed, boolean bothOptionAllowed) {
+    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters, boolean listOptionAllowed, boolean bothOptionAllowed) {
         ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
-        return params.stream()
-                .collect(Collectors.toMap(
-                        Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, bothOptionAllowed),
-                        (u, v) -> {
-                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
-                        },
-                        TreeMap::new));
+        return params.stream().collect(Collectors.toMap(Function.identity(), e -> createParameterComponent(e, parameters, paramDescriptions.get(e), listOptionAllowed, bothOptionAllowed), (u, v) -> {
+            throw new IllegalStateException(String.format("Duplicate key %s.", u));
+        }, TreeMap::new));
     }
 
     /**
@@ -216,8 +212,7 @@ public class GridSearchEditor extends JPanel {
             }
         });
 
-        return Stream.concat(otherComps.stream(), boolComps.stream())
-                .toArray(Box[]::new);
+        return Stream.concat(otherComps.stream(), boolComps.stream()).toArray(Box[]::new);
     }
 
     /**
@@ -228,8 +223,7 @@ public class GridSearchEditor extends JPanel {
      * @param paramDesc  the ParamDescription object containing information about the parameter
      * @return a Box component representing the parameter
      */
-    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc,
-                                                boolean listOptionAllowed, boolean bothOptionAllowed) {
+    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc, boolean listOptionAllowed, boolean bothOptionAllowed) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
 
@@ -288,7 +282,7 @@ public class GridSearchEditor extends JPanel {
         } else if (defaultValue instanceof Boolean) {
             component = getBooleanSelectionBox(parameter, parameters, bothOptionAllowed);
         } else if (defaultValue instanceof String) {
-            component = getStringField(parameter, parameters, (String) defaultValue);
+            component = createStringField(parameter, parameters, (String) defaultValue);
         } else {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
@@ -317,10 +311,8 @@ public class GridSearchEditor extends JPanel {
      * @param upperBound   the upperbound limit for valid input values in the DoubleTextField
      * @return a DoubleTextField with the specified parameters
      */
-    public static DoubleTextField getDoubleTextField(String parameter, Parameters parameters,
-                                                     double defaultValue, double lowerBound, double upperBound) {
-        DoubleTextField field = new DoubleTextField(defaultValue,
-                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
+    public static DoubleTextField getDoubleTextField(String parameter, Parameters parameters, double defaultValue, double lowerBound, double upperBound) {
+        DoubleTextField field = new DoubleTextField(defaultValue, 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
         field.setFilter((value, oldValues) -> {
             if (Double.isNaN(value)) {
@@ -357,10 +349,8 @@ public class GridSearchEditor extends JPanel {
      * @param upperBound    the upper bound for the values
      * @return a ListDoubleTextField component with the specified parameters
      */
-    public static ListDoubleTextField getListDoubleTextField(String parameter, Parameters parameters,
-                                                             Double[] defaultValues, double lowerBound, double upperBound) {
-        ListDoubleTextField field = new ListDoubleTextField(defaultValues,
-                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
+    public static ListDoubleTextField getListDoubleTextField(String parameter, Parameters parameters, Double[] defaultValues, double lowerBound, double upperBound) {
+        ListDoubleTextField field = new ListDoubleTextField(defaultValues, 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
         field.setFilter((values, oldValues) -> {
             if (values.length == 0) {
@@ -413,8 +403,7 @@ public class GridSearchEditor extends JPanel {
      * @param upperBound   the upper bound for valid values
      * @return an IntTextField with the specified parameters
      */
-    public static IntTextField getIntTextField(String parameter, Parameters parameters,
-                                               int defaultValue, double lowerBound, double upperBound) {
+    public static IntTextField getIntTextField(String parameter, Parameters parameters, int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(defaultValue, 8);
 
         field.setFilter((value, oldValue) -> {
@@ -448,8 +437,7 @@ public class GridSearchEditor extends JPanel {
      * @param upperBound    the upper bound for the values
      * @return a ListIntTextField component with the specified parameters
      */
-    public static ListIntTextField getListIntTextField(String parameter, Parameters parameters,
-                                                       Integer[] defaultValues, double lowerBound, double upperBound) {
+    public static ListIntTextField getListIntTextField(String parameter, Parameters parameters, Integer[] defaultValues, double lowerBound, double upperBound) {
         ListIntTextField field = new ListIntTextField(defaultValues, 8);
 
         field.setFilter((values, oldValues) -> {
@@ -499,8 +487,7 @@ public class GridSearchEditor extends JPanel {
      * @param upperBound   The upper bound for the LongTextField value.
      * @return A LongTextField object with the specified parameters.
      */
-    public static LongTextField getLongTextField(String parameter, Parameters parameters,
-                                                 long defaultValue, long lowerBound, long upperBound) {
+    public static LongTextField getLongTextField(String parameter, Parameters parameters, long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(defaultValue, 8);
 
         field.setFilter((value, oldValue) -> {
@@ -524,8 +511,7 @@ public class GridSearchEditor extends JPanel {
         return field;
     }
 
-    public static ListLongTextField getListLongTextField(String parameter, Parameters parameters,
-                                                         Long[] defaultValues, long lowerBound, long upperBound) {
+    public static ListLongTextField getListLongTextField(String parameter, Parameters parameters, Long[] defaultValues, long lowerBound, long upperBound) {
         ListLongTextField field = new ListLongTextField(defaultValues, 8);
 
         field.setFilter((values, oldValues) -> {
@@ -771,14 +757,10 @@ public class GridSearchEditor extends JPanel {
                     sb.append(", ");
                 }
 
-                if (values[i] instanceof Double)
-                    sb.append(nf.format((double) values[i]));
-                else if (values[i] instanceof Integer)
-                    sb.append((int) values[i]);
-                else if (values[i] instanceof Long)
-                    sb.append((long) values[i]);
-                else
-                    sb.append(values[i]);
+                if (values[i] instanceof Double) sb.append(nf.format((double) values[i]));
+                else if (values[i] instanceof Integer) sb.append((int) values[i]);
+                else if (values[i] instanceof Long) sb.append((long) values[i]);
+                else sb.append(values[i]);
             }
 
             paramText.append("\n\n- ").append(name).append(" = ").append(sb);
@@ -810,8 +792,7 @@ public class GridSearchEditor extends JPanel {
      * @param graphIndexComboBox The combo box to update with the graph indices.
      * @param resultsDir         The directory where the graph results are stored.
      */
-    private void updateAlgorithmBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
-                                           JComboBox<Integer> graphIndexComboBox, File resultsDir) {
+    private void updateAlgorithmBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox, JComboBox<Integer> graphIndexComboBox, File resultsDir) {
         int savedAlgorithm = model.getSelectedAlgorithm();
         Object selectedSimulation = simulationComboBox.getSelectedItem();
 
@@ -877,8 +858,7 @@ public class GridSearchEditor extends JPanel {
      * @param graphIndexComboBox The combo box to update with the graph indices.
      * @param resultsDir         The directory where the graph results are stored.
      */
-    private void updateGraphBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
-                                       JComboBox<Integer> graphIndexComboBox, File resultsDir) {
+    private void updateGraphBoxIndices(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox, JComboBox<Integer> graphIndexComboBox, File resultsDir) {
         int savedGraphIndex = model.getSelectedGraphIndex();
 
         Object selectedSimulation = simulationComboBox.getSelectedItem();
@@ -935,9 +915,7 @@ public class GridSearchEditor extends JPanel {
         }
     }
 
-    private void updateSelectedGraph(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox,
-                                     JComboBox<Integer> graphIndexComboBox, File resultsDir,
-                                     GraphWorkbench workbench) {
+    private void updateSelectedGraph(JComboBox<Integer> simulationComboBox, JComboBox<Integer> algorithmComboBox, JComboBox<Integer> graphIndexComboBox, File resultsDir, GraphWorkbench workbench) {
         Object selectedSimulation = simulationComboBox.getSelectedItem();
         Object selectedAlgorithm = algorithmComboBox.getSelectedItem();
         Object selectedGraphIndex = graphIndexComboBox.getSelectedItem();
@@ -983,10 +961,7 @@ public class GridSearchEditor extends JPanel {
      * @throws IllegalAccessException    If the graph or simulation constructor or class is inaccessible.
      */
     @NotNull
-    private edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(
-            Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz,
-            Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz)
-            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation(Class<? extends edu.cmu.tetrad.algcomparison.graph.RandomGraph> graphClazz, Class<? extends edu.cmu.tetrad.algcomparison.simulation.Simulation> simulationClazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         RandomGraph randomGraph;
 
         if (graphClazz == SingleGraph.class) {
@@ -1253,8 +1228,7 @@ public class GridSearchEditor extends JPanel {
             Set<String> allBootstrapParameters = GridSearchModel.getAllBootstrapParameters(algorithms);
             Set<String> allScoreParameters = GridSearchModel.getAllScoreParameters(algorithms);
 
-            if (allAlgorithmParameters.isEmpty() && allTestParameters.isEmpty() && allBootstrapParameters.isEmpty()
-                && allScoreParameters.isEmpty()) {
+            if (allAlgorithmParameters.isEmpty() && allTestParameters.isEmpty() && allBootstrapParameters.isEmpty() && allScoreParameters.isEmpty()) {
                 JLabel noParamLbl = NO_PARAM_LBL;
                 noParamLbl.setBorder(new EmptyBorder(10, 10, 10, 10));
                 tabbedPane1.addTab("No Parameters", new PaddingPanel(noParamLbl));
@@ -1315,8 +1289,7 @@ public class GridSearchEditor extends JPanel {
             parameterBox.add(noParamLbl, BorderLayout.NORTH);
         } else {
             Box parameters = Box.createVerticalBox();
-            Box[] paramBoxes = ParameterComponents.toArray(
-                    createParameterComponents(params, model.getParameters(), listOptionAllowed, bothOptionAllowed));
+            Box[] paramBoxes = ParameterComponents.toArray(createParameterComponents(params, model.getParameters(), listOptionAllowed, bothOptionAllowed));
             int lastIndex = paramBoxes.length - 1;
             for (int i = 0; i < lastIndex; i++) {
                 parameters.add(paramBoxes[i]);
@@ -1374,8 +1347,7 @@ public class GridSearchEditor extends JPanel {
 
         JPanel tableColumnsChoice = new JPanel();
         tableColumnsChoice.setLayout(new BorderLayout());
-        tableColumnsChoice.add(new JScrollPane(tableColumnsChoiceTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        tableColumnsChoice.add(new JScrollPane(tableColumnsChoiceTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
         tableColumnsChoice.add(tableColumnsSelectionBox, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Table Columns", tableColumnsChoice);
@@ -1392,11 +1364,7 @@ public class GridSearchEditor extends JPanel {
 
                 Parameters.serializableInstance().remove("algcomparison." + column.getColumnName());
 
-                ParamDescriptions.getInstance().put("algcomparison." + column.getColumnName(),
-                        new ParamDescription("algcomparison." + column.getColumnName(),
-                                "Utility for " + column.getColumnName() + " in [0, 1]",
-                                "Utility for " + column.getColumnName(),
-                                weight, 0.0, 1.0));
+                ParamDescriptions.getInstance().put("algcomparison." + column.getColumnName(), new ParamDescription("algcomparison." + column.getColumnName(), "Utility for " + column.getColumnName() + " in [0, 1]", "Utility for " + column.getColumnName(), weight, 0.0, 1.0));
             }
 
             Box parameterBox = getParameterBox(params, false, false);
@@ -1491,9 +1459,7 @@ public class GridSearchEditor extends JPanel {
             Box horiz5 = Box.createHorizontalBox();
             horiz5.add(new JLabel("Parallelism:"));
             horiz5.add(Box.createHorizontalGlue());
-            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(),
-                    model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()),
-                    1, 1000));
+            horiz5.add(getIntTextField("algcomparisonParallelism", model.getParameters(), model.getParameters().getInt("algcomparisonParallelism", Runtime.getRuntime().availableProcessors()), 1, 1000));
 
             Box horiz6 = Box.createHorizontalBox();
             horiz6.add(new JLabel("Comparison Graph Type:"));
@@ -1501,11 +1467,49 @@ public class GridSearchEditor extends JPanel {
             JComboBox<String> comparisonGraphTypeComboBox = new JComboBox<>();
 
             Box horiz7 = Box.createHorizontalBox();
-            horiz7.add(new JLabel("Markov Checker Alpha:"));
+            horiz7.add(new JLabel("Markov Checker:"));
             horiz7.add(Box.createHorizontalGlue());
-            horiz7.add(getDoubleTextField(Params.MC_ALPHA, model.getParameters(),
-                    model.getParameters().getDouble(Params.MC_ALPHA),
-                    0.0, 1.0));
+            JButton chooseTest = new JButton("Choose Test");
+
+            chooseTest.addActionListener(e2 -> {
+                JComboBox<IndependenceTestModel> comboBox = new JComboBox<>();
+                populateTestTypes(comboBox);
+
+                JOptionPane dialog = new JOptionPane(comboBox, JOptionPane.PLAIN_MESSAGE);
+                dialog.createDialog("Choose Markov Checker Test)").setVisible(true);
+            });
+
+            horiz7.add(chooseTest);
+
+            Box horiz8 = Box.createHorizontalBox();
+            horiz8.add(new JLabel("Markov Checker:"));
+            horiz8.add(Box.createHorizontalGlue());
+            JButton configureMarkovChecker = new JButton("Params");
+
+            configureMarkovChecker.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JPanel independenceWrapperParamsPanel = createIndependenceWrapperParamsPanel(model.getParameters());
+                    JOptionPane dialog = new JOptionPane(independenceWrapperParamsPanel, JOptionPane.PLAIN_MESSAGE);
+                    dialog.createDialog("Set Parameters").setVisible(true);
+
+//                    setTest();
+                }
+
+                private JPanel createParamsPanel(GridSearchModel model, Parameters parameters) {
+                    JPanel panel = new JPanel();
+                    panel.add(createParamsPanel(model, parameters));
+                    return panel;
+                }
+            });
+
+
+            horiz7.add(configureMarkovChecker);
+
+
+//            horiz8.add(getDoubleTextField(Params.MC_ALPHA, model.getParameters(),
+//                    model.getParameters().getDouble(Params.MC_ALPHA),
+//                    0.0, 1.0));
 
             for (GridSearchModel.ComparisonGraphType comparisonGraphType : GridSearchModel.ComparisonGraphType.values()) {
                 comparisonGraphTypeComboBox.addItem(comparisonGraphType.toString());
@@ -2281,8 +2285,7 @@ public class GridSearchEditor extends JPanel {
                 for (int i = 0; i < table.getRowCount(); i++) {
                     GridSearchModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
 
-                    if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.PARAMETER
-                        && myTableColumn.isSetByUser()) {
+                    if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.PARAMETER && myTableColumn.isSetByUser()) {
                         columnSelectionTableModel.selectRow(i);
                     }
                 }
@@ -2293,8 +2296,7 @@ public class GridSearchEditor extends JPanel {
                     GridSearchModel.MyTableColumn myTableColumn = columnSelectionTableModel.getMyTableColumn(i);
                     List<String> lastStatisticsUsed = model.getLastStatisticsUsed();
 
-                    if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.STATISTIC
-                        && lastStatisticsUsed.contains(myTableColumn.getColumnName())) {
+                    if (myTableColumn.getType() == GridSearchModel.MyTableColumn.ColumnType.STATISTIC && lastStatisticsUsed.contains(myTableColumn.getColumnName())) {
                         columnSelectionTableModel.selectRow(i);
                     }
                 }
@@ -2333,8 +2335,7 @@ public class GridSearchEditor extends JPanel {
             columnSelectionTableModel.setTableRef(null);
             SwingUtilities.invokeLater(dialog::dispose);
 
-            List<GridSearchModel.MyTableColumn> selectedTableColumns = new ArrayList<>(
-                    columnSelectionTableModel.getSelectedTableColumns());
+            List<GridSearchModel.MyTableColumn> selectedTableColumns = new ArrayList<>(columnSelectionTableModel.getSelectedTableColumns());
 
             for (GridSearchModel.MyTableColumn column : selectedTableColumns) {
                 model.addTableColumn(column);
@@ -2591,17 +2592,14 @@ public class GridSearchEditor extends JPanel {
      * empty. Otherwise, it sets a message indicating that a comparison has not been run for the selection.
      */
     private void setComparisonText() {
-        if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().isEmpty()
-            || model.getSelectedTableColumns().isEmpty()) {
-            comparisonTextArea.setText(
-                    """
-                            ** You have made an empty selection; look back at the Simulation, Algorithm, and Table Columns tabs **
-                            """);
+        if (model.getSelectedSimulations().getSimulations().isEmpty() || model.getSelectedAlgorithms().isEmpty() || model.getSelectedTableColumns().isEmpty()) {
+            comparisonTextArea.setText("""
+                    ** You have made an empty selection; look back at the Simulation, Algorithm, and Table Columns tabs **
+                    """);
         } else if (comparisonTextArea.getText().isBlank()) {
-            comparisonTextArea.setText
-                    ("""
-                            ** Your selection is non-empty, but you have not yet run a comparison for it **
-                            """);
+            comparisonTextArea.setText("""
+                    ** Your selection is non-empty, but you have not yet run a comparison for it **
+                    """);
         }
     }
 
@@ -2925,4 +2923,304 @@ public class GridSearchEditor extends JPanel {
         }
     }
 
+    /**
+     * Creates a parameters panel for the given set of parameters and Parameters object.
+     *
+     * @param params     The set of parameter names.
+     * @param parameters The Parameters object containing the parameter values.
+     * @return The JPanel containing the parameters panel.
+     */
+    public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
+
+        Box paramsBox = Box.createVerticalBox();
+
+        Box[] boxes = toArray(createParameterComponents(params, parameters));
+        int lastIndex = boxes.length - 1;
+        for (int i = 0; i < lastIndex; i++) {
+            paramsBox.add(boxes[i]);
+            paramsBox.add(Box.createVerticalStrut(10));
+        }
+        paramsBox.add(boxes[lastIndex]);
+
+        panel.add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    /**
+     * Creates a map of parameter components for the given set of parameters and Parameters object.
+     *
+     * @param params     The set of parameter names.
+     * @param parameters The Parameters object containing the parameter values.
+     * @return A map of parameter names to Box components.
+     */
+    private static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
+        return params.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e)),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
+                        },
+                        TreeMap::new));
+    }
+
+    /**
+     * Creates a parameter component based on the given parameter, Parameters, and ParamDescription.
+     *
+     * @param parameter  The name of the parameter.
+     * @param parameters The Parameters object containing the parameter values.
+     * @param paramDesc  The ParamDescription object with information about the parameter.
+     * @return A Box component representing the parameter component.
+     * @throws IllegalArgumentException If the default value type is unexpected.
+     */
+    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+        JComponent component;
+        Object defaultValue = paramDesc.getDefaultValue();
+        if (defaultValue instanceof Double) {
+            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+        } else if (defaultValue instanceof Integer) {
+            int lowerBoundInt = paramDesc.getLowerBoundInt();
+            int upperBoundInt = paramDesc.getUpperBoundInt();
+            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+        } else if (defaultValue instanceof Long) {
+            long lowerBoundLong = paramDesc.getLowerBoundLong();
+            long upperBoundLong = paramDesc.getUpperBoundLong();
+            component = createLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundLong, upperBoundLong);
+        } else if (defaultValue instanceof Boolean) {
+            component = createBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+        } else if (defaultValue instanceof String) {
+            component = getStringField(parameter, parameters, (String) defaultValue);
+        } else {
+            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+        }
+
+        Box paramRow = Box.createHorizontalBox();
+
+        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        String longDescription = paramDesc.getLongDescription();
+        if (longDescription != null) {
+            paramLabel.setToolTipText(longDescription);
+        }
+        paramRow.add(paramLabel);
+        paramRow.add(Box.createHorizontalGlue());
+        paramRow.add(component);
+
+        return paramRow;
+    }
+
+    /**
+     * Returns a DoubleTextField with specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the DoubleTextField.
+     * @param lowerBound   The lower bound for valid values.
+     * @param upperBound   The upper bound for valid values.
+     * @return A DoubleTextField with the specified parameters.
+     */
+    private static DoubleTextField getDoubleField(String parameter, Parameters parameters,
+                                                  double defaultValue, double lowerBound, double upperBound) {
+        return ParameterComponents.getDoubleField(parameter, parameters, defaultValue, lowerBound, upperBound);
+    }
+
+    /**
+     * Returns an IntTextField with the specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the IntTextField.
+     * @param lowerBound   The lower bound for valid values.
+     * @param upperBound   The upper bound for valid values.
+     * @return An IntTextField with the specified parameters.
+     */
+    private static IntTextField getIntTextField(String parameter, Parameters parameters,
+                                                int defaultValue, int lowerBound, int upperBound) {
+        return ParameterComponents.getIntTextField(parameter, parameters, defaultValue, lowerBound, upperBound);
+    }
+
+    /**
+     * Returns a LongTextField object with the specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the LongTextField.
+     * @param lowerBound   The lower bound for valid values.
+     * @param upperBound   The upper bound for valid values.
+     * @return A LongTextField object with the specified parameters.
+     */
+    private static LongTextField createLongTextField(String parameter, Parameters parameters,
+                                                     long defaultValue, long lowerBound, long upperBound) {
+        LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    /**
+     * Creates a boolean selection box with Yes and No radio buttons.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the boolean parameter
+     */
+    private static Box createBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+        Box selectionBox = Box.createHorizontalBox();
+
+        JRadioButton yesButton = new JRadioButton("Yes");
+        JRadioButton noButton = new JRadioButton("No");
+
+        // Button group to ensure only one option can be selected
+        ButtonGroup selectionBtnGrp = new ButtonGroup();
+        selectionBtnGrp.add(yesButton);
+        selectionBtnGrp.add(noButton);
+
+        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+
+        // Set default selection
+        if (aBoolean) {
+            yesButton.setSelected(true);
+        } else {
+            noButton.setSelected(true);
+        }
+
+        // Add to containing box
+        selectionBox.add(yesButton);
+        selectionBox.add(noButton);
+
+        // Event listener
+        yesButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, true);
+            }
+        });
+
+        // Event listener
+        noButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, false);
+            }
+        });
+
+        return selectionBox;
+    }
+
+    /**
+     * Returns a StringTextField object with the specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the StringTextField.
+     * @return A StringTextField object with the specified parameters.
+     */
+    private static StringTextField createStringField(String parameter, Parameters parameters, String defaultValue) {
+        return PathsAction.getStringField(parameter, parameters, defaultValue);
+    }
+
+    /**
+     * Creates a parameters panel for the given independence wrapper and parameters.
+     *
+     * @param params              The parameters for the independence test.
+     * @return The JPanel containing the parameters panel.
+     */
+    private JPanel createIndependenceWrapperParamsPanel(Parameters params) {
+        Set<String> testParameters = new HashSet<>(model.getMarkovCheckerIndependenceWrapper().getParameters());
+        return createParamsPanel(testParameters, params);
+    }
+
+    /**
+     * Refreshes the test list in the GUI. Retrieves the data type of the data set. Removes all items from the test
+     * combo box. Retrieves the independence test models for the given data type. Adds the independence test models to
+     * the test combo box. Disables the test combo box if there are no items. Selects the default model for the data
+     * type.
+     */
+    private void populateTestTypes(JComboBox<IndependenceTestModel> indTestJComboBox) {
+        indTestJComboBox.removeAllItems();
+
+        List<IndependenceTestModel> models = new ArrayList<>(IndependenceTestModels.getInstance().getModels(DataType.Continuous));
+        models.addAll(IndependenceTestModels.getInstance().getModels(DataType.Discrete));
+        models.addAll(IndependenceTestModels.getInstance().getModels(DataType.Mixed));
+
+        for (IndependenceTestModel model : models) {
+            indTestJComboBox.addItem(model);
+        }
+
+        IndependenceTestModel selectedIndependenceTestModel = this.model.getSelectedIndependenceTestModel();
+        for (IndependenceTestModel model : models) {
+            if (model.equals(selectedIndependenceTestModel)) {
+                indTestJComboBox.setSelectedItem(model);
+            }
+        }
+
+        if (selectedIndependenceTestModel == null) {
+            for (IndependenceTestModel model : models) {
+                if (model.getName().equals("Fisher Z Test")) {
+                    this.model.setSelectedIndependenceTestModel(model);
+                    break;
+                }
+            }
+        }
+
+        indTestJComboBox.addItemListener(e -> {
+            IndependenceTestModel item = (IndependenceTestModel) e.getItem();
+            this.model.setSelectedIndependenceTestModel(item);
+            Class<IndependenceWrapper> clazz = (item == null) ? null
+                    : (Class<IndependenceWrapper>) item.getIndependenceTest().clazz();
+
+            if (clazz != null) {
+                try {
+                    IndependenceWrapper independenceWrapper = clazz.getDeclaredConstructor(new Class[0]).newInstance();
+                    model.setMarkovCheckerIndependenceWrapper(independenceWrapper);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                         | NoSuchMethodException e1) {
+                    TetradLogger.getInstance().log("Error: " + e1.getMessage());
+                    throw new RuntimeException(e1);
+                }
+            }
+        });
+
+//        indTestJComboBox.setSelectedItem(selectedIndependenceTestModel);
+
+        Class<IndependenceWrapper> clazz = (selectedIndependenceTestModel == null) ? null
+                : (Class<IndependenceWrapper>) selectedIndependenceTestModel.getIndependenceTest().clazz();
+
+        if (clazz != null) {
+            try {
+                IndependenceWrapper independenceWrapper = clazz.getDeclaredConstructor(new Class[0]).newInstance();
+                model.setMarkovCheckerIndependenceWrapper(independenceWrapper);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                     | NoSuchMethodException e1) {
+                TetradLogger.getInstance().log("Error: " + e1.getMessage());
+                throw new RuntimeException(e1);
+            }
+        }
+    }
 }
