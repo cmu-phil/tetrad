@@ -174,7 +174,7 @@ public final class SvarFci implements IGraphSearch {
 
         this.graph.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sp = new SepsetsPossibleMsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxDiscriminatingPathLength);
+        SepsetProducer sp = new SepsetsPossibleDsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxDiscriminatingPathLength);
         sp.setVerbose(this.verbose);
 
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
@@ -198,9 +198,9 @@ public final class SvarFci implements IGraphSearch {
                 this.sepsets.set(x, y, sepset);
 
 
-                System.out.println("Possible MSEP Removed " + x + "--- " + y + " sepset = " + sepset);
+                System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
 
-                // This is another added component to enforce repeating structure, specifically for possibleMsep
+                // This is another added component to enforce repeating structure, specifically for possibleDsep
                 removeSimilarPairs(getIndependenceTest(), x, y, sepset); // added 4.27.2016
             }
         }

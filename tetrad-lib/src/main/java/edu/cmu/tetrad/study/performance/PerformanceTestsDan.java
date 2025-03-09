@@ -201,7 +201,7 @@ public class PerformanceTestsDan {
             gFci.setVerbose(false);
             gFci.setMaxDegree(depth);
             gFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-//            gFci.setPossibleMsepSearchDone(true);
+//            gFci.setPossibleDsepSearchDone(true);
             gFci.setCompleteRuleSetUsed(true);
 
             Graph pag = gFci.search();

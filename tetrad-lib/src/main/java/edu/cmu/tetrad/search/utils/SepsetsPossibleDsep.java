@@ -36,14 +36,14 @@ import java.util.Set;
 
 /**
  * <p>Provides a sepset producer using conditional independence tests to generate
- * the Sepset map, for the case where possible msep sets are required.</p>
+ * the Sepset map, for the case where possible dsep sets are required.</p>
  *
  * @author josephramsey
  * @version $Id: $Id
  * @see SepsetProducer
  * @see SepsetMap
  */
-public class SepsetsPossibleMsep implements SepsetProducer {
+public class SepsetsPossibleDsep implements SepsetProducer {
     private final Graph graph;
     private final int maxDiscriminatingPathLength;
     private final Knowledge knowledge;
@@ -53,7 +53,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     private IndependenceResult result;
 
     /**
-     * <p>Constructor for SepsetsPossibleMsep.</p>
+     * <p>Constructor for SepsetsPossibleDsep.</p>
      *
      * @param graph                       a {@link edu.cmu.tetrad.graph.Graph} object
      * @param test                        a {@link edu.cmu.tetrad.search.IndependenceTest} object
@@ -61,7 +61,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
      * @param depth                       the depth of the search
      * @param maxDiscriminatingPathLength the maximum length of discriminating paths
      */
-    public SepsetsPossibleMsep(Graph graph, IndependenceTest test, Knowledge knowledge,
+    public SepsetsPossibleDsep(Graph graph, IndependenceTest test, Knowledge knowledge,
                                int depth, int maxDiscriminatingPathLength) {
         this.graph = graph;
         this.test = test;
@@ -180,14 +180,14 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     }
 
     private Set<Node> getCondSetContaining(Node node1, Node node2, Set<Node> s, int maxPathLength) throws InterruptedException {
-        List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPathLength);
-        List<Node> possibleMsep = new ArrayList<>(possibleMsepSet);
+        List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
+        List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = this.knowledge.noEdgeRequired(node1.getName(), node2.getName());
 
         int _depth = this.depth == -1 ? 1000 : this.depth;
-        _depth = FastMath.min(_depth, possibleMsep.size());
+        _depth = FastMath.min(_depth, possibleDsep.size());
 
-        SublistGenerator cg = new SublistGenerator(possibleMsep.size(), _depth);
+        SublistGenerator cg = new SublistGenerator(possibleDsep.size(), _depth);
         int[] choice;
 
         while ((choice = cg.next()) != null) {
@@ -197,7 +197,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
 
             if (choice.length < 1) continue;
 
-            Set<Node> condSet = GraphUtils.asSet(choice, possibleMsep);
+            Set<Node> condSet = GraphUtils.asSet(choice, possibleDsep);
 
             if (s != null && !condSet.containsAll(s)) {
                 continue;
@@ -226,7 +226,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
         return null;
     }
 
-    private List<Node> getPossibleMsep(Node x, Node y, int maxPossibleDsepPathLength) {
+    private List<Node> getPossibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
         List<Node> msep = this.graph.paths().possibleDsep(x, y, maxPossibleDsepPathLength);
 
         if (this.verbose) {

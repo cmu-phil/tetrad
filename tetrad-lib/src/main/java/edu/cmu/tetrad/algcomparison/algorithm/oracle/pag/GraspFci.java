@@ -192,7 +192,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.DEPTH);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.POSSIBLE_MSEP_DONE);
+        params.add(Params.POSSIBLE_DSEP_DONE);
 
         // General
         params.add(Params.TIME_LAG);

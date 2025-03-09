@@ -89,9 +89,9 @@ public final class Fci implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
-     * Whether the possible msep step should be done.
+     * Whether the possible dsep step should be done.
      */
-    private boolean possibleMsepSearchDone = true;
+    private boolean possibleDsepSearchDone = true;
     /**
      * The maximum length of any discriminating path.
      */
@@ -203,7 +203,7 @@ public final class Fci implements IGraphSearch {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
+        // Optional step: possible dsep. (Needed for correctness but very time-consuming.)
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
                 knowledge, verbose);
         strategy.setDepth(-1);
@@ -213,9 +213,9 @@ public final class Fci implements IGraphSearch {
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
-        if (this.possibleMsepSearchDone) {
+        if (this.possibleDsepSearchDone) {
             if (verbose) {
-                TetradLogger.getInstance().log("Starting possible msep search.");
+                TetradLogger.getInstance().log("Starting possible dsep search.");
             }
 
             if (verbose) {
@@ -228,7 +228,7 @@ public final class Fci implements IGraphSearch {
                 TetradLogger.getInstance().log("Removing by possible d-sep.");
             }
 
-            graph.paths().removeByPossibleMsep(independenceTest, sepsets);
+            graph.paths().removeByPossibleDsep(independenceTest, sepsets);
 
             if (verbose) {
                 TetradLogger.getInstance().log("Reorienting all edges as o-o.");
@@ -332,12 +332,12 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the (time-consuming) possible msep step should be done.
+     * Sets whether the (time-consuming) possible dsep step should be done.
      *
-     * @param possibleMsepSearchDone True, if so.
+     * @param possibleDsepSearchDone True, if so.
      */
-    public void setPossibleDsepSearchDone(boolean possibleMsepSearchDone) {
-        this.possibleMsepSearchDone = possibleMsepSearchDone;
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
     /**
