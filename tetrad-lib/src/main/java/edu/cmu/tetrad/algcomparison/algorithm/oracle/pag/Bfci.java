@@ -114,6 +114,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
@@ -173,6 +174,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.COMPLETE_RULE_SET_USED);
+        params.add(Params.DO_POSSIBLE_DSEP);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);

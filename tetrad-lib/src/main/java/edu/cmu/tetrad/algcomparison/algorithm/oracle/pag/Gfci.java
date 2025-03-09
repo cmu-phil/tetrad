@@ -157,7 +157,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
-        parameters.add(Params.POSSIBLE_DSEP_DONE);
+        parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.REMOVE_ALMOST_CYCLES);
         parameters.add(Params.NUM_THREADS);
