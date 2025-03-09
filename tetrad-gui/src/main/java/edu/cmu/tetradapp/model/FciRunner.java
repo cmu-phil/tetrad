@@ -188,7 +188,7 @@ public class FciRunner extends AbstractAlgorithmRunner
             Fci fci = new Fci(getIndependenceTest());
             fci.setKnowledge(knowledge);
             fci.setCompleteRuleSetUsed(getParams().getBoolean("completeRuleSetUsed", false));
-            fci.setDoPossibleDsep(getParams().getBoolean("possibledsepDone", true));
+            fci.setDoPossibleDsep(getParams().getBoolean("doPossibleDsep", true));
             fci.setMaxDiscriminatingPathLength(getParams().getInt("maxReachablePathLength", -1));
             fci.setDepth(getParams().getInt("depth", -1));
             try {

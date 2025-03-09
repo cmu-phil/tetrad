@@ -513,9 +513,9 @@ public final class Params {
      */
     public static final String PERCENT_RESAMPLE_SIZE = "percentResampleSize";
     /**
-     * Constant <code>POSSIBLE_DSEP_DONE="possibleDsepDone"</code>
+     * Constant <code>POSSIBLE_DSEP_DONE="doPossibleDsep"</code>
      */
-    public static final String POSSIBLE_DSEP_DONE = "possibleDsepDone";
+    public static final String POSSIBLE_DSEP_DONE = "doPossibleDsep";
     /**
      * Constant <code>PROB_CYCLE="probCycle"</code>
      */
