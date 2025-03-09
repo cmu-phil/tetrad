@@ -103,7 +103,7 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
         search.setKnowledge(this.knowledge);
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
+        search.setDoPossibleDsep(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
 

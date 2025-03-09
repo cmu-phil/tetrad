@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -278,7 +277,7 @@ public class TestFci {
         Score score = new GraphScore(graph);
 
         Fci fci = new Fci(independence);
-        fci.setPossibleDsepSearchDone(true);
+        fci.setDoPossibleDsep(true);
         fci.setCompleteRuleSetUsed(true);
         fci.setMaxDiscriminatingPathLength(-1);
         fci.setKnowledge(knowledge);

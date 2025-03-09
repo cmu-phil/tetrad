@@ -112,6 +112,13 @@ public final class SpFci implements IGraphSearch {
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod;
+    /**
+     * Indicates whether possible-DSEP (possible-d-separation) procedure should be performed during the causal discovery
+     * process. This is a boolean flag that enables or disables an additional step for identifying potentially d-separated
+     * variables, which can influence the resulting PAG (Partial Ancestral Graph). When set to true, the procedure is applied;
+     * otherwise, it is skipped.
+     */
+    private boolean doPossibleDsep;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -178,6 +185,23 @@ public final class SpFci implements IGraphSearch {
 
         gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, null, verbose);
         GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
+
+        if (this.doPossibleDsep) {
+            for (Edge edge : pag.getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, y, 3));
+
+                if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
+                    TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                    pag.removeEdge(x, y);
+                }
+            }
+
+            pag.reorientAllWith(Endpoint.CIRCLE);
+            GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
+        }
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
@@ -344,5 +368,14 @@ public final class SpFci implements IGraphSearch {
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
+    }
+
+    /**
+     * Sets whether the algorithm should perform the possible D-separation step (DSEP).
+     *
+     * @param doPossibleDsep true if the possible DSEP step should be performed, false otherwise.
+     */
+    public void setDoPossibleDsep(boolean doPossibleDsep) {
+        this.doPossibleDsep = doPossibleDsep;
     }
 }

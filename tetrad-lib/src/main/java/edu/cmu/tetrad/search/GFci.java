@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -122,6 +122,12 @@ public final class GFci implements IGraphSearch {
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod = 2;
+    /**
+     * Indicates whether the search for possible d-separating (d-sep) sets should be done. This flag is used internally
+     * within the GFci algorithm to ensure that the d-sep search is performed only once or skipped if already
+     * completed.
+     */
+    private boolean doPossibleDsep;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -195,14 +201,35 @@ public final class GFci implements IGraphSearch {
         Set<Triple> unshieldedColliders = new HashSet<>();
 
         gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, null, verbose);
+
+        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
+
+        if (this.doPossibleDsep) {
+            for (Edge edge : pag.getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, y, 3));
+
+                if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
+                    TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                    pag.removeEdge(x, y);
+                }
+            }
+
+            pag.reorientAllWith(Endpoint.CIRCLE);
+            GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
+        }
+
+        pag.reorientAllWith(Endpoint.CIRCLE);
+
         GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
-                knowledge, verbose);
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);
         FciOrient fciOrient = new FciOrient(strategy);
@@ -217,8 +244,7 @@ public final class GFci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose,
-                    new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
         }
 
         if (verbose) {
@@ -235,8 +261,7 @@ public final class GFci implements IGraphSearch {
      */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + maxDegree);
+            throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + maxDegree);
         }
 
         this.maxDegree = maxDegree;
@@ -363,5 +388,15 @@ public final class GFci implements IGraphSearch {
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
+    }
+
+    /**
+     * Sets whether the possible D-separation (Dsep) search should be done.
+     *
+     * @param doPossibleDsep A boolean indicating whether the possible Dsep search has been completed.
+     *                               Set to true if the search is done, false otherwise.
+     */
+    public void setDoPossibleDsep(boolean doPossibleDsep) {
+        this.doPossibleDsep = doPossibleDsep;
     }
 }

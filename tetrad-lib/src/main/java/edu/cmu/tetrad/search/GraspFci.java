@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //i
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -132,6 +132,11 @@ public final class GraspFci implements IGraphSearch {
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod = 2;
+    /**
+     * Indicates whether the possible D-separation search process should be done. This flag is used internally to track
+     * the progress of the search algorithm.
+     */
+    private boolean doPossibleDsep;
 
     /**
      * Constructs a new GraspFci object.
@@ -218,12 +223,31 @@ public final class GraspFci implements IGraphSearch {
         gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, null, verbose);
         GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
 
+        if (this.doPossibleDsep) {
+            for (Edge edge : pag.getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, y, 3));
+
+                if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
+                    TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                    pag.removeEdge(x, y);
+                }
+            }
+
+            pag.reorientAllWith(Endpoint.CIRCLE);
+            GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
+        }
+
+        pag.reorientAllWith(Endpoint.CIRCLE);
+        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
+
         if (verbose) {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
-                knowledge, verbose);
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);
         FciOrient fciOrient = new FciOrient(strategy);
@@ -238,8 +262,7 @@ public final class GraspFci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose,
-                    new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
         }
 
         if (verbose) {
@@ -389,5 +412,14 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
+    }
+
+    /**
+     * Sets whether the possible D-separation (Dsep) search should be done.
+     *
+     * @param doPossibleDsep true if the possible Dsep search is completed, false otherwise.
+     */
+    public void setDoPossibleDsep(boolean doPossibleDsep) {
+        this.doPossibleDsep = doPossibleDsep;
     }
 }
