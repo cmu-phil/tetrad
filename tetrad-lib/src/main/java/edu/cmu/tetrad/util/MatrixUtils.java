@@ -713,31 +713,56 @@ public final class MatrixUtils {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix convertCovToCorr(Matrix m) {
-        if (m.getNumRows() != m.getNumColumns()) throw new IllegalArgumentException("Not a square matrix.");
-        if (!MatrixUtils.isSymmetric(m.toArray(), 0.001)) {
-            throw new IllegalArgumentException("Not symmetric with tolerance " + 0.001);
+        return new Matrix(convertCovToCorr(m.getData()));
+//        if (m.getNumRows() != m.getNumColumns()) throw new IllegalArgumentException("Not a square matrix.");
+//        if (!MatrixUtils.isSymmetric(m.toArray(), 0.001)) {
+//            throw new IllegalArgumentException("Not symmetric with tolerance " + 0.001);
+//        }
+//
+//        Matrix corr = m.like();
+//
+//        for (int i = 0; i < m.getNumRows(); i++) {
+//            for (int j = 0; j < m.getNumColumns(); j++) {
+//                double v = m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j));
+//
+//                if (v < -1) v = -1;
+//                if (v > 1) v = 1;
+//
+//                corr.set(i, j, v);
+//            }
+//        }
+//
+////        for (int i = 0; i < m.getNumColumns(); i++) {
+////            corr.set(i, i, 1.0);
+////        }
+//
+//        return corr;
+    }
+
+    public static SimpleMatrix convertCovToCorr(SimpleMatrix covarianceMatrix) {
+        int n = covarianceMatrix.getNumRows();
+        SimpleMatrix correlationMatrix = new SimpleMatrix(n, n);
+
+        // Compute standard deviations (sqrt of diagonal elements)
+        double[] stdDevs = new double[n];
+        for (int i = 0; i < n; i++) {
+            stdDevs[i] = Math.sqrt(covarianceMatrix.get(i, i));
         }
 
-        Matrix corr = m.like();
-
-        for (int i = 0; i < m.getNumRows(); i++) {
-            for (int j = 0; j < m.getNumColumns(); j++) {
-                double v = m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j));
-
-                if (v < -1) v = -1;
-                if (v > 1) v = 1;
-
-                corr.set(i, j, v);
-//                corr.set(j, i, v);
+        // Compute correlation matrix
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (stdDevs[i] > 0 && stdDevs[j] > 0) {
+                    correlationMatrix.set(i, j, covarianceMatrix.get(i, j) / (stdDevs[i] * stdDevs[j]));
+                } else {
+                    correlationMatrix.set(i, j, 0);  // Handle cases where variance is zero
+                }
             }
         }
 
-        for (int i = 0; i < m.getNumColumns(); i++) {
-            corr.set(i, i, 1.0);
-        }
-
-        return corr;
+        return correlationMatrix;
     }
+
 
     /**
      * Converts a matrix in lower triangular form to a symmetric matrix in square form. The lower triangular matrix need
