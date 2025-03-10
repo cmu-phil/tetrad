@@ -34,7 +34,14 @@ public class Embedding {
      * @param dataSet         The original dataset to be embedded; must not be null.
      * @param truncationLimit The maximum number of basis expansions for continuous variables; must be a positive
      *                        integer.
-     * @param basisType       The type of basis function to use for continuous variable expansions.
+     * @param basisType       The type of basis function to use for continuous variable expansions. The function types
+     *                        are as follows:
+     *                        <ul>
+     *                             <li> 0 = `g(x) = x^index [Polynomial basis]</li>
+     *                             <li> 1 = `g(x) = hermite1(index, x) [Probabilist's Hermite polynomial]</li>
+     *                             <li> 2 = `g(x) = legendre(index, x) [Legendre polynomial]</li>
+     *                             <li> 3 = `g(x) = chebyshev(index, x) [Chebyshev polynomial]</li>
+     *                         </ul>
      * @param basisScale      The scaling factor for data transformation. Set to 0 for standardization, positive for
      *                        scaling, and -1 to skip scaling.
      * @return An instance of {@code EmbeddedData}, containing the original dataset, the embedded dataset, and a mapping
@@ -42,8 +49,7 @@ public class Embedding {
      * @throws IllegalArgumentException If the dataset is null, the truncation limit is less than 1, or the basis scale
      *                                  parameter is invalid.
      */
-    public static @NotNull EmbeddedData getEmbeddedData(DataSet dataSet, int truncationLimit,
-                                                        int basisType, double basisScale) {
+    public static @NotNull EmbeddedData getEmbeddedData(DataSet dataSet, int truncationLimit, int basisType, double basisScale) {
         if (dataSet == null) {
             throw new IllegalArgumentException("Data set must not be null.");
         }
@@ -60,8 +66,7 @@ public class Embedding {
         } else if (basisScale > 0.0) {
             dataSet = DataTransforms.scale(dataSet, -basisScale, basisScale);
         } else if (basisScale != -1) {
-            throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be " +
-                                               "standardized, or -1 if the data should not be scaled.");
+            throw new IllegalArgumentException("Basis scale must be a positive number, or 0 if the data should be " + "standardized, or -1 if the data should not be scaled.");
         }
 
         Map<Integer, List<Integer>> embedding = new HashMap<>();
