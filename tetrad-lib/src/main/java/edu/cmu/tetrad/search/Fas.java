@@ -8,7 +8,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -252,7 +251,7 @@ public class Fas {
                 while ((choice = generator.next()) != null) {
                     Set<Node> S = GraphUtils.asSet(choice, ppx);
 
-                    IndependenceResult result = null;
+                    IndependenceResult result;
                     try {
                         result = test.checkIndependence(x, y, S);
                     } catch (InterruptedException e) {
