@@ -121,7 +121,6 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setDoPossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
 
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
@@ -131,7 +130,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setKnowledge(this.knowledge);
 
         return search.search();
@@ -193,12 +192,11 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.DEPTH);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_POSSIBLE_DSEP);
 
         // General
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
-        params.add(Params.REMOVE_ALMOST_CYCLES);
+        params.add(Params.GUARANTEE_PAG);
         params.add(Params.VERBOSE);
 
         return params;

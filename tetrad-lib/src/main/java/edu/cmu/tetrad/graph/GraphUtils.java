@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.DagToPag;
@@ -1827,6 +1828,52 @@ public final class GraphUtils {
         }
     }
 
+    public static void gfciExtraEdgeRemovalStepUnionOfAdj(Graph graph, Graph cpdag, List<Node> nodes,
+                                                          IndependenceTest test, int depth, List<Node> order, boolean verbose) throws InterruptedException {
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting extra-edge removal step.");
+        }
+
+        for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> adjacentNodes = new ArrayList<>(cpdag.getAdjacentNodes(b));
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
+                    Set<Node> sepset = SepsetFinder.getSepsetContainingGreedySubsetUnion(graph, a, c, new HashSet<>(), test, depth, order);
+
+                    if (sepset != null) {
+                        graph.removeEdge(a, c);
+
+                        if (verbose) {
+                            IndependenceResult result = test.checkIndependence(a, c, sepset);
+                            double pValue = result.getPValue();
+                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
+                                                           + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Adds forbidden reverse edges for directed edges in the given graph based on the knowledge.
      *
@@ -2736,22 +2783,25 @@ public final class GraphUtils {
         fciOrient.setAllowedColliders(unshieldedColliders);
         fciOrient.setDoR4(true);
 
-//        pag = new EdgeListGraph(pag);
-//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        Graph orig = new EdgeListGraph(pag);
 
         // Repair almost cycles and repair maximality. We assume here that there are no cycles in the graph that cannot
         // be fixed by removing almost cycles. jdramsey 2024-8-13.
-        boolean changed1 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
-        boolean changed2 = repairMaximality(pag, fciOrient, verbose, selection);
-        boolean changed3 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
-        boolean changed4 = repairMaximality(pag, fciOrient, verbose, selection);
-        boolean changed = changed1 || changed2 || changed3 || changed4;
+        boolean changed1, changed2;
 
+        do {
+            changed1 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
+            changed2 = repairMaximality(pag, verbose, selection);
+            fciOrient.finalOrientation(pag);
+        } while (changed1 || changed2);
+
+        // At this point there should be no almost cycles and it should be maximal. We assume there are no cycles.
+        // This next step adds some additional endpoints implied by final rules from oracle.
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
         DagToPag dagToPag = new DagToPag(mag);
         Graph pag2 = dagToPag.convert();
 
-        if (!changed) {
+        if (pag2.equals(orig)) {
             if (verbose) {
                 TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
             }
@@ -2772,8 +2822,7 @@ public final class GraphUtils {
      * @param verbose   indicates whether to print verbose output
      * @param selection the set of selection nodes to consider for selection
      */
-    private static boolean repairMaximality(Graph pag, FciOrient fciOrient, boolean verbose,
-                                            Set<Node> selection) {
+    private static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing maximality...");
         }
@@ -2794,8 +2843,6 @@ public final class GraphUtils {
                 }
             }
         }
-
-        fciOrient.finalOrientation(pag);
 
         if (verbose) {
             TetradLogger.getInstance().log("All done repairing maximality.");

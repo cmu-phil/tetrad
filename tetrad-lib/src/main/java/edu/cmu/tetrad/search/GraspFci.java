@@ -32,7 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
+import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStepUnionOfAdj;
 
 /**
  * Uses GRaSP in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than
@@ -132,11 +132,6 @@ public final class GraspFci implements IGraphSearch {
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod = 2;
-    /**
-     * Indicates whether the possible D-separation search process should be done. This flag is used internally to track
-     * the progress of the search algorithm.
-     */
-    private boolean doPossibleDsep;
 
     /**
      * Constructs a new GraspFci object.
@@ -220,25 +215,8 @@ public final class GraspFci implements IGraphSearch {
 
         Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, null, verbose);
+        gfciExtraEdgeRemovalStepUnionOfAdj(pag, cpdag, nodes, independenceTest, depth, null, verbose);
         GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
-
-        if (this.doPossibleDsep) {
-            for (Edge edge : pag.getEdges()) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, y, 3));
-
-                if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
-                    TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
-                    pag.removeEdge(x, y);
-                }
-            }
-
-            pag.reorientAllWith(Endpoint.CIRCLE);
-            GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
-        }
 
         pag.reorientAllWith(Endpoint.CIRCLE);
         GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
@@ -412,14 +390,5 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * Sets whether the possible D-separation (Dsep) search should be done.
-     *
-     * @param doPossibleDsep true if the possible Dsep search is completed, false otherwise.
-     */
-    public void setDoPossibleDsep(boolean doPossibleDsep) {
-        this.doPossibleDsep = doPossibleDsep;
     }
 }

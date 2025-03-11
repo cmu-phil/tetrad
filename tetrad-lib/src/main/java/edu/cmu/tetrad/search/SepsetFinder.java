@@ -90,6 +90,71 @@ public class SepsetFinder {
         return sepset;
     }
 
+    public static Set<Node> getSepsetContainingGreedySubsetUnion(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
+        List<Node> adjx = graph.getAdjacentNodes(x);
+        List<Node> adjy = graph.getAdjacentNodes(y);
+//        adjx.remove(y);
+//        adjy.remove(x);
+
+        Set<Node> union = new HashSet<>(adjx);
+        union.addAll(adjy);
+        union.remove(x);
+        union.remove(y);
+
+        List<Node> unionList = new ArrayList<>(union);
+
+        union.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        union.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+
+        List<List<Integer>> choices = getChoices(unionList, depth);
+
+        // Parallelize processing for adjx
+        Set<Node> sepset = choices.parallelStream()
+                .map(choice -> combination(choice, unionList)) // Generate combinations in parallel
+                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                .filter(subset -> {
+                    try {
+//                        if (order != null) {
+//                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+//
+//                            for (Node node : subset) {
+//                                if (order.indexOf(node) > order.indexOf(_y)) {
+//                                    return false;
+//                                }
+//                            }
+//                        }
+
+                        return separates(x, y, subset, test);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }) // Further filter by separating sets
+                .findFirst() // Return the first matching subset
+                .orElse(null);
+
+        if (sepset != null) {
+            return sepset;
+        }
+
+//        // Parallelize processing for adjy
+//        choices = getChoices(adjy, depth);
+//
+//        sepset = choices.parallelStream()
+//                .map(choice -> combination(choice, adjy)) // Generate combinations in parallel
+//                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+//                .filter(subset -> {
+//                    try {
+//                        return separates(x, y, subset, test);
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }) // Further filter by separating sets
+//                .findFirst() // Return the first matching subset
+//                .orElse(null);
+
+        return sepset;
+    }
+
 
     /**
      * Returns the set of nodes that act as a separating set between two given nodes (x and y) in a graph. The method
