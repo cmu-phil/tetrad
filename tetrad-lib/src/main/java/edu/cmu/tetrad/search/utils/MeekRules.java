@@ -376,12 +376,15 @@ public class MeekRules {
                 });
             }
 
-            graph.addEdge(Edges.directedEdge(c, a));
+            graph.addEdge(before);
+            return false;
 
-            visited.add(a);
-            visited.add(c);
-
-            return true;
+//            graph.addEdge(Edges.directedEdge(c, a));
+//
+//            visited.add(a);
+//            visited.add(c);
+//
+//            return true;
         }
 
         Edge after = Edges.directedEdge(a, c);

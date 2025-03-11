@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -89,8 +90,8 @@ public class Fas {
     /**
      * Constructs a new instance of the Fas algorithm using the specified independence test.
      *
-     * @param test The independence test to be used by the Fas algorithm for conditional independence tests
-     *             during the search process.
+     * @param test The independence test to be used by the Fas algorithm for conditional independence tests during the
+     *             search process.
      */
     public Fas(IndependenceTest test) {
         this.test = test;
@@ -105,17 +106,12 @@ public class Fas {
      * @param knowledge The knowledge object that provides information about conditional independencies.
      * @param y         Another node in the graph.
      * @return A list of nodes that are possible parents of the node x.
-     * @throws InterruptedException if any
      */
-    private static List<Node> possibleParents(Node x, List<Node> adjx, Knowledge knowledge, Node y) throws InterruptedException {
+    private static List<Node> possibleParents(Node x, List<Node> adjx, Knowledge knowledge, Node y) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
         for (Node z : adjx) {
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException();
-            }
-
             if (z == null) continue;
             if (z == x) continue;
             if (z == y) continue;
@@ -189,9 +185,8 @@ public class Fas {
                 System.out.println("Depth: " + d);
             }
 
-            Graph graph_ = graph;
-
             if (this.stable) {
+                Graph graph_ = graph;
                 graph = new EdgeListGraph(graph_);
 
                 if (searchAtDepth(graph, graph_, d, this.stable)) {
@@ -201,7 +196,7 @@ public class Fas {
 
                 graph = graph_;
             } else {
-                if (searchAtDepth(graph, graph_, d, stable)) {
+                if (searchAtDepth(graph, graph, d, stable)) {
                     break;
                 }
             }
@@ -219,141 +214,58 @@ public class Fas {
      * @param d      The maximum depth to consider for conditional independence tests.
      * @param stable If true, performs the search using a parallel strategy; otherwise, uses a sequential strategy.
      * @return True if the maximum free degree of the resulting graph is less than or equal to d, false otherwise.
-     * @throws InterruptedException if the search is interrupted during independence testing or parent determination.
      */
-    private boolean searchAtDepth(Graph graph, Graph graph_, int d, boolean stable) throws InterruptedException {
+    private boolean searchAtDepth(Graph graph, Graph graph_, int d, boolean stable) {
         List<Node> nodes = graph.getNodes();
 
         if (stable) {
             try {
                 nodes.parallelStream().forEach(x -> {
-                    for (Node y : nodes) {
-                        if (x == y) continue;
-
-                        if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
-                            synchronized (graph_) {
-                                graph_.removeEdge(x, y);
-                            }
-                        }
-
-                        List<Node> adjX = graph.getAdjacentNodes(x);
-                        adjX.remove(y);
-
-                        List<Node> ppx = null;
-                        try {
-                            ppx = possibleParents(x, adjX, knowledge, y);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        if (ppx.size() >= d) {
-                            ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
-                            int[] choice;
-
-                            while ((choice = generator.next()) != null) {
-                                Set<Node> S = GraphUtils.asSet(choice, ppx);
-
-                                IndependenceResult result = null;
-                                try {
-                                    result = test.checkIndependence(x, y, S);
-                                } catch (InterruptedException e) {
-                                    throw new RuntimeException(e);
-                                }
-                                if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
-                                    synchronized (graph_) {
-                                        graph_.removeEdge(x, y);
-                                        sepset.set(x, y, S);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    removeNodesAboutX(graph, graph_, d, x);
                 });
+
+                return freeDegree(graph_) <= d;
             } catch (Exception e) {
                 nodes.forEach(x -> {
-                    for (Node y : nodes) {
-                        if (x == y) continue;
-
-                        if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
-                            synchronized (graph_) {
-                                graph_.removeEdge(x, y);
-                            }
-                        }
-
-                        List<Node> adjX = graph.getAdjacentNodes(x);
-                        adjX.remove(y);
-
-                        List<Node> ppx = null;
-                        try {
-                            ppx = possibleParents(x, adjX, knowledge, y);
-                        } catch (InterruptedException e2) {
-                            throw new RuntimeException(e2);
-                        }
-
-                        if (ppx.size() >= d) {
-                            ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
-                            int[] choice;
-
-                            while ((choice = generator.next()) != null) {
-                                Set<Node> S = GraphUtils.asSet(choice, ppx);
-
-                                IndependenceResult result = null;
-                                try {
-                                    result = test.checkIndependence(x, y, S);
-                                } catch (InterruptedException e3) {
-                                    throw new RuntimeException(e3);
-                                }
-                                if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
-                                    synchronized (graph_) {
-                                        graph_.removeEdge(x, y);
-                                        sepset.set(x, y, S);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    removeNodesAboutX(graph, graph_, d, x);
                 });
             }
+
+            return freeDegree(graph_) <= d;
         } else {
-            System.out.println("Depth: " + d);
+            nodes.forEach(x -> {
+                removeNodesAboutX(graph, graph, d, x);
+            });
 
-            for (Node x : nodes) {
-                for (Node y : nodes) {
-                    if (x == y) continue;
+            return freeDegree(graph_) <= d;
+        }
+    }
 
-                    if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
-                        graph_.removeEdge(x, y);
+    private void removeNodesAboutX(Graph graph, Graph graph_, int d, Node x) {
+        for (Node y : graph.getAdjacentNodes(x)) {
+            List<Node> ppx = possibleParents(x, graph.getAdjacentNodes(x), knowledge, y);
+
+            if (ppx.size() >= d) {
+                ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
+                int[] choice;
+
+                while ((choice = generator.next()) != null) {
+                    Set<Node> S = GraphUtils.asSet(choice, ppx);
+
+                    IndependenceResult result = null;
+                    try {
+                        result = test.checkIndependence(x, y, S);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
-
-                    List<Node> adjX = graph.getAdjacentNodes(x);
-                    adjX.remove(y);
-
-                    List<Node> ppx = possibleParents(x, adjX, knowledge, y);
-
-                    if (adjX.size() >= d) {
-                        ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
-                        int[] choice;
-
-                        while ((choice = generator.next()) != null) {
-                            Set<Node> S = GraphUtils.asSet(choice, ppx);
-
-                            if (graph.isAdjacentTo(x, y)) {
-                                IndependenceResult result = test.checkIndependence(x, y, S);
-                                if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
-                                    graph_.removeEdge(x, y);
-                                    sepset.set(x, y, S);
-                                    break;
-                                }
-                            }
-                        }
+                    if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
+                        graph_.removeEdge(x, y);
+                        sepset.set(x, y, S);
+                        break;
                     }
                 }
             }
         }
-
-        return freeDegree(graph_) <= d;
     }
 
     /**
