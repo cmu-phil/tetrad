@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -25,7 +25,7 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.Gfci;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
@@ -97,7 +97,7 @@ public class TestGFci {
 
         independenceTest.setAlpha(alpha);
 
-        GFci gFci = new GFci(independenceTest, score);
+        Gfci gFci = new Gfci(independenceTest, score);
         gFci.setVerbose(false);
         gFci.setMaxDegree(depth);
         gFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
@@ -160,7 +160,7 @@ public class TestGFci {
 
         System.out.println(g1);
 
-        GFci gfci = new GFci(new MsepTest(g1), new GraphScore(g1));
+        Gfci gfci = new Gfci(new MsepTest(g1), new GraphScore(g1));
 
         Graph pag = null;
         try {
@@ -198,7 +198,7 @@ public class TestGFci {
                     10, 10, 10, false);
 
 //            Fci gfci = new Fci(new MsepTest(dag));
-            GFci gfci = new GFci(new MsepTest(dag), new GraphScore(dag));
+            Gfci gfci = new Gfci(new MsepTest(dag), new GraphScore(dag));
             gfci.setCompleteRuleSetUsed(true);
 //            gfci.setFaithfulnessAssumed(false);
             Graph pag1 = null;
@@ -246,7 +246,7 @@ public class TestGFci {
         SemBicScore score = new SemBicScore(data, precomputeCovariances);
         score.setRuleType(SemBicScore.RuleType.CHICKERING);
         score.setPenaltyDiscount(2);
-        GFci gFci = new GFci(test, score);
+        Gfci gFci = new Gfci(test, score);
         gFci.setFaithfulnessAssumed(true);
 
         long start = MillisecondTimes.timeMillis();
@@ -278,7 +278,7 @@ public class TestGFci {
         bDeuScore.setSamplePrior(1.0);
         bDeuScore.setStructurePrior(1.0);
 
-        GFci gFci = new GFci(test, bDeuScore);
+        Gfci gFci = new Gfci(test, bDeuScore);
         gFci.setFaithfulnessAssumed(true);
 
         long start = MillisecondTimes.timeMillis();
@@ -309,7 +309,7 @@ public class TestGFci {
         score.setStructurePrior(1.0);
         score.setSamplePrior(1.0);
 
-        GFci gFci = new GFci(indTest, score);
+        Gfci gFci = new Gfci(indTest, score);
         gFci.setFaithfulnessAssumed(true);
         gFci.setMaxDegree(-1);
         gFci.setMaxDiscriminatingPathLength(-1);

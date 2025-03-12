@@ -17,8 +17,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.BFci;
-import edu.cmu.tetrad.search.BFci2;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -108,7 +106,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
             knowledge = timeSeries.getKnowledge();
         }
 
-        BFci2 search = new BFci2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        edu.cmu.tetrad.search.Bfci search = new edu.cmu.tetrad.search.Bfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
         search.setSeed(parameters.getLong(Params.SEED));
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));

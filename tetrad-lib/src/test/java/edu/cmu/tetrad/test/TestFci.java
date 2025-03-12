@@ -300,7 +300,7 @@ public class TestFci {
         }
 
         {
-            GFci fci = new GFci(independence, score);
+            Gfci fci = new Gfci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(true);
             fci.setVerbose(true);
@@ -309,25 +309,7 @@ public class TestFci {
         }
 
         {
-            GFci fci = new GFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(false);
-            fci.setVerbose(true);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            Gfci2 fci = new Gfci2(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(true);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            Gfci2 fci = new Gfci2(independence, score);
+            Gfci fci = new Gfci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(false);
             fci.setVerbose(true);
@@ -354,34 +336,7 @@ public class TestFci {
         }
 
         {
-            GraspFci2 fci = new GraspFci2(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(true);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            GraspFci2 fci = new GraspFci2(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(false);
-            fci.setVerbose(true);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            BFci fci = new BFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(true);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            BFci2 fci = new BFci2(independence, score);
+            Bfci fci = new Bfci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(true);
             fci.setVerbose(true);
@@ -391,15 +346,6 @@ public class TestFci {
 
         {
             SpFci fci = new SpFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(true);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            SpFci2 fci = new SpFci2(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(true);
             fci.setVerbose(true);

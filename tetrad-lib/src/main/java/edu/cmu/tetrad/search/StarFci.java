@@ -103,8 +103,11 @@ public final class StarFci implements IGraphSearch {
      * @param test The independence test to use.
      */
     public StarFci(Graph cpdag, IndependenceTest test) {
+
+        // This check doesn't work if a boostrap summary graph is passed in.
         if (!cpdag.paths().isLegalCpdag()) {
-            throw new IllegalArgumentException("The graph passed in is not a legal CPDAG.");
+            TetradLogger.getInstance().log("The graph passed in is not a legal CPDAG. Perhaps this is a bootstrap " +
+                                           "summary graph?");
         }
 
         this.cpdag = GraphUtils.replaceNodes(cpdag, test.getVariables());

@@ -110,7 +110,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         Score score = this.score.getScore(dataModel, parameters);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.GraspFci2 search = new edu.cmu.tetrad.search.GraspFci2(test, score);
+        edu.cmu.tetrad.search.GraspFci search = new edu.cmu.tetrad.search.GraspFci(test, score);
 
         // GRaSP
         search.setSeed(parameters.getLong(Params.SEED));

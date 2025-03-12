@@ -23,18 +23,8 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
-import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStepUnionOfAdj;
 
 /**
  * Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce an accurate PAG than
@@ -58,14 +48,10 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStepUnionOfAdj
  * @author josephramsey
  * @author bryan andrews
  * @version $Id: $Id
+ * @see StarFci
  * @see Boss
- * @see GFci
- * @see GraspFci
- * @see SpFci
- * @see Fges
- * @see Knowledge
  */
-public final class BFci implements IGraphSearch {
+public final class Bfci implements IGraphSearch {
 
     /**
      * The conditional independence test.
@@ -95,8 +81,8 @@ public final class BFci implements IGraphSearch {
      * the search algorithm will be restarted.
      * </p>
      *
-     * @see BFci#setNumStarts(int)
-     * @see BFci#search()
+     * @see Bfci#setNumStarts(int)
+     * @see Bfci#search()
      */
     private int numStarts = 1;
     /**
@@ -149,7 +135,7 @@ public final class BFci implements IGraphSearch {
      * @see IndependenceTest
      * @see Score
      */
-    public BFci(IndependenceTest test, Score score) {
+    public Bfci(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException("Test is null");
         }
@@ -174,8 +160,6 @@ public final class BFci implements IGraphSearch {
 
         this.independenceTest.setVerbose(verbose);
 
-        List<Node> nodes = getIndependenceTest().getVariables();
-
         if (verbose) {
             TetradLogger.getInstance().log("===Starting BFCI===");
         }
@@ -183,81 +167,48 @@ public final class BFci implements IGraphSearch {
         Graph cpdag;
 
         if (!startFromCompleteGraph) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Starting BOSS.");
-            }
-
-            Boss subAlg = new Boss(this.score);
-            subAlg.setUseBes(bossUseBes);
-            subAlg.setNumStarts(this.numStarts);
-            subAlg.setNumThreads(numThreads);
-            subAlg.setVerbose(verbose);
-            PermutationSearch alg = new PermutationSearch(subAlg);
-            alg.setKnowledge(this.knowledge);
-            cpdag = alg.search();
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Finished BOSS.");
-            }
+            cpdag = getCpdag();
         } else {
             TetradLogger.getInstance().log("===Starting with complete graph=== ");
             cpdag = new EdgeListGraph(independenceTest.getVariables());
             cpdag = GraphUtils.completeGraph(cpdag);
         }
 
-        Graph pag = new EdgeListGraph(cpdag);
-        pag.reorientAllWith(Endpoint.CIRCLE);
-
-        if (score instanceof MagSemBicScore) {
-            ((MagSemBicScore) score).setMag(pag);
-        }
-
-        SepsetProducer sepsets;
-
-        if (independenceTest instanceof MsepTest) {
-            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
-        } else if (sepsetFinderMethod == 1) {
-            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
-        } else if (sepsetFinderMethod == 2) {
-            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
-        } else if (sepsetFinderMethod == 3) {
-            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
-        } else {
-            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
-        }
-
-        Set<Triple> unshieldedColliders = new HashSet<>();
-
-        gfciExtraEdgeRemovalStepUnionOfAdj(pag, cpdag, nodes, independenceTest, depth, null, verbose);
-        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
+        StarFci starFci = new StarFci(cpdag, independenceTest);
+        starFci.setKnowledge(knowledge);
+        starFci.setDepth(depth);
+        starFci.setSepsetFinderMethod(sepsetFinderMethod);
+        starFci.setVerbose(verbose);
+        starFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        starFci.setGuaranteePag(guaranteePag);
+        starFci.setCompleteRuleSetUsed(completeRuleSetUsed);
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting final FCI orientation.");
+            TetradLogger.getInstance().log("===Finished BFCI===");
         }
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
-        strategy.setDepth(-1);
-        strategy.setMaxLength(-1);
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setVerbose(verbose);
+        return starFci.search();
+    }
 
-        fciOrient.finalOrientation(pag);
+    private Graph getCpdag() throws InterruptedException {
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting BOSS.");
+        }
+
+        Boss subAlg = new Boss(this.score);
+        subAlg.setUseBes(bossUseBes);
+        subAlg.setNumStarts(this.numStarts);
+        subAlg.setNumThreads(numThreads);
+        subAlg.setVerbose(verbose);
+        PermutationSearch alg = new PermutationSearch(subAlg);
+        alg.setKnowledge(this.knowledge);
+        Graph cpdag = alg.search();
 
         if (verbose) {
-            TetradLogger.getInstance().log("Finished implied orientation.");
+            TetradLogger.getInstance().log("Finished BOSS.");
         }
 
-        if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("BFCI finished.");
-        }
-
-        return pag;
+        return cpdag;
     }
 
     /**
