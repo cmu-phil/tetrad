@@ -26,20 +26,9 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
- * Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce an accurate PAG than
- * GFCI as a result, for the latent variables case. This is a simple substitution; the reference for BFCI is here:
+ * Uses BOSS in the StarFCI algorithm.
  * <p>
- * Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., &amp; Kummerfeld, E. (2024). Fast Scalable and Accurate
- * Discovery of DAGs Using the Best Order Score Search and Grow Shrink Trees. Advances in Neural Information Processing
- * Systems, 36.
- * <p>
- * The reference for GFCI is here:
- * <p>
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
- * Here, BOSS has been substituted for FGES.
- * <p>
- * For BOSS only a score is needed, but there are steps in GFCI that require a test; for these, a test is additionally
- * required.
+ * For BOSS only a score is needed, but StarFci requires a test, so both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.

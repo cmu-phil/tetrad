@@ -21,7 +21,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -29,18 +30,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Uses GRaSP in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than
- * GFCI as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here: J.M.
- * Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016. Here,
- * BOSS has been substituted for FGES.
+ * Uses GRaSP in the StarFCI algorithm. the reference for GraSP is here:
  * <p>
- * For the first step, the GRaSP algorithm is used, with the same modifications as in the GFCI algorithm.
- * <p>
- * For the second step, the FCI final orientation algorithm is used, with the same modifications as in the GFCI
- * algorithm.
- * <p>
- * For GRaSP only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test
- * and a score need to be given.
+ * For GRaSP either a score or a test is needed. StarFci requires a test. So both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.

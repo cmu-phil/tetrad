@@ -29,16 +29,7 @@ import java.io.PrintStream;
 import java.util.List;
 
 /**
- * Uses SP in place of FGES for the initial step in the GFCI algorithm. This tends to produce an accurate PAG than GFCI
- * as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here:
- * <p>
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
- * Here, SP has been substituted for FGES.
- * <p>
- * The reference for the SP algorithm is here:
- * <p>
- * Raskutti, G., &amp; Uhler, C. (2018). Learning directed acyclic graph models based on sparsest permutations. Stat,
- * 7(1), e183.
+ * Uses SP in place of FGES for the initial step in the StarFci algorithm.
  * <p>
  * For SP only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test and a
  * score need to be given.
