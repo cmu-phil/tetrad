@@ -21,20 +21,14 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
+import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStepUnionOfAdj;
 
 /**
  * Implements a modification of FCI that started by running the FGES algorithm and then fixes that result to be correct
@@ -69,7 +63,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStepUnionOfAdj
  * @see Fges
  * @see Knowledge
  */
-public final class GFci implements IGraphSearch {
+public final class Gfci2 implements IGraphSearch {
     /**
      * The independence test used in search.
      */
@@ -123,10 +117,9 @@ public final class GFci implements IGraphSearch {
      */
     private int sepsetFinderMethod = 2;
     /**
-     * A flag indicating whether the search process should start with a complete graph.
-     * If set to true, the algorithm initializes the structure with all possible edges
-     * between nodes. If false, the initialization starts with a sparser structure.
-     * This parameter can impact the efficiency and outcome of the graph search.
+     * A flag indicating whether the search process should start with a complete graph. If set to true, the algorithm
+     * initializes the structure with all possible edges between nodes. If false, the initialization starts with a
+     * sparser structure. This parameter can impact the efficiency and outcome of the graph search.
      */
     private boolean startFromCompleteGraph;
 
@@ -136,7 +129,7 @@ public final class GFci implements IGraphSearch {
      * @param test  The independence test to use.
      * @param score The score to use.
      */
-    public GFci(IndependenceTest test, Score score) {
+    public Gfci2(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -152,97 +145,49 @@ public final class GFci implements IGraphSearch {
      */
     public Graph search() throws InterruptedException {
         this.independenceTest.setVerbose(verbose);
-        List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         if (verbose) {
             TetradLogger.getInstance().log("===Starting GFCI===");
         }
 
-        Graph cpdag = getCpdag();
-
-        Graph pag = new EdgeListGraph(cpdag);
-        pag.reorientAllWith(Endpoint.CIRCLE);
-
-        if (score instanceof MagSemBicScore) {
-            ((MagSemBicScore) score).setMag(GraphTransforms.zhangMagFromPag(pag));
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Making a copy of the FGES CPDAG for reference.");
-        }
-
-        SepsetProducer sepsets;
-
-        if (independenceTest instanceof MsepTest) {
-            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
-        } else if (sepsetFinderMethod == 1) {
-            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
-        } else if (sepsetFinderMethod == 2) {
-            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
-        } else if (sepsetFinderMethod == 3) {
-            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
-        } else {
-            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
-        }
-
-        Set<Triple> unshieldedColliders = new HashSet<>();
-
-        gfciExtraEdgeRemovalStepUnionOfAdj(pag, cpdag, nodes, independenceTest, depth, null, verbose);
-        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting final FCI orientation.");
-        }
-
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
-        strategy.setDepth(-1);
-        strategy.setMaxLength(-1);
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setVerbose(verbose);
-
-        fciOrient.finalOrientation(pag);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Finished implied orientation.");
-        }
-
-        if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("GFCI finished.");
-        }
-
-        return pag;
-    }
-
-    private Graph getCpdag() throws InterruptedException {
         Graph cpdag;
 
-        if (!startFromCompleteGraph) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Starting FGES.");
-            }
-
-            Fges fges = new Fges(this.score);
-            fges.setKnowledge(getKnowledge());
-            fges.setVerbose(this.verbose);
-            fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
-            fges.setMaxDegree(this.maxDegree);
-            fges.setOut(this.out);
-            fges.setNumThreads(numThreads);
-            cpdag = fges.search();
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Finished FGES.");
-            }
-        } else {
+        if (startFromCompleteGraph) {
             TetradLogger.getInstance().log("===Starting with complete graph=== ");
             cpdag = new EdgeListGraph(independenceTest.getVariables());
             cpdag = GraphUtils.completeGraph(cpdag);
+        } else {
+            cpdag = getCpdag();
+        }
+
+        StarFci starFci = new StarFci(cpdag, independenceTest);
+        starFci.setKnowledge(knowledge);
+        starFci.setDepth(depth);
+        starFci.setSepsetFinderMethod(sepsetFinderMethod);
+        starFci.setVerbose(verbose);
+        starFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        starFci.setGuaranteePag(guaranteePag);
+        starFci.setCompleteRuleSetUsed(completeRuleSetUsed);
+
+        return starFci.search();
+    }
+
+    private Graph getCpdag() throws InterruptedException {
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting FGES.");
+        }
+
+        Fges fges = new Fges(this.score);
+        fges.setKnowledge(getKnowledge());
+        fges.setVerbose(this.verbose);
+        fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
+        fges.setMaxDegree(this.maxDegree);
+        fges.setOut(this.out);
+        fges.setNumThreads(numThreads);
+        Graph cpdag = fges.search();
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Finished FGES.");
         }
         return cpdag;
     }

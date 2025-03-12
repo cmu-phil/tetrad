@@ -22,13 +22,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -37,47 +34,40 @@ import java.util.Set;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStepUnionOfAdj;
 
 /**
- * Implements a modification of FCI that started by running the FGES algorithm and then fixes that result to be correct
- * for latent variables models. First, colliders from the FGES results are copied into the final circle-circle graph,
- * and some independence reasoning is used to add the remaining colliders into the graph. Then, the FCI final
- * orientation rules are applied. The reference is here:
+ * Implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to be
+ * correct for latent variables models. First, colliders from the Markov DAG are copied into the final circle-circle
+ * graph, and some independence reasoning is used to remove edges from this and add the remaining colliders into the
+ * graph. Then, the FCI final orientation rules are applied.
+ * <p>
+ * The reference for the GFCI algorithm this is being modeled from is here:
  * <p>
  * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
  * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR.
  * <p>
- * Because the method both runs FGES (a score-based algorithm) and does additional checking of conditional
- * independencies, both as part of its collider orientation step and also as part of the the definite discriminating
- * path step in the final FCI orientation rules, both a score and a test need to be used to construct a GFCI algorithm.
- * <p>
- * Note that various score-based algorithms could be used in place of FGES for the initial step; in this repository we
- * give three other options, GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI (see).
- * <p>
- * For more information on the algorithm, see the reference above.
+ * We modify this by:
+ * <ul>
+ *     <li>Passing an arbitrary Markov CPDAG in through the constructor.</li>
+ *     <li>Passing an independence test in through the consructor</li>
+ *     <li>Modifying the test-based adjacency removal step to look for sepsets for X*-*Y in (adj(x) U adj(y) \ {x, y}.</li>
+ * </ul>
+ * The rest of the logic is kept intact.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
  *
- * @author Juan Miguel Ogarrio
- * @author peterspirtes
  * @author josephramsey
- * @version $Id: $Id
- * @see Fci
- * @see FciOrient
- * @see GraspFci
- * @see BFci
- * @see SpFci
- * @see Fges
+ * @author bryanandrews
  * @see Knowledge
  */
-public final class GFci implements IGraphSearch {
+public final class StarFci implements IGraphSearch {
     /**
      * The independence test used in search.
      */
     private final IndependenceTest independenceTest;
     /**
-     * The score used in search.
+     * A CPDAG that is Markov.
      */
-    private final Score score;
+    private final Graph cpdag;
     /**
      * The knowledge used in search.
      */
@@ -91,25 +81,9 @@ public final class GFci implements IGraphSearch {
      */
     private int maxDiscriminatingPathLength = -1;
     /**
-     * The maximum degree of the output graph.
-     */
-    private int maxDegree = -1;
-    /**
-     * The print stream used for output.
-     */
-    private transient PrintStream out = System.out;
-    /**
-     * Whether one-edge faithfulness is assumed.
-     */
-    private boolean faithfulnessAssumed = true;
-    /**
      * The depth for independence testing.
      */
     private int depth = -1;
-    /**
-     * The number of threads to use in the search. Must be at least 1.
-     */
-    private int numThreads = 1;
     /**
      * Whether verbose output should be printed.
      */
@@ -122,25 +96,23 @@ public final class GFci implements IGraphSearch {
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod = 2;
-    /**
-     * A flag indicating whether the search process should start with a complete graph.
-     * If set to true, the algorithm initializes the structure with all possible edges
-     * between nodes. If false, the initialization starts with a sparser structure.
-     * This parameter can impact the efficiency and outcome of the graph search.
-     */
-    private boolean startFromCompleteGraph;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
      *
-     * @param test  The independence test to use.
-     * @param score The score to use.
+     * @param test The independence test to use.
      */
-    public GFci(IndependenceTest test, Score score) {
-        if (score == null) {
-            throw new NullPointerException();
+    public StarFci(Graph cpdag, IndependenceTest test) {
+        if (!cpdag.paths().isLegalCpdag()) {
+            throw new IllegalArgumentException("The graph passed in is not a legal CPDAG.");
         }
-        this.score = score;
+
+        this.cpdag = GraphUtils.replaceNodes(cpdag, test.getVariables());
+
+        if (!new HashSet<>(test.getVariables()).containsAll(new HashSet<>(cpdag.getNodes()))) {
+            throw new IllegalArgumentException("The nodes of the CPDAG pass in are not all in the domain of the test.");
+        }
+
         this.independenceTest = test;
     }
 
@@ -154,22 +126,8 @@ public final class GFci implements IGraphSearch {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
-        if (verbose) {
-            TetradLogger.getInstance().log("===Starting GFCI===");
-        }
-
-        Graph cpdag = getCpdag();
-
         Graph pag = new EdgeListGraph(cpdag);
         pag.reorientAllWith(Endpoint.CIRCLE);
-
-        if (score instanceof MagSemBicScore) {
-            ((MagSemBicScore) score).setMag(GraphTransforms.zhangMagFromPag(pag));
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Making a copy of the FGES CPDAG for reference.");
-        }
 
         SepsetProducer sepsets;
 
@@ -217,47 +175,6 @@ public final class GFci implements IGraphSearch {
         }
 
         return pag;
-    }
-
-    private Graph getCpdag() throws InterruptedException {
-        Graph cpdag;
-
-        if (!startFromCompleteGraph) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Starting FGES.");
-            }
-
-            Fges fges = new Fges(this.score);
-            fges.setKnowledge(getKnowledge());
-            fges.setVerbose(this.verbose);
-            fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
-            fges.setMaxDegree(this.maxDegree);
-            fges.setOut(this.out);
-            fges.setNumThreads(numThreads);
-            cpdag = fges.search();
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Finished FGES.");
-            }
-        } else {
-            TetradLogger.getInstance().log("===Starting with complete graph=== ");
-            cpdag = new EdgeListGraph(independenceTest.getVariables());
-            cpdag = GraphUtils.completeGraph(cpdag);
-        }
-        return cpdag;
-    }
-
-    /**
-     * Sets the maximum indegree of the output graph.
-     *
-     * @param maxDegree This maximum.
-     */
-    public void setMaxDegree(int maxDegree) {
-        if (maxDegree < -1) {
-            throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + maxDegree);
-        }
-
-        this.maxDegree = maxDegree;
     }
 
     /**
@@ -324,25 +241,6 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets the print stream used for output, default System.out.
-     *
-     * @param out This print stream.
-     */
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    /**
-     * Sets whether one-edge faithfulness is assumed. For FGES
-     *
-     * @param faithfulnessAssumed True, if so.
-     * @see Fges#setFaithfulnessAssumed(boolean)
-     */
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
-
-    /**
      * Sets the depth of the search for the possible m-sep search.
      *
      * @param depth This depth.
@@ -350,19 +248,6 @@ public final class GFci implements IGraphSearch {
     public void setDepth(int depth) {
         this.depth = depth;
     }
-
-    /**
-     * Sets the number of threads to use in the search.
-     *
-     * @param numThreads The number of threads to use. Must be at least 1.
-     */
-    public void setNumThreads(int numThreads) {
-        if (numThreads < 1) {
-            throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
-        }
-        this.numThreads = numThreads;
-    }
-
 
     /**
      * Sets the flag indicating whether to guarantee the output is a legal PAG.
@@ -381,14 +266,5 @@ public final class GFci implements IGraphSearch {
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * Sets whether the algorithm should start its search with a complete graph.
-     *
-     * @param startFromCompleteGraph true if the search should start with a complete graph, false otherwise.
-     */
-    public void setStartFromCompleteGraph(boolean startFromCompleteGraph) {
-        this.startFromCompleteGraph = startFromCompleteGraph;
     }
 }

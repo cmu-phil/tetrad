@@ -110,7 +110,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         Score score = this.score.getScore(dataModel, parameters);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.GraspFci search = new edu.cmu.tetrad.search.GraspFci(test, score);
+        edu.cmu.tetrad.search.GraspFci2 search = new edu.cmu.tetrad.search.GraspFci2(test, score);
 
         // GRaSP
         search.setSeed(parameters.getLong(Params.SEED));
@@ -121,6 +121,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
 
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
@@ -186,6 +187,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
+        params.add(Params.START_FROM_COMPLETE_GRAPH);
 
         // FCI
         params.add(Params.SEPSET_FINDER_METHOD);

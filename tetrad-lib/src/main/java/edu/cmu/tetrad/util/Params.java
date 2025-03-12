@@ -1019,6 +1019,10 @@ public final class Params {
      * Constant <code>INPUT_SCALE="inputScale"</code>
      */
     public static final String INPUT_SCALE = "inputScale";
+    /**
+     * Constant <code>START_FROM_COMPLETE_GRAPH="startFromCompleteGraph"</code>
+     */
+    public static final String START_FROM_COMPLETE_GRAPH = "startFromCompleteGraph";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

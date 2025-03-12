@@ -18,6 +18,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.Gfci2;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -94,7 +95,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             knowledge = timeSeries.getKnowledge();
         }
 
-        GFci search = new GFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        Gfci2 search = new Gfci2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
         search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
@@ -104,6 +105,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
+        search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
         search.setOut(System.out);
 
         return search.search();
@@ -160,6 +162,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.REMOVE_ALMOST_CYCLES);
         parameters.add(Params.NUM_THREADS);
+        parameters.add(Params.START_FROM_COMPLETE_GRAPH);
 
         parameters.add(Params.VERBOSE);
         return parameters;

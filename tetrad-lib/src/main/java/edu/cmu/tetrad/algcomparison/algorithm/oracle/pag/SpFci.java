@@ -106,12 +106,13 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.SpFci search = new edu.cmu.tetrad.search.SpFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        edu.cmu.tetrad.search.SpFci2 search = new edu.cmu.tetrad.search.SpFci2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
         search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setKnowledge(this.knowledge);
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
 
@@ -166,6 +167,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.GUARANTEE_PAG);
+        params.add(Params.START_FROM_COMPLETE_GRAPH);
         params.add(Params.VERBOSE);
 
         // Flags
