@@ -55,7 +55,7 @@ import java.util.List;
  * @see StarFci
  * @see Sp
  */
-public final class SpFci implements IGraphSearch {
+public final class SpFci extends StarFci {
 
     /**
      * The score.
@@ -82,30 +82,9 @@ public final class SpFci implements IGraphSearch {
      */
     private int maxDegree = -1;
     /**
-     * Indicates the maximum number of variables that can be conditioned on during the search. A negative depth value
-     * (-1 in this case) indicates unlimited depth.
-     */
-    private int depth = -1;
-    /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    /**
-     * True iff the search should guarantee a PAG output.
-     */
-    private boolean guaranteePag = false;
-    /**
-     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
-     */
-    private int sepsetFinderMethod;
-    /**
-     * Indicates whether the search should initialize using a complete graph.
-     * By default, this field is set to false, meaning the search does not
-     * start from a complete graph. If set to true, the search begins with
-     * a complete graph, which may influence both the efficiency and the
-     * outcome of the search process.
-     */
-    private boolean startFromCompleteGraph = false;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -114,6 +93,7 @@ public final class SpFci implements IGraphSearch {
      * @param score The score.
      */
     public SpFci(IndependenceTest test, Score score) {
+        super(test);
         if (score == null) {
             throw new NullPointerException();
         }
@@ -121,45 +101,7 @@ public final class SpFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    /**
-     * Runs the search and returns the discovered PAG.
-     *
-     * @return This PAG.
-     */
-    public Graph search() throws InterruptedException {
-        List<Node> nodes = this.independenceTest.getVariables();
-
-        if (nodes == null) {
-            throw new NullPointerException("Nodes from test were null.");
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("===Starting GRaSP-FCI===");
-        }
-
-        Graph cpdag;
-
-        if (startFromCompleteGraph) {
-            TetradLogger.getInstance().log("===Starting with complete graph=== ");
-            cpdag = new EdgeListGraph(independenceTest.getVariables());
-            cpdag = GraphUtils.completeGraph(cpdag);
-        } else {
-            cpdag = getCpdag();
-        }
-
-        StarFci starFci = new StarFci(cpdag, independenceTest);
-        starFci.setKnowledge(knowledge);
-        starFci.setDepth(depth);
-        starFci.setSepsetFinderMethod(sepsetFinderMethod);
-        starFci.setVerbose(verbose);
-        starFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        starFci.setGuaranteePag(guaranteePag);
-        starFci.setCompleteRuleSetUsed(completeRuleSetUsed);
-
-        return starFci.search();
-    }
-
-    private Graph getCpdag() throws InterruptedException {
+    public Graph getCpdag() throws InterruptedException {
         Graph cpdag;
         if (verbose) {
             TetradLogger.getInstance().log("Starting SP.");
@@ -283,41 +225,5 @@ public final class SpFci implements IGraphSearch {
      */
     public void setOut(PrintStream out) {
         // The print stream that output is directed to.
-    }
-
-    /**
-     * Sets the maximum number of variables conditioned on.
-     *
-     * @param depth This maximum.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
-     * Sets whether the search should guarantee the output is a legal PAG.
-     *
-     * @param guaranteePag True, if so.
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets the method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
-     *
-     * @param sepsetFinderMethod the method to use for finding sepsets
-     */
-    public void setSepsetFinderMethod(int sepsetFinderMethod) {
-        this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * Sets whether the search should begin from a complete graph.
-     *
-     * @param startFromCompleteGraph True if the search should start from a complete graph, false otherwise.
-     */
-    public void setStartFromCompleteGraph(boolean startFromCompleteGraph) {
-        this.startFromCompleteGraph = startFromCompleteGraph;
     }
 }

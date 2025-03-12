@@ -21,9 +21,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
@@ -51,7 +50,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @see StarFci
  * @see Boss
  */
-public final class Bfci implements IGraphSearch {
+public final class Bfci extends StarFci {
 
     /**
      * The conditional independence test.
@@ -66,14 +65,6 @@ public final class Bfci implements IGraphSearch {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * Flag for the complete rule set, true if it should use the complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxDiscriminatingPathLength = -1;
-    /**
      * The number of times to restart the search.
      * <p>
      * The search algorithm may converge to a suboptimal solution. To mitigate this, the algorithm can be restart
@@ -86,18 +77,10 @@ public final class Bfci implements IGraphSearch {
      */
     private int numStarts = 1;
     /**
-     * Represents the depth of the search for the constraint-based step.
-     */
-    private int depth = -1;
-    /**
      * Determines whether the Boss search algorithm should use the BES (Backward elimination of shadows) method as a
      * final step.
      */
     private boolean bossUseBes = false;
-    /**
-     * The seed for the random number generator used in the search. Defaults to -1 if not set.
-     */
-    private long seed = -1;
     /**
      * The number of threads to use for parallel processing. This variable determines the degree of parallelism for
      * certain operations that can be performed concurrently to improve performance. For example, in multithreaded
@@ -112,20 +95,6 @@ public final class Bfci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    /**
-     * Whether to guarantee the output is a PAG by repairing a faulty PAG.
-     */
-    private boolean guaranteePag;
-    /**
-     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
-     */
-    private int sepsetFinderMethod = 2;
-    /**
-     * Indicates whether the search algorithm should start from a complete graph.
-     * If set to true, the initial graph for the search will be fully connected.
-     * This can influence the execution and outcome of the search process.
-     */
-    private boolean startFromCompleteGraph;
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -136,10 +105,7 @@ public final class Bfci implements IGraphSearch {
      * @see Score
      */
     public Bfci(IndependenceTest test, Score score) {
-        if (test == null) {
-            throw new NullPointerException("Test is null");
-        }
-
+        super(test);
         if (score == null) {
             throw new NullPointerException("Score is null");
         }
@@ -147,50 +113,7 @@ public final class Bfci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    /**
-     * Does the search and returns a PAG.
-     *
-     * @return The discovered graph.
-     * @throws InterruptedException if any
-     */
-    public Graph search() throws InterruptedException {
-        if (seed != -1) {
-            RandomUtil.getInstance().setSeed(seed);
-        }
-
-        this.independenceTest.setVerbose(verbose);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("===Starting BFCI===");
-        }
-
-        Graph cpdag;
-
-        if (!startFromCompleteGraph) {
-            cpdag = getCpdag();
-        } else {
-            TetradLogger.getInstance().log("===Starting with complete graph=== ");
-            cpdag = new EdgeListGraph(independenceTest.getVariables());
-            cpdag = GraphUtils.completeGraph(cpdag);
-        }
-
-        StarFci starFci = new StarFci(cpdag, independenceTest);
-        starFci.setKnowledge(knowledge);
-        starFci.setDepth(depth);
-        starFci.setSepsetFinderMethod(sepsetFinderMethod);
-        starFci.setVerbose(verbose);
-        starFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        starFci.setGuaranteePag(guaranteePag);
-        starFci.setCompleteRuleSetUsed(completeRuleSetUsed);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("===Finished BFCI===");
-        }
-
-        return starFci.search();
-    }
-
-    private Graph getCpdag() throws InterruptedException {
+    public Graph getCpdag() throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting BOSS.");
         }
@@ -221,29 +144,6 @@ public final class Bfci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the complete (Zhang's) rule set should be used.
-     *
-     * @param completeRuleSetUsed True if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of
-     *                            the original FCI) should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path.
-     *
-     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        if (maxDiscriminatingPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
-        }
-
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
-    }
-
-    /**
      * Sets whether verbose output should be printed.
      *
      * @param verbose True iff the case
@@ -271,30 +171,12 @@ public final class Bfci implements IGraphSearch {
     }
 
     /**
-     * Sets the depth of the search (for the constraint-based step).
-     *
-     * @param depth The depth of the search.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
      * Sets whether the BES should be used.
      *
      * @param useBes True if the BES should be used, false otherwise.
      */
     public void setBossUseBes(boolean useBes) {
         this.bossUseBes = useBes;
-    }
-
-    /**
-     * Sets the seed for the random number generator.
-     *
-     * @param seed The seed for the random number generator.
-     */
-    public void setSeed(long seed) {
-        this.seed = seed;
     }
 
     /**
@@ -307,33 +189,6 @@ public final class Bfci implements IGraphSearch {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
         }
         this.numThreads = numThreads;
-    }
-
-    /**
-     * Sets whether to guarantee the output is a PAG by repairing a faulty PAG.
-     *
-     * @param guaranteePag True if a faulty PAG should be repaired, false otherwise.
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets the method to be used for finding the sepset.
-     *
-     * @param sepsetFinderMethod The method to be used for finding the sepset.
-     */
-    public void setSepsetFinderMethod(int sepsetFinderMethod) {
-        this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * Sets whether the search should start from a complete graph.
-     *
-     * @param startFromCompleteGraph True if the search should start from a complete graph, false otherwise.
-     */
-    public void setStartFromCompleteGraph(boolean startFromCompleteGraph) {
-        this.startFromCompleteGraph = startFromCompleteGraph;
     }
 }
 

@@ -59,15 +59,11 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStepUnionOfAdj
  * @author bryanandrews
  * @see Knowledge
  */
-public final class StarFci implements IGraphSearch {
+public abstract class StarFci implements IGraphSearch {
     /**
      * The independence test used in search.
      */
     private final IndependenceTest independenceTest;
-    /**
-     * A CPDAG that is Markov.
-     */
-    private final Graph cpdag;
     /**
      * The knowledge used in search.
      */
@@ -96,26 +92,23 @@ public final class StarFci implements IGraphSearch {
      * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
      */
     private int sepsetFinderMethod = 2;
+    /**
+     * A flag indicating whether the algorithm should start its search from a complete undirected graph.
+     * <p>
+     * If set to true, the Star-FCI algorithm initializes the search with a complete graph where every node is connected
+     * with an undirected edge. If set to false, the algorithm starts the search with an alternative initial graph, such
+     * as a learned or predefined CPDAG.
+     * <p>
+     * This option impacts the structure of the initial graph and may influence the overall search process and results.
+     */
+    private boolean startFromCompleteGraph;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
      *
      * @param test The independence test to use.
      */
-    public StarFci(Graph cpdag, IndependenceTest test) {
-
-        // This check doesn't work if a boostrap summary graph is passed in.
-        if (!cpdag.paths().isLegalCpdag()) {
-            TetradLogger.getInstance().log("The graph passed in is not a legal CPDAG. Perhaps this is a bootstrap " +
-                                           "summary graph?");
-        }
-
-        this.cpdag = GraphUtils.replaceNodes(cpdag, test.getVariables());
-
-        if (!new HashSet<>(test.getVariables()).containsAll(new HashSet<>(cpdag.getNodes()))) {
-            throw new IllegalArgumentException("The nodes of the CPDAG pass in are not all in the domain of the test.");
-        }
-
+    public StarFci(IndependenceTest test) {
         this.independenceTest = test;
     }
 
@@ -128,6 +121,16 @@ public final class StarFci implements IGraphSearch {
     public Graph search() throws InterruptedException {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
+
+        Graph cpdag;
+
+        if (startFromCompleteGraph) {
+            TetradLogger.getInstance().log("===Starting with complete graph=== ");
+            cpdag = new EdgeListGraph(independenceTest.getVariables());
+            cpdag = GraphUtils.completeGraph(cpdag);
+        } else {
+            cpdag = getCpdag();
+        }
 
         Graph pag = new EdgeListGraph(cpdag);
         pag.reorientAllWith(Endpoint.CIRCLE);
@@ -269,5 +272,21 @@ public final class StarFci implements IGraphSearch {
      */
     public void setSepsetFinderMethod(int sepsetFinderMethod) {
         this.sepsetFinderMethod = sepsetFinderMethod;
+    }
+
+    /**
+     * Returns a CPDAG to use as the initial graph in the Star-FCI search.
+     *
+     * @return This CPDAG.
+     */
+    public abstract Graph getCpdag() throws InterruptedException;
+
+    /**
+     * Sets whether the search should start from a complete graph.
+     *
+     * @param startFromCompleteGraph A boolean value indicating if the search should start from a complete graph.
+     */
+    public void setStartFromCompleteGraph(boolean startFromCompleteGraph) {
+        this.startFromCompleteGraph = startFromCompleteGraph;
     }
 }

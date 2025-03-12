@@ -58,7 +58,7 @@ import java.io.PrintStream;
  * @see Fges
  * @see Knowledge
  */
-public final class Gfci implements IGraphSearch {
+public final class Gfci extends StarFci {
     /**
      * The independence test used in search.
      */
@@ -72,14 +72,6 @@ public final class Gfci implements IGraphSearch {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * Whether Zhang's complete rules are used.
-     */
-    private boolean completeRuleSetUsed = true;
-    /**
-     * The maximum path length for the discriminating path rule.
-     */
-    private int maxDiscriminatingPathLength = -1;
-    /**
      * The maximum degree of the output graph.
      */
     private int maxDegree = -1;
@@ -92,10 +84,6 @@ public final class Gfci implements IGraphSearch {
      */
     private boolean faithfulnessAssumed = true;
     /**
-     * The depth for independence testing.
-     */
-    private int depth = -1;
-    /**
      * The number of threads to use in the search. Must be at least 1.
      */
     private int numThreads = 1;
@@ -103,20 +91,6 @@ public final class Gfci implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
-    /**
-     * Whether to guarantee the output is a PAG by repairing a faulty PAG.
-     */
-    private boolean guaranteePag = false;
-    /**
-     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
-     */
-    private int sepsetFinderMethod = 2;
-    /**
-     * A flag indicating whether the search process should start with a complete graph. If set to true, the algorithm
-     * initializes the structure with all possible edges between nodes. If false, the initialization starts with a
-     * sparser structure. This parameter can impact the efficiency and outcome of the graph search.
-     */
-    private boolean startFromCompleteGraph;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -125,6 +99,7 @@ public final class Gfci implements IGraphSearch {
      * @param score The score to use.
      */
     public Gfci(IndependenceTest test, Score score) {
+        super(test);
         if (score == null) {
             throw new NullPointerException();
         }
@@ -132,42 +107,7 @@ public final class Gfci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    /**
-     * Runs the graph and returns the search PAG.
-     *
-     * @return This PAG.
-     * @throws InterruptedException if any
-     */
-    public Graph search() throws InterruptedException {
-        this.independenceTest.setVerbose(verbose);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("===Starting GFCI===");
-        }
-
-        Graph cpdag;
-
-        if (startFromCompleteGraph) {
-            TetradLogger.getInstance().log("===Starting with complete graph=== ");
-            cpdag = new EdgeListGraph(independenceTest.getVariables());
-            cpdag = GraphUtils.completeGraph(cpdag);
-        } else {
-            cpdag = getCpdag();
-        }
-
-        StarFci starFci = new StarFci(cpdag, independenceTest);
-        starFci.setKnowledge(knowledge);
-        starFci.setDepth(depth);
-        starFci.setSepsetFinderMethod(sepsetFinderMethod);
-        starFci.setVerbose(verbose);
-        starFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        starFci.setGuaranteePag(guaranteePag);
-        starFci.setCompleteRuleSetUsed(completeRuleSetUsed);
-
-        return starFci.search();
-    }
-
-    private Graph getCpdag() throws InterruptedException {
+    public Graph getCpdag() throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting FGES.");
         }
@@ -223,29 +163,6 @@ public final class Gfci implements IGraphSearch {
     }
 
     /**
-     * Sets whether Zhang's complete rules are used.
-     *
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. True by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path.
-     *
-     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        if (maxDiscriminatingPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
-        }
-
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
-    }
-
-    /**
      * Sets whether verbose output should be printed.
      *
      * @param verbose True, if so.
@@ -283,15 +200,6 @@ public final class Gfci implements IGraphSearch {
     }
 
     /**
-     * Sets the depth of the search for the possible m-sep search.
-     *
-     * @param depth This depth.
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
      * Sets the number of threads to use in the search.
      *
      * @param numThreads The number of threads to use. Must be at least 1.
@@ -301,34 +209,5 @@ public final class Gfci implements IGraphSearch {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
         }
         this.numThreads = numThreads;
-    }
-
-
-    /**
-     * Sets the flag indicating whether to guarantee the output is a legal PAG.
-     *
-     * @param guaranteePag A boolean value indicating whether to guarantee the output is a legal PAG.
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets the method used to find the sepset in the GFci algorithm.
-     *
-     * @param sepsetFinderMethod The method used to find the sepset. - 0: Default method - 1: Custom method 1 - 2:
-     *                           Custom method 2 - ...
-     */
-    public void setSepsetFinderMethod(int sepsetFinderMethod) {
-        this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * Sets whether the algorithm should start its search with a complete graph.
-     *
-     * @param startFromCompleteGraph true if the search should start with a complete graph, false otherwise.
-     */
-    public void setStartFromCompleteGraph(boolean startFromCompleteGraph) {
-        this.startFromCompleteGraph = startFromCompleteGraph;
     }
 }

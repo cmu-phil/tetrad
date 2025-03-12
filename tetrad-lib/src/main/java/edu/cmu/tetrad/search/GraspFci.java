@@ -51,7 +51,7 @@ import java.util.List;
  * @see StarFci
  * @see Grasp
  */
-public final class GraspFci implements IGraphSearch {
+public final class GraspFci extends StarFci {
 
     /**
      * The conditional independence test.
@@ -65,14 +65,6 @@ public final class GraspFci implements IGraphSearch {
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    /**
-     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxDiscriminatingPathLength = -1;
     /**
      * The number of starts for GRaSP.
      */
@@ -116,25 +108,6 @@ public final class GraspFci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose = false;
-    /**
-     * The flag for whether to guarantee the output is a legal PAG.
-     */
-    private boolean guaranteePag = false;
-    /**
-     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
-     */
-    private int sepsetFinderMethod = 2;
-    /**
-     * Determines whether the GRaSP-FCI algorithm should start with a complete graph.
-     * <p>
-     * If set to true, the algorithm begins with a fully connected graph, where every variable is connected to every
-     * other variable. If set to false, the algorithm starts with an empty graph or another specified initial
-     * structure.
-     * <p>
-     * This option can impact the performance and results of the search, as the starting graph influences the edges to
-     * be considered or removed during the causal discovery process.
-     */
-    private boolean startFromCompleteGraph = false;
 
     /**
      * Constructs a new GraspFci object.
@@ -143,6 +116,7 @@ public final class GraspFci implements IGraphSearch {
      * @param score a {@link Score} object
      */
     public GraspFci(IndependenceTest test, Score score) {
+        super(test);
         if (score == null) {
             throw new NullPointerException();
         }
@@ -151,47 +125,7 @@ public final class GraspFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    /**
-     * Run the search and return s a PAG.
-     *
-     * @return The PAG.
-     * @throws InterruptedException if any
-     */
-    public Graph search() throws InterruptedException {
-        List<Node> nodes = this.independenceTest.getVariables();
-
-        if (nodes == null) {
-            throw new NullPointerException("Nodes from test were null.");
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("===Starting GRaSP-FCI===");
-        }
-
-        Graph cpdag;
-
-        if (startFromCompleteGraph) {
-            TetradLogger.getInstance().log("===Starting with complete graph=== ");
-            cpdag = new EdgeListGraph(independenceTest.getVariables());
-            cpdag = GraphUtils.completeGraph(cpdag);
-        } else {
-            cpdag = getCpdag();
-        }
-
-        StarFci starFci = new StarFci(cpdag, independenceTest);
-        starFci.setKnowledge(knowledge);
-        starFci.setDepth(depth);
-        starFci.setSepsetFinderMethod(sepsetFinderMethod);
-        starFci.setVerbose(verbose);
-        starFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        starFci.setGuaranteePag(guaranteePag);
-        starFci.setCompleteRuleSetUsed(completeRuleSetUsed);
-
-        return starFci.search();
-    }
-
-    private @NotNull Graph getCpdag() throws InterruptedException {
-        Graph cpdag;
+    public @NotNull Graph getCpdag() throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting GRaSP.");
         }
@@ -214,7 +148,7 @@ public final class GraspFci implements IGraphSearch {
         assert variables != null;
 
         alg.bestOrder(variables);
-        cpdag = alg.getGraph(true);
+        Graph cpdag = alg.getGraph(true);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished GRaSP.");
@@ -229,29 +163,6 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether Zhang's complete rules set is used.
-     *
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path.
-     *
-     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        if (maxDiscriminatingPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
-        }
-
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
     }
 
     /**
@@ -344,32 +255,6 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setDepth(int depth) {
         this.depth = depth;
-    }
-
-    /**
-     * Sets the flag for whether to guarantee the output is a legal PAG.
-     *
-     * @param guaranteePag True, if so.
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets the method for finding sepsets in the GraspFci class.
-     *
-     * @param sepsetFinderMethod the method for finding sepsets
-     */
-    public void setSepsetFinderMethod(int sepsetFinderMethod) {
-        this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * If true, the score search is skipped and the search starts with a complete graph. Default is false.
-     *
-     * @param startFromCompleteGraph true if the search should start with a complete graph, false otherwise.
-     */
-    public void setStartFromCompleteGraph(boolean startFromCompleteGraph) {
-        this.startFromCompleteGraph = startFromCompleteGraph;
+        super.setDepth(depth);
     }
 }
