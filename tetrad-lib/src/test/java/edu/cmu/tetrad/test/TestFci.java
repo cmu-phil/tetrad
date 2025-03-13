@@ -282,6 +282,8 @@ public class TestFci {
             throw new NullPointerException();
         }
 
+        boolean verbose = false;
+
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert(inputGraph);
 
@@ -294,7 +296,7 @@ public class TestFci {
         {
             Fci fci = new Fci(independence);
             fci.setKnowledge(knowledge);
-            fci.setVerbose(true);
+            fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
         }
@@ -303,7 +305,7 @@ public class TestFci {
             Gfci fci = new Gfci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(true);
+            fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
         }
@@ -312,7 +314,7 @@ public class TestFci {
             Gfci fci = new Gfci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(false);
-            fci.setVerbose(true);
+            fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
         }
@@ -321,7 +323,7 @@ public class TestFci {
             GraspFci fci = new GraspFci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(true);
+            fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
         }
@@ -330,7 +332,7 @@ public class TestFci {
             GraspFci fci = new GraspFci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(false);
-            fci.setVerbose(true);
+            fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
         }
@@ -339,7 +341,7 @@ public class TestFci {
             Bfci fci = new Bfci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(true);
+            fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
         }
@@ -348,7 +350,7 @@ public class TestFci {
             SpFci fci = new SpFci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(true);
+            fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
         }
@@ -474,6 +476,8 @@ public class TestFci {
      */
     @Test
     public void testSearch16() {
+        boolean verbose = false;
+
         final String trueMag = "Graph Nodes:\n" +
                                "(ep);(g);cd;hd;lc;s;i;ps;mb\n" +
                                "\n" +
@@ -509,14 +513,14 @@ public class TestFci {
             Graph truePag_ = GraphSaveLoadUtils.readerToGraphTxt(correctPag);
 
             Fci fci = new Fci(new MsepTest(trueMag_));
-            fci.setVerbose(true);
+            fci.setVerbose(verbose);
             Graph estPag1 = fci.search();
             assertEquals(truePag_, estPag1);
 
             GraspFci graspFci = new GraspFci(new MsepTest(trueMag_), new GraphScore(trueMag_));
             graspFci.setUseRaskuttiUhler(true);
             graspFci.setUseScore(false);
-            graspFci.setVerbose(true);
+            graspFci.setVerbose(verbose);
             Graph estPag2 = graspFci.search();
             assertEquals(truePag_, estPag2);
 
