@@ -106,12 +106,6 @@ public class MeekRules {
                                                        "contain only directed or undirected edges.");
                 }
             }
-
-            // This breaks FGES from dsep. It's not clear why this is necessary, as FGES from dsep passes an
-            // oracle test. jdramsey 2024-6-21
-//            if (graph.paths().existsDirectedCycle()) {
-//                throw new IllegalArgumentException("Graph contains a cycle before Meek orientation.");
-//            }
         }
 
         // The initial list of nodes to visit.
