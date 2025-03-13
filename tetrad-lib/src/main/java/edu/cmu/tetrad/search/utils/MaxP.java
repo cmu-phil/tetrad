@@ -44,8 +44,8 @@ public final class MaxP {
     private final IndependenceTest independenceTest;
     private int depth = -1;
     private Knowledge knowledge = new Knowledge();
-    private boolean useHeuristic;
-    private int maxDiscriminatingPathLength = -1;
+    private boolean useHeuristic = false;
+    private int maxPMaxHeuristicPathLength = -1;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
     private boolean verbose = false;
 
@@ -91,14 +91,14 @@ public final class MaxP {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxPMaxHeuristicPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        if (maxDiscriminatingPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
+    public void setMaxPMaxHeuristicPathLength(int maxPMaxHeuristicPathLength) {
+        if (maxPMaxHeuristicPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPMaxHeuristicPathLength);
         }
 
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+        this.maxPMaxHeuristicPathLength = maxPMaxHeuristicPathLength;
     }
 
     /**
@@ -135,7 +135,9 @@ public final class MaxP {
         tripleList.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
 
         for (Triple triple : tripleList) {
-            System.out.println(triple + " score = " + scores.get(triple));
+            if (scores.get(triple) > independenceTest.getAlpha()) {
+                System.out.println("Picking max p unshielded triple to orient: " + triple + " score = " + scores.get(triple));
+            }
         }
 
         for (Triple triple : tripleList) {
@@ -143,7 +145,9 @@ public final class MaxP {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            orientCollider(graph, a, b, c, this.conflictRule);
+            if (scores.get(triple) > independenceTest.getAlpha()) {
+                orientCollider(graph, a, b, c, this.conflictRule);
+            }
         }
     }
 
@@ -171,7 +175,7 @@ public final class MaxP {
             }
 
             if (this.useHeuristic) {
-                if (existsShortPath(a, c, this.maxDiscriminatingPathLength, graph)) {
+                if (existsShortPath(a, c, this.maxPMaxHeuristicPathLength, graph)) {
                     testColliderMaxP(graph, scores, a, b, c);
                 } else {
                     testColliderHeuristic(graph, scores, a, b, c);

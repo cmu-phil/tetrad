@@ -6,8 +6,13 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.LogUtils;
+import edu.cmu.tetrad.util.TetradLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -42,6 +47,7 @@ import java.util.*;
  * @see Knowledge
  */
 public class Fas {
+    private static final Logger log = LoggerFactory.getLogger(Fas.class);
     /**
      * Represents the core independence test utilized in the FAS algorithm to determine conditional independence
      * relationships between variables. This test serves as the foundation for building and refining graphs during the
@@ -170,6 +176,10 @@ public class Fas {
 
                 if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
                     graph.removeEdge(x, y);
+
+                    if (verbose) {
+                        System.out.println("Edges removed by knowledge: " + x.getName() + " " + y.getName());
+                    }
                 }
             }
         }
@@ -257,6 +267,9 @@ public class Fas {
                     if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
                         graph_.removeEdge(x, y);
                         sepset.set(x, y, S);
+
+                        TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));
+
                         break;
                     }
                 }

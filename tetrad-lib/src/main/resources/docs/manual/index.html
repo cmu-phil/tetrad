@@ -9998,12 +9998,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             id="useMaxPHeuristic">useMaxPHeuristic</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="useMaxPHeuristic_short_desc">Yes if the max P
-                    heuristic should be used to orient unshielded colliders</span></li>
+                    id="useMaxPHeuristic_short_desc">
+                    Yes if the max P heuristic version should be used to orient unshielded colliders
+            </span></li>
             <li>Long Description: <span
-                    id="useMaxPHeuristic_long_desc">The max P heuristic orients
-                    X*-*Y*-*Z by considering whether Y is in the subset S of variables
-                    adjacent to X or Z that maximizes the p-value of X _||_ Y | S.</span></li>
+                    id="useMaxPHeuristic_long_desc">
+                    Yes if the max P heuristic version should be used to orient unshielded colliders
+            </span></li>
             <li>Default Value: <span
                     id="useMaxPHeuristic_default_value">false</span></li>
             <li>Lower Bound: <span
@@ -10016,19 +10017,18 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                         id="useMaxPHeuristic_value_type">Boolean</span></li>
         </ul>
 
-
         <h3 class="parameter_description"
             id="useMaxPOrientationHeuristic">useMaxPOrientationHeuristic</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="useMaxPOrientationHeuristic_short_desc">Yes if the heuristic for
-        orienting unshielded colliders for max P should be used</span></li>
+                    id="useMaxPOrientationHeuristic_short_desc">
+                    Use the max p heuristic version
+                    </span></li>
             <li>Long Description: <span
-                    id="useMaxPOrientationHeuristic_long_desc"> Another way to do the
-        orientation if X and Z are only weakly dependent, is to simply see
-        whether the p-value for X _||_ Z | Y is greater than the p-value for
-        X _||_ Z. The purpose is to speed up the search. </span></li>
+                    id="useMaxPOrientationHeuristic_long_desc">
+                    Use the max p heuristic version
+     		</span></li>
             <li>Default Value: <span
                     id="useMaxPOrientationHeuristic_default_value">false</span></li>
             <li>Lower Bound: <span
@@ -10039,6 +10039,31 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value
                 Type: <span
                         id="useMaxPOrientationHeuristic_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="maxPaxPOrientationHeuristicMaxLength">maxPaxPOrientationHeuristicMaxLength</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="maxPaxPOrientationHeuristicMaxLength_short_desc">
+                    The maximum path length to use for the max p heuristic version.
+                    </span></li>
+            <li>Long Description: <span
+                    id="maxPaxPOrientationHeuristicMaxLength_long_desc">
+                    The maximum path length to use for the max p heuristic version.
+
+     		</span></li>
+            <li>Default Value: <span
+                    id="maxPaxPOrientationHeuristicMaxLength_default_value">5</span></li>
+            <li>Lower Bound: <span
+                    id="maxPaxPOrientationHeuristicMaxLength_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="maxPaxPOrientationHeuristicMaxLength_upper_bound">100000</span></li>
+            <li>Value
+                Type: <span
+                        id="maxPaxPOrientationHeuristicMaxLength_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"

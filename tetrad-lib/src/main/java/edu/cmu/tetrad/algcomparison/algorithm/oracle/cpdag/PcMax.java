@@ -28,18 +28,23 @@ import java.util.List;
 import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 
 /**
- * Peter/Clark algorithm (PC).
+ * PC-Max. This version of PC will orient unshielded colliders similarly to CPC, but instead of listing all subsets S
+ * for X--Y--Z, !adj(X, Z), or adj(X) \ {Z} or adj(Z) \ {X} and seeing whether the facts X _||_ Z | S that test as true
+ * contain or do not contain Y, we list the p-values for all of these facts and pick the S that maximizes the p-value to
+ * do the unshielded collider orientations.
  *
  * @author josephramsey
  * @version $Id: $Id
+ * @see Pc
+ * @see Cpc
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "PC",
-        command = "pc",
+        name = "PC-Max",
+        command = "pc-max",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -56,17 +61,17 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * <p>Constructor for Pc.</p>
+     * <p>Constructor for PcMax.</p>
      */
-    public Pc() {
+    public PcMax() {
     }
 
     /**
-     * <p>Constructor for Pc.</p>
+     * <p>Constructor for PcMax.</p>
      *
-     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param test a {@link IndependenceWrapper} object
      */
-    public Pc(IndependenceWrapper test) {
+    public PcMax(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -94,8 +99,10 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         };
 
         edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
-        search.setUseMaxPOrientation(false); // sepset orientation.
+        search.setUseMaxPOrientation(true);
         search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setMaxPOrientationHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+        search.setMaxPOrientationHeuristicMaxLength(parameters.getInt(Params.MaX_PAX_P_ORIENTATION_HEURISTIC_MAX_LENGTH));
         search.setGuaranteeCpdag(parameters.getBoolean(Params.GUARANTEE_CPDAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
@@ -121,7 +128,7 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
      */
     @Override
     public String getDescription() {
-        return "PC using " + this.test.getDescription();
+        return "PC-Max using " + this.test.getDescription();
     }
 
     /**
@@ -140,6 +147,8 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnow
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.CONFLICT_RULE);
+        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
+        parameters.add(Params.MaX_PAX_P_ORIENTATION_HEURISTIC_MAX_LENGTH);
         parameters.add(Params.GUARANTEE_CPDAG);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);

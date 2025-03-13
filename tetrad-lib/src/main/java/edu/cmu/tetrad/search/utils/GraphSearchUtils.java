@@ -277,9 +277,9 @@ public final class GraphSearchUtils {
                                  && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
                     }
                     if (result) {
-                        if (verbose) {
-                            System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
-                        }
+//                        if (verbose) {
+//                            System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+//                        }
 
                         if (enforceCpdag) {
                             if (graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW) {

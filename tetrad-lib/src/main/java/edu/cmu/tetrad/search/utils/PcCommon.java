@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -159,18 +158,19 @@ public final class PcCommon implements IGraphSearch {
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(z, y);
-                TetradLogger.getInstance().log("Collider oriented: " + GraphUtils.pathString(graph, x, y, z));
+
+//                TetradLogger.getInstance().log("Collider oriented: " + GraphUtils.pathString(graph, x, y, z));
             }
         } else if (conflictRule == ConflictRule.ORIENT_BIDIRECTED) {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
-            TetradLogger.getInstance().log("Collider oriented: " + GraphUtils.pathString(graph, x, y, z));
+//            TetradLogger.getInstance().log("Collider oriented: " + GraphUtils.pathString(graph, x, y, z));
         } else if (conflictRule == ConflictRule.OVERWRITE_EXISTING) {
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);
             graph.addDirectedEdge(z, y);
-            TetradLogger.getInstance().log("Collider oriented: " + GraphUtils.pathString(graph, x, y, z));
+//            TetradLogger.getInstance().log("Collider oriented: " + GraphUtils.pathString(graph, x, y, z));
         }
 
     }
@@ -318,11 +318,11 @@ public final class PcCommon implements IGraphSearch {
 
             MaxP orientCollidersMaxP = new MaxP(this.independenceTest);
             orientCollidersMaxP.setConflictRule(this.conflictRule);
-            orientCollidersMaxP.setMaxDiscriminatingPathLength(this.maxDiscriminatingPathLength);
+            orientCollidersMaxP.setMaxPMaxHeuristicPathLength(this.maxDiscriminatingPathLength);
             orientCollidersMaxP.setDepth(this.depth);
             orientCollidersMaxP.setKnowledge(this.knowledge);
-            orientCollidersMaxP.orient(this.graph);
             orientCollidersMaxP.setVerbose(verbose);
+            orientCollidersMaxP.orient(this.graph);
         } else if (this.colliderDiscovery == ColliderDiscovery.CONSERVATIVE) {
             if (this.verbose) {
                 System.out.println("CPC orientation...");
@@ -657,7 +657,8 @@ public final class PcCommon implements IGraphSearch {
      * @param verbose      a flag indicating whether to display verbose output
      * @param conflictRule the conflict resolution rule to use when orienting colliders
      */
-    private void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose, ConflictRule conflictRule) {
+    private void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
+                                             ConflictRule conflictRule) {
         if (verbose) {
             System.out.println("FAS Sepset orientation...");
         }
@@ -705,9 +706,9 @@ public final class PcCommon implements IGraphSearch {
                             if (colliderAllowed(a, b, c, knowledge)) {
                                 PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose);
 
-                                if (verbose) {
-                                    System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
-                                }
+//                                if (verbose) {
+//                                    System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+//                                }
 
                                 colliderTriples.add(new Triple(a, b, c));
                                 log(LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset), verbose);

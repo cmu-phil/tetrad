@@ -645,6 +645,10 @@ public final class Params {
      */
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
     /**
+     * Constant <code>MaX_PAX_P_ORIENTATION_HEURISTIC_MAX_LENGTH="maxPaxPOrientationHeuristicMaxLength"</code>
+     */
+    public static final String MaX_PAX_P_ORIENTATION_HEURISTIC_MAX_LENGTH = "maxPaxPOrientationHeuristicMaxLength";
+    /**
      * Constant <code>USE_SKEW_ADJACENCIES="useSkewAdjacencies"</code>
      */
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
