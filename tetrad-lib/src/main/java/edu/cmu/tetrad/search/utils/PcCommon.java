@@ -159,19 +159,18 @@ public final class PcCommon implements IGraphSearch {
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(z, y);
-                log(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
+                TetradLogger.getInstance().log("Collider oriented: " + GraphUtils.pathString(graph, x, y, z));
             }
         } else if (conflictRule == ConflictRule.ORIENT_BIDIRECTED) {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
-
-            log(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
+            TetradLogger.getInstance().log("Collider oriented: " + GraphUtils.pathString(graph, x, y, z));
         } else if (conflictRule == ConflictRule.OVERWRITE_EXISTING) {
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);
             graph.addDirectedEdge(z, y);
-            log(LogUtilsSearch.colliderOrientedMsg(x, y, z), verbose);
+            TetradLogger.getInstance().log("Collider oriented: " + GraphUtils.pathString(graph, x, y, z));
         }
 
     }
