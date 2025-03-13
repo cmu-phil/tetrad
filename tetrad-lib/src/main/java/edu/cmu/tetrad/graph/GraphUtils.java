@@ -1828,6 +1828,20 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * Executes an extra-edge removal step during the Greedy Fast Causal Inference (GFCI) process by analyzing
+     * the union of adjacent nodes in a given graph. This method seeks to identify and remove edges that do not
+     * represent causal connections based on independence tests and separation sets (sepsets).
+     *
+     * @param graph The full graph under consideration, which will be modified to remove extra edges.
+     * @param cpdag A Completed Partially Directed Acyclic Graph (CPDAG) representing the current causal structure being analyzed.
+     * @param nodes A list of nodes in the graph to be processed during the extra-edge removal step.
+     * @param test The independence test used to evaluate whether two nodes are conditionally independent given a subset of nodes.
+     * @param depth The depth of conditional independence tests, defining the maximum number of nodes in the conditioning set.
+     * @param order A list of nodes used to guide the processing order of the algorithm.
+     * @param verbose A boolean flag indicating whether detailed logs of the operation should be produced.
+     * @throws InterruptedException If the thread running the method is interrupted.
+     */
     public static void gfciExtraEdgeRemovalStepUnionOfAdj(Graph graph, Graph cpdag, List<Node> nodes,
                                                           IndependenceTest test, int depth, List<Node> order, boolean verbose) throws InterruptedException {
         if (verbose) {

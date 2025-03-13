@@ -90,11 +90,26 @@ public class SepsetFinder {
         return sepset;
     }
 
+    /**
+     * Identifies a separating set (sepset) containing a given subset of nodes between two nodes x and y in a graph
+     * using a greedy approach and subsets of (adj(x) U adu(y)) \ {x, y}. The method applies constraints such as
+     * independence testing, specified node ordering, and optional filtering of certain node types.
+     * <p>
+     * This method mainly focuses on finding a feasible separating set under the given constraints by iterating through
+     * node combinations from the union of adjacent nodes of x and y in the graph.
+     *
+     * @param graph      The graph in which the nodes and their adjacency relationships are defined.
+     * @param x          The first node for which the sepset is being determined.
+     * @param y          The second node for which the sepset is being determined.
+     * @param containing A specified subset of nodes that the resulting sepset must contain.
+     * @param test       The independence test to verify conditional independence between nodes.
+     * @param depth      The maximum allowable size for subsets to consider during the search for the sepset.
+     * @param order      A list representing a specific ordering of nodes, which may influence the valid sepset.
+     * @return A set of nodes representing the sepset containing the given subset, or null if no such set is found.
+     */
     public static Set<Node> getSepsetContainingGreedySubsetUnion(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
-//        adjx.remove(y);
-//        adjy.remove(x);
 
         Set<Node> union = new HashSet<>(adjx);
         union.addAll(adjy);

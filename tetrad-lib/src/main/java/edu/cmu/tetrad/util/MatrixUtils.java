@@ -33,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.sqrt;
-
 /**
  * Class Matrix includes several public static functions performing matrix operations. These function include:
  * determinant, GJinverse, inverse, multiple, difference, transpose, trace, duplicate, minor, identity, mprint,
@@ -739,6 +737,14 @@ public final class MatrixUtils {
 //        return corr;
     }
 
+    /**
+     * Converts a covariance matrix into a correlation matrix. The correlation matrix is computed by normalizing the
+     * covariance matrix using the standard deviations derived from the diagonal elements of the covariance matrix.
+     *
+     * @param covarianceMatrix the input covariance matrix to be converted. It is assumed to be square and symmetric.
+     * @return the resulting correlation matrix where each element is scaled by the product of the standard deviations
+     * of the corresponding variables.
+     */
     public static SimpleMatrix convertCovToCorr(SimpleMatrix covarianceMatrix) {
         int n = covarianceMatrix.getNumRows();
         SimpleMatrix correlationMatrix = new SimpleMatrix(n, n);
@@ -810,10 +816,10 @@ public final class MatrixUtils {
     }
 
     /**
-     * Converts a 2D array of doubles into a String representation using the specified
-     * NumberFormat. This method delegates the formatting process to MatrixUtils.toString.
+     * Converts a 2D array of doubles into a String representation using the specified NumberFormat. This method
+     * delegates the formatting process to MatrixUtils.toString.
      *
-     * @param m the 2D double array to be converted to a string
+     * @param m  the 2D double array to be converted to a string
      * @param nf the NumberFormat to use for formatting the numbers in the array
      * @return a String representation of the 2D array formatted using the specified NumberFormat
      */
@@ -822,18 +828,14 @@ public final class MatrixUtils {
     }
 
     /**
-     * Converts a two-dimensional array representing a matrix into a string
-     * representation using the specified number format and variable names.
+     * Converts a two-dimensional array representing a matrix into a string representation using the specified number
+     * format and variable names.
      *
-     * @param m the matrix to convert, represented as a two-dimensional array
-     *          of double values. Can be null.
-     * @param nf the number format to use for formatting the individual matrix
-     *           elements. Must not be null.
-     * @param variables a list of variable names corresponding to the columns
-     *                  of the matrix. If null, default variable names will
-     *                  be generated.
-     * @return a string representation of the matrix. If the matrix is null
-     *         or empty, a default message is returned.
+     * @param m         the matrix to convert, represented as a two-dimensional array of double values. Can be null.
+     * @param nf        the number format to use for formatting the individual matrix elements. Must not be null.
+     * @param variables a list of variable names corresponding to the columns of the matrix. If null, default variable
+     *                  names will be generated.
+     * @return a string representation of the matrix. If the matrix is null or empty, a default message is returned.
      * @throws NullPointerException if the provided number format is null.
      */
     public static String toString(double[][] m, NumberFormat nf, List<String> variables) {

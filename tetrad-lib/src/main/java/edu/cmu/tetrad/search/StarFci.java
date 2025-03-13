@@ -278,6 +278,7 @@ public abstract class StarFci implements IGraphSearch {
      * Returns a CPDAG to use as the initial graph in the Star-FCI search.
      *
      * @return This CPDAG.
+     * @throws InterruptedException if interrupted.
      */
     public abstract Graph getCpdag() throws InterruptedException;
 

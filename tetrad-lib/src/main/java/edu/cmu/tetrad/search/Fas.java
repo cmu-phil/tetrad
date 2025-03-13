@@ -149,6 +149,7 @@ public class Fas {
      *
      * @return A graph where edges are updated based on the results of conditional independence tests and other provided
      * constraints.
+     * @throws InterruptedException if interrupted.
      */
     public Graph search() throws InterruptedException {
         return search(test.getVariables());
@@ -160,6 +161,7 @@ public class Fas {
      *
      * @param nodes The list of nodes to construct the graph and perform the search on.
      * @return A graph with edges updated based on the search process and conditional independence tests.
+     * @throws InterruptedException if interrupted.
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
         if (!new HashSet<>(test.getVariables()).containsAll(nodes)) {
