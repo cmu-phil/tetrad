@@ -92,7 +92,7 @@ public final class SpFci extends StarFci {
         this.independenceTest = test;
     }
 
-    public Graph getCpdag() throws InterruptedException {
+    public Graph getMarkovCpdag() throws InterruptedException {
         Graph cpdag;
         if (verbose) {
             TetradLogger.getInstance().log("Starting SP.");

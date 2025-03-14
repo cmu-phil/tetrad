@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -71,7 +72,9 @@ public class TestFci {
         resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
 
         assertEquals(pag, resultGraph);
-        assertEquals(pag, GraphTransforms.dagToPag(graph));
+//        System.out.println("DAG to PAG: " + dagToPag(graph));
+//
+        assertEquals(pag, dagToPag(graph));
     }
 
     @Test
@@ -241,7 +244,7 @@ public class TestFci {
 //        DagToPag dagToPag = new DagToPag(trueGraph);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphTransforms.dagToPag(trueGraph);
+        Graph truePag = dagToPag(trueGraph);
 
         assertEquals(graph, truePag);
     }

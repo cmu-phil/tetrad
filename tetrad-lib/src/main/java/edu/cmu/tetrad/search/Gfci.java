@@ -95,7 +95,7 @@ public final class Gfci extends StarFci {
         this.independenceTest = test;
     }
 
-    public Graph getCpdag() throws InterruptedException {
+    public Graph getMarkovCpdag() throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting FGES.");
         }

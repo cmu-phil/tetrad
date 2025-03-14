@@ -22,16 +22,22 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
+import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStepUnionOfAdj;
+import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
+import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
 
 /**
  * Implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to be
@@ -39,24 +45,23 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStepUnionOfAdj
  * graph, and some independence reasoning is used to remove edges from this and add the remaining colliders into the
  * graph. Then, the FCI final orientation rules are applied.
  * <p>
+ * The Markov CPDAG needs to be supplied by classes inheriting from this abstract class using the getMarkovCpdag()
+ * methods.
+ * <p>
  * The reference for the GFCI algorithm this is being modeled from is here:
  * <p>
  * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
  * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR.
  * <p>
- * We modify this by:
- * <ul>
- *     <li>Passing an arbitrary Markov CPDAG in through the constructor.</li>
- *     <li>Passing an independence test in through the consructor</li>
- *     <li>Modifying the test-based adjacency removal step to look for sepsets for X*-*Y in (adj(x) U adj(y) \ {x, y}.</li>
- * </ul>
- * The rest of the logic is kept intact.
+ * We modify this by insistent that getMarkovCpdag() is overridden by a method that will return a CPDAG Markov to the
+ * data or underlying generative model and removing the possible d-sep step of the original algorithm.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
  *
  * @author josephramsey
  * @author bryanandrews
+ * @see #getMarkovCpdag()
  * @see Knowledge
  */
 public abstract class StarFci implements IGraphSearch {
@@ -88,10 +93,7 @@ public abstract class StarFci implements IGraphSearch {
      * Whether to guarantee the output is a PAG by repairing a faulty PAG.
      */
     private boolean guaranteePag = false;
-    /**
-     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
-     */
-    private int sepsetFinderMethod = 2;
+
     /**
      * A flag indicating whether the algorithm should start its search from a complete undirected graph.
      * <p>
@@ -113,6 +115,144 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
+     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
+     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
+     *
+     * @param graph The graph in which the nodes reside.
+     * @param a     The first node in the triple.
+     * @param b     The second node in the triple.
+     * @param c     The third node in the triple.
+     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
+     */
+    private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
+        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
+    }
+
+    /**
+     * Checks if the given nodes are unshielded colliders when considering the given graph.
+     *
+     * @param graph the graph to consider
+     * @param a     the first node
+     * @param b     the second node
+     * @param c     the third node
+     * @return true if the nodes are unshielded colliders, false otherwise
+     */
+    private static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
+        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
+    }
+
+    private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {
+        List<List<Integer>> choices = new ArrayList<>();
+
+        if (depth < 0 || depth > adjx.size()) depth = adjx.size();
+
+        SublistGenerator cg = new SublistGenerator(adjx.size(), depth);
+        int[] choice;
+
+        while ((choice = cg.next()) != null) {
+            choices.add(GraphUtils.asList(choice));
+        }
+
+        return choices;
+    }
+
+    /**
+     * Creates a set of nodes by selecting elements from the adjacency list based on the given indices.
+     *
+     * @param choice A list of integers representing the indices of nodes to be included in the combination.
+     * @param adj    A list of nodes representing the adjacency list from which the nodes are selected.
+     * @return A set of nodes selected from the adjacency list based on the indices in the choice list.
+     */
+    private static Set<Node> combination(List<Integer> choice, List<Node> adj) {
+
+        // Create a set of nodes from the subset of adjx represented by choice.
+        Set<Node> combination = new HashSet<>();
+
+        for (int i : choice) {
+            combination.add(adj.get(i));
+        }
+
+        return combination;
+    }
+
+    /**
+     * Finds a separating set that is a subset of the adjacency of nodes x or y in the input graph.
+     *
+     * @param graph      The graph being analyzed.
+     * @param x          The first node between which independence is checked.
+     * @param y          The second node between which independence is checked.
+     * @param containing A set of nodes that must be included in the separating set.
+     * @param test       The independence test used to evaluate separation.
+     * @param depth      The maximum size of subsets to be tested for independence.
+     * @param order      An optional list specifying the order of nodes for additional constraints.
+     * @return A separating set of nodes (if found) that is a subset of the adjacency of x or y, or {@code null} if no
+     * such set is found.
+     */
+    public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
+        List<Node> adjx = graph.getAdjacentNodes(x);
+        List<Node> adjy = graph.getAdjacentNodes(y);
+        adjx.remove(y);
+        adjy.remove(x);
+
+        adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+
+        List<List<Integer>> choices = getChoices(adjx, depth);
+
+        // Parallelize processing for adjx
+        Set<Node> sepset = choices.parallelStream()
+                .map(choice -> combination(choice, adjx)) // Generate combinations in parallel
+                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                .filter(subset -> {
+                    try {
+                        if (order != null) {
+                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+
+                            for (Node node : subset) {
+                                if (order.indexOf(node) > order.indexOf(_y)) {
+                                    return false;
+                                }
+                            }
+                        }
+
+                        return test.checkIndependence(x, y, subset).isIndependent();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).findFirst().orElse(null);
+
+        if (sepset != null) {
+            return sepset;
+        }
+
+        // Parallelize processing for adjy
+        choices = getChoices(adjy, depth);
+
+        sepset = choices.parallelStream()
+                .map(choice -> combination(choice, adjy)) // Generate combinations in parallel
+                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                .filter(subset -> {
+                    try {
+                        if (order != null) {
+                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+
+                            for (Node node : subset) {
+                                if (order.indexOf(node) > order.indexOf(_y)) {
+                                    return false;
+                                }
+                            }
+                        }
+
+                        return test.checkIndependence(x, y, subset).isIndependent();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).findFirst().orElse(null);
+
+        return sepset;
+    }
+
+    /**
      * Runs the graph and returns the search PAG.
      *
      * @return This PAG.
@@ -129,30 +269,109 @@ public abstract class StarFci implements IGraphSearch {
             cpdag = new EdgeListGraph(independenceTest.getVariables());
             cpdag = GraphUtils.completeGraph(cpdag);
         } else {
-            cpdag = getCpdag();
+            cpdag = getMarkovCpdag();
         }
 
         Graph pag = new EdgeListGraph(cpdag);
         pag.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sepsets;
-
-        if (independenceTest instanceof MsepTest) {
-            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
-        } else if (sepsetFinderMethod == 1) {
-            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
-        } else if (sepsetFinderMethod == 2) {
-            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
-        } else if (sepsetFinderMethod == 3) {
-            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
-        } else {
-            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
-        }
-
         Set<Triple> unshieldedColliders = new HashSet<>();
 
-        gfciExtraEdgeRemovalStepUnionOfAdj(pag, cpdag, nodes, independenceTest, depth, null, verbose);
-        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
+        SepsetMap sepsetMap = new SepsetMap();
+
+        for (Edge edge : pag.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            Node a = edge.getNode1();
+            Node c = edge.getNode2();
+
+            Set<Node> sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null);
+
+            if (sepset != null) {
+                pag.removeEdge(a, c);
+                sepsetMap.set(a, c, sepset);
+
+                List<Node> adj = pag.getAdjacentNodes(a);
+                adj.retainAll(pag.getAdjacentNodes(c));
+
+                if (verbose) {
+                    IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
+                    double pValue = result.getPValue();
+                    TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
+                                                   + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
+                }
+            }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting GFCI-R0.");
+        }
+
+        pag.reorientAllWith(Endpoint.CIRCLE);
+
+        fciOrientbk(knowledge, pag, pag.getNodes());
+
+        for (Node y : nodes) {
+            List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node x = adjacentNodes.get(combination[0]);
+                Node z = adjacentNodes.get(combination[1]);
+
+                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
+                    if (colliderAllowed(pag, x, y, z, knowledge) && cpdag.isDefCollider(x, y, z)) {
+                        pag.setEndpoint(x, y, Endpoint.ARROW);
+                        pag.setEndpoint(z, y, Endpoint.ARROW);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
+
+                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
+                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
+                            }
+
+                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
+                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
+                            }
+                        }
+                    }
+                } else if (cpdag.isAdjacentTo(x, z)) {
+                    if (colliderAllowed(pag, x, y, z, knowledge)) {
+                        Set<Node> sepset = sepsetMap.get(x, z);
+
+                        if (sepset != null) {
+                            pag.removeEdge(x, z);
+
+                            if (!sepset.contains(y)) {
+                                pag.setEndpoint(x, y, Endpoint.ARROW);
+                                pag.setEndpoint(z, y, Endpoint.ARROW);
+
+                                if (verbose) {
+                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ".");
+
+                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
+                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
+                                    }
+
+                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
+                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
@@ -265,24 +484,6 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
-     * Sets the method used to find the sepset in the GFci algorithm.
-     *
-     * @param sepsetFinderMethod The method used to find the sepset. - 0: Default method - 1: Custom method 1 - 2:
-     *                           Custom method 2 - ...
-     */
-    public void setSepsetFinderMethod(int sepsetFinderMethod) {
-        this.sepsetFinderMethod = sepsetFinderMethod;
-    }
-
-    /**
-     * Returns a CPDAG to use as the initial graph in the Star-FCI search.
-     *
-     * @return This CPDAG.
-     * @throws InterruptedException if interrupted.
-     */
-    public abstract Graph getCpdag() throws InterruptedException;
-
-    /**
      * Sets whether the search should start from a complete graph.
      *
      * @param startFromCompleteGraph A boolean value indicating if the search should start from a complete graph.
@@ -290,4 +491,12 @@ public abstract class StarFci implements IGraphSearch {
     public void setStartFromCompleteGraph(boolean startFromCompleteGraph) {
         this.startFromCompleteGraph = startFromCompleteGraph;
     }
+
+    /**
+     * Returns a Markov CPDAG to use as the initial graph in the Star-FCI search.
+     *
+     * @return This CPDAG.
+     * @throws InterruptedException if interrupted.
+     */
+    public abstract Graph getMarkovCpdag() throws InterruptedException;
 }

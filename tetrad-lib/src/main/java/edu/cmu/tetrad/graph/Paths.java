@@ -1754,7 +1754,7 @@ public class Paths implements TetradSerializable {
      * @return A sepset for x and y, if there is one; otherwise, null.
      */
     public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test, int depth) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test, depth, null);
+        return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, Collections.emptySet(), test, depth, null);
     }
 
     /**

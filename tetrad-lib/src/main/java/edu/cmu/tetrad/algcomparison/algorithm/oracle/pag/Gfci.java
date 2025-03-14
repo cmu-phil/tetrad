@@ -94,7 +94,6 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         }
 
         edu.cmu.tetrad.search.Gfci search = new edu.cmu.tetrad.search.Gfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
-        search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
@@ -153,7 +152,6 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.DEPTH);
-        parameters.add(Params.SEPSET_FINDER_METHOD);
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);

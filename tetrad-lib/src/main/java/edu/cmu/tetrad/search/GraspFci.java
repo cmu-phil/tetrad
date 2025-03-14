@@ -117,7 +117,7 @@ public final class GraspFci extends StarFci {
         this.independenceTest = test;
     }
 
-    public @NotNull Graph getCpdag() throws InterruptedException {
+    public @NotNull Graph getMarkovCpdag() throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting GRaSP.");
         }

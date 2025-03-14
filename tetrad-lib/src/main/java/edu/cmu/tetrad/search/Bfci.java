@@ -102,7 +102,7 @@ public final class Bfci extends StarFci {
         this.independenceTest = test;
     }
 
-    public Graph getCpdag() throws InterruptedException {
+    public Graph getMarkovCpdag() throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Starting BOSS.");
         }
