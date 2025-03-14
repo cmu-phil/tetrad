@@ -33,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.sqrt;
-
 /**
  * Class Matrix includes several public static functions performing matrix operations. These function include:
  * determinant, GJinverse, inverse, multiple, difference, transpose, trace, duplicate, minor, identity, mprint,
@@ -713,31 +711,64 @@ public final class MatrixUtils {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix convertCovToCorr(Matrix m) {
-        if (m.getNumRows() != m.getNumColumns()) throw new IllegalArgumentException("Not a square matrix.");
-        if (!MatrixUtils.isSymmetric(m.toArray(), 0.001)) {
-            throw new IllegalArgumentException("Not symmetric with tolerance " + 0.001);
+        return new Matrix(convertCovToCorr(m.getData()));
+//        if (m.getNumRows() != m.getNumColumns()) throw new IllegalArgumentException("Not a square matrix.");
+//        if (!MatrixUtils.isSymmetric(m.toArray(), 0.001)) {
+//            throw new IllegalArgumentException("Not symmetric with tolerance " + 0.001);
+//        }
+//
+//        Matrix corr = m.like();
+//
+//        for (int i = 0; i < m.getNumRows(); i++) {
+//            for (int j = 0; j < m.getNumColumns(); j++) {
+//                double v = m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j));
+//
+//                if (v < -1) v = -1;
+//                if (v > 1) v = 1;
+//
+//                corr.set(i, j, v);
+//            }
+//        }
+//
+////        for (int i = 0; i < m.getNumColumns(); i++) {
+////            corr.set(i, i, 1.0);
+////        }
+//
+//        return corr;
+    }
+
+    /**
+     * Converts a covariance matrix into a correlation matrix. The correlation matrix is computed by normalizing the
+     * covariance matrix using the standard deviations derived from the diagonal elements of the covariance matrix.
+     *
+     * @param covarianceMatrix the input covariance matrix to be converted. It is assumed to be square and symmetric.
+     * @return the resulting correlation matrix where each element is scaled by the product of the standard deviations
+     * of the corresponding variables.
+     */
+    public static SimpleMatrix convertCovToCorr(SimpleMatrix covarianceMatrix) {
+        int n = covarianceMatrix.getNumRows();
+        SimpleMatrix correlationMatrix = new SimpleMatrix(n, n);
+
+        // Compute standard deviations (sqrt of diagonal elements)
+        double[] stdDevs = new double[n];
+        for (int i = 0; i < n; i++) {
+            stdDevs[i] = Math.sqrt(covarianceMatrix.get(i, i));
         }
 
-        Matrix corr = m.like();
-
-        for (int i = 0; i < m.getNumRows(); i++) {
-            for (int j = 0; j < m.getNumColumns(); j++) {
-                double v = m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j));
-
-                if (v < -1) v = -1;
-                if (v > 1) v = 1;
-
-                corr.set(i, j, v);
-//                corr.set(j, i, v);
+        // Compute correlation matrix
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (stdDevs[i] > 0 && stdDevs[j] > 0) {
+                    correlationMatrix.set(i, j, covarianceMatrix.get(i, j) / (stdDevs[i] * stdDevs[j]));
+                } else {
+                    correlationMatrix.set(i, j, 0);  // Handle cases where variance is zero
+                }
             }
         }
 
-        for (int i = 0; i < m.getNumColumns(); i++) {
-            corr.set(i, i, 1.0);
-        }
-
-        return corr;
+        return correlationMatrix;
     }
+
 
     /**
      * Converts a matrix in lower triangular form to a symmetric matrix in square form. The lower triangular matrix need
@@ -785,10 +816,10 @@ public final class MatrixUtils {
     }
 
     /**
-     * Converts a 2D array of doubles into a String representation using the specified
-     * NumberFormat. This method delegates the formatting process to MatrixUtils.toString.
+     * Converts a 2D array of doubles into a String representation using the specified NumberFormat. This method
+     * delegates the formatting process to MatrixUtils.toString.
      *
-     * @param m the 2D double array to be converted to a string
+     * @param m  the 2D double array to be converted to a string
      * @param nf the NumberFormat to use for formatting the numbers in the array
      * @return a String representation of the 2D array formatted using the specified NumberFormat
      */
@@ -797,18 +828,14 @@ public final class MatrixUtils {
     }
 
     /**
-     * Converts a two-dimensional array representing a matrix into a string
-     * representation using the specified number format and variable names.
+     * Converts a two-dimensional array representing a matrix into a string representation using the specified number
+     * format and variable names.
      *
-     * @param m the matrix to convert, represented as a two-dimensional array
-     *          of double values. Can be null.
-     * @param nf the number format to use for formatting the individual matrix
-     *           elements. Must not be null.
-     * @param variables a list of variable names corresponding to the columns
-     *                  of the matrix. If null, default variable names will
-     *                  be generated.
-     * @return a string representation of the matrix. If the matrix is null
-     *         or empty, a default message is returned.
+     * @param m         the matrix to convert, represented as a two-dimensional array of double values. Can be null.
+     * @param nf        the number format to use for formatting the individual matrix elements. Must not be null.
+     * @param variables a list of variable names corresponding to the columns of the matrix. If null, default variable
+     *                  names will be generated.
+     * @return a string representation of the matrix. If the matrix is null or empty, a default message is returned.
      * @throws NullPointerException if the provided number format is null.
      */
     public static String toString(double[][] m, NumberFormat nf, List<String> variables) {

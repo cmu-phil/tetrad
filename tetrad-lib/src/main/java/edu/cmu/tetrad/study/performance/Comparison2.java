@@ -170,7 +170,7 @@ public class Comparison2 {
                 result.setResultGraph(search.search());
                 result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
-                GFci search = new GFci(test, score);
+                Gfci search = new Gfci(test, score);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
@@ -420,7 +420,7 @@ public class Comparison2 {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            GFci search = new GFci(test, score);
+            Gfci search = new Gfci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {

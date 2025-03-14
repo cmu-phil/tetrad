@@ -32,7 +32,7 @@ public class SepsetFinder {
      * @param order      An order of the nodes in the graph, used for some implementations.
      * @return the sepset containing the greedy test for variables x and y, or null if no sepset is found
      */
-    public static Set<Node> getSepsetContainingGreedy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
+    public static Set<Node> findSepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
         List<Node> adjx = graph.getAdjacentNodes(x);
         List<Node> adjy = graph.getAdjacentNodes(y);
         adjx.remove(y);
@@ -49,15 +49,15 @@ public class SepsetFinder {
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
                 .filter(subset -> {
                     try {
-                        if (order != null) {
-                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
-
-                            for (Node node : subset) {
-                                if (order.indexOf(node) > order.indexOf(_y)) {
-                                    return false;
-                                }
-                            }
-                        }
+//                        if (order != null) {
+//                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+//
+//                            for (Node node : subset) {
+//                                if (order.indexOf(node) > order.indexOf(_y)) {
+//                                    return false;
+//                                }
+//                            }
+//                        }
 
                         return separates(x, y, subset, test);
                     } catch (InterruptedException e) {
@@ -86,6 +86,173 @@ public class SepsetFinder {
                 }) // Further filter by separating sets
                 .findFirst() // Return the first matching subset
                 .orElse(null);
+
+        return sepset;
+    }
+
+    /**
+     * Identifies a separating set (sepset) containing a given subset of nodes between two nodes x and y in a graph
+     * using a greedy approach and subsets of (adj(x) U adu(y)) \ {x, y}. The method applies constraints such as
+     * independence testing, specified node ordering, and optional filtering of certain node types.
+     * <p>
+     * This method mainly focuses on finding a feasible separating set under the given constraints by iterating through
+     * node combinations from the union of adjacent nodes of x and y in the graph.
+     *
+     * @param graph      The graph in which the nodes and their adjacency relationships are defined.
+     * @param x          The first node for which the sepset is being determined.
+     * @param y          The second node for which the sepset is being determined.
+     * @param containing A specified subset of nodes that the resulting sepset must contain.
+     * @param test       The independence test to verify conditional independence between nodes.
+     * @param depth      The maximum allowable size for subsets to consider during the search for the sepset.
+     * @param order      A list representing a specific ordering of nodes, which may influence the valid sepset.
+     * @return A set of nodes representing the sepset containing the given subset, or null if no such set is found.
+     */
+    public static Set<Node> getSepsetContainingGreedySubsetUnion(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
+        List<Node> adjx = graph.getAdjacentNodes(x);
+        List<Node> adjy = graph.getAdjacentNodes(y);
+
+        Set<Node> union = new HashSet<>(adjx);
+        union.addAll(adjy);
+        union.remove(x);
+        union.remove(y);
+
+        List<Node> unionList = new ArrayList<>(union);
+
+        union.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        union.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+
+        List<List<Integer>> choices = getChoices(unionList, depth);
+
+        // Parallelize processing for adjx
+        Set<Node> sepset = choices.parallelStream()
+                .map(choice -> combination(choice, unionList)) // Generate combinations in parallel
+                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                .filter(subset -> {
+                    try {
+//                        if (order != null) {
+//                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+//
+//                            for (Node node : subset) {
+//                                if (order.indexOf(node) > order.indexOf(_y)) {
+//                                    return false;
+//                                }
+//                            }
+//                        }
+
+                        return separates(x, y, subset, test);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }) // Further filter by separating sets
+                .findFirst() // Return the first matching subset
+                .orElse(null);
+
+        if (sepset != null) {
+            return sepset;
+        }
+
+        return sepset;
+    }
+
+
+    /**
+     * Identifies a separating set (sepset) containing a given subset of nodes between two nodes x and y in a graph
+     * using a greedy approach and subsets of (adj(x) U adu(y)) \ {x, y}. The method applies constraints such as
+     * independence testing, specified node ordering, and optional filtering of certain node types.
+     * <p>
+     * This method mainly focuses on finding a feasible separating set under the given constraints by iterating through
+     * node combinations from the union of adjacent nodes of x and y in the graph.
+     *
+     * @param graph      The graph in which the nodes and their adjacency relationships are defined.
+     * @param cpdag      The CDPDAG.
+     * @param x          The first node for which the sepset is being determined.
+     * @param y          The second node for which the sepset is being determined.
+     * @param containing A specified subset of nodes that the resulting sepset must contain.
+     * @param test       The independence test to verify conditional independence between nodes.
+     * @param depth      The maximum allowable size for subsets to consider during the search for the sepset.
+     * @param order      A list representing a specific ordering of nodes, which may influence the valid sepset.
+     * @return A set of nodes representing the sepset containing the given subset, or null if no such set is found.
+     */
+    public static Set<Node> getSepsetContainingGreedySubsetMb(Graph graph, Graph cpdag, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
+        List<Node> mbx = new ArrayList<>(cpdag.paths().markovBlanket(x));
+
+        if (("A".equals(x.getName()) && "E".equals(y.getName()))
+            || ("E".equals(x.getName()) && "A".equals(y.getName()))) {
+            System.out.println("mb(x) = " + graph.paths().markovBlanket(x));
+            System.out.println("mb(y) = " + graph.paths().markovBlanket(y));
+
+            MsepTest msepTest = new MsepTest(graph);
+
+            Set<Node> bd = new HashSet<>();
+            bd.add(graph.getNode("B"));
+            bd.add(graph.getNode("D"));
+
+            System.out.println("dsep(x, y | BD" + msepTest.checkIndependence(x, y, bd).isIndependent());
+        }
+
+        mbx.remove(y);
+        List<Node> mby = new ArrayList<>(cpdag.paths().markovBlanket(y));
+        mby.remove(x);
+
+        List<Node> mb = mbx.size() < mby.size() ? mbx : mby;
+
+        mb.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        mb.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        List<List<Integer>> choices = getChoices(mb, depth);
+
+        // Parallelize processing for adjx
+        Set<Node> sepset = choices.parallelStream()
+                .map(choice -> combination(choice, mb)) // Generate combinations in parallel
+                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                .filter(subset -> {
+                    try {
+//                        if (order != null) {
+//                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+//
+//                            for (Node node : subset) {
+//                                if (order.indexOf(node) > order.indexOf(_y)) {
+//                                    return false;
+//                                }
+//                            }
+//                        }
+
+                        return separates(x, y, subset, test);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }) // Further filter by separating sets
+                .findFirst() // Return the first matching subset
+                .orElse(null);
+
+        if (sepset != null) {
+            return sepset;
+        }
+
+//        choices = getChoices(mby, depth);
+//
+//        sepset = choices.parallelStream()
+//                .map(choice -> combination(choice, mby)) // Generate combinations in parallel
+//                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+//                .filter(subset -> {
+//                    try {
+////                        if (order != null) {
+////                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+////
+////                            for (Node node : subset) {
+////                                if (order.indexOf(node) > order.indexOf(_y)) {
+////                                    return false;
+////                                }
+////                            }
+////                        }
+//
+//                        return separates(x, y, subset, test);
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }) // Further filter by separating sets
+//                .findFirst() // Return the first matching subset
+//                .orElse(null);
+
 
         return sepset;
     }

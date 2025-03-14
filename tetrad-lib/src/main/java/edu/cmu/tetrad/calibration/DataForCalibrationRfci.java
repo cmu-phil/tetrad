@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.BFci;
+import edu.cmu.tetrad.search.Bfci;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -66,7 +66,7 @@ public class DataForCalibrationRfci {
      * <p>main.</p>
      *
      * @param args an array of {@link java.lang.String} objects
-     * @throws java.io.IOException if any.
+     * @throws java.io.IOException            if any.
      * @throws java.lang.InterruptedException if any.
      */
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -177,7 +177,7 @@ public class DataForCalibrationRfci {
 
         System.out.println("Starting search with all data");
 
-        BFci fci = new BFci(test, score);
+        Bfci fci = new Bfci(test, score);
         fci.setVerbose(false);
         fci.setCompleteRuleSetUsed(true);
         fci.setDepth(DFC.depth);

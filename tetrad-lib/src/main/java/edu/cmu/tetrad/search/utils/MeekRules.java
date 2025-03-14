@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,13 +17,15 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -79,8 +81,7 @@ public class MeekRules {
 
     private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-               !knowledge.isForbidden(from.toString(), to.toString());
+        return !knowledge.isRequired(to.toString(), from.toString()) && !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -101,15 +102,10 @@ public class MeekRules {
         if (meekPreventCycles) {
             for (Edge edge : graph.getEdges()) {
                 if (!(Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
-                    throw new IllegalArgumentException("Graph must contain only directed or undirected edges.");
+                    throw new IllegalArgumentException("In order to guarantee the graph is a CPDAG, the graph must " +
+                                                       "contain only directed or undirected edges.");
                 }
             }
-
-            // This breaks FGES from dsep. It's not clear why this is necessary, as FGES from dsep passes an
-            // oracle test. jdramsey 2024-6-21
-//            if (graph.paths().existsDirectedCycle()) {
-//                throw new IllegalArgumentException("Graph contains a cycle before Meek orientation.");
-//            }
         }
 
         // The initial list of nodes to visit.
@@ -223,8 +219,7 @@ public class MeekRules {
         for (Node a : graph.getParents(b)) {
             if (graph.isAdjacentTo(c, a)) continue;
             if (direct(b, c, graph, visited)) {
-                log(LogUtilsSearch.edgeOrientedMsg(
-                        "Meek R1 triangle (" + a + "-->" + b + "---" + c + ")", graph.getEdge(b, c)));
+                log(LogUtilsSearch.edgeOrientedMsg("Meek R1 triangle (" + a + "-->" + b + "---" + c + ")", graph.getEdge(b, c)));
                 return true;
             }
         }
@@ -261,8 +256,7 @@ public class MeekRules {
 
     private boolean r2Helper(Node a, Node b, Node c, Graph graph, Set<Node> visited) {
         if (direct(a, c, graph, visited)) {
-            log(LogUtilsSearch.edgeOrientedMsg(
-                    "Meek R2 triangle (" + a + "-->" + b + "-->" + c + ", " + a + "--" + c + ")", graph.getEdge(a, c)));
+            log(LogUtilsSearch.edgeOrientedMsg("Meek R2 triangle (" + a + "-->" + b + "-->" + c + ", " + a + "--" + c + ")", graph.getEdge(a, c)));
             return true;
         }
         return false;
@@ -305,8 +299,7 @@ public class MeekRules {
 
         if (b4 && b5 && b6 && b7 && b8) {
             if (direct(d, a, graph, visited)) {
-                log(LogUtilsSearch.edgeOrientedMsg("Meek R3 " + d + "--" + a + ", " + b + ", "
-                                                   + c, graph.getEdge(d, a)));
+                log(LogUtilsSearch.edgeOrientedMsg("Meek R3 " + d + "--" + a + ", " + b + ", " + c, graph.getEdge(d, a)));
                 return true;
             }
         }
@@ -368,20 +361,20 @@ public class MeekRules {
             if (verbose) {
                 graph.getNodesInTo(a, Endpoint.ARROW).forEach(node -> {
                     if (!graph.isAdjacentTo(node, c)) {
-                        TetradLogger.getInstance().log("Meek: Prevented cycle by orienting "
-                                                       + a + "---" + c + " as " + a + "<--" + c
-                                                       + " creating new unshielded collider " + node
-                                                       + " --> " + a + " <-- " + c);
+                        TetradLogger.getInstance().log("Meek: Prevented cycle by orienting " + a + "---" + c + " as " + a + "<--" + c + " creating new unshielded collider " + node + " --> " + a + " <-- " + c);
                     }
                 });
             }
 
-            graph.addEdge(Edges.directedEdge(c, a));
+            graph.addEdge(before);
+            return false;
 
-            visited.add(a);
-            visited.add(c);
-
-            return true;
+//            graph.addEdge(Edges.directedEdge(c, a));
+//
+//            visited.add(a);
+//            visited.add(c);
+//
+//            return true;
         }
 
         Edge after = Edges.directedEdge(a, c);
@@ -402,24 +395,33 @@ public class MeekRules {
      * @param visited The set of visited nodes.
      */
     private void revertToUnshieldedColliders(Node y, Graph graph, Set<Node> visited) {
-        List<Node> parents = graph.getParents(y);
+        Set<Pair<Node, Node>> keep = new HashSet<>();
 
-        P:
-        for (Node p : parents) {
-            for (Node q : parents) {
-                if (p != q && !graph.isAdjacentTo(p, q)) {
-                    continue P;
-                }
+        List<Node> parents = graph.getNodesInTo(y, Endpoint.ARROW);
+        ChoiceGenerator gen = new ChoiceGenerator(parents.size(), 2);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            Node x = parents.get(choice[0]);
+            Node z = parents.get(choice[1]);
+
+            if (!graph.isAdjacentTo(x, z)) {
+                keep.add(Pair.of(x, y));
+                keep.add(Pair.of(z, y));
             }
+        }
 
-            if (this.knowledge.isForbidden(y.getName(), p.getName()) || this.knowledge.isRequired(p.getName(), y.getName()))
-                continue;
+        for (Node z : parents) {
+            if (!keep.contains(Pair.of(z, y))) {
+                if (this.knowledge.isForbidden(y.getName(), z.getName()) || this.knowledge.isRequired(z.getName(), y.getName()))
+                    continue;
 
-            graph.removeEdge(p, y);
-            graph.addUndirectedEdge(p, y);
+                graph.removeEdge(z, y);
+                graph.addUndirectedEdge(z, y);
 
-            visited.add(p);
-            visited.add(y);
+                visited.add(z);
+                visited.add(y);
+            }
         }
     }
 

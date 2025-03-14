@@ -220,7 +220,7 @@ public class Comparison {
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            GFci search = new GFci(test, score);
+            Gfci search = new Gfci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
         } else {

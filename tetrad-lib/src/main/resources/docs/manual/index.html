@@ -6500,6 +6500,30 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="startFromCompleteGraph">startFromCompleteGraph</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="startFromCompleteGraph_short_desc">
+                    Yes, if the procedure should start from a complete graph
+        </span></li>
+            <li>Long Description: <span
+                    id="startFromCompleteGraph_long_desc">
+                    Yes, if the procedure should start from a complete graph
+        </span></li>
+            <li>Default Value: <span
+                    id="startFromCompleteGraph_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="startFromCompleteGraph_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="startFromCompleteGraph_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="startFromCompleteGraph_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="extraEdgeRemovalStep">extraEdgeRemovalStep</h3>
         <ul
                 class="parameter_description_list">
@@ -6976,14 +7000,14 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </span></li>
             <li>Default
                 Value: <span
-                        id="hiddenDimension_default_value">20</span></li>
+                        id="hiddenDimension_default_value">50,50,50,50,50</span></li>
             <li>Lower Bound: <span
-                    id="hiddenDimension_lower_bound">1</span></li>
+                    id="hiddenDimension_lower_bound"></span></li>
             <li>Upper
                 Bound: <span
-                        id="hiddenDimension_upper_bound">2147483647</span></li>
+                        id="hiddenDimension_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="hiddenDimension_value_type">Integer</span></li>
+                    id="hiddenDimension_value_type">String</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6999,7 +7023,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </span></li>
             <li>Default
                 Value: <span
-                        id="hiddenDimensions_default_value">20</span></li>
+                        id="hiddenDimensions_default_value">50,50,50,50,50</span></li>
             <li>Lower Bound: <span
                     id="hiddenDimensions_lower_bound"></span></li>
             <li>Upper
@@ -9059,24 +9083,24 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="possibleMsepDone">possibleMsepDone</h3>
+            id="doPossibleDsep">doPossibleDsep</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="possibleMsepDone_short_desc">Yes if the possible d-sep search
+                    id="doPossibleDsep_short_desc">Yes if the possible d-sep search
         should be done</span></li>
             <li>Long Description: <span
-                    id="possibleMsepDone_long_desc"> This algorithm has a possible d-sep
+                    id="doPossibleDsep_long_desc"> This algorithm has a possible d-sep
         path search, which can be time-consuming. See Spirtes, Glymour, and
         Scheines (2000) for details.</span></li>
             <li>Default Value: <span
-                    id="possibleMsepDone_default_value">true</span></li>
+                    id="doPossibleDsep_default_value">true</span></li>
             <li>Lower Bound:
-                <span id="possibleMsepDone_lower_bound"></span></li>
+                <span id="doPossibleDsep_lower_bound"></span></li>
             <li>Upper Bound:
-                <span id="possibleMsepDone_upper_bound"></span></li>
+                <span id="doPossibleDsep_upper_bound"></span></li>
             <li>Value Type:
-                <span id="possibleMsepDone_value_type">Boolean</span></li>
+                <span id="doPossibleDsep_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="probCycle">probCycle</h3>
@@ -9974,12 +9998,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             id="useMaxPHeuristic">useMaxPHeuristic</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="useMaxPHeuristic_short_desc">Yes if the max P
-                    heuristic should be used to orient unshielded colliders</span></li>
+                    id="useMaxPHeuristic_short_desc">
+                    Yes if the max P heuristic version should be used to orient unshielded colliders
+            </span></li>
             <li>Long Description: <span
-                    id="useMaxPHeuristic_long_desc">The max P heuristic orients
-                    X*-*Y*-*Z by considering whether Y is in the subset S of variables
-                    adjacent to X or Z that maximizes the p-value of X _||_ Y | S.</span></li>
+                    id="useMaxPHeuristic_long_desc">
+                    Yes if the max P heuristic version should be used to orient unshielded colliders
+            </span></li>
             <li>Default Value: <span
                     id="useMaxPHeuristic_default_value">false</span></li>
             <li>Lower Bound: <span
@@ -9992,19 +10017,18 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                         id="useMaxPHeuristic_value_type">Boolean</span></li>
         </ul>
 
-
         <h3 class="parameter_description"
             id="useMaxPOrientationHeuristic">useMaxPOrientationHeuristic</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="useMaxPOrientationHeuristic_short_desc">Yes if the heuristic for
-        orienting unshielded colliders for max P should be used</span></li>
+                    id="useMaxPOrientationHeuristic_short_desc">
+                    Use the max p heuristic version
+                    </span></li>
             <li>Long Description: <span
-                    id="useMaxPOrientationHeuristic_long_desc"> Another way to do the
-        orientation if X and Z are only weakly dependent, is to simply see
-        whether the p-value for X _||_ Z | Y is greater than the p-value for
-        X _||_ Z. The purpose is to speed up the search. </span></li>
+                    id="useMaxPOrientationHeuristic_long_desc">
+                    Use the max p heuristic version
+     		</span></li>
             <li>Default Value: <span
                     id="useMaxPOrientationHeuristic_default_value">false</span></li>
             <li>Lower Bound: <span
@@ -10015,6 +10039,31 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Value
                 Type: <span
                         id="useMaxPOrientationHeuristic_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="maxPaxPOrientationHeuristicMaxLength">maxPaxPOrientationHeuristicMaxLength</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="maxPaxPOrientationHeuristicMaxLength_short_desc">
+                    The maximum path length to use for the max p heuristic version.
+                    </span></li>
+            <li>Long Description: <span
+                    id="maxPaxPOrientationHeuristicMaxLength_long_desc">
+                    The maximum path length to use for the max p heuristic version.
+
+     		</span></li>
+            <li>Default Value: <span
+                    id="maxPaxPOrientationHeuristicMaxLength_default_value">5</span></li>
+            <li>Lower Bound: <span
+                    id="maxPaxPOrientationHeuristicMaxLength_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="maxPaxPOrientationHeuristicMaxLength_upper_bound">100000</span></li>
+            <li>Value
+                Type: <span
+                        id="maxPaxPOrientationHeuristicMaxLength_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"

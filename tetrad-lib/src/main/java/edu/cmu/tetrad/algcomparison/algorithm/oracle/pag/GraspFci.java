@@ -121,16 +121,16 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
 
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setKnowledge(this.knowledge);
 
         return search.search();
@@ -186,18 +186,17 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
+        params.add(Params.START_FROM_COMPLETE_GRAPH);
 
         // FCI
-        params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.DEPTH);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.POSSIBLE_MSEP_DONE);
 
         // General
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
-        params.add(Params.REMOVE_ALMOST_CYCLES);
+        params.add(Params.GUARANTEE_PAG);
         params.add(Params.VERBOSE);
 
         return params;

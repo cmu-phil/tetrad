@@ -359,9 +359,10 @@ public class IndTestDegenerateGaussianLrtFullSample implements IndependenceTest,
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
 
-        if (verbose) {
-            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
-        }
+//        if (verbose) {
+//            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
+//        }
+
         return p_value;
     }
 

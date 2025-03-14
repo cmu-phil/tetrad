@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -97,7 +96,7 @@ public final class FciMax implements IGraphSearch {
     /**
      * Whether the discriminating path rule will be used in search.
      */
-    private boolean possibleMsepSearchDone = true;
+    private boolean possibleDsepSearchDone = true;
     /**
      * The maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -157,10 +156,10 @@ public final class FciMax implements IGraphSearch {
         pag.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-        if (this.possibleMsepSearchDone) {
+        // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
+        if (this.possibleDsepSearchDone) {
             FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
-            pag.paths().removeByPossibleMsep(independenceTest, sepsets);
+            pag.paths().removeByPossibleDsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             pag.reorientAllWith(Endpoint.CIRCLE);
@@ -277,12 +276,12 @@ public final class FciMax implements IGraphSearch {
     }
 
     /**
-     * Sets whether the (time-consuming) possible msep step should be done.
+     * Sets whether the (time-consuming) possible dsep step should be done.
      *
-     * @param possibleMsepSearchDone True, if so.
+     * @param possibleDsepSearchDone True, if so.
      */
-    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
-        this.possibleMsepSearchDone = possibleMsepSearchDone;
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
     /**

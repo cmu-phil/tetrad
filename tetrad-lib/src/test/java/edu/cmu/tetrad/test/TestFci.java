@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
 
@@ -41,13 +41,13 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -58,6 +58,24 @@ import static org.junit.Assert.assertTrue;
 public class TestFci {
 
     private static final Logger log = LoggerFactory.getLogger(TestFci.class);
+
+    private static void runLvSearch(String outputGraph, IGraphSearch fci, Graph graph) {
+        // Run search
+        Graph resultGraph = null;
+        try {
+            resultGraph = fci.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        Graph pag = GraphUtils.convert(outputGraph);
+
+        resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
+
+        assertEquals(pag, resultGraph);
+//        System.out.println("DAG to PAG: " + dagToPag(graph));
+//
+        assertEquals(pag, dagToPag(graph));
+    }
 
     @Test
     public void testSearch1() {
@@ -72,7 +90,6 @@ public class TestFci {
     public void testSearch2() {
         checkSearch("Z1-->X,Z2-->X,X-->Y", "Z1o->X,Z2o->X,X-->Y", new Knowledge());
     }
-
 
     /**
      * Basic discriminating path checker.
@@ -227,7 +244,7 @@ public class TestFci {
 //        DagToPag dagToPag = new DagToPag(trueGraph);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphTransforms.dagToPag(trueGraph);
+        Graph truePag = dagToPag(trueGraph);
 
         assertEquals(graph, truePag);
     }
@@ -268,6 +285,8 @@ public class TestFci {
             throw new NullPointerException();
         }
 
+        boolean verbose = false;
+
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert(inputGraph);
 
@@ -277,38 +296,67 @@ public class TestFci {
         IndependenceTest independence = new MsepTest(graph);
         Score score = new GraphScore(graph);
 
-        Fci fci = new Fci(independence);
-        fci.setPossibleDsepSearchDone(true);
-        fci.setCompleteRuleSetUsed(true);
-        fci.setMaxDiscriminatingPathLength(-1);
-        fci.setKnowledge(knowledge);
-        fci.setVerbose(true);
+        {
+            Fci fci = new Fci(independence);
+            fci.setKnowledge(knowledge);
+            fci.setVerbose(verbose);
 
-//        GraspFci fci = new GraspFci(independence, score);
-//        fci.setKnowledge(knowledge);
-//        fci.setVerbose(true);
-
-//        GFci fci = new GFci(independence, score);
-//        fci.setKnowledge(knowledge);
-//        fci.setVerbose(true);
-
-//        LvLite fci = new LvLite(independence, score);
-////        fci.setKnowledge(knowledge);
-////        fci.setDoDdpEdgeRemovalStep(true);
-//        fci.setVerbose(true);
-
-        // Run search
-        Graph resultGraph = null;
-        try {
-            resultGraph = fci.search();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            runLvSearch(outputGraph, fci, graph);
         }
-        Graph pag = GraphUtils.convert(outputGraph);
 
-        resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
+        {
+            Gfci fci = new Gfci(independence, score);
+            fci.setKnowledge(knowledge);
+            fci.setStartFromCompleteGraph(true);
+            fci.setVerbose(verbose);
 
-        assertEquals(pag, resultGraph);
+            runLvSearch(outputGraph, fci, graph);
+        }
+
+        {
+            Gfci fci = new Gfci(independence, score);
+            fci.setKnowledge(knowledge);
+            fci.setStartFromCompleteGraph(false);
+            fci.setVerbose(verbose);
+
+            runLvSearch(outputGraph, fci, graph);
+        }
+
+        {
+            GraspFci fci = new GraspFci(independence, score);
+            fci.setKnowledge(knowledge);
+            fci.setStartFromCompleteGraph(true);
+            fci.setVerbose(verbose);
+
+            runLvSearch(outputGraph, fci, graph);
+        }
+
+        {
+            GraspFci fci = new GraspFci(independence, score);
+            fci.setKnowledge(knowledge);
+            fci.setStartFromCompleteGraph(false);
+            fci.setVerbose(verbose);
+
+            runLvSearch(outputGraph, fci, graph);
+        }
+
+        {
+            Bfci fci = new Bfci(independence, score);
+            fci.setKnowledge(knowledge);
+            fci.setStartFromCompleteGraph(true);
+            fci.setVerbose(verbose);
+
+            runLvSearch(outputGraph, fci, graph);
+        }
+
+        {
+            SpFci fci = new SpFci(independence, score);
+            fci.setKnowledge(knowledge);
+            fci.setStartFromCompleteGraph(true);
+            fci.setVerbose(verbose);
+
+            runLvSearch(outputGraph, fci, graph);
+        }
     }
 
     //    @Test
@@ -431,6 +479,8 @@ public class TestFci {
      */
     @Test
     public void testSearch16() {
+        boolean verbose = false;
+
         final String trueMag = "Graph Nodes:\n" +
                                "(ep);(g);cd;hd;lc;s;i;ps;mb\n" +
                                "\n" +
@@ -466,12 +516,14 @@ public class TestFci {
             Graph truePag_ = GraphSaveLoadUtils.readerToGraphTxt(correctPag);
 
             Fci fci = new Fci(new MsepTest(trueMag_));
+            fci.setVerbose(verbose);
             Graph estPag1 = fci.search();
             assertEquals(truePag_, estPag1);
 
             GraspFci graspFci = new GraspFci(new MsepTest(trueMag_), new GraphScore(trueMag_));
             graspFci.setUseRaskuttiUhler(true);
             graspFci.setUseScore(false);
+            graspFci.setVerbose(verbose);
             Graph estPag2 = graspFci.search();
             assertEquals(truePag_, estPag2);
 

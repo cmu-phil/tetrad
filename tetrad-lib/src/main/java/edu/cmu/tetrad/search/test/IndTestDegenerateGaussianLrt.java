@@ -200,9 +200,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
         this.pValue = p_value;
 
-        if (verbose) {
-            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
-        }
+//        if (verbose) {
+//            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
+//        }
 
         return p_value;
     }

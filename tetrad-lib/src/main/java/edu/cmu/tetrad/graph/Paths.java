@@ -1618,20 +1618,20 @@ public class Paths implements TetradSerializable {
      *                recorded.
      * @throws InterruptedException if any
      */
-    public void removeByPossibleMsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
+    public void removeByPossibleDsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
         for (Edge edge : graph.getEdges()) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
 
             {
-                List<Node> possibleMsep = possibleDsep(a, b, -1);
+                List<Node> possibleDsep = possibleDsep(a, b, -1);
 
-                SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
+                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
                     if (choice.length < 2) continue;
-                    Set<Node> sepset = GraphUtils.asSet(choice, possibleMsep);
+                    Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
                     if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                     if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                     if (test.checkIndependence(a, b, sepset).isIndependent()) {
@@ -1648,14 +1648,14 @@ public class Paths implements TetradSerializable {
 
             if (graph.containsEdge(edge)) {
                 {
-                    List<Node> possibleMsep = possibleDsep(b, a, -1);
+                    List<Node> possibleDsep = possibleDsep(b, a, -1);
 
-                    SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
+                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
                         if (choice.length < 2) continue;
-                        Set<Node> sepset = GraphUtils.asSet(choice, possibleMsep);
+                        Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
                         if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                         if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                         if (test.checkIndependence(a, b, sepset).isIndependent()) {
@@ -1754,7 +1754,7 @@ public class Paths implements TetradSerializable {
      * @return A sepset for x and y, if there is one; otherwise, null.
      */
     public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test, int depth) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test, depth, null);
+        return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, Collections.emptySet(), test, depth, null);
     }
 
     /**

@@ -28,7 +28,9 @@ import java.util.List;
 import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 
 /**
- * Conservative PC (CPC).
+ * Conservative PC (CPC). This version of PC will orient unshielded colliders by listing all subsets S for unshielded
+ * X--Y--Z, for S subset of adj(X) \ {Z} or adj(Z) \ {X}. It then looks to see whether the facts X _||_ Z | S that test
+ * as true all contain or do not contain Y.
  *
  * @author josephramsey
  * @version $Id: $Id

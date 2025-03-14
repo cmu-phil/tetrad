@@ -397,25 +397,31 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                     for (int j = i + 1; j < selectedVariables.size(); j++) {
                         Node x = selectedVariables.get(i);
                         Node y = selectedVariables.get(j);
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 1);
 
-                        if (nTypeString.equals(atMostString) && !paths.isEmpty()) {
+
+                        if (nTypeString.equals(atMostString)) {
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 2);
+
                             for (List<Node> path : paths) {
-                                if (path.size() <= getN() + 1) {
+                                if (path.size() <= getN() + 2) {
                                     g.addUndirectedEdge(x, y);
                                     break;
                                 }
                             }
-                        } else if (nTypeString.equals(atLeastString) && !paths.isEmpty()) {
+                        } else if (nTypeString.equals(atLeastString)) {
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, -1);
+
                             for (List<Node> path : paths) {
-                                if (path.size() >= getN() + 1) {
+                                if (path.size() >= getN() + 2) {
                                     g.addUndirectedEdge(x, y);
                                     break;
                                 }
                             }
                         } else if (nTypeString.equals(equalsString)) {
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 2);
+
                             for (List<Node> path : paths) {
-                                if (path.size() == getN() + 1) {
+                                if (path.size() == getN() + 2) {
                                     g.addUndirectedEdge(x, y);
                                     break;
                                 }
@@ -434,24 +440,24 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                         Node x = selectedVariables.get(i);
                         Node y = selectedVariables.get(j);
 
-                        if (nTypeString.equals(atMostString) && !getGraphAtIndex(k).paths().treks(x, y, getN() + 1).isEmpty()) {
-                            List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 1);
+                        if (nTypeString.equals(atMostString) && !getGraphAtIndex(k).paths().treks(x, y, getN() + 2).isEmpty()) {
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 2);
                             for (List<Node> path : paths) {
-                                if (path.size() <= getN() + 1) {
+                                if (path.size() <= getN() + 2) {
                                     edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                                 }
                             }
                         } else if (nTypeString.equals(atLeastString)) {
                             List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, -1);
                             for (List<Node> path : paths) {
-                                if (path.size() >= getN() + 1) {
+                                if (path.size() >= getN() + 2) {
                                     edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                                 }
                             }
                         } else if (nTypeString.equals(equalsString)) {
-                            List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 1);
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 2);
                             for (List<Node> path : paths) {
-                                if (path.size() == getN() + 1) {
+                                if (path.size() == getN() + 2) {
                                     edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                                 }
                             }
@@ -468,25 +474,30 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                     for (int j = i + 1; j < selectedVariables.size(); j++) {
                         Node x = selectedVariables.get(i);
                         Node y = selectedVariables.get(j);
-                        Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
 
-                        if (nTypeString.equals(atMostString) && !paths.isEmpty()) {
+                        if (nTypeString.equals(atMostString)) {
+                            Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN() + 2);
+
                             for (List<Node> path : paths) {
-                                if (path.size() <= getN() + 1) {
+                                if (path.size() <= getN() + 2) {
                                     g.addUndirectedEdge(x, y);
                                     break;
                                 }
                             }
-                        } else if (nTypeString.equals(atLeastString) && !paths.isEmpty()) {
+                        } else if (nTypeString.equals(atLeastString)) {
+                            Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, -1);
+
                             for (List<Node> path : paths) {
-                                if (path.size() >= getN() + 1) {
+                                if (path.size() >= getN() + 2) {
                                     g.addUndirectedEdge(x, y);
                                     break;
                                 }
                             }
                         } else if (nTypeString.equals(equalsString)) {
+                            Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN() + 2);
+
                             for (List<Node> path : paths) {
-                                if (path.size() == getN() + 1) {
+                                if (path.size() == getN() + 2) {
                                     g.addUndirectedEdge(x, y);
                                     break;
                                 }
@@ -506,9 +517,9 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                         Node y = selectedVariables.get(j);
 
                         if (nTypeString.equals(atMostString)) {
-                            Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
+                            Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN() + 2);
                             for (List<Node> path : paths) {
-                                if (path.size() <= getN() + 1) {
+                                if (path.size() <= getN() + 2) {
                                     edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                                 }
                             }
@@ -520,9 +531,9 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                                 }
                             }
                         } else if (nTypeString.equals(equalsString)) {
-                            Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN());
+                            Set<List<Node>> paths = getGraphAtIndex(k).paths().allPaths(x, y, getN() + 2);
                             for (List<Node> path : paths) {
-                                if (path.size() == getN() + 1) {
+                                if (path.size() == getN() + 2) {
                                     edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                                 }
                             }
@@ -543,9 +554,9 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                         Node y = selectedVariables.get(j);
 
                         if (nTypeString.equals(atMostString)) {
-                            List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, getN());
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, getN() + 2);
                             for (List<Node> path : paths) {
-                                if (path.size() <= getN() + 1) {
+                                if (path.size() <= getN() + 2) {
                                     g.addDirectedEdge(x, y);
                                     break;
                                 }
@@ -553,15 +564,15 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                         } else if (nTypeString.equals(atLeastString)) {
                             List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, -1);
                             for (List<Node> path : paths) {
-                                if (path.size() >= getN() + 1) {
+                                if (path.size() >= getN() + 2) {
                                     g.addDirectedEdge(x, y);
                                     break;
                                 }
                             }
                         } else if (nTypeString.equals(equalsString)) {
-                            List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, getN());
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, getN() + 2);
                             for (List<Node> path : paths) {
-                                if (path.size() == getN() + 1) {
+                                if (path.size() == getN() + 2) {
                                     g.addDirectedEdge(x, y);
                                     break;
                                 }
@@ -581,23 +592,29 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
                         Node x = selectedVariables.get(i);
                         Node y = selectedVariables.get(j);
-                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, -1);
 
-                        if (nTypeString.equals(atMostString) && !paths.isEmpty()) {
+
+                        if (nTypeString.equals(atMostString)) {
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, getN() + 2);
+
                             for (List<Node> path : paths) {
-                                if (path.size() <= getN() + 1) {
+                                if (path.size() <= getN() + 2) {
                                     edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                                 }
                             }
-                        } else if (nTypeString.equals(atLeastString) && !paths.isEmpty()) {
+                        } else if (nTypeString.equals(atLeastString)) {
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, -1);
+
                             for (List<Node> path : paths) {
-                                if (path.size() >= getN() + 1) {
+                                if (path.size() >= getN() + 2) {
                                     edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                                 }
                             }
                         } else if (nTypeString.equals(equalsString)) {
+                            List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPaths(x, y, getN() + 2);
+
                             for (List<Node> path : paths) {
-                                if (path.size() == getN() + 1) {
+                                if (path.size() == getN() + 2) {
                                     edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                                 }
                             }

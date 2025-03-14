@@ -47,7 +47,7 @@ import java.util.Set;
  * @author David Danks
  * @version $Id: $Id
  */
-public class PossibleMsepFci {
+public class PossibleDsepFci {
     private final Graph graph;
     private final IndependenceTest test;
     private final SepsetMap sepset;
@@ -61,14 +61,14 @@ public class PossibleMsepFci {
      * @param graph The GaSearchGraph on which to work
      * @param test  The IndependenceChecker to use as an oracle
      */
-    public PossibleMsepFci(Graph graph, IndependenceTest test) {
+    public PossibleDsepFci(Graph graph, IndependenceTest test) {
         if (graph == null) {
             throw new NullPointerException("null GaSearchGraph passed in " +
-                                           "PossibleMSepSearch constructor!");
+                                           "PossibleDSepSearch constructor!");
         }
         if (test == null) {
             throw new NullPointerException("null IndependenceChecker passed " +
-                                           "in PossibleMSepSearch " + "constructor!");
+                                           "in PossibleDSepSearch " + "constructor!");
         }
 
         this.graph = graph;
@@ -188,11 +188,11 @@ public class PossibleMsepFci {
     }
 
     private Set<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPossibleDsepPathLength) throws InterruptedException {
-        List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPossibleDsepPathLength);
-        List<Node> possibleMsep = new ArrayList<>(possibleMsepSet);
+        List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPossibleDsepPathLength);
+        List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
 
-        List<Node> possParents = possibleParents(node1, possibleMsep, getKnowledge());
+        List<Node> possParents = possibleParents(node1, possibleDsep, getKnowledge());
 
         int _depth = getDepth() == -1 ? 1000 : getDepth();
 
@@ -246,7 +246,7 @@ public class PossibleMsepFci {
      * 		(b) X is adjacent to Z.
      * </pre>
      */
-    private List<Node> getPossibleMsep(Node node1, Node node2, int maxPathLength) {
+    private List<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
         List<Node> msep = this.graph.paths().possibleDsep(node1, node2, maxPathLength);
 
         msep.remove(node1);

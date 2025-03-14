@@ -121,7 +121,25 @@ public class Pc implements IGraphSearch {
     /**
      * Whether the max-p heuristic should be used for collider discovery.
      */
-    private boolean useMaxPHeuristic = false;
+    private boolean useMaxPOrientation = false;
+    /**
+     * Indicates whether the max-p orientation heuristic is enabled during the PC algorithm's execution. This heuristic
+     * affects the way causal relationships are oriented in the graph, prioritizing orientations based on maximum
+     * p-values. When enabled, the max-p heuristic is applied to improve the efficiency and accuracy of edge
+     * directionality in causal discovery.
+     * <p>
+     * Default value is typically false unless explicitly set via configuration.
+     */
+    private boolean maxPOrientationHeuristic = false;
+    /**
+     * Represents the maximum path length considered by the max-p orientation heuristic in the PC algorithm during the
+     * causal discovery process.
+     * <p>
+     * This parameter defines an upper limit on the length of paths evaluated for collider orientation decisions when
+     * the max-p orientation heuristic is enabled. It helps to control the computational complexity and heuristic
+     * behavior of the search process. A value of `5` is set as the default maximum length.
+     */
+    private int maxPOrientationHeuristicMaxLength = 5;
 
     /**
      * Constructs a new PC search using the given independence test as oracle.
@@ -247,7 +265,7 @@ public class Pc implements IGraphSearch {
             search.setFasType(PcCommon.FasType.REGULAR);
         }
 
-        if (useMaxPHeuristic) {
+        if (useMaxPOrientation) {
             search.setColliderDiscovery(PcCommon.ColliderDiscovery.MAX_P);
         } else {
             search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
@@ -400,7 +418,7 @@ public class Pc implements IGraphSearch {
      * ConflictRule.PRIORITIZE_EXISTING.
      *
      * @param conflictRule The rule.
-     * @see edu.cmu.tetrad.search.utils.PcCommon.ConflictRule
+     * @see PcCommon.ConflictRule
      */
     public void setConflictRule(PcCommon.ConflictRule conflictRule) {
         this.conflictRule = conflictRule;
@@ -413,10 +431,10 @@ public class Pc implements IGraphSearch {
      * Ramsey, J. (2016). Improving the accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
      * preprint arXiv:1610.00378.
      *
-     * @param useMaxPHeuristic True, if so.
+     * @param useMaxPOrientation True, if so.
      */
-    public void setUseMaxPHeuristic(boolean useMaxPHeuristic) {
-        this.useMaxPHeuristic = useMaxPHeuristic;
+    public void setUseMaxPOrientation(boolean useMaxPOrientation) {
+        this.useMaxPOrientation = useMaxPOrientation;
     }
 
     /**
@@ -459,6 +477,29 @@ public class Pc implements IGraphSearch {
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
+    }
+
+    /**
+     * Sets whether to use the max-p orientation heuristic in the PC algorithm. This heuristic impacts the method of
+     * orienting edges in the generated graph during causal discovery.
+     *
+     * @param maxPOrientationHeuristic A boolean value indicating whether the max-p orientation heuristic should be
+     *                                 used. True enables the heuristic, while false disables it.
+     */
+    public void setMaxPOrientationHeuristic(boolean maxPOrientationHeuristic) {
+        this.maxPOrientationHeuristic = maxPOrientationHeuristic;
+    }
+
+    /**
+     * Sets the maximum length parameter for the max-p orientation heuristic. This parameter is used to define the upper
+     * limit on the length of paths considered by the max-p orientation heuristic during the search process.
+     *
+     * @param maxPOrientationHeuristicMaxLength The maximum length for the max-p orientation heuristic. A positive
+     *                                          integer value specifies the limit, while a value of -1 disables the
+     *                                          limit.
+     */
+    public void setMaxPOrientationHeuristicMaxLength(int maxPOrientationHeuristicMaxLength) {
+        this.maxPOrientationHeuristicMaxLength = maxPOrientationHeuristicMaxLength;
     }
 }
 

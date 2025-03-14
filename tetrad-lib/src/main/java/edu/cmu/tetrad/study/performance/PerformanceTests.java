@@ -861,7 +861,7 @@ public class PerformanceTests {
 
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
-        GFci fci = new GFci(independenceTest, score);
+        Gfci fci = new Gfci(independenceTest, score);
 
         fci.setVerbose(false);
         fci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
@@ -1444,7 +1444,7 @@ public class PerformanceTests {
         final double penaltyDiscount = 3.0;
         final int depth = 3;
         final int maxPathLength = -1;
-        final boolean possibleMsepDone = true;
+        final boolean doPossibleDsep = true;
         final boolean completeRuleSetUsed = false;
         final boolean faithfulnessAssumed = true;
 
@@ -1458,7 +1458,7 @@ public class PerformanceTests {
         this.out.println("Depth = " + depth);
         this.out.println("Maximum reachable path length for msep search and discriminating undirectedPaths = " + maxPathLength);
         this.out.println("Num additional latent common causes = " + numLatents);
-        this.out.println("Possible Msep Done = " + possibleMsepDone);
+        this.out.println("Possible Dsep Done = " + doPossibleDsep);
         this.out.println("Complete Rule Set Used = " + completeRuleSetUsed);
         this.out.println();
 
@@ -1526,10 +1526,10 @@ public class PerformanceTests {
             long ta1 = MillisecondTimes.timeMillis();
 
 //            FCI fci = new FCI(independenceTest);
-            GFci fci = new GFci(independenceTest, score);
+            Gfci fci = new Gfci(independenceTest, score);
             fci.setMaxDegree(depth);
             fci.setMaxDiscriminatingPathLength(maxPathLength);
-//            fci.setPossibleNsepSearchDone(possibleMsepDone);
+//            fci.setPossibleNsepSearchDone(doPossibleDsep);
             fci.setCompleteRuleSetUsed(completeRuleSetUsed);
             fci.setFaithfulnessAssumed(faithfulnessAssumed);
             try {

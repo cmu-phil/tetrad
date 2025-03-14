@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -42,21 +42,24 @@ import java.util.Set;
  * @see SepsetProducer
  * @see SepsetMap
  */
-public class SepsetsGreedy implements SepsetProducer {
+public class SepsetsGreedyMb implements SepsetProducer {
     private final IndependenceTest independenceTest;
     private Graph graph;
     private boolean verbose;
     private IndependenceResult result;
+    private Graph cpdag;
 
     /**
      * <p>Constructor for Sepsets.</p>
      *
      * @param graph            a {@link Graph} object
+     * @param cpdag            The cpdag.
      * @param independenceTest a {@link IndependenceTest} object
      * @param depth            a int
      */
-    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, int depth) {
+    public SepsetsGreedyMb(Graph graph, Graph cpdag, IndependenceTest independenceTest, int depth) {
         this.graph = graph;
+        this.cpdag = cpdag;
         this.independenceTest = independenceTest;
     }
 
@@ -65,7 +68,10 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     /**
-     * Retrieves the sepset (separating set) between two nodes, or null if no such sepset is found.
+     * Retrieves the sepset (separating set) between two nodes, or null if no
+     * <p>
+     * <p>
+     * such sepset is found.
      *
      * @param i     The first node
      * @param k     The second node
@@ -89,14 +95,14 @@ public class SepsetsGreedy implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
-        return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, s, this.independenceTest, depth, null);
+        return SepsetFinder.getSepsetContainingGreedySubsetMb(graph, cpdag, i, k, s, this.independenceTest, depth, null);
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
-        Set<Node> set = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, null, this.independenceTest, depth, null);
+        Set<Node> set = SepsetFinder.getSepsetContainingGreedySubsetMb(graph, cpdag, i, k, null, this.independenceTest, depth, null);
         return set != null && !set.contains(j);
     }
 
