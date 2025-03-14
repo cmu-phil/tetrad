@@ -75,7 +75,7 @@ public final class GraphUtils {
             throw new IllegalArgumentException("An error node should have only " + "one child, which is its associated node: " + errorNode);
         }
 
-        return children.iterator().next();
+        return children.getFirst();
     }
 
     /**
@@ -331,15 +331,15 @@ public final class GraphUtils {
             }
         }
 
-        if (path.get(0).getNodeType() == NodeType.LATENT) {
-            buf.append("(").append(path.get(0).toString()).append(")");
+        if (path.getFirst().getNodeType() == NodeType.LATENT) {
+            buf.append("(").append(path.getFirst().toString()).append(")");
         } else {
-            buf.append(path.get(0).toString());
+            buf.append(path.getFirst().toString());
         }
 
         String conditioningSymbol = "✔";
 
-        if (conditioningVars.contains(path.get(0))) {
+        if (conditioningVars.contains(path.getFirst())) {
             buf.append(conditioningSymbol);
         }
 
@@ -1158,7 +1158,7 @@ public final class GraphUtils {
             Edge xyEdge = graph.getEdge(x, y);
             graph.removeEdge(xyEdge);
 
-            boolean existsSemidirectedPath = false;
+            boolean existsSemidirectedPath;
 
             if (graph instanceof EdgeListGraph) {
                 existsSemidirectedPath = graph.existsSemidirectedPath(x, y);
@@ -1752,124 +1752,22 @@ public final class GraphUtils {
     public static Graph getComparisonGraph(Graph graph, Parameters params) {
         String type = params.getString("graphComparisonType");
 
-        if ("DAG".equals(type)) {
-            params.set("graphComparisonType", "DAG");
-            return new EdgeListGraph(graph);
-        } else if ("CPDAG".equals(type)) {
-            params.set("graphComparisonType", "CPDAG");
-            return GraphTransforms.dagToCpdag(graph);
-        } else if ("PAG".equals(type)) {
-            params.set("graphComparisonType", "PAG");
-            return GraphTransforms.dagToPag(graph);
-        } else {
-            params.set("graphComparisonType", "DAG");
-            return new EdgeListGraph(graph);
-        }
-    }
-
-    /**
-     * The extra-edge removal step for GFCI. This removes edges in triangles in the CPDAG from a score search like FGES
-     * or BOSS. We look for sepsets S for edge a--c, among the adjacents of b, such that a _||_ c | S.
-     *
-     * @param graph   The graph being operated on and changed.
-     * @param cpdag   The reference graph, a CPDAG obtained using such an algorithm.
-     * @param nodes   The nodes in the graph.
-     * @param sepsets A SepsetProducer that will do the sepset search operation described.
-     * @param depth   The depth of the sepset search.
-     * @param order   The order of the nodes, used for some implementations.
-     * @param verbose Whether to print verbose output.
-     * @throws InterruptedException if any
-     */
-    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph cpdag, List<Node> nodes,
-                                                SepsetProducer sepsets, int depth, List<Node> order, boolean verbose) throws InterruptedException {
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting extra-edge removal step.");
-        }
-
-        for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
+        switch (type) {
+            case "DAG" -> {
+                params.set("graphComparisonType", "DAG");
+                return new EdgeListGraph(graph);
             }
-
-            List<Node> adjacentNodes = new ArrayList<>(cpdag.getAdjacentNodes(b));
-
-            if (adjacentNodes.size() < 2) {
-                continue;
+            case "CPDAG" -> {
+                params.set("graphComparisonType", "CPDAG");
+                return GraphTransforms.dagToCpdag(graph);
             }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c, depth, order);
-
-                    if (sepset != null) {
-                        graph.removeEdge(a, c);
-
-                        if (verbose) {
-                            double pValue = sepsets.getPValue(a, c, sepset);
-                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
-                                                           + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
-                        }
-                    }
-                }
+            case "PAG" -> {
+                params.set("graphComparisonType", "PAG");
+                return GraphTransforms.dagToPag(graph);
             }
-        }
-    }
-
-    /**
-     * Executes an extra-edge removal step during the Greedy Fast Causal Inference (GFCI) process by analyzing the union
-     * of adjacent nodes in a given graph. This method seeks to identify and remove edges that do not represent causal
-     * connections based on independence tests and separation sets (sepsets).
-     *
-     * @param graph   The full graph under consideration, which will be modified to remove extra edges.
-     * @param cpdag   A Completed Partially Directed Acyclic Graph (CPDAG) representing the current causal structure
-     *                being analyzed.
-     * @param nodes   A list of nodes in the graph to be processed during the extra-edge removal step.
-     * @param test    The independence test used to evaluate whether two nodes are conditionally independent given a
-     *                subset of nodes.
-     * @param depth   The depth of conditional independence tests, defining the maximum number of nodes in the
-     *                conditioning set.
-     * @param order   A list of nodes used to guide the processing order of the algorithm.
-     * @param verbose A boolean flag indicating whether detailed logs of the operation should be produced.
-     * @throws InterruptedException If the thread running the method is interrupted.
-     */
-    public static void gfciExtraEdgeRemovalStepRevised(Graph graph, Graph cpdag, List<Node> nodes,
-                                                       IndependenceTest test, int depth, List<Node> order, SepsetMap sepsetMap, boolean verbose) throws InterruptedException {
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting extra-edge removal step.");
-        }
-
-        for (Edge edge : graph.getEdges()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            Node a = edge.getNode1();
-            Node c = edge.getNode2();
-
-            if (graph.isAdjacentTo(a, c) && cpdag.isAdjacentTo(a, c)) {
-                Set<Node> sepset = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, a, c, new HashSet<>(), test, depth, order);
-
-                if (sepset != null) {
-                    graph.removeEdge(a, c);
-                    sepsetMap.set(a, c, sepset);
-
-                    if (verbose) {
-                        IndependenceResult result = test.checkIndependence(a, c, sepset);
-                        double pValue = result.getPValue();
-                        TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
-                                                       + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
-                    }
-                }
+            case null, default -> {
+                params.set("graphComparisonType", "DAG");
+                return new EdgeListGraph(graph);
             }
         }
     }
@@ -2373,284 +2271,6 @@ public final class GraphUtils {
     }
 
     /**
-     * Applies the GFCI-R0 algorithm to orient edges in a pag based on a reference CPDAG, sepsets, and knowledge. This
-     * method modifies the given pag by changing the orientation of edges. Due to Spirtes.
-     *
-     * @param pag               The pag to be modified.
-     * @param cpdag             The reference CPDAG to guide the orientation of edges.
-     * @param sepsets           The sepsets used to determine the orientation of edges.
-     * @param knowledge         The knowledge used to determine the orientation of edges.
-     * @param verbose           Whether to print verbose output.
-     * @param unshieldedTriples A set to store unshielded triples.
-     * @throws InterruptedException if any
-     */
-    public static void gfciR0(Graph pag, Graph cpdag, SepsetProducer sepsets, IndependenceTest test, Knowledge knowledge,
-                              boolean verbose, Set<Triple> unshieldedTriples) throws InterruptedException {
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-R0.");
-        }
-
-        pag.reorientAllWith(Endpoint.CIRCLE);
-
-        fciOrientbk(knowledge, pag, pag.getNodes());
-
-        List<Node> nodes = pag.getNodes();
-
-        for (Node y : nodes) {
-            List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node x = adjacentNodes.get(combination[0]);
-                Node z = adjacentNodes.get(combination[1]);
-
-                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge) && cpdag.isDefCollider(x, y, z)) {
-                        pag.setEndpoint(x, y, Endpoint.ARROW);
-                        pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                        unshieldedTriples.add(new Triple(x, y, z));
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                            }
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                            }
-                        }
-                    }
-                } else if (cpdag.isAdjacentTo(x, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
-//                        Set<Node> sepset = sepsets.getSepset(x, z, -1, null);
-                        Set<Node> sepset = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(cpdag, x, y, new HashSet<>(), test, -1, null);
-
-
-                        if (sepset != null) {
-                            pag.removeEdge(x, z);
-
-                            if (!sepset.contains(y)) {
-                                pag.setEndpoint(x, y, Endpoint.ARROW);
-                                pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                                unshieldedTriples.add(new Triple(x, y, z));
-
-                                if (verbose) {
-                                    double p = sepsets.getPValue(x, z, sepset);
-                                    String _p = p < 0.0001 ? "< 0.0001" : String.format("%.4f", p);
-
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ", p = " + _p + ".");
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                                    }
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    public static void gfciR0(Graph pag, Graph cpdag, SepsetMap sepsetMap, Knowledge knowledge,
-                              boolean verbose, Set<Triple> unshieldedTriples) throws InterruptedException {
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-R0.");
-        }
-
-        pag.reorientAllWith(Endpoint.CIRCLE);
-
-        fciOrientbk(knowledge, pag, pag.getNodes());
-
-        List<Node> nodes = pag.getNodes();
-
-        for (Node y : nodes) {
-            List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node x = adjacentNodes.get(combination[0]);
-                Node z = adjacentNodes.get(combination[1]);
-
-                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge) && cpdag.isDefCollider(x, y, z)) {
-                        pag.setEndpoint(x, y, Endpoint.ARROW);
-                        pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                        unshieldedTriples.add(new Triple(x, y, z));
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                            }
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                            }
-                        }
-                    }
-                } else if (cpdag.isAdjacentTo(x, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsetMap.get(x, z);
-
-                        if (sepset != null) {
-                            pag.removeEdge(x, z);
-
-                            if (!sepset.contains(y)) {
-                                pag.setEndpoint(x, y, Endpoint.ARROW);
-                                pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                                unshieldedTriples.add(new Triple(x, y, z));
-
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ".");
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                                    }
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public static void gfciR0b(Graph pag, Graph cpdag, SepsetMap sepsetMap, IndependenceTest test, Knowledge knowledge,
-                               boolean verbose, Set<Triple> unshieldedTriples) throws InterruptedException {
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-R0.");
-        }
-
-        pag.reorientAllWith(Endpoint.CIRCLE);
-
-        fciOrientbk(knowledge, pag, pag.getNodes());
-
-        List<Node> nodes = pag.getNodes();
-
-        for (Node y : nodes) {
-            List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node x = adjacentNodes.get(combination[0]);
-                Node z = adjacentNodes.get(combination[1]);
-
-                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge) && cpdag.isDefCollider(x, y, z)) {
-                        pag.setEndpoint(x, y, Endpoint.ARROW);
-                        pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                        unshieldedTriples.add(new Triple(x, y, z));
-
-                        if (verbose) {
-                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                            }
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                            }
-                        }
-                    }
-                } else if (cpdag.isAdjacentTo(x, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsetMap.get(x, z);
-//                        Set<Node> sepset = SepsetFinder.getSepsetSubsetOfAdjxOrAdjy(cpdag, x, y, new HashSet<>(), test, -1, null);
-
-
-                        if (sepset != null) {
-                            pag.removeEdge(x, z);
-
-                            if (!sepset.contains(y)) {
-                                pag.setEndpoint(x, y, Endpoint.ARROW);
-                                pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                                unshieldedTriples.add(new Triple(x, y, z));
-
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ".");
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                                    }
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks if three nodes in a graph form an unshielded triple. An unshielded triple is a configuration where node a
-     * is adjacent to node b, node b is adjacent to node c, but node a is not adjacent to node c.
-     *
-     * @param graph The graph in which the nodes reside.
-     * @param a     The first node in the triple.
-     * @param b     The second node in the triple.
-     * @param c     The third node in the triple.
-     * @return {@code true} if the nodes form an unshielded triple, {@code false} otherwise.
-     */
-    private static boolean unshieldedTriple(Graph graph, Node a, Node b, Node c) {
-        return graph.isAdjacentTo(a, b) && graph.isAdjacentTo(b, c) && !graph.isAdjacentTo(a, c);
-    }
-
-    /**
-     * Checks if the given nodes are unshielded colliders when considering the given graph.
-     *
-     * @param graph the graph to consider
-     * @param a     the first node
-     * @param b     the second node
-     * @param c     the third node
-     * @return true if the nodes are unshielded colliders, false otherwise
-     */
-    public static boolean unshieldedCollider(Graph graph, Node a, Node b, Node c) {
-        return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
-    }
-
-    /**
      * Attempts to orient the edges in the graph based on the given knowledge.
      *
      * @param knowledge The knowledge containing the forbidden and required edges to orient.
@@ -2862,7 +2482,7 @@ public final class GraphUtils {
      * @return The source node of the trek.
      */
     public static Node getTrekSource(Graph graph, List<Node> trek) {
-        Node source = trek.get(trek.size() - 1);
+        Node source = trek.getLast();
 
         // Find the first node where the direction is left to right.
         for (int i = 0; i < trek.size() - 1; i++) {

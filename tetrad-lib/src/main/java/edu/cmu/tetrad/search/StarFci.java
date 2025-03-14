@@ -349,7 +349,7 @@ public abstract class StarFci implements IGraphSearch {
                         Set<Node> sepset = sepsetMap.get(x, z);
 
                         if (sepset != null) {
-                            pag.removeEdge(x, z);
+//                            pag.removeEdge(x, z);
 
                             if (!sepset.contains(y)) {
                                 pag.setEndpoint(x, y, Endpoint.ARROW);

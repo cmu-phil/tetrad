@@ -164,6 +164,7 @@ public class SepsetFinder {
      * node combinations from the union of adjacent nodes of x and y in the graph.
      *
      * @param graph      The graph in which the nodes and their adjacency relationships are defined.
+     * @param cpdag      The CDPDAG.
      * @param x          The first node for which the sepset is being determined.
      * @param y          The second node for which the sepset is being determined.
      * @param containing A specified subset of nodes that the resulting sepset must contain.
