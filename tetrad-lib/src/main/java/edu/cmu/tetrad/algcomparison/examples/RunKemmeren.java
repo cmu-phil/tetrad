@@ -80,7 +80,7 @@ public class RunKemmeren {
 
 //            Fges search = new Fges(score);
             Fas search = new Fas(test);
-//            Gfci search = new Gfci(test, score);
+//            FgesFci search = new FgesFci(test, score);
             search.setKnowledge(knowledge);
             Graph graph = search.search(dataSet, parameters);
 

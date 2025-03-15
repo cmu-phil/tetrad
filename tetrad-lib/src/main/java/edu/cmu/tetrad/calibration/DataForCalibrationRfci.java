@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Bfci;
+import edu.cmu.tetrad.search.BossFci;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -177,7 +177,7 @@ public class DataForCalibrationRfci {
 
         System.out.println("Starting search with all data");
 
-        Bfci fci = new Bfci(test, score);
+        BossFci fci = new BossFci(test, score);
         fci.setVerbose(false);
         fci.setCompleteRuleSetUsed(true);
         fci.setDepth(DFC.depth);

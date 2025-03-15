@@ -40,7 +40,7 @@ import java.util.Set;
 
 
 /**
- * Represents a GFCI search algorithm for structure learning in causal discovery.
+ * Represents a FGES-FCI search algorithm for structure learning in causal discovery.
  */
 public final class SvarGfci implements IGraphSearch {
     /**
@@ -86,7 +86,7 @@ public final class SvarGfci implements IGraphSearch {
 
 
     /**
-     * Constructs a new GFCI search for the given independence test and background knowledge.
+     * Constructs a new SvarGfci search for the given independence test and background knowledge.
      *
      * @param test  The independence test.
      * @param score The score.

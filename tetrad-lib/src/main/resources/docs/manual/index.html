@@ -3012,16 +3012,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
 
-    <h3>The GFCI Algorithm</h3>
+    <h3>The FGES-FCI Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="gfci">
+    <div id="fges.fci">
 
-        <p>GFCI is a combination of the FGES [FGES, 2016] algorithm
+        <p>FGES-FCI is a combination of the FGES [FGES, 2016] algorithm
             and the FCI algorithm [Spirtes, 1993] that improves upon the accuracy
             and efficiency of FCI. In order to understand the basic methodology
-            of GFCI, it is necessary to understand some basic facts about the
+            of FGES-FCI, it is necessary to understand some basic facts about the
             FGES and FCI algorithms. The FGES algorithm is used to improve the
             accuracy of both the adjacency phase and the orientation phase of FCI
             by providing a more accurate initial graph that contains a subset of
@@ -3033,11 +3033,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             adjacency phase of FCI, some of the orientations of FGES are then
             used to provide an initial orientation of the undirected graph that
             is then augmented by the orientation phase of FCI to provide
-            additional orientations. A verbose description of GFCI can be found
-            <a href="https://www.ccd.pitt.edu//pdfs/GFCId.pdf"> here (discrete
-                variables)</a> and <a
-                    href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/GFCIc-
-        overview-11_22_2016.pdf">here (continuous variables)</a>.</p>
+            additional orientations.
 
         <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
@@ -3068,9 +3064,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <div id="grasp-fci">
 
         <p>GRaSP-FCI is wrapper around the GRaSP algorithm that replaces
-            the FGES step in GFCI with the more accurate GRaSP algorithm, which
+            the FGES step in FGES-FCI with the more accurate GRaSP algorithm, which
             reasons by considering permutations of variables. The second collider
-            orientation step in GFCI is also done using permutation reasoning,
+            orientation step in FGES-FCI is also done using permutation reasoning,
             leaving the discriminating path rule as the only rule that requires a
             "raw" conditional independence judgment. Ultimately this independence
             judgment can be decided using the same scoring apparatus as the other
@@ -3105,7 +3101,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <div id="lv-lite">
         <p> LV-Lite starts with BOSS or GRaSP and gets a valid order and a DAG/CPDAG. It sets the initial state of the
             estimted PAG to this CPDAG and orients as o-o and then copy all of the unshielded colliders from the CPDAG
-            to the PAG. It then performs a testing modified from the step in GFCI that is more efficient. In GFCI, an
+            to the PAG. It then performs a testing modified from the step in FGES-FCI that is more efficient. In GFCI,
+            an
             edge x *-* y is removed from the graph is there is a subset S of adj(x) \ {y} or adj(y) \ {x} such that x
             _||_ y | S. For LV-Lite we instead search outward from x for a set S using a novel procedure that blocks all
             existing paths in the estimated PAG either unconditionally or conditionally. Bounds may be placed on the
@@ -3117,9 +3114,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             Tetrad that return partial ancestral graphs (PAGs).
         </p>
 
-        <p>LV-Lite, along with BFCI, can produce highly accurate models in simulation. LV-Lite, in particular, is highly
-            scalable. A paper describing BFCI and LV-Lite in more detail is planned. We make both BFCI and LV-Lite
-            non-experimental for this version since requests have been made to use them.</p>
+        <p>LV-Lite, along with BOSS-FCI, can produce highly accurate models in simulation. LV-Lite, in particular, is
+            highly scalable. A paper describing BOSS-FCI and LV-Lite in more detail is planned. We make both BOSS-FCI
+            and LV-Lite non-experimental for this version since requests have been made to use them.</p>
         </p>
 
         <p>Note: If one wants to analyze time series data using this algorithm, one may set the time lag parameter to a
@@ -3141,11 +3138,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
         GRaSP.</p>
 
-    <h3>The BFCI Algorithm</h3>
+    <h3>The BOSS-FCI Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="bfci">
+    <div id="boss-fci">
         <p>Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG
             than GFCI as a result, for the latent variables case. This is a simple substitution; the reference for GFCI
             is here:</p>
@@ -3158,9 +3155,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             Information Processing Systems, 36, 63945-63956.</p>
         <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of
             temporal tiers.</p>
-        <p>LV-Lite, along with BFCI, can produce highly accurate models in simulation. LV-Lite, in particular, is highly
-            scalable. A paper describing BFCI and LV-Lite in more detail is planned. We make both BFCI and LV-Lite
-            non-experimental for this version since requests have been made to use them.</p>
+        <p>LV-Lite, along with BOSS-FCI, can produce highly accurate models in simulation. LV-Lite, in particular, is
+            highly scalable. A paper describing BOSS-FCI and LV-Lite in more detail is planned. We make both BFCI and
+            LV-Lite non-experimental for this version since requests have been made to use them.</p>
         </p>
 
         <p>Note: If one wants to analyze time series data using this algorithm,

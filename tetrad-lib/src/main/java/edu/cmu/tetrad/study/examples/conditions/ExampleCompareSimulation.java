@@ -130,7 +130,7 @@ public class ExampleCompareSimulation {
 
 //        algorithms.add(new PcAll(new FisherZ()));
         algorithms.add(new Fges(new SemBicScore()));
-//        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
+//        algorithms.add(new Fges-FCI(new FisherZ(), new SemBicScore()));
 
         Simulations simulations = new Simulations();
 

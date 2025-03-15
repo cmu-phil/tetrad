@@ -25,7 +25,7 @@ import java.util.List;
 
 
 /**
- * This class represents the LV-Lite algorithm, which is an implementation of the GFCI algorithm for learning causal
+ * This class represents the LV-Lite algorithm, which is an implementation of the FGES-FCI algorithm for learning causal
  * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
  * afterward.
  *

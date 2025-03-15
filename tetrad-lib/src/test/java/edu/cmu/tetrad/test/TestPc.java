@@ -226,7 +226,7 @@ public class TestPc {
     //    @Test
     public void testPcFci() {
 
-        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI"};
+        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "CFCI"};
         String[] statLabels = {"AP", "TP", "BP", "NA", "NT", "NB", "E"/*, "AP/E"*/};
 
         final int numMeasures = 10;
@@ -340,7 +340,7 @@ public class TestPc {
                     search = new Fci(test);
                     break;
                 case 4:
-                    search = new Gfci(test, score);
+                    search = new FgesFci(test, score);
                     break;
                 case 5:
                     search = new Rfci(test);
@@ -569,7 +569,7 @@ public class TestPc {
     @Test
     public void testPcRegression() {
 
-        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI", "Regression"};
+        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "CFCI", "Regression"};
         String[] statLabels = {"AP", "AR"};
 
         final int numMeasures = 10;
@@ -707,7 +707,7 @@ public class TestPc {
                     }
                     break;
                 case 4:
-                    search = new Gfci(test, score);
+                    search = new FgesFci(test, score);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {

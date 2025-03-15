@@ -32,19 +32,16 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
 import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
 
 /**
- * GFCI-Template (GFCI-T) implements a template modification of GFCI that starts with a given Markov CPDAG and then
- * fixes that result to be correct for latent variables models. First, colliders from the Markov DAG are copied into the
- * final circle-circle graph, and some independence reasoning is used to remove edges from this and add the remaining
- * colliders into the graph. Then, the FCI final orientation rules are applied.
+ * *-FCI implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to
+ * be correct for latent variables models. First, colliders from the Markov DAG are copied into the final circle-circle
+ * graph, and some independence reasoning is used to remove edges from this and add the remaining colliders into the
+ * graph. Then, the FCI final orientation rules are applied.
  * <p>
  * The Markov CPDAG needs to be supplied by classes inheriting from this abstract class using the getMarkovCpdag()
  * methods.
@@ -65,7 +62,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
  * @see #getMarkovCpdag()
  * @see Knowledge
  */
-public abstract class GfciT implements IGraphSearch {
+public abstract class StarFci implements IGraphSearch {
     /**
      * The independence test used in search.
      */
@@ -111,7 +108,7 @@ public abstract class GfciT implements IGraphSearch {
      *
      * @param test The independence test to use.
      */
-    public GfciT(IndependenceTest test) {
+    public StarFci(IndependenceTest test) {
         this.independenceTest = test;
     }
 
@@ -128,7 +125,8 @@ public abstract class GfciT implements IGraphSearch {
      * @return A separating set of nodes (if found) that is a subset of the adjacency of x or y, or {@code null} if no
      * such set is found.
      */
-    public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
+    public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
+                                                     IndependenceTest test, int depth, List<Node> order) {
 
         // We need to look at the original adjx and adjy, not some modified version.
         List<Node> adjx = graph.getAdjacentNodes(x);
@@ -139,10 +137,29 @@ public abstract class GfciT implements IGraphSearch {
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        Set<Node> sepset = getSepset(x, y, containing, test, depth, order, adjx);
-        if (sepset != null) return sepset;
+        Set<Node> sepset1 = getSepset(x, y, containing, test, depth, order, adjx);
+        Set<Node> sepset2 = getSepset(y, x, containing, test, depth, order, adjy);
 
-        return getSepset(y, x, containing, test, depth, order, adjy);
+        if (sepset1 == null && sepset2 == null) {
+            return null;
+        }
+
+        if (sepset1 != null && sepset2 == null) {
+            return sepset1;
+        }
+
+        if (sepset1 == null) {
+            return sepset2;
+        }
+
+        try {
+            double p1 = test.checkIndependence(x, y, sepset1).getPValue();
+            double p2 = test.checkIndependence(x, y, sepset2).getPValue();
+
+            return p1 > p2 ? sepset1 : sepset2;
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -163,31 +180,49 @@ public abstract class GfciT implements IGraphSearch {
      * @return A separating set of nodes that fulfills all constraints and is a subset of adjx, or {@code null} if no
      * such set is found.
      */
-    private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order, List<Node> adjx) {
-        List<List<Integer>> choices = getChoices(adjx, depth);
+    private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
+                                                 List<Node> order, List<Node> adjx) {
+        List<Set<Node>> choices = getChoices(adjx, depth);
 
-        // Parallelize processing for adjx
-        // Generate combinations in parallel
-        // Filter combinations that don't contain 'containing'
-        return choices.parallelStream().map(choice -> combination(choice, adjx)) // Generate combinations in parallel
-                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-                .filter(subset -> {
-                    try {
-                        if (order != null) {
-                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+        // Max p for stability...
+        return choices.parallelStream()
+                .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
+                .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
+                .orElse(null); // Return best set or null if none pass the threshold
 
-                            for (Node node : subset) {
-                                if (order.indexOf(node) > order.indexOf(_y)) {
-                                    return false;
-                                }
-                            }
-                        }
 
-                        return test.checkIndependence(x, y, subset).isIndependent();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).findFirst().orElse(null);
+//        List<Set<Node>> choices = getChoices(adjx, depth);
+//
+//        // Parallelize processing for adjx
+//        // Generate combinations in parallel
+//        // Filter combinations that don't contain 'containing'
+//        return choices.parallelStream().map(choice -> combination(choice, adjx)) // Generate combinations in parallel
+//                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+//                .filter(subset -> {
+//                    try {
+////                        if (order != null) {
+////                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+////
+////                            for (Node node : subset) {
+////                                if (order.indexOf(node) > order.indexOf(_y)) {
+////                                    return false;
+////                                }
+////                            }
+////                        }
+//
+//                        return test.checkIndependence(x, y, subset).isIndependent();
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }).findFirst().orElse(null);
+    }
+
+    private static double computeScore(Node x, Node y, Set<Node> set, IndependenceTest test) {
+        try {
+            return test.checkIndependence(x, y, set).getPValue();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -227,8 +262,8 @@ public abstract class GfciT implements IGraphSearch {
      * @return A list of all possible lists of integers representing combinations of indices from the adjacency list up
      * to the given depth.
      */
-    private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {
-        List<List<Integer>> choices = new ArrayList<>();
+    private static @NotNull List<Set<Node>> getChoices(List<Node> adjx, int depth) {
+        List<Set<Node>> choices = new ArrayList<>();
 
         if (depth < 0 || depth > adjx.size()) depth = adjx.size();
 
@@ -236,7 +271,7 @@ public abstract class GfciT implements IGraphSearch {
         int[] choice;
 
         while ((choice = cg.next()) != null) {
-            choices.add(GraphUtils.asList(choice));
+            choices.add(GraphUtils.asSet(choice, adjx));
         }
 
         return choices;
@@ -458,21 +493,21 @@ public abstract class GfciT implements IGraphSearch {
     }
 
     /**
-     * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
      * Indicates whether verbose output is enabled.
      *
      * @return true if verbose output is enabled, false otherwise.
      */
     public boolean isVerbose() {
         return verbose;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True, if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     /**

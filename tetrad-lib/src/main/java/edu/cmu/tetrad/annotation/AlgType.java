@@ -16,7 +16,7 @@ public enum AlgType {
     /**
      * If an algorithm allows latent common causes.
      */
-    allow_latent_common_causes, // FCI, RFCI, GFCI, SVARFCI, SvarGFCI
+    allow_latent_common_causes, // FCI, RFCI, FGES-FCI, SVARFCI, SvarGFCI
 
     /**
      * If an algorithm searches for Markov blanekts.

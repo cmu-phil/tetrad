@@ -42,11 +42,11 @@ import java.io.PrintStream;
  * @author peterspirtes
  * @author josephramsey
  * @version $Id: $Id
- * @see GfciT
+ * @see StarFci
  * @see Fges
  * @see Knowledge
  */
-public final class Gfci extends GfciT {
+public final class FgesFci extends StarFci {
     /**
      * The score used in search.
      */
@@ -74,7 +74,7 @@ public final class Gfci extends GfciT {
      * @param test  The independence test to use.
      * @param score The score to use.
      */
-    public Gfci(IndependenceTest test, Score score) {
+    public FgesFci(IndependenceTest test, Score score) {
         super(test);
         if (score == null) {
             throw new NullPointerException();

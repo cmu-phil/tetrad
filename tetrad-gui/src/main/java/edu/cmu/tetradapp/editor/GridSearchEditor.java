@@ -671,7 +671,7 @@ public class GridSearchEditor extends JPanel {
 //                                </simulation>
 //                            </simulations>
 //                            <algorithms>
-//                                <algorithm name="gfci">
+//                                <algorithm name="fges-fci">
 //                                    <test>fisher-z-test</test>
 //                                    <score>sem-bic-score</score>
 //                                </algorithm>

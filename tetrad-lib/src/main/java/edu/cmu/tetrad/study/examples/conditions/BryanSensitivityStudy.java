@@ -23,7 +23,7 @@ package edu.cmu.tetrad.study.examples.conditions;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FgesFci;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -77,7 +77,7 @@ public class BryanSensitivityStudy {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
+        algorithms.add(new FgesFci(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new Fci(new FisherZ()));
 
         Comparison comparison = new Comparison();

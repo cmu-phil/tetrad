@@ -305,7 +305,7 @@ public class TestFci {
         }
 
         {
-            Gfci fci = new Gfci(independence, score);
+            FgesFci fci = new FgesFci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(true);
             fci.setVerbose(verbose);
@@ -314,7 +314,7 @@ public class TestFci {
         }
 
         {
-            Gfci fci = new Gfci(independence, score);
+            FgesFci fci = new FgesFci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(false);
             fci.setVerbose(verbose);
@@ -341,7 +341,7 @@ public class TestFci {
         }
 
         {
-            Bfci fci = new Bfci(independence, score);
+            BossFci fci = new BossFci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setStartFromCompleteGraph(true);
             fci.setVerbose(verbose);

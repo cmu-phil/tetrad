@@ -39,10 +39,10 @@ import java.util.List;
  * @author josephramsey
  * @author bryanandrews
  * @version $Id: $Id
- * @see GfciT
+ * @see StarFci
  * @see Grasp
  */
-public final class GraspFci extends GfciT {
+public final class GraspFci extends StarFci {
 
     /**
      * The conditional independence test.
@@ -113,7 +113,7 @@ public final class GraspFci extends GfciT {
             TetradLogger.getInstance().log("Starting GRaSP.");
         }
 
-        // Run GRaSP to get a CPDAG (like GFCI with FGES)...
+        // Run GRaSP to get a CPDAG.
         Grasp alg = new Grasp(independenceTest, score);
         alg.setSeed(seed);
         alg.setOrdered(ordered);

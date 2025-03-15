@@ -26,7 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FgesFci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
@@ -2520,7 +2520,7 @@ public final class TestGrasp {
         algorithms.add(new Rfci(test));
 //
         for (ScoreWrapper score : scores) {
-            algorithms.add(new Gfci(test, score));
+            algorithms.add(new FgesFci(test, score));
         }
 //
         Algorithms _algorithms = new Algorithms();
@@ -2686,8 +2686,8 @@ public final class TestGrasp {
             algorithms.add(new Fci(test));
 //            algorithms.add(new FciMax(test));
 //            algorithms.add(new Rfci(test));
-//            algorithms.add(new GFCI(test, score));
-//            algorithms.add(new BFCI(test, score));
+//            algorithms.add(new FGES-FCI(test, score));
+//            algorithms.add(new BOSS-FCI(test, score));
 
             algNames = new ArrayList<>();
 

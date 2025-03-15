@@ -26,16 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The Gfci class represents the Greedy Fast Causal Inference algorithm.
+ * The Fges-FCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "GFCI",
-        command = "gfci",
+        name = "FGES-FCI",
+        command = "fges-fci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix {
+public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper,
+        TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -56,18 +56,18 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The Gfci class represents the Greedy Fast Causal Inference algorithm.
+     * The FGES-FCI class represents the Greedy Fast Causal Inference algorithm.
      */
-    public Gfci() {
+    public FgesFci() {
     }
 
     /**
-     * Constructs a new instance of Gfci with the given IndependenceWrapper and ScoreWrapper.
+     * Constructs a new instance of FGES-FCI with the given IndependenceWrapper and ScoreWrapper.
      *
-     * @param test  The IndependenceWrapper object to associate with this Gfci instance.
-     * @param score The ScoreWrapper object to associate with this Gfci instance.
+     * @param test  The IndependenceWrapper object to associate with this FGES-FCI instance.
+     * @param score The ScoreWrapper object to associate with this FGES-FCI instance.
      */
-    public Gfci(IndependenceWrapper test, ScoreWrapper score) {
+    public FgesFci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -93,7 +93,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.Gfci search = new edu.cmu.tetrad.search.Gfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        edu.cmu.tetrad.search.FgesFci search = new edu.cmu.tetrad.search.FgesFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
@@ -121,15 +121,14 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns a description of the GFCI (Greedy Fast Causal Inference) algorithm using the description of the
-     * independence test and score associated with it.
+     * Returns a description of the FGES-FCI algorithm using the description of the independence test and score
+     * associated with it.
      *
      * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
-        return "GFCI (Greedy Fast Causal Inference) using " + this.test.getDescription()
-               + " and " + this.score.getDescription();
+        return "FGES-FCI using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
