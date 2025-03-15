@@ -272,6 +272,12 @@ public abstract class StarFci implements IGraphSearch {
         return choices;
     }
 
+    /**
+     * Sets whether to use the maxP criterion during the search process.
+     *
+     * @param useMaxP A boolean indicating whether the maxP criterion
+     *                should be applied (true) or not (false).
+     */
     public void setUseMaxP(boolean useMaxP) {
         this.useMaxP = useMaxP;
     }
