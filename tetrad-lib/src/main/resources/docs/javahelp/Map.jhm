@@ -93,7 +93,7 @@
     <mapID target="fges" url="manual/boxes/search/fges.html"/>
     <mapID target="fgesmb" url="manual/boxes/search/fgesmb.html"/>
     <mapID target="ccdmax" url="manual/boxes/search/ccdmax.html"/>
-    <mapID target="gfci" url="manual/boxes/search/gfci.html"/>
+    <mapID target="fges_fci" url="manual/boxes/search/fges_fci.html"/>
     <mapID target="glasso" url="manual/boxes/search/glasso.html"/>
     <mapID target="images" url="manual/boxes/search/images.html"/>
     <mapID target="lingam" url="manual/boxes/search/lingam.html"/>

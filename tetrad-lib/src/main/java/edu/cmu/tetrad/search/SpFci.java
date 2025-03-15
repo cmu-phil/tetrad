@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -20,16 +20,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.List;
 
 /**
- * Uses SP in place of FGES for the initial step in the StarFci algorithm.
+ * Uses SP in place of FGES for the initial step in the GFCI-T algorithm.
  * <p>
  * For SP only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test and a
  * score need to be given.
@@ -53,14 +51,6 @@ public final class SpFci extends StarFci {
      */
     private final Score score;
     /**
-     * The conditional independence test.
-     */
-    private final IndependenceTest independenceTest;
-    /**
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
-    /**
      * Flag for complete rule set, true if you should use the complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
@@ -72,10 +62,6 @@ public final class SpFci extends StarFci {
      * The maxDegree for the fast adjacency search.
      */
     private int maxDegree = -1;
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -89,21 +75,20 @@ public final class SpFci extends StarFci {
             throw new NullPointerException();
         }
         this.score = score;
-        this.independenceTest = test;
     }
 
     public Graph getMarkovCpdag() throws InterruptedException {
         Graph cpdag;
-        if (verbose) {
+        if (isCompleteRuleSetUsed()) {
             TetradLogger.getInstance().log("Starting SP.");
         }
 
         Sp subAlg = new Sp(this.score);
         PermutationSearch alg = new PermutationSearch(subAlg);
-        alg.setKnowledge(this.knowledge);
+        alg.setKnowledge(getKnowledge());
         cpdag = alg.search();
 
-        if (verbose) {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Finished SP.");
         }
         return cpdag;
@@ -129,24 +114,6 @@ public final class SpFci extends StarFci {
         }
 
         this.maxDegree = maxDegree;
-    }
-
-    /**
-     * Returns the knowledge.
-     *
-     * @return This knowledge.
-     */
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    /**
-     * Sets the knoweldge used in the search.
-     *
-     * @param knowledge This knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
@@ -189,24 +156,6 @@ public final class SpFci extends StarFci {
         }
 
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
-    }
-
-    /**
-     * Sets whether verbose output is printed.
-     *
-     * @param verbose True, if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * Returns the independence test used in search.
-     *
-     * @return This test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
     }
 
     /**

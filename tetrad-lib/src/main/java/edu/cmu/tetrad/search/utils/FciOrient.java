@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
  * and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.
  * <p>
  * These final rules are used in all algorithms in Tetrad that follow and refine the FCI algorithm--for example, the
- * GFCI and RFCI algorihtms.
+ * FGES-FCI and RFCI algorihtms.
  * <p>
  * We've made the methods for each of the separate rules publicly accessible in case someone wants to use the individual
  * rules in the context of their own algorithms.

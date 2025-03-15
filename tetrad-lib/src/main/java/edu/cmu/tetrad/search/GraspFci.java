@@ -20,7 +20,6 @@
 /// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
@@ -30,9 +29,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Uses GRaSP in the StarFCI algorithm. the reference for GraSP is here:
+ * Uses GRaSP in the GFCI-T algorithm. the reference for GraSP is here:
  * <p>
- * For GRaSP either a score or a test is needed. StarFci requires a test. So both are needed.
+ * For GRaSP either a score or a test is needed. GFCI-T requires a test. So both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
@@ -53,10 +52,6 @@ public final class GraspFci extends StarFci {
      * The score.
      */
     private final Score score;
-    /**
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
     /**
      * The number of starts for GRaSP.
      */
@@ -96,10 +91,6 @@ public final class GraspFci extends StarFci {
      * @see GraspFci#setSeed(long)
      */
     private long seed = -1;
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose = false;
 
     /**
      * Constructs a new GraspFci object.
@@ -118,11 +109,11 @@ public final class GraspFci extends StarFci {
     }
 
     public @NotNull Graph getMarkovCpdag() throws InterruptedException {
-        if (verbose) {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Starting GRaSP.");
         }
 
-        // Run GRaSP to get a CPDAG (like GFCI with FGES)...
+        // Run GRaSP to get a CPDAG.
         Grasp alg = new Grasp(independenceTest, score);
         alg.setSeed(seed);
         alg.setOrdered(ordered);
@@ -133,8 +124,8 @@ public final class GraspFci extends StarFci {
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
-        alg.setVerbose(false);
-        alg.setKnowledge(knowledge);
+        alg.setVerbose(isVerbose());
+        alg.setKnowledge(getKnowledge());
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
@@ -142,28 +133,10 @@ public final class GraspFci extends StarFci {
         alg.bestOrder(variables);
         Graph cpdag = alg.getGraph(true);
 
-        if (verbose) {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Finished GRaSP.");
         }
         return cpdag;
-    }
-
-    /**
-     * Sets the knowledge used in search.
-     *
-     * @param knowledge This knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     /**

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Gfci;
+import edu.cmu.tetrad.search.FgesFci;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -74,7 +74,7 @@ public class PerformanceTestsDan {
         final int numRuns = 100;
 
         for (int run = 0; run < numRuns; run++) {
-            final double alphaGFci = 0.01;
+            final double alphaFgesFci = 0.01;
             final double alphaPc = 0.01;
             final int penaltyDiscount = 1;
             final int depth = 3;
@@ -101,7 +101,7 @@ public class PerformanceTestsDan {
             PrintStream out11;
             PrintStream out12;
 
-            File dir0 = new File("gfci.output");
+            File dir0 = new File("fges.fci.output");
             dir0.mkdirs();
 
             File dir = new File(dir0, "" + (run + 1));
@@ -129,7 +129,7 @@ public class PerformanceTestsDan {
             out1.println("Num edges = " + (int) (numVars * edgesPerNode));
             out1.println("Num cases = " + numCases);
             out1.println("Alpha for PC = " + alphaPc);
-            out1.println("Alpha for FFCI = " + alphaGFci);
+            out1.println("Alpha for FFCI = " + alphaFgesFci);
             out1.println("Penalty discount = " + penaltyDiscount);
             out1.println("Depth = " + depth);
             out1.println("Maximum reachable path length for msep search and discriminating undirectedPaths = " + maxDiscriminatingPathLength);
@@ -192,19 +192,19 @@ public class PerformanceTestsDan {
 
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-            IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
+            IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaFgesFci);
             SemBicScore scoreGfci = new SemBicScore(cov);
 
             out6.println("GFCI.PAG_of_the_true_DAG");
 
-            Gfci gFci = new Gfci(independenceTestGFci, scoreGfci);
-            gFci.setVerbose(false);
-            gFci.setMaxDegree(depth);
-            gFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-//            gFci.setPossibleDsepSearchDone(true);
-            gFci.setCompleteRuleSetUsed(true);
+            FgesFci fgesFci = new FgesFci(independenceTestGFci, scoreGfci);
+            fgesFci.setVerbose(false);
+            fgesFci.setMaxDegree(depth);
+            fgesFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+//            fgesFci.setPossibleDsepSearchDone(true);
+            fgesFci.setCompleteRuleSetUsed(true);
 
-            Graph pag = gFci.search();
+            Graph pag = fgesFci.search();
 
             out6.println(pag);
             printDanMatrix(_vars, pag, out7);

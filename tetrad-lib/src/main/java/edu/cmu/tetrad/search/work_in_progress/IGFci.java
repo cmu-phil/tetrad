@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Instance-specific GFci given in Fattaneh Jabbari's dissertation (Pages 144-147)
+ * Instance-specific FGES-FCI given in Fattaneh Jabbari's dissertation (Pages 144-147)
  *
  * @author Fattaneh
  */

@@ -137,11 +137,11 @@ public class PerformanceTests {
 
 
         if (args.length == 3) {
-            if ("GFCI".equals(args[0])) {
+            if ("FGES-FCI".equals(args[0])) {
                 int numVars = Integer.parseInt(args[1]);
                 double edgeFactor = Double.parseDouble(args[2]);
 //                    final int numCases = Integer.parseInt(args[3]);
-                performanceTests.testGfci(numVars, edgeFactor);
+                performanceTests.testFgesFci(numVars, edgeFactor);
             } else {
                 throw new IllegalArgumentException("Not a configuration!");
             }
@@ -794,7 +794,7 @@ public class PerformanceTests {
      * @param numVars    a int
      * @param edgeFactor a double
      */
-    public void testGfci(int numVars, double edgeFactor) {
+    public void testFgesFci(int numVars, double edgeFactor) {
         final double alpha = .1;
         final int depth = -1;
         final double penaltyDiscount = 4.0;
@@ -804,7 +804,7 @@ public class PerformanceTests {
         final int numLatentConfounders = 50;
         final int numCases = 1000;
 
-        init(new File("long.gfci." + numVars + ".txt"), "Tests performance of the FCI-GES algorithm");
+        init(new File("long.fges.fci." + numVars + ".txt"), "Tests performance of the FGES-FCI algorithm");
 
         long time1 = MillisecondTimes.timeMillis();
 
@@ -857,11 +857,10 @@ public class PerformanceTests {
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
         IndependenceTest independenceTest = new IndTestFisherZ(cov, alpha);
-//        GFci fci = new GFci(independenceTest);
 
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
-        Gfci fci = new Gfci(independenceTest, score);
+        FgesFci fci = new FgesFci(independenceTest, score);
 
         fci.setVerbose(false);
         fci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
@@ -1526,7 +1525,7 @@ public class PerformanceTests {
             long ta1 = MillisecondTimes.timeMillis();
 
 //            FCI fci = new FCI(independenceTest);
-            Gfci fci = new Gfci(independenceTest, score);
+            FgesFci fci = new FgesFci(independenceTest, score);
             fci.setMaxDegree(depth);
             fci.setMaxDiscriminatingPathLength(maxPathLength);
 //            fci.setPossibleNsepSearchDone(doPossibleDsep);

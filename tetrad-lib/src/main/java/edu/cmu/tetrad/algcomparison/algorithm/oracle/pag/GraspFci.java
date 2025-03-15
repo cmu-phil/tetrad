@@ -29,12 +29,7 @@ import java.util.List;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial steps of finding adjacencies and
- * unshielded colliders.
- * <p>
- * GFCI reference is this:
- * <p>
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
+ * GRaSP-FCI, an implentatation of *-FCI using GRaSP.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -127,6 +122,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -192,6 +188,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.DEPTH);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
+        params.add(Params.USE_MAX_P_HEURISTIC);
 
         // General
         params.add(Params.TIME_LAG);

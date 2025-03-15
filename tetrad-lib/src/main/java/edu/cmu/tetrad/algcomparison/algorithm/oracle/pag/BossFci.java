@@ -27,10 +27,10 @@ import java.util.List;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial steps of finding adjacencies and
- * unshielded colliders.
+ * Adjusts FGES-FCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial steps of finding adjacencies
+ * and unshielded colliders.
  * <p>
- * GFCI reference is this:
+ * FGES-FCI reference is this:
  * <p>
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
  *
@@ -38,13 +38,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI",
-        command = "bfci",
+        name = "BOSS-FCI",
+        command = "boss-fci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 //@Experimental
-public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
+public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix {
 
@@ -69,17 +69,17 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
     /**
      * No-arg constructor. Used for reflection; do not delete.
      */
-    public Bfci() {
+    public BossFci() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * Constructs a new BFCI algorithm using the given test and score.
+     * Constructs a new BOSS-FCI algorithm using the given test and score.
      *
      * @param test  the independence test to use
      * @param score the score to use
      */
-    public Bfci(IndependenceWrapper test, ScoreWrapper score) {
+    public BossFci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -106,7 +106,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.Bfci search = new edu.cmu.tetrad.search.Bfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        edu.cmu.tetrad.search.BossFci search = new edu.cmu.tetrad.search.BossFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
@@ -115,6 +115,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
+        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setKnowledge(knowledge);
@@ -137,15 +138,13 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
     }
 
     /**
-     * Returns a description of the BFCI (Best-order FCI) algorithm using the description of its independence test and
-     * score.
+     * Returns a description of the BOSS-FCI algorithm using the description of its independence test and score.
      *
      * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
-        return "BFCI (Best-order FCI) using " + this.test.getDescription()
-               + " and " + this.score.getDescription();
+        return "BOSS-FCI using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
@@ -159,9 +158,9 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
     }
 
     /**
-     * Retrieves the list of parameters used for the BFCI (Best-order FCI) algorithm.
+     * Retrieves the list of parameters used for the BOSS-FCI algorithm.
      *
-     * @return the list of parameters used for the BFCI algorithm
+     * @return the list of parameters used for the BOSS-FCI algorithm
      */
     @Override
     public List<String> getParameters() {
@@ -176,6 +175,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         params.add(Params.NUM_THREADS);
         params.add(Params.GUARANTEE_PAG);
         params.add(Params.START_FROM_COMPLETE_GRAPH);
+        params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.VERBOSE);
 
         // Parameters
@@ -206,7 +206,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
     }
 
     /**
-     * Returns the IndependenceWrapper associated with this Bfci algorithm.
+     * Returns the IndependenceWrapper associated with this BOSS-FCI algorithm.
      *
      * @return the IndependenceWrapper object
      */

@@ -364,7 +364,7 @@ public class ComparisonParameters {
             resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.FCI) {
             resultType = ResultType.PAG;
-        } else if (algorithm == Algorithm.GFCI) {
+        } else if (algorithm == Algorithm.FGES_FCI) {
             resultType = ResultType.PAG;
         } else if (algorithm == Algorithm.SVARFCI) {
             resultType = ResultType.PAG;
@@ -661,7 +661,7 @@ public class ComparisonParameters {
         /**
          * Constant for the GFCI algorithm.
          */
-        GFCI,
+        FGES_FCI,
 
         /**
          * Constant for the SVARFCI algorithm.

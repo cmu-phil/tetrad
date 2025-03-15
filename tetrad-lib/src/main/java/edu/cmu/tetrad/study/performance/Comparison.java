@@ -218,9 +218,9 @@ public class Comparison {
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES_FCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            Gfci search = new Gfci(test, score);
+            FgesFci search = new FgesFci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
         } else {

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Gfci;
+import edu.cmu.tetrad.search.FgesFci;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
@@ -56,7 +56,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author josephramsey
  */
-public class TestGFci {
+public class TestFgesFci {
     boolean precomputeCovariances = true;
 
 
@@ -97,15 +97,15 @@ public class TestGFci {
 
         independenceTest.setAlpha(alpha);
 
-        Gfci gFci = new Gfci(independenceTest, score);
-        gFci.setVerbose(false);
-        gFci.setMaxDegree(depth);
-        gFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        gFci.setCompleteRuleSetUsed(false);
-        gFci.setFaithfulnessAssumed(true);
+        FgesFci FgesFci = new FgesFci(independenceTest, score);
+        FgesFci.setVerbose(false);
+        FgesFci.setMaxDegree(depth);
+        FgesFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        FgesFci.setCompleteRuleSetUsed(false);
+        FgesFci.setFaithfulnessAssumed(true);
         Graph outGraph = null;
         try {
-            outGraph = gFci.search();
+            outGraph = FgesFci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -160,11 +160,11 @@ public class TestGFci {
 
         System.out.println(g1);
 
-        Gfci gfci = new Gfci(new MsepTest(g1), new GraphScore(g1));
+        FgesFci fgesFci = new FgesFci(new MsepTest(g1), new GraphScore(g1));
 
         Graph pag = null;
         try {
-            pag = gfci.search();
+            pag = fgesFci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -184,7 +184,7 @@ public class TestGFci {
     }
 
     //    @Test
-    // Not sure why this fails for GFCI. Other similar algorithms pass.
+    // Not sure why this fails for Fges-FCI. Other similar algorithms pass.
     public void testFromGraph() {
 //        RandomUtil.getInstance().setSeed(new Date().getTime());
         RandomUtil.getInstance().setSeed(19444322L);
@@ -197,13 +197,14 @@ public class TestGFci {
             Graph dag = RandomGraph.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
-//            Fci gfci = new Fci(new MsepTest(dag));
-            Gfci gfci = new Gfci(new MsepTest(dag), new GraphScore(dag));
-            gfci.setCompleteRuleSetUsed(true);
-//            gfci.setFaithfulnessAssumed(false);
+//            Fci fgesFci = new Fci(new MsepTest(dag));
+            FgesFci fgesFci = new FgesFci(new MsepTest(dag), new GraphScore(dag));
+            fgesFci.setCompleteRuleSetUsed(true);
+//            fgesFci.setFaithfulnessAssumed(false);
             Graph pag1 = null;
+
             try {
-                pag1 = gfci.search();
+                pag1 = fgesFci.search();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -246,13 +247,13 @@ public class TestGFci {
         SemBicScore score = new SemBicScore(data, precomputeCovariances);
         score.setRuleType(SemBicScore.RuleType.CHICKERING);
         score.setPenaltyDiscount(2);
-        Gfci gFci = new Gfci(test, score);
-        gFci.setFaithfulnessAssumed(true);
+        FgesFci fgesFci = new FgesFci(test, score);
+        fgesFci.setFaithfulnessAssumed(true);
 
         long start = MillisecondTimes.timeMillis();
 
         try {
-            gFci.search();
+            fgesFci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -278,13 +279,13 @@ public class TestGFci {
         bDeuScore.setSamplePrior(1.0);
         bDeuScore.setStructurePrior(1.0);
 
-        Gfci gFci = new Gfci(test, bDeuScore);
-        gFci.setFaithfulnessAssumed(true);
+        FgesFci fgesFci = new FgesFci(test, bDeuScore);
+        fgesFci.setFaithfulnessAssumed(true);
 
         long start = MillisecondTimes.timeMillis();
 
         try {
-            gFci.search();
+            fgesFci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -309,17 +310,17 @@ public class TestGFci {
         score.setStructurePrior(1.0);
         score.setSamplePrior(1.0);
 
-        Gfci gFci = new Gfci(indTest, score);
-        gFci.setFaithfulnessAssumed(true);
-        gFci.setMaxDegree(-1);
-        gFci.setMaxDiscriminatingPathLength(-1);
-        gFci.setCompleteRuleSetUsed(false);
-        gFci.setVerbose(true);
+        FgesFci fgesFci = new FgesFci(indTest, score);
+        fgesFci.setFaithfulnessAssumed(true);
+        fgesFci.setMaxDegree(-1);
+        fgesFci.setMaxDiscriminatingPathLength(-1);
+        fgesFci.setCompleteRuleSetUsed(false);
+        fgesFci.setVerbose(true);
 
         long start = MillisecondTimes.timeMillis();
 
         try {
-            gFci.search();
+            fgesFci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -26,15 +26,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The GFCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
+ * The Fges-FCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "GFCI",
-        command = "gfci",
+        name = "FGES-FCI",
+        command = "fges-fci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper,
+public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -56,18 +56,18 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The GFCI class represents the Greedy Fast Causal Inference algorithm.
+     * The FGES-FCI class represents the Greedy Fast Causal Inference algorithm.
      */
-    public Gfci() {
+    public FgesFci() {
     }
 
     /**
-     * Constructs a new instance of GFCI with the given IndependenceWrapper and ScoreWrapper.
+     * Constructs a new instance of FGES-FCI with the given IndependenceWrapper and ScoreWrapper.
      *
-     * @param test  The IndependenceWrapper object to associate with this GFCI instance.
-     * @param score The ScoreWrapper object to associate with this GFCI instance.
+     * @param test  The IndependenceWrapper object to associate with this FGES-FCI instance.
+     * @param score The ScoreWrapper object to associate with this FGES-FCI instance.
      */
-    public Gfci(IndependenceWrapper test, ScoreWrapper score) {
+    public FgesFci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -93,7 +93,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.Gfci search = new edu.cmu.tetrad.search.Gfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        edu.cmu.tetrad.search.FgesFci search = new edu.cmu.tetrad.search.FgesFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
@@ -103,6 +103,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
         search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
+        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setOut(System.out);
 
         return search.search();
@@ -121,14 +122,14 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     }
 
     /**
-     * Returns a description of the GFCI algorithm using the description of the independence test and score
+     * Returns a description of the FGES-FCI algorithm using the description of the independence test and score
      * associated with it.
      *
      * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
-        return "GFCI using " + this.test.getDescription() + " and " + this.score.getDescription();
+        return "FGES-FCI using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
@@ -158,6 +159,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.REMOVE_ALMOST_CYCLES);
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.START_FROM_COMPLETE_GRAPH);
+        parameters.add(Params.USE_MAX_P_HEURISTIC);
 
         parameters.add(Params.VERBOSE);
         return parameters;
