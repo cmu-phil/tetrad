@@ -68,16 +68,16 @@ public class SepsetsGreedyMb implements SepsetProducer {
     }
 
     /**
-     * Retrieves the sepset (separating set) between two nodes, or null if no
-     * <p>
-     * <p>
-     * such sepset is found.
+     * Retrieves the separating set (sepset) between two nodes in the graph.
+     * This method finds a subset of adjacent nodes that separate the specified nodes
+     * based on the provided parameters.
      *
-     * @param i     The first node
-     * @param k     The second node
-     * @param depth The depth of the search
-     * @param order The order of the nodes, used for some implementations.
-     * @return The sepset between the two nodes
+     * @param i     the first node
+     * @param k     the second node
+     * @param depth the maximum depth of the search
+     * @param order the list representing the order in which nodes are processed
+     * @return a set of nodes representing the separating set, or an empty set if no such
+     *         separating set is found
      */
     public Set<Node> getSepset(Node i, Node k, int depth, List<Node> order) {
         return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, new HashSet<>(), this.independenceTest, depth, order);

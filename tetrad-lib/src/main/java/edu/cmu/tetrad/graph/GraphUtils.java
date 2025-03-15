@@ -2569,7 +2569,7 @@ public final class GraphUtils {
         boolean changed1, changed2;
 
         do {
-            changed1 = removeAlmostCyclesSadeghi(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
+            changed1 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
             changed2 = repairMaximality(pag, verbose, selection);
             fciOrient.finalOrientation(pag);
         } while (changed1 || changed2);
@@ -3122,134 +3122,6 @@ public final class GraphUtils {
                     TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
                     TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
                 }
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Done removing almost cycles this round.");
-            }
-
-            // Rebuild the PAG with this new unshielded collider set.
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Rebuilding graph.");
-            }
-
-            reorientWithCircles(pag, verbose);
-            doRequiredOrientations(fciOrient, pag, pag.getNodes(), knowledge, verbose);
-            recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Finished rebuilding graph.");
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Final orientation.");
-            }
-
-            fciOrient.setVerbose(false);
-            fciOrient.setAllowedColliders(unshieldedColliders);
-            fciOrient.setDoR4(false);
-            fciOrient.finalOrientation(pag);
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Finished final orientation.");
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("All done removing almost cycles, round " + round + ".");
-            }
-        }
-
-        return changed;
-    }
-
-    public static boolean removeAlmostCyclesSadeghi(Graph pag, Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders, FciOrient fciOrient,
-                                             Knowledge knowledge, boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Removing almost cycles.");
-        }
-
-        boolean changed = false;
-
-        fciOrient.setInitialAllowedColliders(new HashSet<>());
-        fciOrient.finalOrientation(pag);
-        unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
-        fciOrient.setInitialAllowedColliders(null);
-
-        Set<Edge> _almostCycles = new HashSet<>();
-
-        int round = 0;
-
-        while (!Thread.currentThread().isInterrupted()) {
-            round++;
-            Graph mag = GraphTransforms.zhangMagFromPag(pag);
-
-            // Make a list of all <x, y> where x ↔ y and x ~~> y.
-            Set<Edge> almostCyclesSet = new HashSet<>();
-
-            for (Edge edge : mag.getEdges()) {
-                if (Edges.isBidirectedEdge(edge)) {
-                    if (mag.paths().existsDirectedPath(edge.getNode1(), edge.getNode2())) {
-                        Edge e = Edges.directedEdge(edge.getNode1(), edge.getNode2());
-                        almostCyclesSet.add(e);
-                    } else if (mag.paths().existsDirectedPath(edge.getNode2(), edge.getNode1())) {
-                        Edge e = Edges.directedEdge(edge.getNode2(), edge.getNode1());
-                        almostCyclesSet.add(e);
-                    }
-                }
-            }
-
-            if (almostCyclesSet.equals(_almostCycles)) {
-                break;
-            }
-
-            _almostCycles = new HashSet<>(almostCyclesSet);
-
-            if (verbose) {
-                StringBuilder sb = new StringBuilder();
-
-                sb.append("Almost cycles round ").append(round).append(": ");
-
-                for (Edge _almostCycle : almostCyclesSet) {
-                    sb.append(_almostCycle.getNode1()).append(" ~~> ").append(_almostCycle.getNode2()).append(" ");
-                }
-
-                TetradLogger.getInstance().log(sb.toString());
-
-                TetradLogger.getInstance().log("# almost cycles = " + almostCyclesSet.size());
-            }
-
-            for (Edge almostCycle : almostCyclesSet) {
-                pag.addEdge(almostCycle);
-
-//                Node x = almostCycle.getNode1();
-//                Node y = almostCycle.getNode2();
-//
-//                // Find all unshielded triples z *→ x ↔ y in subsequentUnshieldedColliders
-//                Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
-//
-//                for (Triple triple : new HashSet<>(extraUnshieldedColliders)) {
-//                    if (triple.getY().equals(x) && triple.getZ().equals(y)) {
-//                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
-//                            unshieldedColliders.remove(triple);
-//                            extraUnshieldedColliders.remove(triple);
-//                            unshieldedTriplesIntoX.add(triple);
-//                            changed = true;
-//                        }
-//                    } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
-//                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
-//                            unshieldedColliders.remove(triple);
-//                            extraUnshieldedColliders.remove(triple);
-//                            unshieldedTriplesIntoX.add(triple);
-//                            changed = true;
-//                        }
-//                    }
-//                }
-//
-//                if (!unshieldedColliders.isEmpty() && verbose) {
-//                    TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
-//                    TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
-//                }
             }
 
             if (verbose) {
