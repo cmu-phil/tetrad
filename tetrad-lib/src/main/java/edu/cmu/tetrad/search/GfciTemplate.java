@@ -467,6 +467,15 @@ public abstract class GfciTemplate implements IGraphSearch {
     }
 
     /**
+     * Indicates whether verbose output is enabled.
+     *
+     * @return true if verbose output is enabled, false otherwise.
+     */
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    /**
      * Returns the independence test used in search.
      *
      * @return This test.

@@ -20,7 +20,6 @@
 /// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
@@ -53,10 +52,6 @@ public final class GraspFci extends GfciTemplate {
      * The score.
      */
     private final Score score;
-    /**
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
     /**
      * The number of starts for GRaSP.
      */
@@ -96,10 +91,6 @@ public final class GraspFci extends GfciTemplate {
      * @see GraspFci#setSeed(long)
      */
     private long seed = -1;
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose = false;
 
     /**
      * Constructs a new GraspFci object.
@@ -118,7 +109,7 @@ public final class GraspFci extends GfciTemplate {
     }
 
     public @NotNull Graph getMarkovCpdag() throws InterruptedException {
-        if (verbose) {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Starting GRaSP.");
         }
 
@@ -133,8 +124,8 @@ public final class GraspFci extends GfciTemplate {
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
-        alg.setVerbose(false);
-        alg.setKnowledge(knowledge);
+        alg.setVerbose(isVerbose());
+        alg.setKnowledge(getKnowledge());
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
@@ -142,28 +133,10 @@ public final class GraspFci extends GfciTemplate {
         alg.bestOrder(variables);
         Graph cpdag = alg.getGraph(true);
 
-        if (verbose) {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Finished GRaSP.");
         }
         return cpdag;
-    }
-
-    /**
-     * Sets the knowledge used in search.
-     *
-     * @param knowledge This knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     /**

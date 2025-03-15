@@ -48,17 +48,9 @@ import java.io.PrintStream;
  */
 public final class Gfci extends GfciTemplate {
     /**
-     * The independence test used in search.
-     */
-    private final IndependenceTest independenceTest;
-    /**
      * The score used in search.
      */
     private final Score score;
-    /**
-     * The knowledge used in search.
-     */
-    private Knowledge knowledge = new Knowledge();
     /**
      * The maximum degree of the output graph.
      */
@@ -75,10 +67,6 @@ public final class Gfci extends GfciTemplate {
      * The number of threads to use in the search. Must be at least 1.
      */
     private int numThreads = 1;
-    /**
-     * Whether verbose output should be printed.
-     */
-    private boolean verbose = false;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -92,26 +80,26 @@ public final class Gfci extends GfciTemplate {
             throw new NullPointerException();
         }
         this.score = score;
-        this.independenceTest = test;
     }
 
     public Graph getMarkovCpdag() throws InterruptedException {
-        if (verbose) {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Starting FGES.");
         }
 
         Fges fges = new Fges(this.score);
         fges.setKnowledge(getKnowledge());
-        fges.setVerbose(this.verbose);
+        fges.setVerbose(isVerbose());
         fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         fges.setNumThreads(numThreads);
         Graph cpdag = fges.search();
 
-        if (verbose) {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Finished FGES.");
         }
+
         return cpdag;
     }
 
@@ -126,46 +114,6 @@ public final class Gfci extends GfciTemplate {
         }
 
         this.maxDegree = maxDegree;
-    }
-
-    /**
-     * Returns the knowledge used in search.
-     *
-     * @return This knowledge
-     */
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    /**
-     * Sets the knowledge to use in search.
-     *
-     * @param knowledge This knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
-    }
-
-    /**
-     * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * Returns the independence test used in search.
-     *
-     * @return This test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
     }
 
     /**
