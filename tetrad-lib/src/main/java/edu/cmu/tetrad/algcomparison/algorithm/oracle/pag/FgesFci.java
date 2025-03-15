@@ -103,6 +103,7 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ha
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
         search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
+        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setOut(System.out);
 
         return search.search();
@@ -158,6 +159,7 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ha
         parameters.add(Params.REMOVE_ALMOST_CYCLES);
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.START_FROM_COMPLETE_GRAPH);
+        parameters.add(Params.USE_MAX_P_HEURISTIC);
 
         parameters.add(Params.VERBOSE);
         return parameters;

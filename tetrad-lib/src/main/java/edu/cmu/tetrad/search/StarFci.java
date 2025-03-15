@@ -91,6 +91,11 @@ public abstract class StarFci implements IGraphSearch {
      * Whether to guarantee the output is a PAG by repairing a faulty PAG.
      */
     private boolean guaranteePag = false;
+    /**
+     * A boolean flag indicating whether to use the maximum p-value heuristic during certain operations in the
+     * Star-FCI algorithm. The default value is {@code true}, enabling the heuristic by default.
+     */
+    private boolean useMaxP = false;
 
     /**
      * A flag indicating whether the algorithm should start its search from a complete undirected graph.
@@ -126,7 +131,7 @@ public abstract class StarFci implements IGraphSearch {
      * such set is found.
      */
     public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
-                                                     IndependenceTest test, int depth, List<Node> order) {
+                                                     IndependenceTest test, int depth, List<Node> order, boolean useMaxP) {
 
         // We need to look at the original adjx and adjy, not some modified version.
         List<Node> adjx = graph.getAdjacentNodes(x);
@@ -137,8 +142,8 @@ public abstract class StarFci implements IGraphSearch {
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        Set<Node> sepset1 = getSepset(x, y, containing, test, depth, order, adjx);
-        Set<Node> sepset2 = getSepset(y, x, containing, test, depth, order, adjy);
+        Set<Node> sepset1 = getSepset(x, y, containing, test, depth, order, adjx, useMaxP);
+        Set<Node> sepset2 = getSepset(y, x, containing, test, depth, order, adjy, useMaxP);
 
         if (sepset1 == null && sepset2 == null) {
             return null;
@@ -181,40 +186,30 @@ public abstract class StarFci implements IGraphSearch {
      * such set is found.
      */
     private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
-                                                 List<Node> order, List<Node> adjx) {
+                                                 List<Node> order, List<Node> adjx, boolean useMaxP) {
         List<Set<Node>> choices = getChoices(adjx, depth);
 
-        // Max p for stability...
-        return choices.parallelStream()
-                .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
-                .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
-                .orElse(null); // Return best set or null if none pass the threshold
+        if (useMaxP) {
+            // Max p for stability...
+            return choices.parallelStream()
+                    .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
+                    .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
+                    .orElse(null); // Return best set or null if none pass the threshold
+        } else { // Greedy
 
-
-//        List<Set<Node>> choices = getChoices(adjx, depth);
-//
-//        // Parallelize processing for adjx
-//        // Generate combinations in parallel
-//        // Filter combinations that don't contain 'containing'
-//        return choices.parallelStream().map(choice -> combination(choice, adjx)) // Generate combinations in parallel
-//                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-//                .filter(subset -> {
-//                    try {
-////                        if (order != null) {
-////                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
-////
-////                            for (Node node : subset) {
-////                                if (order.indexOf(node) > order.indexOf(_y)) {
-////                                    return false;
-////                                }
-////                            }
-////                        }
-//
-//                        return test.checkIndependence(x, y, subset).isIndependent();
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }).findFirst().orElse(null);
+            // Parallelize processing for adjx
+            // Generate combinations in parallel
+            // Filter combinations that don't contain 'containing'
+            return choices.parallelStream() // Generate combinations in parallel
+                    .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                    .filter(subset -> {
+                        try {
+                            return test.checkIndependence(x, y, subset).isIndependent();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).findFirst().orElse(null);
+        }
     }
 
     private static double computeScore(Node x, Node y, Set<Node> set, IndependenceTest test) {
@@ -277,23 +272,8 @@ public abstract class StarFci implements IGraphSearch {
         return choices;
     }
 
-    /**
-     * Creates a set of nodes by selecting elements from the adjacency list based on the given indices.
-     *
-     * @param choice A list of integers representing the indices of nodes to be included in the combination.
-     * @param adj    A list of nodes representing the adjacency list from which the nodes are selected.
-     * @return A set of nodes selected from the adjacency list based on the indices in the choice list.
-     */
-    private static Set<Node> combination(List<Integer> choice, List<Node> adj) {
-
-        // Create a set of nodes from the subset of adjx represented by choice.
-        Set<Node> combination = new HashSet<>();
-
-        for (int i : choice) {
-            combination.add(adj.get(i));
-        }
-
-        return combination;
+    public void setUseMaxP(boolean useMaxP) {
+        this.useMaxP = useMaxP;
     }
 
     /**
@@ -334,7 +314,7 @@ public abstract class StarFci implements IGraphSearch {
             Node a = edge.getNode1();
             Node c = edge.getNode2();
 
-            Set<Node> sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null);
+            Set<Node> sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null, useMaxP);
 
             if (sepset != null) {
                 pag.removeEdge(a, c);
