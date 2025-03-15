@@ -28,12 +28,12 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.PrintStream;
 
 /**
- * Uses FGES for the initial step of StarFci. This is an adjustment to the original GFCI algorithm here:
+ * Uses FGES for the initial step of GFCI-T. This is an adjustment to the original GFCI algorithm here:
  * <p>
  * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
  * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR.
  * <p>
- * See StarFci for the modifications used. StarFci requires a test; FGES requires a score, so both are needed.
+ * See GFCI-T for the modifications used. GFCI-T requires a test; FGES requires a score, so both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
@@ -42,11 +42,11 @@ import java.io.PrintStream;
  * @author peterspirtes
  * @author josephramsey
  * @version $Id: $Id
- * @see StarFci
+ * @see GfciTemplate
  * @see Fges
  * @see Knowledge
  */
-public final class Gfci extends StarFci {
+public final class Gfci extends GfciTemplate {
     /**
      * The independence test used in search.
      */

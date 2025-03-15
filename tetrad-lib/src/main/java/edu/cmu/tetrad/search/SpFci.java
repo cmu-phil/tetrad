@@ -26,10 +26,9 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.List;
 
 /**
- * Uses SP in place of FGES for the initial step in the StarFci algorithm.
+ * Uses SP in place of FGES for the initial step in the GFCI-T algorithm.
  * <p>
  * For SP only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test and a
  * score need to be given.
@@ -43,10 +42,10 @@ import java.util.List;
  * @author josephramsey
  * @author bryan andrews
  * @version $Id: $Id
- * @see StarFci
+ * @see GfciTemplate
  * @see Sp
  */
-public final class SpFci extends StarFci {
+public final class SpFci extends GfciTemplate {
 
     /**
      * The score.

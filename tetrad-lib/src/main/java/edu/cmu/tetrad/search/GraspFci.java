@@ -30,9 +30,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Uses GRaSP in the StarFCI algorithm. the reference for GraSP is here:
+ * Uses GRaSP in the GFCI-T algorithm. the reference for GraSP is here:
  * <p>
- * For GRaSP either a score or a test is needed. StarFci requires a test. So both are needed.
+ * For GRaSP either a score or a test is needed. GFCI-T requires a test. So both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
@@ -40,10 +40,10 @@ import java.util.List;
  * @author josephramsey
  * @author bryanandrews
  * @version $Id: $Id
- * @see StarFci
+ * @see GfciTemplate
  * @see Grasp
  */
-public final class GraspFci extends StarFci {
+public final class GraspFci extends GfciTemplate {
 
     /**
      * The conditional independence test.

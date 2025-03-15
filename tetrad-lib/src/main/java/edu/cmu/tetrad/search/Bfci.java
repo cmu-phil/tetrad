@@ -26,9 +26,9 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
- * Uses BOSS in the StarFCI algorithm.
+ * Uses BOSS in the GFCI-T algorithm.
  * <p>
- * For BOSS only a score is needed, but StarFci requires a test, so both are needed.
+ * For BOSS only a score is needed, but GFCI-T requires a test, so both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
@@ -36,10 +36,10 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author josephramsey
  * @author bryan andrews
  * @version $Id: $Id
- * @see StarFci
+ * @see GfciTemplate
  * @see Boss
  */
-public final class Bfci extends StarFci {
+public final class Bfci extends GfciTemplate {
 
     /**
      * The conditional independence test.

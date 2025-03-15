@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,10 +41,10 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
 import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
 
 /**
- * Implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to be
- * correct for latent variables models. First, colliders from the Markov DAG are copied into the final circle-circle
- * graph, and some independence reasoning is used to remove edges from this and add the remaining colliders into the
- * graph. Then, the FCI final orientation rules are applied.
+ * GFCI-Template (GFCI-T) implements a template modification of GFCI that starts with a given Markov CPDAG and then
+ * fixes that result to be correct for latent variables models. First, colliders from the Markov DAG are copied into the
+ * final circle-circle graph, and some independence reasoning is used to remove edges from this and add the remaining
+ * colliders into the graph. Then, the FCI final orientation rules are applied.
  * <p>
  * The Markov CPDAG needs to be supplied by classes inheriting from this abstract class using the getMarkovCpdag()
  * methods.
@@ -64,7 +65,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
  * @see #getMarkovCpdag()
  * @see Knowledge
  */
-public abstract class StarFci implements IGraphSearch {
+public abstract class GfciTemplate implements IGraphSearch {
     /**
      * The independence test used in search.
      */
@@ -110,8 +111,83 @@ public abstract class StarFci implements IGraphSearch {
      *
      * @param test The independence test to use.
      */
-    public StarFci(IndependenceTest test) {
+    public GfciTemplate(IndependenceTest test) {
         this.independenceTest = test;
+    }
+
+    /**
+     * Finds a separating set that is a subset of the adjacency of nodes x or y in the input graph.
+     *
+     * @param graph      The graph being analyzed.
+     * @param x          The first node between which independence is checked.
+     * @param y          The second node between which independence is checked.
+     * @param containing A set of nodes that must be included in the separating set.
+     * @param test       The independence test used to evaluate separation.
+     * @param depth      The maximum size of subsets to be tested for independence.
+     * @param order      An optional list specifying the order of nodes for additional constraints.
+     * @return A separating set of nodes (if found) that is a subset of the adjacency of x or y, or {@code null} if no
+     * such set is found.
+     */
+    public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
+
+        // We need to look at the original adjx and adjy, not some modified version.
+        List<Node> adjx = graph.getAdjacentNodes(x);
+        List<Node> adjy = graph.getAdjacentNodes(y);
+        adjx.remove(y);
+        adjy.remove(x);
+
+        adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+        adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+
+        Set<Node> sepset = getSepset(x, y, containing, test, depth, order, adjx);
+        if (sepset != null) return sepset;
+
+        return getSepset(y, x, containing, test, depth, order, adjy);
+    }
+
+    /**
+     * Finds a separating set between nodes x and y that satisfies certain conditions, including containing a specified
+     * set of nodes, maintaining optional ordering constraints, and ensuring the independence between x and y with
+     * respect to the separating set.
+     * <p>
+     * The separating set is constructed from the adjacency list of node x.
+     *
+     * @param x          The first node between which independence is being checked.
+     * @param y          The second node between which independence is being checked.
+     * @param containing A set of nodes that must be included in the separating set.
+     * @param test       The independence test used to evaluate separation between x and y.
+     * @param depth      The maximum size of subsets to be tested for independence.
+     * @param order      An optional list specifying the processing order of nodes, used to enforce additional
+     *                   constraints during the search.
+     * @param adjx       The adjacency list of node x, from which subsets are generated to test for separation.
+     * @return A separating set of nodes that fulfills all constraints and is a subset of adjx, or {@code null} if no
+     * such set is found.
+     */
+    private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order, List<Node> adjx) {
+        List<List<Integer>> choices = getChoices(adjx, depth);
+
+        // Parallelize processing for adjx
+        // Generate combinations in parallel
+        // Filter combinations that don't contain 'containing'
+        return choices.parallelStream().map(choice -> combination(choice, adjx)) // Generate combinations in parallel
+                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                .filter(subset -> {
+                    try {
+                        if (order != null) {
+                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
+
+                            for (Node node : subset) {
+                                if (order.indexOf(node) > order.indexOf(_y)) {
+                                    return false;
+                                }
+                            }
+                        }
+
+                        return test.checkIndependence(x, y, subset).isIndependent();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).findFirst().orElse(null);
     }
 
     /**
@@ -141,6 +217,16 @@ public abstract class StarFci implements IGraphSearch {
         return a != c && unshieldedTriple(graph, a, b, c) && graph.isDefCollider(a, b, c);
     }
 
+    /**
+     * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth
+     * using combinations.
+     *
+     * @param adjx  The adjacency list of nodes to generate combinations from.
+     * @param depth The maximum size of the sublists to be generated. If the depth is negative or exceeds the size of
+     *              the adjacency list, it will be adjusted to the size of the adjacency list.
+     * @return A list of all possible lists of integers representing combinations of indices from the adjacency list up
+     * to the given depth.
+     */
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {
         List<List<Integer>> choices = new ArrayList<>();
 
@@ -176,83 +262,6 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
-     * Finds a separating set that is a subset of the adjacency of nodes x or y in the input graph.
-     *
-     * @param graph      The graph being analyzed.
-     * @param x          The first node between which independence is checked.
-     * @param y          The second node between which independence is checked.
-     * @param containing A set of nodes that must be included in the separating set.
-     * @param test       The independence test used to evaluate separation.
-     * @param depth      The maximum size of subsets to be tested for independence.
-     * @param order      An optional list specifying the order of nodes for additional constraints.
-     * @return A separating set of nodes (if found) that is a subset of the adjacency of x or y, or {@code null} if no
-     * such set is found.
-     */
-    public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing, IndependenceTest test, int depth, List<Node> order) {
-        List<Node> adjx = graph.getAdjacentNodes(x);
-        List<Node> adjy = graph.getAdjacentNodes(y);
-        adjx.remove(y);
-        adjy.remove(x);
-
-        adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-        adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-        List<List<Integer>> choices = getChoices(adjx, depth);
-
-        // Parallelize processing for adjx
-        Set<Node> sepset = choices.parallelStream()
-                .map(choice -> combination(choice, adjx)) // Generate combinations in parallel
-                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-                .filter(subset -> {
-                    try {
-                        if (order != null) {
-                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
-
-                            for (Node node : subset) {
-                                if (order.indexOf(node) > order.indexOf(_y)) {
-                                    return false;
-                                }
-                            }
-                        }
-
-                        return test.checkIndependence(x, y, subset).isIndependent();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).findFirst().orElse(null);
-
-        if (sepset != null) {
-            return sepset;
-        }
-
-        // Parallelize processing for adjy
-        choices = getChoices(adjy, depth);
-
-        sepset = choices.parallelStream()
-                .map(choice -> combination(choice, adjy)) // Generate combinations in parallel
-                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-                .filter(subset -> {
-                    try {
-                        if (order != null) {
-                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
-
-                            for (Node node : subset) {
-                                if (order.indexOf(node) > order.indexOf(_y)) {
-                                    return false;
-                                }
-                            }
-                        }
-
-                        return test.checkIndependence(x, y, subset).isIndependent();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).findFirst().orElse(null);
-
-        return sepset;
-    }
-
-    /**
      * Runs the graph and returns the search PAG.
      *
      * @return This PAG.
@@ -273,11 +282,14 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         Graph pag = new EdgeListGraph(cpdag);
-        pag.reorientAllWith(Endpoint.CIRCLE);
 
         Set<Triple> unshieldedColliders = new HashSet<>();
 
         SepsetMap sepsetMap = new SepsetMap();
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Starting GFCI-T extra edge removal step.");
+        }
 
         for (Edge edge : pag.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
@@ -299,14 +311,14 @@ public abstract class StarFci implements IGraphSearch {
                 if (verbose) {
                     IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
                     double pValue = result.getPValue();
-                    TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
-                                                   + " in extra-edge removal step; sepset = " + sepset + ", p-value = " + pValue + ".");
+                    TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
+                                                   + sepset + ", p-value = " + pValue + ".");
                 }
             }
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-R0.");
+            TetradLogger.getInstance().log("Starting GFCI-T-R0.");
         }
 
         pag.reorientAllWith(Endpoint.CIRCLE);
@@ -349,8 +361,6 @@ public abstract class StarFci implements IGraphSearch {
                         Set<Node> sepset = sepsetMap.get(x, z);
 
                         if (sepset != null) {
-//                            pag.removeEdge(x, z);
-
                             if (!sepset.contains(y)) {
                                 pag.setEndpoint(x, y, Endpoint.ARROW);
                                 pag.setEndpoint(z, y, Endpoint.ARROW);
