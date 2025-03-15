@@ -39,10 +39,10 @@ import java.util.List;
  * @author josephramsey
  * @author bryanandrews
  * @version $Id: $Id
- * @see GfciTemplate
+ * @see GfciT
  * @see Grasp
  */
-public final class GraspFci extends GfciTemplate {
+public final class GraspFci extends GfciT {
 
     /**
      * The conditional independence test.

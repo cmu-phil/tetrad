@@ -35,10 +35,10 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author josephramsey
  * @author bryan andrews
  * @version $Id: $Id
- * @see GfciTemplate
+ * @see GfciT
  * @see Boss
  */
-public final class Bfci extends GfciTemplate {
+public final class Bfci extends GfciT {
     /**
      * The score.
      */

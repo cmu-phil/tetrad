@@ -42,11 +42,11 @@ import java.io.PrintStream;
  * @author peterspirtes
  * @author josephramsey
  * @version $Id: $Id
- * @see GfciTemplate
+ * @see GfciT
  * @see Fges
  * @see Knowledge
  */
-public final class Gfci extends GfciTemplate {
+public final class Gfci extends GfciT {
     /**
      * The score used in search.
      */

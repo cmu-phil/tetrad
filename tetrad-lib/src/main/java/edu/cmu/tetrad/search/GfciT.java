@@ -65,7 +65,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
  * @see #getMarkovCpdag()
  * @see Knowledge
  */
-public abstract class GfciTemplate implements IGraphSearch {
+public abstract class GfciT implements IGraphSearch {
     /**
      * The independence test used in search.
      */
@@ -111,7 +111,7 @@ public abstract class GfciTemplate implements IGraphSearch {
      *
      * @param test The independence test to use.
      */
-    public GfciTemplate(IndependenceTest test) {
+    public GfciT(IndependenceTest test) {
         this.independenceTest = test;
     }
 

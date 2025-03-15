@@ -41,10 +41,10 @@ import java.io.PrintStream;
  * @author josephramsey
  * @author bryan andrews
  * @version $Id: $Id
- * @see GfciTemplate
+ * @see GfciT
  * @see Sp
  */
-public final class SpFci extends GfciTemplate {
+public final class SpFci extends GfciT {
 
     /**
      * The score.
