@@ -1515,6 +1515,10 @@ public class Paths implements TetradSerializable {
         return null;
     }
 
+    public List<Node> possibleDsep(Node x, int maxPossibleDsepPathLength) {
+        return possibleDsep(x, null, maxPossibleDsepPathLength);
+    }
+
     /**
      * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
      * constraint.
@@ -1539,7 +1543,7 @@ public class Paths implements TetradSerializable {
         Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
 
         for (Node b : adjacentNodes) {
-            if (b == y) {
+            if (y != null && b == y) {
                 continue;
             }
             OrderedPair<Node> edge = new OrderedPair<>(x, b);
@@ -1577,7 +1581,7 @@ public class Paths implements TetradSerializable {
                 if (c == x) {
                     continue;
                 }
-                if (c == y) {
+                if (y !=null && c == y) {
                     continue;
                 }
 
@@ -1624,7 +1628,9 @@ public class Paths implements TetradSerializable {
             Node b = edge.getNode2();
 
             {
-                List<Node> possibleDsep = possibleDsep(a, b, -1);
+                List<Node> possibleDsep = possibleDsep(a, -1);
+                possibleDsep.remove(a);
+                possibleDsep.remove(b);
 
                 SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
                 int[] choice;
@@ -1648,7 +1654,9 @@ public class Paths implements TetradSerializable {
 
             if (graph.containsEdge(edge)) {
                 {
-                    List<Node> possibleDsep = possibleDsep(b, a, -1);
+                    List<Node> possibleDsep = possibleDsep(a, -1);
+                    possibleDsep.remove(a);
+                    possibleDsep.remove(b);
 
                     SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
                     int[] choice;

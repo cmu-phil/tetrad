@@ -103,6 +103,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
+        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setOut(System.out);
 
         return search.search();
@@ -156,6 +157,7 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.GUARANTEE_PAG);
+        parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.START_FROM_COMPLETE_GRAPH);
 

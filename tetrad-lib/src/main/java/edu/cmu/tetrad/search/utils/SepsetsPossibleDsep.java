@@ -180,7 +180,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     }
 
     private Set<Node> getCondSetContaining(Node node1, Node node2, Set<Node> s, int maxPathLength) throws InterruptedException {
-        List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
+        List<Node> possibleDsepSet = getPossibleDsep(node1, maxPathLength);
         List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = this.knowledge.noEdgeRequired(node1.getName(), node2.getName());
 
@@ -226,11 +226,11 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return null;
     }
 
-    private List<Node> getPossibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
-        List<Node> msep = this.graph.paths().possibleDsep(x, y, maxPossibleDsepPathLength);
+    private List<Node> getPossibleDsep(Node x, int maxPossibleDsepPathLength) {
+        List<Node> msep = this.graph.paths().possibleDsep(x, maxPossibleDsepPathLength);
 
         if (this.verbose) {
-            System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + msep);
+            System.out.println("Possible-D-Sep(" + x + ") = " + msep);
         }
 
         return msep;

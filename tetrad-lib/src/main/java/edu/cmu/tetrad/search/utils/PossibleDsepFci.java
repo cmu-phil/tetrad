@@ -188,13 +188,39 @@ public class PossibleDsepFci {
     }
 
     private Set<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPossibleDsepPathLength) throws InterruptedException {
-        List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPossibleDsepPathLength);
+        List<Node> possibleDsepSet = getPossibleDsep(node1, maxPossibleDsepPathLength);
         List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
+        possibleDsep.remove(node1);
+        possibleDsep.remove(node2);
+
         boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
 
         List<Node> possParents = possibleParents(node1, possibleDsep, getKnowledge());
 
         int _depth = getDepth() == -1 ? 1000 : getDepth();
+
+        for (int d = 0; d <= FastMath.min(_depth, possParents.size()); d++) {
+            ChoiceGenerator cg = new ChoiceGenerator(possParents.size(), d);
+            int[] choice;
+
+            while ((choice = cg.next()) != null) {
+                Set<Node> condSet = GraphUtils.asSet(choice, possParents);
+                boolean independent = test.checkIndependence(node1, node2, condSet).isIndependent();
+
+                if (independent && noEdgeRequired) {
+                    return condSet;
+                }
+            }
+        }
+
+        possibleDsepSet = getPossibleDsep(node2, maxPossibleDsepPathLength);
+        possibleDsep = new ArrayList<>(possibleDsepSet);
+        possibleDsep.remove(node1);
+        possibleDsep.remove(node2);
+
+        possParents = possibleParents(node2, possibleDsep, getKnowledge());
+
+        _depth = getDepth() == -1 ? 1000 : getDepth();
 
         for (int d = 0; d <= FastMath.min(_depth, possParents.size()); d++) {
             ChoiceGenerator cg = new ChoiceGenerator(possParents.size(), d);
@@ -246,15 +272,8 @@ public class PossibleDsepFci {
      * 		(b) X is adjacent to Z.
      * </pre>
      */
-    private List<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
-        List<Node> msep = this.graph.paths().possibleDsep(node1, node2, maxPathLength);
-
-        msep.remove(node1);
-        msep.remove(node2);
-
-//        TetradLogger.getInstance().log("details", "Possible-M-Sep(" + node1 + ", " + node2 + ") = " + msep);
-
-        return msep;
+    private List<Node> getPossibleDsep(Node node1, int maxPathLength) {
+        return this.graph.paths().possibleDsep(node1, maxPathLength);
     }
 
 }

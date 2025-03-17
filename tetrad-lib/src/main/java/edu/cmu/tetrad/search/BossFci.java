@@ -25,9 +25,9 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
- * Uses BOSS in the GFCI-T algorithm.
+ * Uses BOSS in the *-FCI algorithm.
  * <p>
- * For BOSS only a score is needed, but GFCI-T requires a test, so both are needed.
+ * For BOSS only a score is needed, but *-FCI requires a test, so both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.

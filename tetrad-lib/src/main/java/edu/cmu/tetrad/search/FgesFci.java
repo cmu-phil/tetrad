@@ -28,12 +28,12 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.PrintStream;
 
 /**
- * Uses FGES for the initial step of GFCI-T. This is an adjustment to the original GFCI algorithm here:
+ * Uses FGES for the initial step of *-FCI. This is an adjustment to the original GFCI algorithm here:
  * <p>
  * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
  * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR.
  * <p>
- * See GFCI-T for the modifications used. GFCI-T requires a test; FGES requires a score, so both are needed.
+ * See *-FCI for the modifications used. *-FCI requires a test; FGES requires a score, so both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.

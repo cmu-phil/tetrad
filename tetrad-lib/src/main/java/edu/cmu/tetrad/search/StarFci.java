@@ -308,7 +308,7 @@ public abstract class StarFci implements IGraphSearch {
         SepsetMap sepsetMap = new SepsetMap();
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-T extra edge removal step.");
+            TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
         }
 
         for (Edge edge : pag.getEdges()) {
@@ -338,7 +338,7 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-T-R0.");
+            TetradLogger.getInstance().log("Starting *-FCI-R0.");
         }
 
         pag.reorientAllWith(Endpoint.CIRCLE);
