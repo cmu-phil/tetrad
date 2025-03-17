@@ -128,7 +128,7 @@ public class Gfci implements IGraphSearch {
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
      *
-     * @param test The independence test to use.
+     * @param test  The independence test to use.
      * @param score The score to use.
      */
     public Gfci(IndependenceTest test, Score score) {
@@ -387,10 +387,6 @@ public class Gfci implements IGraphSearch {
         for (Node y : nodes) {
             List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
             ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
@@ -398,43 +394,30 @@ public class Gfci implements IGraphSearch {
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
-                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge) && cpdag.isDefCollider(x, y, z)) {
+                if (cpdag.isDefCollider(x, y, z)) {
+                    if (colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
+                        unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                            }
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                            }
+                            TetradLogger.getInstance().log("Copied collider " + x + " → " + y + " ← " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsetMap.get(x, z);
+                    Set<Node> sepset = sepsetMap.get(x, z);
 
-                        if (sepset != null) {
-                            if (!sepset.contains(y)) {
-                                pag.setEndpoint(x, y, Endpoint.ARROW);
-                                pag.setEndpoint(z, y, Endpoint.ARROW);
+                    if (sepset != null && !sepset.contains(y)) {
+                        if (colliderAllowed(pag, x, y, z, knowledge)) {
+                            pag.setEndpoint(x, y, Endpoint.ARROW);
+                            pag.setEndpoint(z, y, Endpoint.ARROW);
 
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ".");
+                            if (!pag.isAdjacentTo(x, z)) {
+                                unshieldedColliders.add(new Triple(x, y, z));
+                            }
 
-                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                                    }
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                                    }
-                                }
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " → " + y + " ← " + z);
                             }
                         }
                     }
@@ -487,10 +470,6 @@ public class Gfci implements IGraphSearch {
         for (Node y : nodes) {
             List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
             ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
@@ -498,43 +477,30 @@ public class Gfci implements IGraphSearch {
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
-                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge) && cpdag.isDefCollider(x, y, z)) {
+                if (cpdag.isDefCollider(x, y, z)) {
+                    if (colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
+                        unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                            }
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                            }
+                            TetradLogger.getInstance().log("Copied collider " + x + " → " + y + " ← " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsetMap.get(x, z);
+                    Set<Node> sepset = sepsetMap.get(x, z);
 
-                        if (sepset != null) {
-                            if (!sepset.contains(y)) {
-                                pag.setEndpoint(x, y, Endpoint.ARROW);
-                                pag.setEndpoint(z, y, Endpoint.ARROW);
+                    if (sepset != null && !sepset.contains(y)) {
+                        if (colliderAllowed(pag, x, y, z, knowledge)) {
+                            pag.setEndpoint(x, y, Endpoint.ARROW);
+                            pag.setEndpoint(z, y, Endpoint.ARROW);
 
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ".");
+                            if (!pag.isAdjacentTo(x, z)) {
+                                unshieldedColliders.add(new Triple(x, y, z));
+                            }
 
-                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                                    }
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                                    }
-                                }
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " → " + y + " ← " + z);
                             }
                         }
                     }
@@ -716,9 +682,8 @@ public class Gfci implements IGraphSearch {
     }
 
     /**
-     * Executes the FGES algorithm to compute the Markov equivalence class in the form
-     * of a completed partially directed acyclic graph (CPDAG) based on the provided
-     * score and algorithm configuration.
+     * Executes the FGES algorithm to compute the Markov equivalence class in the form of a completed partially directed
+     * acyclic graph (CPDAG) based on the provided score and algorithm configuration.
      *
      * @return The resulting CPDAG representing the Markov equivalence class.
      * @throws InterruptedException if the operation is interrupted.

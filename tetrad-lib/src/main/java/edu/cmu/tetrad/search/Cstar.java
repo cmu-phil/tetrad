@@ -740,7 +740,7 @@ public class Cstar {
     }
 
     /**
-     * Retrieves a pattern graph using the Restricted BOSS (Bayesian Optimal Structure Search) algorithm.
+     * Retrieves a pattern graph using the Restricted BOSS (Best Order Score Search) algorithm.
      *
      * @param sample the dataset to use for the Restricted BOSS algorithm
      * @param data   the dataset containing the variables for replacing the nodes in the resulting graph
