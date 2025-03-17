@@ -124,11 +124,20 @@ public class Gfci implements IGraphSearch {
      * This option impacts the structure of the initial graph and may influence the overall search process and results.
      */
     private boolean startFromCompleteGraph;
+    /**
+     * A flag indicating whether the maximum p-value should be used for selecting separating sets or directing edges in
+     * the algorithm.
+     * <p>
+     * When set to {@code true}, the algorithm prioritizes separating sets or edges based on the highest p-value
+     * encountered. This may impact the behavior of independence tests or edge direction decisions during the search
+     * process.
+     */
+    private boolean useMaxP;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
      *
-     * @param test The independence test to use.
+     * @param test  The independence test to use.
      * @param score The score to use.
      */
     public Gfci(IndependenceTest test, Score score) {
@@ -150,7 +159,7 @@ public class Gfci implements IGraphSearch {
      * such set is found.
      */
     public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
-                                                     IndependenceTest test, int depth, List<Node> order) {
+                                                     IndependenceTest test, int depth, List<Node> order, boolean useMaxP) {
 
         // We need to look at the original adjx and adjy, not some modified version.
         List<Node> adjx = graph.getAdjacentNodes(x);
@@ -161,8 +170,8 @@ public class Gfci implements IGraphSearch {
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        Set<Node> sepset1 = getSepset(x, y, containing, test, depth, order, adjx);
-        Set<Node> sepset2 = getSepset(y, x, containing, test, depth, order, adjy);
+        Set<Node> sepset1 = getSepset(x, y, containing, test, depth, order, adjx, useMaxP);
+        Set<Node> sepset2 = getSepset(y, x, containing, test, depth, order, adjy, useMaxP);
 
         if (sepset1 == null && sepset2 == null) {
             return null;
@@ -205,40 +214,30 @@ public class Gfci implements IGraphSearch {
      * such set is found.
      */
     private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
-                                                 List<Node> order, List<Node> adjx) {
+                                                 List<Node> order, List<Node> adjx, boolean useMaxP) {
         List<Set<Node>> choices = getChoices(adjx, depth);
 
-        // Max p for stability...
-        return choices.parallelStream()
-                .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
-                .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
-                .orElse(null); // Return best set or null if none pass the threshold
+        if (useMaxP) {
+            // Max p for stability...
+            return choices.parallelStream()
+                    .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
+                    .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
+                    .orElse(null); // Return best set or null if none pass the threshold
+        } else { // Greedy
 
-
-//        List<Set<Node>> choices = getChoices(adjx, depth);
-//
-//        // Parallelize processing for adjx
-//        // Generate combinations in parallel
-//        // Filter combinations that don't contain 'containing'
-//        return choices.parallelStream().map(choice -> combination(choice, adjx)) // Generate combinations in parallel
-//                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-//                .filter(subset -> {
-//                    try {
-////                        if (order != null) {
-////                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
-////
-////                            for (Node node : subset) {
-////                                if (order.indexOf(node) > order.indexOf(_y)) {
-////                                    return false;
-////                                }
-////                            }
-////                        }
-//
-//                        return test.checkIndependence(x, y, subset).isIndependent();
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }).findFirst().orElse(null);
+            // Parallelize processing for adjx
+            // Generate combinations in parallel
+            // Filter combinations that don't contain 'containing'
+            return choices.parallelStream() // Generate combinations in parallel
+                    .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
+                    .filter(subset -> {
+                        try {
+                            return test.checkIndependence(x, y, subset).isIndependent();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).findFirst().orElse(null);
+        }
     }
 
     private static double computeScore(Node x, Node y, Set<Node> set, IndependenceTest test) {
@@ -347,7 +346,7 @@ public class Gfci implements IGraphSearch {
         SepsetMap sepsetMap = new SepsetMap();
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-T extra edge removal step.");
+            TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
         }
 
         for (Edge edge : pag.getEdges()) {
@@ -358,7 +357,7 @@ public class Gfci implements IGraphSearch {
             Node a = edge.getNode1();
             Node c = edge.getNode2();
 
-            Set<Node> sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null);
+            Set<Node> sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null, useMaxP);
 
             if (sepset != null) {
                 pag.removeEdge(a, c);
@@ -377,7 +376,7 @@ public class Gfci implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-T-R0.");
+            TetradLogger.getInstance().log("Starting *-FCI-R0.");
         }
 
         pag.reorientAllWith(Endpoint.CIRCLE);
@@ -387,10 +386,6 @@ public class Gfci implements IGraphSearch {
         for (Node y : nodes) {
             List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
             ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
@@ -398,43 +393,30 @@ public class Gfci implements IGraphSearch {
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
-                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge) && cpdag.isDefCollider(x, y, z)) {
+                if (cpdag.isDefCollider(x, y, z)) {
+                    if (colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
+                        unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                            }
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                            }
+                            TetradLogger.getInstance().log("Copied collider " + x + " → " + y + " ← " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsetMap.get(x, z);
+                    Set<Node> sepset = sepsetMap.get(x, z);
 
-                        if (sepset != null) {
-                            if (!sepset.contains(y)) {
-                                pag.setEndpoint(x, y, Endpoint.ARROW);
-                                pag.setEndpoint(z, y, Endpoint.ARROW);
+                    if (sepset != null && !sepset.contains(y)) {
+                        if (colliderAllowed(pag, x, y, z, knowledge)) {
+                            pag.setEndpoint(x, y, Endpoint.ARROW);
+                            pag.setEndpoint(z, y, Endpoint.ARROW);
 
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ".");
+                            if (!pag.isAdjacentTo(x, z)) {
+                                unshieldedColliders.add(new Triple(x, y, z));
+                            }
 
-                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                                    }
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                                    }
-                                }
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " → " + y + " ← " + z);
                             }
                         }
                     }
@@ -451,8 +433,10 @@ public class Gfci implements IGraphSearch {
             Node a = edge.getNode1();
             Node c = edge.getNode2();
 
-            List<Node> possibleDsep = pag.paths().possibleDsep(a, c, -1);
-            Set<Node> sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep);
+            List<Node> possibleDsep = pag.paths().possibleDsep(a, -1);
+            possibleDsep.remove(a);
+            possibleDsep.remove(c);
+            Set<Node> sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep, useMaxP);
 
             if (sepset != null) {
                 pag.removeEdge(a, c);
@@ -467,8 +451,10 @@ public class Gfci implements IGraphSearch {
             }
 
             if (pag.isAdjacentTo(a, c)) {
-                possibleDsep = pag.paths().possibleDsep(a, c, -1);
-                sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep);
+                possibleDsep = pag.paths().possibleDsep(c, -1);
+                possibleDsep.remove(a);
+                possibleDsep.remove(c);
+                sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep, useMaxP);
 
                 if (sepset != null) {
                     pag.removeEdge(a, c);
@@ -487,10 +473,6 @@ public class Gfci implements IGraphSearch {
         for (Node y : nodes) {
             List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
             ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
@@ -498,43 +480,30 @@ public class Gfci implements IGraphSearch {
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
-                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge) && cpdag.isDefCollider(x, y, z)) {
+                if (cpdag.isDefCollider(x, y, z)) {
+                    if (colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
+                        unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                            }
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                            }
+                            TetradLogger.getInstance().log("Copied collider " + x + " → " + y + " ← " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsetMap.get(x, z);
+                    Set<Node> sepset = sepsetMap.get(x, z);
 
-                        if (sepset != null) {
-                            if (!sepset.contains(y)) {
-                                pag.setEndpoint(x, y, Endpoint.ARROW);
-                                pag.setEndpoint(z, y, Endpoint.ARROW);
+                    if (sepset != null && !sepset.contains(y)) {
+                        if (colliderAllowed(pag, x, y, z, knowledge)) {
+                            pag.setEndpoint(x, y, Endpoint.ARROW);
+                            pag.setEndpoint(z, y, Endpoint.ARROW);
 
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ".");
+                            if (!pag.isAdjacentTo(x, z)) {
+                                unshieldedColliders.add(new Triple(x, y, z));
+                            }
 
-                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                                    }
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                                    }
-                                }
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " → " + y + " ← " + z);
                             }
                         }
                     }
@@ -716,9 +685,8 @@ public class Gfci implements IGraphSearch {
     }
 
     /**
-     * Executes the FGES algorithm to compute the Markov equivalence class in the form
-     * of a completed partially directed acyclic graph (CPDAG) based on the provided
-     * score and algorithm configuration.
+     * Executes the FGES algorithm to compute the Markov equivalence class in the form of a completed partially directed
+     * acyclic graph (CPDAG) based on the provided score and algorithm configuration.
      *
      * @return The resulting CPDAG representing the Markov equivalence class.
      * @throws InterruptedException if the operation is interrupted.
@@ -742,5 +710,14 @@ public class Gfci implements IGraphSearch {
         }
 
         return cpdag;
+    }
+
+    /**
+     * Sets whether the "Use Max-P" option is enabled or not.
+     *
+     * @param useMaxP A boolean flag indicating whether the "Use Max-P" option is enabled (true) or disabled (false).
+     */
+    public void setUseMaxP(boolean useMaxP) {
+        this.useMaxP = useMaxP;
     }
 }

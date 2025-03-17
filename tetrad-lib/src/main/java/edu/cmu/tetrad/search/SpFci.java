@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.PrintStream;
 
 /**
- * Uses SP in place of FGES for the initial step in the GFCI-T algorithm.
+ * Uses SP in place of FGES for the initial step in the *-FCI algorithm.
  * <p>
  * For SP only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test and a
  * score need to be given.

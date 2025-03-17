@@ -220,11 +220,24 @@ public final class Fci implements IGraphSearch {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, y, 3));
+                Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, 3));
+                d.remove(x);
+                d.remove(y);
 
                 if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
                     TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                     pag.removeEdge(x, y);
+                }
+
+                if (pag.isAdjacentTo(x, y)) {
+                    d = new HashSet<>(pag.paths().possibleDsep(y, 3));
+                    d.remove(x);
+                    d.remove(y);
+
+                    if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
+                        TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                        pag.removeEdge(x, y);
+                    }
                 }
             }
 

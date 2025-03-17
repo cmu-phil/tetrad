@@ -92,8 +92,8 @@ public abstract class StarFci implements IGraphSearch {
      */
     private boolean guaranteePag = false;
     /**
-     * A boolean flag indicating whether to use the maximum p-value heuristic during certain operations in the
-     * Star-FCI algorithm. The default value is {@code true}, enabling the heuristic by default.
+     * A boolean flag indicating whether to use the maximum p-value heuristic during certain operations in the Star-FCI
+     * algorithm. The default value is {@code true}, enabling the heuristic by default.
      */
     private boolean useMaxP = false;
 
@@ -272,6 +272,11 @@ public abstract class StarFci implements IGraphSearch {
         return choices;
     }
 
+    /**
+     * Sets whether to use the maxP criterion during the search process.
+     *
+     * @param useMaxP A boolean indicating whether the maxP criterion should be applied (true) or not (false).
+     */
     public void setUseMaxP(boolean useMaxP) {
         this.useMaxP = useMaxP;
     }
@@ -303,7 +308,7 @@ public abstract class StarFci implements IGraphSearch {
         SepsetMap sepsetMap = new SepsetMap();
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-T extra edge removal step.");
+            TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
         }
 
         for (Edge edge : pag.getEdges()) {
@@ -333,7 +338,7 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting GFCI-T-R0.");
+            TetradLogger.getInstance().log("Starting *-FCI-R0.");
         }
 
         pag.reorientAllWith(Endpoint.CIRCLE);
@@ -343,10 +348,6 @@ public abstract class StarFci implements IGraphSearch {
         for (Node y : nodes) {
             List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
             ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
@@ -354,43 +355,30 @@ public abstract class StarFci implements IGraphSearch {
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
-                if (unshieldedTriple(pag, x, y, z) && unshieldedCollider(cpdag, x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge) && cpdag.isDefCollider(x, y, z)) {
+                if (cpdag.isDefCollider(x, y, z)) {
+                    if (colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
+                        unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                            }
-
-                            if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                            }
+                            TetradLogger.getInstance().log("Copied collider " + x + " → " + y + " ← " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
-                        Set<Node> sepset = sepsetMap.get(x, z);
+                    Set<Node> sepset = sepsetMap.get(x, z);
 
-                        if (sepset != null) {
-                            if (!sepset.contains(y)) {
-                                pag.setEndpoint(x, y, Endpoint.ARROW);
-                                pag.setEndpoint(z, y, Endpoint.ARROW);
+                    if (sepset != null && !sepset.contains(y)) {
+                        if (colliderAllowed(pag, x, y, z, knowledge)) {
+                            pag.setEndpoint(x, y, Endpoint.ARROW);
+                            pag.setEndpoint(z, y, Endpoint.ARROW);
 
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Oriented collider by test " + x + " *-> " + y + " <-* " + z + ".");
+                            if (!pag.isAdjacentTo(x, z)) {
+                                unshieldedColliders.add(new Triple(x, y, z));
+                            }
 
-                                    if (Edges.isBidirectedEdge(pag.getEdge(x, y))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(x, y));
-                                    }
-
-                                    if (Edges.isBidirectedEdge(pag.getEdge(y, z))) {
-                                        TetradLogger.getInstance().log("Created bidirected edge: " + pag.getEdge(y, z));
-                                    }
-                                }
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " → " + y + " ← " + z);
                             }
                         }
                     }
@@ -421,7 +409,7 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("GFCI finished.");
+            TetradLogger.getInstance().log("*-FCI finished.");
         }
 
         return pag;

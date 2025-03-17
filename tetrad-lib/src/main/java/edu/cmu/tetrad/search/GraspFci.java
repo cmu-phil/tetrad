@@ -29,9 +29,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Uses GRaSP in the GFCI-T algorithm. the reference for GraSP is here:
+ * Uses GRaSP in the *-FCI algorithm. the reference for GraSP is here:
  * <p>
- * For GRaSP either a score or a test is needed. GFCI-T requires a test. So both are needed.
+ * For GRaSP either a score or a test is needed. *-FCI requires a test. So both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.

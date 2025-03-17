@@ -2568,6 +2568,8 @@ public final class GraphUtils {
         // be fixed by removing almost cycles. jdramsey 2024-8-13.
         boolean changed1, changed2;
 
+//        removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
+
         do {
             changed1 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
             changed2 = repairMaximality(pag, verbose, selection);
