@@ -1445,16 +1445,16 @@ public class Paths implements TetradSerializable {
             Node a = current.previous; // Previous node
             Node b = current.current;  // Current node
 
+            // If the target node is reached, an inducing path exists
+            if (b == y) {
+                return true;
+            }
+
             if (visited.contains(b)) {
                 continue;
             }
 
             visited.add(b);
-
-            // If the target node is reached, an inducing path exists
-            if (b == y) {
-                return true;
-            }
 
             // Explore neighbors of the current node
             for (Node c : graph.getAdjacentNodes(b)) {
@@ -1515,20 +1515,19 @@ public class Paths implements TetradSerializable {
         return null;
     }
 
-    public List<Node> possibleDsep(Node x, int maxPossibleDsepPathLength) {
-        return possibleDsep(x, null, maxPossibleDsepPathLength);
-    }
-
     /**
-     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
-     * constraint.
+     * Identifies and returns a list of possible d-separating nodes relative to a specified node in the graph.
+     * The search is constrained by the specified maximum path length.
      *
-     * @param x                         the starting Node for the path
-     * @param y                         the ending Node for the path
-     * @param maxPossibleDsepPathLength the maximum length of the path, -1 for unlimited
-     * @return a List of Nodes representing the possible d-separation nodes
+     * @param x the target node for which possible d-separating nodes are to be identified
+     * @param maxPossibleDsepPathLength the maximum allowable path length for determining d-separating nodes;
+     *                                   a value of -1 indicates no explicit limit
+     * @return a sorted list of nodes that are potential d-separators for the specified node,
+     *         ordered in descending order
      */
-    public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
+    public List<Node> possibleDsep(Node x, int maxPossibleDsepPathLength) {
+
+        // Removing the second argument y to bring this in line with CPS 2001 p. 188.
         Set<Node> msep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -1543,9 +1542,6 @@ public class Paths implements TetradSerializable {
         Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
 
         for (Node b : adjacentNodes) {
-            if (y != null && b == y) {
-                continue;
-            }
             OrderedPair<Node> edge = new OrderedPair<>(x, b);
             if (e == null) {
                 e = edge;
@@ -1581,14 +1577,13 @@ public class Paths implements TetradSerializable {
                 if (c == x) {
                     continue;
                 }
-                if (y !=null && c == y) {
-                    continue;
-                }
 
                 addToSet(previous, b, c);
 
                 if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
-                    OrderedPair<Node> u = new OrderedPair<>(a, c);
+
+                    // Bug : This was <a, c> should have been <b, c> to continue the path.
+                    OrderedPair<Node> u = new OrderedPair<>(b, c);
                     if (V.contains(u)) {
                         continue;
                     }
@@ -1604,7 +1599,6 @@ public class Paths implements TetradSerializable {
         }
 
         msep.remove(x);
-        msep.remove(y);
 
         List<Node> _msep = new ArrayList<>(msep);
 
@@ -1612,7 +1606,105 @@ public class Paths implements TetradSerializable {
         Collections.reverse(_msep);
 
         return _msep;
+
     }
+
+//    /**
+//     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
+//     * constraint.
+//     *
+//     * @param x                         the starting Node for the path
+//     * @param y                         the ending Node for the path
+//     * @param maxPossibleDsepPathLength the maximum length of the path, -1 for unlimited
+//     * @return a List of Nodes representing the possible d-separation nodes
+//     */
+//    public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
+//        Set<Node> msep = new HashSet<>();
+//
+//        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
+//        Set<OrderedPair<Node>> V = new HashSet<>();
+//
+//        Map<Node, Set<Node>> previous = new HashMap<>();
+//        previous.put(x, new HashSet<>());
+//
+//        OrderedPair<Node> e = null;
+//        int distance = 0;
+//
+//        Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
+//
+//        for (Node b : adjacentNodes) {
+//            if (y != null && b == y) {
+//                continue;
+//            }
+//            OrderedPair<Node> edge = new OrderedPair<>(x, b);
+//            if (e == null) {
+//                e = edge;
+//            }
+//            Q.offer(edge);
+//            V.add(edge);
+//            addToSet(previous, b, x);
+//            msep.add(b);
+//        }
+//
+//        while (!Q.isEmpty()) {
+//            OrderedPair<Node> t = Q.poll();
+//
+//            if (e == t) {
+//                e = null;
+//                distance++;
+//                if (distance > 0 && distance > (maxPossibleDsepPathLength == -1 ? 1000 : maxPossibleDsepPathLength)) {
+//                    break;
+//                }
+//            }
+//
+//            Node a = t.getFirst();
+//            Node b = t.getSecond();
+//
+//            if (existOnePathWithPossibleParents(previous, b, x, b)) {
+//                msep.add(b);
+//            }
+//
+//            for (Node c : graph.getAdjacentNodes(b)) {
+//                if (c == a) {
+//                    continue;
+//                }
+//                if (c == x) {
+//                    continue;
+//                }
+//                if (y !=null && c == y) {
+//                    continue;
+//                }
+//
+//                addToSet(previous, b, c);
+//
+//                if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
+//                    OrderedPair<Node> u = new OrderedPair<>(b, c);
+//                    if (V.contains(u)) {
+//                        continue;
+//                    }
+//
+//                    V.add(u);
+//                    Q.offer(u);
+//
+//                    System.out.println("Updated " + u + " = " + "Q = " + Q + " V = " + V +  " msep: " + msep);
+//
+//                    if (e == null) {
+//                        e = u;
+//                    }
+//                }
+//            }
+//        }
+//
+//        msep.remove(x);
+//        msep.remove(y);
+//
+//        List<Node> _msep = new ArrayList<>(msep);
+//
+//        Collections.sort(_msep);
+//        Collections.reverse(_msep);
+//
+//        return _msep;
+//    }
 
     /**
      * Remove edges by the possible m-separation rule.

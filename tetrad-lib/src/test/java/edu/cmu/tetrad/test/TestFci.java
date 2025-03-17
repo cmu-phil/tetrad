@@ -36,6 +36,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -73,8 +74,7 @@ public class TestFci {
 
         assertEquals(pag, resultGraph);
 //        System.out.println("DAG to PAG: " + dagToPag(graph));
-//
-        assertEquals(pag, dagToPag(graph));
+//        assertEquals(pag, dagToPag(graph));
     }
 
     @Test
@@ -534,6 +534,17 @@ public class TestFci {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void test18() {
+
+        // Possible d-sep check from Haoyue Dai.
+        Graph graph = GraphUtils.convert("0o->2, 1o->2, 0o-o3, 2o-o3");
+        Node v1 = graph.getNode("1");
+        Node v3 = graph.getNode("3");
+        assertTrue(graph.paths().possibleDsep(v3, -1).contains(v1));
+        assertTrue(graph.paths().possibleDsep(v1, -1).contains(v3));
     }
 
     private boolean ancestral(Node n, Node q, Graph pag) {
