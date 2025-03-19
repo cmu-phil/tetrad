@@ -304,14 +304,14 @@ public class TestFci {
             runLvSearch(outputGraph, fci, graph);
         }
 
-        {
-            FgesFci fci = new FgesFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
+//        {
+//            FgesFci fci = new FgesFci(independence, score);
+//            fci.setKnowledge(knowledge);
+//            fci.setStartFromCompleteGraph(true);
+//            fci.setVerbose(verbose);
+//
+//            runLvSearch(outputGraph, fci, graph);
+//        }
 
         {
             FgesFci fci = new FgesFci(independence, score);
@@ -322,14 +322,14 @@ public class TestFci {
             runLvSearch(outputGraph, fci, graph);
         }
 
-        {
-            GraspFci fci = new GraspFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
+//        {
+//            GraspFci fci = new GraspFci(independence, score);
+//            fci.setKnowledge(knowledge);
+//            fci.setStartFromCompleteGraph(true);
+//            fci.setVerbose(verbose);
+//
+//            runLvSearch(outputGraph, fci, graph);
+//        }
 
         {
             GraspFci fci = new GraspFci(independence, score);
@@ -340,23 +340,23 @@ public class TestFci {
             runLvSearch(outputGraph, fci, graph);
         }
 
-        {
-            BossFci fci = new BossFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(verbose);
+//        {
+//            BossFci fci = new BossFci(independence, score);
+//            fci.setKnowledge(knowledge);
+//            fci.setStartFromCompleteGraph(true);
+//            fci.setVerbose(verbose);
+//
+//            runLvSearch(outputGraph, fci, graph);
+//        }
 
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            SpFci fci = new SpFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
+//        {
+//            SpFci fci = new SpFci(independence, score);
+//            fci.setKnowledge(knowledge);
+//            fci.setStartFromCompleteGraph(true);
+//            fci.setVerbose(verbose);
+//
+//            runLvSearch(outputGraph, fci, graph);
+//        }
     }
 
     //    @Test

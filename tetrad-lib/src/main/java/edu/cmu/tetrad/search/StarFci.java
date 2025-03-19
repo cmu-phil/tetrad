@@ -36,6 +36,7 @@ import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
 import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
+import static java.util.Collections.shuffle;
 
 /**
  * *-FCI implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to
@@ -107,6 +108,16 @@ public abstract class StarFci implements IGraphSearch {
      * This option impacts the structure of the initial graph and may influence the overall search process and results.
      */
     private boolean startFromCompleteGraph;
+    /**
+     * Indicates whether the procedure for finding possible separating sets should be executed during the search in the
+     * Star-FCI algorithm.
+     * <p>
+     * When this flag is set to {@code true}, the search will attempt to identify possible separating sets that satisfy
+     * the specified conditions. This can influence the output structure of the learned PAG, depending on the separation
+     * property verified during the search process. This is not part of the algorithm; is only here for testing, so
+     * we do not include a setter for this field.
+     */
+    private boolean doPossibleSep = false;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -311,7 +322,10 @@ public abstract class StarFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
         }
 
-        for (Edge edge : pag.getEdges()) {
+        List<Edge> edges =  new ArrayList<>(pag.getEdges());
+        shuffle(edges);
+
+        for (Edge edge : edges) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
@@ -384,6 +398,96 @@ public abstract class StarFci implements IGraphSearch {
                     }
                 }
             }
+        }
+
+        if (doPossibleSep) {
+            // Possible d-sep removal
+            for (Edge edge : pag.getEdges()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                Node a = edge.getNode1();
+                Node c = edge.getNode2();
+
+                List<Node> possibleDsep = pag.paths().possibleDsep(a, -1);
+                possibleDsep.remove(a);
+                possibleDsep.remove(c);
+                Set<Node> sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep, useMaxP);
+
+                if (sepset != null) {
+                    pag.removeEdge(a, c);
+                    sepsetMap.set(a, c, sepset);
+
+                    if (verbose) {
+                        IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
+                        double pValue = result.getPValue();
+                        TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
+                                                       + sepset + ", p-value = " + pValue + ".");
+                    }
+                }
+
+                if (pag.isAdjacentTo(a, c)) {
+                    possibleDsep = pag.paths().possibleDsep(c, -1);
+                    possibleDsep.remove(a);
+                    possibleDsep.remove(c);
+                    sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep, useMaxP);
+
+                    if (sepset != null) {
+                        pag.removeEdge(a, c);
+                        sepsetMap.set(a, c, sepset);
+
+                        if (verbose) {
+                            IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
+                            double pValue = result.getPValue();
+                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
+                                                           + sepset + ", p-value = " + pValue + ".");
+                        }
+                    }
+                }
+            }
+
+            for (Node y : nodes) {
+                List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
+
+                ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+                int[] combination;
+
+                while ((combination = cg.next()) != null) {
+                    Node x = adjacentNodes.get(combination[0]);
+                    Node z = adjacentNodes.get(combination[1]);
+
+                    if (cpdag.isDefCollider(x, y, z)) {
+                        if (colliderAllowed(pag, x, y, z, knowledge)) {
+                            pag.setEndpoint(x, y, Endpoint.ARROW);
+                            pag.setEndpoint(z, y, Endpoint.ARROW);
+                            unshieldedColliders.add(new Triple(x, y, z));
+
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Copied collider " + x + " → " + y + " ← " + z + " from CPDAG.");
+                            }
+                        }
+                    } else if (cpdag.isAdjacentTo(x, z)) {
+                        Set<Node> sepset = sepsetMap.get(x, z);
+
+                        if (sepset != null && !sepset.contains(y)) {
+                            if (colliderAllowed(pag, x, y, z, knowledge)) {
+                                pag.setEndpoint(x, y, Endpoint.ARROW);
+                                pag.setEndpoint(z, y, Endpoint.ARROW);
+
+                                if (!pag.isAdjacentTo(x, z)) {
+                                    unshieldedColliders.add(new Triple(x, y, z));
+                                }
+
+                                if (verbose) {
+                                    TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " → " + y + " ← " + z);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
 
         if (verbose) {
