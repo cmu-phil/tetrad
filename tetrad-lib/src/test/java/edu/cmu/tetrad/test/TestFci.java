@@ -307,7 +307,6 @@ public class TestFci {
         {
             FgesFci fci = new FgesFci(independence, score);
             fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(false);
             fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
@@ -316,7 +315,6 @@ public class TestFci {
         {
             GraspFci fci = new GraspFci(independence, score);
             fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(false);
             fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);

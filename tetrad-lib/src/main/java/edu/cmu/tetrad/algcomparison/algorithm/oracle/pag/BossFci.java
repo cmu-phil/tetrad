@@ -114,7 +114,6 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Us
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-        search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -174,7 +173,6 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Us
         params.add(Params.SEED);
         params.add(Params.NUM_THREADS);
         params.add(Params.GUARANTEE_PAG);
-        params.add(Params.START_FROM_COMPLETE_GRAPH);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.VERBOSE);
 

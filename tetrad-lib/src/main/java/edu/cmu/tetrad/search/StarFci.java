@@ -99,27 +99,6 @@ public abstract class StarFci implements IGraphSearch {
     private boolean useMaxP = false;
 
     /**
-     * A flag indicating whether the algorithm should start its search from a complete undirected graph.
-     * <p>
-     * If set to true, the Star-FCI algorithm initializes the search with a complete graph where every node is connected
-     * with an undirected edge. If set to false, the algorithm starts the search with an alternative initial graph, such
-     * as a learned or predefined CPDAG.
-     * <p>
-     * This option impacts the structure of the initial graph and may influence the overall search process and results.
-     */
-    private boolean startFromCompleteGraph;
-    /**
-     * Indicates whether the procedure for finding possible separating sets should be executed during the search in the
-     * Star-FCI algorithm.
-     * <p>
-     * When this flag is set to {@code true}, the search will attempt to identify possible separating sets that satisfy
-     * the specified conditions. This can influence the output structure of the learned PAG, depending on the separation
-     * property verified during the search process. This is not part of the algorithm; is only here for testing, so
-     * we do not include a setter for this field.
-     */
-    private boolean doPossibleSep = false;
-
-    /**
      * Constructs a new GFci algorithm with the given independence test and score.
      *
      * @param test The independence test to use.
@@ -302,20 +281,9 @@ public abstract class StarFci implements IGraphSearch {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
-        Graph cpdag;
-
-        if (startFromCompleteGraph) {
-            TetradLogger.getInstance().log("===Starting with complete graph=== ");
-            cpdag = new EdgeListGraph(independenceTest.getVariables());
-            cpdag = GraphUtils.completeGraph(cpdag);
-        } else {
-            cpdag = getMarkovCpdag();
-        }
-
+        Graph cpdag = getMarkovCpdag();
         Graph pag = new EdgeListGraph(cpdag);
-
         Set<Triple> unshieldedColliders = new HashSet<>();
-
         SepsetMap sepsetMap = new SepsetMap();
 
         if (verbose) {
@@ -398,96 +366,6 @@ public abstract class StarFci implements IGraphSearch {
                     }
                 }
             }
-        }
-
-        if (doPossibleSep) {
-            // Possible d-sep removal
-            for (Edge edge : pag.getEdges()) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node a = edge.getNode1();
-                Node c = edge.getNode2();
-
-                List<Node> possibleDsep = pag.paths().possibleDsep(a, -1);
-                possibleDsep.remove(a);
-                possibleDsep.remove(c);
-                Set<Node> sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep, useMaxP);
-
-                if (sepset != null) {
-                    pag.removeEdge(a, c);
-                    sepsetMap.set(a, c, sepset);
-
-                    if (verbose) {
-                        IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
-                        double pValue = result.getPValue();
-                        TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
-                                                       + sepset + ", p-value = " + pValue + ".");
-                    }
-                }
-
-                if (pag.isAdjacentTo(a, c)) {
-                    possibleDsep = pag.paths().possibleDsep(c, -1);
-                    possibleDsep.remove(a);
-                    possibleDsep.remove(c);
-                    sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep, useMaxP);
-
-                    if (sepset != null) {
-                        pag.removeEdge(a, c);
-                        sepsetMap.set(a, c, sepset);
-
-                        if (verbose) {
-                            IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
-                            double pValue = result.getPValue();
-                            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
-                                                           + sepset + ", p-value = " + pValue + ".");
-                        }
-                    }
-                }
-            }
-
-            for (Node y : nodes) {
-                List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
-
-                ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-                int[] combination;
-
-                while ((combination = cg.next()) != null) {
-                    Node x = adjacentNodes.get(combination[0]);
-                    Node z = adjacentNodes.get(combination[1]);
-
-                    if (cpdag.isDefCollider(x, y, z)) {
-                        if (colliderAllowed(pag, x, y, z, knowledge)) {
-                            pag.setEndpoint(x, y, Endpoint.ARROW);
-                            pag.setEndpoint(z, y, Endpoint.ARROW);
-                            unshieldedColliders.add(new Triple(x, y, z));
-
-                            if (verbose) {
-                                TetradLogger.getInstance().log("Copied collider " + x + " → " + y + " ← " + z + " from CPDAG.");
-                            }
-                        }
-                    } else if (cpdag.isAdjacentTo(x, z)) {
-                        Set<Node> sepset = sepsetMap.get(x, z);
-
-                        if (sepset != null && !sepset.contains(y)) {
-                            if (colliderAllowed(pag, x, y, z, knowledge)) {
-                                pag.setEndpoint(x, y, Endpoint.ARROW);
-                                pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                                if (!pag.isAdjacentTo(x, z)) {
-                                    unshieldedColliders.add(new Triple(x, y, z));
-                                }
-
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " → " + y + " ← " + z);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
         }
 
         if (verbose) {
@@ -607,15 +485,6 @@ public abstract class StarFci implements IGraphSearch {
      */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets whether the search should start from a complete graph.
-     *
-     * @param startFromCompleteGraph A boolean value indicating if the search should start from a complete graph.
-     */
-    public void setStartFromCompleteGraph(boolean startFromCompleteGraph) {
-        this.startFromCompleteGraph = startFromCompleteGraph;
     }
 
     /**
