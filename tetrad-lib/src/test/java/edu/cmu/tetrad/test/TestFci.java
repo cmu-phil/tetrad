@@ -36,7 +36,6 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -446,9 +445,8 @@ public class TestFci {
     }
 
     /**
-     * This is a "problem MAG" that Peter recommended for testing, from Causation, Prediction,
-     * and Search. In order to get it right, the correct conditioning sets need to be found
-     * for each of the two inducing paths.
+     * This is a "problem MAG" that Peter recommended for testing, from Causation, Prediction, and Search. In order to
+     * get it right, the correct conditioning sets need to be found for each of the two inducing paths.
      */
     @Test
     public void testSearch16() {
