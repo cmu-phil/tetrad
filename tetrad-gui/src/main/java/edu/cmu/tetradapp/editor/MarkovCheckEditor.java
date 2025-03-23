@@ -232,7 +232,7 @@ public class MarkovCheckEditor extends JPanel {
         setPreferredSize(new Dimension(1100, 600));
 
         conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
-        conditioningSetTypeJComboBox.addItem("Ordered Local Markov using MBs");
+        conditioningSetTypeJComboBox.addItem("Ordered Local Markov MAG");
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
@@ -250,6 +250,9 @@ public class MarkovCheckEditor extends JPanel {
                     break;
                 case "Ordered Local Markov":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
+                    break;
+                case "Ordered Local Markov MAG":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
                     break;
                 case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.MARKOV_BLANKET);

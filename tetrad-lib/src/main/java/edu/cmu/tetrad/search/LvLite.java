@@ -489,7 +489,7 @@ public final class LvLite implements IGraphSearch {
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        pag.getEdges().stream().forEach(edge -> {
+        pag.getEdges().parallelStream().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
