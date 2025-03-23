@@ -251,9 +251,6 @@ public class MarkovCheckEditor extends JPanel {
                 case "Ordered Local Markov":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
                     break;
-                case "Ordered Local Markov using MBs":
-                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MB);
-                    break;
                 case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.MARKOV_BLANKET);
                     break;
