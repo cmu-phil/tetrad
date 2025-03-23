@@ -846,96 +846,85 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             Set<IndependenceFact> msep = new HashSet<>();
             Set<IndependenceFact> mconn = new HashSet<>();
 
-            for (int i = 0; i < nodes.size(); i++) {
-                for (int j = 0; j < nodes.size(); j++) {
-                    if (i == j) continue;
-                    Node x = nodes.get(i);
-                    Node y = nodes.get(j);
+            if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
+                Graph mag = GraphTransforms.zhangMagFromPag(graph);
+                allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
+            } else {
+                for (int i = 0; i < nodes.size(); i++) {
+                    for (int j = 0; j < nodes.size(); j++) {
+                        if (i == j) continue;
+                        Node x = nodes.get(i);
+                        Node y = nodes.get(j);
 
-                    Set<Node> z;
+                        Set<Node> z;
 
-                    switch (setType) {
-                        case LOCAL_MARKOV:
-                            z = new HashSet<>();
+                        switch (setType) {
+                            case LOCAL_MARKOV:
+                                z = new HashSet<>();
 
-                            for (Node w : graph.getAdjacentNodes(x)) {
-                                if (graph.isParentOf(w, x)) {
-                                    z.add(w);
-                                }
-                            }
-
-                            break;
-                        case PARENTS_AND_NEIGHBORS:
-                            z = new HashSet<>();
-
-                            for (Node w : graph.getAdjacentNodes(x)) {
-                                if (Edges.isUndirectedEdge(graph.getEdge(w, x))) {
-                                    z.add(w);
+                                for (Node w : graph.getAdjacentNodes(x)) {
+                                    if (graph.isParentOf(w, x)) {
+                                        z.add(w);
+                                    }
                                 }
 
-                                if (graph.isParentOf(w, x)) {
-                                    z.add(w);
+                                break;
+                            case PARENTS_AND_NEIGHBORS:
+                                z = new HashSet<>();
+
+                                for (Node w : graph.getAdjacentNodes(x)) {
+                                    if (Edges.isUndirectedEdge(graph.getEdge(w, x))) {
+                                        z.add(w);
+                                    }
+
+                                    if (graph.isParentOf(w, x)) {
+                                        z.add(w);
+                                    }
                                 }
-                            }
 
-                            break;
-                        case ORDERED_LOCAL_MARKOV:
-                            if (order == null) throw new IllegalArgumentException("No valid order found.");
-                            z = new HashSet<>(graph.getAdjacentNodes(x));
+                                break;
+                            case ORDERED_LOCAL_MARKOV:
+                                if (order == null) throw new IllegalArgumentException("No valid order found.");
+                                z = new HashSet<>(graph.getAdjacentNodes(x));
 
-                            // Keep only the parents in Prefix(x)--i.e., nodes adjacent to x that are in Prefix(X)
-                            for (Node w : new ArrayList<>(z)) {
-                                int i1 = order.indexOf(x);
-                                int i2 = order.indexOf(w);
+                                // Keep only the parents in Prefix(x)--i.e., nodes adjacent to x that are in Prefix(X)
+                                for (Node w : new ArrayList<>(z)) {
+                                    int i1 = order.indexOf(x);
+                                    int i2 = order.indexOf(w);
 
-                                if (i2 >= i1) {
-                                    z.remove(w);
+                                    if (i2 >= i1) {
+                                        z.remove(w);
+                                    }
                                 }
-                            }
 
-                            break;
-                        case ORDERED_LOCAL_MARKOV_MB:
-                            if (order == null) throw new IllegalArgumentException("No valid order found.");
+                                break;
+                            case MARKOV_BLANKET:
+                                z = GraphUtils.markovBlanket(x, graph);
+                                break;
+                            case RECURSIVE_MSEP:
+                                z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
+                                break;
+                            case NONCOLLIDERS_ONLY:
+                                z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, maxLength, true);
+                                break;
+                            default:
+                                throw new IllegalArgumentException("Unknown separation set type: " + setType);
+                        }
 
-                            z = new HashSet<>(graph.paths().markovBlanket(x));
+                        if (x == y || z.contains(x) || z.contains(y)) continue;
 
-                            // Keep only the nodes in Prefix(x) that are in MB(X)
-                            for (Node w : new ArrayList<>(z)) {
-                                int i1 = order.indexOf(x);
-                                int i2 = order.indexOf(w);
-
-                                if (i2 >= i1) {
-                                    z.remove(w);
-                                }
-                            }
-
-                            break;
-                        case MARKOV_BLANKET:
-                            z = GraphUtils.markovBlanket(x, graph);
-                            break;
-                        case RECURSIVE_MSEP:
-                            z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
-                            break;
-                        case NONCOLLIDERS_ONLY:
-                            z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, maxLength, true);
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknown separation set type: " + setType);
-                    }
-
-                    if (x == y || z.contains(x) || z.contains(y)) continue;
-
-                    if (findSmallestSubset && graph.paths().isMSeparatedFrom(x, y, z, false)) {
+                        if (findSmallestSubset && graph.paths().isMSeparatedFrom(x, y, z, false)) {
 //                        z = removeExtraneousVariables(z, x, y, !isMpdag);
-                        z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isMpdag);
-                    }
+                            z = SepsetFinder.getSmallestSubset(x, y, z, new HashSet<>(), graph, !isMpdag);
+                        }
 
-                    if (!checkNodeIndependenceAndConditioning(x, y, z)) {
-                        continue;
-                    }
+                        if (!checkNodeIndependenceAndConditioning(x, y, z)) {
+                            continue;
+                        }
 
-                    IndependenceFact fact = new IndependenceFact(x, y, z);
-                    allIndependenceFacts.add(fact);
+                        IndependenceFact fact = new IndependenceFact(x, y, z);
+                        allIndependenceFacts.add(fact);
+                    }
                 }
             }
 

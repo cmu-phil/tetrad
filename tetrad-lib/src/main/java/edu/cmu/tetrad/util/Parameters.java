@@ -277,7 +277,7 @@ public class Parameters implements TetradSerializable {
         // Check if the values are serializable, so that a Parameters object can be saved as
         // a field.
         for (Object o : n) {
-            if (!(o instanceof Serializable)) {
+            if (!(o instanceof Serializable || o instanceof PrintStream)) {
                 throw new IllegalArgumentException("Parameter '" + name + "' is being set to an array containing a non-serizable value.");
             }
         }
@@ -322,7 +322,7 @@ public class Parameters implements TetradSerializable {
 
         // Check if the values are serializable, so that a Parameters object can be saved as
         // a field.
-        if (!(value instanceof Serializable)) {
+        if (!(value instanceof Serializable || value instanceof PrintStream)) {
             throw new IllegalArgumentException("Parameter '" + name + "' is being assigned a value that is not serializable.");
         }
 

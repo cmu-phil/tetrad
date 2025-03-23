@@ -58,15 +58,11 @@ public enum ConditioningSetType {
     ORDERED_LOCAL_MARKOV,
 
     /**
-     * Ordered local Markov property.
+     * Generates a set of independence facts that implies Global Markov for MAG.
+     * Taking a MAG in the given PAG in the calling method.
+     *
+     * @see OrderedLocalMarkovProperty
      */
-    ORDERED_LOCAL_MARKOV_PROPERTY,
-
-    /**
-     * Testing independence facts implied by the graph, conditioning on the predecessors of each variable in the graph
-     * in the Markov blanket for a node, in a causal order of the graph. Some independence facts obtained in this way
-     * may be for implied dependencies.
-     */
-    ORDERED_LOCAL_MARKOV_MB
+    ORDERED_LOCAL_MARKOV_MAG
 
 }
