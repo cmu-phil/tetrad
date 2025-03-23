@@ -319,6 +319,17 @@ public class TestFci {
 
             runLvSearch(outputGraph, fci, graph);
         }
+
+        {
+            LvLite fci = new LvLite(independence, score);
+            fci.setStartWith(LvLite.START_WITH.GRASP);
+            fci.setDepth(-1);
+            fci.setKnowledge(knowledge);
+            fci.setEnsureMarkov(false);
+            fci.setVerbose(verbose);
+
+            runLvSearch(outputGraph, fci, graph);
+        }
     }
 
     //    @Test

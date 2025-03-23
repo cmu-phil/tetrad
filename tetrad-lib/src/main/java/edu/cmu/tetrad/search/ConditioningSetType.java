@@ -58,6 +58,11 @@ public enum ConditioningSetType {
     ORDERED_LOCAL_MARKOV,
 
     /**
+     * Ordered local Markov property.
+     */
+    ORDERED_LOCAL_MARKOV_PROPERTY,
+
+    /**
      * Testing independence facts implied by the graph, conditioning on the predecessors of each variable in the graph
      * in the Markov blanket for a node, in a causal order of the graph. Some independence facts obtained in this way
      * may be for implied dependencies.

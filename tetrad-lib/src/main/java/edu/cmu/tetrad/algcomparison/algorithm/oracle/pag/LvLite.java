@@ -226,7 +226,7 @@ public class LvLite extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.GUARANTEE_PAG);
         params.add(Params.DO_DDP_EDGE_REMOVAL_STEP);
-//        params.add(Params.ENSURE_MARKOV);
+        params.add(Params.ENSURE_MARKOV);
 
         // General
         params.add(Params.TIME_LAG);
