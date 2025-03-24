@@ -34,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Stream;
 
 /**
  * The LV-Lite algorithm (Latent Variable "Lite") algorithm implements a search algorithm for learning the structure of
@@ -509,7 +510,15 @@ public final class LvLite implements IGraphSearch {
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         // Assuming 'unshieldedColliders' is a thread-safe list
-        pag.getEdges().stream().forEach(edge -> {
+        Stream<Edge> stream;
+
+        if (test instanceof MsepTest) {
+            stream = pag.getEdges().stream();
+        } else {
+            stream = pag.getEdges().parallelStream();
+        }
+
+        stream.forEach(edge -> {
             if (verbose) {
                 TetradLogger.getInstance().log("Checking " + edge + " for potential DDP collider orientations.");
             }
