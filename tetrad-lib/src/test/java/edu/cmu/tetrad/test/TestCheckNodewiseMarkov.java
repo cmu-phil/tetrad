@@ -219,7 +219,8 @@ public class TestCheckNodewiseMarkov {
         double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
         double kSPvalue = markovCheck.getKsPValue(true);
         double fractionDep = markovCheck.getFractionDependent(true);
-        int numTests = markovCheck.getNumTests(true); // number of tests generateResults actually did
+        // number of tests generateResults actually did
+        int numTests = markovCheck.getNumTests(true);
         // TODO VBC: print a report file of one role of each graph, each col be the above stats numbers
     }
 
