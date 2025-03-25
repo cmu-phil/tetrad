@@ -176,6 +176,9 @@ public class TestCheckNodewiseMarkov {
         } catch (IOException e) {
             TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
         }
+        // TODO VBC: make a directory called simulation call it datasets
+        // sample size info, etc. graph file, dataset, description file
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         Graph estimatedCpdag = null;
@@ -204,12 +207,20 @@ public class TestCheckNodewiseMarkov {
         System.out.println("whole_lgr: " + whole_lgr);
     }
 
+    /**
+     * For LV-light paper's usage under ORDERED_LOCAL_MARKOV_MAG conditioning set type
+     * @see OrderedLocalMarkovProperty
+     * @see ConditioningSetType
+     */
     private static void testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(DataSet data, Graph trueGraph, Graph estimatedCpdag, double threshold, double shuffleThreshold, double lowRecallBound) {
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
-        // Global score TODO VBC: shall we set the two both be true?
-        markovCheck.generateResults(true, true);
-        // TODO VBC: what are the scores we want to print here? and how do we want it to be compared with the true graph?
+        markovCheck.generateResults(true);
+        double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
+        double kSPvalue = markovCheck.getKsPValue(true);
+        double fractionDep = markovCheck.getFractionDependent(true);
+        int numTests = markovCheck.getNumTests(true); // number of tests generateResults actually did
+        // TODO VBC: print a report file of one role of each graph, each col be the above stats numbers
     }
 
     public static void testGaussianDAGPrecisionRecallForLocalOnDirectNeighbours(File txtFile, double threshold, double shuffleThreshold, double lowRecallBound) {
