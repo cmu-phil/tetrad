@@ -157,6 +157,73 @@ public class TestCheckNodewiseMarkov {
         System.out.println("Rejects size: " + rejects.size());
     }
 
+    public static void testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(File txtFile, double threshold, double shuffleThreshold, double lowRecallBound) {
+        Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(txtFile);
+        System.out.println("Test True Graph: " + trueGraph);
+        System.out.println("Test True Graph size: " + trueGraph.getNodes().size());
+
+        SemPm pm = new SemPm(trueGraph);
+        // Parameters without additional setting default tobe Gaussian
+        SemIm im = new SemIm(pm, new Parameters());
+        // Simulate permuted dataset and save a copy of it.
+        DataSet data = im.simulateData(10000, false);
+        data = DataTransforms.shuffleColumns(data); // Permute the data columns, this matters to some algorithms, e.g. PC.
+        File file = new File(".", "testPermutedData.txt");
+        try {
+            Writer out = new FileWriter(file);
+            DataWriter.writeRectangularData(data, out, '\t');
+            out.close();
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception: " + e.getMessage());
+        }
+        // TODO VBC: make a directory called simulation call it datasets
+        // sample size info, etc. graph file, dataset, description file
+
+        SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        Graph estimatedCpdag = null;
+        try {
+            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+//        TODO VBC: Next check different search algo to generate estimated graph. e.g. PC
+        System.out.println("Test Estimated CPDAG Graph: " + estimatedCpdag);
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(data, trueGraph, estimatedCpdag, threshold, shuffleThreshold, lowRecallBound);
+        System.out.println("~~~~~~~~~~~~~Full Graph~~~~~~~~~~~~~~~");
+        estimatedCpdag = GraphUtils.replaceNodes(estimatedCpdag, trueGraph.getNodes());
+        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        System.out.println("whole_ap: " + whole_ap);
+        System.out.println("whole_ar: " + whole_ar );
+        System.out.println("whole_ahp: " + whole_ahp);
+        System.out.println("whole_ahr: " + whole_ahr);
+        System.out.println("whole_lgp: " + whole_lgp);
+        System.out.println("whole_lgr: " + whole_lgr);
+    }
+
+    /**
+     * For LV-light paper's usage under ORDERED_LOCAL_MARKOV_MAG conditioning set type
+     * @see OrderedLocalMarkovProperty
+     * @see ConditioningSetType
+     */
+    private static void testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(DataSet data, Graph trueGraph, Graph estimatedCpdag, double threshold, double shuffleThreshold, double lowRecallBound) {
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+        markovCheck.generateResults(true);
+        double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
+        double kSPvalue = markovCheck.getKsPValue(true);
+        double fractionDep = markovCheck.getFractionDependent(true);
+        // number of tests generateResults actually did
+        int numTests = markovCheck.getNumTests(true);
+        // TODO VBC: print a report file of one role of each graph, each col be the above stats numbers
+    }
+
     public static void testGaussianDAGPrecisionRecallForLocalOnDirectNeighbours(File txtFile, double threshold, double shuffleThreshold, double lowRecallBound) {
         Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(txtFile);
         System.out.println("Test True Graph: " + trueGraph);
