@@ -459,7 +459,7 @@ public final class LvLite implements IGraphSearch {
     private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders,
                                FciOrient fciOrient, List<Node> best) {
         GraphUtils.reorientWithCircles(pag, verbose);
-        pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
+        pag =   adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
         return pag;
@@ -545,7 +545,7 @@ public final class LvLite implements IGraphSearch {
             _depth = Math.min(_depth, _perhapsNotFollowed.size());
 
             // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), depth);
+            SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), _depth);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -560,7 +560,8 @@ public final class LvLite implements IGraphSearch {
 
                 try {
                     // Create a Callable task to call blockPathsRecursively
-                    Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
+                    Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
+                            maxBlockingPathLength);
 
                     // Submit the task to the executor
                     Future<Set<Node>> future = executor.submit(task);

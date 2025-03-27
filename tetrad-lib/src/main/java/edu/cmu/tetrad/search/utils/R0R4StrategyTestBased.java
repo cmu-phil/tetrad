@@ -9,10 +9,8 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * The FciOrientDataExaminationStrategyTestBased class implements the FciOrientDataExaminationStrategy interface and
@@ -37,7 +35,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
      */
-    private BlockingType blockingType = BlockingType.GREEDY;
+    private BlockingType blockingType = BlockingType.RECURSIVE;
     /**
      * Private variable representing the knowledge.
      * <p>
@@ -206,10 +204,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-        Set<Node> blocking;
+        Set<Node> blocking = null;
 
         if (blockingType == BlockingType.RECURSIVE) {
-            blocking = SepsetFinder.getPathBlockingSetRecursive(graph, x, y, new HashSet<>(path), maxLength, Set.of());
+            blocking = findDdpSepset(graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)), maxLength, maxLength, -1);
         } else if (blockingType == BlockingType.GREEDY) {
             blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth, null);
 
@@ -349,6 +347,134 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         return false;
+    }
+
+    private Set<Node> findDdpSepset(Graph pag, Node x, Node y, FciOrient fciOrient,
+                                    int maxBlockingPathLength, int maxDdpPathLength, long testTimeout) {
+        fciOrient.finalOrientation(pag);
+
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength,
+                false);
+
+        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
+
+        pag.getEdges().parallelStream().forEach(edge -> {
+            Set<DiscriminatingPath> paths = new HashSet<>();
+
+            for (DiscriminatingPath path : discriminatingPaths) {
+                if (path.getX() == x && path.getY() == y) {
+                    paths.add(path);
+                } else if (path.getX() == y && path.getY() == x) {
+                    paths.add(path);
+                }
+            }
+
+            pathsByEdge.put(Set.of(x, y), paths);
+        });
+
+        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
+        // there in this graph.
+        // Assuming 'unshieldedColliders' is a thread-safe list
+        if (verbose) {
+            TetradLogger.getInstance().log("Checking " + pag.getEdge(x, y) + " for potential DDP collider orientations.");
+        }
+
+        List<Node> common = pag.getAdjacentNodes(x);
+        common.retainAll(pag.getAdjacentNodes(y));
+
+        Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
+        Set<Node> perhapsNotFollowed = new HashSet<>();
+
+        if (paths != null) {
+            for (DiscriminatingPath path : paths) {
+                if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                    perhapsNotFollowed.add(path.getV());
+                }
+            }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
+        }
+
+        List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
+
+        int _depth = depth == -1 ? _perhapsNotFollowed.size() : depth;
+        _depth = Math.min(_depth, _perhapsNotFollowed.size());
+
+        // Generate subsets and check blocking paths
+        SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), _depth);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            Set<Node> notFollowed = GraphUtils.asSet(choice, _perhapsNotFollowed);
+
+            if (verbose) {
+                TetradLogger.getInstance().log(" x: " + x + " y: " + y + " notFollowed: " + notFollowed
+                                               + " maxBlockingPathLength: " + maxBlockingPathLength);
+            }
+
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+
+            try {
+                // Create a Callable task to call blockPathsRecursively
+                Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
+                        maxBlockingPathLength);
+
+                // Submit the task to the executor
+                Future<Set<Node>> future = executor.submit(task);
+
+                // Try to get the result within the specified timeout (e.g., 5 seconds)
+                Set<Node> b;
+
+                if (testTimeout > 0) {
+                    b = future.get(testTimeout, TimeUnit.MILLISECONDS);
+                } else {
+                    b = future.get();
+                }
+
+                int _depth2 = depth == -1 ? common.size() : depth;
+                _depth2 = Math.min(_depth2, common.size());
+
+                SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
+                int[] choice2;
+
+                W:
+                while ((choice2 = gen2.next()) != null) {
+//                    if (!pag.isAdjacentTo(x, y)) {
+//                        break;
+//                    }
+
+                    Set<Node> c = GraphUtils.asSet(choice2, common);
+
+                    for (Node node : c) {
+                        if (pag.isDefCollider(x, node, y)) {
+                            continue W;
+                        }
+                    }
+
+                    b.removeAll(c);
+
+                    if (ensureMarkovHelper != null) {
+                        if (ensureMarkovHelper.markovIndependence(x, y, b)) {
+                            return b;
+                        }
+                    } else {
+                        if (test.checkIndependence(x, y, b).isIndependent()) {
+                            return b;
+                        }
+                    }
+                }
+            } catch (TimeoutException e) {
+                System.out.println("Timeout occurred while waiting for blockPathsRecursively");
+            } catch (Exception e) {
+                e.printStackTrace(); // Handle other exceptions that might occur
+            } finally {
+                executor.shutdown(); // Always shut down the executor
+            }
+        }
+
+        return null;
     }
 
     /**
