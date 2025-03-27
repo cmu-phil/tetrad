@@ -116,7 +116,6 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
 
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
@@ -182,7 +181,6 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
-        params.add(Params.START_FROM_COMPLETE_GRAPH);
 
         // FCI
         params.add(Params.DEPTH);

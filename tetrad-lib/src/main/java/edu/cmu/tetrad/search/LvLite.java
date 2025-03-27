@@ -459,7 +459,7 @@ public final class LvLite implements IGraphSearch {
     private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders,
                                FciOrient fciOrient, List<Node> best) {
         GraphUtils.reorientWithCircles(pag, verbose);
-        pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
+        pag =   adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
         GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
         return pag;
@@ -489,7 +489,7 @@ public final class LvLite implements IGraphSearch {
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        pag.getEdges().stream().forEach(edge -> {
+        pag.getEdges().parallelStream().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -523,9 +523,11 @@ public final class LvLite implements IGraphSearch {
             Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
             Set<Node> perhapsNotFollowed = new HashSet<>();
 
-            for (DiscriminatingPath path : paths) {
-                if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                    perhapsNotFollowed.add(path.getV());
+            if (paths != null) {
+                for (DiscriminatingPath path : paths) {
+                    if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                        perhapsNotFollowed.add(path.getV());
+                    }
                 }
             }
 
@@ -543,7 +545,7 @@ public final class LvLite implements IGraphSearch {
             _depth = Math.min(_depth, _perhapsNotFollowed.size());
 
             // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), depth);
+            SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), _depth);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -558,7 +560,8 @@ public final class LvLite implements IGraphSearch {
 
                 try {
                     // Create a Callable task to call blockPathsRecursively
-                    Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
+                    Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
+                            maxBlockingPathLength);
 
                     // Submit the task to the executor
                     Future<Set<Node>> future = executor.submit(task);

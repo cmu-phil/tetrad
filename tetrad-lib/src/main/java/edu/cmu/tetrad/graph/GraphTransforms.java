@@ -367,13 +367,13 @@ public class GraphTransforms {
     /**
      * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the DagToPag algorithm.
      *
-     * @param trueGraph The input DAG to be converted.
+     * @param graph The input DAG to be converted.
      * @return The resulting PAG obtained from the input DAG.
      */
     @NotNull
-    public static Graph dagToPag(Graph trueGraph) {
-        return PagCache.getInstance().getPag(trueGraph);
-//        return new DagToPag(trueGraph).convert();
+    public static Graph dagToPag(Graph graph) {
+        return PagCache.getInstance().getPag(graph);
+//        return new DagToPag(graph).convert();
     }
 
     /**

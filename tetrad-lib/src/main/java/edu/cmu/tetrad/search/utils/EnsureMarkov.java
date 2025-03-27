@@ -84,8 +84,6 @@ public class EnsureMarkov {
 
         var _pValues = new HashMap<>(pValues);
 
-//        MsepTest msep = new MsepTest(cpdag);
-
         Set<Node> parentsX = new HashSet<>(cpdag.getParents(x));
 
         for (Node node : parentsX) {
@@ -114,10 +112,8 @@ public class EnsureMarkov {
 
             if (!parentsX.contains(_y) && !cpdag.paths().existsDirectedPath(x, _y, withoutPair)) {
                 IndependenceResult result = test.checkIndependence(x, _y, parentsX);
-//                if (msep.checkIndependence(x, _y, parentsX).isIndependent()) {
                 _pValues.putIfAbsent(Pair.of(x, _y), new HashSet<>());
                 _pValues.get(Pair.of(x, _y)).add(result.getPValue());
-//                }
             }
         }
 
@@ -128,10 +124,8 @@ public class EnsureMarkov {
 
             if (!parentsY.contains(_x) && !cpdag.paths().existsDirectedPath(y, _x, withoutPair)) {
                 IndependenceResult result = test.checkIndependence(y, _x, parentsY);
-//                if (msep.checkIndependence(y, _x, parentsY).isIndependent()) {
                 _pValues.putIfAbsent(Pair.of(y, _x), new HashSet<>());
                 _pValues.get(Pair.of(y, _x)).add(result.getPValue());
-//                }
             }
         }
 

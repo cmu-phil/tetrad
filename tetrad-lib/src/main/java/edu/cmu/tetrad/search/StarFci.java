@@ -36,6 +36,7 @@ import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
 import static edu.cmu.tetrad.graph.GraphUtils.fciOrientbk;
+import static java.util.Collections.shuffle;
 
 /**
  * *-FCI implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to
@@ -96,17 +97,6 @@ public abstract class StarFci implements IGraphSearch {
      * algorithm. The default value is {@code true}, enabling the heuristic by default.
      */
     private boolean useMaxP = false;
-
-    /**
-     * A flag indicating whether the algorithm should start its search from a complete undirected graph.
-     * <p>
-     * If set to true, the Star-FCI algorithm initializes the search with a complete graph where every node is connected
-     * with an undirected edge. If set to false, the algorithm starts the search with an alternative initial graph, such
-     * as a learned or predefined CPDAG.
-     * <p>
-     * This option impacts the structure of the initial graph and may influence the overall search process and results.
-     */
-    private boolean startFromCompleteGraph;
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -291,27 +281,19 @@ public abstract class StarFci implements IGraphSearch {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
-        Graph cpdag;
-
-        if (startFromCompleteGraph) {
-            TetradLogger.getInstance().log("===Starting with complete graph=== ");
-            cpdag = new EdgeListGraph(independenceTest.getVariables());
-            cpdag = GraphUtils.completeGraph(cpdag);
-        } else {
-            cpdag = getMarkovCpdag();
-        }
-
+        Graph cpdag = getMarkovCpdag();
         Graph pag = new EdgeListGraph(cpdag);
-
         Set<Triple> unshieldedColliders = new HashSet<>();
-
         SepsetMap sepsetMap = new SepsetMap();
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
         }
 
-        for (Edge edge : pag.getEdges()) {
+        List<Edge> edges =  new ArrayList<>(pag.getEdges());
+        shuffle(edges);
+
+        for (Edge edge : edges) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
@@ -503,15 +485,6 @@ public abstract class StarFci implements IGraphSearch {
      */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets whether the search should start from a complete graph.
-     *
-     * @param startFromCompleteGraph A boolean value indicating if the search should start from a complete graph.
-     */
-    public void setStartFromCompleteGraph(boolean startFromCompleteGraph) {
-        this.startFromCompleteGraph = startFromCompleteGraph;
     }
 
     /**

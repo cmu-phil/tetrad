@@ -422,7 +422,8 @@ public class SepsetFinder {
     }
 
     private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                        Set<Node> notFollowing, Map<Node, Set<Node>> ancestorMap, int maxPathLength) {
+                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength
+    ) {
         if (x == y) {
             return null;
         }
@@ -431,19 +432,45 @@ public class SepsetFinder {
 
         Set<Node> _z;
 
+        for (Node b : graph.getAdjacentNodes(x)) {
+            for (Node c : graph.getAdjacentNodes(b)) {
+                if (c == x) continue;
+                if (c != y) continue;
+
+                if (graph.isDefNoncollider(x, b, y)) {
+                    z.add(b);
+                }
+            }
+        }
+
         do {
             _z = new HashSet<>(z);
-
             Set<Node> path = new HashSet<>();
             path.add(x);
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
-                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap, notFollowing);
+                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap, notFollowed);
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
         return z;
+    }
+
+    private static List<Node> getReachableNodes(Graph graph, Node a, Node b, Set<Node> z, Set<Node> notFollowing, Map<Node, Set<Node>> ancestorMap) {
+        List<Node> passNodes = new ArrayList<>();
+
+        for (Node c : graph.getAdjacentNodes(b)) {
+            if (c == a) {
+                continue;
+            }
+
+            if (reachable(graph, a, b, c, z, notFollowing, ancestorMap)) {
+                passNodes.add(c);
+            }
+        }
+
+        return passNodes;
     }
 
     private static List<Node> getReachableNodes(Graph graph, Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
@@ -460,6 +487,30 @@ public class SepsetFinder {
         }
 
         return passNodes;
+    }
+
+    private static boolean reachable(Graph graph, Node a, Node b, Node c, Set<Node> z, Set<Node> notFollowing,
+                                     Map<Node, Set<Node>> ancestors) {
+        boolean collider = graph.isDefCollider(a, b, c);
+
+        if (!collider || (graph.isUnderlineTriple(a, b, c) && !z.contains(b))) {
+            return true;
+        }
+
+        if (ancestors == null) {
+            return collider && graph.paths().isAncestor(b, z);
+        } else {
+            boolean ancestor = false;
+
+            for (Node _z : ancestors.get(b)) {
+                if (z.contains(_z)) {
+                    ancestor = true;
+                    break;
+                }
+            }
+
+            return collider && ancestor;
+        }
     }
 
     private static boolean reachable(Graph graph, Node a, Node b, Node c, Set<Node> z, Map<Node, Set<Node>> ancestors) {
@@ -600,7 +651,7 @@ public class SepsetFinder {
             boolean found1 = false;
             Set<Triple> _colliders1 = new HashSet<>();
 
-            List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
+            List<Node> passNodes = getReachableNodes(graph, a, b, z, notFollowed, ancestorMap);
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {

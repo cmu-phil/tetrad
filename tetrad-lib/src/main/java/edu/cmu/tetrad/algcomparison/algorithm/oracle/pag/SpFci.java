@@ -111,7 +111,6 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-        search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
@@ -166,7 +165,6 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.GUARANTEE_PAG);
-        params.add(Params.START_FROM_COMPLETE_GRAPH);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.VERBOSE);
 

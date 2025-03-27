@@ -62,7 +62,7 @@ public class DiscriminatingPath {
      * @since 1.0
      */
     private final List<Node> colliderPath;
-    private boolean checkEcNonadjacency = true;
+    private boolean checkXYNonadjacency = true;
 
     /**
      * Represents a discriminating path construct in a graph. A discriminating path is a path in a graph that meets
@@ -76,7 +76,7 @@ public class DiscriminatingPath {
      * @param v                   the node V in the discriminating path
      * @param y                   the node Y in the discriminating path
      * @param colliderPath        the collider subpath of the discriminating path
-     * @param checkEcNonadjacency whether to check that E is not adjacent to C
+     * @param checkEcNonadjacency whether to check that X is not adjacent to Y
      */
     public DiscriminatingPath(Node x, Node w, Node v, Node y, LinkedList<Node> colliderPath, boolean checkEcNonadjacency) {
         this.x = x;
@@ -84,7 +84,7 @@ public class DiscriminatingPath {
         this.v = v;
         this.y = y;
         this.colliderPath = colliderPath;
-        this.checkEcNonadjacency = checkEcNonadjacency;
+        this.checkXYNonadjacency = checkEcNonadjacency;
     }
 
     /**
@@ -116,7 +116,7 @@ public class DiscriminatingPath {
 
         // Make sure there should be a sepset of E and C in the path (Zhang's X and Y). This is the case
         // if E is not adjacent to C.
-        if (checkEcNonadjacency && graph.isAdjacentTo(x, y)) {
+        if (checkXYNonadjacency && graph.isAdjacentTo(x, y)) {
             return false;
         }
 
@@ -145,11 +145,11 @@ public class DiscriminatingPath {
                 return false;
             }
 
-            if (checkEcNonadjacency && !graph.isParentOf(n2, y)) {
+            if (checkXYNonadjacency && !graph.isParentOf(n2, y)) {
                 return false;
             }
 
-            if (checkEcNonadjacency) {
+            if (checkXYNonadjacency) {
                 if (!graph.isParentOf(n2, y)) {
                     return false;
                 }
@@ -214,10 +214,10 @@ public class DiscriminatingPath {
 
     public String toString() {
         return "DiscriminatingPath{" +
-               "e=" + x +
-               ", a=" + w +
-               ", b=" + v +
-               ", c=" + y +
+               "x=" + x +
+               ", w=" + w +
+               ", v=" + v +
+               ", y=" + y +
                ", colliderPath=" + colliderPath +
                '}';
     }

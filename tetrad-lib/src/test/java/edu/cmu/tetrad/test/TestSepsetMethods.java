@@ -25,7 +25,10 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,6 +43,8 @@ import static org.junit.Assert.assertTrue;
  * The TestSepsetMethods class  is responsible for testing various methods for finding a sepset of two nodes in a DAG.
  */
 public class TestSepsetMethods {
+
+    private static final Logger log = LoggerFactory.getLogger(TestSepsetMethods.class);
 
     /**
      * This method is used to test various methods for finding a sepset of two nodes in a directed acyclic graph (DAG).
@@ -222,7 +227,7 @@ public class TestSepsetMethods {
      * This method is used to test the blockPathsRecursively method for finding a set of nodes that blocks all blockable
      * paths between two nodes in a graph, for local Markov.
      * <p>
-     * The blocking set returned by blockPathsRecursively should always be a sepset or x and y given parents(x) for
+     * The blocking set returned by blockPathsRecursively should always be a sepset of x and y given parents(x) for
      * non-descendants x.
      */
     @Test
@@ -250,7 +255,14 @@ public class TestSepsetMethods {
                 }
 
                 Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1);
-                assertTrue(new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent());
+
+                boolean independent = new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent();
+
+                if (!independent) {
+                    System.out.println(LogUtilsSearch.independenceFact(x, y, blocking));
+                }
+
+                assertTrue(independent);
             }
         }
     }

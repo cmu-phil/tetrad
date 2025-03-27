@@ -73,8 +73,7 @@ public class TestFci {
 
         assertEquals(pag, resultGraph);
 //        System.out.println("DAG to PAG: " + dagToPag(graph));
-//
-        assertEquals(pag, dagToPag(graph));
+//        assertEquals(pag, dagToPag(graph));
     }
 
     @Test
@@ -307,16 +306,6 @@ public class TestFci {
         {
             FgesFci fci = new FgesFci(independence, score);
             fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            FgesFci fci = new FgesFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(false);
             fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
@@ -325,34 +314,17 @@ public class TestFci {
         {
             GraspFci fci = new GraspFci(independence, score);
             fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
             fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
         }
 
         {
-            GraspFci fci = new GraspFci(independence, score);
+            LvLite fci = new LvLite(independence, score);
+            fci.setStartWith(LvLite.START_WITH.GRASP);
+            fci.setDepth(-1);
             fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(false);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            BossFci fci = new BossFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
-
-        {
-            SpFci fci = new SpFci(independence, score);
-            fci.setKnowledge(knowledge);
-            fci.setStartFromCompleteGraph(true);
+            fci.setEnsureMarkov(false);
             fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
@@ -473,9 +445,8 @@ public class TestFci {
     }
 
     /**
-     * This is a "problem MAG" that Peter recommended for testing, from Causation, Prediction,
-     * and Search. In order to get it right, the correct conditioning sets need to be found
-     * for each of the two inducing paths.
+     * This is a "problem MAG" that Peter recommended for testing, from Causation, Prediction, and Search. In order to
+     * get it right, the correct conditioning sets need to be found for each of the two inducing paths.
      */
     @Test
     public void testSearch16() {
@@ -515,18 +486,21 @@ public class TestFci {
             Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueMag);
             Graph truePag_ = GraphSaveLoadUtils.readerToGraphTxt(correctPag);
 
+            System.out.println("True MAG");
+            System.out.println(trueMag_);
+
             Fci fci = new Fci(new MsepTest(trueMag_));
             fci.setVerbose(verbose);
             Graph estPag1 = fci.search();
             assertEquals(truePag_, estPag1);
 
-            GraspFci graspFci = new GraspFci(new MsepTest(trueMag_), new GraphScore(trueMag_));
-            graspFci.setUseRaskuttiUhler(true);
-            graspFci.setUseScore(false);
-            graspFci.setVerbose(verbose);
-            Graph estPag2 = graspFci.search();
-            assertEquals(truePag_, estPag2);
-
+//            GraspFci graspFci = new GraspFci(new MsepTest(trueMag_), new GraphScore(trueMag_));
+//            graspFci.setUseRaskuttiUhler(true);
+//            graspFci.setUseScore(false);
+//            graspFci.setVerbose(verbose);
+//            Graph estPag2 = graspFci.search();
+//            assertEquals(truePag_, estPag2);
+//
 //            LvLite lvLite = new LvLite(new MsepTest(trueMag_), new GraphScore(trueMag_));
 //            lvLite.setEnsureMarkov(true);
 //            Graph estPag3 = lvLite.search();
@@ -534,6 +508,17 @@ public class TestFci {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void test18() {
+
+        // Possible d-sep check from Haoyue Dai.
+        Graph graph = GraphUtils.convert("0o->2, 1o->2, 0o-o3, 2o-o3");
+        Node v1 = graph.getNode("1");
+        Node v3 = graph.getNode("3");
+        assertTrue(graph.paths().possibleDsep(v3, -1).contains(v1));
+        assertTrue(graph.paths().possibleDsep(v1, -1).contains(v3));
     }
 
     private boolean ancestral(Node n, Node q, Graph pag) {

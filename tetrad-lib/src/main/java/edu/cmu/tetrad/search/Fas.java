@@ -9,7 +9,6 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.LogUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,8 +167,8 @@ public class Fas {
             throw new InterruptedException("Variables should be a subset of the ones in the test.");
         }
 
-        Graph graph = new EdgeListGraph(nodes);
-        graph = GraphUtils.completeGraph(graph);
+        Graph modify = new EdgeListGraph(nodes);
+        modify = GraphUtils.completeGraph(modify);
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -177,10 +176,10 @@ public class Fas {
                 Node y = nodes.get(j);
 
                 if (knowledge.isForbidden(x.getName(), y.getName()) && knowledge.isForbidden(y.getName(), x.getName())) {
-                    graph.removeEdge(x, y);
+                    modify.removeEdge(x, y);
 
                     if (verbose) {
-                        System.out.println("Edges removed by knowledge: " + x.getName() + " " + y.getName());
+                        TetradLogger.getInstance().log("Edge removed by knowledge: " + x.getName() + " *-* " + y.getName());
                     }
                 }
             }
@@ -194,64 +193,54 @@ public class Fas {
             }
 
             if (this.stable) {
-                Graph graph_ = graph;
-                graph = new EdgeListGraph(graph_);
+                Graph checkAdj = new EdgeListGraph(modify);
 
-                if (searchAtDepth(graph, graph_, d, this.stable)) {
-                    graph = graph_;
+                if (searchAtDepth(checkAdj, modify, d, this.stable)) {
                     break;
                 }
 
-                graph = graph_;
+//                checkAdj = graph_;
             } else {
-                if (searchAtDepth(graph, graph, d, stable)) {
+                if (searchAtDepth(modify, modify, d, this.stable)) {
                     break;
                 }
             }
         }
 
-        return graph;
+        return modify;
     }
 
     /**
-     * Searches for conditional independence relationships in a graph up to a given depth d. If the graph's nodes meet
-     * the conditions specified, the edges may be removed based on the provided knowledge.
+     * Searches for conditional independence relationships in a checkAdj up to a given depth d. If the checkAdj's nodes
+     * meet the conditions specified, the edges may be removed based on the provided knowledge.
      *
-     * @param graph  The graph on which the search is performed.
-     * @param graph_ A copy of the graph where changes are applied during the search process.
-     * @param d      The maximum depth to consider for conditional independence tests.
-     * @param stable If true, performs the search using a parallel strategy; otherwise, uses a sequential strategy.
-     * @return True if the maximum free degree of the resulting graph is less than or equal to d, false otherwise.
+     * @param checkAdj The checkAdj on which the search is performed.
+     * @param modify   A copy of the checkAdj where changes are applied during the search process.
+     * @param d        The maximum depth to consider for conditional independence tests.
+     * @param stable   If true, performs the search using a parallel strategy; otherwise, uses a sequential strategy.
+     * @return True if the maximum free degree of the resulting checkAdj is less than or equal to d, false otherwise.
      */
-    private boolean searchAtDepth(Graph graph, Graph graph_, int d, boolean stable) {
-        List<Node> nodes = graph.getNodes();
+    private boolean searchAtDepth(Graph checkAdj, Graph modify, int d, boolean stable) {
+        List<Node> nodes = checkAdj.getNodes();
 
         if (stable) {
-            try {
-                nodes.parallelStream().forEach(x -> {
-                    removeNodesAboutX(graph, graph_, d, x);
-                });
-
-                return freeDegree(graph_) <= d;
-            } catch (Exception e) {
-                nodes.forEach(x -> {
-                    removeNodesAboutX(graph, graph_, d, x);
-                });
-            }
-
-            return freeDegree(graph_) <= d;
-        } else {
-            nodes.forEach(x -> {
-                removeNodesAboutX(graph, graph, d, x);
+            nodes.parallelStream().forEach(x -> {
+                removeNodesAboutX(checkAdj, modify, d, x);
             });
 
-            return freeDegree(graph_) <= d;
+            return freeDegree(modify) <= d;
+        } else {
+            nodes.forEach(x -> {
+                removeNodesAboutX(modify, modify, d, x);
+            });
+
+            return freeDegree(modify) <= d;
         }
     }
 
-    private void removeNodesAboutX(Graph graph, Graph graph_, int d, Node x) {
-        for (Node y : graph.getAdjacentNodes(x)) {
-            List<Node> ppx = possibleParents(x, graph.getAdjacentNodes(x), knowledge, y);
+    private void removeNodesAboutX(Graph checkAdj, Graph modify, int d, Node x) {
+        for (Node y : checkAdj.getAdjacentNodes(x)) {
+            List<Node> ppx = possibleParents(x, checkAdj.getAdjacentNodes(x), knowledge, y);
 
             if (ppx.size() >= d) {
                 ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
@@ -267,7 +256,7 @@ public class Fas {
                         throw new RuntimeException(e);
                     }
                     if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
-                        graph_.removeEdge(x, y);
+                        modify.removeEdge(x, y);
                         sepset.set(x, y, S);
 
                         TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));
