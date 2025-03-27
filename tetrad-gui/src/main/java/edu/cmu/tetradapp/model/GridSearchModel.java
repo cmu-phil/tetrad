@@ -181,7 +181,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * is categorized or scoped, influencing the analysis process in probabilistic or causal models. It is initialized
      * to `ConditioningSetType.LOCAL_MARKOV`, indicating that the default scope pertains to local Markovity.
      */
-    private ConditioningSetType markovCheckerConditioningSetType = ConditioningSetType.LOCAL_MARKOV;
+    private ConditioningSetType markovCheckerConditioningSetType = ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG;
     /**
      * Stores the selected independendence test model for the GridSearchEditor. It needs to be stored here in case
      * the user closes the editor and re-opens it.
