@@ -209,9 +209,12 @@ public class TestCheckNodewiseMarkov {
         }
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedCpdag = null;
+        Graph estimatedPAG = null;
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         try {
-            estimatedCpdag = new PermutationSearch(new Boss(score)).search();
+            BossFci bossFCI = new BossFci(fisherZTest, score); // TODO VBC: discuss with Peter: GaspFCI, LVLite, FCI,
+            bossFCI.setGuaranteePag(true);
+            estimatedPAG = bossFCI.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -236,23 +239,23 @@ public class TestCheckNodewiseMarkov {
         }
 
         // Save estimated graph in the simulation directory
-        File estGraphFile = new File(simulationDir, "estimatedCpdag.txt");
+        File estGraphFile = new File(simulationDir, "estimatedPAG.txt");
         try (Writer out = new FileWriter(estGraphFile)) {
-            out.write(estimatedCpdag.toString());
+            out.write(estimatedPAG.toString());
         } catch (IOException e) {
             TetradLogger.getInstance().log("IO Exception while saving graph: " + e.getMessage());
         }
 
         File statsFile = new File(simulationDir, "stats.txt");
 
-        testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(statsFile, data, trueGraph, estimatedCpdag, threshold, shuffleThreshold, lowRecallBound);
-        estimatedCpdag = GraphUtils.replaceNodes(estimatedCpdag, trueGraph.getNodes());
-        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
-        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
-        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
-        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
-        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
-        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(statsFile, fisherZTest, data, trueGraph, estimatedPAG, threshold, shuffleThreshold, lowRecallBound);
+        estimatedPAG = GraphUtils.replaceNodes(estimatedPAG, trueGraph.getNodes());
+        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedPAG, null, new Parameters());
+        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedPAG, null, new Parameters());
+        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedPAG, null, new Parameters());
+        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedPAG, null, new Parameters());
+        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedPAG, null, new Parameters());
+        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedPAG, null, new Parameters());
 
         // Save statistical data in the simulation directory
         try (Writer out = new FileWriter(statsFile)) {
@@ -273,13 +276,13 @@ public class TestCheckNodewiseMarkov {
      * @see OrderedLocalMarkovProperty
      * @see ConditioningSetType
      */
-    private static void testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(File statsFile, DataSet data, Graph trueGraph, Graph estimatedCpdag, double threshold, double shuffleThreshold, double lowRecallBound) {
-        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+    private static void testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(File statsFile, IndependenceTest fisherZTest, DataSet data, Graph trueGraph, Graph estimatedPAG, double threshold, double shuffleThreshold, double lowRecallBound) {
+        // IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         // TODO VBC: ?? estimatedCpda can lead to error in generateResults : Input is not a legal MAG
         // such case would appear around once every 10 simulations.
         // do we want to insert false to keep record of such cases?
         // OR do we want to make sure the estimatedCpdag feed into markovCheck are already legal MAG?
-        MarkovCheck markovCheck = new MarkovCheck(estimatedCpdag, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+        MarkovCheck markovCheck = new MarkovCheck(estimatedPAG, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
         markovCheck.generateResults(true);
         double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
         double kSPvalue = markovCheck.getKsPValue(true);
