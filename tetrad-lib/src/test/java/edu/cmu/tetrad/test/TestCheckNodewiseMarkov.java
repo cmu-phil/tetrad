@@ -258,7 +258,7 @@ public class TestCheckNodewiseMarkov {
         double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedPAG, null, new Parameters());
 
         // Save statistical data in the simulation directory
-        try (Writer out = new FileWriter(statsFile)) {
+        try (Writer out = new FileWriter(statsFile, true)) {
             out.write("whole_ap: " + whole_ap + "\n" );
             out.write("whole_ar: " + whole_ar + "\n" );
             out.write("whole_ahp: " + whole_ahp + "\n" );
