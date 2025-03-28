@@ -848,6 +848,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
             if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG) {
                 Graph mag = GraphTransforms.zhangMagFromPag(graph);
+                // TODO VBC: ?? here it seems mag from zhangMagFromPag(graph) can be
+                //  reported as "Input is not a legal MAG" in OrderedLocalMarkovProperty.getModel(mag) call.
+                //  does it mean Jiji's method  zhangMagFromPag has bug?
                 allIndependenceFacts = OrderedLocalMarkovProperty.getModel(mag);
             } else {
                 for (int i = 0; i < nodes.size(); i++) {
