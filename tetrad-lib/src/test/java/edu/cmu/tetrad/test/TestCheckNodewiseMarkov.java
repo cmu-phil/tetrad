@@ -277,11 +277,6 @@ public class TestCheckNodewiseMarkov {
      * @see ConditioningSetType
      */
     private static void testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(File statsFile, IndependenceTest fisherZTest, DataSet data, Graph trueGraph, Graph estimatedPAG, double threshold, double shuffleThreshold, double lowRecallBound) {
-        // IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
-        // TODO VBC: ?? estimatedCpda can lead to error in generateResults : Input is not a legal MAG
-        // such case would appear around once every 10 simulations.
-        // do we want to insert false to keep record of such cases?
-        // OR do we want to make sure the estimatedCpdag feed into markovCheck are already legal MAG?
         MarkovCheck markovCheck = new MarkovCheck(estimatedPAG, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
         markovCheck.generateResults(true);
         double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
@@ -299,7 +294,6 @@ public class TestCheckNodewiseMarkov {
         } catch (IOException e) {
             TetradLogger.getInstance().log("IO Exception while saving statistics: " + e.getMessage());
         }
-
         // TODO VBC: print a report file of one role of each graph, each col be the above stats numbers
     }
 
