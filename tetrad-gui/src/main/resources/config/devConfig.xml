@@ -136,6 +136,17 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor
                 </editor-class>
             </model>
+            <model name="Suggest Intermediate Latents" acronym="Suggest Intermediate Latents"
+                   help="graph" category="Graph Manipulations">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="pag" description="PAG" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.SuggestIntermediateLatents
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GraphEditor
+                </editor-class>
+            </model>
             <model name="Make Bidirected Edges Undirected" acronym="Make bidirected undirected"
                    help="graph" category="Graph Manipulations">
                 <logger>
