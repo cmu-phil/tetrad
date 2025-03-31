@@ -7,12 +7,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * The `DmPc` class implements a causal discovery algorithm for detecting and representing intermediate latent variables
- * and their causal relationships in a dataset. The algorithm utilizes constraint-based causal discovery techniques,
- * clustering, and structure refinement to build a causal graph that incorporates latent variables.
+ * The Detect-Mimic-PC (DM-PC) algorithm. This is intended to detect intermediate latent variables for Multiple Input *
+ * Multiple IndiCator (MIMIC) models. models. This implements a causal discovery algorithm for detecting and
+ * representing intermediate latent variables and their causal relationships in a dataset. The algorithm utilizes
+ * constraint-based causal discovery techniques, clustering, and structure refinement to build a causal graph that
+ * incorporates latent variables.
  * <p>
  * The class requires an `IndependenceTest` to perform statistical independence checks on variable pairs or groups,
  * which is central to its operation.
+ *
+ * @author murraywaters
+ * @author josephramsey
  */
 public class DmPc {
 

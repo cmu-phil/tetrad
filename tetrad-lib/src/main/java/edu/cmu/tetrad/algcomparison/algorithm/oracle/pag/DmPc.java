@@ -26,7 +26,8 @@ import java.util.List;
 
 
 /**
- * DM.
+ * Detect-Mimic-PC (DM-PC) algorithm. This is intended to detect intermediate latent variables for Multiple Input
+ * Multiple IndiCator (MIMIC) models. models.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -63,7 +64,7 @@ public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     /**
      * <p>Constructor for DM-PC.</p>
      *
-     * @param test  a {@link IndependenceWrapper} object
+     * @param test a {@link IndependenceWrapper} object
      */
     public DmPc(IndependenceWrapper test) {
         this.test = test;

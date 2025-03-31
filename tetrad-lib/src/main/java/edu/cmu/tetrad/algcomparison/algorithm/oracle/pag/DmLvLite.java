@@ -34,11 +34,11 @@ import java.util.*;
 
 
 /**
- * This class represents the DM-LV-Lite algorithm, a specialized variant of the DM-PC and LV-Lite algorithms designed to
- * identify intermediate latent variables. DM-LV-Lite enhances accuracy and computational efficiency by recursively
- * maintaining complete PAG orientations during the search process. At each step, it uses these orientations to
- * substantially reduce the required size of conditioning sets when testing independence. This approach leads to more
- * precise identification of latent variables and better orientation accuracy overall.
+ * This class represents the Detect-Mimic-Lv-Lite (DM-LV-Lite) algorithm, a specialized variant of the DM-PC and LV-Lite
+ * algorithms designed to identify intermediate latent variables. DM-LV-Lite enhances accuracy and computational
+ * efficiency by recursively maintaining complete PAG orientations during the search process. At each step, it uses
+ * these orientations to substantially reduce the required size of conditioning sets when testing independence. This
+ * approach leads to more precise identification of latent variables and better orientation accuracy overall.
  *
  * @author josephramsey
  */
@@ -110,7 +110,7 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
      * @param test  An independence test used for determining conditional independencies in the graph.
      * @return A modified graph with latent variables identified and directed edges appropriately adjusted.
      */
-    private static Graph getGraph(Graph graph, IndependenceTest test) {
+    private static Graph getDmGraph(Graph graph, IndependenceTest test) {
         FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(test));
         graph = new EdgeListGraph(graph);
 
@@ -160,14 +160,9 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
                     a2.forEach(children::remove);
                     if (children.isEmpty()) continue;
 
-                    for (Node p : parents) {
-                        for (Node c : children) {
-                            Edge e = possiblyDirected.getEdge(p, c);
-                            if (e == null) continue C;
-                        }
-                    }
+                    if (!cartesianProduct(parents, children, possiblyDirected)) continue;
 
-                    // DM CHECK: Confirm legitimate latent
+                    // Verify that the candidate latent node meets orientation-based legitimacy criteria.
                     if (confirmLatentUsingOrientation(graph, parents, children, test)) {
                         if (!parents.isEmpty() && !children.isEmpty()) {
                             GraphNode newLatent = new GraphNode("L" + latentCounter++);
@@ -200,10 +195,30 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
             }
         }
 
-        // DM CHECK: Orient latent-to-latent edges using subset-inclusion logic
+        // Add latent-to-latent edges based on subset-inclusion logic.
         orientLatentEdges(graph, latentNodes);
         LayoutUtil.repositionLatents(graph);
         return graph;
+    }
+
+    /**
+     * Checks if there is an edge in the given graph for every pair of nodes from the Cartesian product of the provided
+     * parents and children sets.
+     *
+     * @param parents          The set of parent nodes to be considered.
+     * @param children         The set of child nodes to be considered.
+     * @param possiblyDirected The graph in which the edges are checked. The graph may or may not be directed.
+     * @return True if there is an edge in the graph for every pair of nodes from the Cartesian product of parents and
+     * children; false otherwise.
+     */
+    private static boolean cartesianProduct(Set<Node> parents, Set<Node> children, Graph possiblyDirected) {
+        for (Node p : parents) {
+            for (Node c : children) {
+                Edge e = possiblyDirected.getEdge(p, c);
+                if (e == null) return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -353,7 +368,7 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         Graph graph = search.search();
 
-        return getGraph(graph, test);
+        return getDmGraph(graph, test);
     }
 
     /**
