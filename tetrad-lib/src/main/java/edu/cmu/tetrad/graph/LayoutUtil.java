@@ -107,6 +107,8 @@ public class LayoutUtil {
 
             phi += rad;
         }
+
+        repositionLatents(graph);
     }
 
     /**
@@ -165,6 +167,8 @@ public class LayoutUtil {
             node.setCenterX(bufferx);
             node.setCenterY(buffery + spacey * (side - i));
         }
+
+        repositionLatents(graph);
     }
 
     /**
@@ -290,6 +294,43 @@ public class LayoutUtil {
         }
 
         return arrangedAll;
+    }
+
+    public static void repositionLatents(Graph graph) {
+        for (Node latent : graph.getNodes()) {
+            if (latent.getNodeType() == NodeType.LATENT) {
+                Set<Node> neighbors = new HashSet<>(graph.getAdjacentNodes(latent));
+
+                for (Node neighbor : new HashSet<>(neighbors)) {
+                    if (neighbor.getNodeType() == NodeType.LATENT) {
+                        neighbors.remove(neighbor);
+                    }
+                }
+
+                positionLatentNode(latent, neighbors);
+            }
+        }
+    }
+
+    public static void positionLatentNode(Node latent, Set<Node> neighbors) {
+        if (neighbors.isEmpty()) return; // safety check to prevent division by zero.
+
+        float avgX = 0f;
+        float avgY = 0f;
+        int count = 0;
+
+        for (Node neighbor : neighbors) {
+            if (neighbor.getNodeType() == NodeType.MEASURED) {
+                avgX += neighbor.getCenterX();
+                avgY += neighbor.getCenterY();
+                count++;
+            }
+        }
+
+        avgX /= count;
+        avgY /= count;
+
+        latent.setCenter((int) avgX, (int) avgY);
     }
 
     /**

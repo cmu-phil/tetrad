@@ -83,10 +83,6 @@ public class SuggestIntermediateLatents extends GraphWrapper implements DoNotAdd
                 possibleParents.addAll(possiblyDirected.getParents(p));
             }
 
-//            for (Node p : possibleParents) {
-//                possibleChildren.addAll(possiblyDirected.getChildren(p));
-//            }
-
             List<Node> _possibleParents = new ArrayList<>(possibleParents);
             List<Node> _possibleChildren = new ArrayList<>(possibleChildren);
 
@@ -173,16 +169,6 @@ public class SuggestIntermediateLatents extends GraphWrapper implements DoNotAdd
         }
 
         return graph;
-    }
-
-    private static boolean possibleDirectedEdge(Node node2, Node node21, Graph graph) {
-        Edge edge = graph.getEdge(node21, node2);
-        if (edge == null) return false;
-
-        boolean end1Ok = edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE;
-        boolean en21Ok = edge.getEndpoint2() == Endpoint.ARROW;// || edge.getEndpoint2() == Endpoint.CIRCLE;
-
-        return end1Ok && en21Ok;
     }
 
     /**
