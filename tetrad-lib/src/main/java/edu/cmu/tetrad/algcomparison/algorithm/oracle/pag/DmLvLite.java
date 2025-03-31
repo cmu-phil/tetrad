@@ -114,8 +114,6 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
         FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(test));
         graph = new EdgeListGraph(graph);
 
-        Map<Set<Node>, Set<Node>> cartesianProducts = new HashMap<>();
-
         Graph possiblyDirected = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
@@ -123,6 +121,9 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
                 possiblyDirected.addDirectedEdge(edge.getNode1(), edge.getNode2());
             }
         }
+
+        int latentCounter = 1;
+        Map<Set<Node>, Node> latentNodes = new HashMap<>();
 
         for (Node x : possiblyDirected.getNodes()) {
             Set<Node> possibleChildren = new HashSet<>(possiblyDirected.getChildren(x));
@@ -145,9 +146,9 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
             W:
             while ((choice1 = gen1.next()) != null) {
                 List<Node> a1 = GraphUtils.asList(choice1, _possibleParents);
-                Set<Node> comp1 = new HashSet<>(_possibleParents);
-                a1.forEach(comp1::remove);
-                if (comp1.isEmpty()) continue;
+                Set<Node> parents = new HashSet<>(_possibleParents);
+                a1.forEach(parents::remove);
+                if (parents.isEmpty()) continue;
 
                 SublistGenerator gen2 = new SublistGenerator(_possibleChildren.size(), _possibleChildren.size());
                 int[] choice2;
@@ -155,24 +156,40 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
                 C:
                 while ((choice2 = gen2.next()) != null) {
                     List<Node> a2 = GraphUtils.asList(choice2, _possibleChildren);
-                    Set<Node> comp2 = new HashSet<>(_possibleChildren);
-                    a2.forEach(comp2::remove);
-                    if (comp2.isEmpty()) continue;
+                    Set<Node> children = new HashSet<>(_possibleChildren);
+                    a2.forEach(children::remove);
+                    if (children.isEmpty()) continue;
 
-                    for (Node p : comp1) {
-                        for (Node c : comp2) {
+                    for (Node p : parents) {
+                        for (Node c : children) {
                             Edge e = possiblyDirected.getEdge(p, c);
                             if (e == null) continue C;
                         }
                     }
 
                     // DM CHECK: Confirm legitimate latent
-                    if (confirmLatentUsingOrientation(graph, comp1, comp2, test)) {
-                        cartesianProducts.put(new HashSet<>(comp1), new HashSet<>(comp2));
+                    if (confirmLatentUsingOrientation(graph, parents, children, test)) {
+                        if (!parents.isEmpty() && !children.isEmpty()) {
+                            GraphNode newLatent = new GraphNode("L" + latentCounter++);
+                            newLatent.setNodeType(NodeType.LATENT);
+                            graph.addNode(newLatent);
 
-                        // Remove edges from comp1 to comp2 from possiblyDirected
-                        for (Node p : comp1) {
-                            for (Node c : comp2) {
+                            latentNodes.put(parents, newLatent);
+
+                            for (Node p : parents) {
+                                for (Node c : children) {
+                                    graph.removeEdge(p, c);
+                                    graph.addDirectedEdge(p, newLatent);
+                                    graph.addDirectedEdge(newLatent, c);
+                                }
+                            }
+
+                            fciOrient.finalOrientation(graph);
+                        }
+
+                        // Remove edges from parents to children from possiblyDirected
+                        for (Node p : parents) {
+                            for (Node c : children) {
                                 possiblyDirected.removeEdge(p, c);
                             }
                         }
@@ -180,31 +197,6 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
                         break W;
                     }
                 }
-            }
-        }
-
-        Map<Set<Node>, Node> latentNodes = new HashMap<>();
-        int latentCounter = 1;
-
-        for (Set<Node> parents : cartesianProducts.keySet()) {
-            Set<Node> children = cartesianProducts.get(parents);
-
-            if (!parents.isEmpty() && !children.isEmpty()) {
-                GraphNode newLatent = new GraphNode("L" + latentCounter++);
-                newLatent.setNodeType(NodeType.LATENT);
-                graph.addNode(newLatent);
-
-                latentNodes.put(parents, newLatent);
-
-                for (Node p : parents) {
-                    for (Node c : children) {
-                        graph.removeEdge(p, c);
-                        graph.addDirectedEdge(p, newLatent);
-                        graph.addDirectedEdge(newLatent, c);
-                    }
-                }
-
-                fciOrient.finalOrientation(graph);
             }
         }
 
@@ -264,7 +256,6 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
                     IndependenceResult result = test.checkIndependence(childA, childB, minimalParents);
 
                     if (result.isIndependent()) {
-                        // Found independence, latent is NOT legitimate
                         return false;
                     }
                 }
@@ -289,7 +280,7 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
     private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents) {
         // Delegates the minimal conditioning set finding to the proven recursive method.
         return SepsetFinder.getPathBlockingSetRecursive(
-                graph, childA, childB, new HashSet<>(parents), -1, new HashSet<>()
+                graph, childA, childB, new HashSet<>(), -1, new HashSet<>()
         );
     }
 
