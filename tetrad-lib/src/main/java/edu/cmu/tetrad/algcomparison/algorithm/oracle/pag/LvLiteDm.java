@@ -474,7 +474,7 @@ public class LvLiteDm extends AbstractBootstrapAlgorithm implements Algorithm, U
         for (Set<Node> parents : cartesianProducts.keySet()) {
             Set<Node> children = cartesianProducts.get(parents);
 
-            if (true) {//!parents.isEmpty() && !children.isEmpty()) {
+            if (!parents.isEmpty() && !children.isEmpty()) {
                 GraphNode newNode = new GraphNode("L" + latentCounter++);
                 newNode.setNodeType(NodeType.LATENT);
                 graph.addNode(newNode);
