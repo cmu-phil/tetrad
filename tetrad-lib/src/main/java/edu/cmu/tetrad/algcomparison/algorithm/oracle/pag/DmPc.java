@@ -32,12 +32,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM",
-        command = "dm",
+        name = "DM-PC",
+        command = "dm-pc",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class DM extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
+public class DmPc extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -54,18 +54,18 @@ public class DM extends AbstractBootstrapAlgorithm implements Algorithm, TakesIn
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * <p>Constructor for DM.</p>
+     * <p>Constructor for DM-PC.</p>
      */
-    public DM() {
+    public DmPc() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * <p>Constructor for DM.</p>
+     * <p>Constructor for DM-PC.</p>
      *
      * @param test  a {@link IndependenceWrapper} object
      */
-    public DM(IndependenceWrapper test) {
+    public DmPc(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -94,7 +94,7 @@ public class DM extends AbstractBootstrapAlgorithm implements Algorithm, TakesIn
         IndependenceTest test = this.test.getTest(dataModel, parameters);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.DM search = new edu.cmu.tetrad.search.DM(test);
+        edu.cmu.tetrad.search.DmPc search = new edu.cmu.tetrad.search.DmPc(test);
         search.setKnowledge(knowledge);
 
         return search.search();
@@ -119,7 +119,7 @@ public class DM extends AbstractBootstrapAlgorithm implements Algorithm, TakesIn
      */
     @Override
     public String getDescription() {
-        return "DM using " + this.test.getDescription();
+        return "DM-PC using " + this.test.getDescription();
     }
 
     /**

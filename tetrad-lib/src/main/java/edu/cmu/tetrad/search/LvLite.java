@@ -131,6 +131,17 @@ public final class LvLite implements IGraphSearch {
      * A helper class to help perserve Markov.
      */
     private EnsureMarkov ensureMarkovHelper = null;
+    /**
+     * The unshielded colliders encountered in search.
+     */
+    private Set<Triple> unshieldedColliers;
+    /**
+     * A map that associates each {@code Edge} with a corresponding set of {@code Node} objects
+     * representing additional separating sets within a graph. This data structure is typically
+     * used to manage extra separation information between nodes connected by edges in applications
+     * such as graphical models or causal inference algorithms.
+     */
+    private Map<Edge, Set<Node>> extraSepsets;
 
     /**
      * LV-Lite constructor. Initializes a new object of LV-Lite search algorithm with the given IndependenceTest and
@@ -433,9 +444,10 @@ public final class LvLite implements IGraphSearch {
         TetradLogger.getInstance().log("Guarantee PAG time: " + (stop3 - start3) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop3 - start1) + " ms.");
 
-        Graph graph = GraphUtils.replaceNodes(pag, nodes);
+        this.unshieldedColliers = unshieldedColliders;
+        this.extraSepsets = extraSepsets;
 
-        return graph;
+        return GraphUtils.replaceNodes(pag, nodes);
     }
 
     private void copyUnshieldedCollidersFromCpdag(List<Node> best, Graph pag, Set<Triple> checked, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, FciOrient fciOrient) {
@@ -1030,6 +1042,21 @@ public final class LvLite implements IGraphSearch {
      */
     public void setEnsureMarkov(boolean ensureMarkov) {
         this.ensureMarkov = ensureMarkov;
+    }
+
+    public Set<Triple> getUnshieldedColliers() {
+        return new HashSet<>(unshieldedColliers);
+    }
+
+    /**
+     * Retrieves a map containing additional separation sets.
+     * Each entry in the map associates an edge with a set of nodes
+     * that constitute the separation set for that edge.
+     *
+     * @return a map where the keys are edges and the values are sets of nodes representing the separation sets
+     */
+    public Map<Edge, Set<Node>> getExtraSepsets() {
+        return new HashMap<>(extraSepsets);
     }
 
     /**

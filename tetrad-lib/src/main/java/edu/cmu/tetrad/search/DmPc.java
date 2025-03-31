@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DM {
+public class DmPc {
 
     private final IndependenceTest test;
     private final List<Node> inputs = new ArrayList<>();
@@ -15,7 +15,7 @@ public class DM {
     private int latentIndex = 1;
     private Knowledge knowledge = new Knowledge();
 
-    public DM(IndependenceTest test) {
+    public DmPc(IndependenceTest test) {
         this.test = test;
     }
 
@@ -152,8 +152,6 @@ public class DM {
                 .filter(n -> n.getNodeType() != NodeType.LATENT)
                 .collect(Collectors.toSet());
     }
-
-
 
     // You'd implement these helper methods clearly:
     private Set<Node> getInputNodes(Node latent, Graph graph) {
