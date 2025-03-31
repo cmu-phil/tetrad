@@ -324,7 +324,6 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         pag.reorientAllWith(Endpoint.CIRCLE);
-
         fciOrientbk(knowledge, pag, pag.getNodes());
 
         for (Node y : nodes) {

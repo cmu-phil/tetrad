@@ -231,6 +231,7 @@ public final class DagToPag {
 
         FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
         fciOrient.setVerbose(verbose);
+        fciOrient.setKnowledge(knowledge);
 
         fciOrient.ruleR0(pag, new HashSet<>());
         fciOrient.finalOrientation(pag);

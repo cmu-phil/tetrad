@@ -1,19 +1,21 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DM2 {
+public class DM {
 
     private final IndependenceTest test;
     private final List<Node> inputs = new ArrayList<>();
     private final List<Node> outputs = new ArrayList<>();
 
     private int latentIndex = 1;
+    private Knowledge knowledge = new Knowledge();
 
-    public DM2(IndependenceTest test) {
+    public DM(IndependenceTest test) {
         this.test = test;
     }
 
@@ -42,6 +44,7 @@ public class DM2 {
         try {
             Pc pc = new Pc(test);
             pc.setDepth(0);
+            pc.setKnowledge(knowledge);
             return pc.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -201,6 +204,8 @@ public class DM2 {
     private void finalRefinement(Graph graph) {
         try {
             Pc pc = new Pc(test);
+            pc.setDepth(-1);
+            pc.setKnowledge(knowledge);
             Graph fullPattern = pc.search();
 
             for (Node output : outputs) {
@@ -228,4 +233,7 @@ public class DM2 {
     }
 
 
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
 }

@@ -5,10 +5,8 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -18,7 +16,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -29,18 +26,18 @@ import java.util.List;
 
 
 /**
- * DM2.
+ * DM.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM2",
-        command = "dm2",
+        name = "DM",
+        command = "dm",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class DM2 extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
+public class DM extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -57,18 +54,18 @@ public class DM2 extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * <p>Constructor for DM2.</p>
+     * <p>Constructor for DM.</p>
      */
-    public DM2() {
+    public DM() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * <p>Constructor for DM2.</p>
+     * <p>Constructor for DM.</p>
      *
      * @param test  a {@link IndependenceWrapper} object
      */
-    public DM2(IndependenceWrapper test) {
+    public DM(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -97,7 +94,8 @@ public class DM2 extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         IndependenceTest test = this.test.getTest(dataModel, parameters);
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        edu.cmu.tetrad.search.DM2 search = new edu.cmu.tetrad.search.DM2(test);
+        edu.cmu.tetrad.search.DM search = new edu.cmu.tetrad.search.DM(test);
+        search.setKnowledge(knowledge);
 
         return search.search();
     }
@@ -121,7 +119,7 @@ public class DM2 extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      */
     @Override
     public String getDescription() {
-        return "DM2 using " + this.test.getDescription();
+        return "DM using " + this.test.getDescription();
     }
 
     /**

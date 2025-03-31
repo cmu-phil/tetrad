@@ -37,13 +37,13 @@ import java.util.*;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM3",
-        command = "dm3",
+        name = "Lv-Lite-DM",
+        command = "lv-lite-dm",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class DM3 extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class LvLiteDm extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -76,7 +76,7 @@ public class DM3 extends AbstractBootstrapAlgorithm implements Algorithm, UsesSc
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public DM3() {
+    public LvLiteDm() {
         // Used for reflection; do not delete.
     }
 
@@ -94,7 +94,7 @@ public class DM3 extends AbstractBootstrapAlgorithm implements Algorithm, UsesSc
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public DM3(IndependenceWrapper test, ScoreWrapper score) {
+    public LvLiteDm(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -190,7 +190,7 @@ public class DM3 extends AbstractBootstrapAlgorithm implements Algorithm, UsesSc
      */
     @Override
     public String getDescription() {
-        return "DM3 using " + this.score.getDescription();
+        return "Lv-Lite-DM using " + this.score.getDescription();
     }
 
     /**
@@ -288,6 +288,114 @@ public class DM3 extends AbstractBootstrapAlgorithm implements Algorithm, UsesSc
         this.test = independenceWrapper;
     }
 
+//    private static Graph getGraph(Graph graph, IndependenceTest test) {
+//        graph = new EdgeListGraph(graph);
+//
+//        Map<Set<Node>, Set<Node>> cartesianProducts = new HashMap<>();
+//
+//        Graph possiblyDirected = new EdgeListGraph(graph.getNodes());
+//
+//        // Step 1: Include explicitly directed edges.
+//        for (Edge edge : graph.getEdges()) {
+//            if (edge.pointsTowards(edge.getNode2())) {
+//                possiblyDirected.addDirectedEdge(edge.getNode1(), edge.getNode2());
+//            } else if (edge.getEndpoint1() == Endpoint.CIRCLE && edge.getEndpoint2() == Endpoint.CIRCLE) {
+//                // DM3 REVISION: Include o-o edges with lexical ordering.
+//                Node node1 = edge.getNode1();
+//                Node node2 = edge.getNode2();
+//
+//                // Lexical ordering (alphabetical).
+//                if (node1.getName().compareTo(node2.getName()) < 0) {
+//                    possiblyDirected.addDirectedEdge(node1, node2);
+//                } else {
+//                    possiblyDirected.addDirectedEdge(node2, node1);
+//                }
+//            }
+//            // Other edges are ignored (bidirected, undirected, or partially oriented).
+//        }
+//
+//        for (Node x : possiblyDirected.getNodes()) {
+//            Set<Node> possibleChildren = new HashSet<>(possiblyDirected.getChildren(x));
+//            Set<Node> possibleParents = new HashSet<>();
+//
+//            for (Node p : possibleChildren) {
+//                possibleParents.addAll(possiblyDirected.getParents(p));
+//            }
+//
+//            List<Node> _possibleParents = new ArrayList<>(possibleParents);
+//            List<Node> _possibleChildren = new ArrayList<>(possibleChildren);
+//
+//            SublistGenerator gen1 = new SublistGenerator(_possibleParents.size(), _possibleParents.size());
+//            int[] choice1;
+//
+//            W:
+//            while ((choice1 = gen1.next()) != null) {
+//                List<Node> a1 = GraphUtils.asList(choice1, _possibleParents);
+//                Set<Node> comp1 = new HashSet<>(_possibleParents);
+//                a1.forEach(comp1::remove);
+//                if (comp1.size() < 2) continue;
+//
+//                SublistGenerator gen2 = new SublistGenerator(_possibleChildren.size(), _possibleChildren.size());
+//                int[] choice2;
+//
+//                C:
+//                while ((choice2 = gen2.next()) != null) {
+//                    List<Node> a2 = GraphUtils.asList(choice2, _possibleChildren);
+//                    Set<Node> comp2 = new HashSet<>(_possibleChildren);
+//                    a2.forEach(comp2::remove);
+//                    if (comp2.size() < 2) continue;
+//
+//                    for (Node p : comp1) {
+//                        for (Node c : comp2) {
+//                            Edge e = possiblyDirected.getEdge(p, c);
+//                            if (e == null) continue C;
+//                        }
+//                    }
+//
+//                    if (confirmLatent(comp1, comp2, test)) {
+//                        cartesianProducts.put(new HashSet<>(comp1), new HashSet<>(comp2));
+//
+//                        // Remove edges from comp1 to comp2 from possiblyDirected
+//                        for (Node p : comp1) {
+//                            for (Node c : comp2) {
+//                                possiblyDirected.removeEdge(p, c);
+//                            }
+//                        }
+//
+//                        break W;
+//                    }
+//                }
+//            }
+//        }
+//
+//        Map<Set<Node>, Node> latentNodes = new HashMap<>();
+//        int latentCounter = 1;
+//
+//        for (Set<Node> parents : cartesianProducts.keySet()) {
+//            Set<Node> children = cartesianProducts.get(parents);
+//
+//            if (!parents.isEmpty() && !children.isEmpty()) {
+//                GraphNode newNode = new GraphNode("L" + latentCounter++);
+//                newNode.setNodeType(NodeType.LATENT);
+//                graph.addNode(newNode);
+//                latentNodes.put(parents, newNode);
+//
+//                for (Node p : parents) {
+//                    for (Node c : children) {
+//                        graph.removeEdge(p, c);
+//                        graph.addDirectedEdge(p, newNode);
+//                        graph.addDirectedEdge(newNode, c);
+//                    }
+//                }
+//            }
+//        }
+//
+//        orientLatentEdges(graph, latentNodes);
+//        LayoutUtil.repositionLatents(graph);
+//
+//        return graph;
+//    }
+
     private static Graph getGraph(Graph graph, IndependenceTest test) {
         graph = new EdgeListGraph(graph);
 
@@ -309,6 +417,10 @@ public class DM3 extends AbstractBootstrapAlgorithm implements Algorithm, UsesSc
                 possibleParents.addAll(possiblyDirected.getParents(p));
             }
 
+            for (Node c : possibleParents) {
+                possibleChildren.addAll(possiblyDirected.getChildren(c));
+            }
+
             List<Node> _possibleParents = new ArrayList<>(possibleParents);
             List<Node> _possibleChildren = new ArrayList<>(possibleChildren);
 
@@ -320,7 +432,7 @@ public class DM3 extends AbstractBootstrapAlgorithm implements Algorithm, UsesSc
                 List<Node> a1 = GraphUtils.asList(choice1, _possibleParents);
                 Set<Node> comp1 = new HashSet<>(_possibleParents);
                 a1.forEach(comp1::remove);
-                if (comp1.size() < 2) continue;
+                if (comp1.isEmpty()) continue;
 
                 SublistGenerator gen2 = new SublistGenerator(_possibleChildren.size(), _possibleChildren.size());
                 int[] choice2;
@@ -330,7 +442,7 @@ public class DM3 extends AbstractBootstrapAlgorithm implements Algorithm, UsesSc
                     List<Node> a2 = GraphUtils.asList(choice2, _possibleChildren);
                     Set<Node> comp2 = new HashSet<>(_possibleChildren);
                     a2.forEach(comp2::remove);
-                    if (comp2.size() < 2) continue;
+                    if (comp2.isEmpty()) continue;
 
                     for (Node p : comp1) {
                         for (Node c : comp2) {
@@ -362,7 +474,7 @@ public class DM3 extends AbstractBootstrapAlgorithm implements Algorithm, UsesSc
         for (Set<Node> parents : cartesianProducts.keySet()) {
             Set<Node> children = cartesianProducts.get(parents);
 
-            if (parents.size() > 1 && children.size() > 1) {
+            if (true) {//!parents.isEmpty() && !children.isEmpty()) {
                 GraphNode newNode = new GraphNode("L" + latentCounter++);
                 newNode.setNodeType(NodeType.LATENT);
                 graph.addNode(newNode);

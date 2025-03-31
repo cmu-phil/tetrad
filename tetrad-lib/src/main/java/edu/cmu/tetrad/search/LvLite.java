@@ -218,6 +218,20 @@ public final class LvLite implements IGraphSearch {
 
         TetradLogger.getInstance().log("===Starting LV-Lite===");
 
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+        strategy.setVerbose(verbose);
+        strategy.setDepth(depth);
+        strategy.setMaxLength(maxBlockingPathLength);
+        strategy.setEnsureMarkovHelper(ensureMarkovHelper);
+
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setTestTimeout(testTimeout);
+        fciOrient.setVerbose(verbose);
+        fciOrient.setParallel(true);
+        fciOrient.setKnowledge(knowledge);
+
         Graph pag;
         Graph dag;
         List<Node> best;
@@ -343,26 +357,12 @@ public final class LvLite implements IGraphSearch {
 
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
         pag = new EdgeListGraph(cpdag);
+        strategy.setPag(pag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
-
-        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
-        strategy.setVerbose(verbose);
-        strategy.setDepth(depth);
-        strategy.setMaxLength(maxBlockingPathLength);
-        strategy.setPag(pag);
-        strategy.setEnsureMarkovHelper(ensureMarkovHelper);
-
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setTestTimeout(testTimeout);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setParallel(true);
-        fciOrient.setKnowledge(knowledge);
 
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
@@ -378,7 +378,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         GraphUtils.reorientWithCircles(pag, verbose);
-        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
+        fciOrient.fciOrientbk(knowledge, pag, nodes);
 
         if (verbose) {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
@@ -433,7 +433,9 @@ public final class LvLite implements IGraphSearch {
         TetradLogger.getInstance().log("Guarantee PAG time: " + (stop3 - start3) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop3 - start1) + " ms.");
 
-        return GraphUtils.replaceNodes(pag, nodes);
+        Graph graph = GraphUtils.replaceNodes(pag, nodes);
+
+        return graph;
     }
 
     private void copyUnshieldedCollidersFromCpdag(List<Node> best, Graph pag, Set<Triple> checked, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, FciOrient fciOrient) {
@@ -460,7 +462,7 @@ public final class LvLite implements IGraphSearch {
                                FciOrient fciOrient, List<Node> best) {
         GraphUtils.reorientWithCircles(pag, verbose);
         pag =   adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
-        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
         return pag;
     }
