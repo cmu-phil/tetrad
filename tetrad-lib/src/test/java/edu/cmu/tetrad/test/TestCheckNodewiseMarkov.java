@@ -42,7 +42,7 @@ public class TestCheckNodewiseMarkov {
                 System.err.println("Failed to create markovCheckSimulation/ directory.");
             }
         }
-        for (int run = 0; run < 10; run++) {
+        for (int run = 0; run < 10; run++) { // TODO VBC: choose total nodes, and then set vary numLatentConfounders and calculate the percentage of them.
             testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(run,10, 0,
                     20, 30, 40, 5, false, 0.5,
                     1.0, 0.8);
@@ -184,6 +184,7 @@ public class TestCheckNodewiseMarkov {
         }
         // Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(txtFile);
         // Graph trueGraph = RandomGraph.randomDag(100, 0, 400, 100, 100, 100, false);
+        // TODO VBC:
         Graph trueGraph = RandomGraph.randomDag(numNodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
         File graphFile = new File(simulationDir, "trueGraph.txt");
         try (Writer out = new FileWriter(graphFile)) {
@@ -212,7 +213,7 @@ public class TestCheckNodewiseMarkov {
         Graph estimatedPAG = null;
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
         try {
-            BossFci bossFCI = new BossFci(fisherZTest, score); // TODO VBC: discuss with Peter: GaspFCI, LVLite, FCI,
+            BossFci bossFCI = new BossFci(fisherZTest, score); // TODO VBC: discuss with Peter: GaspFCI, (LVLite not in the *-FCI), FCI, FCI max, RFCI
             bossFCI.setGuaranteePag(true);
             estimatedPAG = bossFCI.search();
         } catch (InterruptedException e) {
@@ -245,11 +246,20 @@ public class TestCheckNodewiseMarkov {
         } catch (IOException e) {
             TetradLogger.getInstance().log("IO Exception while saving graph: " + e.getMessage());
         }
+        // TODO VBC: take the MB of the target node,
+        //  and compare the vertices in the estimated MB vs the true MB
+        //  and see if we get the structure of the MB correct:
+        //  take the subgraph and see if we get the correct adj and orientations correct
+        // and we also want to do something like this MB case for OrderedLocalMarkov, too
+        // with OrderedLocalMarkov get a set of
+        // add a new method for each node and its set of indp set
+        // then for each node also see the local parents and children, adjacencies (also has double head arrows, so this is larger than parents + children)
 
         File statsFile = new File(simulationDir, "stats.txt");
 
-        testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(statsFile, fisherZTest, data, trueGraph, estimatedPAG, threshold, shuffleThreshold, lowRecallBound);
+        testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(statsFile, fisherZTest, data, trueGraph, estimatedPAG, threshold, shuffleThreshold, lowRecallBound);
         estimatedPAG = GraphUtils.replaceNodes(estimatedPAG, trueGraph.getNodes());
+        // TODO VBC: convert true graph to PAG and then compare with the estimated PAG
         double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedPAG, null, new Parameters());
         double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedPAG, null, new Parameters());
         double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedPAG, null, new Parameters());
@@ -276,10 +286,12 @@ public class TestCheckNodewiseMarkov {
      * @see OrderedLocalMarkovProperty
      * @see ConditioningSetType
      */
-    private static void testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(File statsFile, IndependenceTest fisherZTest, DataSet data, Graph trueGraph, Graph estimatedPAG, double threshold, double shuffleThreshold, double lowRecallBound) {
+    private static void testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(File statsFile, IndependenceTest fisherZTest, DataSet data, Graph trueGraph, Graph estimatedPAG, double threshold, double shuffleThreshold, double lowRecallBound) {
         MarkovCheck markovCheck = new MarkovCheck(estimatedPAG, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
         markovCheck.generateResults(true);
         double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
+        // TODO VBC: add AD P Value
+        // TODO VBC: Fisher combined P Value
         double kSPvalue = markovCheck.getKsPValue(true);
         double fractionDep = markovCheck.getFractionDependent(true);
         // number of tests generateResults actually did
