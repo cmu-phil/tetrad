@@ -1002,7 +1002,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public Node getNode(String name) {
-        return this.namesHash.get(name);
+        Node node = this.namesHash.get(name);
+        return node == null? new GraphNode(name): node;
     }
 
     /**
