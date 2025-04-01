@@ -297,9 +297,6 @@ public class DmLvLite2 extends AbstractBootstrapAlgorithm implements Algorithm, 
      */
     private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents) {
         return new MsepVertexCutFinder(graph).findChokePoint(childA, childB, graph.paths().getAncestorsMap());
-//        return SepsetFinder.getPathBlockingSetRecursive(
-//                graph, childA, childB, new HashSet<>(), -1, new HashSet<>()
-//        );
     }
 
     /**

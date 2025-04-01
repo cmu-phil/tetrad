@@ -73,6 +73,7 @@ public class MsepVertexCutFinder {
                 return true;
             }
         }
+
         return false;
     }
 
