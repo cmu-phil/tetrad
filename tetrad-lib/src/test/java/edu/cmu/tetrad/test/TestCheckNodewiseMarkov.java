@@ -250,12 +250,13 @@ public class TestCheckNodewiseMarkov {
 
         testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(statsFile, fisherZTest, data, trueGraph, estimatedPAG, threshold, shuffleThreshold, lowRecallBound);
         estimatedPAG = GraphUtils.replaceNodes(estimatedPAG, trueGraph.getNodes());
-        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedPAG, null, new Parameters());
-        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedPAG, null, new Parameters());
-        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedPAG, null, new Parameters());
-        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedPAG, null, new Parameters());
-        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedPAG, null, new Parameters());
-        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedPAG, null, new Parameters());
+        Graph truePAG = GraphTransforms.dagToPag(trueGraph);
+        double whole_ap = new AdjacencyPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
+        double whole_ar = new AdjacencyRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
+        double whole_ahp = new ArrowheadPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
+        double whole_ahr = new ArrowheadRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
+        double whole_lgp = new LocalGraphPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
+        double whole_lgr = new LocalGraphRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
 
         // Save statistical data in the simulation directory
         try (Writer out = new FileWriter(statsFile, true)) {
