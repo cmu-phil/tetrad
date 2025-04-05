@@ -281,6 +281,8 @@ public class TestCheckNodewiseMarkov {
         MarkovCheck markovCheck = new MarkovCheck(estimatedPAG, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
         markovCheck.generateResults(true);
         double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
+        double andersonDarlingP = markovCheck.getAndersonDarlingP(true);
+        double finsherCombinedP = markovCheck.getFisherCombinedP(true);
         double kSPvalue = markovCheck.getKsPValue(true);
         double fractionDep = markovCheck.getFractionDependent(true);
         // number of tests generateResults actually did
@@ -289,6 +291,8 @@ public class TestCheckNodewiseMarkov {
         // Save further statistical data in the simulation stats
         try (Writer out = new FileWriter(statsFile)) {
             out.write("andersonDarlingA2: " + andersonDarlingA2 + "\n" );
+            out.write("andersonDarlingP: " + andersonDarlingP + "\n" );
+            out.write("finsherCombinedP: " + finsherCombinedP + "\n" );
             out.write("kSPvalue: " + kSPvalue + "\n" );
             out.write("fractionDep: " + fractionDep + "\n" );
             out.write("numTests: " + numTests + "\n" );
