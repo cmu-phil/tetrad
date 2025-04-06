@@ -387,6 +387,8 @@ public class TestGeneralizedSem {
                 }
             }
 
+            System.out.println(semPm);
+
             assertEquals(shouldWork, works);
         }
     }

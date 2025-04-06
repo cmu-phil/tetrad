@@ -2566,15 +2566,16 @@ public final class GraphUtils {
 
         // Repair almost cycles and repair maximality. We assume here that there are no cycles in the graph that cannot
         // be fixed by removing almost cycles. jdramsey 2024-8-13.
-        boolean changed1, changed2;
+        boolean changed1, changed2, changed3;
 
 //        removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
 
         do {
             changed1 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
             changed2 = repairMaximality(pag, verbose, selection);
+            changed3 = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
             fciOrient.finalOrientation(pag);
-        } while (changed1 || changed2);
+        } while (changed1 || changed2 || changed3);
 
         // At this point there should be no almost cycles and it should be maximal. We assume there are no cycles.
         // This next step adds some additional endpoints implied by final rules from oracle.

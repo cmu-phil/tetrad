@@ -1541,6 +1541,8 @@ public class Paths implements TetradSerializable {
 
         Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
 
+        System.out.println("adjacentNodes: " + adjacentNodes);
+
         for (Node b : adjacentNodes) {
             OrderedPair<Node> edge = new OrderedPair<>(x, b);
             if (e == null) {

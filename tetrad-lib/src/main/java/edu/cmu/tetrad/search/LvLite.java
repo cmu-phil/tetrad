@@ -234,6 +234,7 @@ public final class LvLite implements IGraphSearch {
         strategy.setDepth(depth);
         strategy.setMaxLength(maxBlockingPathLength);
         strategy.setEnsureMarkovHelper(ensureMarkovHelper);
+        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
@@ -368,7 +369,6 @@ public final class LvLite implements IGraphSearch {
 
         // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
         pag = new EdgeListGraph(cpdag);
-        strategy.setPag(pag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");

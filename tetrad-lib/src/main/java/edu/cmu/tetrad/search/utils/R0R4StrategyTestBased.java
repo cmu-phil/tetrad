@@ -35,7 +35,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
      */
-    private BlockingType blockingType = BlockingType.RECURSIVE;
+    private BlockingType blockingType = BlockingType.GREEDY;
     /**
      * Private variable representing the knowledge.
      * <p>
@@ -55,6 +55,11 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Determines whether verbose mode is enabled or not.
      */
     private boolean verbose = false;
+    /**
+     * A Set of Triples representing the allowed colliders for the strategy. This variable is initially set to null and
+     * can be configured or modified through the corresponding setter methods. Allowed colliders are used within the
+     * FciOrientDataExaminationStrategy to impose constraints on the orientation of certain patterns in the graph.
+     */
     private Set<Triple> allowedColliders = null;
     /**
      * This variable represents the initial set of allowed colliders for the FciOrientDataExaminationStrategy. It is a
@@ -83,10 +88,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The maximum length of the path, for relevant paths.
      */
     private int maxLength = -1;
-    /**
-     * The PAG (partial ancestral graph) for the strategy.
-     */
-    private Graph pag = null;
     /**
      * Helper variable of type EnsureMarkov used for ensuring Markov properties in the R0R4StrategyTestBased class.
      * Initialized to null by default.
@@ -441,10 +442,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
                 W:
                 while ((choice2 = gen2.next()) != null) {
-//                    if (!pag.isAdjacentTo(x, y)) {
-//                        break;
-//                    }
-
                     Set<Node> c = GraphUtils.asSet(choice2, common);
 
                     for (Node node : c) {
@@ -468,7 +465,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             } catch (TimeoutException e) {
                 System.out.println("Timeout occurred while waiting for blockPathsRecursively");
             } catch (Exception e) {
-                e.printStackTrace(); // Handle other exceptions that might occur
+                throw new RuntimeException(e);
             } finally {
                 executor.shutdown(); // Always shut down the executor
             }
@@ -574,15 +571,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     @Override
     public void setAllowedColliders(Set<Triple> allowedColliders) {
         this.allowedColliders = allowedColliders;
-    }
-
-    /**
-     * Sets the PAG (partial ancestral graph) for the strategy.
-     *
-     * @param pag the PAG to be set
-     */
-    public void setPag(Graph pag) {
-        this.pag = pag;
     }
 
     /**
