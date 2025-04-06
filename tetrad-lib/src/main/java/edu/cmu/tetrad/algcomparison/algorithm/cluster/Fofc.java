@@ -73,6 +73,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         edu.cmu.tetrad.search.Fofc search
                 = new edu.cmu.tetrad.search.Fofc(dataSet, testType, alpha);
+        search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         Graph graph = search.search();
@@ -161,6 +162,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.TETRAD_TEST_FOFC);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
+        parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.VERBOSE);
 
         return parameters;

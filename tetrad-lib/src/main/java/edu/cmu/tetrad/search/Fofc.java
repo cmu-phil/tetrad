@@ -107,6 +107,12 @@ public class Fofc {
      * Whether verbose output is desired.
      */
     private boolean verbose;
+    /**
+     * Indicates whether all nodes should be included in the graph construction or processing. When set to true, the
+     * algorithm will incorporate all nodes into the resulting graph, regardless of specific clustering or filtering
+     * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
+     */
+    private boolean includeAllNodes = false;
 
     /**
      * Conctructor.
@@ -145,7 +151,7 @@ public class Fofc {
         ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
         clusterSignificance.printClusterPValues(allClusters);
 
-        return convertToGraph(allClusters);
+        return convertToGraph(allClusters, includeAllNodes);
     }
 
     /**
@@ -272,8 +278,8 @@ public class Fofc {
     }
 
     /**
-     * Finds clusters of size 3 for the SAG algorithm. If a 3-cluster is found, we attempt to grow it into
-     * a larger cluster.
+     * Finds clusters of size 3 for the SAG algorithm. If a 3-cluster is found, we attempt to grow it into a larger
+     * cluster.
      *
      * @param unionClustered The set of union pure variables.
      * @return A set of lists of integers representing the mixed clusters.
@@ -346,7 +352,7 @@ public class Fofc {
                     }
                 }
             }
-        } while(!unionClustered.equals(_unionClustered));
+        } while (!unionClustered.equals(_unionClustered));
 
         return mixedClusters;
     }
@@ -481,8 +487,8 @@ public class Fofc {
      * @param clusters The set of sets of Node objects representing the clusters.
      * @return A Graph object representing the search graph nodes.
      */
-    private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
-        Graph graph = new EdgeListGraph(this.variables);
+    private Graph convertSearchGraphNodes(Set<Set<Node>> clusters, boolean includeAllNodes) {
+        Graph graph = includeAllNodes ? new EdgeListGraph(this.variables) : new EdgeListGraph();
 
         List<Node> latents = new ArrayList<>();
         List<Set<Node>> _clusters = new ArrayList<>(clusters);
@@ -508,7 +514,7 @@ public class Fofc {
      * @param allClusters The set of sets of Node objects representing the clusters.
      * @return A Graph object representing the search graph nodes.
      */
-    private Graph convertToGraph(Set<List<Integer>> allClusters) {
+    private Graph convertToGraph(Set<List<Integer>> allClusters, boolean includeAllNodes) {
         Set<Set<Node>> _clustering = new HashSet<>();
 
         for (List<Integer> cluster : allClusters) {
@@ -521,7 +527,7 @@ public class Fofc {
             _clustering.add(nodes);
         }
 
-        return convertSearchGraphNodes(_clustering);
+        return convertSearchGraphNodes(_clustering, includeAllNodes);
     }
 
     /**
@@ -549,6 +555,15 @@ public class Fofc {
         if (this.verbose) {
             TetradLogger.getInstance().log(s);
         }
+    }
+
+    /**
+     * Indicates whether all nodes should be included in the graph construction or processing. When set to true, the
+     * algorithm will incorporate all nodes into the resulting graph, regardless of specific clustering or filtering
+     * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
+     */
+    public void setIncludeAllNodes(boolean includeAllNodes) {
+        this.includeAllNodes = includeAllNodes;
     }
 }
 
