@@ -1120,7 +1120,7 @@ public class FciOrient {
     /**
      * R10 Suppose α o→ γ, β → γ ← θ, p1 is an uncovered potentially directed (semidirected) path from α to β, and p2 is
      * an uncovered p.d. path from α to θ. Let μ be the vertex adjacent to α on p1 (μ could be β), and ω be the vertex
-     * adjacent to α on p2 (ω could be θ). If μ and ω are distinct, and are not adjacent, then orient α o→ γ as α → γ.
+     * adjacent to α on p2 (ω could be θ). If μ and ω ar    e distinct, and are not adjacent, then orient α o→ γ as α → γ.
      *
      * @param alpha α
      * @param gamma γ

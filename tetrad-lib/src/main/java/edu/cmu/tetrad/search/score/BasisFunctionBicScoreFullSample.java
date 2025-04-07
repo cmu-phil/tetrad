@@ -241,7 +241,8 @@ public class BasisFunctionBicScoreFullSample implements Score {
 
         for (int i = 0; i < pX; i++) {
             // Define parent variables for Xi
-            SimpleMatrix Z = (i == 0) ? Y_basis : Y_basis.combine(0, Y_basis.getNumCols(), X_basis.extractMatrix(0, N, 0, i));
+//            SimpleMatrix Z = (i == 0) ? Y_basis : Y_basis.combine(0, Y_basis.getNumCols(), X_basis.extractMatrix(0, N, 0, i));
+            SimpleMatrix Z = Y_basis;
 
             // Fit regression: Xi ~ Z
             SimpleMatrix x = X_basis.extractMatrix(0, N, i, i + 1);

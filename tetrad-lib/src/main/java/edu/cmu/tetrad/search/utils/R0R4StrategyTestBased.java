@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -210,25 +211,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         if (blockingType == BlockingType.RECURSIVE) {
             blocking = findDdpSepset(graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)), maxLength, maxLength, -1);
         } else if (blockingType == BlockingType.GREEDY) {
-            blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth, null);
-
-            Set<Node> b1 = new HashSet<>(blocking);
-            b1.remove(v);
-
-            boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
-
-            Set<Node> b2 = new HashSet<>(b1);
-            b2.add(v);
-
-            boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
-
-            if (b1Indep) {
-                blocking = b1;
-            } else if (b2Indep) {
-                blocking = b2;
-            } else {
-                blocking = null;
-            }
+            blocking = findAdjSetSepset(graph, x, y, path, v);
         } else {
             throw new IllegalArgumentException("Unknown blocking type.");
         }
@@ -313,6 +296,30 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
     }
 
+    private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
+        Set<Node> blocking;
+        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth, null);
+
+        Set<Node> b1 = new HashSet<>(blocking);
+        b1.remove(v);
+
+        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
+
+        Set<Node> b2 = new HashSet<>(b1);
+        b2.add(v);
+
+        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
+
+        if (b1Indep) {
+            blocking = b1;
+        } else if (b2Indep) {
+            blocking = b2;
+        } else {
+            blocking = null;
+        }
+        return blocking;
+    }
+
     private boolean checkIndependenceRecursive(Node x, Node y, Set<Node> blocking, Set<Node> vNodes,
                                                DiscriminatingPath discriminatingPath, IndependenceTest test) throws InterruptedException {
 
@@ -352,7 +359,9 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
     private Set<Node> findDdpSepset(Graph pag, Node x, Node y, FciOrient fciOrient,
                                     int maxBlockingPathLength, int maxDdpPathLength, long testTimeout) {
+        fciOrient.setDoR4(false);
         fciOrient.finalOrientation(pag);
+        fciOrient.setDoR4(true);
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength,
                 false);

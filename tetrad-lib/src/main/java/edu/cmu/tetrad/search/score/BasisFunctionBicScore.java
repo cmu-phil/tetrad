@@ -120,7 +120,7 @@ public class BasisFunctionBicScore implements Score {
             sumLik += result.lik();
             sumDof += result.dof();
 
-            B.add(i_);
+//            B.add(i_);
         }
 
         return 2 * sumLik - penaltyDiscount * sumDof * log(getSampleSize());
