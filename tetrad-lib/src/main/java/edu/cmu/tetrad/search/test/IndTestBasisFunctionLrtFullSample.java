@@ -112,7 +112,7 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      */
     private List<Integer> rows;
     /**
-     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt; use the equation for X1 only, if true;
      * otherwise, use equations for all of X1, X2,...,Xp.
      */
     private boolean doOneEquationOnly;
@@ -161,12 +161,11 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * singular. Regularization is controlled by the lambda parameter, which adds a scaled identity matrix to the design
      * matrix's normal equation.
      *
-     * @param B                    the design matrix, where rows correspond to observations and columns correspond to
-     *                             features.
-     * @param X                    the response matrix, where rows correspond to observations and columns to dependent
-     *                             variable outputs.
-     * @param lambda               the regularization parameter used to stabilize the solution. Larger values result in
-     *                             stronger regularization.
+     * @param B      the design matrix, where rows correspond to observations and columns correspond to features.
+     * @param X      the response matrix, where rows correspond to observations and columns to dependent variable
+     *               outputs.
+     * @param lambda the regularization parameter used to stabilize the solution. Larger values result in stronger
+     *               regularization.
      * @return the computed OLS solution as a SimpleMatrix object.
      */
     public static SimpleMatrix computeOLS(SimpleMatrix B, SimpleMatrix X, double lambda) {
@@ -450,8 +449,10 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
     }
 
     /**
-     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt; use the equation for X1 only, if true;
      * otherwise, use equations for all of X1, X2,...,Xp.
+     *
+     * @param doOneEquationOnly True if only the equation for X1 is to be used for X = X1,...,Xp.     *
      */
     public void setDoOneEquationOnly(boolean doOneEquationOnly) {
         this.doOneEquationOnly = doOneEquationOnly;

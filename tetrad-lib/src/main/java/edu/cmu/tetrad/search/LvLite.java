@@ -1044,6 +1044,11 @@ public final class LvLite implements IGraphSearch {
         this.ensureMarkov = ensureMarkov;
     }
 
+    /**
+     * Retrieves the set of unshielded colliers.
+     *
+     * @return a Set containing Triple objects that represent unshielded colliers
+     */
     public Set<Triple> getUnshieldedColliers() {
         return new HashSet<>(unshieldedColliers);
     }

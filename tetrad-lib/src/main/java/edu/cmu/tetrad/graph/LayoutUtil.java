@@ -296,6 +296,15 @@ public class LayoutUtil {
         return arrangedAll;
     }
 
+    /**
+     * Repositions latent nodes in the given graph based on their non-latent neighbors.
+     * <p>
+     * This method iterates through all nodes in the graph, identifies latent nodes, and repositions them using the
+     * non-latent neighbors only. The method works by filtering out latent neighbors of each latent node before
+     * repositioning.
+     *
+     * @param graph the graph containing the nodes to be repositioned.
+     */
     public static void repositionLatents(Graph graph) {
         for (Node latent : graph.getNodes()) {
             if (latent.getNodeType() == NodeType.LATENT) {
@@ -312,6 +321,13 @@ public class LayoutUtil {
         }
     }
 
+    /**
+     * Positions a latent node based on the average position of its measured neighbors. The method calculates the
+     * average x and y coordinates of the measured neighbors and repositions the latent node to this calculated center.
+     *
+     * @param latent    the latent node to be positioned
+     * @param neighbors the set of neighboring nodes; only measured neighbors are used to calculate the position
+     */
     public static void positionLatentNode(Node latent, Set<Node> neighbors) {
         if (neighbors.isEmpty()) return; // safety check to prevent division by zero.
 

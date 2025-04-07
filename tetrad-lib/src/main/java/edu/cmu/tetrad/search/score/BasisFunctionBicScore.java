@@ -46,7 +46,7 @@ public class BasisFunctionBicScore implements Score {
      */
     private double penaltyDiscount = 2;
     /**
-     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt; use the equation for X1 only, if true;
      * otherwise, use equations for all of X1, X2,...,Xp.
      */
     private boolean doOneEquationOnly;
@@ -202,8 +202,10 @@ public class BasisFunctionBicScore implements Score {
     }
 
     /**
-     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt; use the equation for X1 only, if true;
      * otherwise, use equations for all of X1, X2,...,Xp.
+     *
+     * @param doOneEquationOnly True if only the equation for X1 is to be used for X = X1,...,Xp.     *
      */
     public void setDoOneEquationOnly(boolean doOneEquationOnly) {
         this.doOneEquationOnly = doOneEquationOnly;

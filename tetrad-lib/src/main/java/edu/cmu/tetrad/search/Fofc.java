@@ -561,6 +561,8 @@ public class Fofc {
      * Indicates whether all nodes should be included in the graph construction or processing. When set to true, the
      * algorithm will incorporate all nodes into the resulting graph, regardless of specific clustering or filtering
      * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
+     *
+     * @param includeAllNodes True if all nodes should be included in the graph output.
      */
     public void setIncludeAllNodes(boolean includeAllNodes) {
         this.includeAllNodes = includeAllNodes;
