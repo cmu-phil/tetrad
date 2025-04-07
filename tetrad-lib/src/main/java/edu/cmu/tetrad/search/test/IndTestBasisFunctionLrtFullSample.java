@@ -10,7 +10,6 @@ import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -112,6 +111,11 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
      * values will be used by default.
      */
     private List<Integer> rows;
+    /**
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * otherwise, use equations for all of X1, X2,...,Xp.
+     */
+    private boolean doOneEquationOnly;
 
     /**
      * Constructs an instance of the IndTestBasisFunctionLrt class. This constructor initializes the object using the
@@ -211,6 +215,11 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
 
         // Grab the embedded data for _x, _y, and _z. These are columns in the embeddedData dataset.
         List<Integer> embedded_x = embedding.get(_x);
+
+        if (doOneEquationOnly) {
+            embedded_x = embedded_x.subList(0, 1);
+        }
+
         List<Integer> embedded_y = embedding.get(_y);
         List<Integer> embedded_z = new ArrayList<>();
         for (int value : _z) {
@@ -438,5 +447,13 @@ public class IndTestBasisFunctionLrtFullSample implements IndependenceTest, Effe
         }
 
         return rows;
+    }
+
+    /**
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * otherwise, use equations for all of X1, X2,...,Xp.
+     */
+    public void setDoOneEquationOnly(boolean doOneEquationOnly) {
+        this.doOneEquationOnly = doOneEquationOnly;
     }
 }

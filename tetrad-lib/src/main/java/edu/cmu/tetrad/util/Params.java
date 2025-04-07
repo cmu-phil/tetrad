@@ -1031,6 +1031,10 @@ public final class Params {
      * Constant <code>INCLUDE_ALL_NODES="includeAllNodes"</code>
      */
     public static final String INCLUDE_ALL_NODES = "includeAllNodes";
+    /**
+     * Constant <code>DO_ONE_EQUATION_ONLY="doOneEquationOnly"</code>
+     */
+    public static final String DO_ONE_EQUATION_ONLY = "doOneEquationOnly";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

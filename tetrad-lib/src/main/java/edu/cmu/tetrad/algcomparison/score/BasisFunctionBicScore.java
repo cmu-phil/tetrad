@@ -72,6 +72,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
                 parameters.getDouble(Params.SINGULARITY_LAMBDA)
         );
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
         return score;
     }
 
@@ -100,6 +101,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.DO_ONE_EQUATION_ONLY);
         return parameters;
     }
 

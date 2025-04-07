@@ -55,6 +55,11 @@ public class BasisFunctionBicScoreFullSample implements Score {
      * adjustments in the likelihood penalty term.
      */
     private double penaltyDiscount = 2;
+    /**
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * otherwise, use equations for all of X1, X2,...,Xp.
+     */
+    private boolean doOneEquationOnly;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
@@ -68,8 +73,7 @@ public class BasisFunctionBicScoreFullSample implements Score {
     public BasisFunctionBicScoreFullSample(DataSet dataSet, int truncationLimit, double lambda) {
         this.variables = dataSet.getVariables();
 
-        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1
-        );
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1);
         this.embedding = result.embedding();
         this.lambda = lambda;
         embeddedData = result.embeddedData();
@@ -118,6 +122,11 @@ public class BasisFunctionBicScoreFullSample implements Score {
 
         // Grab the embedded data for _x, _y, and _z. These are columns in the embeddedData dataset.
         List<Integer> embedded_x = embedding.get(i);
+
+        if (doOneEquationOnly) {
+            embedded_x = embedded_x.subList(0, 1);
+        }
+
         List<Integer> embedded_z = new ArrayList<>();
         for (int value : parents) {
             embedded_z.addAll(embedding.get(value));
@@ -256,5 +265,13 @@ public class BasisFunctionBicScoreFullSample implements Score {
      */
     private double computeVariance(SimpleMatrix residuals) {
         return residuals.elementMult(residuals).elementSum() / residuals.getNumRows();
+    }
+
+    /**
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * otherwise, use equations for all of X1, X2,...,Xp.
+     */
+    public void setDoOneEquationOnly(boolean doOneEquationOnly) {
+        this.doOneEquationOnly = doOneEquationOnly;
     }
 }

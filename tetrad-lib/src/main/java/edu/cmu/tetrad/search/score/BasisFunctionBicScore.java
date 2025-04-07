@@ -45,6 +45,11 @@ public class BasisFunctionBicScore implements Score {
      * adjustments in the likelihood penalty term.
      */
     private double penaltyDiscount = 2;
+    /**
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * otherwise, use equations for all of X1, X2,...,Xp.
+     */
+    private boolean doOneEquationOnly;
 
     /**
      * Constructs a BasisFunctionBicScore object with the specified parameters.
@@ -91,6 +96,11 @@ public class BasisFunctionBicScore implements Score {
         // the sums of the likelihoods and degrees of freedom. A test case to try is with nonlinear variables
         // embedded as Legendre polynomials. jdramsey 2025-2-13
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
+
+        if (doOneEquationOnly) {
+            A = A.subList(0, 1);
+        }
+
         List<Integer> B = new ArrayList<>();
         for (int i_ : parents) {
             B.addAll(this.embedding.get(i_));
@@ -189,5 +199,13 @@ public class BasisFunctionBicScore implements Score {
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
         this.bic.setPenaltyDiscount(penaltyDiscount);
+    }
+
+    /**
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt, use the equation for X1 only, if true;
+     * otherwise, use equations for all of X1, X2,...,Xp.
+     */
+    public void setDoOneEquationOnly(boolean doOneEquationOnly) {
+        this.doOneEquationOnly = doOneEquationOnly;
     }
 }

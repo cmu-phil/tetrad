@@ -2035,7 +2035,7 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Checks if the given path is an m-connecting path.
+     * Checks if the given path is an m-connecting path and doens't contain duplicate nodes.
      *
      * @param path               The path to check.
      * @param conditioningSet    The set of nodes to check reachability against.
@@ -2045,6 +2045,18 @@ public class Paths implements TetradSerializable {
      */
     public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         Edge edge1, edge2;
+
+        Set<Node> pathSet = new HashSet<>();
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            Node node = path.get(i);
+
+            if (pathSet.contains(node)) {
+                return false;
+            } else {
+                pathSet.add(node);
+            }
+        }
 
         edge2 = graph.getEdge(path.getFirst(), path.get(1));
 
