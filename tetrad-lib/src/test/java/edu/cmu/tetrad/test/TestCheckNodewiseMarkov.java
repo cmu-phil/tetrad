@@ -214,7 +214,6 @@ public class TestCheckNodewiseMarkov {
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
 
         // Simulate different FCI methods
-        List<Graph> estimatedFCIPAGs = new ArrayList<>();
         List<String> methodNames = Arrays.asList("BossFCI", "GaspFCI", "FCI", "FCIMax", "RFCI");
         for (String methodName : methodNames) {
             try {
@@ -255,8 +254,6 @@ public class TestCheckNodewiseMarkov {
                     default:
                         throw new IllegalArgumentException("Unsupported FCI method: " + methodName);
                 }
-                // estimatedFCIPAGs.add(estimatedPAG);
-
                 // Save estimated graph
                 File estGraphFile = new File(methodDir, "estimatedPAG.txt");
                 try (Writer out = new FileWriter(estGraphFile)) {
@@ -308,7 +305,6 @@ public class TestCheckNodewiseMarkov {
                 } catch (IOException e) {
                     TetradLogger.getInstance().log("IO Exception while saving description: " + e.getMessage());
                 }
-
                 System.out.println("-----------------------Graph Simulation " + runID +" for : "+ methodName + "-----------------------");
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
