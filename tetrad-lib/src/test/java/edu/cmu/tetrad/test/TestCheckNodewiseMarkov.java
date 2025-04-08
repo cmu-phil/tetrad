@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -209,15 +211,59 @@ public class TestCheckNodewiseMarkov {
         }
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
-        Graph estimatedPAG = null;
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
-        try {
-            BossFci bossFCI = new BossFci(fisherZTest, score); // TODO VBC: discuss with Peter: GaspFCI, LVLite, FCI,
-            bossFCI.setGuaranteePag(true);
-            estimatedPAG = bossFCI.search();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+
+        // Simulate different FCI methods
+        List<Graph> estimatedFCIPAGs = new ArrayList<>();
+        List<String> methodNames = Arrays.asList("BossFCI", "GaspFCI", "FCI", "FCIMax", "RFCI");
+        for (String methodName : methodNames) {
+            try {
+                Graph estimatedPAG = null; // PAG
+                switch (methodName) {
+                    case "BossFCI":
+                        BossFci bossFCI = new BossFci(fisherZTest, score);
+                        bossFCI.setGuaranteePag(true);
+                        estimatedPAG = bossFCI.search();
+                        break;
+                    case "GaspFCI":
+                        GraspFci gaspFCI = new GraspFci(fisherZTest, score);
+                        gaspFCI.setGuaranteePag(true);
+                        estimatedPAG = gaspFCI.search();
+                        break;
+                    case "FCI":
+                        Fci fci = new Fci(fisherZTest); // seems fci does not need score input?
+                        fci.setGuaranteePag(true);
+                        estimatedPAG = fci.search();
+                        break;
+                    case "FCIMax":
+                        FciMax fciMax = new FciMax(fisherZTest); // seems fciMax does not need score input?
+                        fciMax.setGuaranteePag(true);
+                        estimatedPAG = fciMax.search();
+                        break;
+                    case "RFCI":
+                        Rfci rfci = new Rfci(fisherZTest); // seems fciMax does not need score input?
+                        estimatedPAG = rfci.search(); // returns the RFCI PAG.
+                        break;
+                    // TODO: Add other FCI variants here if needed
+                    default:
+                        throw new IllegalArgumentException("Unsupported FCI method: " + methodName);
+                }
+                estimatedFCIPAGs.add(estimatedPAG);
+
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
+
+//        Graph estimatedPAG = null;
+//
+//        try {
+//            BossFci bossFCI = new BossFci(fisherZTest, score); // TODO VBC: discuss with Peter: GaspFCI, (LVLite not in the *-FCI), FCI, FCI max, RFCI
+//            bossFCI.setGuaranteePag(true);
+//            estimatedPAG = bossFCI.search();
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
         // Save a parameter settings info description file
         File descriptionFile = new File(simulationDir, "description.txt");
         try (Writer out = new FileWriter(descriptionFile)) {
