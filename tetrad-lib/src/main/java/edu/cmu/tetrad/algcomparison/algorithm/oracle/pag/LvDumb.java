@@ -27,7 +27,7 @@ import java.util.List;
 
 
 /**
- * This class represents the FCI-TT algorithm, which is an implementation of the FGES-FCI algorithm for learning causal
+ * This class represents the FCIT algorithm, which is an implementation of the FGES-FCI algorithm for learning causal
  * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
  * afterward.
  *
@@ -60,7 +60,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * This class represents LV-Dumb algorithm.
      *
      * <p>
-     * The FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -73,10 +73,10 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Use
     }
 
     /**
-     * FCI-TT is a class that represents a FCI-TT algorithm.
+     * FCIT is a class that represents a FCIT algorithm.
      *
      * <p>
-     * The FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>

@@ -18,6 +18,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -31,20 +32,20 @@ import java.util.List;
 
 
 /**
- * This class represents the FCI Targeted Testing (FCI-TT) algorithm, which is variant of the *-FCI algorithm for
+ * This class represents the FCI Targeted Testing (FCIT) algorithm, which is variant of the *-FCI algorithm for
  * learning causal structures from observational data using the BOSS algorithm as an initial CPDAG and using all
  * score-based steps afterward.
  *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCI-TT",
-        command = "fci-tt",
+        name = "FCIT",
+        command = "FCIT",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class FciT extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -66,10 +67,10 @@ public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, Uses
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a FCI-TT algorithm.
+     * This class represents a FCIT algorithm.
      *
      * <p>
-     * The FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -77,15 +78,15 @@ public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, Uses
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FciTt() {
+    public FciT() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * FCI-TT is a class that represents a FCI-TT algorithm.
+     * FCIT is a class that represents a FCIT algorithm.
      *
      * <p>
-     * The FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -95,7 +96,7 @@ public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, Uses
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FciTt(IndependenceWrapper test, ScoreWrapper score) {
+    public FciT(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -128,12 +129,12 @@ public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {
-            if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
+            if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
                 throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
             }
         }
 
-        edu.cmu.tetrad.search.FciTt search = new edu.cmu.tetrad.search.FciTt(test, score);
+        Fcit search = new Fcit(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -143,7 +144,7 @@ public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-        // FCI-TT
+        // FCIT
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
@@ -153,14 +154,14 @@ public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, Uses
 //        search.setDoDdpEdgeRemovalStep(parameters.getBoolean(Params.DO_DDP_EDGE_REMOVAL_STEP));
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
-        if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.FciTt.START_WITH.BOSS);
-        } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.FciTt.START_WITH.GRASP);
-        } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.FciTt.START_WITH.SP);
+        if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
+            search.setStartWith(Fcit.START_WITH.BOSS);
+        } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
+            search.setStartWith(Fcit.START_WITH.GRASP);
+        } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
+            search.setStartWith(Fcit.START_WITH.SP);
         } else {
-            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCI_TT_STARTS_WITH));
+            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
 
         // General
@@ -189,7 +190,7 @@ public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, Uses
      */
     @Override
     public String getDescription() {
-        return "FCI-TT (FCI Targeted Testing) using " + this.score.getDescription();
+        return "FCIT (FCI Targeted Testing) using " + this.score.getDescription();
     }
 
     /**
@@ -219,8 +220,8 @@ public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
 
-        // FCI-TT
-        params.add(Params.FCI_TT_STARTS_WITH);
+        // FCIT
+        params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);

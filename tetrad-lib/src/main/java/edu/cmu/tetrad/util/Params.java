@@ -1080,9 +1080,9 @@ public final class Params {
             Params.SEED
     ));
     /**
-     * Constant <code>FCI_TT_STARTS_WITH="fciTTStartsWith"</code>
+     * Constant <code>FCIT_STARTS_WITH="fcitStartsWith"</code>
      */
-    public static String FCI_TT_STARTS_WITH = "fciTTStartsWith";
+    public static String FCIT_STARTS_WITH = "fcitStartsWith";
     /**
      * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
      */

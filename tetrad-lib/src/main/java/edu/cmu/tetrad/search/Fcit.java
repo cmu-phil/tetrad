@@ -36,7 +36,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * The FCI Targeted Testing (FCI-TT) algorithm implements a search algorithm for learning the structure of a graphical
+ * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
  * model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
  * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph,    then finishes with a testing step
  * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
@@ -44,7 +44,7 @@ import java.util.concurrent.*;
  *
  * @author josephramsey
  */
-public final class FciTt implements IGraphSearch {
+public final class Fcit implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -138,17 +138,17 @@ public final class FciTt implements IGraphSearch {
     private Map<Edge, Set<Node>> extraSepsets;
 
     /**
-     * FCI-TT constructor. Initializes a new object of FCI-TT search algorithm with the given IndependenceTest and Score
+     * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
      * object.
      * <p>
      * In this constructor, we will use BOSS or GRaSP internally to infer an initial CPDAG and valid order of the
-     * variables. This is the default behavior of the FCI-TT algorithm.
+     * variables. This is the default behavior of the FCIT algorithm.
      *
      * @param test  The IndependenceTest object to be used for testing independence between variables.
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public FciTt(IndependenceTest test, Score score) {
+    public Fcit(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -168,7 +168,7 @@ public final class FciTt implements IGraphSearch {
     }
 
     /**
-     * Alternative FCI-TT constructor. Initializes a new object of FCI-TT search algorithm with the given initial CPDAG,
+     * Alternative FCIT constructor. Initializes a new object of FCIT search algorithm with the given initial CPDAG,
      * along with the IndependenceTest. These should all be over variables with the same names as the variables in the
      * supplied test.
      * <p>
@@ -188,7 +188,7 @@ public final class FciTt implements IGraphSearch {
      * @param cpdag The initial CPDAG.
      * @param test  The independence test.
      */
-    public FciTt(Graph cpdag, IndependenceTest test) {
+    public Fcit(Graph cpdag, IndependenceTest test) {
         this.score = null;
         this.test = test;
         this.cpdag = GraphUtils.replaceNodes(cpdag, this.test.getVariables());
@@ -221,7 +221,7 @@ public final class FciTt implements IGraphSearch {
             nodes = new ArrayList<>(this.test.getVariables());
         }
 
-        TetradLogger.getInstance().log("===Starting FCI-TT===");
+        TetradLogger.getInstance().log("===Starting FCIT===");
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setVerbose(verbose);
@@ -273,7 +273,7 @@ public final class FciTt implements IGraphSearch {
                 TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
             }
         } else if (startWith == START_WITH.GRASP) {
-            // We need to include the GRaSP option here so that we can run FCI-TT from Oracle.
+            // We need to include the GRaSP option here so that we can run FCIT from Oracle.
 
             if (verbose) {
                 TetradLogger.getInstance().log("Running GRaSP...");
@@ -447,7 +447,7 @@ public final class FciTt implements IGraphSearch {
 
         long stop3 = System.currentTimeMillis();
 
-        TetradLogger.getInstance().log("FCI-TT finished.");
+        TetradLogger.getInstance().log("FCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Guarantee PAG time: " + (stop3 - start3) + " ms.");

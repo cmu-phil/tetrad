@@ -17,13 +17,13 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.FciTt;
+import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.MsepVertexCutFinder;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -35,8 +35,8 @@ import java.util.*;
 
 
 /**
- * This class represents the Detect-Mimic-FCI-TT (DM-FCI-TT) algorithm, a specialized variant of the DM-PC and FCI-TT
- * algorithms designed to identify intermediate latent variables. DM-FCI-TT enhances accuracy and computational
+ * This class represents the Detect-Mimic-FCIT (DM-FCIT) algorithm, a specialized variant of the DM-PC and FCIT
+ * algorithms designed to identify intermediate latent variables. DM-FCIT enhances accuracy and computational
  * efficiency by recursively maintaining complete PAG orientations during the search process. At each step, it uses
  * these orientations to substantially reduce the required size of conditioning sets when testing independence. This
  * approach leads to more precise identification of latent variables and better orientation accuracy overall.
@@ -44,13 +44,13 @@ import java.util.*;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM-FCI-TT",
-        command = "dm-fci-tt",
+        name = "DM-FCIT-2",
+        command = "dm-FCIT-2",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -69,10 +69,10 @@ public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, Us
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a DM-FCI-TT algorithm.
+     * This class represents a DM-FCIT algorithm.
      *
      * <p>
-     * The DM-FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
+     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
      * a given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -80,15 +80,15 @@ public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public DmFciTT() {
+    public DmFciT2() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * Represents a DM-FCI-TT algorithm.
+     * Represents a DM-FCIT algorithm.
      *
      * <p>
-     * The DM-FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
+     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
      * a given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -98,7 +98,7 @@ public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public DmFciTT(IndependenceWrapper test, ScoreWrapper score) {
+    public DmFciT2(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -268,6 +268,8 @@ public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, Us
                     // Identify minimal conditioning set using the current PAG orientation
                     Set<Node> minimalParents = getMinimalConditioningSet(graph, childA, childB, parents);
 
+                    if (minimalParents == null) return false;
+
                     // Perform independence test using a minimal conditioning set
                     IndependenceResult result = test.checkIndependence(childA, childB, minimalParents);
 
@@ -294,10 +296,7 @@ public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @return A minimal conditioning subset of parents.
      */
     private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents) {
-        // Delegates the minimal conditioning set finding to the proven recursive method.
-        return SepsetFinder.getPathBlockingSetRecursive(
-                graph, childA, childB, new HashSet<>(), -1, new HashSet<>()
-        );
+        return new MsepVertexCutFinder(graph).findChokePoint(childA, childB, graph.paths().getAncestorsMap());
     }
 
     /**
@@ -328,12 +327,12 @@ public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, Us
         Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {
-            if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
+            if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
                 throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
             }
         }
 
-        FciTt search = new FciTt(test, score);
+        Fcit search = new Fcit(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -343,24 +342,23 @@ public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, Us
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-        // FCi-TT
+        // FCIT
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-//        search.setDoDdpEdgeRemovalStep(parameters.getBoolean(Params.DO_DDP_EDGE_REMOVAL_STEP));
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
-        if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
-            search.setStartWith(FciTt.START_WITH.BOSS);
-        } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 2) {
-            search.setStartWith(FciTt.START_WITH.GRASP);
-        } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 3) {
-            search.setStartWith(FciTt.START_WITH.SP);
+        if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
+            search.setStartWith(Fcit.START_WITH.BOSS);
+        } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
+            search.setStartWith(Fcit.START_WITH.GRASP);
+        } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
+            search.setStartWith(Fcit.START_WITH.SP);
         } else {
-            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCI_TT_STARTS_WITH));
+            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
 
         // General
@@ -391,7 +389,7 @@ public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, Us
      */
     @Override
     public String getDescription() {
-        return "DM-FCI-TT using " + this.score.getDescription();
+        return "DM-FCIT-2 using " + this.score.getDescription();
     }
 
     /**
@@ -421,8 +419,8 @@ public class DmFciTT extends AbstractBootstrapAlgorithm implements Algorithm, Us
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
 
-        // FCI-TT
-        params.add(Params.FCI_TT_STARTS_WITH);
+        // FCIT
+        params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);

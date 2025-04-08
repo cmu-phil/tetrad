@@ -3094,17 +3094,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         GRaSP.</p>
 
 
-    <h3>The FCI-TT Algorithm</h3>
+    <h3>The FCIT Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="fci-tt">
-        <p> FCI-TT starts with BOSS or GRaSP and gets a valid order and a DAG/CPDAG. It sets the initial state of the
+    <div id="FCIT">
+        <p> FCIT starts with BOSS or GRaSP and gets a valid order and a DAG/CPDAG. It sets the initial state of the
             estimted PAG to this CPDAG and orients as o-o and then copy all of the unshielded colliders from the CPDAG
             to the PAG. It then performs a testing modified from the step in FGES-FCI that is more efficient. In GFCI,
             an
             edge x *-* y is removed from the graph is there is a subset S of adj(x) \ {y} or adj(y) \ {x} such that x
-            _||_ y | S. For FCI-TT we instead search outward from x for a set S using a novel procedure that blocks all
+            _||_ y | S. For FCIT we instead search outward from x for a set S using a novel procedure that blocks all
             existing paths in the estimated PAG either unconditionally or conditionally. Bounds may be placed on the
             lengths of the blocked paths to consider and the depth (maximum |S|). We also allow bounds on the time
             spent on any testing step. As edges are removed in this way, any additional colliders are oriented given
@@ -3114,9 +3114,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             Tetrad that return partial ancestral graphs (PAGs).
         </p>
 
-        <p>FCI-TT, along with BOSS-FCI, can produce highly accurate models in simulation. FCI-TT, in particular, is
-            highly scalable. A paper describing BOSS-FCI and FCI-TT in more detail is planned. We make both BOSS-FCI
-            and FCI-TT non-experimental for this version since requests have been made to use them.</p>
+        <p>FCIT, along with BOSS-FCI, can produce highly accurate models in simulation. FCIT, in particular, is
+            highly scalable. A paper describing BOSS-FCI and FCIT in more detail is planned. We make both BOSS-FCI
+            and FCIT non-experimental for this version since requests have been made to use them.</p>
         </p>
 
         <p>Note: If one wants to analyze time series data using this algorithm, one may set the time lag parameter to a
@@ -3155,9 +3155,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             Information Processing Systems, 36, 63945-63956.</p>
         <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of
             temporal tiers.</p>
-        <p>FCI-TT, along with BOSS-FCI, can produce highly accurate models in simulation. FCI-TT, in particular, is
-            highly scalable. A paper describing BOSS-FCI and FCI-TT in more detail is planned. We make both BFCI and
-            FCI-TT non-experimental for this version since requests have been made to use them.</p>
+        <p>FCIT, along with BOSS-FCI, can produce highly accurate models in simulation. FCIT, in particular, is
+            highly scalable. A paper describing BOSS-FCI and FCIT in more detail is planned. We make both BFCI and
+            FCIT non-experimental for this version since requests have been made to use them.</p>
         </p>
 
         <p>Note: If one wants to analyze time series data using this algorithm,
@@ -6515,27 +6515,27 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
-            id="fciTTStartsWith">fciTTStartsWith</h3>
+            id="fcitStartsWith">fcitStartsWith</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="fciTTStartsWith_short_desc">
+                    id="fcitStartsWith_short_desc">
                     The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP, 3 = SP
         </span></li>
             <li>Long Description: <span
-                    id="fciTTStartsWith_long_desc">
+                    id="fcitStartsWith_long_desc">
                     The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP, 3 = SP
         </span></li>
             <li>Default Value: <span
-                    id="fciTTStartsWith_default_value">1</span></li>
+                    id="fcitStartsWith_default_value">1</span></li>
             <li>Lower Bound: <span
-                    id="fciTTStartsWith_lower_bound">1</span></li>
+                    id="fcitStartsWith_lower_bound">1</span></li>
             <li>Upper
                 Bound: <span
-                        id="fciTTStartsWith_upper_bound">3</span></li>
+                        id="fcitStartsWith_upper_bound">3</span></li>
             <li>Value
                 Type: <span
-                        id="fciTTStartsWith_value_type">Integer</span></li>
+                        id="fcitStartsWith_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7099,7 +7099,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             id="maxSepsetSize">maxSepsetSize</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="maxSepsetSize_short_desc">For testing steps in FCI-TT, the
+                    id="maxSepsetSize_short_desc">For testing steps in FCIT, the
                     maximum conditioning set size</span></li>
             <li>Long Description: <span
                     id="maxSepsetSize_long_desc">
