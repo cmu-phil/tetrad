@@ -615,6 +615,8 @@ public final class GraphSearchUtils {
                 }
             }
         }
+
+        LayoutUtil.repositionLatents(graph);
     }
 
     /**
@@ -676,6 +678,8 @@ public final class GraphSearchUtils {
             y += ySpace;
 
         }
+
+        LayoutUtil.repositionLatents(graph);
     }
 
     /**

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.LvLite;
+import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -81,7 +81,7 @@ public class TestLvFromOracle {
 
         Graph estimated = null;
         try {
-            estimated = new LvLite(msepTest, score).search();
+            estimated = new Fcit(msepTest, score).search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

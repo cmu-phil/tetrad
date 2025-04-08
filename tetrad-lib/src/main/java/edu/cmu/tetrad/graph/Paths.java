@@ -1541,6 +1541,8 @@ public class Paths implements TetradSerializable {
 
         Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
 
+        System.out.println("adjacentNodes: " + adjacentNodes);
+
         for (Node b : adjacentNodes) {
             OrderedPair<Node> edge = new OrderedPair<>(x, b);
             if (e == null) {
@@ -2033,7 +2035,7 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Checks if the given path is an m-connecting path.
+     * Checks if the given path is an m-connecting path and doens't contain duplicate nodes.
      *
      * @param path               The path to check.
      * @param conditioningSet    The set of nodes to check reachability against.
@@ -2043,6 +2045,18 @@ public class Paths implements TetradSerializable {
      */
     public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         Edge edge1, edge2;
+
+        Set<Node> pathSet = new HashSet<>();
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            Node node = path.get(i);
+
+            if (pathSet.contains(node)) {
+                return false;
+            } else {
+                pathSet.add(node);
+            }
+        }
 
         edge2 = graph.getEdge(path.getFirst(), path.get(1));
 
@@ -2735,12 +2749,14 @@ public class Paths implements TetradSerializable {
      *                                target, 3 = near either.
      * @param maxPathLength           The maximum length of the path to consider for backdoor paths. If a value of -1 is
      *                                given, all paths will be considered.
-     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
+     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;. Return an smpty
+     * list if source == target or there is no amenable path from source to target.
      */
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
                                           int nearWhichEndpoint, int maxPathLength) {
         if (source == target) {
-            throw new IllegalArgumentException("Source and target nodes must be different.");
+            return new ArrayList<>();
+//            throw new IllegalArgumentException("Source and target nodes must be different.");
         }
 
         boolean mpdag = false;
@@ -2774,7 +2790,8 @@ public class Paths implements TetradSerializable {
         }
 
         if (amenable.isEmpty()) {
-            throw new IllegalArgumentException("No amenable paths found.");
+            return new ArrayList<>();
+//            throw new IllegalArgumentException("No amenable paths found.");
         }
 
         Set<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);

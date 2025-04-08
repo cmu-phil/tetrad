@@ -36,15 +36,15 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * The LV-Lite algorithm (Latent Variable "Lite") algorithm implements a search algorithm for learning the structure of
- * a graphical model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to
- * get an initial CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with
- * a testing step to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is
- * applied to the graph.
+ * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
+ * model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
+ * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph,    then finishes with a testing step
+ * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
+ * graph.
  *
  * @author josephramsey
  */
-public final class LvLite implements IGraphSearch {
+public final class Fcit implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -119,11 +119,6 @@ public final class LvLite implements IGraphSearch {
      */
     private long testTimeout = -1;
     /**
-     * Indicates whether the DDP (Definite Discriminating Path) edge removal algorithm should be performed. This step
-     * may be computationally expensive for large models and addresses a relatively rare condition in the search space.
-     */
-    private boolean doDdpEdgeRemovalStep = true;
-    /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
     private boolean ensureMarkov = true;
@@ -131,19 +126,29 @@ public final class LvLite implements IGraphSearch {
      * A helper class to help perserve Markov.
      */
     private EnsureMarkov ensureMarkovHelper = null;
+    /**
+     * The unshielded colliders encountered in search.
+     */
+    private Set<Triple> unshieldedColliers;
+    /**
+     * A map that associates each {@code Edge} with a corresponding set of {@code Node} objects representing additional
+     * separating sets within a graph. This data structure is typically used to manage extra separation information
+     * between nodes connected by edges in applications such as graphical models or causal inference algorithms.
+     */
+    private Map<Edge, Set<Node>> extraSepsets;
 
     /**
-     * LV-Lite constructor. Initializes a new object of LV-Lite search algorithm with the given IndependenceTest and
-     * Score object.
+     * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
+     * object.
      * <p>
      * In this constructor, we will use BOSS or GRaSP internally to infer an initial CPDAG and valid order of the
-     * variables. This is the default behavior of the LV-Lite algorithm.
+     * variables. This is the default behavior of the FCIT algorithm.
      *
      * @param test  The IndependenceTest object to be used for testing independence between variables.
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public LvLite(IndependenceTest test, Score score) {
+    public Fcit(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -163,9 +168,9 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Alternative LV-Lite constructor. Initializes a new object of LV-Lite search algorithm with the given initial
-     * CPDAG, along with the IndependenceTest. These should all be over variables with the same names as the variables
-     * in the supplied test.
+     * Alternative FCIT constructor. Initializes a new object of FCIT search algorithm with the given initial CPDAG,
+     * along with the IndependenceTest. These should all be over variables with the same names as the variables in the
+     * supplied test.
      * <p>
      * This constructor allows the user to employ an external algorithm to find this initial CPDAG (and an implied order
      * of the variables). This is useful when the user has a preferred algorithm for this task. In this case, the
@@ -183,7 +188,7 @@ public final class LvLite implements IGraphSearch {
      * @param cpdag The initial CPDAG.
      * @param test  The independence test.
      */
-    public LvLite(Graph cpdag, IndependenceTest test) {
+    public Fcit(Graph cpdag, IndependenceTest test) {
         this.score = null;
         this.test = test;
         this.cpdag = GraphUtils.replaceNodes(cpdag, this.test.getVariables());
@@ -216,7 +221,22 @@ public final class LvLite implements IGraphSearch {
             nodes = new ArrayList<>(this.test.getVariables());
         }
 
-        TetradLogger.getInstance().log("===Starting LV-Lite===");
+        TetradLogger.getInstance().log("===Starting FCIT===");
+
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+        strategy.setVerbose(verbose);
+        strategy.setDepth(depth);
+        strategy.setMaxLength(maxBlockingPathLength);
+        strategy.setEnsureMarkovHelper(ensureMarkovHelper);
+        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
+
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setTestTimeout(testTimeout);
+        fciOrient.setVerbose(verbose);
+        fciOrient.setParallel(true);
+        fciOrient.setKnowledge(knowledge);
 
         Graph pag;
         Graph dag;
@@ -253,7 +273,7 @@ public final class LvLite implements IGraphSearch {
                 TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
             }
         } else if (startWith == START_WITH.GRASP) {
-            // We need to include the GRaSP option here so that we can run LV-Lite from Oracle.
+            // We need to include the GRaSP option here so that we can run FCIT from Oracle.
 
             if (verbose) {
                 TetradLogger.getInstance().log("Running GRaSP...");
@@ -349,21 +369,6 @@ public final class LvLite implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
-        strategy.setVerbose(verbose);
-        strategy.setDepth(depth);
-        strategy.setMaxLength(maxBlockingPathLength);
-        strategy.setPag(pag);
-        strategy.setEnsureMarkovHelper(ensureMarkovHelper);
-
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setTestTimeout(testTimeout);
-        fciOrient.setVerbose(verbose);
-        fciOrient.setParallel(true);
-        fciOrient.setKnowledge(knowledge);
-
         if (verbose) {
             TetradLogger.getInstance().log("Collider orientation and edge removal.");
         }
@@ -378,7 +383,7 @@ public final class LvLite implements IGraphSearch {
         }
 
         GraphUtils.reorientWithCircles(pag, verbose);
-        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, false);
+        fciOrient.fciOrientbk(knowledge, pag, nodes);
 
         if (verbose) {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
@@ -394,12 +399,21 @@ public final class LvLite implements IGraphSearch {
         // each side. So in a dense graph, this can take a very long time to complete. Here, we look for a sepset
         // for each edge by examining the structure of the current graph and finding a sepset that blocks all
         // paths between x and y. This is a simpler problem and scales better to dense graphs (though not perfectly).
-        removeExtraEdgesCommonColliders(pag, extraSepsets);
-        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
+        // New definite discriminating paths may be created, so additional checking needs to be done until the
+        // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
+        // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
+        // convergence.
+        while (true) {
+            Graph _pag = new EdgeListGraph(pag);
 
-        if (doDdpEdgeRemovalStep) {
-            removeExtraEdgesDdp(pag, extraSepsets, fciOrient, maxBlockingPathLength);
+            Set<Edge> edges = new HashSet<>(pag.getEdges());
+
+            removeExtraEdgesDdp(pag, edges, extraSepsets, fciOrient, -1);
             pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
+
+            if (_pag.equals(pag)) {
+                break;
+            }
         }
 
         // Final FCI orientation.
@@ -425,13 +439,22 @@ public final class LvLite implements IGraphSearch {
             pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, extraUnshieldedColliders, verbose, new HashSet<>());
         }
 
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        DagToPag dagToPag = new DagToPag(pag);
+        dagToPag.setKnowledge(knowledge);
+        Graph pag2 = dagToPag.convert();
+        fciOrient.finalOrientation(pag);
+
         long stop3 = System.currentTimeMillis();
 
-        TetradLogger.getInstance().log("LV-Lite finished.");
+        TetradLogger.getInstance().log("FCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Guarantee PAG time: " + (stop3 - start3) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop3 - start1) + " ms.");
+
+        this.unshieldedColliers = unshieldedColliders;
+        this.extraSepsets = extraSepsets;
 
         return GraphUtils.replaceNodes(pag, nodes);
     }
@@ -459,8 +482,8 @@ public final class LvLite implements IGraphSearch {
     private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders,
                                FciOrient fciOrient, List<Node> best) {
         GraphUtils.reorientWithCircles(pag, verbose);
-        pag =   adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
-        GraphUtils.doRequiredOrientations(fciOrient, pag, best, knowledge, verbose);
+        pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
         return pag;
     }
@@ -482,14 +505,14 @@ public final class LvLite implements IGraphSearch {
         return _pag;
     }
 
-    private void removeExtraEdgesDdp(Graph pag, Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
+    private void removeExtraEdgesDdp(Graph pag, Set<Edge> edges, Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        pag.getEdges().parallelStream().forEach(edge -> {
+        edges.parallelStream().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -523,6 +546,9 @@ public final class LvLite implements IGraphSearch {
             Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
             Set<Node> perhapsNotFollowed = new HashSet<>();
 
+            // Don't repeat the same independence test twice for thie edge x *-* y.
+            Set<Set<Node>> S = new HashSet<>();
+
             if (paths != null) {
                 for (DiscriminatingPath path : paths) {
                     if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
@@ -535,21 +561,17 @@ public final class LvLite implements IGraphSearch {
                 TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
             }
 
-            if (perhapsNotFollowed.isEmpty()) {
-                return;
-            }
+            List<Node> E = new ArrayList<>(perhapsNotFollowed);
 
-            List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
-
-            int _depth = depth == -1 ? _perhapsNotFollowed.size() : depth;
-            _depth = Math.min(_depth, _perhapsNotFollowed.size());
+            int _depth = depth == -1 ? E.size() : depth;
+            _depth = Math.min(_depth, E.size());
 
             // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), _depth);
+            SublistGenerator gen = new SublistGenerator(E.size(), _depth);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                Set<Node> notFollowed = GraphUtils.asSet(choice, _perhapsNotFollowed);
+                Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
                 if (verbose) {
                     TetradLogger.getInstance().log(" x: " + x + " y: " + y + " notFollowed: " + notFollowed
@@ -597,6 +619,10 @@ public final class LvLite implements IGraphSearch {
 
                         b.removeAll(c);
 
+                        if (S.contains(b)) continue;
+
+                        S.add(new HashSet<>(b));
+
                         if (ensureMarkovHelper.markovIndependence(x, y, b)) {
                             if (verbose) {
                                 TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
@@ -615,6 +641,8 @@ public final class LvLite implements IGraphSearch {
                 }
             }
         });
+
+
     }
 
     /**
@@ -1011,23 +1039,31 @@ public final class LvLite implements IGraphSearch {
     }
 
     /**
-     * Sets whether to perform DDP edge removal step. This step may be computationally expensive for large models and
-     * addresses a relatively rare condition in the search space. By default the step is done, since it is needed for
-     * correctness.
-     *
-     * @param doDdpEdgeRemovalStep a boolean indicating if the DDP edge removal step should be executed
-     */
-    public void setDoDdpEdgeRemovalStep(boolean doDdpEdgeRemovalStep) {
-        this.doDdpEdgeRemovalStep = doDdpEdgeRemovalStep;
-    }
-
-    /**
      * Sets the value indicating whether the process should ensure Markov property.
      *
      * @param ensureMarkov a boolean value, true to ensure Markov property, false otherwise.
      */
     public void setEnsureMarkov(boolean ensureMarkov) {
         this.ensureMarkov = ensureMarkov;
+    }
+
+    /**
+     * Retrieves the set of unshielded colliers.
+     *
+     * @return a Set containing Triple objects that represent unshielded colliers
+     */
+    public Set<Triple> getUnshieldedColliers() {
+        return new HashSet<>(unshieldedColliers);
+    }
+
+    /**
+     * Retrieves a map containing additional separation sets. Each entry in the map associates an edge with a set of
+     * nodes that constitute the separation set for that edge.
+     *
+     * @return a map where the keys are edges and the values are sets of nodes representing the separation sets
+     */
+    public Map<Edge, Set<Node>> getExtraSepsets() {
+        return new HashMap<>(extraSepsets);
     }
 
     /**

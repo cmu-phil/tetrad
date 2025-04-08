@@ -2566,20 +2566,22 @@ public final class GraphUtils {
 
         // Repair almost cycles and repair maximality. We assume here that there are no cycles in the graph that cannot
         // be fixed by removing almost cycles. jdramsey 2024-8-13.
-        boolean changed1, changed2;
+        boolean changed1, changed2, changed3;
 
 //        removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
 
         do {
             changed1 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
             changed2 = repairMaximality(pag, verbose, selection);
+            changed3 = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
             fciOrient.finalOrientation(pag);
-        } while (changed1 || changed2);
+        } while (changed1 || changed2 || changed3);
 
         // At this point there should be no almost cycles and it should be maximal. We assume there are no cycles.
         // This next step adds some additional endpoints implied by final rules from oracle.
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
         DagToPag dagToPag = new DagToPag(mag);
+        dagToPag.setKnowledge(knowledge);
         Graph pag2 = dagToPag.convert();
 
         if (pag2.equals(orig)) {
@@ -3137,7 +3139,7 @@ public final class GraphUtils {
             }
 
             reorientWithCircles(pag, verbose);
-            doRequiredOrientations(fciOrient, pag, pag.getNodes(), knowledge, verbose);
+            fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
             recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
             if (verbose) {
@@ -3245,7 +3247,8 @@ public final class GraphUtils {
             }
 
             reorientWithCircles(pag, verbose);
-            doRequiredOrientations(fciOrient, pag, pag.getNodes(), knowledge, verbose);
+            fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+//            doRequiredOrientations(fciOrient, pag, pag.getNodes(), knowledge, verbose);
             recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
 
             if (verbose) {
@@ -3339,23 +3342,6 @@ public final class GraphUtils {
      */
     public static boolean colliderAllowed(Graph pag, Node x, Node b, Node y, Knowledge knowledge) {
         return FciOrient.isArrowheadAllowed(x, b, pag, knowledge) && FciOrient.isArrowheadAllowed(y, b, pag, knowledge);
-    }
-
-    /**
-     * Orient required edges in PAG.
-     *
-     * @param fciOrient The FciOrient object used for orienting the edges.
-     * @param pag       The Graph representing the PAG.
-     * @param best      The list of Node objects representing the best nodes.
-     * @param knowledge The Knowledge object.
-     * @param verbose   A boolean value indicating whether verbose output should be printed.
-     */
-    public static void doRequiredOrientations(FciOrient fciOrient, Graph pag, List<Node> best, Knowledge knowledge, boolean verbose) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Orient required edges in PAG:");
-        }
-
-        fciOrient.fciOrientbk(knowledge, pag, best);
     }
 
     /**

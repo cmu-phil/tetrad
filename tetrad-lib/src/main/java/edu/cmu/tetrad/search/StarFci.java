@@ -117,6 +117,7 @@ public abstract class StarFci implements IGraphSearch {
      * @param test       The independence test used to evaluate separation.
      * @param depth      The maximum size of subsets to be tested for independence.
      * @param order      An optional list specifying the order of nodes for additional constraints.
+     * @param useMaxP    True if the maxP method should be used.
      * @return A separating set of nodes (if found) that is a subset of the adjacency of x or y, or {@code null} if no
      * such set is found.
      */
@@ -324,7 +325,6 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         pag.reorientAllWith(Endpoint.CIRCLE);
-
         fciOrientbk(knowledge, pag, pag.getNodes());
 
         for (Node y : nodes) {

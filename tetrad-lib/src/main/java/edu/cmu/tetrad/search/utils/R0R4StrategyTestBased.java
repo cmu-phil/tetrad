@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -35,7 +36,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
      */
-    private BlockingType blockingType = BlockingType.RECURSIVE;
+    private BlockingType blockingType = BlockingType.GREEDY;
     /**
      * Private variable representing the knowledge.
      * <p>
@@ -55,6 +56,11 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Determines whether verbose mode is enabled or not.
      */
     private boolean verbose = false;
+    /**
+     * A Set of Triples representing the allowed colliders for the strategy. This variable is initially set to null and
+     * can be configured or modified through the corresponding setter methods. Allowed colliders are used within the
+     * FciOrientDataExaminationStrategy to impose constraints on the orientation of certain patterns in the graph.
+     */
     private Set<Triple> allowedColliders = null;
     /**
      * This variable represents the initial set of allowed colliders for the FciOrientDataExaminationStrategy. It is a
@@ -83,10 +89,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The maximum length of the path, for relevant paths.
      */
     private int maxLength = -1;
-    /**
-     * The PAG (partial ancestral graph) for the strategy.
-     */
-    private Graph pag = null;
     /**
      * Helper variable of type EnsureMarkov used for ensuring Markov properties in the R0R4StrategyTestBased class.
      * Initialized to null by default.
@@ -209,25 +211,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         if (blockingType == BlockingType.RECURSIVE) {
             blocking = findDdpSepset(graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)), maxLength, maxLength, -1);
         } else if (blockingType == BlockingType.GREEDY) {
-            blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth, null);
-
-            Set<Node> b1 = new HashSet<>(blocking);
-            b1.remove(v);
-
-            boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
-
-            Set<Node> b2 = new HashSet<>(b1);
-            b2.add(v);
-
-            boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
-
-            if (b1Indep) {
-                blocking = b1;
-            } else if (b2Indep) {
-                blocking = b2;
-            } else {
-                blocking = null;
-            }
+            blocking = findAdjSetSepset(graph, x, y, path, v);
         } else {
             throw new IllegalArgumentException("Unknown blocking type.");
         }
@@ -312,6 +296,30 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
     }
 
+    private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
+        Set<Node> blocking;
+        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth, null);
+
+        Set<Node> b1 = new HashSet<>(blocking);
+        b1.remove(v);
+
+        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
+
+        Set<Node> b2 = new HashSet<>(b1);
+        b2.add(v);
+
+        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
+
+        if (b1Indep) {
+            blocking = b1;
+        } else if (b2Indep) {
+            blocking = b2;
+        } else {
+            blocking = null;
+        }
+        return blocking;
+    }
+
     private boolean checkIndependenceRecursive(Node x, Node y, Set<Node> blocking, Set<Node> vNodes,
                                                DiscriminatingPath discriminatingPath, IndependenceTest test) throws InterruptedException {
 
@@ -351,7 +359,9 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
     private Set<Node> findDdpSepset(Graph pag, Node x, Node y, FciOrient fciOrient,
                                     int maxBlockingPathLength, int maxDdpPathLength, long testTimeout) {
+        fciOrient.setDoR4(false);
         fciOrient.finalOrientation(pag);
+        fciOrient.setDoR4(true);
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength,
                 false);
@@ -441,10 +451,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
                 W:
                 while ((choice2 = gen2.next()) != null) {
-//                    if (!pag.isAdjacentTo(x, y)) {
-//                        break;
-//                    }
-
                     Set<Node> c = GraphUtils.asSet(choice2, common);
 
                     for (Node node : c) {
@@ -468,7 +474,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             } catch (TimeoutException e) {
                 System.out.println("Timeout occurred while waiting for blockPathsRecursively");
             } catch (Exception e) {
-                e.printStackTrace(); // Handle other exceptions that might occur
+                throw new RuntimeException(e);
             } finally {
                 executor.shutdown(); // Always shut down the executor
             }
@@ -574,15 +580,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     @Override
     public void setAllowedColliders(Set<Triple> allowedColliders) {
         this.allowedColliders = allowedColliders;
-    }
-
-    /**
-     * Sets the PAG (partial ancestral graph) for the strategy.
-     *
-     * @param pag the PAG to be set
-     */
-    public void setPag(Graph pag) {
-        this.pag = pag;
     }
 
     /**

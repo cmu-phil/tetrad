@@ -66,7 +66,7 @@ public final class LvDumb implements IGraphSearch {
      */
     private boolean verbose;
     /**
-     * LV-Lite constructor. Initializes a new object of LvLite search algorithm with the given IndependenceTest and
+     * LV-Dumb constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
      * Score object.
      *
      * @param score The Score object to be used for scoring DAGs.

@@ -920,10 +920,6 @@ public final class Params {
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
     /**
-     * Constant <code>DO_DDP_EDGE_REMOVAL_STEP="doDdpEdgeRemovalStep"</code>
-     */
-    public static final String DO_DDP_EDGE_REMOVAL_STEP = "doDdpEdgeRemovalStep";
-    /**
      * Constant <code>ENSURE_MARKOV="ensureMarkov"</code>
      */
     public static final String ENSURE_MARKOV = "ensureMarkov";
@@ -1027,6 +1023,14 @@ public final class Params {
      * Constant <code>START_FROM_COMPLETE_GRAPH="startFromCompleteGraph"</code>
      */
     public static final String START_FROM_COMPLETE_GRAPH = "startFromCompleteGraph";
+    /**
+     * Constant <code>INCLUDE_ALL_NODES="includeAllNodes"</code>
+     */
+    public static final String INCLUDE_ALL_NODES = "includeAllNodes";
+    /**
+     * Constant <code>DO_ONE_EQUATION_ONLY="doOneEquationOnly"</code>
+     */
+    public static final String DO_ONE_EQUATION_ONLY = "doOneEquationOnly";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -1076,9 +1080,9 @@ public final class Params {
             Params.SEED
     ));
     /**
-     * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
+     * Constant <code>FCIT_STARTS_WITH="fcitStartsWith"</code>
      */
-    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
+    public static String FCIT_STARTS_WITH = "fcitStartsWith";
     /**
      * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
      */

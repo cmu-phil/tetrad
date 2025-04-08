@@ -89,6 +89,11 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
      * internal processing steps.
      */
     private boolean verbose = false;
+    /**
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt; use the equation for X1 only, if true;
+     * otherwise, use equations for all of X1, X2,...,Xp.
+     */
+    private boolean doOneEquationOnly;
 
     /**
      * Constructs an instance of IndTestBasisFunctionLrtCovariance. This constructor initializes the object using a
@@ -147,6 +152,11 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
 
         // Grab the embedded data for _x, _y, and _z.
         List<Integer> embedded_x = embedding.get(_x);
+
+        if (doOneEquationOnly) {
+            embedded_x = embedded_x.subList(0, 1);
+        }
+
         List<Integer> embedded_y = embedding.get(_y);
         List<Integer> embedded_z = new ArrayList<>();
 
@@ -176,13 +186,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
 
         // Compute p-value
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-        double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
-
-//        if (verbose) {
-//            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
-//        }
-
-        return p_value;
+        return 1.0 - chi2.cumulativeProbability(LR_stat);
     }
 
     /**
@@ -278,5 +282,15 @@ public class IndTestBasisFunctionLrt implements IndependenceTest {
             throw new IllegalArgumentException("Alpha must be between 0 and 1.");
         }
         this.alpha = alpha;
+    }
+
+    /**
+     * When calculation the score for X = &lt;X1 = X, X2, X3,..., Xp&gt; use the equation for X1 only, if true;
+     * otherwise, use equations for all of X1, X2,...,Xp.
+     *
+     * @param doOneEquationOnly True if only the equation for X1 is to be used for X = X1,...,Xp.
+     */
+    public void setDoOneEquationOnly(boolean doOneEquationOnly) {
+        this.doOneEquationOnly = doOneEquationOnly;
     }
 }

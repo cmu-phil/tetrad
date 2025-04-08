@@ -80,7 +80,7 @@ public interface LayoutEditable {
      */
     void layoutByGraph(Graph graph);
 
-    /**
+    /**f
      * Lays out the graph in tiers according to knowledge.
      */
     void layoutByKnowledge();
