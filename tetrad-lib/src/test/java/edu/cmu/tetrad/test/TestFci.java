@@ -320,8 +320,8 @@ public class TestFci {
         }
 
         {
-            FciTT fci = new FciTT(independence, score);
-            fci.setStartWith(FciTT.START_WITH.GRASP);
+            FciTt fci = new FciTt(independence, score);
+            fci.setStartWith(FciTt.START_WITH.GRASP);
             fci.setDepth(-1);
             fci.setKnowledge(knowledge);
             fci.setEnsureMarkov(false);

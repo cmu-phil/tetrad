@@ -43,7 +43,7 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class FciTT extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class FciTt extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -76,7 +76,7 @@ public class FciTT extends AbstractBootstrapAlgorithm implements Algorithm, Uses
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FciTT() {
+    public FciTt() {
         // Used for reflection; do not delete.
     }
 
@@ -94,7 +94,7 @@ public class FciTT extends AbstractBootstrapAlgorithm implements Algorithm, Uses
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FciTT(IndependenceWrapper test, ScoreWrapper score) {
+    public FciTt(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -132,7 +132,7 @@ public class FciTT extends AbstractBootstrapAlgorithm implements Algorithm, Uses
             }
         }
 
-        edu.cmu.tetrad.search.FciTT search = new edu.cmu.tetrad.search.FciTT(test, score);
+        edu.cmu.tetrad.search.FciTt search = new edu.cmu.tetrad.search.FciTt(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -153,11 +153,11 @@ public class FciTT extends AbstractBootstrapAlgorithm implements Algorithm, Uses
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
         if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.FciTT.START_WITH.BOSS);
+            search.setStartWith(edu.cmu.tetrad.search.FciTt.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.FciTT.START_WITH.GRASP);
+            search.setStartWith(edu.cmu.tetrad.search.FciTt.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.FciTT.START_WITH.SP);
+            search.setStartWith(edu.cmu.tetrad.search.FciTt.START_WITH.SP);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCI_TT_STARTS_WITH));
         }

@@ -44,7 +44,7 @@ import java.util.concurrent.*;
  *
  * @author josephramsey
  */
-public final class FciTT implements IGraphSearch {
+public final class FciTt implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -148,7 +148,7 @@ public final class FciTT implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public FciTT(IndependenceTest test, Score score) {
+    public FciTt(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -188,7 +188,7 @@ public final class FciTT implements IGraphSearch {
      * @param cpdag The initial CPDAG.
      * @param test  The independence test.
      */
-    public FciTT(Graph cpdag, IndependenceTest test) {
+    public FciTt(Graph cpdag, IndependenceTest test) {
         this.score = null;
         this.test = test;
         this.cpdag = GraphUtils.replaceNodes(cpdag, this.test.getVariables());

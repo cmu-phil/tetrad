@@ -17,7 +17,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.FciTT;
+import edu.cmu.tetrad.search.FciTt;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -332,7 +332,7 @@ public class DmFciTT2 extends AbstractBootstrapAlgorithm implements Algorithm, U
             }
         }
 
-        FciTT search = new FciTT(test, score);
+        FciTt search = new FciTt(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -352,11 +352,11 @@ public class DmFciTT2 extends AbstractBootstrapAlgorithm implements Algorithm, U
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
         if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
-            search.setStartWith(FciTT.START_WITH.BOSS);
+            search.setStartWith(FciTt.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 2) {
-            search.setStartWith(FciTT.START_WITH.GRASP);
+            search.setStartWith(FciTt.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 3) {
-            search.setStartWith(FciTT.START_WITH.SP);
+            search.setStartWith(FciTt.START_WITH.SP);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCI_TT_STARTS_WITH));
         }
