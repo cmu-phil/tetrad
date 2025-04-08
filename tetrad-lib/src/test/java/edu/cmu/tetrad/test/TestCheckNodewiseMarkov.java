@@ -290,43 +290,30 @@ public class TestCheckNodewiseMarkov {
                 } catch (IOException e) {
                     TetradLogger.getInstance().log("IO Exception while saving statistics: " + e.getMessage());
                 }
+                File descriptionFile = new File(methodDir, "description.txt");
+                try (Writer out = new FileWriter(descriptionFile)) {
+                    out.write("Simulated Gaussian DAG with the following RandomGraph.randomDag(...) parameters:\n");
+                    out.write("numNodes: " + numNodes + "\n" );
+                    out.write("numLatentConfounders: " + numLatentConfounders + "\n" );
+                    out.write("maxNumEdges: " + maxNumEdges + "\n" );
+                    out.write("maxDegree: " + maxDegree + "\n" );
+                    out.write("maxIndegree: " + maxIndegree + "\n" );
+                    out.write("maxOutdegree: " + maxOutdegree + "\n" );
+                    out.write("connected: " + connected + "\n" );
+                    out.write("\n");
+                    out.write("Other Simulation Settings:\n");
+                    out.write("threshold: " + threshold + "\n" );
+                    out.write("shuffleThreshold: " + shuffleThreshold + "\n" );
+                    out.write("lowRecallBound: " + lowRecallBound + "\n" );
+                } catch (IOException e) {
+                    TetradLogger.getInstance().log("IO Exception while saving description: " + e.getMessage());
+                }
 
-                System.out.println("~~~~~~~~~~~~~Graph Simulation " + runID + "~~~~~~~~~~~~~~~");
+                System.out.println("-----------------------Graph Simulation " + runID +" for : "+ methodName + "-----------------------");
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
         }
-
-//        Graph estimatedPAG = null;
-//
-//        try {
-//            BossFci bossFCI = new BossFci(fisherZTest, score); // TODO VBC: discuss with Peter: GaspFCI, (LVLite not in the *-FCI), FCI, FCI max, RFCI
-//            bossFCI.setGuaranteePag(true);
-//            estimatedPAG = bossFCI.search();
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-        // Save a parameter settings info description file
-        File descriptionFile = new File(simulationDir, "description.txt");
-        try (Writer out = new FileWriter(descriptionFile)) {
-            out.write("Simulated Gaussian DAG with the following RandomGraph.randomDag(...) parameters:\n");
-            out.write("numNodes: " + numNodes + "\n" );
-            out.write("numLatentConfounders: " + numLatentConfounders + "\n" );
-            out.write("maxNumEdges: " + maxNumEdges + "\n" );
-            out.write("maxDegree: " + maxDegree + "\n" );
-            out.write("maxIndegree: " + maxIndegree + "\n" );
-            out.write("maxOutdegree: " + maxOutdegree + "\n" );
-            out.write("connected: " + connected + "\n" );
-            out.write("\n");
-            out.write("Other Simulation Settings:\n");
-            out.write("threshold: " + threshold + "\n" );
-            out.write("shuffleThreshold: " + shuffleThreshold + "\n" );
-            out.write("lowRecallBound: " + lowRecallBound + "\n" );
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("IO Exception while saving description: " + e.getMessage());
-        }
-
-
         System.out.println("~~~~~~~~~~~~~Graph Simulation " + runID + "~~~~~~~~~~~~~~~");
     }
 
