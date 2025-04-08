@@ -209,6 +209,25 @@ public class TestCheckNodewiseMarkov {
         } catch (IOException e) {
             TetradLogger.getInstance().log("IO Exception while saving dataset: " + e.getMessage());
         }
+        File descriptionFile = new File(simulationDir, "description.txt");
+        try (Writer out = new FileWriter(descriptionFile)) {
+            out.write("Simulated Gaussian DAG with the following RandomGraph.randomDag(...) parameters:\n");
+            out.write("numNodes: " + numNodes + "\n" );
+            out.write("numLatentConfounders: " + numLatentConfounders + "\n" );
+            out.write("maxNumEdges: " + maxNumEdges + "\n" );
+            out.write("maxDegree: " + maxDegree + "\n" );
+            out.write("maxIndegree: " + maxIndegree + "\n" );
+            out.write("maxOutdegree: " + maxOutdegree + "\n" );
+            out.write("connected: " + connected + "\n" );
+            out.write("\n");
+            out.write("Other Simulation Settings:\n");
+            out.write("threshold: " + threshold + "\n" );
+            out.write("shuffleThreshold: " + shuffleThreshold + "\n" );
+            out.write("lowRecallBound: " + lowRecallBound + "\n" );
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception while saving description: " + e.getMessage());
+        }
+
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
@@ -286,24 +305,6 @@ public class TestCheckNodewiseMarkov {
                     out.write("whole_lgr: " + whole_lgr + "\n" );
                 } catch (IOException e) {
                     TetradLogger.getInstance().log("IO Exception while saving statistics: " + e.getMessage());
-                }
-                File descriptionFile = new File(methodDir, "description.txt");
-                try (Writer out = new FileWriter(descriptionFile)) {
-                    out.write("Simulated Gaussian DAG with the following RandomGraph.randomDag(...) parameters:\n");
-                    out.write("numNodes: " + numNodes + "\n" );
-                    out.write("numLatentConfounders: " + numLatentConfounders + "\n" );
-                    out.write("maxNumEdges: " + maxNumEdges + "\n" );
-                    out.write("maxDegree: " + maxDegree + "\n" );
-                    out.write("maxIndegree: " + maxIndegree + "\n" );
-                    out.write("maxOutdegree: " + maxOutdegree + "\n" );
-                    out.write("connected: " + connected + "\n" );
-                    out.write("\n");
-                    out.write("Other Simulation Settings:\n");
-                    out.write("threshold: " + threshold + "\n" );
-                    out.write("shuffleThreshold: " + shuffleThreshold + "\n" );
-                    out.write("lowRecallBound: " + lowRecallBound + "\n" );
-                } catch (IOException e) {
-                    TetradLogger.getInstance().log("IO Exception while saving description: " + e.getMessage());
                 }
                 System.out.println("-----------------------Graph Simulation " + runID +" for : "+ methodName + "-----------------------");
             } catch (InterruptedException | IOException e) {
