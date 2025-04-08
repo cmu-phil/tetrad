@@ -265,9 +265,33 @@ public class TestCheckNodewiseMarkov {
                     TetradLogger.getInstance().log("IO Exception while saving graph for " + methodName + ": " + e.getMessage());
                 }
 
+                // Stats Evaluation
+                File statsFile = new File(methodDir, "stats.txt");
+                testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(
+                        statsFile, fisherZTest, data, trueGraph, estimatedPAG, threshold, shuffleThreshold, lowRecallBound);
 
+                estimatedPAG = GraphUtils.replaceNodes(estimatedPAG, trueGraph.getNodes());
+                Graph truePAG = GraphTransforms.dagToPag(trueGraph);
 
+                double whole_ap = new AdjacencyPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_ar = new AdjacencyRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_ahp = new ArrowheadPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_ahr = new ArrowheadRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_lgp = new LocalGraphPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_lgr = new LocalGraphRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
+                // Save statistical data in the simulation directory
+                try (Writer out = new FileWriter(statsFile, true)) {
+                    out.write("whole_ap: " + whole_ap + "\n" );
+                    out.write("whole_ar: " + whole_ar + "\n" );
+                    out.write("whole_ahp: " + whole_ahp + "\n" );
+                    out.write("whole_ahr: " + whole_ahr + "\n" );
+                    out.write("whole_lgp: " + whole_lgp + "\n" );
+                    out.write("whole_lgr: " + whole_lgr + "\n" );
+                } catch (IOException e) {
+                    TetradLogger.getInstance().log("IO Exception while saving statistics: " + e.getMessage());
+                }
 
+                System.out.println("~~~~~~~~~~~~~Graph Simulation " + runID + "~~~~~~~~~~~~~~~");
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
@@ -302,37 +326,7 @@ public class TestCheckNodewiseMarkov {
             TetradLogger.getInstance().log("IO Exception while saving description: " + e.getMessage());
         }
 
-        // Save estimated graph in the simulation directory
-        File estGraphFile = new File(simulationDir, "estimatedPAG.txt");
-        try (Writer out = new FileWriter(estGraphFile)) {
-            out.write(estimatedPAG.toString());
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("IO Exception while saving graph: " + e.getMessage());
-        }
 
-        File statsFile = new File(simulationDir, "stats.txt");
-
-        testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(statsFile, fisherZTest, data, trueGraph, estimatedPAG, threshold, shuffleThreshold, lowRecallBound);
-        estimatedPAG = GraphUtils.replaceNodes(estimatedPAG, trueGraph.getNodes());
-        Graph truePAG = GraphTransforms.dagToPag(trueGraph);
-        double whole_ap = new AdjacencyPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_ar = new AdjacencyRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_ahp = new ArrowheadPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_ahr = new ArrowheadRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_lgp = new LocalGraphPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_lgr = new LocalGraphRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
-
-        // Save statistical data in the simulation directory
-        try (Writer out = new FileWriter(statsFile, true)) {
-            out.write("whole_ap: " + whole_ap + "\n" );
-            out.write("whole_ar: " + whole_ar + "\n" );
-            out.write("whole_ahp: " + whole_ahp + "\n" );
-            out.write("whole_ahr: " + whole_ahr + "\n" );
-            out.write("whole_lgp: " + whole_lgp + "\n" );
-            out.write("whole_lgr: " + whole_lgr + "\n" );
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("IO Exception while saving statistics: " + e.getMessage());
-        }
         System.out.println("~~~~~~~~~~~~~Graph Simulation " + runID + "~~~~~~~~~~~~~~~");
     }
 
