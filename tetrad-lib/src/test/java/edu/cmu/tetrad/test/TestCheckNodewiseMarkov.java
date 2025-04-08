@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,8 +44,8 @@ public class TestCheckNodewiseMarkov {
             }
         }
         for (int run = 0; run < 10; run++) {
-            testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(run,10, 0,
-                    20, 30, 40, 5, false, 0.5,
+            testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(run,5, 0,
+                    10, 30, 40, 5, false, 0.5,
                     1.0, 0.8);
         }
     }
