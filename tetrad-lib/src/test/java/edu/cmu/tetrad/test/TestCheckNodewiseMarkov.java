@@ -218,7 +218,14 @@ public class TestCheckNodewiseMarkov {
         List<String> methodNames = Arrays.asList("BossFCI", "GaspFCI", "FCI", "FCIMax", "RFCI");
         for (String methodName : methodNames) {
             try {
-                Graph estimatedPAG = null; // PAG
+                Graph estimatedPAG = null;
+
+                // Create FCI-method-specific subdirectory
+                File methodDir = new File(simulationDir, methodName);
+                if (!methodDir.exists() && !methodDir.mkdirs()) {
+                    throw new IOException("Failed to create directory: " + methodDir.getAbsolutePath());
+                }
+
                 switch (methodName) {
                     case "BossFCI":
                         BossFci bossFCI = new BossFci(fisherZTest, score);
@@ -248,9 +255,20 @@ public class TestCheckNodewiseMarkov {
                     default:
                         throw new IllegalArgumentException("Unsupported FCI method: " + methodName);
                 }
-                estimatedFCIPAGs.add(estimatedPAG);
+                // estimatedFCIPAGs.add(estimatedPAG);
 
-            } catch (InterruptedException e) {
+                // Save estimated graph
+                File estGraphFile = new File(methodDir, "estimatedPAG.txt");
+                try (Writer out = new FileWriter(estGraphFile)) {
+                    out.write(estimatedPAG.toString());
+                } catch (IOException e) {
+                    TetradLogger.getInstance().log("IO Exception while saving graph for " + methodName + ": " + e.getMessage());
+                }
+
+
+
+
+            } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
         }
