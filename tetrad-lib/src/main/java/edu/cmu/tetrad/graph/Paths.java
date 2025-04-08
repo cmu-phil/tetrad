@@ -2749,12 +2749,14 @@ public class Paths implements TetradSerializable {
      *                                target, 3 = near either.
      * @param maxPathLength           The maximum length of the path to consider for backdoor paths. If a value of -1 is
      *                                given, all paths will be considered.
-     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
+     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;. Return an smpty
+     * list if source == target or there is no amenable path from source to target.
      */
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
                                           int nearWhichEndpoint, int maxPathLength) {
         if (source == target) {
-            throw new IllegalArgumentException("Source and target nodes must be different.");
+            return new ArrayList<>();
+//            throw new IllegalArgumentException("Source and target nodes must be different.");
         }
 
         boolean mpdag = false;
@@ -2788,7 +2790,8 @@ public class Paths implements TetradSerializable {
         }
 
         if (amenable.isEmpty()) {
-            throw new IllegalArgumentException("No amenable paths found.");
+            return new ArrayList<>();
+//            throw new IllegalArgumentException("No amenable paths found.");
         }
 
         Set<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);

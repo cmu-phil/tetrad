@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * m-separation holds and another list (for dependency checks) where the m-separation does not hold. Then the
  * predictions are tested against the data set using the independence test. For the Markov test, since an independence
  * test yielding p-values should be Uniform under the null hypothesis, these p-values are tested for Uniformity using
- * the Kolmogorov-Smirnov test. Also, a fraction of dependent judgments is returned, which should equal the alpha level
+ * the Kolmogorov-Smirnov test. Also, a fraction of dependent judgments isd  returned, which should equal the alpha level
  * of the independence test if the test is Uniform under the null hypothesis. For the Faithfulness test, the p-values
  * are tested for Uniformity using the Kolmogorov-Smirnov test; these should be dependent. Also, a fraction of dependent
  * judgments is returned.
