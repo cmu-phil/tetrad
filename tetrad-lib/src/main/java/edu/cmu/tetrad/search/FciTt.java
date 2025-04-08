@@ -36,11 +36,11 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * The FCI-TT algorithm (FCI Targeted Testing) algorithm implements a search algorithm for learning the structure of
- * a graphical model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to
- * get an initial CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with
- * a testing step to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is
- * applied to the graph.
+ * The FCI Targeted Testing (FCI-TT) algorithm implements a search algorithm for learning the structure of a graphical
+ * model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
+ * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph,    then finishes with a testing step
+ * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
+ * graph.
  *
  * @author josephramsey
  */
@@ -138,8 +138,8 @@ public final class FciTt implements IGraphSearch {
     private Map<Edge, Set<Node>> extraSepsets;
 
     /**
-     * FCI-TT constructor. Initializes a new object of FCI-TT search algorithm with the given IndependenceTest and
-     * Score object.
+     * FCI-TT constructor. Initializes a new object of FCI-TT search algorithm with the given IndependenceTest and Score
+     * object.
      * <p>
      * In this constructor, we will use BOSS or GRaSP internally to infer an initial CPDAG and valid order of the
      * variables. This is the default behavior of the FCI-TT algorithm.
@@ -168,9 +168,9 @@ public final class FciTt implements IGraphSearch {
     }
 
     /**
-     * Alternative FCI-TT constructor. Initializes a new object of FCI-TT search algorithm with the given initial
-     * CPDAG, along with the IndependenceTest. These should all be over variables with the same names as the variables
-     * in the supplied test.
+     * Alternative FCI-TT constructor. Initializes a new object of FCI-TT search algorithm with the given initial CPDAG,
+     * along with the IndependenceTest. These should all be over variables with the same names as the variables in the
+     * supplied test.
      * <p>
      * This constructor allows the user to employ an external algorithm to find this initial CPDAG (and an implied order
      * of the variables). This is useful when the user has a preferred algorithm for this task. In this case, the
@@ -438,6 +438,12 @@ public final class FciTt implements IGraphSearch {
         if (guaranteePag) {
             pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, extraUnshieldedColliders, verbose, new HashSet<>());
         }
+
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        DagToPag dagToPag = new DagToPag(pag);
+        dagToPag.setKnowledge(knowledge);
+        Graph pag2 = dagToPag.convert();
+        fciOrient.finalOrientation(pag);
 
         long stop3 = System.currentTimeMillis();
 

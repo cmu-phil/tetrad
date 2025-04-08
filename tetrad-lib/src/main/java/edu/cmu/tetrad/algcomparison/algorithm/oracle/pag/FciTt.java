@@ -31,8 +31,9 @@ import java.util.List;
 
 
 /**
- * This class represents the FCI-TT algorithm, which is variant of the *-FCI algorithm for learning causal structures
- * from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps afterward.
+ * This class represents the FCI Targeted Testing (FCI-TT) algorithm, which is variant of the *-FCI algorithm for
+ * learning causal structures from observational data using the BOSS algorithm as an initial CPDAG and using all
+ * score-based steps afterward.
  *
  * @author josephramsey
  */
