@@ -288,6 +288,8 @@ public class TestGeneralizedSem {
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
+            im.setParameterValue("a1", 1.4);
+
             print(im);
 
             DataSet dataSet = im.simulateDataNSteps(1000, false);

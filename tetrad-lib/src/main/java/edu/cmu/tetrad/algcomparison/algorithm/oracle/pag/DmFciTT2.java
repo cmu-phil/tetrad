@@ -17,12 +17,13 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.FciTT;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.MsepVertexCutFinder;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -34,8 +35,8 @@ import java.util.*;
 
 
 /**
- * This class represents the Detect-Mimic-Lv-Lite (DM-LV-Lite) algorithm, a specialized variant of the DM-PC and LV-Lite
- * algorithms designed to identify intermediate latent variables. DM-LV-Lite enhances accuracy and computational
+ * This class represents the Detect-Mimic-FCI-TT (DM-FCI-TT) algorithm, a specialized variant of the DM-PC and FCI-TT
+ * algorithms designed to identify intermediate latent variables. DM-FCI-TT enhances accuracy and computational
  * efficiency by recursively maintaining complete PAG orientations during the search process. At each step, it uses
  * these orientations to substantially reduce the required size of conditioning sets when testing independence. This
  * approach leads to more precise identification of latent variables and better orientation accuracy overall.
@@ -43,13 +44,13 @@ import java.util.*;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "DM-LV-Lite",
-        command = "dm-lv-lite",
+        name = "DM-FCI-TT-2",
+        command = "dm-fci-tt-2",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+public class DmFciTT2 extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -68,10 +69,10 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a DM-LV-Lite algorithm.
+     * This class represents a DM-FCI-TT algorithm.
      *
      * <p>
-     * The DM-LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
+     * The DM-FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
      * a given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -79,15 +80,15 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public DmLvLite() {
+    public DmFciTT2() {
         // Used for reflection; do not delete.
     }
 
     /**
-     * Represents a DM-LV-Lite algorithm.
+     * Represents a DM-FCI-TT algorithm.
      *
      * <p>
-     * The DM-LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
+     * The DM-FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
      * a given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -97,7 +98,7 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public DmLvLite(IndependenceWrapper test, ScoreWrapper score) {
+    public DmFciTT2(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -267,6 +268,8 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
                     // Identify minimal conditioning set using the current PAG orientation
                     Set<Node> minimalParents = getMinimalConditioningSet(graph, childA, childB, parents);
 
+                    if (minimalParents == null) return false;
+
                     // Perform independence test using a minimal conditioning set
                     IndependenceResult result = test.checkIndependence(childA, childB, minimalParents);
 
@@ -293,10 +296,7 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
      * @return A minimal conditioning subset of parents.
      */
     private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents) {
-        // Delegates the minimal conditioning set finding to the proven recursive method.
-        return SepsetFinder.getPathBlockingSetRecursive(
-                graph, childA, childB, new HashSet<>(), -1, new HashSet<>()
-        );
+        return new MsepVertexCutFinder(graph).findChokePoint(childA, childB, graph.paths().getAncestorsMap());
     }
 
     /**
@@ -327,12 +327,12 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
         Score score = this.score.getScore(dataModel, parameters);
 
         if (test instanceof MsepTest) {
-            if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
+            if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
                 throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
             }
         }
 
-        edu.cmu.tetrad.search.LvLite search = new edu.cmu.tetrad.search.LvLite(test, score);
+        FciTT search = new FciTT(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -342,24 +342,23 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
         // FCI-ORIENT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-        // LV-Lite
+        // FCI-TT
         search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-        search.setDoDdpEdgeRemovalStep(parameters.getBoolean(Params.DO_DDP_EDGE_REMOVAL_STEP));
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
-        if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.BOSS);
-        } else if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.GRASP);
-        } else if (parameters.getInt(Params.LV_LITE_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.LvLite.START_WITH.SP);
+        if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
+            search.setStartWith(FciTT.START_WITH.BOSS);
+        } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 2) {
+            search.setStartWith(FciTT.START_WITH.GRASP);
+        } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 3) {
+            search.setStartWith(FciTT.START_WITH.SP);
         } else {
-            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.LV_LITE_STARTS_WITH));
+            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCI_TT_STARTS_WITH));
         }
 
         // General
@@ -390,7 +389,7 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
      */
     @Override
     public String getDescription() {
-        return "DM-LV-Lite using " + this.score.getDescription();
+        return "DM-FCI-TT-2 using " + this.score.getDescription();
     }
 
     /**
@@ -420,14 +419,14 @@ public class DmLvLite extends AbstractBootstrapAlgorithm implements Algorithm, U
         // FCI-ORIENT
         params.add(Params.COMPLETE_RULE_SET_USED);
 
-        // LV-Lite
-        params.add(Params.LV_LITE_STARTS_WITH);
+        // FCI-TT
+        params.add(Params.FCI_TT_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.GUARANTEE_PAG);
-        params.add(Params.DO_DDP_EDGE_REMOVAL_STEP);
+//        params.add(Params.DO_DDP_EDGE_REMOVAL_STEP);
         params.add(Params.ENSURE_MARKOV);
 
         // General

@@ -920,10 +920,6 @@ public final class Params {
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
     /**
-     * Constant <code>DO_DDP_EDGE_REMOVAL_STEP="doDdpEdgeRemovalStep"</code>
-     */
-    public static final String DO_DDP_EDGE_REMOVAL_STEP = "doDdpEdgeRemovalStep";
-    /**
      * Constant <code>ENSURE_MARKOV="ensureMarkov"</code>
      */
     public static final String ENSURE_MARKOV = "ensureMarkov";
@@ -1084,9 +1080,9 @@ public final class Params {
             Params.SEED
     ));
     /**
-     * Constant <code>LV_LITE_STARTS_WITGH="LvLiteStartsWith"</code>
+     * Constant <code>FCI_TT_STARTS_WITH="fciTTStartsWith"</code>
      */
-    public static String LV_LITE_STARTS_WITH = "lvLiteStartsWith";
+    public static String FCI_TT_STARTS_WITH = "fciTTStartsWith";
     /**
      * Constant <code>EXTRA_EDGE_REMOVAL_STEP="extraEdgeRemovalStep"</code>
      */

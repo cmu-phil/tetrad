@@ -4,17 +4,23 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.LvDumb;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -25,24 +31,28 @@ import java.util.List;
 
 
 /**
- * This class represents the LV-Lite algorithm, which is an implementation of the FGES-FCI algorithm for learning causal
- * structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps
- * afterward.
+ * This class represents the FCI-TT algorithm, which is variant of the *-FCI algorithm for learning causal structures
+ * from observational data using the BOSS algorithm as an initial CPDAG and using all score-based steps afterward.
  *
  * @author josephramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "LV-Dumb",
-//        command = "lv-dumb",
-//        algoType = AlgType.allow_latent_common_causes
-//)
-//@Bootstrapping
-//@Experimental
-public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "FCI-TT",
+        command = "fci-tt",
+        algoType = AlgType.allow_latent_common_causes
+)
+@Bootstrapping
+@Experimental
+public class FciTT extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
+    private IndependenceWrapper test;
 
     /**
      * The score to use.
@@ -55,10 +65,10 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents a LV-Lite algorithm.
+     * This class represents a FCI-TT algorithm.
      *
      * <p>
-     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
@@ -66,24 +76,26 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BossPag() {
-        // Used for reflection; do not delete this.
+    public FciTT() {
+        // Used for reflection; do not delete.
     }
 
     /**
-     * LV-Lite is a class that represents a LV-Lite algorithm.
+     * FCI-TT is a class that represents a FCI-TT algorithm.
      *
      * <p>
-     * The LV-Lite algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * The FCI-TT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
      * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
      *
+     * @param test  The independence test to use.
      * @param score The score to use.
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BossPag(ScoreWrapper score) {
+    public FciTT(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
         this.score = score;
     }
 
@@ -97,7 +109,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
      *                                  DataSet.
      */
     @Override
-    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+    public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             if (!(dataModel instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Expecting a dataset for time lagging.");
@@ -111,23 +123,50 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
             knowledge = timeSeries.getKnowledge();
         }
 
+        IndependenceTest test = this.test.getTest(dataModel, parameters);
         Score score = this.score.getScore(dataModel, parameters);
-        LvDumb search = new LvDumb(score);
+
+        if (test instanceof MsepTest) {
+            if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
+                throw new IllegalArgumentException("For d-separation oracle input, please use the GRaSP option.");
+            }
+        }
+
+        edu.cmu.tetrad.search.FciTT search = new edu.cmu.tetrad.search.FciTT(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
+        // FCI-ORIENT
+        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+
+        // FCI-TT
+        search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
+        search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+//        search.setDoDdpEdgeRemovalStep(parameters.getBoolean(Params.DO_DDP_EDGE_REMOVAL_STEP));
+        search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
+
+        if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 1) {
+            search.setStartWith(edu.cmu.tetrad.search.FciTT.START_WITH.BOSS);
+        } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 2) {
+            search.setStartWith(edu.cmu.tetrad.search.FciTT.START_WITH.GRASP);
+        } else if (parameters.getInt(Params.FCI_TT_STARTS_WITH) == 3) {
+            search.setStartWith(edu.cmu.tetrad.search.FciTT.START_WITH.SP);
+        } else {
+            throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCI_TT_STARTS_WITH));
+        }
+
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
 
-        try {
-            return search.search();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        return search.search();
     }
 
     /**
@@ -149,7 +188,7 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
      */
     @Override
     public String getDescription() {
-        return "LV-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
+        return "FCI-TT (FCI Targeted Testing) using " + this.score.getDescription();
     }
 
     /**
@@ -176,9 +215,23 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
+        // FCI-ORIENT
+        params.add(Params.COMPLETE_RULE_SET_USED);
+
+        // FCI-TT
+        params.add(Params.FCI_TT_STARTS_WITH);
+        params.add(Params.GRASP_DEPTH);
+        params.add(Params.MAX_BLOCKING_PATH_LENGTH);
+        params.add(Params.DEPTH);
+        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        params.add(Params.GUARANTEE_PAG);
+//        params.add(Params.DO_DDP_EDGE_REMOVAL_STEP);
+        params.add(Params.ENSURE_MARKOV);
+
         // General
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
+        params.add(Params.TEST_TIMEOUT);
 
         return params;
     }
@@ -221,5 +274,15 @@ public class BossPag extends AbstractBootstrapAlgorithm implements Algorithm, Us
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
+    }
+
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return test;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 }

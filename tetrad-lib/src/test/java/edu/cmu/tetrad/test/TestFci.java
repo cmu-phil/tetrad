@@ -178,7 +178,7 @@ public class TestFci {
                 "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge());
     }
 
-    // This fails for LV-Lite from Oracle understandably. (GSTs from oracle can't use knowledge.)
+    // This fails for FCI-TT from Oracle understandably. (GSTs from oracle can't use knowledge.)
     // For FCI etc. can turn it on.
 //    @Test
     public void testSearch11() {
@@ -199,7 +199,7 @@ public class TestFci {
                 "X1o->X2,X2<->X3", knowledge);
     }
 
-    // This fails for LV-Lite from Oracle understandably. (GSTs from oracle can't use knowledge.)
+    // This fails for FCI-TT from Oracle understandably. (GSTs from oracle can't use knowledge.)
     // For FCI etc. can turn it on.
 //    @Test
     public void testSearch12() {
@@ -320,8 +320,8 @@ public class TestFci {
         }
 
         {
-            LvLite fci = new LvLite(independence, score);
-            fci.setStartWith(LvLite.START_WITH.GRASP);
+            FciTT fci = new FciTT(independence, score);
+            fci.setStartWith(FciTT.START_WITH.GRASP);
             fci.setDepth(-1);
             fci.setKnowledge(knowledge);
             fci.setEnsureMarkov(false);
@@ -501,9 +501,9 @@ public class TestFci {
 //            Graph estPag2 = graspFci.search();
 //            assertEquals(truePag_, estPag2);
 //
-//            LvLite lvLite = new LvLite(new MsepTest(trueMag_), new GraphScore(trueMag_));
-//            lvLite.setEnsureMarkov(true);
-//            Graph estPag3 = lvLite.search();
+//            FciTT fciTT = new FciTT(new MsepTest(trueMag_), new GraphScore(trueMag_));
+//            fciTT.setEnsureMarkov(true);
+//            Graph estPag3 = fciTT.search();
 //            assertEquals(truePag_, estPag3);
         } catch (Exception e) {
             e.printStackTrace();
