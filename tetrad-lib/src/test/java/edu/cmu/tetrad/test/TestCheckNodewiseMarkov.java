@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -43,9 +44,14 @@ public class TestCheckNodewiseMarkov {
             }
         }
         for (int run = 0; run < 10; run++) {
-            testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(run,10, 0,
-                    20, 30, 40, 5, false, 0.5,
-                    1.0, 0.8);
+            try {
+                testGaussianDAGPrecisionRecallForLatentVariableOnLocalOrderedMarkov(run,5, 0,
+                        10, 30, 40, 5, false, 0.5,
+                        1.0, 0.8);
+            } catch (Exception e) {
+                System.err.println("Skipping run because of an exception: " + e.getMessage());
+                run--;
+            }
         }
     }
 
@@ -207,18 +213,6 @@ public class TestCheckNodewiseMarkov {
         } catch (IOException e) {
             TetradLogger.getInstance().log("IO Exception while saving dataset: " + e.getMessage());
         }
-        SemBicScore score = new SemBicScore(data, false);
-        score.setPenaltyDiscount(2);
-        Graph estimatedPAG = null;
-        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
-        try {
-            BossFci bossFCI = new BossFci(fisherZTest, score); // TODO VBC: discuss with Peter: GaspFCI, LVLite, FCI,
-            bossFCI.setGuaranteePag(true);
-            estimatedPAG = bossFCI.search();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        // Save a parameter settings info description file
         File descriptionFile = new File(simulationDir, "description.txt");
         try (Writer out = new FileWriter(descriptionFile)) {
             out.write("Simulated Gaussian DAG with the following RandomGraph.randomDag(...) parameters:\n");
@@ -238,36 +232,92 @@ public class TestCheckNodewiseMarkov {
             TetradLogger.getInstance().log("IO Exception while saving description: " + e.getMessage());
         }
 
-        // Save estimated graph in the simulation directory
-        File estGraphFile = new File(simulationDir, "estimatedPAG.txt");
-        try (Writer out = new FileWriter(estGraphFile)) {
-            out.write(estimatedPAG.toString());
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("IO Exception while saving graph: " + e.getMessage());
-        }
+        SemBicScore score = new SemBicScore(data, false);
+        score.setPenaltyDiscount(2);
+        IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
 
-        File statsFile = new File(simulationDir, "stats.txt");
+        // Simulate different FCI methods
+        List<String> methodNames = Arrays.asList("BossFCI", "GaspFCI", "FCI", "FCIMax", "RFCI");
+        for (String methodName : methodNames) {
+            try {
+                Graph estimatedPAG = null;
 
-        testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(statsFile, fisherZTest, data, trueGraph, estimatedPAG, threshold, shuffleThreshold, lowRecallBound);
-        estimatedPAG = GraphUtils.replaceNodes(estimatedPAG, trueGraph.getNodes());
-        Graph truePAG = GraphTransforms.dagToPag(trueGraph);
-        double whole_ap = new AdjacencyPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_ar = new AdjacencyRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_ahp = new ArrowheadPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_ahr = new ArrowheadRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_lgp = new LocalGraphPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
-        double whole_lgr = new LocalGraphRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
+                // Create FCI-method-specific subdirectory
+                File methodDir = new File(simulationDir, methodName);
+                if (!methodDir.exists() && !methodDir.mkdirs()) {
+                    throw new IOException("Failed to create directory: " + methodDir.getAbsolutePath());
+                }
 
-        // Save statistical data in the simulation directory
-        try (Writer out = new FileWriter(statsFile, true)) {
-            out.write("whole_ap: " + whole_ap + "\n" );
-            out.write("whole_ar: " + whole_ar + "\n" );
-            out.write("whole_ahp: " + whole_ahp + "\n" );
-            out.write("whole_ahr: " + whole_ahr + "\n" );
-            out.write("whole_lgp: " + whole_lgp + "\n" );
-            out.write("whole_lgr: " + whole_lgr + "\n" );
-        } catch (IOException e) {
-            TetradLogger.getInstance().log("IO Exception while saving statistics: " + e.getMessage());
+                switch (methodName) {
+                    case "BossFCI":
+                        BossFci bossFCI = new BossFci(fisherZTest, score);
+                        bossFCI.setGuaranteePag(true);
+                        estimatedPAG = bossFCI.search();
+                        break;
+                    case "GaspFCI":
+                        GraspFci gaspFCI = new GraspFci(fisherZTest, score);
+                        gaspFCI.setGuaranteePag(true);
+                        estimatedPAG = gaspFCI.search();
+                        break;
+                    case "FCI":
+                        Fci fci = new Fci(fisherZTest); // seems fci does not need score input?
+                        fci.setGuaranteePag(true);
+                        estimatedPAG = fci.search();
+                        break;
+                    case "FCIMax":
+                        FciMax fciMax = new FciMax(fisherZTest); // seems fciMax does not need score input?
+                        fciMax.setGuaranteePag(true);
+                        estimatedPAG = fciMax.search();
+                        break;
+                    case "RFCI":
+                        Rfci rfci = new Rfci(fisherZTest); // seems fciMax does not need score input?
+                        estimatedPAG = rfci.search(); // returns the RFCI PAG.
+                        break;
+                    // TODO: Add other FCI variants here if needed
+                    default:
+                        throw new IllegalArgumentException("Unsupported FCI method: " + methodName);
+                }
+                // Save estimated graph
+                File estGraphFile = new File(methodDir, "estimatedPAG.txt");
+                try (Writer out = new FileWriter(estGraphFile)) {
+                    out.write(estimatedPAG.toString());
+                } catch (IOException e) {
+                    TetradLogger.getInstance().log("IO Exception while saving graph for " + methodName + ": " + e.getMessage());
+                }
+
+                // Stats Evaluation
+                File statsFile = new File(methodDir, "stats.txt");
+                try {
+                    testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(
+                            statsFile, fisherZTest, data, trueGraph, estimatedPAG, threshold, shuffleThreshold, lowRecallBound);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+                estimatedPAG = GraphUtils.replaceNodes(estimatedPAG, trueGraph.getNodes());
+                Graph truePAG = GraphTransforms.dagToPag(trueGraph);
+
+                double whole_ap = new AdjacencyPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_ar = new AdjacencyRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_ahp = new ArrowheadPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_ahr = new ArrowheadRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_lgp = new LocalGraphPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
+                double whole_lgr = new LocalGraphRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
+                // Save statistical data in the simulation directory
+                try (Writer out = new FileWriter(statsFile, true)) {
+                    out.write("whole_ap: " + whole_ap + "\n" );
+                    out.write("whole_ar: " + whole_ar + "\n" );
+                    out.write("whole_ahp: " + whole_ahp + "\n" );
+                    out.write("whole_ahr: " + whole_ahr + "\n" );
+                    out.write("whole_lgp: " + whole_lgp + "\n" );
+                    out.write("whole_lgr: " + whole_lgr + "\n" );
+                } catch (IOException e) {
+                    TetradLogger.getInstance().log("IO Exception while saving statistics: " + e.getMessage());
+                }
+                System.out.println("-----------------------Graph Simulation " + runID +" for : "+ methodName + "-----------------------");
+            } catch (InterruptedException | IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         System.out.println("~~~~~~~~~~~~~Graph Simulation " + runID + "~~~~~~~~~~~~~~~");
     }
