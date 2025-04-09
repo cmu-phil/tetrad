@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -40,7 +40,7 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class PurifyScoreBased implements IPurify {
-    private final boolean outputMessage = true;
+    private final boolean verbose = false;
     private final TetradTest tetradTest;
     private final int numVars;
     private final List<Set<String>> forbiddenList;
@@ -102,10 +102,14 @@ public class PurifyScoreBased implements IPurify {
      * {@inheritDoc}
      */
     public List<List<Node>> purify(List<List<Node>> partition) {
-        System.out.println("*** " + partition);
+        if (verbose) {
+            System.out.println("*** " + partition);
+        }
         List<int[]> _partition = convertListToInt(partition);
 
-        printIntPartition(_partition);
+        if (verbose) {
+            printIntPartition(_partition);
+        }
 
         SemGraph graph = scoreBasedPurify(_partition);
         Graph _graph = convertSearchGraph(graph);
@@ -130,7 +134,9 @@ public class PurifyScoreBased implements IPurify {
             _partition1.add(_cluster);
         }
 
-        printClustering(_partition1);
+        if (verbose) {
+            printClustering(_partition1);
+        }
 
         return convertIntToList(_partition1);
     }
@@ -258,7 +264,9 @@ public class PurifyScoreBased implements IPurify {
     private SemGraph scoreBasedPurify(List<int[]> partition) {
         structuralEmInitialization(partition);
         SemGraph bestGraph = this.purePartitionGraph;
-        System.out.println(">>>> Structural EM: initial round");
+        if (verbose) {
+            System.out.println(">>>> Structural EM: initial round");
+        }
         //gaussianEM(bestGraph, null);
         for (int i = 0; i < this.correlatedErrors.length; i++) {
             for (int j = 0; j < this.correlatedErrors.length; j++) {
@@ -282,10 +290,14 @@ public class PurifyScoreBased implements IPurify {
         do {
             this.modifiedGraph = false;
             double score = gaussianEM(bestGraph);
-            printlnMessage("Initial score" + score);
+            if (verbose) {
+                printlnMessage("Initial score" + score);
+            }
             impurityScoreSearch(score);
             if (this.modifiedGraph) {
-                printlnMessage(">>>> Structural EM: starting a new round");
+                if (verbose) {
+                    printlnMessage(">>>> Structural EM: starting a new round");
+                }
                 bestGraph = updatedGraph();
             }
         } while (this.modifiedGraph);
@@ -428,19 +440,19 @@ public class PurifyScoreBased implements IPurify {
     }
 
     private void printMessage(String message) {
-        if (this.outputMessage) {
+        if (this.verbose) {
             System.out.print(message);
         }
     }
 
     private void printlnMessage(String message) {
-        if (this.outputMessage) {
+        if (this.verbose) {
             System.out.println(message);
         }
     }
 
     private void printlnMessage() {
-        if (this.outputMessage) {
+        if (this.verbose) {
             System.out.println();
         }
     }
@@ -497,7 +509,9 @@ public class PurifyScoreBased implements IPurify {
         initializeGaussianEM(semdag);
 
         for (int i = 0; i < 3; i++) {
-            System.out.println("--Trial " + i);
+            if (verbose) {
+                System.out.println("--Trial " + i);
+            }
             SemIm semIm;
             semIm = new SemIm(semPm);
             semIm.setCovMatrix(this.covarianceMatrix);
@@ -509,7 +523,9 @@ public class PurifyScoreBased implements IPurify {
                     break;
                 }
             } while (FastMath.abs(score - newScore) > 1.E-3);
-            System.out.println(newScore);
+            if (verbose) {
+                System.out.println(newScore);
+            }
             if (newScore > bestScore && !Double.isInfinite(newScore)) {
                 bestScore = newScore;
                 for (int p = 0; p < this.numObserved; p++) {
@@ -529,7 +545,9 @@ public class PurifyScoreBased implements IPurify {
             System.arraycopy(this.bestCzz[p], 0, this.Czz[p], 0, this.numLatent);
         }
         if (Double.isInfinite(bestScore)) {
-            System.out.println("* * Warning: Heywood case in this step");
+            if (verbose) {
+                System.out.println("* * Warning: Heywood case in this step");
+            }
             return -Double.MAX_VALUE;
         }
         //System.exit(0);
@@ -1239,7 +1257,9 @@ public class PurifyScoreBased implements IPurify {
                                                                                j];
                         if (this.pseudoParentsCov[i][this.parents[i].length +
                                                      j][this.parents[i].length + ii] == 0.) {
-                            System.out.println("Zero here... Iter = " + iter);
+                            if (verbose) {
+                                System.out.println("Zero here... Iter = " + iter);
+                            }
                             iter = 1000;
                             break;
                         }
@@ -1373,15 +1393,20 @@ public class PurifyScoreBased implements IPurify {
             return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
                                          FastMath.log(this.covarianceMatrix.getSampleSize());
         } catch (java.lang.IllegalArgumentException e) {
-            System.out.println("** Warning: " + e.toString());
+            if (verbose) {
+                System.out.println("** Warning: " + e.toString());
+            }
             return -Double.MAX_VALUE;
         }
     }
 
     private SemGraph removeMarkedImpurities(SemGraph graph,
                                             boolean[][] impurities) {
-        printlnMessage();
-        printlnMessage("** PURIFY: using marked impure pairs");
+
+        if (verbose) {
+            printlnMessage();
+            printlnMessage("** PURIFY: using marked impure pairs");
+        }
         List<Node> latents = new ArrayList<>();
         List<int[]> partition = new ArrayList<>();
         for (int i = 0; i < graph.getNodes().size(); i++) {
@@ -1408,8 +1433,10 @@ public class PurifyScoreBased implements IPurify {
         for (int i = 0; i < impurities.length - 1; i++) {
             for (int j = i + 1; j < impurities.length; j++) {
                 if (impurities[i][j]) {
-                    System.out.println(this.measuredNodes.get(i).toString() + " x " +
-                                       this.measuredNodes.get(j).toString());
+                    if (verbose) {
+                        System.out.println(this.measuredNodes.get(i).toString() + " x " +
+                                           this.measuredNodes.get(j).toString());
+                    }
                 }
             }
         }
@@ -1430,18 +1457,23 @@ public class PurifyScoreBased implements IPurify {
             List<int[]> solution = findInducedPureGraph(nextPartition, impurities);
             if (solution != null) {
 
-                System.out.println("--Solution");
-                for (Object o : solution) {
-                    int[] c = (int[]) o;
-                    for (int i : c) {
-                        System.out.print(
-                                this.measuredNodes.get(i).toString() + " ");
+                if (verbose) {
+                    System.out.println("--Solution");
+                    for (Object o : solution) {
+                        int[] c = (int[]) o;
+                        for (int i : c) {
+                            System.out.print(
+                                    this.measuredNodes.get(i).toString() + " ");
+                        }
+                        System.out.println();
                     }
-                    System.out.println();
                 }
 
-                printlnMessage(">> SIZE: " + sizeCluster(solution));
-                printlnMessage(">> New solution found!");
+                if (verbose) {
+                    printlnMessage(">> SIZE: " + sizeCluster(solution));
+                    printlnMessage(">> New solution found!");
+                }
+
                 SemGraph graph2 = new SemGraph();
                 graph2.setShowErrorTerms(true);
                 Node[] latentsArray = new Node[solution.size()];
@@ -1582,7 +1614,9 @@ public class PurifyScoreBased implements IPurify {
                         !this.observedParent[j][i]) {
                         this.correlatedErrors[i][j] = this.correlatedErrors[j][i] = true;
                         double newScore = scoreCandidate();
-                        System.out.println("Trying impurity " + i + " &lt;-&gt; " + j + " (Score = " + newScore + ")"); //System.exit(0);
+                        if (verbose) {
+                            System.out.println("Trying impurity " + i + " &lt;-&gt; " + j + " (Score = " + newScore + ")"); //System.exit(0);
+                        }
                         if (newScore > nextScore) {
                             nextScore = newScore;
                             bestChoice1 = i;
@@ -1599,32 +1633,40 @@ public class PurifyScoreBased implements IPurify {
                 switch (choiceType) {
                     case 0:
                         this.latentParent[bestChoice1][bestChoice2] = true;
-                        System.out.println(
-                                "****************************Added impurity: " +
-                                this.latentNodes.get(
-                                        bestChoice2).toString() +
-                                " --> " + this.measuredNodes.get(
-                                        bestChoice1).toString() + " " +
-                                nextScore);
+
+                        if (verbose) {
+                            System.out.println(
+                                    "****************************Added impurity: " +
+                                    this.latentNodes.get(
+                                            bestChoice2).toString() +
+                                    " --> " + this.measuredNodes.get(
+                                            bestChoice1).toString() + " " +
+                                    nextScore);
+                        }
                         break;
                     case 1:
                         this.observedParent[bestChoice1][bestChoice2] = true;
-                        System.out.println(
-                                "****************************Added impurity: " +
-                                this.measuredNodes.get(
-                                        bestChoice2).toString() +
-                                " --> " + this.measuredNodes.get(
-                                        bestChoice1).toString() + " " +
-                                nextScore);
+
+                        if (verbose) {
+                            System.out.println(
+                                    "****************************Added impurity: " +
+                                    this.measuredNodes.get(
+                                            bestChoice2).toString() +
+                                    " --> " + this.measuredNodes.get(
+                                            bestChoice1).toString() + " " +
+                                    nextScore);
+                        }
                         break;
                     case 2:
-                        System.out.println(
-                                "****************************Added impurity: " +
-                                this.measuredNodes.get(
-                                        bestChoice1).toString() +
-                                " &lt;-&gt; " + this.measuredNodes.get(
-                                        bestChoice2).toString() + " " +
-                                nextScore);
+                        if (verbose) {
+                            System.out.println(
+                                    "****************************Added impurity: " +
+                                    this.measuredNodes.get(
+                                            bestChoice1).toString() +
+                                    " &lt;-&gt; " + this.measuredNodes.get(
+                                            bestChoice2).toString() + " " +
+                                    nextScore);
+                        }
                         this.correlatedErrors[bestChoice1][bestChoice2] =
                                 this.correlatedErrors[bestChoice2][bestChoice1] =
                                         true;
@@ -1632,7 +1674,9 @@ public class PurifyScoreBased implements IPurify {
                 changed[0] = true;
             }
         } while (score < nextScore);
-        printlnMessage("End of addition round");
+        if (verbose) {
+            printlnMessage("End of addition round");
+        }
         return score;
     }
 
@@ -1656,7 +1700,9 @@ public class PurifyScoreBased implements IPurify {
         gaussianMaximization(semIm);
 
         try {
-            System.out.println("trunk ll = " + semIm.getTruncLL());
+            if (verbose) {
+                System.out.println("trunk ll = " + semIm.getTruncLL());
+            }
 
             return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
                                          FastMath.log(this.covarianceMatrix.getSampleSize());
@@ -1759,6 +1805,7 @@ public class PurifyScoreBased implements IPurify {
                 switch (choiceType) {
                     case 0:
                         if (this.observedParent[bestChoice1][bestChoice2]) {
+                            if (verbose) {
                             System.out.println(
                                     "****************************Removed impurity: " +
                                     this.measuredNodes.get(bestChoice2)
@@ -1766,27 +1813,32 @@ public class PurifyScoreBased implements IPurify {
                                     this.measuredNodes.get(bestChoice1)
                                             .toString() + " " +
                                     nextScore);
+                            }
                         } else {
-                            System.out.println(
-                                    "****************************Removed impurity: " +
-                                    this.measuredNodes.get(bestChoice1)
-                                            .toString() + " --> " +
-                                    this.measuredNodes.get(bestChoice2)
-                                            .toString() + " " +
-                                    nextScore);
+                            if (verbose) {
+                                System.out.println(
+                                        "****************************Removed impurity: " +
+                                        this.measuredNodes.get(bestChoice1)
+                                                .toString() + " --> " +
+                                        this.measuredNodes.get(bestChoice2)
+                                                .toString() + " " +
+                                        nextScore);
+                            }
                         }
                         this.observedParent[bestChoice1][bestChoice2] =
                                 this.observedParent[bestChoice2][bestChoice1] =
                                         false;
                         break;
                     case 1:
-                        System.out.println(
-                                "****************************Removed impurity: " +
-                                this.measuredNodes.get(
-                                        bestChoice1).toString() +
-                                " &lt;-&gt; " + this.measuredNodes.get(
-                                        bestChoice2).toString() + " " +
-                                nextScore);
+                        if (verbose) {
+                            System.out.println(
+                                    "****************************Removed impurity: " +
+                                    this.measuredNodes.get(
+                                            bestChoice1).toString() +
+                                    " &lt;-&gt; " + this.measuredNodes.get(
+                                            bestChoice2).toString() + " " +
+                                    nextScore);
+                        }
                         this.correlatedErrors[bestChoice1][bestChoice2] =
                                 this.correlatedErrors[bestChoice2][bestChoice1] =
                                         false;
@@ -1794,7 +1846,9 @@ public class PurifyScoreBased implements IPurify {
                 changed[0] = true;
             }
         } while (score < nextScore);
-        printlnMessage("End of deletion round");
+        if (verbose) {
+            printlnMessage("End of deletion round");
+        }
         return score;
     }
 

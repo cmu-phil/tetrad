@@ -69,6 +69,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
         }
 
         edu.cmu.tetrad.search.Bpc bpc = new edu.cmu.tetrad.search.Bpc(cov, alpha, testType);
+        bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         if (parameters.getInt(Params.CHECK_TYPE) == 1) {
             bpc.setCheckType(ClusterSignificance.CheckType.Significance);
@@ -108,7 +109,9 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
 
             ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
-            TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+            if (parameters.getBoolean(Params.VERBOSE)) {
+                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+            }
 
             Graph fullGraph = mimbuild.getFullGraph(dataModel.getVariables());
             LayoutUtil.defaultLayout(fullGraph);

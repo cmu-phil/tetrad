@@ -530,6 +530,10 @@ public final class Fcit implements IGraphSearch {
             Set<DiscriminatingPath> paths = new HashSet<>();
 
             for (DiscriminatingPath path : discriminatingPaths) {
+                if (!path.existsIn(pag)) {
+                    continue;
+                }
+
                 if (path.getX() == x && path.getY() == y) {
                     paths.add(path);
                 } else if (path.getX() == y && path.getY() == x) {

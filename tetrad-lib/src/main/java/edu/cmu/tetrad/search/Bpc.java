@@ -94,6 +94,7 @@ public final class Bpc {
     private DataSet dataSet;
     private double alpha;
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
+    private boolean verbose = false;
 
     //**************************** INITIALIZATION ***********************************/
 
@@ -182,8 +183,10 @@ public final class Bpc {
         }
 
         ClusterSignificance clusterSignificance = new ClusterSignificance(variables, covarianceMatrix);
-        clusterSignificance.printClusterPValues(_clustering);
 
+        if (verbose) {
+            clusterSignificance.printClusterPValues(_clustering);
+        }
 
         return graph;
     }
@@ -885,8 +888,10 @@ public final class Bpc {
             List<int[]> newClustering = new ArrayList<>();
             List<int[]> baseClustering = baseListOfClusterings.get(i);
 
-            System.out.println("* Base mimClustering");
-            printClustering(baseClustering);
+            if (verbose) {
+                System.out.println("* Base mimClustering");
+                printClustering(baseClustering);
+            }
 
             List<Integer> baseIds = baseListOfIds.get(i);
             List<Integer> usedIds = new ArrayList<>();
@@ -933,8 +938,10 @@ public final class Bpc {
                 }
             }
 
-            System.out.println("* Filtered mimClustering 1");
-            printClustering(newClustering);
+            if (verbose) {
+                System.out.println("* Filtered mimClustering 1");
+                printClustering(newClustering);
+            }
 
             //Second filter: remove nodes that are linked by an edge in ng but are in different clusters
             //(i.e., they were not shown to belong to different clusters)
@@ -985,12 +992,15 @@ public final class Bpc {
                 }
 
                 clusteringIds.add(usedIdsArray);
-                System.out.println("* Filtered mimClustering 2");
-                printClustering(finalNewClustering);
-                System.out.print("* ID/Size: ");
-                printLatentClique(usedIdsArray
-                );
-                System.out.println();
+
+                if (verbose) {
+                    System.out.println("* Filtered mimClustering 2");
+                    printClustering(finalNewClustering);
+                    System.out.print("* ID/Size: ");
+                    printLatentClique(usedIdsArray
+                    );
+                    System.out.println();
+                }
             }
 
         }
@@ -1028,7 +1038,11 @@ public final class Bpc {
     }
 
     private List<int[]> removeMarkedImpurities(List<int[]> partition, boolean[][] impurities) {
-        System.out.println("sizecluster = " + clustersize(partition));
+
+        if (verbose) {
+            System.out.println("sizecluster = " + clustersize(partition));
+        }
+
         int[][] elements = new int[clustersize(partition)][3];
         int[] partitionCount = new int[partition.size()];
         int countElements = 0;
@@ -1090,7 +1104,9 @@ public final class Bpc {
 
             if (draftCount > 0) {
                 int[] realCluster = new int[draftCount];
-                System.arraycopy(draftArea, 0, realCluster, 0, draftCount);
+                if (verbose) {
+                    System.arraycopy(draftArea, 0, realCluster, 0, draftCount);
+                }
                 solution.add(realCluster);
             }
         }
@@ -1443,7 +1459,9 @@ public final class Bpc {
         List<int[]> clustering = new ArrayList<>();
         List<int[]> components = findComponents(ng, numVariables());
         for (int[] component : components) {
-            printClusterIds(component);
+            if (verbose) {
+                printClusterIds(component);
+            }
             List<int[]> nextClustering = findMaximalCliques(component, ng);
             clustering.addAll(trimCliqueList(nextClustering));
         }
@@ -1463,7 +1481,9 @@ public final class Bpc {
         }
 
         List<int[]> individualOneFactors = individualPurification(clustering);
-        printClustering(individualOneFactors);
+        if (verbose) {
+            printClustering(individualOneFactors);
+        }
         clustering = individualOneFactors;
         List<List<Integer>> ids = new ArrayList<>();
         List<List<int[]>> clusterings = chooseClusterings(clustering, ids, true, cv);
@@ -1547,9 +1567,13 @@ public final class Bpc {
                 }
             }
         }
-        System.out.println("INCOMPATIBLE!:");
-        printClusterNames(cluster1);
-        printClusterNames(cluster2);
+
+        if (verbose) {
+            System.out.println("INCOMPATIBLE!:");
+            printClusterNames(cluster1);
+            printClusterNames(cluster2);
+        }
+
         return false;
     }
 
@@ -1565,7 +1589,11 @@ public final class Bpc {
         }
 
         List<int[]> initialClustering = initialMeasurementPattern(ng, cv, variables);
-        printClustering(initialClustering);
+
+        if (verbose) {
+            printClustering(initialClustering);
+        }
+
         for (int[] nextCluster : initialClustering) {
             for (int j : nextCluster) {
                 selected[j] = true;
@@ -1635,7 +1663,10 @@ public final class Bpc {
             }
         }
 
-        System.out.println("Trying RULE 2 now!");
+        if (verbose) {
+            System.out.println("Trying RULE 2 now!");
+        }
+
         for (int x1 = 0; x1 < numVariables() - 1; x1++) {
             outer_loop:
             for (int y1 = x1 + 1; y1 < numVariables(); y1++) {
@@ -1698,7 +1729,10 @@ public final class Bpc {
         List<int[]> clustering = new ArrayList<>();
         List<int[]> components = findComponents(ng, numVariables());
         for (int[] component : components) {
-            printClusterIds(component);
+            if (verbose) {
+                printClusterIds(component);
+            }
+
             List<int[]> nextClustering = findMaximalCliques(component, ng);
             clustering.addAll(trimCliqueList(nextClustering));
         }
@@ -1716,7 +1750,10 @@ public final class Bpc {
             clustering.set(i, clustering.get(max_idx));
             clustering.set(max_idx, temp);
         }
-        printClustering(clustering);
+
+        if (verbose) {
+            printClustering(clustering);
+        }
         List<List<Integer>> ids = new ArrayList<>();
         List<List<int[]>> clusterings = chooseClusterings(clustering, ids, false, cv);
         List<int[]> orderedIds = new ArrayList<>();
@@ -1725,7 +1762,9 @@ public final class Bpc {
         List<int[]> finalPureModel = purify(actualClusterings, orderedIds
         );
 
-        printClustering(finalPureModel);
+        if (verbose) {
+            printClustering(finalPureModel);
+        }
 
         return finalPureModel;
     }
@@ -1751,7 +1790,9 @@ public final class Bpc {
 
         //Ideally, we should find all maximum cliques among "cluster nodes".
         //Heuristic: greedily build a set of clusters starting from each cluster.
-        System.out.println("Total number of clusters: " + clustering.size());
+        if (verbose) {
+            System.out.println("Total number of clusters: " + clustering.size());
+        }
         for (int i = 0; i < max; i++) {
             //System.out.println("Step " + i);
             List<Integer> nextIds = new ArrayList<>();
@@ -1853,10 +1894,16 @@ public final class Bpc {
 
         if (!actualClusterings.isEmpty()) {
             List<int[]> partition = actualClusterings.get(0);
-            printLatentClique(clusterIds.get(0));
+            if (verbose) {
+                printLatentClique(clusterIds.get(0));
+            }
+
             Clusters clustering = new Clusters();
             int clusterId = 0;
-            printClustering(partition);
+
+            if (verbose) {
+                printClustering(partition);
+            }
 
             for (int[] codes : partition) {
                 for (int code : codes) {
@@ -1880,12 +1927,18 @@ public final class Bpc {
                 partition2.add(cluster);
             }
 
-            System.out.println("Partition = " + partition2);
+            if (verbose) {
+                System.out.println("Partition = " + partition2);
+            }
 
             return partition;
         }
 
         return new ArrayList<>();
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

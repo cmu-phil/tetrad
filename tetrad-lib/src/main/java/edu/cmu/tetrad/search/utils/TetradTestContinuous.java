@@ -70,6 +70,7 @@ public final class TetradTestContinuous implements TetradTest {
     private Matrix bufferMatrix;
     //    private Map<Tetrad, Double> tetradDifference;
     private List<Node> variables;
+    private boolean verbose = false;
 
     /**
      * <p>Constructor for TetradTestContinuous.</p>
@@ -575,9 +576,11 @@ public final class TetradTestContinuous implements TetradTest {
         this.deltaTest.calcChiSquare(Collections.singleton(new TetradInt(i, j, k, l)));
         this.prob[0] = this.deltaTest.getPValue();
 
-        TetradLogger.getInstance().log(new TetradNode(this.variables.get(i),
-                this.variables.get(j), this.variables.get(k), this.variables.get(l))
-                                       + " = 0, p = " + this.prob[0]);
+        if (verbose) {
+            TetradLogger.getInstance().log(new TetradNode(this.variables.get(i),
+                    this.variables.get(j), this.variables.get(k), this.variables.get(l))
+                                           + " = 0, p = " + this.prob[0]);
+        }
 
 
     }
@@ -640,6 +643,10 @@ public final class TetradTestContinuous implements TetradTest {
         int[] indices = {v1, v2, v3, v4, v5, v6};
         this.twoFactorsEst6.init(indices, 3);
         return this.twoFactorsEst6.isSignificant();
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     abstract static class SimpleFactorEstimator {
