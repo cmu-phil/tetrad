@@ -3190,19 +3190,18 @@ public final class GraphUtils {
         unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
         fciOrient.setInitialAllowedColliders(null);
 
-        boolean removedCycle = true;
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
-        while (removedCycle) {
-            removedCycle = false;
+        while (mag.paths().existsDirectedCycle()) {
             Map<Node, Set<Triple>> cycleTriples = new HashMap<>();
 
-            for (Node x : pag.getNodes()) {
-                if (pag.paths().existsDirectedPath(x, x)) {
+            for (Node x : mag.getNodes()) {
+                if (mag.paths().existsDirectedPath(x, x)) {
                     Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
 
                     for (Triple triple : new HashSet<>(unshieldedColliders)) {
                         if (triple.getY().equals(x) || triple.getZ().equals(x)) {
-                            if (pag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
+                            if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
                                 unshieldedColliders.remove(triple);
                                 unshieldedTriplesIntoX.add(triple);
                                 changed = true;
@@ -3235,8 +3234,6 @@ public final class GraphUtils {
                         TetradLogger.getInstance().log("Removing cycle at " + x);
                         TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
                     }
-
-                    removedCycle = true;
                 }
             }
 
@@ -3266,6 +3263,8 @@ public final class GraphUtils {
             if (verbose) {
                 TetradLogger.getInstance().log("Finished final orientation.");
             }
+
+            mag = GraphTransforms.zhangMagFromPag(pag);
         }
 
         if (verbose) {
