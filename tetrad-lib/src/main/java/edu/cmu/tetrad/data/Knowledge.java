@@ -57,7 +57,7 @@ public final class Knowledge implements TetradSerializable {
     /**
      * The comma delimiter.
      */
-    private static final Pattern COMMAN_DELIM = Pattern.compile(",");
+    private static final Pattern COMMA_DELIM = Pattern.compile(",");
 
     /**
      * The variable names.
@@ -199,7 +199,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     private Set<String> split(String spec) {
-        return Arrays.stream(Knowledge.COMMAN_DELIM.split(spec))
+        return Arrays.stream(Knowledge.COMMA_DELIM.split(spec))
                 .map(String::trim)
                 .filter(e -> !e.isEmpty())
                 .collect(Collectors.toSet());
