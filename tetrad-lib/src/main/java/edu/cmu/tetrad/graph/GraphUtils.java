@@ -3107,15 +3107,17 @@ public final class GraphUtils {
                 for (Triple triple : new HashSet<>(extraUnshieldedColliders)) {
                     if (triple.getY().equals(x) && triple.getZ().equals(y)) {
                         if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
-                            unshieldedColliders.remove(triple);
-                            extraUnshieldedColliders.remove(triple);
+                            pag.addNondirectedEdge(triple.getX(), triple.getZ());
+//                            unshieldedColliders.remove(triple);
+//                            extraUnshieldedColliders.remove(triple);
                             unshieldedTriplesIntoX.add(triple);
                             changed = true;
                         }
                     } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
                         if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
-                            unshieldedColliders.remove(triple);
-                            extraUnshieldedColliders.remove(triple);
+                            pag.addNondirectedEdge(triple.getX(), triple.getZ());
+//                            unshieldedColliders.remove(triple);
+//                            extraUnshieldedColliders.remove(triple);
                             unshieldedTriplesIntoX.add(triple);
                             changed = true;
                         }
@@ -3193,49 +3195,62 @@ public final class GraphUtils {
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
         while (mag.paths().existsDirectedCycle()) {
-            Map<Node, Set<Triple>> cycleTriples = new HashMap<>();
+//            Map<Node, Set<Triple>> cycleTriples = new HashMap<>();
 
             for (Node x : mag.getNodes()) {
                 if (mag.paths().existsDirectedPath(x, x)) {
-                    Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
+                    List<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
 
-                    for (Triple triple : new HashSet<>(unshieldedColliders)) {
-                        if (triple.getY().equals(x) || triple.getZ().equals(x)) {
-                            if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
-                                unshieldedColliders.remove(triple);
-                                unshieldedTriplesIntoX.add(triple);
-                                changed = true;
-                            }
+                    for (List<Node> path : paths) {
+                        if (path.size() >= 3) {
+                            Node y = path.get(path.size() - 2);
+                            Node w = path.get(1);
+
+                            pag.addNondirectedEdge(y, w);
                         }
                     }
 
-                    cycleTriples.put(x, unshieldedTriplesIntoX);
+//                    Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
+//
+//                    for (Triple triple : new HashSet<>(unshieldedColliders)) {
+//                        if (triple.getY().equals(x)) {// || triple.getZ().equals(x)) {
+//                            pag.addNondirectedEdge(triple.getX(), triple.getZ());
+//                            changed = true;
+////                            if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
+////                                unshieldedColliders.remove(triple);
+////                                unshieldedTriplesIntoX.add(triple);
+////                                changed = true;
+////                            }
+//                        }
+//                    }
+
+//                    cycleTriples.put(x, unshieldedTriplesIntoX);
                 }
             }
 
-            // Find the element of cycleTriples that is mapped to the fewest triples.
-            Node x = null;
-            int min = Integer.MAX_VALUE;
+//            // Find the element of cycleTriples that is mapped to the fewest triples.
+//            Node x = null;
+//            int min = Integer.MAX_VALUE;
+//
+//            for (Map.Entry<Node, Set<Triple>> entry : cycleTriples.entrySet()) {
+//                if (entry.getValue().size() < min) {
+//                    x = entry.getKey();
+//                    min = entry.getValue().size();
+//                }
+//            }
 
-            for (Map.Entry<Node, Set<Triple>> entry : cycleTriples.entrySet()) {
-                if (entry.getValue().size() < min) {
-                    x = entry.getKey();
-                    min = entry.getValue().size();
-                }
-            }
-
-            if (x != null) {
-                Set<Triple> unshieldedTriplesIntoX = cycleTriples.get(x);
-
-                if (!unshieldedTriplesIntoX.isEmpty()) {
-                    unshieldedColliders.removeAll(unshieldedTriplesIntoX);
-
-                    if (verbose) {
-                        TetradLogger.getInstance().log("Removing cycle at " + x);
-                        TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
-                    }
-                }
-            }
+//            if (x != null) {
+//                Set<Triple> unshieldedTriplesIntoX = cycleTriples.get(x);
+//
+//                if (!unshieldedTriplesIntoX.isEmpty()) {
+//                    unshieldedColliders.removeAll(unshieldedTriplesIntoX);
+//
+//                    if (verbose) {
+//                        TetradLogger.getInstance().log("Removing cycle at " + x);
+//                        TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
+//                    }
+//                }
+//            }
 
             // Rebuild the PAG with this new unshielded collider set.
 
@@ -3302,6 +3317,11 @@ public final class GraphUtils {
             Node y = triple.getZ();
 
             if (!pag.isAdjacentTo(x, b) || !pag.isAdjacentTo(b, y)) {
+                unshieldedColliders.remove(triple);
+                continue;
+            }
+
+            if (pag.isAdjacentTo(x, y)) {
                 unshieldedColliders.remove(triple);
                 continue;
             }
