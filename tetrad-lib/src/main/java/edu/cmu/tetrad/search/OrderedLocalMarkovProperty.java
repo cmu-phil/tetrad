@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import java.util.*;
 
@@ -30,8 +31,10 @@ public class OrderedLocalMarkovProperty {
      */
     public static Set<IndependenceFact> getModel(Graph mag) {
         Paths paths = new Paths(mag);
+
         if (!paths.isLegalMag()) {
-            throw new IllegalArgumentException("Input is not a legal MAG");
+            GraphSearchUtils.LegalMagRet ret = GraphSearchUtils.isLegalMag(mag, new HashSet<>());
+            throw new IllegalArgumentException("MAG not valid, reason = " + ret.getReason());
         }
 
         Set<IndependenceFact> model = new HashSet<>();
