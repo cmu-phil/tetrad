@@ -214,10 +214,12 @@ public class TestCheckNodewiseMarkov {
             TetradLogger.getInstance().log("IO Exception while saving dataset: " + e.getMessage());
         }
         File descriptionFile = new File(simulationDir, "description.txt");
+        double latentConfoundersPercentage = (double) numLatentConfounders / numNodes;
         try (Writer out = new FileWriter(descriptionFile)) {
             out.write("Simulated Gaussian DAG with the following RandomGraph.randomDag(...) parameters:\n");
             out.write("numNodes: " + numNodes + "\n" );
             out.write("numLatentConfounders: " + numLatentConfounders + "\n" );
+            out.write("latentConfoundersPercentage: " + latentConfoundersPercentage + "\n" );
             out.write("maxNumEdges: " + maxNumEdges + "\n" );
             out.write("maxDegree: " + maxDegree + "\n" );
             out.write("maxIndegree: " + maxIndegree + "\n" );
