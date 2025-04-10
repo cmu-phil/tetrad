@@ -186,18 +186,18 @@ public class FciOrient {
 
         List<Node> nodes = graph.getNodes();
 
-        //  *         B
-        // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
+        //  *         V
+        // *         *o           * is either an arrowhead or a circle; note V *-> W is not a condition in Zhang's rule
         // *        /  \
         // *       v    *
-        // * E....A --> C
-        for (Node a : nodes) {
+        // * X....W --> Y
+        for (Node w : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            for (Node c : graph.getAdjacentNodes(a)) {
-                discriminatingPaths.addAll(listDiscriminatingPaths(graph, a, c, maxDiscriminatingPathLength, checkEcNonadjacency));
+            for (Node y : graph.getAdjacentNodes(w)) {
+                discriminatingPaths.addAll(listDiscriminatingPaths(graph, w, y, maxDiscriminatingPathLength, checkEcNonadjacency));
             }
         }
 
