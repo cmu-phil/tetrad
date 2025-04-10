@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search;
 
@@ -94,6 +94,7 @@ public final class Bpc {
     private DataSet dataSet;
     private double alpha;
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
+    private boolean verbose = false;
 
     //**************************** INITIALIZATION ***********************************/
 
@@ -105,8 +106,7 @@ public final class Bpc {
      * @param sigTestType      The type of the significance test to use.
      * @see BpcTestType
      */
-    public Bpc(ICovarianceMatrix covarianceMatrix, double alpha,
-               BpcTestType sigTestType) {
+    public Bpc(ICovarianceMatrix covarianceMatrix, double alpha, BpcTestType sigTestType) {
         if (covarianceMatrix == null) {
             throw new IllegalArgumentException("Covariance matrix cannot be null.");
         }
@@ -129,8 +129,7 @@ public final class Bpc {
             this.covarianceMatrix = new CovarianceMatrix(dataSet);
             initAlgorithm(alpha, sigTestType);
         } else if (dataSet.isDiscrete()) {
-            throw new IllegalArgumentException("Discrete data is not supported " +
-                                               "for this search.");
+            throw new IllegalArgumentException("Discrete data is not supported " + "for this search.");
         }
     }
 
@@ -182,8 +181,10 @@ public final class Bpc {
         }
 
         ClusterSignificance clusterSignificance = new ClusterSignificance(variables, covarianceMatrix);
-        clusterSignificance.printClusterPValues(_clustering);
 
+        if (verbose) {
+            clusterSignificance.printClusterPValues(_clustering);
+        }
 
         return graph;
     }
@@ -221,16 +222,14 @@ public final class Bpc {
 
         // Check for missing values.
         if (getCovarianceMatrix() != null && DataUtils.containsMissingValue(getCovarianceMatrix().getMatrix())) {
-            throw new IllegalArgumentException(
-                    "Please remove or impute missing values first.");
+            throw new IllegalArgumentException("Please remove or impute missing values first.");
         }
 
         this.alpha = alpha;
 
         this.outputMessage = true;
         this.sigTestType = sigTestType;
-        this.scoreTestMode = (this.sigTestType == BpcTestType.DISCRETE ||
-                              this.sigTestType == BpcTestType.GAUSSIAN_FACTOR);
+        this.scoreTestMode = (this.sigTestType == BpcTestType.DISCRETE || this.sigTestType == BpcTestType.GAUSSIAN_FACTOR);
 
         if (sigTestType == BpcTestType.DISCRETE) {
             this.numVariables = this.dataSet.getNumColumns();
@@ -242,12 +241,10 @@ public final class Bpc {
             this.independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
             BpcTestType type;
 
-            if (sigTestType == BpcTestType.TETRAD_WISHART || sigTestType == BpcTestType.TETRAD_DELTA
-                || sigTestType == BpcTestType.GAUSSIAN_FACTOR) {
+            if (sigTestType == BpcTestType.TETRAD_WISHART || sigTestType == BpcTestType.TETRAD_DELTA || sigTestType == BpcTestType.GAUSSIAN_FACTOR) {
                 type = sigTestType;
             } else {
-                throw new IllegalArgumentException("Expecting TETRAD_WISHART, TETRAD_DELTA, or GAUSSIAN FACTOR " +
-                                                   sigTestType);
+                throw new IllegalArgumentException("Expecting TETRAD_WISHART, TETRAD_DELTA, or GAUSSIAN FACTOR " + sigTestType);
             }
 
             if (this.dataSet != null) {
@@ -301,8 +298,7 @@ public final class Bpc {
         if (this.scoreTestMode) {
             return this.tetradTest.oneFactorTest(v1, v2, v3, v4);
         } else {
-            if (cv[v1][v4] == this.EDGE_NONE && cv[v2][v4] == this.EDGE_NONE &&
-                cv[v3][v4] == this.EDGE_NONE) {
+            if (cv[v1][v4] == this.EDGE_NONE && cv[v2][v4] == this.EDGE_NONE && cv[v3][v4] == this.EDGE_NONE) {
                 return true;
             }
 
@@ -320,15 +316,11 @@ public final class Bpc {
 
     private boolean clusteredPartial2(int v1, int v2, int v3, int v4, int v5) {
         if (this.scoreTestMode) {
-            return !this.tetradTest.oneFactorTest(v1, v2, v3, v5) ||
-                   this.tetradTest.oneFactorTest(v1, v2, v3, v4, v5) ||
-                   !this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5);
+            return !this.tetradTest.oneFactorTest(v1, v2, v3, v5) || this.tetradTest.oneFactorTest(v1, v2, v3, v4, v5) || !this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5);
         } else {
             return !this.tetradTest.tetradScore3(v1, v2, v3, v5) ||
 
-                   !this.tetradTest.tetradScore1(v1, v2, v4, v5) ||
-                   !this.tetradTest.tetradScore1(v2, v3, v4, v5) ||
-                   !this.tetradTest.tetradScore1(v1, v3, v4, v5);
+                   !this.tetradTest.tetradScore1(v1, v2, v4, v5) || !this.tetradTest.tetradScore1(v2, v3, v4, v5) || !this.tetradTest.tetradScore1(v1, v3, v4, v5);
         }
     }
 
@@ -336,8 +328,7 @@ public final class Bpc {
         if (this.scoreTestMode) {
             return this.tetradTest.oneFactorTest(v1, v2, v3, v5);
         } else {
-            if (cv[v1][v5] == this.EDGE_NONE && cv[v2][v5] == this.EDGE_NONE &&
-                cv[v3][v5] == this.EDGE_NONE) {
+            if (cv[v1][v5] == this.EDGE_NONE && cv[v2][v5] == this.EDGE_NONE && cv[v3][v5] == this.EDGE_NONE) {
                 return true;
             }
 
@@ -349,41 +340,23 @@ public final class Bpc {
         }
     }
 
-    private boolean unclusteredPartial3(int v1, int v2, int v3, int v4, int v5,
-                                        int v6) {
+    private boolean unclusteredPartial3(int v1, int v2, int v3, int v4, int v5, int v6) {
         if (this.scoreTestMode) {
-            return this.tetradTest.oneFactorTest(v1, v2, v3, v6) &&
-                   this.tetradTest.oneFactorTest(v4, v5, v6, v1) &&
-                   this.tetradTest.oneFactorTest(v4, v5, v6, v2) &&
-                   this.tetradTest.oneFactorTest(v4, v5, v6, v3) &&
-                   this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5, v6);
+            return this.tetradTest.oneFactorTest(v1, v2, v3, v6) && this.tetradTest.oneFactorTest(v4, v5, v6, v1) && this.tetradTest.oneFactorTest(v4, v5, v6, v2) && this.tetradTest.oneFactorTest(v4, v5, v6, v3) && this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5, v6);
         } else {
             return
 
-                    this.tetradTest.tetradScore3(v1, v2, v3, v6) &&
-                    this.tetradTest.tetradScore3(v4, v5, v6, v1) &&
-                    this.tetradTest.tetradScore3(v4, v5, v6, v2) &&
-                    this.tetradTest.tetradScore3(v4, v5, v6, v3) &&
+                    this.tetradTest.tetradScore3(v1, v2, v3, v6) && this.tetradTest.tetradScore3(v4, v5, v6, v1) && this.tetradTest.tetradScore3(v4, v5, v6, v2) && this.tetradTest.tetradScore3(v4, v5, v6, v3) &&
 
-                    this.tetradTest.tetradScore1(v1, v2, v4, v6) &&
-                    this.tetradTest.tetradScore1(v1, v2, v5, v6) &&
-                    this.tetradTest.tetradScore1(v2, v3, v4, v6) &&
-                    this.tetradTest.tetradScore1(v2, v3, v5, v6) &&
-                    this.tetradTest.tetradScore1(v1, v3, v4, v6) &&
-                    this.tetradTest.tetradScore1(v1, v3, v5, v6);
+                    this.tetradTest.tetradScore1(v1, v2, v4, v6) && this.tetradTest.tetradScore1(v1, v2, v5, v6) && this.tetradTest.tetradScore1(v2, v3, v4, v6) && this.tetradTest.tetradScore1(v2, v3, v5, v6) && this.tetradTest.tetradScore1(v1, v3, v4, v6) && this.tetradTest.tetradScore1(v1, v3, v5, v6);
         }
     }
 
-    private boolean validClusterPairPartial3(int v1, int v2, int v3, int v4,
-                                             int v5, int v6, int[][] cv) {
+    private boolean validClusterPairPartial3(int v1, int v2, int v3, int v4, int v5, int v6, int[][] cv) {
         if (this.scoreTestMode) {
-            return this.tetradTest.oneFactorTest(v1, v2, v3, v6) &&
-                   this.tetradTest.oneFactorTest(v4, v5, v6, v1) &&
-                   this.tetradTest.oneFactorTest(v4, v5, v6, v2) &&
-                   this.tetradTest.oneFactorTest(v4, v5, v6, v3);
+            return this.tetradTest.oneFactorTest(v1, v2, v3, v6) && this.tetradTest.oneFactorTest(v4, v5, v6, v1) && this.tetradTest.oneFactorTest(v4, v5, v6, v2) && this.tetradTest.oneFactorTest(v4, v5, v6, v3);
         } else {
-            if (cv[v1][v6] == this.EDGE_NONE && cv[v2][v6] == this.EDGE_NONE &&
-                cv[v3][v6] == this.EDGE_NONE) {
+            if (cv[v1][v6] == this.EDGE_NONE && cv[v2][v6] == this.EDGE_NONE && cv[v3][v6] == this.EDGE_NONE) {
                 return true;
             }
 
@@ -429,13 +402,10 @@ public final class Bpc {
 
     private boolean partialRule1_2(int x1, int x2, int y1, int y2) {
         if (this.scoreTestMode) {
-            return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) &&
-                   this.tetradTest.twoFactorTest(x1, x2, y1, y2);
+            return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) && this.tetradTest.twoFactorTest(x1, x2, y1, y2);
         }
 
-        return !this.tetradTest.tetradHolds(x1, x2, y2, y1) &&
-               !this.tetradTest.tetradHolds(x1, y1, x2, y2) &&
-               this.tetradTest.tetradHolds(x1, y1, y2, x2);
+        return !this.tetradTest.tetradHolds(x1, x2, y2, y1) && !this.tetradTest.tetradHolds(x1, y1, x2, y2) && this.tetradTest.tetradHolds(x1, y1, y2, x2);
 
     }
 
@@ -450,14 +420,10 @@ public final class Bpc {
 
     private boolean partialRule2_1(int x1, int x2, int y1, int y2) {
         if (this.scoreTestMode) {
-            return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) &&
-                   this.tetradTest.twoFactorTest(x1, x2, y1, y2);
+            return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) && this.tetradTest.twoFactorTest(x1, x2, y1, y2);
         }
 
-        return this.tetradTest.tetradHolds(x1, y1, y2, x2) &&
-               !this.tetradTest.tetradHolds(x1, x2, y2, y1) &&
-               !this.tetradTest.tetradHolds(x1, y1, x2, y2) &&
-               this.tetradTest.tetradHolds(x1, y1, y2, x2);
+        return this.tetradTest.tetradHolds(x1, y1, y2, x2) && !this.tetradTest.tetradHolds(x1, x2, y2, y1) && !this.tetradTest.tetradHolds(x1, y1, x2, y2) && this.tetradTest.tetradHolds(x1, y1, y2, x2);
 
     }
 
@@ -492,12 +458,10 @@ public final class Bpc {
 
         if (getCovarianceMatrix() != null) {
             List<Node> variables = getCovarianceMatrix().getVariables();
-            return getIndependenceTest().checkIndependence(variables.get(v1),
-                    variables.get(v2)).isIndependent();
+            return getIndependenceTest().checkIndependence(variables.get(v1), variables.get(v2)).isIndependent();
 
         } else {
-            return getIndependenceTest().checkIndependence(this.dataSet.getVariable(v1),
-                    this.dataSet.getVariable(v2)).isIndependent();
+            return getIndependenceTest().checkIndependence(this.dataSet.getVariable(v1), this.dataSet.getVariable(v2)).isIndependent();
 
         }
     }
@@ -637,8 +601,7 @@ public final class Bpc {
         for (int i = 0; i < connected.length; i++) {
             for (int j = i; j < connected.length; j++) {
                 if (i != j) {
-                    connected[i][j] = connected[j][i] =
-                            (ng[i][j] != this.EDGE_NONE);
+                    connected[i][j] = connected[j][i] = (ng[i][j] != this.EDGE_NONE);
                 } else {
                     connected[i][j] = true;
                 }
@@ -651,14 +614,11 @@ public final class Bpc {
         int[] compsub = new int[elements.length];
         int[] old = new int[elements.length];
         System.arraycopy(elements, 0, old, 0, elements.length);
-        findMaximalCliquesOperator(numCalls, output, connected,
-                compsub, c, old, 0, elements.length);
+        findMaximalCliquesOperator(numCalls, output, connected, compsub, c, old, 0, elements.length);
         return output;
     }
 
-    private void findMaximalCliquesOperator(int[] numCalls,
-                                            List<int[]> output, boolean[][] connected, int[] compsub, int[] c,
-                                            int[] old, int ne, int ce) {
+    private void findMaximalCliquesOperator(int[] numCalls, List<int[]> output, boolean[][] connected, int[] compsub, int[] c, int[] old, int ne, int ce) {
         if (numCalls[0] > this.MAX_CLIQUE_TRIALS) {
             return;
         }
@@ -721,8 +681,7 @@ public final class Bpc {
                 output.add(clique);
             } else if (newne < newce) {
                 numCalls[0]++;
-                findMaximalCliquesOperator(numCalls, output,
-                        connected, compsub, c, newA, newne, newce);
+                findMaximalCliquesOperator(numCalls, output, connected, compsub, c, newA, newne, newce);
             }
 
             c[0]--;
@@ -795,8 +754,7 @@ public final class Bpc {
         return total;
     }
 
-    private void sortClusterings(int start, int end, List<List<int[]>> clusterings,
-                                 int[] criterion) {
+    private void sortClusterings(int start, int end, List<List<int[]>> clusterings, int[] criterion) {
         for (int i = start; i < end - 1; i++) {
             int max = -1;
             int max_idx = -1;
@@ -870,10 +828,7 @@ public final class Bpc {
         return score;
     }
 
-    private List<List<int[]>> filterAndOrderClusterings(List<List<int[]>> baseListOfClusterings,
-                                                        List<List<Integer>> baseListOfIds,
-                                                        List<int[]> clusteringIds, int[][] ng,
-                                                        List<Node> variables) {
+    private List<List<int[]>> filterAndOrderClusterings(List<List<int[]>> baseListOfClusterings, List<List<Integer>> baseListOfIds, List<int[]> clusteringIds, int[][] ng, List<Node> variables) {
 
         assert clusteringIds != null;
         List<List<int[]>> listOfClusterings = new ArrayList<>();
@@ -885,8 +840,10 @@ public final class Bpc {
             List<int[]> newClustering = new ArrayList<>();
             List<int[]> baseClustering = baseListOfClusterings.get(i);
 
-            System.out.println("* Base mimClustering");
-            printClustering(baseClustering);
+            if (verbose) {
+                System.out.println("* Base mimClustering");
+                printClustering(baseClustering);
+            }
 
             List<Integer> baseIds = baseListOfIds.get(i);
             List<Integer> usedIds = new ArrayList<>();
@@ -933,8 +890,10 @@ public final class Bpc {
                 }
             }
 
-            System.out.println("* Filtered mimClustering 1");
-            printClustering(newClustering);
+            if (verbose) {
+                System.out.println("* Filtered mimClustering 1");
+                printClustering(newClustering);
+            }
 
             //Second filter: remove nodes that are linked by an edge in ng but are in different clusters
             //(i.e., they were not shown to belong to different clusters)
@@ -954,18 +913,14 @@ public final class Bpc {
                         int[] nextCluster = newClustering.get(k);
 
                         for (int value : nextCluster) {
-                            impurities[currentCluster[jj]][value] =
-                                    ng[currentCluster[jj]][value] !=
-                                    this.EDGE_NONE;
-                            impurities[value][currentCluster[jj]] =
-                                    impurities[currentCluster[jj]][value];
+                            impurities[currentCluster[jj]][value] = ng[currentCluster[jj]][value] != this.EDGE_NONE;
+                            impurities[value][currentCluster[jj]] = impurities[currentCluster[jj]][value];
                         }
                     }
                 }
             }
 
-            List<int[]> newClustering2 = removeMarkedImpurities(newClustering,
-                    impurities);
+            List<int[]> newClustering2 = removeMarkedImpurities(newClustering, impurities);
             List<int[]> finalNewClustering = new ArrayList<>();
             List<Integer> finalUsedIds = new ArrayList<>();
 
@@ -985,12 +940,14 @@ public final class Bpc {
                 }
 
                 clusteringIds.add(usedIdsArray);
-                System.out.println("* Filtered mimClustering 2");
-                printClustering(finalNewClustering);
-                System.out.print("* ID/Size: ");
-                printLatentClique(usedIdsArray
-                );
-                System.out.println();
+
+                if (verbose) {
+                    System.out.println("* Filtered mimClustering 2");
+                    printClustering(finalNewClustering);
+                    System.out.print("* ID/Size: ");
+                    printLatentClique(usedIdsArray);
+                    System.out.println();
+                }
             }
 
         }
@@ -1001,8 +958,7 @@ public final class Bpc {
         for (int i = 0; i < listOfClusterings.size(); i++) {
             numIndicators[i] = clustersize3(listOfClusterings.get(i));
         }
-        sortClusterings(0, listOfClusterings.size(), listOfClusterings,
-                numIndicators);
+        sortClusterings(0, listOfClusterings.size(), listOfClusterings, numIndicators);
         for (int i = 0; i < listOfClusterings.size(); i++) {
             numIndicators[i] = clustersize(listOfClusterings.get(i));
         }
@@ -1028,7 +984,11 @@ public final class Bpc {
     }
 
     private List<int[]> removeMarkedImpurities(List<int[]> partition, boolean[][] impurities) {
-        System.out.println("sizecluster = " + clustersize(partition));
+
+        if (verbose) {
+            System.out.println("sizecluster = " + clustersize(partition));
+        }
+
         int[][] elements = new int[clustersize(partition)][3];
         int[] partitionCount = new int[partition.size()];
         int countElements = 0;
@@ -1081,8 +1041,7 @@ public final class Bpc {
 
             for (int k : next) {
                 for (int[] element : elements) {
-                    if (element[0] == k &&
-                        !eliminated[element[0]]) {
+                    if (element[0] == k && !eliminated[element[0]]) {
                         draftArea[draftCount++] = k;
                     }
                 }
@@ -1090,15 +1049,16 @@ public final class Bpc {
 
             if (draftCount > 0) {
                 int[] realCluster = new int[draftCount];
-                System.arraycopy(draftArea, 0, realCluster, 0, draftCount);
+                if (verbose) {
+                    System.arraycopy(draftArea, 0, realCluster, 0, draftCount);
+                }
                 solution.add(realCluster);
             }
         }
         return solution;
     }
 
-    private void sortByImpurityPriority(int[][] elements, int[] partitionCount,
-                                        boolean[] eliminated) {
+    private void sortByImpurityPriority(int[][] elements, int[] partitionCount, boolean[] eliminated) {
         int[] temp = new int[3];
 
         //First, throw all eliminated elements to the end of the array
@@ -1232,18 +1192,11 @@ public final class Bpc {
                 }
                 boolean notFound = true;
                 for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
-                    if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_NONE || ng[v1][v3] ==
-                                                                                this.EDGE_GRAY || ng[v2][v3] == this.EDGE_NONE || ng[v2][v3] ==
-                                                                                                                                  this.EDGE_GRAY) {
+                    if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_NONE || ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_NONE || ng[v2][v3] == this.EDGE_GRAY) {
                         continue;
                     }
                     for (int v4 = v3 + 1; v4 < numVariables() && notFound; v4++) {
-                        if (v1 == v4 || v2 == v4 || ng[v1][v4] == this.EDGE_NONE ||
-                            ng[v1][v4] == this.EDGE_GRAY ||
-                            ng[v2][v4] == this.EDGE_NONE ||
-                            ng[v2][v4] == this.EDGE_GRAY ||
-                            ng[v3][v4] == this.EDGE_NONE ||
-                            ng[v3][v4] == this.EDGE_GRAY) {
+                        if (v1 == v4 || v2 == v4 || ng[v1][v4] == this.EDGE_NONE || ng[v1][v4] == this.EDGE_GRAY || ng[v2][v4] == this.EDGE_NONE || ng[v2][v4] == this.EDGE_GRAY || ng[v3][v4] == this.EDGE_NONE || ng[v3][v4] == this.EDGE_GRAY) {
                             continue;
                         }
                         if (this.tetradTest.tetradScore3(v1, v2, v3, v4)) {
@@ -1282,50 +1235,25 @@ public final class Bpc {
 
                 for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
                     if (v1 == v3 || v2 == v3 || //ng[v1][v3] != EDGE_BLUE ||
-                        ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_GRAY ||
-                        cv[v1][v3] != this.EDGE_BLACK ||
-                        cv[v2][v3] != this.EDGE_BLACK) {
+                        ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_GRAY || cv[v1][v3] != this.EDGE_BLACK || cv[v2][v3] != this.EDGE_BLACK) {
                         continue;
                     }
 
                     for (int v5 = v3 + 1; v5 < numVariables() && notFound; v5++) {
                         if (v1 == v5 || v2 == v5 || //ng[v1][v5] != EDGE_BLUE || ng[v3][v5] != EDGE_BLUE ||
-                            ng[v1][v5] == this.EDGE_GRAY ||
-                            ng[v2][v5] == this.EDGE_GRAY ||
-                            ng[v3][v5] == this.EDGE_GRAY ||
-                            cv[v1][v5] != this.EDGE_BLACK ||
-                            cv[v2][v5] != this.EDGE_BLACK ||
-                            cv[v3][v5] != this.EDGE_BLACK ||
-                            clusteredPartial1(v1, v3, v5, v2)) {
+                            ng[v1][v5] == this.EDGE_GRAY || ng[v2][v5] == this.EDGE_GRAY || ng[v3][v5] == this.EDGE_GRAY || cv[v1][v5] != this.EDGE_BLACK || cv[v2][v5] != this.EDGE_BLACK || cv[v3][v5] != this.EDGE_BLACK || clusteredPartial1(v1, v3, v5, v2)) {
                             continue;
                         }
 
                         for (int v4 = 0; v4 < numVariables() - 1 && notFound; v4++) {
-                            if (v1 == v4 || v2 == v4 || v3 == v4 || v5 == v4 ||
-                                ng[v1][v4] == this.EDGE_GRAY ||
-                                ng[v2][v4] == this.EDGE_GRAY ||
-                                ng[v3][v4] == this.EDGE_GRAY ||
-                                ng[v5][v4] == this.EDGE_GRAY || //ng[v2][v4] != EDGE_BLUE ||
-                                cv[v1][v4] != this.EDGE_BLACK ||
-                                cv[v2][v4] != this.EDGE_BLACK ||
-                                cv[v3][v4] != this.EDGE_BLACK ||
-                                cv[v5][v4] != this.EDGE_BLACK ||
-                                clusteredPartial2(v1, v3, v5, v2, v4)) {
+                            if (v1 == v4 || v2 == v4 || v3 == v4 || v5 == v4 || ng[v1][v4] == this.EDGE_GRAY || ng[v2][v4] == this.EDGE_GRAY || ng[v3][v4] == this.EDGE_GRAY || ng[v5][v4] == this.EDGE_GRAY || //ng[v2][v4] != EDGE_BLUE ||
+                                cv[v1][v4] != this.EDGE_BLACK || cv[v2][v4] != this.EDGE_BLACK || cv[v3][v4] != this.EDGE_BLACK || cv[v5][v4] != this.EDGE_BLACK || clusteredPartial2(v1, v3, v5, v2, v4)) {
                                 continue;
                             }
 
                             for (int v6 = v4 + 1; v6 < numVariables() && notFound; v6++) {
-                                if (v1 == v6 || v2 == v6 || v3 == v6 ||
-                                    v5 == v6 || ng[v1][v6] == this.EDGE_GRAY ||
-                                    ng[v2][v6] == this.EDGE_GRAY ||
-                                    ng[v3][v6] == this.EDGE_GRAY ||
-                                    ng[v4][v6] == this.EDGE_GRAY ||
-                                    ng[v5][v6] == this.EDGE_GRAY || //ng[v2][v6] != EDGE_BLUE || ng[v4][v6] != EDGE_BLUE ||
-                                    cv[v1][v6] != this.EDGE_BLACK ||
-                                    cv[v2][v6] != this.EDGE_BLACK ||
-                                    cv[v3][v6] != this.EDGE_BLACK ||
-                                    cv[v4][v6] != this.EDGE_BLACK ||
-                                    cv[v5][v6] != this.EDGE_BLACK) {
+                                if (v1 == v6 || v2 == v6 || v3 == v6 || v5 == v6 || ng[v1][v6] == this.EDGE_GRAY || ng[v2][v6] == this.EDGE_GRAY || ng[v3][v6] == this.EDGE_GRAY || ng[v4][v6] == this.EDGE_GRAY || ng[v5][v6] == this.EDGE_GRAY || //ng[v2][v6] != EDGE_BLUE || ng[v4][v6] != EDGE_BLUE ||
+                                    cv[v1][v6] != this.EDGE_BLACK || cv[v2][v6] != this.EDGE_BLACK || cv[v3][v6] != this.EDGE_BLACK || cv[v4][v6] != this.EDGE_BLACK || cv[v5][v6] != this.EDGE_BLACK) {
                                     continue;
                                 }
 
@@ -1360,52 +1288,23 @@ public final class Bpc {
 
                     //Trying to find unclustered({v1, v2, v3}, {v4, v5, v6})
                     for (int v3 = 0; v3 < numVariables() && notFound; v3++) {
-                        if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_GRAY ||
-                            ng[v2][v3] == this.EDGE_GRAY ||
-                            cv[v1][v3] != this.EDGE_BLACK ||
-                            cv[v2][v3] != this.EDGE_BLACK) {
+                        if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_GRAY || cv[v1][v3] != this.EDGE_BLACK || cv[v2][v3] != this.EDGE_BLACK) {
                             continue;
                         }
 
                         for (int v4 = 0; v4 < numVariables() - 2 && notFound; v4++) {
-                            if (v1 == v4 || v2 == v4 || v3 == v4 ||
-                                ng[v1][v4] == this.EDGE_GRAY ||
-                                ng[v2][v4] == this.EDGE_GRAY ||
-                                ng[v3][v4] == this.EDGE_GRAY ||
-                                cv[v1][v4] != this.EDGE_BLACK ||
-                                cv[v2][v4] != this.EDGE_BLACK ||
-                                cv[v3][v4] != this.EDGE_BLACK ||
-                                clusteredPartial1(v1, v2, v3, v4)) {
+                            if (v1 == v4 || v2 == v4 || v3 == v4 || ng[v1][v4] == this.EDGE_GRAY || ng[v2][v4] == this.EDGE_GRAY || ng[v3][v4] == this.EDGE_GRAY || cv[v1][v4] != this.EDGE_BLACK || cv[v2][v4] != this.EDGE_BLACK || cv[v3][v4] != this.EDGE_BLACK || clusteredPartial1(v1, v2, v3, v4)) {
                                 continue;
                             }
 
                             for (int v5 = v4 + 1; v5 < numVariables() - 1 && notFound; v5++) {
-                                if (v1 == v5 || v2 == v5 || v3 == v5 ||
-                                    ng[v1][v5] == this.EDGE_GRAY ||
-                                    ng[v2][v5] == this.EDGE_GRAY ||
-                                    ng[v3][v5] == this.EDGE_GRAY ||
-                                    ng[v4][v5] == this.EDGE_GRAY ||
-                                    cv[v1][v5] != this.EDGE_BLACK ||
-                                    cv[v2][v5] != this.EDGE_BLACK ||
-                                    cv[v3][v5] != this.EDGE_BLACK ||
-                                    cv[v4][v5] != this.EDGE_BLACK || //ng[v4][v5] != EDGE_BLUE ||
-                                    clusteredPartial2(v1, v2, v3, v4,
-                                            v5)) {
+                                if (v1 == v5 || v2 == v5 || v3 == v5 || ng[v1][v5] == this.EDGE_GRAY || ng[v2][v5] == this.EDGE_GRAY || ng[v3][v5] == this.EDGE_GRAY || ng[v4][v5] == this.EDGE_GRAY || cv[v1][v5] != this.EDGE_BLACK || cv[v2][v5] != this.EDGE_BLACK || cv[v3][v5] != this.EDGE_BLACK || cv[v4][v5] != this.EDGE_BLACK || //ng[v4][v5] != EDGE_BLUE ||
+                                    clusteredPartial2(v1, v2, v3, v4, v5)) {
                                     continue;
                                 }
 
                                 for (int v6 = v5 + 1; v6 < numVariables() && notFound; v6++) {
-                                    if (v1 == v6 || v2 == v6 || v3 == v6 ||
-                                        ng[v1][v6] == this.EDGE_GRAY ||
-                                        ng[v2][v6] == this.EDGE_GRAY ||
-                                        ng[v3][v6] == this.EDGE_GRAY ||
-                                        ng[v4][v6] == this.EDGE_GRAY ||
-                                        ng[v5][v6] == this.EDGE_GRAY ||
-                                        cv[v1][v6] != this.EDGE_BLACK ||
-                                        cv[v2][v6] != this.EDGE_BLACK ||
-                                        cv[v3][v6] != this.EDGE_BLACK ||
-                                        cv[v4][v6] != this.EDGE_BLACK ||
-                                        cv[v5][v6] != this.EDGE_BLACK) {
+                                    if (v1 == v6 || v2 == v6 || v3 == v6 || ng[v1][v6] == this.EDGE_GRAY || ng[v2][v6] == this.EDGE_GRAY || ng[v3][v6] == this.EDGE_GRAY || ng[v4][v6] == this.EDGE_GRAY || ng[v5][v6] == this.EDGE_GRAY || cv[v1][v6] != this.EDGE_BLACK || cv[v2][v6] != this.EDGE_BLACK || cv[v3][v6] != this.EDGE_BLACK || cv[v4][v6] != this.EDGE_BLACK || cv[v5][v6] != this.EDGE_BLACK) {
                                         continue;
                                     }
 
@@ -1443,7 +1342,9 @@ public final class Bpc {
         List<int[]> clustering = new ArrayList<>();
         List<int[]> components = findComponents(ng, numVariables());
         for (int[] component : components) {
-            printClusterIds(component);
+            if (verbose) {
+                printClusterIds(component);
+            }
             List<int[]> nextClustering = findMaximalCliques(component, ng);
             clustering.addAll(trimCliqueList(nextClustering));
         }
@@ -1463,13 +1364,14 @@ public final class Bpc {
         }
 
         List<int[]> individualOneFactors = individualPurification(clustering);
-        printClustering(individualOneFactors);
+        if (verbose) {
+            printClustering(individualOneFactors);
+        }
         clustering = individualOneFactors;
         List<List<Integer>> ids = new ArrayList<>();
         List<List<int[]>> clusterings = chooseClusterings(clustering, ids, true, cv);
         List<int[]> orderedIds = new ArrayList<>();
-        List<List<int[]>> actualClustering = filterAndOrderClusterings(clusterings, ids,
-                orderedIds, ng, variables);
+        List<List<int[]>> actualClustering = filterAndOrderClusterings(clusterings, ids, orderedIds, ng, variables);
         return purify(actualClustering, orderedIds);
     }
 
@@ -1503,8 +1405,7 @@ public final class Bpc {
         return purified;
     }
 
-    private boolean compatibleClusters(int[] cluster1, int[] cluster2,
-                                       int[][] cv) {
+    private boolean compatibleClusters(int[] cluster1, int[] cluster2, int[][] cv) {
         HashSet<Integer> allNodes = new HashSet<>();
 
         for (int j : cluster1) {
@@ -1524,21 +1425,15 @@ public final class Bpc {
             for (int o2 = o1 + 1; o2 < cset1 - 1; o2++) {
                 for (int o3 = o2 + 1; o3 < cset1; o3++) {
                     for (int o4 = 0; o4 < cset2 - 2; o4++) {
-                        if (!validClusterPairPartial1(cluster1[o1],
-                                cluster1[o2], cluster1[o3], cluster2[o4], cv)) {
+                        if (!validClusterPairPartial1(cluster1[o1], cluster1[o2], cluster1[o3], cluster2[o4], cv)) {
                             continue;
                         }
                         for (int o5 = o4 + 1; o5 < cset2 - 1; o5++) {
-                            if (!validClusterPairPartial2(cluster1[o1],
-                                    cluster1[o2], cluster1[o3], cluster2[o5],
-                                    cv)) {
+                            if (!validClusterPairPartial2(cluster1[o1], cluster1[o2], cluster1[o3], cluster2[o5], cv)) {
                                 continue;
                             }
                             for (int o6 = o5 + 1; o6 < cset2; o6++) {
-                                if (validClusterPairPartial3(cluster1[o1],
-                                        cluster1[o2], cluster1[o3],
-                                        cluster2[o4], cluster2[o5],
-                                        cluster2[o6], cv)) {
+                                if (validClusterPairPartial3(cluster1[o1], cluster1[o2], cluster1[o3], cluster2[o4], cluster2[o5], cluster2[o6], cv)) {
                                     return true;
                                 }
                             }
@@ -1547,9 +1442,13 @@ public final class Bpc {
                 }
             }
         }
-        System.out.println("INCOMPATIBLE!:");
-        printClusterNames(cluster1);
-        printClusterNames(cluster2);
+
+        if (verbose) {
+            System.out.println("INCOMPATIBLE!:");
+            printClusterNames(cluster1);
+            printClusterNames(cluster2);
+        }
+
         return false;
     }
 
@@ -1565,7 +1464,11 @@ public final class Bpc {
         }
 
         List<int[]> initialClustering = initialMeasurementPattern(ng, cv, variables);
-        printClustering(initialClustering);
+
+        if (verbose) {
+            printClustering(initialClustering);
+        }
+
         for (int[] nextCluster : initialClustering) {
             for (int j : nextCluster) {
                 selected[j] = true;
@@ -1575,11 +1478,9 @@ public final class Bpc {
         /* Stage 1: identify (partially) uncorrelated and impure pairs */
         for (int i = 0; i < numVariables(); i++) {
             for (int j = 0; j < numVariables(); j++) {
-                if (selected[i] && selected[j] &&
-                    (ng[i][j] == this.EDGE_BLUE || ng[i][j] == this.EDGE_YELLOW)) {
+                if (selected[i] && selected[j] && (ng[i][j] == this.EDGE_BLUE || ng[i][j] == this.EDGE_YELLOW)) {
                     ng[i][j] = this.EDGE_RED;
-                } else if ((!selected[i] || !selected[j]) &&
-                           ng[i][j] == this.EDGE_YELLOW) {
+                } else if ((!selected[i] || !selected[j]) && ng[i][j] == this.EDGE_YELLOW) {
                     ng[i][j] = this.EDGE_BLUE;
                 }
             }
@@ -1595,35 +1496,19 @@ public final class Bpc {
                     continue;
                 }
                 for (int x2 = 0; x2 < numVariables(); x2++) {
-                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] ==
-                                                                                this.EDGE_NONE) {
+                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] == this.EDGE_NONE) {
                         continue;
                     }
                     for (int x3 = 0; x3 < numVariables(); x3++) {
-                        if (x1 == x3 || x2 == x3 || y1 == x3 ||
-                            cv[x1][x3] == this.EDGE_NONE ||
-                            cv[x2][x3] == this.EDGE_NONE ||
-                            cv[y1][x3] == this.EDGE_NONE ||
-                            !partialRule1_1(x1, x2, x3, y1)) {
+                        if (x1 == x3 || x2 == x3 || y1 == x3 || cv[x1][x3] == this.EDGE_NONE || cv[x2][x3] == this.EDGE_NONE || cv[y1][x3] == this.EDGE_NONE || !partialRule1_1(x1, x2, x3, y1)) {
                             continue;
                         }
                         for (int y2 = 0; y2 < numVariables(); y2++) {
-                            if (x1 == y2 || x2 == y2 || x3 == y2 || y1 == y2 ||
-                                cv[x1][y2] == this.EDGE_NONE ||
-                                cv[x2][y2] == this.EDGE_NONE ||
-                                cv[x3][y2] == this.EDGE_NONE ||
-                                cv[y1][y2] == this.EDGE_NONE ||
-                                !partialRule1_2(x1, x2, y1, y2)) {
+                            if (x1 == y2 || x2 == y2 || x3 == y2 || y1 == y2 || cv[x1][y2] == this.EDGE_NONE || cv[x2][y2] == this.EDGE_NONE || cv[x3][y2] == this.EDGE_NONE || cv[y1][y2] == this.EDGE_NONE || !partialRule1_2(x1, x2, y1, y2)) {
                                 continue;
                             }
                             for (int y3 = 0; y3 < numVariables(); y3++) {
-                                if (x1 == y3 || x2 == y3 || x3 == y3 ||
-                                    y1 == y3 || y2 == y3 || cv[x1][y3] ==
-                                                            this.EDGE_NONE || cv[x2][y3] == this.EDGE_NONE ||
-                                    cv[x3][y3] == this.EDGE_NONE ||
-                                    cv[y1][y3] == this.EDGE_NONE ||
-                                    cv[y2][y3] == this.EDGE_NONE ||
-                                    !partialRule1_3(x1, y1, y2, y3)) {
+                                if (x1 == y3 || x2 == y3 || x3 == y3 || y1 == y3 || y2 == y3 || cv[x1][y3] == this.EDGE_NONE || cv[x2][y3] == this.EDGE_NONE || cv[x3][y3] == this.EDGE_NONE || cv[y1][y3] == this.EDGE_NONE || cv[y2][y3] == this.EDGE_NONE || !partialRule1_3(x1, y1, y2, y3)) {
                                     continue;
                                 }
                                 ng[x1][y1] = ng[y1][x1] = this.EDGE_NONE;
@@ -1635,7 +1520,10 @@ public final class Bpc {
             }
         }
 
-        System.out.println("Trying RULE 2 now!");
+        if (verbose) {
+            System.out.println("Trying RULE 2 now!");
+        }
+
         for (int x1 = 0; x1 < numVariables() - 1; x1++) {
             outer_loop:
             for (int y1 = x1 + 1; y1 < numVariables(); y1++) {
@@ -1643,38 +1531,19 @@ public final class Bpc {
                     continue;
                 }
                 for (int x2 = 0; x2 < numVariables(); x2++) {
-                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] ==
-                                                                                this.EDGE_NONE || ng[x1][x2] == this.EDGE_GRAY) {
+                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] == this.EDGE_NONE || ng[x1][x2] == this.EDGE_GRAY) {
                         continue;
                     }
                     for (int y2 = 0; y2 < numVariables(); y2++) {
-                        if (x1 == y2 || x2 == y2 || y1 == y2 ||
-                            cv[x1][y2] == this.EDGE_NONE ||
-                            cv[x2][y2] == this.EDGE_NONE ||
-                            cv[y1][y2] == this.EDGE_NONE ||
-                            ng[y1][y2] == this.EDGE_GRAY ||
-                            !partialRule2_1(x1, x2, y1, y2)) {
+                        if (x1 == y2 || x2 == y2 || y1 == y2 || cv[x1][y2] == this.EDGE_NONE || cv[x2][y2] == this.EDGE_NONE || cv[y1][y2] == this.EDGE_NONE || ng[y1][y2] == this.EDGE_GRAY || !partialRule2_1(x1, x2, y1, y2)) {
                             continue;
                         }
                         for (int x3 = 0; x3 < numVariables(); x3++) {
-                            if (x1 == x3 || x2 == x3 || y1 == x3 || y2 == x3 ||
-                                ng[x1][x3] == this.EDGE_GRAY ||
-                                cv[x1][x3] == this.EDGE_NONE ||
-                                cv[x2][x3] == this.EDGE_NONE ||
-                                cv[y1][x3] == this.EDGE_NONE ||
-                                cv[y2][x3] == this.EDGE_NONE ||
-                                !partialRule2_2(x1, x2, x3, y2)) {
+                            if (x1 == x3 || x2 == x3 || y1 == x3 || y2 == x3 || ng[x1][x3] == this.EDGE_GRAY || cv[x1][x3] == this.EDGE_NONE || cv[x2][x3] == this.EDGE_NONE || cv[y1][x3] == this.EDGE_NONE || cv[y2][x3] == this.EDGE_NONE || !partialRule2_2(x1, x2, x3, y2)) {
                                 continue;
                             }
                             for (int y3 = 0; y3 < numVariables(); y3++) {
-                                if (x1 == y3 || x2 == y3 || x3 == y3 ||
-                                    y1 == y3 || y2 == y3 || ng[y1][y3] ==
-                                                            this.EDGE_GRAY || cv[x1][y3] == this.EDGE_NONE ||
-                                    cv[x2][y3] == this.EDGE_NONE ||
-                                    cv[x3][y3] == this.EDGE_NONE ||
-                                    cv[y1][y3] == this.EDGE_NONE ||
-                                    cv[y2][y3] == this.EDGE_NONE ||
-                                    !partialRule2_3(x2, y1, y2, y3)) {
+                                if (x1 == y3 || x2 == y3 || x3 == y3 || y1 == y3 || y2 == y3 || ng[y1][y3] == this.EDGE_GRAY || cv[x1][y3] == this.EDGE_NONE || cv[x2][y3] == this.EDGE_NONE || cv[x3][y3] == this.EDGE_NONE || cv[y1][y3] == this.EDGE_NONE || cv[y2][y3] == this.EDGE_NONE || !partialRule2_3(x2, y1, y2, y3)) {
                                     continue;
                                 }
                                 ng[x1][y1] = ng[y1][x1] = this.EDGE_NONE;
@@ -1698,7 +1567,10 @@ public final class Bpc {
         List<int[]> clustering = new ArrayList<>();
         List<int[]> components = findComponents(ng, numVariables());
         for (int[] component : components) {
-            printClusterIds(component);
+            if (verbose) {
+                printClusterIds(component);
+            }
+
             List<int[]> nextClustering = findMaximalCliques(component, ng);
             clustering.addAll(trimCliqueList(nextClustering));
         }
@@ -1716,22 +1588,24 @@ public final class Bpc {
             clustering.set(i, clustering.get(max_idx));
             clustering.set(max_idx, temp);
         }
-        printClustering(clustering);
+
+        if (verbose) {
+            printClustering(clustering);
+        }
         List<List<Integer>> ids = new ArrayList<>();
         List<List<int[]>> clusterings = chooseClusterings(clustering, ids, false, cv);
         List<int[]> orderedIds = new ArrayList<>();
-        List<List<int[]>> actualClusterings = filterAndOrderClusterings(clusterings, ids,
-                orderedIds, ng, variables);
-        List<int[]> finalPureModel = purify(actualClusterings, orderedIds
-        );
+        List<List<int[]>> actualClusterings = filterAndOrderClusterings(clusterings, ids, orderedIds, ng, variables);
+        List<int[]> finalPureModel = purify(actualClusterings, orderedIds);
 
-        printClustering(finalPureModel);
+        if (verbose) {
+            printClustering(finalPureModel);
+        }
 
         return finalPureModel;
     }
 
-    private List<List<int[]>> chooseClusterings(List<int[]> clustering, List<List<Integer>> outputIds,
-                                                boolean need3, int[][] cv) {
+    private List<List<int[]>> chooseClusterings(List<int[]> clustering, List<List<Integer>> outputIds, boolean need3, int[][] cv) {
         List<List<int[]>> clusterings = new ArrayList<>();
         boolean[] marked = new boolean[clustering.size()];
         boolean[] buffer = new boolean[this.numVariables()];
@@ -1742,16 +1616,16 @@ public final class Bpc {
         if (need3) {
             for (int i = 0; i < clustering.size() - 1; i++) {
                 for (int j = i + 1; j < clustering.size(); j++) {
-                    compatibility[i][j] = compatibility[j][i] = compatibleClusters(
-                            clustering.get(i),
-                            clustering.get(j), cv);
+                    compatibility[i][j] = compatibility[j][i] = compatibleClusters(clustering.get(i), clustering.get(j), cv);
                 }
             }
         }
 
         //Ideally, we should find all maximum cliques among "cluster nodes".
         //Heuristic: greedily build a set of clusters starting from each cluster.
-        System.out.println("Total number of clusters: " + clustering.size());
+        if (verbose) {
+            System.out.println("Total number of clusters: " + clustering.size());
+        }
         for (int i = 0; i < max; i++) {
             //System.out.println("Step " + i);
             List<Integer> nextIds = new ArrayList<>();
@@ -1772,9 +1646,7 @@ public final class Bpc {
                         continue;
                     }
                     for (int[] ints : newClustering) {
-                        if (need3 &&
-                            !compatibility[j][clustering.indexOf(
-                                    ints)]) {
+                        if (need3 && !compatibility[j][clustering.indexOf(ints)]) {
                             marked[j] = true;
                             continue next_choice;
                         }
@@ -1853,10 +1725,16 @@ public final class Bpc {
 
         if (!actualClusterings.isEmpty()) {
             List<int[]> partition = actualClusterings.get(0);
-            printLatentClique(clusterIds.get(0));
+            if (verbose) {
+                printLatentClique(clusterIds.get(0));
+            }
+
             Clusters clustering = new Clusters();
             int clusterId = 0;
-            printClustering(partition);
+
+            if (verbose) {
+                printClustering(partition);
+            }
 
             for (int[] codes : partition) {
                 for (int code : codes) {
@@ -1880,12 +1758,24 @@ public final class Bpc {
                 partition2.add(cluster);
             }
 
-            System.out.println("Partition = " + partition2);
+            if (verbose) {
+                System.out.println("Partition = " + partition2);
+            }
 
             return partition;
         }
 
         return new ArrayList<>();
+    }
+
+    /**
+     * Sets the verbose mode for the object. When verbose mode is enabled, detailed logging or additional output may be
+     * produced during execution.
+     *
+     * @param verbose A boolean value indicating whether verbose mode should be enabled (true) or disabled (false).
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

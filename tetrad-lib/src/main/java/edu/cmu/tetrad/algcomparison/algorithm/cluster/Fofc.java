@@ -61,10 +61,12 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        System.out.println("alpha = " + parameters.getDouble(Params.FOFC_ALPHA));
-        System.out.println("penaltyDiscount = " + parameters.getDouble(Params.PENALTY_DISCOUNT));
-        System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
-        System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
+        if (parameters.getBoolean(Params.VERBOSE)) {
+            System.out.println("alpha = " + parameters.getDouble(Params.FOFC_ALPHA));
+            System.out.println("penaltyDiscount = " + parameters.getDouble(Params.PENALTY_DISCOUNT));
+            System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
+            System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
+        }
 
         DataSet dataSet = (DataSet) dataModel;
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);

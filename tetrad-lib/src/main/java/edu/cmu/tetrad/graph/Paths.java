@@ -353,12 +353,6 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a Legal PAG, false otherwise
      */
     public boolean isLegalPag() {
-        List<Node> latent = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
-
-        List<Node> measured = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
-
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 

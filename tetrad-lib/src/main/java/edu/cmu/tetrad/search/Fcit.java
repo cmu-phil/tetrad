@@ -38,8 +38,8 @@ import java.util.concurrent.*;
 /**
  * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
  * model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
- * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph,    then finishes with a testing step
- * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
+ * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph,    then finishes with a testing
+ * step to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
  * graph.
  *
  * @author josephramsey
@@ -249,6 +249,10 @@ public final class Fcit implements IGraphSearch {
                 TetradLogger.getInstance().log("Running BOSS...");
             }
 
+            if (this.score == null) {
+                throw new IllegalArgumentException("For BOSS a non-null score is expected.");
+            }
+
             long start = MillisecondTimes.wallTimeMillis();
 
             Boss subAlg = new Boss(this.score);
@@ -302,6 +306,10 @@ public final class Fcit implements IGraphSearch {
             }
 
             long start = MillisecondTimes.wallTimeMillis();
+
+            if (this.score == null) {
+                throw new IllegalArgumentException("For SP a non-null score is expected.");
+            }
 
             Sp subAlg = new Sp(this.score);
             PermutationSearch alg = new PermutationSearch(subAlg);
@@ -403,12 +411,13 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
+        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, -1);
+        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
+
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
-            Set<Edge> edges = new HashSet<>(pag.getEdges());
-
-            removeExtraEdgesDdp(pag, edges, extraSepsets, fciOrient, -1);
+            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, -1);
             pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
             if (_pag.equals(pag)) {
@@ -505,8 +514,10 @@ public final class Fcit implements IGraphSearch {
         return _pag;
     }
 
-    private void removeExtraEdgesDdp(Graph pag, Set<Edge> edges, Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
+    private Set<DiscriminatingPath> removeExtraEdgesDdp(Graph pag, Set<DiscriminatingPath> oldDiscriminatingPaths,
+                                                        Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
+        Set<Edge> edges = pag.getEdges();
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
 
@@ -519,10 +530,31 @@ public final class Fcit implements IGraphSearch {
             Set<DiscriminatingPath> paths = new HashSet<>();
 
             for (DiscriminatingPath path : discriminatingPaths) {
+                if (!path.existsIn(pag)) {
+                    continue;
+                }
+
                 if (path.getX() == x && path.getY() == y) {
                     paths.add(path);
                 } else if (path.getX() == y && path.getY() == x) {
                     paths.add(path);
+                }
+            }
+
+            if (oldDiscriminatingPaths != null) {
+                Set<DiscriminatingPath> oldPaths = new HashSet<>();
+
+                for (DiscriminatingPath path : oldDiscriminatingPaths) {
+                    if (path.getX() == x && path.getY() == y) {
+                        oldPaths.add(path);
+                    } else if (path.getX() == y && path.getY() == x) {
+                        oldPaths.add(path);
+                    }
+                }
+
+                if (paths.equals(oldPaths)) {
+                    pathsByEdge.put(Set.of(x, y), null);
+                    return;
                 }
             }
 
@@ -549,13 +581,17 @@ public final class Fcit implements IGraphSearch {
             // Don't repeat the same independence test twice for thie edge x *-* y.
             Set<Set<Node>> S = new HashSet<>();
 
-            if (paths != null) {
-                for (DiscriminatingPath path : paths) {
-                    if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                        perhapsNotFollowed.add(path.getV());
-                    }
+            if (paths == null) {
+                return;
+            }
+
+//            if (paths != null) {
+            for (DiscriminatingPath path : paths) {
+                if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                    perhapsNotFollowed.add(path.getV());
                 }
             }
+//            }
 
             if (verbose) {
                 TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
@@ -642,7 +678,7 @@ public final class Fcit implements IGraphSearch {
             }
         });
 
-
+        return discriminatingPaths;
     }
 
     /**

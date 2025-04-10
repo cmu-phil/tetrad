@@ -86,13 +86,13 @@ public class GraphTransforms {
      */
     public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
         Graph dag = new EdgeListGraph(cpdag);
-        transformCpdagIntoRandomDag(dag, knowledge, meekPreventCycles, verbose);
+        transformCpdagIntoDag(dag, knowledge, meekPreventCycles, verbose);
         return dag;
     }
 
     /**
-     * Transforms a completed partially directed acyclic graph (CPDAG) into a random directed acyclic graph (DAG) by
-     * randomly orienting the undirected edges in the CPDAG in shuffled order.
+     * Transforms a completed partially directed acyclic graph (CPDAG) into a directed acyclic graph (DAG) by orienting
+     * the undirected edges in the CPDAG.
      *
      * @param graph             The original graph from which the CPDAG was derived.
      * @param knowledge         The knowledge available to check if a potential DAG violates any constraints.
@@ -100,7 +100,7 @@ public class GraphTransforms {
      *                          unshielded colliders in the graph.
      * @param verbose           Whether to print verbose output.
      */
-    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
+    public static void transformCpdagIntoDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
         List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
@@ -109,7 +109,12 @@ public class GraphTransforms {
             }
         }
 
-        Collections.shuffle(undirectedEdges);
+        undirectedEdges.sort((e1, e2) -> {
+            String s1 = e1.getNode1().getName() + e1.getNode2().getName();
+            String s2 = e2.getNode1().getName() + e2.getNode2().getName();
+            return s1.compareTo(s2);
+        });
+
 
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(meekPreventCycles);
@@ -127,22 +132,22 @@ public class GraphTransforms {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                if (!Edges.isUndirectedEdge(graph.getEdge(x, y))) {
-                    continue;
-                }
-
-                if (Edges.isUndirectedEdge(edge) && !graph.paths().isAncestorOf(y, x)) {
-                    double d = RandomUtil.getInstance().nextDouble();
-
-                    if (d < 0.5) {
+                if (Edges.isUndirectedEdge(graph.getEdge(x, y))) {
+                    if (!graph.paths().isAncestorOf(y, x)) {
                         direct(x, y, graph);
-                    } else {
+                    } else if (!graph.paths().isAncestorOf(x, y)) {
                         direct(y, x, graph);
+                    } else {
+                        if (x.getName().compareTo(y.getName()) < 0) {
+                            direct(x, y, graph);
+                        } else {
+                            direct(y, x, graph);
+                        }
                     }
-
                     rules.orientImplied(graph);
                     continue NEXT;
                 }
+
             }
 
             break;
@@ -199,8 +204,7 @@ public class GraphTransforms {
     }
 
     /**
-     * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem
-     * 2.
+     * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem 2.
      *
      * @param pag The partially ancestral graph to transform.
      * @return The maximally ancestral graph obtained from the PAG.
@@ -219,7 +223,7 @@ public class GraphTransforms {
             }
         }
 
-        pcafcic = GraphTransforms.dagFromCpdag(pcafcic, new Knowledge(), false, false);
+        pcafcic = GraphTransforms.dagFromCpdag(pcafcic, new Knowledge(), true, false);
 
         for (Edge e : pcafcic.getEdges()) {
             pcafci.removeEdge(e.getNode1(), e.getNode2());

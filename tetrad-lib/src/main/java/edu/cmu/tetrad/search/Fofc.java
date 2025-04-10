@@ -146,10 +146,12 @@ public class Fofc {
         allClusters = estimateClustersSag();
         this.clusters = ClusterSignificance.variablesForIndices(allClusters, variables);
 
-        System.out.println("clusters = " + this.clusters);
+        log("clusters = " + this.clusters);
 
-        ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
-        clusterSignificance.printClusterPValues(allClusters);
+        if (verbose) {
+            ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
+            clusterSignificance.printClusterPValues(allClusters);
+        }
 
         return convertToGraph(allClusters, includeAllNodes);
     }
@@ -210,9 +212,7 @@ public class Fofc {
 
         VARIABLES:
         while (!variables.isEmpty()) {
-            if (this.verbose) {
-                System.out.println(variables);
-            }
+            log(variables.toString());
 
             if (variables.size() < 4) break;
 
