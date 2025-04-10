@@ -645,6 +645,15 @@ public final class TetradTestContinuous implements TetradTest {
         return this.twoFactorsEst6.isSignificant();
     }
 
+    /**
+     * Sets the verbosity level for this instance.
+     * Determines whether detailed operations or messages
+     * should be output during execution.
+     *
+     * @param verbose a boolean value indicating verbosity.
+     *                If true, verbose output is enabled;
+     *                otherwise, it is disabled.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

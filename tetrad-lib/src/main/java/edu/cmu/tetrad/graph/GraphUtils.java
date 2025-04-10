@@ -2527,76 +2527,20 @@ public final class GraphUtils {
         return existsLatentConfounder;
     }
 
-//    /**
-//     * Guarantees a legal PAG by repairing deviations of a graph from a legal PAG (partial ancestral graph).
-//     * <p>
-//     * Two types of repairs are attempted. First, if there is an edge x &lt;-&gt; y with a path x ~~&gt; y, then the
-//     * unshielded colldiers into x are removed and the graph is rebuilt.
-//     * <p>
-//     * Second, if there is an inducing path between two non-adjacent nodes x and y, then an edge x *-*.y is added.
-//     * Arrows are included at x and y if including them prevents almost cycles.
-//     * <p>
-//     * The final orientation is then done using the FCI orient from DAG to PAG (using DSEP).
-//     * <p>
-//     * TODO: this method is in a bit of a state of flux as various ideas are tried for repairing PAGs
-//     *
-//     * @param pag                      the faulty PAG to be repaired
-//     * @param fciOrient                the FciOrient object used for final orientation
-//     * @param knowledge                the knowledge object used for orientation
-//     * @param unshieldedColliders      the set of unshielded colliders to be updated
-//     * @param extraUnshieldedColliders the set of extra unshielded colliders oriented after the initial scoring step.
-//     * @param verbose                  indicates whether or not to print verbose output
-//     * @param selection                the set of nodes to consider for selection
-//     * @return the repaired PAG
-//     * @throws IllegalArgumentException if the estimated PAG contains a directed cycle
-//     */
-//    public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-//                                     Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders,
-//                                     boolean verbose, Set<Node> selection) {
-//        if (verbose) {
-//            TetradLogger.getInstance().log("Repairing faulty PAG...");
-//        }
-//
-//        fciOrient.setVerbose(true);
-//        fciOrient.setKnowledge(knowledge);
-//        fciOrient.setAllowedColliders(unshieldedColliders);
-//        fciOrient.setDoR4(true);
-//
-//        Graph orig = new EdgeListGraph(pag);
-//
-//        // Repair almost cycles and repair maximality. We assume here that there are no cycles in the graph that cannot
-//        // be fixed by removing almost cycles. jdramsey 2024-8-13.
-//        boolean changed1, changed2, changed3;
-//
-////        removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
-//
-//        do {
-//            changed1 = removeAlmostCycles(pag, unshieldedColliders, extraUnshieldedColliders, fciOrient, knowledge, verbose);
-//            changed2 = repairMaximality(pag, verbose, selection);
-//            changed3 = removeCycles(unshieldedColliders, fciOrient, pag, knowledge, verbose);
-//            fciOrient.finalOrientation(pag);
-//        } while (changed1 || changed2 || changed3);
-//
-//        // At this point there should be no almost cycles and it should be maximal. We assume there are no cycles.
-//        // This next step adds some additional endpoints implied by final rules from oracle.
-//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-//        DagToPag dagToPag = new DagToPag(mag);
-//        dagToPag.setKnowledge(knowledge);
-//        Graph pag2 = dagToPag.convert();
-//
-//        if (pag2.equals(orig)) {
-//            if (verbose) {
-//                TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
-//            }
-//        } else {
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Faulty PAG repaired.");
-//            }
-//        }
-//
-//        return pag2;
-//    }
-
+    /**
+     * Guarantees the correctness of a Partial Ancestral Graph (PAG) by repairing faulty structures
+     * such as cycles, violations of maximality, and incorrectly oriented edges. It uses FCI orientation
+     * rules and knowledge constraints to perform the repair process.
+     *
+     * @param pag the initial PAG to be repaired
+     * @param fciOrient the FCI (Fast Causal Inference) orientation utility for edge orientation
+     * @param knowledge the background knowledge to enforce during the repair process
+     * @param unshieldedColliders a set of triples representing unshielded colliders to be enforced
+     * @param extraUnshieldedColliders an additional set of unshielded colliders to be considered during the repair
+     * @param verbose whether to provide detailed logging of the repair process
+     * @param selection a set of nodes to be considered during the maximality repair
+     * @return the repaired PAG that satisfies required constraints and is free of faults
+     */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders,
                                      boolean verbose, Set<Node> selection) {
@@ -2739,43 +2683,6 @@ public final class GraphUtils {
         }
         return map;
     }
-
-//    /**
-//     * Adds nondirected edges to the graph required for maximality. An edge x o-o y is added if there is an inducing
-//     * path between x and y. These will be oriented later.
-//     *
-//     * @param pag       the graph to be repaired
-//     * @param verbose   indicates whether to print verbose output
-//     * @param selection the set of selection nodes to consider for selection
-//     */
-//    private static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
-//        if (verbose) {
-//            TetradLogger.getInstance().log("Repairing maximality...");
-//        }
-//
-//        boolean changed = false;
-//
-//        // Repair maximality.
-//        for (Node x : pag.getNodes()) {
-//            for (Node y : pag.getNodes()) {
-//                if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, selection)) {
-//                    pag.addNondirectedEdge(x, y);
-//
-//                    if (verbose) {
-//                        TetradLogger.getInstance().log("FAULTY PAG CORRECTION: Added nondirected edge " + x + " <-> " + y + ".");
-//                    }
-//
-//                    changed = true;
-//                }
-//            }
-//        }
-//
-//        if (verbose) {
-//            TetradLogger.getInstance().log("All done repairing maximality.");
-//        }
-//
-//        return changed;
-//    }
 
     /**
      * Calculates the number of induced adjacencies in the given estiamted Partial Ancestral (PAG) with respect to the
