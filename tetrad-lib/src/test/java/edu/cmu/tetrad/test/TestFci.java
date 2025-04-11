@@ -43,9 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
 import static org.junit.Assert.assertEquals;
@@ -519,6 +517,24 @@ public class TestFci {
         Node v3 = graph.getNode("3");
         assertTrue(graph.paths().possibleDsep(v3, -1).contains(v1));
         assertTrue(graph.paths().possibleDsep(v1, -1).contains(v3));
+    }
+
+    @Test
+    public void test19() {
+        Graph mag = GraphUtils.convert("x-->b,b-->z,z<->y,x<->a,a<->y,a-->b");
+
+        Node x = mag.getNode("x");
+        Node y = mag.getNode("y");
+
+        Set<Node> B = SepsetFinder.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1);
+
+        MsepTest msepTest = new MsepTest(mag);
+        boolean indep = msepTest.checkIndependence(x, y, B).isIndependent();
+
+        System.out.println("B = " + B + ", indep = " + indep);
+
+        assertTrue(B.isEmpty());
+        assertTrue(indep);
     }
 
     private boolean ancestral(Node n, Node q, Graph pag) {
