@@ -544,7 +544,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return The set of nodes that form the sepset between the two given nodes.
      */
     public Set<Node> getSepset(Node x, Node y, int maxLength) {
-        return new Paths(this).getSepsetContaining(x, y, new HashSet<>(), maxLength);
+        return new Paths(this).getSepsetContaining(x, y, new HashSet<>(), maxLength, paths().getAncestorsMap());
     }
 
     /**
@@ -557,7 +557,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return The set of nodes that form the sepset between the two given nodes.
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxLength) {
-        return new Paths(this).getSepsetContaining(x, y, containing, maxLength);
+        return new Paths(this).getSepsetContaining(x, y, containing, maxLength, paths().getAncestorsMap());
     }
 
     /**

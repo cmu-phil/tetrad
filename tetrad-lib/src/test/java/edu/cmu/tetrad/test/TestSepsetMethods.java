@@ -140,7 +140,7 @@ public class TestSepsetMethods {
                         blockingSet = SepsetFinder.blockPathsWithMarkovBlanket(x, graph);
                     }
                     case BLOCK_PATHS_RECURSIVELY -> {
-                        blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), -1);
+                        blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), -1, graph.paths().getAncestorsMap());
                     }
                     case BLOCK_PATHS_LOCAL_MARKOV -> {
                         blockingSet = blockPathsLocalMarkov(graph, x);
@@ -211,7 +211,7 @@ public class TestSepsetMethods {
         System.out.println(graph);
 
         Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, graph.getNode("X"), graph.getNode("Z"),
-                new HashSet<>(), Set.of(), -1);
+                new HashSet<>(), Set.of(), -1, graph.paths().getAncestorsMap());
 
         System.out.println(blocking);
 
@@ -247,14 +247,15 @@ public class TestSepsetMethods {
                 Set<Node> parents = new HashSet<>(graph.getParents(x));
 
                 if (parents.contains(y)) {
-                    continue;
+                    continue;s
                 }
 
                 if (graph.paths().isDescendentOf(y, x)) {
                     continue;
                 }
 
-                Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1);
+                Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1,
+                        graph.paths().getAncestorsMap());
 
                 boolean independent = new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent();
 

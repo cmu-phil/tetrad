@@ -526,7 +526,8 @@ public class TestFci {
         Node x = mag.getNode("x");
         Node y = mag.getNode("y");
 
-        Set<Node> B = SepsetFinder.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1);
+        Set<Node> B = SepsetFinder.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1,
+                mag.paths().getAncestorsMap());
 
         MsepTest msepTest = new MsepTest(mag);
         boolean indep = msepTest.checkIndependence(x, y, B).isIndependent();

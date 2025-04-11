@@ -518,6 +518,7 @@ public final class Fcit implements IGraphSearch {
                                                         Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
         Set<Edge> edges = pag.getEdges();
+        Map<Node, Set<Node>> ancestorMap = pag.paths().getAncestorsMap();
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
 
@@ -619,7 +620,7 @@ public final class Fcit implements IGraphSearch {
                 try {
                     // Create a Callable task to call blockPathsRecursively
                     Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
-                            maxBlockingPathLength);
+                            maxBlockingPathLength, ancestorMap);
 
                     // Submit the task to the executor
                     Future<Set<Node>> future = executor.submit(task);
@@ -871,6 +872,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         MsepTest msep = new MsepTest(pag);
+        Map<Node, Set<Node>> ancestorMap = pag.paths().getAncestorsMap();
 
         List<Callable<Pair<Edge, Set<Node>>>> tasks = new ArrayList<>();
 
@@ -887,7 +889,7 @@ public final class Fcit implements IGraphSearch {
                 common.retainAll(pag.getAdjacentNodes(y));
 
                 Set<Node> blockers = SepsetFinder.blockPathsRecursively(pag, x,
-                        y, new HashSet<>(), Set.of(), maxBlockingPathLength);
+                        y, new HashSet<>(), Set.of(), maxBlockingPathLength, ancestorMap);
 
                 int _depth2 = depth == -1 ? common.size() : depth;
                 _depth2 = Math.min(_depth2, common.size());
