@@ -67,10 +67,6 @@ public final class Fcit implements IGraphSearch {
      */
     private START_WITH startWith = START_WITH.BOSS;
     /**
-     * Flag indicating the output should be guaranteed to be a PAG.
-     */
-    private boolean guaranteePag = false;
-    /**
      * The number of starts for GRaSP.
      */
     private int numStarts = 1;
@@ -110,10 +106,6 @@ public final class Fcit implements IGraphSearch {
      * The maximum length of any discriminating path.
      */
     private int maxDdpPathLength = -1;
-    /**
-     * The style for removing extra edges.
-     */
-    private ExtraEdgeRemovalStyle extraEdgeRemovalStyle = ExtraEdgeRemovalStyle.PARALLEL;
     /**
      * The timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
      */
@@ -441,17 +433,9 @@ public final class Fcit implements IGraphSearch {
         }
 
         long start3 = System.currentTimeMillis();
-        Set<Triple> extraUnshieldedColliders = new HashSet<>(unshieldedColliders);
-        extraUnshieldedColliders.removeAll(_unshieldedColliders);
 
-        if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, extraUnshieldedColliders, verbose, new HashSet<>());
-        }
-
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
         DagToPag dagToPag = new DagToPag(pag);
         dagToPag.setKnowledge(knowledge);
-        Graph pag2 = dagToPag.convert();
         fciOrient.finalOrientation(pag);
 
         long stop3 = System.currentTimeMillis();
@@ -518,7 +502,7 @@ public final class Fcit implements IGraphSearch {
                                                         Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
         Set<Edge> edges = pag.getEdges();
-        Map<Node, Set<Node>> ancestorMap = pag.paths().getAncestorsMap();
+//        Map<Node, Set<Node>> ancestorMap = pag.paths().getAncestorsMap();
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
 
@@ -531,9 +515,9 @@ public final class Fcit implements IGraphSearch {
             Set<DiscriminatingPath> paths = new HashSet<>();
 
             for (DiscriminatingPath path : discriminatingPaths) {
-                if (!path.existsIn(pag)) {
-                    continue;
-                }
+//                if (!path.existsIn(pag)) {
+//                    continue;
+//                }
 
                 if (path.getX() == x && path.getY() == y) {
                     paths.add(path);
@@ -620,7 +604,7 @@ public final class Fcit implements IGraphSearch {
                 try {
                     // Create a Callable task to call blockPathsRecursively
                     Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
-                            maxBlockingPathLength, ancestorMap);
+                            maxBlockingPathLength);
 
                     // Submit the task to the executor
                     Future<Set<Node>> future = executor.submit(task);
@@ -656,9 +640,9 @@ public final class Fcit implements IGraphSearch {
 
                         b.removeAll(c);
 
-                        if (S.contains(b)) continue;
-
-                        S.add(new HashSet<>(b));
+//                        if (S.contains(b)) continue;
+//
+//                        S.add(new HashSet<>(b));
 
                         if (ensureMarkovHelper.markovIndependence(x, y, b)) {
                             if (verbose) {
@@ -726,13 +710,6 @@ public final class Fcit implements IGraphSearch {
      */
     private @NotNull PermutationSearch getSpSearch() throws InterruptedException {
         var suborderSearch = new Sp(score);
-//        suborderSearch.setResetAfterBM(true);
-//        suborderSearch.setResetAfterRS(true);
-//        suborderSearch.setVerbose(false);
-//        suborderSearch.setUseBes(useBes);
-//        suborderSearch.setUseDataOrder(useDataOrder);
-//        suborderSearch.setNumStarts(numStarts);
-//        suborderSearch.setVerbose(verbose);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         permutationSearch.search();
@@ -783,15 +760,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setRecursionDepth(int recursionDepth) {
         this.recursionDepth = recursionDepth;
-    }
-
-    /**
-     * Sets whether to guarantee a PAG output by repairing a faulty PAG.
-     *
-     * @param guaranteePag true if a faulty PAGs should be repaired, false otherwise
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
     }
 
     /**
@@ -871,9 +839,6 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
 
-        MsepTest msep = new MsepTest(pag);
-        Map<Node, Set<Node>> ancestorMap = pag.paths().getAncestorsMap();
-
         List<Callable<Pair<Edge, Set<Node>>>> tasks = new ArrayList<>();
 
         for (Edge edge : pag.getEdges()) {
@@ -889,7 +854,7 @@ public final class Fcit implements IGraphSearch {
                 common.retainAll(pag.getAdjacentNodes(y));
 
                 Set<Node> blockers = SepsetFinder.blockPathsRecursively(pag, x,
-                        y, new HashSet<>(), Set.of(), maxBlockingPathLength, ancestorMap);
+                        y, new HashSet<>(), Set.of(), maxBlockingPathLength);
 
                 int _depth2 = depth == -1 ? common.size() : depth;
                 _depth2 = Math.min(_depth2, common.size());
@@ -1055,15 +1020,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setMaxDdpPathLength(int maxDdpPathLength) {
         this.maxDdpPathLength = maxDdpPathLength;
-    }
-
-    /**
-     * Sets the style for removing extra edges.
-     *
-     * @param extraEdgeRemovalStyle the style for removing extra edges
-     */
-    public void setExtraEdgeRemovalStyle(ExtraEdgeRemovalStyle extraEdgeRemovalStyle) {
-        this.extraEdgeRemovalStyle = extraEdgeRemovalStyle;
     }
 
     /**

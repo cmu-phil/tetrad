@@ -247,7 +247,7 @@ public class TestSepsetMethods {
                 Set<Node> parents = new HashSet<>(graph.getParents(x));
 
                 if (parents.contains(y)) {
-                    continue;s
+                    continue;
                 }
 
                 if (graph.paths().isDescendentOf(y, x)) {

@@ -363,14 +363,12 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         fciOrient.finalOrientation(pag);
         fciOrient.setDoR4(true);
 
-        Map<Node, Set<Node>> ancestorMap = pag.paths().getAncestorsMap();
-
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength,
                 false);
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        pag.getEdges().parallelStream().forEach(edge -> {
+        pag.getEdges().forEach(edge -> {
             Set<DiscriminatingPath> paths = new HashSet<>();
 
             for (DiscriminatingPath path : discriminatingPaths) {
@@ -431,7 +429,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             try {
                 // Create a Callable task to call blockPathsRecursively
                 Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
-                        maxBlockingPathLength, ancestorMap);
+                        maxBlockingPathLength);
 
                 // Submit the task to the executor
                 Future<Set<Node>> future = executor.submit(task);
@@ -478,7 +476,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
-                executor.shutdown(); // Always shut down the executor
+                executor.shutdown();
             }
         }
 

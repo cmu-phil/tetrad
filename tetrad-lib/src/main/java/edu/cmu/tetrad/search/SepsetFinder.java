@@ -417,13 +417,12 @@ public class SepsetFinder {
      * {@code null} if no sepset can be found.
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
-                                                  int maxPathLength, Map<Node, Set<Node>> ancestorMap) {
-        return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength, ancestorMap);
+                                                  int maxPathLength) {
+        return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
     private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength,
-                                                        Map<Node, Set<Node>> descendantsMap
+                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength
     ) {
         if (x == y) {
             return null;
