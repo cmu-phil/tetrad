@@ -244,27 +244,67 @@ public class MarkovCheckEditor extends JPanel {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
                 case "Parents(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.LOCAL_MARKOV);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Parents(X)");
+                    }
+
                     break;
                 case "Parents(X) and Neighbors(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.PARENTS_AND_NEIGHBORS);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Parents(X) and Neighbors(X)");
+                    }
+
                     break;
                 case "Ordered Local Markov":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov");
+                    }
+
                     break;
                 case "Ordered Local Markov MAG":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov MAG");
+                    }
+
                     break;
                 case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.MARKOV_BLANKET);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "MarkovBlanket(X)");
+                    }
+
                     break;
                 case "Recursive M-Sep Conditioning Set":
                     model.getMarkovCheck().setSetType(ConditioningSetType.RECURSIVE_MSEP);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Recursive M-Sep Conditioning Set");
+                    }
+
                     break;
                 case "Conditioning on Noncolliders Only":
                     model.getMarkovCheck().setSetType(ConditioningSetType.NONCOLLIDERS_ONLY);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Conditioning on Noncolliders Only");
+                    }
+
                     break;
                 case "All Subsets (Global Markov)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.GLOBAL_MARKOV);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "All Subsets (Global Markov)");
+                    }
+
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conditioning set type: "
@@ -307,6 +347,8 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         setTest();
+
+        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Parents(X)"));
 
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));
