@@ -417,13 +417,13 @@ public class SepsetFinder {
      * {@code null} if no sepset can be found.
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
-                                                  int maxPathLength) {
+                                                  int maxPathLength) throws InterruptedException {
         return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
     private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength
-    ) {
+                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
+            throws InterruptedException {
         if (x == y) {
             return null;
         }
@@ -433,6 +433,10 @@ public class SepsetFinder {
         Set<Node> _z;
 
         for (Node b : graph.getAdjacentNodes(x)) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
             for (Node c : graph.getAdjacentNodes(b)) {
                 if (c == x) continue;
                 if (c != y) continue;
@@ -450,6 +454,10 @@ public class SepsetFinder {
             Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
+                }
+
                 findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, notFollowed, ancestorMap);
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
@@ -536,7 +544,8 @@ public class SepsetFinder {
      * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
      */
     public static Set<Node> getPathBlockingSetRecursive(Graph graph, Node x, Node y, Set<Node> containing, int maxPathLength,
-                                                        Set<Node> notFollowing, Map<Node, Set<Node>> ancestorMap) {
+                                                        Set<Node> notFollowing, Map<Node, Set<Node>> ancestorMap)
+            throws InterruptedException {
         return getPathBlockingSetRecursiveVisit(graph, x, y, containing, notFollowing, maxPathLength, ancestorMap);
     }
 
@@ -553,7 +562,8 @@ public class SepsetFinder {
      * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
      */
     private static Set<Node> getPathBlockingSetRecursiveVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                              Set<Node> notFollowed, int maxPathLength, Map<Node, Set<Node>> ancestorMap) {
+                                                              Set<Node> notFollowed, int maxPathLength, Map<Node, Set<Node>> ancestorMap)
+            throws InterruptedException {
         if (x == y) {
             return null;
         }
@@ -598,7 +608,12 @@ public class SepsetFinder {
      * @return True if the path can be blocked, false otherwise.
      */
     private static boolean findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
-                                            Set<Triple> colliders, int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap) {
+                                            Set<Triple> colliders, int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
+            throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            return false;
+        }
+
         if (b == y) {
             return true;
         }
@@ -622,7 +637,11 @@ public class SepsetFinder {
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {
-                if (findPathToTarget(graph, b, c, y, path, z, colliders, maxPathLength, notFollowed,ancestorMap)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
+                if (findPathToTarget(graph, b, c, y, path, z, colliders, maxPathLength, notFollowed, ancestorMap)) {
                     return true; // can't be blocked.
                 }
             }
@@ -641,6 +660,10 @@ public class SepsetFinder {
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
                 if (findPathToTarget(graph, b, c, y, path, z, _colliders1, maxPathLength, notFollowed, ancestorMap)) {
                     found1 = true; // can't be blocked.
                     break;
@@ -662,6 +685,10 @@ public class SepsetFinder {
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
                 if (findPathToTarget(graph, b, c, y, path, z, _colliders2, maxPathLength, notFollowed, ancestorMap)) {
                     found2 = true;
                     break;
@@ -734,7 +761,8 @@ public class SepsetFinder {
      * @return A set of nodes that can block all blockable paths from x to y that can be blocked with noncolliders only,
      * or null if no such set exists.
      */
-    public static Set<Node> blockPathsNoncollidersOnly(Graph graph, Node x, Node y, int maxLength, boolean isPag) {
+    public static Set<Node> blockPathsNoncollidersOnly(Graph graph, Node x, Node y, int maxLength, boolean isPag)
+            throws InterruptedException {
         Set<Node> cond = new HashSet<>();
         Set<Node> blackList = new HashSet<>();
 
@@ -743,7 +771,7 @@ public class SepsetFinder {
 
         while (!queue.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
-                break;
+                throw new InterruptedException();
             }
 
             List<Node> path = queue.poll();
@@ -1004,7 +1032,8 @@ public class SepsetFinder {
      * @throws IllegalArgumentException if the conditioning set is null
      */
     public static Set<List<Node>> bfsAllPathsOutOfX(Graph graph, Set<Node> conditionSet, Set<Node> couldBeColliders,
-                                                    Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias) {
+                                                    Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias)
+            throws InterruptedException {
         Set<List<Node>> allPaths = new HashSet<>();
         Queue<List<Node>> queue = new LinkedList<>();
         queue.add(Collections.singletonList(x));
@@ -1015,7 +1044,7 @@ public class SepsetFinder {
 
         while (!queue.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
-                break;
+                throw new InterruptedException();
             }
 
             List<Node> path = queue.poll();
@@ -1036,7 +1065,7 @@ public class SepsetFinder {
 
             for (Node z3 : graph.getAdjacentNodes(node)) {
                 if (Thread.currentThread().isInterrupted()) {
-                    break;
+                    throw new InterruptedException();
                 }
 
                 if (!path.contains(z3)) {

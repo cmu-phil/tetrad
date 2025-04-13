@@ -140,13 +140,21 @@ public class TestSepsetMethods {
                         blockingSet = SepsetFinder.blockPathsWithMarkovBlanket(x, graph);
                     }
                     case BLOCK_PATHS_RECURSIVELY -> {
-                        blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), -1, graph.paths().getAncestorsMap());
+                        try {
+                            blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), -1);
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                     case BLOCK_PATHS_LOCAL_MARKOV -> {
                         blockingSet = blockPathsLocalMarkov(graph, x);
                     }
                     case BLOCK_PATHS_NONCOLLIDERS_ONLY -> {
-                        blockingSet = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, -1, graphType == GraphType.PAG);
+                        try {
+                            blockingSet = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, -1, graphType == GraphType.PAG);
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                     case BLOCK_PATHS_GREEDY -> {
                         blockingSet = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(), msepTest, -1, null);
@@ -210,8 +218,13 @@ public class TestSepsetMethods {
 
         System.out.println(graph);
 
-        Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, graph.getNode("X"), graph.getNode("Z"),
-                new HashSet<>(), Set.of(), -1, graph.paths().getAncestorsMap());
+        Set<Node> blocking = null;
+        try {
+            blocking = SepsetFinder.blockPathsRecursively(graph, graph.getNode("X"), graph.getNode("Z"),
+                    new HashSet<>(), Set.of(), -1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println(blocking);
 
@@ -254,8 +267,12 @@ public class TestSepsetMethods {
                     continue;
                 }
 
-                Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1,
-                        graph.paths().getAncestorsMap());
+                Set<Node> blocking = null;
+                try {
+                    blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 boolean independent = new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent();
 

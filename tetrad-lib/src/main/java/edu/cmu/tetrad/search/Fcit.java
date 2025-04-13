@@ -549,10 +549,10 @@ public final class Fcit implements IGraphSearch {
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         // Assuming 'unshieldedColliders' is a thread-safe list
-        pag.getEdges().stream().forEach(edge -> {
-            if (verbose) {
-                TetradLogger.getInstance().log("Checking " + edge + " for potential DDP collider orientations.");
-            }
+        pag.getEdges().parallelStream().forEach(edge -> {
+//            if (verbose) {
+//                TetradLogger.getInstance().log("Checking " + edge + " for potential DDP collider orientations.");
+//            }
 
             Node x = edge.getNode1();
             Node y = edge.getNode2();
@@ -578,9 +578,9 @@ public final class Fcit implements IGraphSearch {
             }
 //            }
 
-            if (verbose) {
-                TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
-            }
+//            if (verbose) {
+//                TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
+//            }
 
             List<Node> E = new ArrayList<>(perhapsNotFollowed);
 
@@ -594,56 +594,66 @@ public final class Fcit implements IGraphSearch {
             while ((choice = gen.next()) != null) {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
-                if (verbose) {
-                    TetradLogger.getInstance().log(" x: " + x + " y: " + y + " notFollowed: " + notFollowed
-                                                   + " maxBlockingPathLength: " + maxBlockingPathLength);
-                }
+//                if (verbose) {
+//                    TetradLogger.getInstance().log(" x: " + x + " y: " + y + " notFollowed: " + notFollowed
+//                                                   + " maxBlockingPathLength: " + maxBlockingPathLength);
+//                }
 
                 ExecutorService executor = Executors.newSingleThreadExecutor();
 
+//                try {
+                // Create a Callable task to call blockPathsRecursively
+                Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
+                        maxBlockingPathLength);
+
+                // Submit the task to the executor
+                Future<Set<Node>> future = executor.submit(task);
+
+                // Try to get the result within the specified timeout (e.g., 5 seconds)
+                Set<Node> b;
+
                 try {
-                    // Create a Callable task to call blockPathsRecursively
-                    Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
-                            maxBlockingPathLength);
-
-                    // Submit the task to the executor
-                    Future<Set<Node>> future = executor.submit(task);
-
-                    // Try to get the result within the specified timeout (e.g., 5 seconds)
-                    Set<Node> b;
-
                     if (testTimeout > 0) {
                         b = future.get(testTimeout, TimeUnit.MILLISECONDS);
                     } else {
                         b = future.get();
                     }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
+                } catch (TimeoutException e) {
+                    continue;
+//                        throw new RuntimeException(e);
+                }
 
-                    int _depth2 = depth == -1 ? common.size() : depth;
-                    _depth2 = Math.min(_depth2, common.size());
+                int _depth2 = depth == -1 ? common.size() : depth;
+                _depth2 = Math.min(_depth2, common.size());
 
-                    SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
-                    int[] choice2;
+                SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
+                int[] choice2;
 
-                    W:
-                    while ((choice2 = gen2.next()) != null) {
-                        if (!pag.isAdjacentTo(x, y)) {
-                            break;
+                W:
+                while ((choice2 = gen2.next()) != null) {
+                    if (!pag.isAdjacentTo(x, y)) {
+                        break;
+                    }
+
+                    Set<Node> c = GraphUtils.asSet(choice2, common);
+
+                    for (Node node : c) {
+                        if (pag.isDefCollider(x, node, y)) {
+                            continue W;
                         }
+                    }
 
-                        Set<Node> c = GraphUtils.asSet(choice2, common);
-
-                        for (Node node : c) {
-                            if (pag.isDefCollider(x, node, y)) {
-                                continue W;
-                            }
-                        }
-
-                        b.removeAll(c);
+                    b.removeAll(c);
 
 //                        if (S.contains(b)) continue;
 //
 //                        S.add(new HashSet<>(b));
 
+                    try {
                         if (ensureMarkovHelper.markovIndependence(x, y, b)) {
                             if (verbose) {
                                 TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
@@ -652,15 +662,19 @@ public final class Fcit implements IGraphSearch {
                             extraSepsets.put(pag.getEdge(x, y), b);
                             pag.removeEdge(x, y);
                         }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
-                } catch (TimeoutException e) {
-                    System.out.println("Timeout occurred while waiting for blockPathsRecursively");
-                } catch (Exception e) {
-                    e.printStackTrace(); // Handle other exceptions that might occur
-                } finally {
-                    executor.shutdown(); // Always shut down the executor
                 }
             }
+//            catch (TimeoutException e) {
+//                    System.out.println("Timeout occurred while waiting for blockPathsRecursively");
+//                } catch (Exception e) {
+//                    e.printStackTrace(); // Handle other exceptions that might occur
+//                } finally {
+//                    executor.shutdown(); // Always shut down the executor
+//                }
+//            }
         });
 
         return discriminatingPaths;
