@@ -360,149 +360,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         return false;
     }
 
-//    public Set<Node> findDdpSepset(
-//            Graph pag, Node x, Node y, FciOrient fciOrient,
-//            int maxBlockingPathLength, int maxDdpPathLength) {
-//        // 1) Preliminary orientation steps
-//        fciOrient.setDoR4(false);
-//        fciOrient.finalOrientation(pag);
-//        fciOrient.setDoR4(true);
-//
-//        // 2) List possible "DiscriminatingPath" objects.
-//        Set<DiscriminatingPath> discriminatingPaths =
-//                FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
-//
-//        // 3) Figure out which nodes might be "notFollowed"
-//        Set<DiscriminatingPath> relevantPaths = new HashSet<>();
-//        for (DiscriminatingPath path : discriminatingPaths) {
-//            if ((path.getX() == x && path.getY() == y) || (path.getX() == y && path.getY() == x)) {
-//                relevantPaths.add(path);
-//            }
-//        }
-//
-//        Set<Node> perhapsNotFollowed = new HashSet<>();
-//        for (DiscriminatingPath path : relevantPaths) {
-//            if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-//                perhapsNotFollowed.add(path.getV());
-//            }
-//        }
-//        List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
-//
-//        // 4) Possibly limit subset size by "depth".
-//        int _depth = (depth == -1) ? _perhapsNotFollowed.size() : depth;
-//        _depth = Math.min(_depth, _perhapsNotFollowed.size());
-//
-//        // Generate all subsets from _perhapsNotFollowed up to _depth in size.
-//        SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), _depth);
-//        List<int[]> allChoices = new ArrayList<>();
-//        int[] choice;
-//        while ((choice = gen.next()) != null) {
-//            allChoices.add(choice.clone());
-//        }
-//
-//        // 5) Build "common" neighbors for the second part of the test.
-//        List<Node> common = new ArrayList<>(pag.getAdjacentNodes(x));
-//        common.retainAll(pag.getAdjacentNodes(y));
-//        int _depth2 = (depth == -1) ? common.size() : depth;
-//        _depth2 = Math.min(_depth2, common.size());
-//
-//        // 6) Build a Callable for each subset of "notFollowed".
-//        List<Callable<Set<Node>>> tasks = new ArrayList<>();
-//        for (int[] indices : allChoices) {
-//            int __depth2 = _depth2;
-//
-//            tasks.add(() -> {
-//                if (Thread.currentThread().isInterrupted()) {
-//                    return null;
-//                }
-//
-//                // Convert the sublist indices to actual nodes
-//                Set<Node> notFollowedSet = GraphUtils.asSet(indices, _perhapsNotFollowed);
-//
-//                // (A) blockPathsRecursively => "b"
-//                Set<Node> b = SepsetFinder.blockPathsRecursively(
-//                        pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
-//                );
-//
-//                // (B) For each subset of "common", check independence
-//                SublistGenerator gen2 = new SublistGenerator(common.size(), __depth2);
-//                int[] choice2;
-//
-//                outerLoop:
-//                while ((choice2 = gen2.next()) != null) {
-//                    if (Thread.currentThread().isInterrupted()) {
-//                        return null;
-//                    }
-//
-//                    Set<Node> c = GraphUtils.asSet(choice2, common);
-//
-//                    // Skip if there's a definite collider x->node<-y for any node in c
-//                    for (Node node : c) {
-//                        if (pag.isDefCollider(x, node, y)) {
-//                            continue outerLoop;
-//                        }
-//                    }
-//
-//                    // Test "b minus c"
-//                    Set<Node> testSet = new HashSet<>(b);
-//                    testSet.removeAll(c);
-//
-//                    // Check independence
-//                    boolean independent;
-//                    if (ensureMarkovHelper != null) {
-//                        independent = ensureMarkovHelper.markovIndependence(x, y, testSet);
-//                    } else {
-//                        independent = test.checkIndependence(x, y, testSet).isIndependent();
-//                    }
-//
-//                    if (independent) {
-//                        // Return a non-null => indicates success
-//                        return testSet;
-//                    }
-//                }
-//                // If not found, return null => indicates "no solution from this task"
-//                return null;
-//            });
-//        }
-//
-//        // 7) Create a ForkJoinPool(10) to run the tasks
-//        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-//
-//        try {
-//            List<Future<Set<Node>>> futures = forkJoinPool.invokeAll(tasks);
-//
-//            for (Future<Set<Node>> future : futures) {
-//                Set<Node> result = null;
-//                try {
-//                    result = future.get(500L, TimeUnit.MILLISECONDS);
-//                } catch (TimeoutException e) {
-//                    System.out.println("Timeout waiting for future");
-////                    throw new RuntimeException(e);
-//                }
-//                if (result != null) {
-//
-//                    // We found a separating set => shut down pool immediately
-//                    forkJoinPool.shutdownNow();
-//                    return result;
-//                }
-//            }
-//
-//            // If all tasks returned null, no solution found
-//            return null;
-//
-//        } catch (InterruptedException | ExecutionException e) {
-//            forkJoinPool.shutdownNow();
-//            throw new RuntimeException(e);
-//
-//        } finally {
-//            // Ensure pool is no longer running any threads
-//            if (!forkJoinPool.isShutdown()) {
-//                forkJoinPool.shutdownNow();
-//            }
-//        }
-//    }
-
-
     public Set<Node> findDdpSepset(
             Graph pag, Node x, Node y, FciOrient fciOrient,
             int maxBlockingPathLength, int maxDdpPathLength) {
@@ -609,8 +466,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             });
         }
 
-        // 7) Create a ForkJoinPool with, say, 10 threads or so:
-        ForkJoinPool forkJoinPool = new ForkJoinPool(10);
+        ForkJoinPool forkJoinPool = new ForkJoinPool(3);
 
         try {
             // 8) Use invokeAny => returns as soon as one task completes successfully
@@ -620,7 +476,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             // 9) If we get here, 'result' is from the first successfully completed task
             // We can shut down forcibly, to kill all other tasks
             forkJoinPool.shutdownNow();
-
             return result;
 
         } catch (InterruptedException e) {

@@ -546,6 +546,8 @@ public final class Fcit implements IGraphSearch {
             pathsByEdge.put(Set.of(x, y), paths);
         });
 
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         // Assuming 'unshieldedColliders' is a thread-safe list
@@ -570,17 +572,11 @@ public final class Fcit implements IGraphSearch {
                 return;
             }
 
-//            if (paths != null) {
             for (DiscriminatingPath path : paths) {
                 if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
                     perhapsNotFollowed.add(path.getV());
                 }
             }
-//            }
-
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
-//            }
 
             List<Node> E = new ArrayList<>(perhapsNotFollowed);
 
@@ -594,20 +590,12 @@ public final class Fcit implements IGraphSearch {
             while ((choice = gen.next()) != null) {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
-//                if (verbose) {
-//                    TetradLogger.getInstance().log(" x: " + x + " y: " + y + " notFollowed: " + notFollowed
-//                                                   + " maxBlockingPathLength: " + maxBlockingPathLength);
-//                }
-
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-
-//                try {
-                // Create a Callable task to call blockPathsRecursively
-                Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
-                        maxBlockingPathLength);
-
-                // Submit the task to the executor
-                Future<Set<Node>> future = executor.submit(task);
+                // Instead of newSingleThreadExecutor(), we use the shared 'executor'
+                Future<Set<Node>> future = executor.submit(() ->
+                        SepsetFinder.blockPathsRecursively(
+                                pag, x, y, Set.of(), notFollowed, maxBlockingPathLength
+                        )
+                );
 
                 // Try to get the result within the specified timeout (e.g., 5 seconds)
                 Set<Node> b;
@@ -618,13 +606,11 @@ public final class Fcit implements IGraphSearch {
                     } else {
                         b = future.get();
                     }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                } catch (ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     throw new RuntimeException(e);
                 } catch (TimeoutException e) {
+                    TetradLogger.getInstance().log("Timeout while fetching paths from pag.");
                     continue;
-//                        throw new RuntimeException(e);
                 }
 
                 int _depth2 = depth == -1 ? common.size() : depth;
@@ -648,10 +634,8 @@ public final class Fcit implements IGraphSearch {
                     }
 
                     b.removeAll(c);
-
-//                        if (S.contains(b)) continue;
-//
-//                        S.add(new HashSet<>(b));
+                    if (S.contains(b)) continue;
+                    S.add(new HashSet<>(b));
 
                     try {
                         if (ensureMarkovHelper.markovIndependence(x, y, b)) {
@@ -667,14 +651,6 @@ public final class Fcit implements IGraphSearch {
                     }
                 }
             }
-//            catch (TimeoutException e) {
-//                    System.out.println("Timeout occurred while waiting for blockPathsRecursively");
-//                } catch (Exception e) {
-//                    e.printStackTrace(); // Handle other exceptions that might occur
-//                } finally {
-//                    executor.shutdown(); // Always shut down the executor
-//                }
-//            }
         });
 
         return discriminatingPaths;
