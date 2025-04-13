@@ -10,7 +10,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /**
@@ -209,7 +212,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         Set<Node> blocking = null;
 
         if (blockingType == BlockingType.RECURSIVE) {
-            blocking = findDdpSepset(graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)), maxLength, maxLength, -1);
+            blocking = findDdpSepset(graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)), maxLength, -1);
         } else if (blockingType == BlockingType.GREEDY) {
             blocking = findAdjSetSepset(graph, x, y, path, v);
         } else {
@@ -357,131 +360,142 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         return false;
     }
 
-    private Set<Node> findDdpSepset(Graph pag, Node x, Node y, FciOrient fciOrient,
-                                    int maxBlockingPathLength, int maxDdpPathLength, long testTimeout) {
+    public Set<Node> findDdpSepset(
+            Graph pag, Node x, Node y, FciOrient fciOrient,
+            int maxBlockingPathLength, int maxDdpPathLength) {
+        // 1) Preliminary orientation steps
         fciOrient.setDoR4(false);
         fciOrient.finalOrientation(pag);
         fciOrient.setDoR4(true);
 
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength,
-                false);
+        // 2) List possible "DiscriminatingPath" objects.
+        Set<DiscriminatingPath> discriminatingPaths =
+                FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
 
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-
-        pag.getEdges().forEach(edge -> {
-            Set<DiscriminatingPath> paths = new HashSet<>();
-
-            for (DiscriminatingPath path : discriminatingPaths) {
-                if (path.getX() == x && path.getY() == y) {
-                    paths.add(path);
-                } else if (path.getX() == y && path.getY() == x) {
-                    paths.add(path);
-                }
+        // 3) Figure out which nodes might be "notFollowed"
+        Set<DiscriminatingPath> relevantPaths = new HashSet<>();
+        for (DiscriminatingPath path : discriminatingPaths) {
+            if ((path.getX() == x && path.getY() == y) || (path.getX() == y && path.getY() == x)) {
+                relevantPaths.add(path);
             }
-
-            pathsByEdge.put(Set.of(x, y), paths);
-        });
-
-        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-        // there in this graph.
-        // Assuming 'unshieldedColliders' is a thread-safe list
-        if (verbose) {
-            TetradLogger.getInstance().log("Checking " + pag.getEdge(x, y) + " for potential DDP collider orientations.");
         }
 
-        List<Node> common = pag.getAdjacentNodes(x);
-        common.retainAll(pag.getAdjacentNodes(y));
-
-        Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
         Set<Node> perhapsNotFollowed = new HashSet<>();
-
-        if (paths != null) {
-            for (DiscriminatingPath path : paths) {
-                if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                    perhapsNotFollowed.add(path.getV());
-                }
+        for (DiscriminatingPath path : relevantPaths) {
+            if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                perhapsNotFollowed.add(path.getV());
             }
         }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
-        }
-
         List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
 
-        int _depth = depth == -1 ? _perhapsNotFollowed.size() : depth;
+        // 4) Possibly limit subset size by "depth".
+        int _depth = (depth == -1) ? _perhapsNotFollowed.size() : depth;
         _depth = Math.min(_depth, _perhapsNotFollowed.size());
 
-        // Generate subsets and check blocking paths
+        // Generate all subsets from _perhapsNotFollowed up to _depth in size.
         SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), _depth);
+        List<int[]> allChoices = new ArrayList<>();
         int[] choice;
-
         while ((choice = gen.next()) != null) {
-            Set<Node> notFollowed = GraphUtils.asSet(choice, _perhapsNotFollowed);
-
-            if (verbose) {
-                TetradLogger.getInstance().log(" x: " + x + " y: " + y + " notFollowed: " + notFollowed
-                                               + " maxBlockingPathLength: " + maxBlockingPathLength);
-            }
-
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-
-            try {
-                // Create a Callable task to call blockPathsRecursively
-                Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
-                        maxBlockingPathLength);
-
-                // Submit the task to the executor
-                Future<Set<Node>> future = executor.submit(task);
-
-                // Try to get the result within the specified timeout (e.g., 5 seconds)
-                Set<Node> b;
-
-                if (testTimeout > 0) {
-                    b = future.get(testTimeout, TimeUnit.MILLISECONDS);
-                } else {
-                    b = future.get();
-                }
-
-                int _depth2 = depth == -1 ? common.size() : depth;
-                _depth2 = Math.min(_depth2, common.size());
-
-                SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
-                int[] choice2;
-
-                W:
-                while ((choice2 = gen2.next()) != null) {
-                    Set<Node> c = GraphUtils.asSet(choice2, common);
-
-                    for (Node node : c) {
-                        if (pag.isDefCollider(x, node, y)) {
-                            continue W;
-                        }
-                    }
-
-                    b.removeAll(c);
-
-                    if (ensureMarkovHelper != null) {
-                        if (ensureMarkovHelper.markovIndependence(x, y, b)) {
-                            return b;
-                        }
-                    } else {
-                        if (test.checkIndependence(x, y, b).isIndependent()) {
-                            return b;
-                        }
-                    }
-                }
-            } catch (TimeoutException e) {
-                System.out.println("Timeout occurred while waiting for blockPathsRecursively");
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                executor.shutdown();
-            }
+            allChoices.add(choice.clone());
         }
 
-        return null;
+        // 5) Build "common" neighbors for the second part of the test.
+        List<Node> common = new ArrayList<>(pag.getAdjacentNodes(x));
+        common.retainAll(pag.getAdjacentNodes(y));
+        int _depth2 = (depth == -1) ? common.size() : depth;
+        _depth2 = Math.min(_depth2, common.size());
+
+        // 6) Build a Callable for each subset of "notFollowed".
+        List<Callable<Set<Node>>> tasks = new ArrayList<>();
+        for (int[] indices : allChoices) {
+            int __depth2 = _depth2;
+
+            tasks.add(() -> {
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
+                }
+
+                // Convert the sublist indices to actual nodes
+                Set<Node> notFollowedSet = GraphUtils.asSet(indices, _perhapsNotFollowed);
+
+                // (A) blockPathsRecursively => "b"
+                Set<Node> b = SepsetFinder.blockPathsRecursively(
+                        pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
+                );
+
+                // (B) For each subset of "common", check independence
+                SublistGenerator gen2 = new SublistGenerator(common.size(), __depth2);
+                int[] choice2;
+
+                outerLoop:
+                while ((choice2 = gen2.next()) != null) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        return null;
+                    }
+
+                    Set<Node> c = GraphUtils.asSet(choice2, common);
+
+                    // Skip if there's a definite collider x->node<-y for any node in c
+                    for (Node node : c) {
+                        if (pag.isDefCollider(x, node, y)) {
+                            continue outerLoop;
+                        }
+                    }
+
+                    // Test "b minus c"
+                    Set<Node> testSet = new HashSet<>(b);
+                    testSet.removeAll(c);
+
+                    // Check independence
+                    boolean independent;
+                    if (ensureMarkovHelper != null) {
+                        independent = ensureMarkovHelper.markovIndependence(x, y, testSet);
+                    } else {
+                        independent = test.checkIndependence(x, y, testSet).isIndependent();
+                    }
+
+                    if (independent) {
+                        // Return a non-null => indicates success
+                        return testSet;
+                    }
+                }
+                // If not found, return null => indicates "no solution from this task"
+                return null;
+            });
+        }
+
+        // 7) Create a ForkJoinPool(10) to run the tasks
+        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+
+        try {
+            List<Future<Set<Node>>> futures = forkJoinPool.invokeAll(tasks);
+
+            for (Future<Set<Node>> future : futures) {
+                Set<Node> result = future.get();
+                if (result != null) {
+
+                    // We found a separating set => shut down pool immediately
+                    forkJoinPool.shutdownNow();
+                    return result;
+                }
+            }
+
+            // If all tasks returned null, no solution found
+            return null;
+
+        } catch (InterruptedException | ExecutionException e) {
+            forkJoinPool.shutdownNow();
+            throw new RuntimeException(e);
+
+        } finally {
+            // Ensure pool is no longer running any threads
+            if (!forkJoinPool.isShutdown()) {
+                forkJoinPool.shutdownNow();
+            }
+        }
     }
+
 
     /**
      * Sets the knowledge object used by the FciOrientDataExaminationStrategy.

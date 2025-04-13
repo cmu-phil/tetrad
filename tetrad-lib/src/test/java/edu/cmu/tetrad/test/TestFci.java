@@ -526,8 +526,12 @@ public class TestFci {
         Node x = mag.getNode("x");
         Node y = mag.getNode("y");
 
-        Set<Node> B = SepsetFinder.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1,
-                mag.paths().getAncestorsMap());
+        Set<Node> B = null;
+        try {
+            B = SepsetFinder.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         MsepTest msepTest = new MsepTest(mag);
         boolean indep = msepTest.checkIndependence(x, y, B).isIndependent();
