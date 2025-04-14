@@ -331,7 +331,7 @@ public class TestCheckNodewiseMarkov {
      */
     private static void testGaussianDAGPrecisionRecallForForLatentVariableOnLocalOrderedMarkov(File statsFile, IndependenceTest fisherZTest, DataSet data, Graph trueGraph, Graph estimatedPAG, double threshold, double shuffleThreshold, double lowRecallBound) {
         MarkovCheck markovCheck = new MarkovCheck(estimatedPAG, fisherZTest, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
-        markovCheck.generateResults(true);
+        markovCheck.generateAllResults();
         double andersonDarlingA2 = markovCheck.getAndersonDarlingA2(true);
         double andersonDarlingP = markovCheck.getAndersonDarlingP(true);
         double finsherCombinedP = markovCheck.getFisherCombinedP(true);

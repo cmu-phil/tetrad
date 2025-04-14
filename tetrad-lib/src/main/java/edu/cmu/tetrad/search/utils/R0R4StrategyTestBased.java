@@ -466,7 +466,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             });
         }
 
-        ForkJoinPool forkJoinPool = new ForkJoinPool(3);
+        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() / 2);
 
         try {
             // 8) Use invokeAny => returns as soon as one task completes successfully

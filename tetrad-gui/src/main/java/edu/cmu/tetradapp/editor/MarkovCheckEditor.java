@@ -677,7 +677,7 @@ public class MarkovCheckEditor extends JPanel {
                         model.getMarkovCheck().generateResults(true, true);
                         model.getMarkovCheck().generateResults(false, false);
                     } else {
-                        model.getMarkovCheck().generateResults(false, false);
+                        model.getMarkovCheck().generateResults(true, false);
                         model.getMarkovCheck().generateResults(false, false);
                     }
                 } else {

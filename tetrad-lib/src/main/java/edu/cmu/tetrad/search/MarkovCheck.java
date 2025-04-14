@@ -793,11 +793,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * the result methods. Note that only results for X _||_ Y | Z1,...,Zn are generated, where X and Y are in the
      * independenceNodes list and Z1,...,Zn are in the conditioningNodes list.
      *
-     * @param clear True, if the results should be cleared before generating new results; otherwise, the new results are
-     *              appended to the existing results.
      * @see #getResults(boolean)
      */
-    public void generateResults(boolean clear) {
+    public void generateAllResults() {
         generateResults(true, true);
         generateResults(false, false);
     }
