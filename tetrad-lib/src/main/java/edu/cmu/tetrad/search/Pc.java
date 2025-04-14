@@ -398,6 +398,7 @@ public class Pc implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+        this.independenceTest.setVerbose(verbose);
     }
 
     /**
