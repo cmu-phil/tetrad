@@ -184,7 +184,7 @@ public class FactorAnalysis {
             unitVector.set(i, 0, 1);
         }
 
-        for (int i = 0; i < this.numFactors; i++) {
+        for (int i = 0; i <= this.numFactors; i++) {
             boolean found = successiveResidualHelper(residual, unitVector);
 
             if (!found) break;

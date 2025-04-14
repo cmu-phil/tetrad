@@ -188,6 +188,8 @@ public class Pc implements IGraphSearch {
     public Graph search(Set<Node> nodes) throws InterruptedException {
         nodes = new HashSet<>(nodes);
 
+        getIndependenceTest().setVerbose(verbose);
+
         Fas fas = new Fas(getIndependenceTest());
         fas.setVerbose(this.verbose);
 
@@ -398,7 +400,6 @@ public class Pc implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        this.independenceTest.setVerbose(verbose);
     }
 
     /**

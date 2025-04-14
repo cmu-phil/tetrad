@@ -259,7 +259,9 @@ public class Fas {
                         modify.removeEdge(x, y);
                         sepset.set(x, y, S);
 
-                        TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));
+                        if (verbose) {
+                            TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));
+                        }
 
                         break;
                     }
