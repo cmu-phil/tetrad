@@ -162,7 +162,7 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
      * @return The description of the algorithm.
      */
     public String getDescription() {
-        return "GLASSO (Graphical LASSO)";
+        return "Factor Analysis";
     }
 
     /**
