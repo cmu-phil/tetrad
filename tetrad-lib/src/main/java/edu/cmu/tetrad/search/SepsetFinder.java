@@ -451,14 +451,13 @@ public class SepsetFinder {
             _z = new HashSet<>(z);
             Set<Node> path = new HashSet<>();
             path.add(x);
-            Set<Triple> colliders = new HashSet<>();
 
             for (Node b : graph.getAdjacentNodes(x)) {
                 if (Thread.currentThread().isInterrupted()) {
                     return null;
                 }
 
-                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, notFollowed, ancestorMap);
+                findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
@@ -576,11 +575,10 @@ public class SepsetFinder {
 
             Set<Node> path = new HashSet<>();
             path.add(x);
-            Set<Triple> colliders = new HashSet<>();
 
             // Iterate over adjacent nodes to find potential paths.
             for (Node b : graph.getAdjacentNodes(x)) {
-                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, notFollowed, ancestorMap);
+                findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
             }
         } while (!previousZ.equals(z)); // Repeat if the set z changes.
 
@@ -601,14 +599,12 @@ public class SepsetFinder {
      * @param path          The current path.
      * @param z             The set of nodes that can block the path. This is a set of conditioning nodes that is being
      *                      built.
-     * @param colliders     The set of colliders. These are kept track of so avoid conditioning on them or their
-     *                      descendants.
      * @param maxPathLength The maximum length of the paths to consider.
      * @param notFollowed   A set of nodes that should not be followed along paths.
      * @return True if the path can be blocked, false otherwise.
      */
     private static boolean findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
-                                            Set<Triple> colliders, int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
+                                            int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
             throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
             return false;
@@ -641,7 +637,7 @@ public class SepsetFinder {
                     throw new InterruptedException();
                 }
 
-                if (findPathToTarget(graph, b, c, y, path, z, colliders, maxPathLength, notFollowed, ancestorMap)) {
+                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap)) {
                     return true; // can't be blocked.
                 }
             }
@@ -654,7 +650,6 @@ public class SepsetFinder {
             // stop here. If it hasn't, we'll see if we can block it by conditioning also on b. If it can't be
             // blocked either way, well, then, it just can't be blocked.
             boolean found1 = false;
-            Set<Triple> _colliders1 = new HashSet<>();
 
             List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
             passNodes.removeAll(notFollowed);
@@ -664,7 +659,7 @@ public class SepsetFinder {
                     throw new InterruptedException();
                 }
 
-                if (findPathToTarget(graph, b, c, y, path, z, _colliders1, maxPathLength, notFollowed, ancestorMap)) {
+                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap)) {
                     found1 = true; // can't be blocked.
                     break;
                 }
@@ -672,15 +667,12 @@ public class SepsetFinder {
 
             if (!found1) {
                 path.remove(b);
-                colliders.addAll(_colliders1);
                 return false; // blocked.
             }
 
             z.add(b);
 
             boolean found2 = false;
-            Set<Triple> _colliders2 = new HashSet<>();
-
             passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
             passNodes.removeAll(notFollowed);
 
@@ -689,7 +681,7 @@ public class SepsetFinder {
                     throw new InterruptedException();
                 }
 
-                if (findPathToTarget(graph, b, c, y, path, z, _colliders2, maxPathLength, notFollowed, ancestorMap)) {
+                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap)) {
                     found2 = true;
                     break;
                 }
@@ -697,7 +689,6 @@ public class SepsetFinder {
 
             if (!found2) {
                 path.remove(b);
-                colliders.addAll(_colliders2);
                 return false; // blocked
             }
 
