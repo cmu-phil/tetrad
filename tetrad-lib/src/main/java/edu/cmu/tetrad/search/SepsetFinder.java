@@ -418,61 +418,7 @@ public class SepsetFinder {
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
-        if (true) {
-            return blockPathsRecursivelyVisitDFS2(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
-        }
-
-        return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
-    }
-
-    private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
-            throws InterruptedException {
-
-        if (x == y) {
-            return null;
-        }
-
-        Set<Node> z = new HashSet<>(containing);
-
-        Set<Node> _z;
-
-        for (Node b : graph.getAdjacentNodes(x)) {
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException();
-            }
-
-            for (Node c : graph.getAdjacentNodes(b)) {
-                if (c == x) continue;
-                if (c != y) continue;
-
-                if (graph.isDefNoncollider(x, b, y)) {
-                    z.add(b);
-                }
-            }
-        }
-
-        do {
-            _z = new HashSet<>(z);
-            Set<Node> path = new HashSet<>();
-            path.add(x);
-
-            for (Node b : graph.getAdjacentNodes(x)) {
-                if (Thread.currentThread().isInterrupted()) {
-                    return null;
-                }
-
-                if (true) {
-                    StackState state = new StackState(graph, x, b, y, new HashSet<>(path), z, maxPathLength, notFollowed, ancestorMap);
-                    findPathToTargetDFS2(state);
-
-                } else {
-                    findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
-                }
-            }
-        } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
-
-        return z;
+        return blockPathsRecursivelyVisitDFS2(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
     private static Set<Node> blockPathsRecursivelyVisitDFS2(Graph graph, Node x, Node y, Set<Node> containing,
@@ -513,8 +459,10 @@ public class SepsetFinder {
                 }
 
                 StackState _state = new StackState(graph, x, b, y, new HashSet<>(path), z, maxPathLength, notFollowed, ancestorMap);
-
                 findPathToTargetDFS2(_state);
+
+//                StackState2 _state = new StackState2(graph, x, b, y, new HashSet<>(path), z, maxPathLength, notFollowed, ancestorMap, 1);
+//                findPathToTargetStack2(_state);
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
@@ -823,6 +771,138 @@ public class SepsetFinder {
 
             return found2;
         }
+    }
+
+    private static boolean findPathToTargetStack(StackState initialState) throws InterruptedException {
+        Deque<StackState> stack = new ArrayDeque<>();
+        stack.push(initialState);
+
+        while (!stack.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
+                return false;
+            }
+
+            StackState state = stack.pop();
+
+            if (state.getB() == state.getY()) {
+                return true;
+            }
+
+            if (state.getPath().contains(state.getB())) {
+                continue;
+            }
+
+            state.getPath().add(state.getB());
+
+            if (state.getMaxPathLength() != -1 && state.getPath().size() > state.getMaxPathLength()) {
+                continue;
+            }
+
+            if (state.getB().getNodeType() == NodeType.LATENT || state.getZ().contains(state.getB())) {
+                List<Node> passNodes = getReachableNodes(state.getGraph(), state.getA(), state.getB(), state.getZ(), state.getAncestorMap());
+                passNodes.removeAll(state.getNotFollowed());
+
+                for (Node c : passNodes) {
+                    stack.push(new StackState(state.getGraph(), state.getB(), c, state.getY(),
+                            new HashSet<>(state.getPath()), state.getZ(), state.getMaxPathLength(),
+                            state.getNotFollowed(), state.getAncestorMap()));
+                }
+            } else {
+                boolean found1 = false;
+
+                List<Node> passNodes = getReachableNodes(state.getGraph(), state.getA(), state.getB(), state.getZ(), state.getAncestorMap());
+                passNodes.removeAll(state.getNotFollowed());
+
+                for (Node c : passNodes) {
+                    stack.push(new StackState(state.getGraph(), state.getB(), c, state.getY(),
+                            new HashSet<>(state.getPath()), state.getZ(), state.getMaxPathLength(),
+                            state.getNotFollowed(), state.getAncestorMap()));
+                }
+
+                if (!found1) {
+                    continue;
+                }
+
+                state.getZ().add(state.getB());
+
+                passNodes = getReachableNodes(state.getGraph(), state.getA(), state.getB(), state.getZ(), state.getAncestorMap());
+                passNodes.removeAll(state.getNotFollowed());
+
+                boolean found2 = false;
+
+                for (Node c : passNodes) {
+                    stack.push(new StackState(state.getGraph(), state.getB(), c, state.getY(),
+                            new HashSet<>(state.getPath()), state.getZ(), state.getMaxPathLength(),
+                            state.getNotFollowed(), state.getAncestorMap()));
+                }
+
+                if (found2) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean findPathToTargetStack3(Frame start) throws InterruptedException {
+        Deque<Frame> stack = new ArrayDeque<>();
+        stack.push(start);
+
+        while (!stack.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+            Frame f = stack.peek();           // look at the top but don’t pop yet
+
+            /* base‑case tests the first time we visit the frame */
+            if (f.pass == null) {             // first entry into this frame
+                if (f.b == f.y) return true;
+                if (f.path.contains(f.b)) {
+                    stack.pop();
+                    continue;
+                }
+
+                f.path.add(f.b);
+                if (f.maxPathLength != -1 && f.path.size() > f.maxPathLength) {
+                    stack.pop();
+                    continue;
+                }
+
+                f.pass = getReachableNodes(f.graph, f.a, f.b, f.z, f.ancestorMap);
+                f.pass.removeAll(f.notFollowed);
+            }
+
+            /* have we finished iterating over passNodes? */
+            if (f.idx >= f.pass.size()) {
+                if (!f.phase1) {                 // just finished phase‑0
+                    if (!f.found1) {             // nothing got through ⇒ blocked
+                        stack.pop();
+                        continue;
+                    }
+                    /* promote to phase‑1 */
+                    Set<Node> z2 = new HashSet<>(f.z);
+                    z2.add(f.b);
+                    f.z = z2;
+                    f.phase1 = true;
+                    f.pass = getReachableNodes(f.graph, f.a, f.b, f.z, f.ancestorMap);
+                    f.pass.removeAll(f.notFollowed);
+                    f.idx = 0;
+                    /* fall through to push first child of phase‑1 */
+                } else {                         // finished phase‑1 with no success
+                    stack.pop();
+                    continue;
+                }
+            }
+
+            /* push next child */
+            Node c = f.pass.get(f.idx++);
+            Set<Node> newPath = new HashSet<>(f.path);
+            Frame child = new Frame(f.graph, f.b, c, f.y,
+                    newPath, f.z, f.maxPathLength,
+                    f.notFollowed, f.ancestorMap, false);
+            stack.push(child);
+        }
+        return false;
     }
 
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {
@@ -1313,6 +1393,40 @@ public class SepsetFinder {
 //            if (verbose) {
 //                TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
 //            }
+        }
+    }
+
+    private static final class Frame {
+        final Graph graph;
+        final Node a, b, y;
+        final Set<Node> path;
+        Set<Node> z;           // immutable inside this frame
+        final Set<Node> notFollowed;
+        final Map<Node, Set<Node>> ancestorMap;
+        final int maxPathLength;
+
+        /* mutable per‑frame fields */
+        List<Node> pass;
+        int idx;                    // next child to explore
+        boolean found1;              // did phase‑0 succeed?
+        boolean phase1;              // false = phase‑0, true = phase‑1
+
+        Frame(Graph g, Node a, Node b, Node y,
+              Set<Node> path, Set<Node> z, int maxLen,
+              Set<Node> nf, Map<Node, Set<Node>> anc, boolean phase1) {
+            this.graph = g;
+            this.a = a;
+            this.b = b;
+            this.y = y;
+            this.path = path;
+            this.z = z;
+            this.maxPathLength = maxLen;
+            this.notFollowed = nf;
+            this.ancestorMap = anc;
+            this.phase1 = phase1;
+            this.pass = null;  // filled in lazily
+            this.idx = 0;
+            this.found1 = false;
         }
     }
 
