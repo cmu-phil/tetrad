@@ -418,12 +418,66 @@ public class SepsetFinder {
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
+        if (true) {
+            return blockPathsRecursivelyVisitDFS2(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
+        }
+
         return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
     private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
                                                         Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
             throws InterruptedException {
+
+        if (x == y) {
+            return null;
+        }
+
+        Set<Node> z = new HashSet<>(containing);
+
+        Set<Node> _z;
+
+        for (Node b : graph.getAdjacentNodes(x)) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            for (Node c : graph.getAdjacentNodes(b)) {
+                if (c == x) continue;
+                if (c != y) continue;
+
+                if (graph.isDefNoncollider(x, b, y)) {
+                    z.add(b);
+                }
+            }
+        }
+
+        do {
+            _z = new HashSet<>(z);
+            Set<Node> path = new HashSet<>();
+            path.add(x);
+
+            for (Node b : graph.getAdjacentNodes(x)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
+                }
+
+                if (true) {
+                    StackState state = new StackState(graph, x, b, y, new HashSet<>(path), z, maxPathLength, notFollowed, ancestorMap);
+                    findPathToTargetDFS2(state);
+
+                } else {
+                    findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
+                }
+            }
+        } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
+
+        return z;
+    }
+
+    private static Set<Node> blockPathsRecursivelyVisitDFS2(Graph graph, Node x, Node y, Set<Node> containing,
+                                                            Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap,
+                                                            int maxPathLength) throws InterruptedException {
         if (x == y) {
             return null;
         }
@@ -458,7 +512,9 @@ public class SepsetFinder {
                     return null;
                 }
 
-                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, notFollowed, ancestorMap);
+                StackState _state = new StackState(graph, x, b, y, new HashSet<>(path), z, maxPathLength, notFollowed, ancestorMap);
+
+                findPathToTargetDFS2(_state);
             }
         } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
@@ -580,7 +636,7 @@ public class SepsetFinder {
 
             // Iterate over adjacent nodes to find potential paths.
             for (Node b : graph.getAdjacentNodes(x)) {
-                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, notFollowed, ancestorMap);
+                findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
             }
         } while (!previousZ.equals(z)); // Repeat if the set z changes.
 
@@ -601,14 +657,12 @@ public class SepsetFinder {
      * @param path          The current path.
      * @param z             The set of nodes that can block the path. This is a set of conditioning nodes that is being
      *                      built.
-     * @param colliders     The set of colliders. These are kept track of so avoid conditioning on them or their
-     *                      descendants.
      * @param maxPathLength The maximum length of the paths to consider.
      * @param notFollowed   A set of nodes that should not be followed along paths.
      * @return True if the path can be blocked, false otherwise.
      */
     private static boolean findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
-                                            Set<Triple> colliders, int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
+                                            int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
             throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
             return false;
@@ -641,7 +695,7 @@ public class SepsetFinder {
                     throw new InterruptedException();
                 }
 
-                if (findPathToTarget(graph, b, c, y, path, z, colliders, maxPathLength, notFollowed, ancestorMap)) {
+                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap)) {
                     return true; // can't be blocked.
                 }
             }
@@ -654,7 +708,6 @@ public class SepsetFinder {
             // stop here. If it hasn't, we'll see if we can block it by conditioning also on b. If it can't be
             // blocked either way, well, then, it just can't be blocked.
             boolean found1 = false;
-            Set<Triple> _colliders1 = new HashSet<>();
 
             List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
             passNodes.removeAll(notFollowed);
@@ -664,7 +717,7 @@ public class SepsetFinder {
                     throw new InterruptedException();
                 }
 
-                if (findPathToTarget(graph, b, c, y, path, z, _colliders1, maxPathLength, notFollowed, ancestorMap)) {
+                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap)) {
                     found1 = true; // can't be blocked.
                     break;
                 }
@@ -672,7 +725,6 @@ public class SepsetFinder {
 
             if (!found1) {
                 path.remove(b);
-                colliders.addAll(_colliders1);
                 return false; // blocked.
             }
 
@@ -689,7 +741,7 @@ public class SepsetFinder {
                     throw new InterruptedException();
                 }
 
-                if (findPathToTarget(graph, b, c, y, path, z, _colliders2, maxPathLength, notFollowed, ancestorMap)) {
+                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap)) {
                     found2 = true;
                     break;
                 }
@@ -697,7 +749,108 @@ public class SepsetFinder {
 
             if (!found2) {
                 path.remove(b);
-                colliders.addAll(_colliders2);
+                return false; // blocked
+            }
+
+            return true; // can't be blocked.
+        }
+    }
+
+    private static boolean findPathToTargetDFS2(StackState state)
+            throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            return false;
+        }
+
+        if (state.getB() == state.getY()) {
+            return true;
+        }
+
+        if (state.getPath().contains(state.getB())) {
+            return false;
+        }
+
+        state.getPath().add(state.getB());
+
+        if (state.getMaxPathLength() != -1) {
+            if (state.getPath().size() > state.getMaxPathLength()) {
+                return false;
+            }
+        }
+
+        // If b is latent, we cannot condition on it. If z already contains b, we know we've already conditioned on
+        // it, so there's no point considering further whether to condition on it or now.
+        if (state.getB().getNodeType() == NodeType.LATENT || state.getZ().contains(state.getB())) {
+            List<Node> passNodes = getReachableNodes(state.getGraph(), state.getA(), state.getB(), state.getZ(), state.getAncestorMap());
+            passNodes.removeAll(state.getNotFollowed());
+
+            for (Node c : passNodes) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
+                StackState _state = new StackState(state.getGraph(), state.getB(), c, state.getY(), new HashSet<>(state.getPath()),
+                        state.getZ(), state.getMaxPathLength(), state.getNotFollowed(), state.getAncestorMap());
+
+                if (findPathToTargetDFS2(_state)) {
+                    return true; // can't be blocked.
+                }
+            }
+
+            state.getPath().remove(state.getB());
+            return false; // blocked.
+        } else {
+
+            // We're going to look to see whether the path to y has already been blocked by z. If it has, we can
+            // stop here. If it hasn't, we'll see if we can block it by conditioning also on b. If it can't be
+            // blocked either way, well, then, it just can't be blocked.
+            boolean found1 = false;
+
+            List<Node> passNodes = getReachableNodes(state.getGraph(), state.getA(), state.getB(), state.getZ(), state.getAncestorMap());
+            passNodes.removeAll(state.getNotFollowed());
+
+            for (Node c : passNodes) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
+                StackState _state = new StackState(state.getGraph(), state.getB(), c, state.getY(), new HashSet<>(state.getPath()),
+                        state.getZ(), state.getMaxPathLength(), state.getNotFollowed(), state.getAncestorMap());
+
+                if (findPathToTargetDFS2(_state)) {
+                    found1 = true; // can't be blocked.
+                    break;
+                }
+            }
+
+            if (!found1) {
+                state.getPath().remove(state.getB());
+                return false; // blocked.
+            }
+
+            state.getZ().add(state.getB());
+
+            boolean found2 = false;
+
+            passNodes = getReachableNodes(state.getGraph(), state.getA(), state.getB(), state.getZ(), state.getAncestorMap());
+            passNodes.removeAll(state.getNotFollowed());
+
+            for (Node c : passNodes) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
+                StackState _state = new StackState(state.getGraph(), state.getB(), c, state.getY(), new HashSet<>(state.getPath()),
+                        state.getZ(), state.getMaxPathLength(), state.getNotFollowed(), state.getAncestorMap());
+
+                if (findPathToTargetDFS2(_state)) {
+                    found2 = true;
+                    break;
+                }
+            }
+
+            if (!found2) {
+                state.getPath().remove(state.getB());
                 return false; // blocked
             }
 
@@ -1193,6 +1346,67 @@ public class SepsetFinder {
 //            if (verbose) {
 //                TetradLogger.getInstance().log("Noting that " + z2 + " could be a collider on " + path);
 //            }
+        }
+    }
+
+    private static class StackState {
+        private final Graph graph;
+        private final Node a;
+        private final Node b;
+        private final Node y;
+        private final Set<Node> path;
+        private final Set<Node> z;
+        private final Set<Node> notFollowed;
+        private final Map<Node, Set<Node>> ancestorMap;
+        private final int maxPathLength;
+
+        public StackState(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
+                          int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap) {
+            this.graph = graph;
+            this.a = a;
+            this.b = b;
+            this.y = y;
+            this.path = path;
+            this.z = z;
+            this.maxPathLength = maxPathLength;
+            this.notFollowed = notFollowed;
+            this.ancestorMap = ancestorMap;
+        }
+
+        public Graph getGraph() {
+            return graph;
+        }
+
+        public Node getA() {
+            return a;
+        }
+
+        public Node getB() {
+            return b;
+        }
+
+        public Set<Node> getZ() {
+            return z;
+        }
+
+        public Map<Node, Set<Node>> getAncestorMap() {
+            return ancestorMap;
+        }
+
+        public Set<Node> getNotFollowed() {
+            return notFollowed;
+        }
+
+        public int getMaxPathLength() {
+            return maxPathLength;
+        }
+
+        public Node getY() {
+            return y;
+        }
+
+        public Set<Node> getPath() {
+            return path;
         }
     }
 
