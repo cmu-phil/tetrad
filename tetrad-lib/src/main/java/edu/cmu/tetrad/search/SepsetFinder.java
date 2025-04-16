@@ -797,7 +797,6 @@ public class SepsetFinder {
                 }
             }
 
-            state.getPath().remove(state.getB());
             return false; // blocked.
         } else {
 
@@ -824,7 +823,6 @@ public class SepsetFinder {
             }
 
             if (!found1) {
-                state.getPath().remove(state.getB());
                 return false; // blocked.
             }
 
@@ -849,12 +847,7 @@ public class SepsetFinder {
                 }
             }
 
-            if (!found2) {
-                state.getPath().remove(state.getB());
-                return false; // blocked
-            }
-
-            return true; // can't be blocked.
+            return found2;
         }
     }
 
