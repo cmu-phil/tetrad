@@ -664,96 +664,70 @@ public class SepsetFinder {
     private static boolean findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
                                             int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
             throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            return false;
-        }
+        Deque<StackState> stack = new ArrayDeque<>();
+        stack.push(new StackState(graph, a, b, y, new HashSet<>(path), z, maxPathLength, notFollowed, ancestorMap));
 
-        if (b == y) {
-            return true;
-        }
-
-        if (path.contains(b)) {
-            return false;
-        }
-
-        path.add(b);
-
-        if (maxPathLength != -1) {
-            if (path.size() > maxPathLength) {
+        while (!stack.isEmpty()) {
+            if (Thread.currentThread().isInterrupted()) {
                 return false;
             }
+
+            StackState currentState = stack.pop();
+
+            Node currentB = currentState.getB();
+            if (currentB == currentState.getY()) {
+                return true;
+            }
+
+            if (currentState.getPath().contains(currentB)) {
+                continue;
+            }
+
+            currentState.getPath().add(currentB);
+
+            if (currentState.getMaxPathLength() != -1 && currentState.getPath().size() > currentState.getMaxPathLength()) {
+                continue;
+            }
+
+            if (currentB.getNodeType() == NodeType.LATENT || currentState.getZ().contains(currentB)) {
+                List<Node> passNodes = getReachableNodes(currentState.getGraph(), currentState.getA(), currentB, currentState.getZ(), ancestorMap);
+                passNodes.removeAll(currentState.getNotFollowed());
+
+                for (Node c : passNodes) {
+                    stack.push(new StackState(currentState.getGraph(), currentB, c, currentState.getY(),
+                            new HashSet<>(currentState.getPath()), currentState.getZ(), currentState.getMaxPathLength(),
+                            currentState.getNotFollowed(), currentState.getAncestorMap()));
+                }
+            } else {
+                boolean found1 = false;
+
+                List<Node> passNodes = getReachableNodes(currentState.getGraph(), currentState.getA(), currentB, currentState.getZ(), ancestorMap);
+                passNodes.removeAll(currentState.getNotFollowed());
+
+                for (Node c : passNodes) {
+                    stack.push(new StackState(currentState.getGraph(), currentB, c, currentState.getY(),
+                            new HashSet<>(currentState.getPath()), currentState.getZ(), currentState.getMaxPathLength(),
+                            currentState.getNotFollowed(), currentState.getAncestorMap()));
+                }
+
+                if (!found1) {
+                    continue;
+                }
+
+                currentState.getZ().add(currentB);
+
+                passNodes = getReachableNodes(currentState.getGraph(), currentState.getA(), currentB, currentState.getZ(), ancestorMap);
+                passNodes.removeAll(currentState.getNotFollowed());
+
+                for (Node c : passNodes) {
+                    stack.push(new StackState(currentState.getGraph(), currentB, c, currentState.getY(),
+                            new HashSet<>(currentState.getPath()), currentState.getZ(), currentState.getMaxPathLength(),
+                            currentState.getNotFollowed(), currentState.getAncestorMap()));
+                }
+            }
         }
 
-        // If b is latent, we cannot condition on it. If z already contains b, we know we've already conditioned on
-        // it, so there's no point considering further whether to condition on it or now.
-        if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
-            List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
-            passNodes.removeAll(notFollowed);
-
-            for (Node c : passNodes) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
-                }
-
-                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap)) {
-                    return true; // can't be blocked.
-                }
-            }
-
-            path.remove(b);
-            return false; // blocked.
-        } else {
-
-            // We're going to look to see whether the path to y has already been blocked by z. If it has, we can
-            // stop here. If it hasn't, we'll see if we can block it by conditioning also on b. If it can't be
-            // blocked either way, well, then, it just can't be blocked.
-            boolean found1 = false;
-
-            List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
-            passNodes.removeAll(notFollowed);
-
-            for (Node c : passNodes) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
-                }
-
-                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap)) {
-                    found1 = true; // can't be blocked.
-                    break;
-                }
-            }
-
-            if (!found1) {
-                path.remove(b);
-                return false; // blocked.
-            }
-
-            z.add(b);
-
-            boolean found2 = false;
-            Set<Triple> _colliders2 = new HashSet<>();
-
-            passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
-            passNodes.removeAll(notFollowed);
-
-            for (Node c : passNodes) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
-                }
-
-                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap)) {
-                    found2 = true;
-                    break;
-                }
-            }
-
-            if (!found2) {
-                path.remove(b);
-                return false; // blocked
-            }
-
-            return true; // can't be blocked.
-        }
+        return false;
     }
 
     private static boolean findPathToTargetDFS2(StackState state)
