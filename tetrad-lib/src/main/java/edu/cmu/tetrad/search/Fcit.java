@@ -128,6 +128,11 @@ public final class Fcit implements IGraphSearch {
      * between nodes connected by edges in applications such as graphical models or causal inference algorithms.
      */
     private Map<Edge, Set<Node>> extraSepsets;
+    /**
+     * Represents whether the payment guarantee feature is enabled or not. This variable is a flag to determine if the
+     * guarantee payment option is active in the current context.
+     */
+    private boolean guaranteePag;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -448,6 +453,10 @@ public final class Fcit implements IGraphSearch {
         this.unshieldedColliers = unshieldedColliders;
         this.extraSepsets = extraSepsets;
 
+        if (guaranteePag) {
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
+        }
+
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
@@ -481,20 +490,17 @@ public final class Fcit implements IGraphSearch {
     }
 
     private Graph adjustForExtraSepsets(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders) {
-        Graph _pag = pag;
-
-        extraSepsets.keySet().parallelStream().forEach(edge -> {
-                    if (unshieldedColliders.contains(edge)) {
-                        _pag.removeEdge(edge);
-                    }
-                }
-        );
+        for (Triple triple : new HashSet<>(unshieldedColliders)) {
+            if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
+                unshieldedColliders.remove(triple);
+            }
+        }
 
         extraSepsets.keySet().parallelStream().forEach(edge ->
-                orientCommonAdjacents(edge, _pag, unshieldedColliders, extraSepsets)
+                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets)
         );
 
-        return _pag;
+        return pag;
     }
 
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Graph pag, Set<DiscriminatingPath> oldDiscriminatingPaths,
@@ -514,10 +520,6 @@ public final class Fcit implements IGraphSearch {
             Set<DiscriminatingPath> paths = new HashSet<>();
 
             for (DiscriminatingPath path : discriminatingPaths) {
-//                if (!path.existsIn(pag)) {
-//                    continue;
-//                }
-
                 if (path.getX() == x && path.getY() == y) {
                     paths.add(path);
                 } else if (path.getX() == y && path.getY() == x) {
@@ -547,17 +549,9 @@ public final class Fcit implements IGraphSearch {
 
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
-
-//        ExecutorService executor = Executors.newSingleThreadExecutor();
-
             // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
             // there in this graph.
-            // Assuming 'unshieldedColliders' is a thread-safe list
             pag.getEdges().parallelStream().forEach(edge -> {
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Checking " + edge + " for potential DDP collider orientations.");
-//            }
-
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
@@ -1057,6 +1051,15 @@ public final class Fcit implements IGraphSearch {
      */
     public Map<Edge, Set<Node>> getExtraSepsets() {
         return new HashMap<>(extraSepsets);
+    }
+
+    /**
+     * Sets the value of the guaranteePag property.
+     *
+     * @param guaranteePag a boolean value indicating whether the guaranteePag is enabled or not
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**

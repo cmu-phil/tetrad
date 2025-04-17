@@ -430,8 +430,6 @@ public class SepsetFinder {
 
         Set<Node> z = new HashSet<>(containing);
 
-//        Set<Node> _z;
-
         for (Node b : graph.getAdjacentNodes(x)) {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
@@ -447,9 +445,6 @@ public class SepsetFinder {
             }
         }
 
-
-//        do {
-//        _z = new HashSet<>(z);
         Set<Node> path = new HashSet<>();
         path.add(x);
 
@@ -460,7 +455,6 @@ public class SepsetFinder {
 
             findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
         }
-//        } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
 
         return z;
     }
@@ -604,26 +598,26 @@ public class SepsetFinder {
      * @param notFollowed   A set of nodes that should not be followed along paths.
      * @return True if the path can be blocked, false otherwise.
      */
-    private static Found findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
-                                          int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
+    private static Blockable findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
+                                              int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
             throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
-            return Found.INDETERMINATE;
+            return Blockable.INDETERMINATE;
         }
 
         if (b == y) {
-            return Found.FOUND;
+            return Blockable.UNBLOCKABLE;
         }
 
         if (path.contains(b)) {
-            return Found.FOUND;
+            return Blockable.UNBLOCKABLE;
         }
 
         path.add(b);
 
         if (maxPathLength != -1) {
             if (path.size() > maxPathLength) {
-                return Found.INDETERMINATE;
+                return Blockable.INDETERMINATE;
             }
         }
 
@@ -638,24 +632,21 @@ public class SepsetFinder {
                     throw new InterruptedException();
                 }
 
-//                Set<Node> _z = new HashSet<>(z);
+                Blockable blockable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
 
-                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap) == Found.FOUND) {
-//                    z.clear();
-//                    z.addAll(_z);
-
-                    return Found.FOUND; // can't be blocked.
+                if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
+                    return Blockable.UNBLOCKABLE;
                 }
             }
 
             path.remove(b);
-            return Found.NOT_FOUND; // blocked.
+            return Blockable.BLOCKABLE; // blocked.
         } else {
 
             // We're going to look to see whether the path to y has already been blocked by z. If it has, we can
             // stop here. If it hasn't, we'll see if we can block it by conditioning also on b. If it can't be
             // blocked either way, well, then, it just can't be blocked.
-            boolean found1 = false;
+            boolean blockable1 = true;
 
             List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
             passNodes.removeAll(notFollowed);
@@ -665,24 +656,22 @@ public class SepsetFinder {
                     throw new InterruptedException();
                 }
 
-//                Set<Node> _z = new HashSet<>(z);
+                Blockable blockType = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
 
-                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap) == Found.FOUND) {
-                    found1 = true; // can't be blocked.
-//                    z.clear();
-//                    z.addAll(_z);
+                if (blockType == Blockable.UNBLOCKABLE || blockType == Blockable.INDETERMINATE) {
+                    blockable1 = false;
                     break;
                 }
             }
 
-            if (!found1) {
+            if (blockable1) {
                 path.remove(b);
-                return Found.NOT_FOUND; // blocked.
+                return Blockable.BLOCKABLE;
             }
 
             z.add(b);
 
-            boolean found2 = false;
+            boolean blockable2 = true;
             passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
             passNodes.removeAll(notFollowed);
 
@@ -691,22 +680,21 @@ public class SepsetFinder {
                     throw new InterruptedException();
                 }
 
-//                Set<Node> _z = new HashSet<>(z);
+                Blockable blackable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
 
-                if (findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap) == Found.FOUND) {
-                    found2 = true;
-//                    z.clear();
-//                    z.addAll(_z);
+                if (blackable == Blockable.UNBLOCKABLE || blackable == Blockable.INDETERMINATE) {
+                    blockable2 = false;
                     break;
                 }
             }
 
-            if (!found2) {
+            if (blockable2) {
                 path.remove(b);
-                return Found.NOT_FOUND; // blocked
+                return Blockable.BLOCKABLE;
             }
 
-            return Found.FOUND; // can't be blocked.
+            path.remove(b);
+            return Blockable.UNBLOCKABLE;
         }
     }
 
@@ -1201,6 +1189,6 @@ public class SepsetFinder {
         }
     }
 
-    public static enum Found {FOUND, NOT_FOUND, INDETERMINATE}
+    public static enum Blockable {UNBLOCKABLE, BLOCKABLE, INDETERMINATE}
 
 }

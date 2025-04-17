@@ -2540,7 +2540,7 @@ public final class GraphUtils {
          * @param selection a set of nodes to be considered during the maximality repair
          * @return the repaired PAG that satisfies required constraints and is free of faults
          */
-        public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+        public static Graph  guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                          Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders,
                                          boolean verbose, Set<Node> selection) {
             if (verbose) {
@@ -2567,8 +2567,7 @@ public final class GraphUtils {
 
             } while (changed);
 
-            Graph mag = GraphTransforms.zhangMagFromPag(pag);
-            DagToPag dagToPag = new DagToPag(mag);
+            DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
             dagToPag.setKnowledge(knowledge);
             Graph pag2 = dagToPag.convert();
 

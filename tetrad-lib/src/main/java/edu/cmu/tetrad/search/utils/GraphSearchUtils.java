@@ -441,7 +441,9 @@ public final class GraphSearchUtils {
                 reason += ". " + edgeMismatch;
             }
 
-            return new LegalPagRet(false, reason);
+            if (!edgeMismatch.isEmpty()) {
+                return new LegalPagRet(false, reason);
+            }
         }
 
         return new LegalPagRet(true, "This is a legal PAG");
