@@ -36,10 +36,10 @@ import java.util.*;
 
 /**
  * This class represents the Detect-Mimic-FCIT (DM-FCIT) algorithm, a specialized variant of the DM-PC and FCIT
- * algorithms designed to identify intermediate latent variables. DM-FCIT enhances accuracy and computational
- * efficiency by recursively maintaining complete PAG orientations during the search process. At each step, it uses
- * these orientations to substantially reduce the required size of conditioning sets when testing independence. This
- * approach leads to more precise identification of latent variables and better orientation accuracy overall.
+ * algorithms designed to identify intermediate latent variables. DM-FCIT enhances accuracy and computational efficiency
+ * by recursively maintaining complete PAG orientations during the search process. At each step, it uses these
+ * orientations to substantially reduce the required size of conditioning sets when testing independence. This approach
+ * leads to more precise identification of latent variables and better orientation accuracy overall.
  *
  * @author josephramsey
  */
@@ -72,8 +72,8 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * This class represents a DM-FCIT algorithm.
      *
      * <p>
-     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
-     * a given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
+     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * given data set and parameters. It is a subclass of the Abstract BootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
      *
@@ -88,8 +88,8 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * Represents a DM-FCIT algorithm.
      *
      * <p>
-     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on
-     * a given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
+     * The DM-FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
+     * given data set and parameters. It is a subclass of the AbstractBootstrapAlgorithm class and implements the
      * Algorithm interface.
      * </p>
      *
@@ -293,10 +293,13 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @param parents Set of potential parent nodes.
      * @return A minimal conditioning subset of parents.
      */
-    private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents) {
+    private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents)
+            throws InterruptedException {
+        Map<Node, Set<Node>> ancestorMap = graph.paths().getAncestorsMap();
+
         // Delegates the minimal conditioning set finding to the proven recursive method.
         return SepsetFinder.getPathBlockingSetRecursive(
-                graph, childA, childB, new HashSet<>(), -1, new HashSet<>()
+                graph, childA, childB, new HashSet<>(), -1, new HashSet<>(), ancestorMap
         );
     }
 
@@ -349,8 +352,6 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-//        search.setDoDdpEdgeRemovalStep(parameters.getBoolean(Params.DO_DDP_EDGE_REMOVAL_STEP));
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {

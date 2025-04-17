@@ -59,7 +59,7 @@ public class EnsureMarkov {
      * Adjusts the p-values for a local Markov condition in a given constraint-based partially directed acyclic graph
      * (CPDAG).
      *
-     * @param cpdag        the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
+     * @param graph        the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
      * @param ensureMarkov a boolean flag indicating if the Markov condition should be ensured; should be true
      * @param test         the independence test to be used; must not be null and not an instance of MsepTest
      * @param pValues      a map of node pairs to sets of p-values used for adjustment
@@ -69,8 +69,8 @@ public class EnsureMarkov {
      * @throws IllegalArgumentException if ensureMarkov is false or if the test is null or an instance of MsepTest
      * @throws InterruptedException     if any
      */
-    public static Map<Pair<Node, Node>, Set<Double>> localMarkovAdjustPValues(Graph cpdag, boolean ensureMarkov, IndependenceTest test,
-                                                                              Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) throws InterruptedException {
+    public static Map<Pair<Node, Node>, Set<Double>> markovAdjustPValues(Graph graph, boolean ensureMarkov, IndependenceTest test,
+                                                                         Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) throws InterruptedException {
         if (!ensureMarkov) {
             throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
         }
@@ -84,7 +84,7 @@ public class EnsureMarkov {
 
         var _pValues = new HashMap<>(pValues);
 
-        Set<Node> parentsX = new HashSet<>(cpdag.getParents(x));
+        Set<Node> parentsX = new HashSet<>(graph.getParents(x));
 
         for (Node node : parentsX) {
             if (node.equals(y)) {
@@ -93,7 +93,7 @@ public class EnsureMarkov {
             }
         }
 
-        Set<Node> parentsY = new HashSet<>(cpdag.getParents(y));
+        Set<Node> parentsY = new HashSet<>(graph.getParents(y));
 
         for (Node node : parentsY) {
             if (node.equals(x)) {
@@ -105,24 +105,24 @@ public class EnsureMarkov {
         _pValues.remove(Pair.of(x, y));
         _pValues.remove(Pair.of(y, x));
 
-        for (Node _y : cpdag.getNodes()) {
+        for (Node _y : graph.getNodes()) {
             if (x.equals(_y)) {
                 continue;
             }
 
-            if (!parentsX.contains(_y) && !cpdag.paths().existsDirectedPath(x, _y, withoutPair)) {
+            if (!parentsX.contains(_y) && !graph.paths().existsDirectedPath(x, _y, withoutPair)) {
                 IndependenceResult result = test.checkIndependence(x, _y, parentsX);
                 _pValues.putIfAbsent(Pair.of(x, _y), new HashSet<>());
                 _pValues.get(Pair.of(x, _y)).add(result.getPValue());
             }
         }
 
-        for (Node _x : cpdag.getNodes()) {
+        for (Node _x : graph.getNodes()) {
             if (y.equals(_x)) {
                 continue;
             }
 
-            if (!parentsY.contains(_x) && !cpdag.paths().existsDirectedPath(y, _x, withoutPair)) {
+            if (!parentsY.contains(_x) && !graph.paths().existsDirectedPath(y, _x, withoutPair)) {
                 IndependenceResult result = test.checkIndependence(y, _x, parentsY);
                 _pValues.putIfAbsent(Pair.of(y, _x), new HashSet<>());
                 _pValues.get(Pair.of(y, _x)).add(result.getPValue());
@@ -167,7 +167,7 @@ public class EnsureMarkov {
 
         if (result.isIndependent()) {
             if (ensureMarkov) {
-                Map<Pair<Node, Node>, Set<Double>> _pValues = localMarkovAdjustPValues(dag, ensureMarkov,
+                Map<Pair<Node, Node>, Set<Double>> _pValues = markovAdjustPValues(dag, ensureMarkov,
                         test, pValues, Pair.of(x, y));
 
 //                double baseline = GraphUtils.calculatePercentDependent(test, pValues);

@@ -67,10 +67,6 @@ public final class Fcit implements IGraphSearch {
      */
     private START_WITH startWith = START_WITH.BOSS;
     /**
-     * Flag indicating the output should be guaranteed to be a PAG.
-     */
-    private boolean guaranteePag = false;
-    /**
      * The number of starts for GRaSP.
      */
     private int numStarts = 1;
@@ -111,10 +107,6 @@ public final class Fcit implements IGraphSearch {
      */
     private int maxDdpPathLength = -1;
     /**
-     * The style for removing extra edges.
-     */
-    private ExtraEdgeRemovalStyle extraEdgeRemovalStyle = ExtraEdgeRemovalStyle.PARALLEL;
-    /**
      * The timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
      */
     private long testTimeout = -1;
@@ -136,6 +128,11 @@ public final class Fcit implements IGraphSearch {
      * between nodes connected by edges in applications such as graphical models or causal inference algorithms.
      */
     private Map<Edge, Set<Node>> extraSepsets;
+    /**
+     * Represents whether the payment guarantee feature is enabled or not. This variable is a flag to determine if the
+     * guarantee payment option is active in the current context.
+     */
+    private boolean guaranteePag;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -398,7 +395,6 @@ public final class Fcit implements IGraphSearch {
         }
 
         copyUnshieldedCollidersFromCpdag(best, pag, checked, cpdag, scorer, unshieldedColliders, fciOrient);
-        Set<Triple> _unshieldedColliders = new HashSet<>(unshieldedColliders);
 
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
@@ -411,13 +407,13 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
-        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, -1);
+        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength);
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
-            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, -1);
+            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength);
             pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
             if (_pag.equals(pag)) {
@@ -441,17 +437,9 @@ public final class Fcit implements IGraphSearch {
         }
 
         long start3 = System.currentTimeMillis();
-        Set<Triple> extraUnshieldedColliders = new HashSet<>(unshieldedColliders);
-        extraUnshieldedColliders.removeAll(_unshieldedColliders);
 
-        if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, extraUnshieldedColliders, verbose, new HashSet<>());
-        }
-
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
         DagToPag dagToPag = new DagToPag(pag);
         dagToPag.setKnowledge(knowledge);
-        Graph pag2 = dagToPag.convert();
         fciOrient.finalOrientation(pag);
 
         long stop3 = System.currentTimeMillis();
@@ -464,6 +452,10 @@ public final class Fcit implements IGraphSearch {
 
         this.unshieldedColliers = unshieldedColliders;
         this.extraSepsets = extraSepsets;
+
+        if (guaranteePag) {
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
+        }
 
         return GraphUtils.replaceNodes(pag, nodes);
     }
@@ -498,26 +490,24 @@ public final class Fcit implements IGraphSearch {
     }
 
     private Graph adjustForExtraSepsets(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders) {
-        Graph _pag = pag;
-
-        extraSepsets.keySet().parallelStream().forEach(edge -> {
-                    if (unshieldedColliders.contains(edge)) {
-                        _pag.removeEdge(edge);
-                    }
-                }
-        );
+        for (Triple triple : new HashSet<>(unshieldedColliders)) {
+            if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
+                unshieldedColliders.remove(triple);
+            }
+        }
 
         extraSepsets.keySet().parallelStream().forEach(edge ->
-                orientCommonAdjacents(edge, _pag, unshieldedColliders, extraSepsets)
+                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets)
         );
 
-        return _pag;
+        return pag;
     }
 
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Graph pag, Set<DiscriminatingPath> oldDiscriminatingPaths,
                                                         Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
         Set<Edge> edges = pag.getEdges();
+//        Map<Node, Set<Node>> ancestorMap = pag.paths().getAncestorsMap();
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
 
@@ -530,10 +520,6 @@ public final class Fcit implements IGraphSearch {
             Set<DiscriminatingPath> paths = new HashSet<>();
 
             for (DiscriminatingPath path : discriminatingPaths) {
-                if (!path.existsIn(pag)) {
-                    continue;
-                }
-
                 if (path.getX() == x && path.getY() == y) {
                     paths.add(path);
                 } else if (path.getX() == y && path.getY() == x) {
@@ -561,76 +547,72 @@ public final class Fcit implements IGraphSearch {
             pathsByEdge.put(Set.of(x, y), paths);
         });
 
-        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-        // there in this graph.
-        // Assuming 'unshieldedColliders' is a thread-safe list
-        pag.getEdges().stream().forEach(edge -> {
-            if (verbose) {
-                TetradLogger.getInstance().log("Checking " + edge + " for potential DDP collider orientations.");
-            }
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+            // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
+            // there in this graph.
+            pag.getEdges().parallelStream().forEach(edge -> {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-            List<Node> common = pag.getAdjacentNodes(x);
-            common.retainAll(pag.getAdjacentNodes(y));
+                List<Node> common = pag.getAdjacentNodes(x);
+                common.retainAll(pag.getAdjacentNodes(y));
 
-            Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-            Set<Node> perhapsNotFollowed = new HashSet<>();
+                Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
+                Set<Node> perhapsNotFollowed = new HashSet<>();
 
-            // Don't repeat the same independence test twice for thie edge x *-* y.
-            Set<Set<Node>> S = new HashSet<>();
+                // Don't repeat the same independence test twice for thie edge x *-* y.
+                Set<Set<Node>> S = new HashSet<>();
 
-            if (paths == null) {
-                return;
-            }
-
-//            if (paths != null) {
-            for (DiscriminatingPath path : paths) {
-                if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                    perhapsNotFollowed.add(path.getV());
-                }
-            }
-//            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Discriminating paths listed, perhapsNotFollowed: " + perhapsNotFollowed);
-            }
-
-            List<Node> E = new ArrayList<>(perhapsNotFollowed);
-
-            int _depth = depth == -1 ? E.size() : depth;
-            _depth = Math.min(_depth, E.size());
-
-            // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(E.size(), _depth);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                Set<Node> notFollowed = GraphUtils.asSet(choice, E);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log(" x: " + x + " y: " + y + " notFollowed: " + notFollowed
-                                                   + " maxBlockingPathLength: " + maxBlockingPathLength);
+                if (paths == null) {
+                    return;
                 }
 
-                ExecutorService executor = Executors.newSingleThreadExecutor();
+                for (DiscriminatingPath path : paths) {
+                    if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                        perhapsNotFollowed.add(path.getV());
+                    }
+                }
 
-                try {
-                    // Create a Callable task to call blockPathsRecursively
-                    Callable<Set<Node>> task = () -> SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed,
-                            maxBlockingPathLength);
+                List<Node> E = new ArrayList<>(perhapsNotFollowed);
 
-                    // Submit the task to the executor
-                    Future<Set<Node>> future = executor.submit(task);
+                int _depth = depth == -1 ? E.size() : depth;
+                _depth = Math.min(_depth, E.size());
+
+                // Generate subsets and check blocking paths
+                SublistGenerator gen = new SublistGenerator(E.size(), _depth);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    Set<Node> notFollowed = GraphUtils.asSet(choice, E);
+
+                    // Instead of newSingleThreadExecutor(), we use the shared 'executor'
+                    Future<Set<Node>> future = executor.submit(() ->
+                            SepsetFinder.blockPathsRecursively(
+                                    pag, x, y, Set.of(), notFollowed, maxBlockingPathLength
+                            )
+                    );
 
                     // Try to get the result within the specified timeout (e.g., 5 seconds)
                     Set<Node> b;
 
-                    if (testTimeout > 0) {
-                        b = future.get(testTimeout, TimeUnit.MILLISECONDS);
-                    } else {
-                        b = future.get();
+                    try {
+                        if (testTimeout > 0) {
+                            b = future.get(testTimeout, TimeUnit.MILLISECONDS);
+                        } else {
+                            b = future.get();
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException(e);
+                    } catch (TimeoutException e) {
+                        TetradLogger.getInstance().log("Timeout while fetching paths from pag.");
+                        continue;
+                    }
+
+                    // b will be null if the search did not conclude with set that is known to either m-separate
+                    // or not m-separate x and y.
+                    if (b == null) {
+                        continue;
                     }
 
                     int _depth2 = depth == -1 ? common.size() : depth;
@@ -654,29 +636,25 @@ public final class Fcit implements IGraphSearch {
                         }
 
                         b.removeAll(c);
-
                         if (S.contains(b)) continue;
-
                         S.add(new HashSet<>(b));
 
-                        if (ensureMarkovHelper.markovIndependence(x, y, b)) {
-                            if (verbose) {
-                                TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                            }
+                        try {
+                            if (ensureMarkovHelper.markovIndependence(x, y, b)) {
+                                if (verbose) {
+                                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
+                                }
 
-                            extraSepsets.put(pag.getEdge(x, y), b);
-                            pag.removeEdge(x, y);
+                                extraSepsets.put(pag.getEdge(x, y), b);
+                                pag.removeEdge(x, y);
+                            }
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
                         }
                     }
-                } catch (TimeoutException e) {
-                    System.out.println("Timeout occurred while waiting for blockPathsRecursively");
-                } catch (Exception e) {
-                    e.printStackTrace(); // Handle other exceptions that might occur
-                } finally {
-                    executor.shutdown(); // Always shut down the executor
                 }
-            }
-        });
+            });
+        }
 
         return discriminatingPaths;
     }
@@ -725,13 +703,6 @@ public final class Fcit implements IGraphSearch {
      */
     private @NotNull PermutationSearch getSpSearch() throws InterruptedException {
         var suborderSearch = new Sp(score);
-//        suborderSearch.setResetAfterBM(true);
-//        suborderSearch.setResetAfterRS(true);
-//        suborderSearch.setVerbose(false);
-//        suborderSearch.setUseBes(useBes);
-//        suborderSearch.setUseDataOrder(useDataOrder);
-//        suborderSearch.setNumStarts(numStarts);
-//        suborderSearch.setVerbose(verbose);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         permutationSearch.search();
@@ -782,15 +753,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setRecursionDepth(int recursionDepth) {
         this.recursionDepth = recursionDepth;
-    }
-
-    /**
-     * Sets whether to guarantee a PAG output by repairing a faulty PAG.
-     *
-     * @param guaranteePag true if a faulty PAGs should be repaired, false otherwise
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
     }
 
     /**
@@ -869,8 +831,6 @@ public final class Fcit implements IGraphSearch {
         if (verbose) {
             TetradLogger.getInstance().log("Checking for additional sepsets:");
         }
-
-        MsepTest msep = new MsepTest(pag);
 
         List<Callable<Pair<Edge, Set<Node>>>> tasks = new ArrayList<>();
 
@@ -1056,15 +1016,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets the style for removing extra edges.
-     *
-     * @param extraEdgeRemovalStyle the style for removing extra edges
-     */
-    public void setExtraEdgeRemovalStyle(ExtraEdgeRemovalStyle extraEdgeRemovalStyle) {
-        this.extraEdgeRemovalStyle = extraEdgeRemovalStyle;
-    }
-
-    /**
      * Sets the timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
      *
      * @param testTimeout the timeout for the testing steps, for the extra edge removal steps and the discriminating
@@ -1100,6 +1051,15 @@ public final class Fcit implements IGraphSearch {
      */
     public Map<Edge, Set<Node>> getExtraSepsets() {
         return new HashMap<>(extraSepsets);
+    }
+
+    /**
+     * Sets the value of the guaranteePag property.
+     *
+     * @param guaranteePag a boolean value indicating whether the guaranteePag is enabled or not
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**

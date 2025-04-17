@@ -164,6 +164,7 @@ public class ClusterSignificance {
 
         if (dataModel instanceof DataSet) {
             Fas fas = new Fas(new IndTestFisherZ((DataSet) dataModel, alpha));
+            fas.setVerbose(false);
             Graph g = null;
             try {
                 g = fas.search(_cluster);
@@ -173,6 +174,7 @@ public class ClusterSignificance {
             return GraphUtils.isClique(_cluster, g);
         } else if (dataModel instanceof ICovarianceMatrix) {
             Fas fas = new Fas(new IndTestFisherZ((ICovarianceMatrix) dataModel, alpha));
+            fas.setVerbose(false);
             Graph g = null;
             try {
                 g = fas.search(_cluster);

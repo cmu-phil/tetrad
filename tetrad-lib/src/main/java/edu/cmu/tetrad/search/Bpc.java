@@ -144,6 +144,8 @@ public final class Bpc {
     public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
 
+        getIndependenceTest().setVerbose(verbose);
+
         TetradLogger.getInstance().log("BPC alpha = " + this.alpha + " test = " + this.sigTestType);
         List<Node> variables = this.tetradTest.getVariables();
 

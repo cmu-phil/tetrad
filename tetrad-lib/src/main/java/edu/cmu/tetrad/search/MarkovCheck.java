@@ -793,11 +793,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * the result methods. Note that only results for X _||_ Y | Z1,...,Zn are generated, where X and Y are in the
      * independenceNodes list and Z1,...,Zn are in the conditioningNodes list.
      *
-     * @param clear True, if the results should be cleared before generating new results; otherwise, the new results are
-     *              appended to the existing results.
      * @see #getResults(boolean)
      */
-    public void generateResults(boolean clear) {
+    public void generateAllResults() {
         generateResults(true, true);
         generateResults(false, false);
     }
@@ -902,10 +900,20 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                                 z = GraphUtils.markovBlanket(x, graph);
                                 break;
                             case RECURSIVE_MSEP:
-                                z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
+                                Map<Node, Set<Node>> ancestorMap = graph.paths().getAncestorsMap();
+
+                                try {
+                                    z = SepsetFinder.blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), maxLength);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
                                 break;
                             case NONCOLLIDERS_ONLY:
-                                z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, maxLength, true);
+                                try {
+                                    z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, maxLength, true);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
                                 break;
                             default:
                                 throw new IllegalArgumentException("Unknown separation set type: " + setType);

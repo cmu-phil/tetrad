@@ -348,7 +348,6 @@ public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, Us
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {

@@ -553,21 +553,37 @@ public class Ftfc {
      */
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
         Graph graph = new EdgeListGraph(this.variables);
-        List<Node> latents = new ArrayList<>();
+        List<Node> latentsA = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
-            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
-            latent.setNodeType(NodeType.LATENT);
-            latents.add(latent);
-            graph.addNode(latent);
+            Node latentA = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1) + ".A");
+            latentA.setNodeType(NodeType.LATENT);
+            latentsA.add(latentA);
+            graph.addNode(latentA);
+        }
+
+        List<Node> latentsB = new ArrayList<>();
+
+        for (int i = 0; i < clusters.size(); i++) {
+            Node latentB = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1) + ".B");
+            latentB.setNodeType(NodeType.LATENT);
+            latentsB.add(latentB);
+            graph.addNode(latentB);
         }
 
         List<Set<Node>> _clusters = new ArrayList<>(clusters);
 
-        for (int i = 0; i < latents.size(); i++) {
+        for (int i = 0; i < latentsA.size(); i++) {
             for (Node node : _clusters.get(i)) {
                 if (!graph.containsNode(node)) graph.addNode(node);
-                graph.addDirectedEdge(latents.get(i), node);
+                graph.addDirectedEdge(latentsA.get(i), node);
+            }
+        }
+
+        for (int i = 0; i < latentsB.size(); i++) {
+            for (Node node : _clusters.get(i)) {
+                if (!graph.containsNode(node)) graph.addNode(node);
+                graph.addDirectedEdge(latentsB.get(i), node);
             }
         }
 

@@ -1226,7 +1226,7 @@ public class Paths implements TetradSerializable {
             return true;
         }
 
-        boolean ancestor = isAncestor(b, z);
+        boolean ancestor = isAncestorOfAnyZ(b, z);
         return collider && ancestor;
     }
 
@@ -1267,7 +1267,7 @@ public class Paths implements TetradSerializable {
 
         for (Node n1 : graph.getNodes()) {
             for (Node n2 : graph.getNodes()) {
-                if (isAncestor(n1, Collections.singleton(n2))) {
+                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
                     decendantsMap.get(n1).add(n2);
                 }
             }
@@ -1290,7 +1290,7 @@ public class Paths implements TetradSerializable {
 
         for (Node n1 : graph.getNodes()) {
             for (Node n2 : graph.getNodes()) {
-                if (isAncestor(n1, Collections.singleton(n2))) {
+                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
                     ancestorsMap.get(n2).add(n1);
                 }
             }
@@ -1306,7 +1306,7 @@ public class Paths implements TetradSerializable {
      * @param z a {@link java.util.Set} object
      * @return true if b is an ancestor of any node in z
      */
-    public boolean isAncestor(Node b, Set<Node> z) {
+    public boolean isAncestorOfAnyZ(Node b, Set<Node> z) {
         if (z.contains(b)) {
             return true;
         }
@@ -1402,7 +1402,7 @@ public class Paths implements TetradSerializable {
 
             if (graph.isDefCollider(a, b, c)) {
                 if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
-                      || graph.paths().isAncestor(b, selectionVariables))) {
+                      || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
                     continue;
                 }
             }
@@ -1466,7 +1466,7 @@ public class Paths implements TetradSerializable {
 
                 if (a != null && graph.isDefCollider(a, b, c)) {
                     if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
-                          || graph.paths().isAncestor(b, selectionVariables))) {
+                          || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
                         continue;
                     }
                 }
@@ -1862,7 +1862,7 @@ public class Paths implements TetradSerializable {
      * @param maxPathLength the maximum length of the path to search for the blocking set
      * @return the sepset between the two nodes
      */
-    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) {
+    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) throws InterruptedException {
         Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength);
 
         // TODO - should allow the user to determine whether this is a PAG.

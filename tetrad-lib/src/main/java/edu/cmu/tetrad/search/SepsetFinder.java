@@ -417,22 +417,24 @@ public class SepsetFinder {
      * {@code null} if no sepset can be found.
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
-                                                  int maxPathLength) {
+                                                  int maxPathLength) throws InterruptedException {
         return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
     private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength
-    ) {
+                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
+            throws InterruptedException {
         if (x == y) {
             return null;
         }
 
         Set<Node> z = new HashSet<>(containing);
 
-        Set<Node> _z;
-
         for (Node b : graph.getAdjacentNodes(x)) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
             for (Node c : graph.getAdjacentNodes(b)) {
                 if (c == x) continue;
                 if (c != y) continue;
@@ -443,34 +445,18 @@ public class SepsetFinder {
             }
         }
 
-        do {
-            _z = new HashSet<>(z);
-            Set<Node> path = new HashSet<>();
-            path.add(x);
-            Set<Triple> colliders = new HashSet<>();
+        Set<Node> path = new HashSet<>();
+        path.add(x);
 
-            for (Node b : graph.getAdjacentNodes(x)) {
-                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap, notFollowed);
-            }
-        } while (!new HashSet<>(z).equals(new HashSet<>(_z)));
-
-        return z;
-    }
-
-    private static List<Node> getReachableNodes(Graph graph, Node a, Node b, Set<Node> z, Set<Node> notFollowing, Map<Node, Set<Node>> ancestorMap) {
-        List<Node> passNodes = new ArrayList<>();
-
-        for (Node c : graph.getAdjacentNodes(b)) {
-            if (c == a) {
-                continue;
+        for (Node b : graph.getAdjacentNodes(x)) {
+            if (Thread.currentThread().isInterrupted()) {
+                return null;
             }
 
-            if (reachable(graph, a, b, c, z, notFollowing, ancestorMap)) {
-                passNodes.add(c);
-            }
+            findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
         }
 
-        return passNodes;
+        return z;
     }
 
     private static List<Node> getReachableNodes(Graph graph, Node a, Node b, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
@@ -489,16 +475,32 @@ public class SepsetFinder {
         return passNodes;
     }
 
-    private static boolean reachable(Graph graph, Node a, Node b, Node c, Set<Node> z, Set<Node> notFollowing,
+    private static List<Node> getReachableNodes(Graph graph, Node a, Node b, Set<Node> z) {
+        List<Node> passNodes = new ArrayList<>();
+
+        for (Node c : graph.getAdjacentNodes(b)) {
+            if (c == a) {
+                continue;
+            }
+
+            if (reachable(graph, a, b, c, z)) {
+                passNodes.add(c);
+            }
+        }
+
+        return passNodes;
+    }
+
+    private static boolean reachable(Graph graph, Node a, Node b, Node c, Set<Node> z,
                                      Map<Node, Set<Node>> ancestors) {
         boolean collider = graph.isDefCollider(a, b, c);
 
-        if (!collider || (graph.isUnderlineTriple(a, b, c) && !z.contains(b))) {
+        if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
         }
 
         if (ancestors == null) {
-            return collider && graph.paths().isAncestor(b, z);
+            return collider && graph.paths().isAncestorOfAnyZ(b, z);
         } else {
             boolean ancestor = false;
 
@@ -513,27 +515,14 @@ public class SepsetFinder {
         }
     }
 
-    private static boolean reachable(Graph graph, Node a, Node b, Node c, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+    private static boolean reachable(Graph graph, Node a, Node b, Node c, Set<Node> z) {
         boolean collider = graph.isDefCollider(a, b, c);
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
         }
 
-        if (ancestors == null) {
-            return collider && graph.paths().isAncestor(b, z);
-        } else {
-            boolean ancestor = false;
-
-            for (Node _z : ancestors.get(b)) {
-                if (z.contains(_z)) {
-                    ancestor = true;
-                    break;
-                }
-            }
-
-            return collider && ancestor;
-        }
+        return collider && graph.paths().isAncestorOfAnyZ(b, z);
     }
 
     /**
@@ -548,8 +537,10 @@ public class SepsetFinder {
      * @param notFollowing  A set of notes that should not be followed along paths.
      * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
      */
-    public static Set<Node> getPathBlockingSetRecursive(Graph graph, Node x, Node y, Set<Node> containing, int maxPathLength, Set<Node> notFollowing) {
-        return getPathBlockingSetRecursiveVisit(graph, x, y, containing, notFollowing, graph.paths().getDescendantsMap(), maxPathLength);
+    public static Set<Node> getPathBlockingSetRecursive(Graph graph, Node x, Node y, Set<Node> containing, int maxPathLength,
+                                                        Set<Node> notFollowing, Map<Node, Set<Node>> ancestorMap)
+            throws InterruptedException {
+        return getPathBlockingSetRecursiveVisit(graph, x, y, containing, notFollowing, maxPathLength, ancestorMap);
     }
 
     /**
@@ -561,12 +552,12 @@ public class SepsetFinder {
      * @param y             The ending node of the path.
      * @param containing    The set of nodes that must be included in the blocking set.
      * @param notFollowed   The set of nodes that should not be followed along paths.
-     * @param ancestorMap   A map of ancestors for each node.
      * @param maxPathLength The maximum length of the paths to consider.
      * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
      */
     private static Set<Node> getPathBlockingSetRecursiveVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                              Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength) {
+                                                              Set<Node> notFollowed, int maxPathLength, Map<Node, Set<Node>> ancestorMap)
+            throws InterruptedException {
         if (x == y) {
             return null;
         }
@@ -579,11 +570,10 @@ public class SepsetFinder {
 
             Set<Node> path = new HashSet<>();
             path.add(x);
-            Set<Triple> colliders = new HashSet<>();
 
             // Iterate over adjacent nodes to find potential paths.
             for (Node b : graph.getAdjacentNodes(x)) {
-                findPathToTarget(graph, x, b, y, path, z, colliders, maxPathLength, ancestorMap, notFollowed);
+                findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
             }
         } while (!previousZ.equals(z)); // Repeat if the set z changes.
 
@@ -604,28 +594,30 @@ public class SepsetFinder {
      * @param path          The current path.
      * @param z             The set of nodes that can block the path. This is a set of conditioning nodes that is being
      *                      built.
-     * @param colliders     The set of colliders. These are kept track of so avoid conditioning on them or their
-     *                      descendants.
      * @param maxPathLength The maximum length of the paths to consider.
-     * @param ancestorMap   A map of ancestors for each node.
      * @param notFollowed   A set of nodes that should not be followed along paths.
      * @return True if the path can be blocked, false otherwise.
      */
-    private static boolean findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
-                                            Set<Triple> colliders, int maxPathLength, Map<Node, Set<Node>> ancestorMap, Set<Node> notFollowed) {
+    private static Blockable findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
+                                              int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
+            throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            return Blockable.INDETERMINATE;
+        }
+
         if (b == y) {
-            return true;
+            return Blockable.UNBLOCKABLE;
         }
 
         if (path.contains(b)) {
-            return false;
+            return Blockable.UNBLOCKABLE;
         }
 
         path.add(b);
 
         if (maxPathLength != -1) {
             if (path.size() > maxPathLength) {
-                return false;
+                return Blockable.INDETERMINATE;
             }
         }
 
@@ -636,59 +628,73 @@ public class SepsetFinder {
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {
-                if (findPathToTarget(graph, b, c, y, path, z, colliders, maxPathLength, ancestorMap, notFollowed)) {
-                    return true; // can't be blocked.
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
+                Blockable blockable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
+
+                if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
+                    return Blockable.UNBLOCKABLE;
                 }
             }
 
             path.remove(b);
-            return false; // blocked.
+            return Blockable.BLOCKABLE; // blocked.
         } else {
 
             // We're going to look to see whether the path to y has already been blocked by z. If it has, we can
             // stop here. If it hasn't, we'll see if we can block it by conditioning also on b. If it can't be
             // blocked either way, well, then, it just can't be blocked.
-            boolean found1 = false;
-            Set<Triple> _colliders1 = new HashSet<>();
+            boolean blockable1 = true;
 
-            List<Node> passNodes = getReachableNodes(graph, a, b, z, notFollowed, ancestorMap);
+            List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {
-                if (findPathToTarget(graph, b, c, y, path, z, _colliders1, maxPathLength, ancestorMap, notFollowed)) {
-                    found1 = true; // can't be blocked.
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
+                Blockable blockType = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
+
+                if (blockType == Blockable.UNBLOCKABLE || blockType == Blockable.INDETERMINATE) {
+                    blockable1 = false;
                     break;
                 }
             }
 
-            if (!found1) {
+            if (blockable1) {
                 path.remove(b);
-                colliders.addAll(_colliders1);
-                return false; // blocked.
+                return Blockable.BLOCKABLE;
             }
 
             z.add(b);
 
-            boolean found2 = false;
-            Set<Triple> _colliders2 = new HashSet<>();
-
+            boolean blockable2 = true;
             passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
             passNodes.removeAll(notFollowed);
 
             for (Node c : passNodes) {
-                if (findPathToTarget(graph, b, c, y, path, z, _colliders2, maxPathLength, ancestorMap, notFollowed)) {
-                    found2 = true;
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
+                Blockable blackable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
+
+                if (blackable == Blockable.UNBLOCKABLE || blackable == Blockable.INDETERMINATE) {
+                    blockable2 = false;
                     break;
                 }
             }
 
-            if (!found2) {
+            if (blockable2) {
                 path.remove(b);
-                colliders.addAll(_colliders2);
-                return false; // blocked
+                return Blockable.BLOCKABLE;
             }
 
-            return true; // can't be blocked.
+            path.remove(b);
+            return Blockable.UNBLOCKABLE;
         }
     }
 
@@ -748,7 +754,8 @@ public class SepsetFinder {
      * @return A set of nodes that can block all blockable paths from x to y that can be blocked with noncolliders only,
      * or null if no such set exists.
      */
-    public static Set<Node> blockPathsNoncollidersOnly(Graph graph, Node x, Node y, int maxLength, boolean isPag) {
+    public static Set<Node> blockPathsNoncollidersOnly(Graph graph, Node x, Node y, int maxLength, boolean isPag)
+            throws InterruptedException {
         Set<Node> cond = new HashSet<>();
         Set<Node> blackList = new HashSet<>();
 
@@ -757,7 +764,7 @@ public class SepsetFinder {
 
         while (!queue.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
-                break;
+                throw new InterruptedException();
             }
 
             List<Node> path = queue.poll();
@@ -1018,7 +1025,8 @@ public class SepsetFinder {
      * @throws IllegalArgumentException if the conditioning set is null
      */
     public static Set<List<Node>> bfsAllPathsOutOfX(Graph graph, Set<Node> conditionSet, Set<Node> couldBeColliders,
-                                                    Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias) {
+                                                    Set<Node> blacklist, int maxLength, Node x, Node y, boolean allowSelectionBias)
+            throws InterruptedException {
         Set<List<Node>> allPaths = new HashSet<>();
         Queue<List<Node>> queue = new LinkedList<>();
         queue.add(Collections.singletonList(x));
@@ -1029,7 +1037,7 @@ public class SepsetFinder {
 
         while (!queue.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
-                break;
+                throw new InterruptedException();
             }
 
             List<Node> path = queue.poll();
@@ -1050,7 +1058,7 @@ public class SepsetFinder {
 
             for (Node z3 : graph.getAdjacentNodes(node)) {
                 if (Thread.currentThread().isInterrupted()) {
-                    break;
+                    throw new InterruptedException();
                 }
 
                 if (!path.contains(z3)) {
@@ -1180,5 +1188,7 @@ public class SepsetFinder {
 //            }
         }
     }
+
+    public static enum Blockable {UNBLOCKABLE, BLOCKABLE, INDETERMINATE}
 
 }
