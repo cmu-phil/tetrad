@@ -2581,45 +2581,65 @@ public final class GraphUtils {
             return pag2;
         }
 
-        private static boolean removeAlmostCycles(Graph pag, Set<Triple> extraUnshieldedColliders, boolean verbose) {
-            boolean changed = false;
-            int round = 0;
+    private static boolean removeAlmostCycles(Graph pag,
+                                              Set<Triple> extraUnshieldedColliders,
+                                              boolean verbose) {
 
-            while (true) {
-                round++;
-                Graph mag = GraphTransforms.zhangMagFromPag(pag);
-                Map<Node, Set<Node>> reachableFrom = buildDescendantsMap(mag);
+        boolean changedOverall = false;
 
-                List<Edge> candidates = mag.getEdges().stream()
-                        .filter(Edges::isBidirectedEdge)
-                        .filter(e -> reachableFrom.get(e.getNode1()).contains(e.getNode2()) ||
-                                     reachableFrom.get(e.getNode2()).contains(e.getNode1()))
-                        .toList();
+        boolean changedThisRound;
+        int round = 0;
 
-                if (candidates.isEmpty()) break;
+        do {
+            changedThisRound = false;
+            round++;
 
-                for (Edge edge : candidates) {
-                    Node x = edge.getNode1(), y = edge.getNode2();
+            Graph mag = GraphTransforms.zhangMagFromPag(pag);
+            Map<Node, Set<Node>> reachable =
+                    buildDescendantsMap(mag);
 
-                    for (Triple triple : extraUnshieldedColliders) {
-                        if (triple.getY().equals(x) && (triple.getZ().equals(y) || triple.getX().equals(y))) {
-                            Node u = triple.getX().equals(y) ? triple.getZ() : triple.getX();
-                            if (!pag.isAdjacentTo(u, y)) {
-                                pag.addNondirectedEdge(u, y);
-                                changed = true;
-                            }
+            List<Edge> candidates = mag.getEdges().stream()
+                    .filter(Edges::isBidirectedEdge)
+                    .filter(e ->
+                            reachable.getOrDefault(e.getNode1(), Set.of()).contains(e.getNode2()) ||
+                            reachable.getOrDefault(e.getNode2(), Set.of()).contains(e.getNode1()))
+                    .toList();
+
+            for (Edge edge : candidates) {
+                Node x = edge.getNode1(), y = edge.getNode2();
+
+                for (Iterator<Triple> it = extraUnshieldedColliders.iterator();
+                     it.hasNext(); ) {
+
+                    Triple t = it.next();
+                    if (t.getY().equals(x) &&
+                        (t.getZ().equals(y) || t.getX().equals(y))) {
+
+                        Node u = t.getX().equals(y) ? t.getZ() : t.getX();
+
+                        if (!pag.isAdjacentTo(u, y)) {
+                            pag.addNondirectedEdge(u, y);
+                            it.remove();
+                            changedThisRound = true;
+                            changedOverall   = true;
                         }
                     }
                 }
-
-                if (verbose) TetradLogger.getInstance().log("Round " + round + ": Removed almost cycles = " + candidates);
-                else break;
             }
 
-            return changed;
-        }
+            if (verbose) {
+                TetradLogger.getInstance()
+                        .log("Round " + round +
+                             ", candidates = " + candidates.size() +
+                             ", changed = " + changedThisRound);
+            }
+        } while (changedThisRound);   // stop when a complete pass makes no changes
 
-        private static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
+        return changedOverall;        // tell the caller whether anything changed *at all*
+    }
+
+
+    private static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
             boolean changed = false;
             for (Node x : pag.getNodes()) {
                 for (Node y : pag.getNodes()) {
@@ -2649,8 +2669,10 @@ public final class GraphUtils {
                             Node a = path.get(i - 1);
                             Node b = path.get(i + 1);
                             if (pag.isParentOf(a, y) && pag.isParentOf(b, y) && !pag.isAdjacentTo(a, b)) {
-                                pag.addNondirectedEdge(a, b);
-                                changed = true;
+                                if (!pag.isAdjacentTo(a, b)) {
+                                    pag.addNondirectedEdge(a, b);
+                                    changed = true;
+                                }
                             }
                         }
                     }

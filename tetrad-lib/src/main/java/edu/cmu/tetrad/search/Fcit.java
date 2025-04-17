@@ -390,7 +390,6 @@ public final class Fcit implements IGraphSearch {
         }
 
         copyUnshieldedCollidersFromCpdag(best, pag, checked, cpdag, scorer, unshieldedColliders, fciOrient);
-        Set<Triple> _unshieldedColliders = new HashSet<>(unshieldedColliders);
 
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
@@ -403,13 +402,13 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
-        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, -1);
+        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength);
         pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
-            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, -1);
+            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength);
             pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
 
             if (_pag.equals(pag)) {
@@ -546,112 +545,122 @@ public final class Fcit implements IGraphSearch {
             pathsByEdge.put(Set.of(x, y), paths);
         });
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
-        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-        // there in this graph.
-        // Assuming 'unshieldedColliders' is a thread-safe list
-        pag.getEdges().parallelStream().forEach(edge -> {
+
+//        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+            // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
+            // there in this graph.
+            // Assuming 'unshieldedColliders' is a thread-safe list
+            pag.getEdges().parallelStream().forEach(edge -> {
 //            if (verbose) {
 //                TetradLogger.getInstance().log("Checking " + edge + " for potential DDP collider orientations.");
 //            }
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
-            List<Node> common = pag.getAdjacentNodes(x);
-            common.retainAll(pag.getAdjacentNodes(y));
+                List<Node> common = pag.getAdjacentNodes(x);
+                common.retainAll(pag.getAdjacentNodes(y));
 
-            Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-            Set<Node> perhapsNotFollowed = new HashSet<>();
+                Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
+                Set<Node> perhapsNotFollowed = new HashSet<>();
 
-            // Don't repeat the same independence test twice for thie edge x *-* y.
-            Set<Set<Node>> S = new HashSet<>();
+                // Don't repeat the same independence test twice for thie edge x *-* y.
+                Set<Set<Node>> S = new HashSet<>();
 
-            if (paths == null) {
-                return;
-            }
-
-            for (DiscriminatingPath path : paths) {
-                if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                    perhapsNotFollowed.add(path.getV());
-                }
-            }
-
-            List<Node> E = new ArrayList<>(perhapsNotFollowed);
-
-            int _depth = depth == -1 ? E.size() : depth;
-            _depth = Math.min(_depth, E.size());
-
-            // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(E.size(), _depth);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                Set<Node> notFollowed = GraphUtils.asSet(choice, E);
-
-                // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Future<Set<Node>> future = executor.submit(() ->
-                        SepsetFinder.blockPathsRecursively(
-                                pag, x, y, Set.of(), notFollowed, maxBlockingPathLength
-                        )
-                );
-
-                // Try to get the result within the specified timeout (e.g., 5 seconds)
-                Set<Node> b;
-
-                try {
-                    if (testTimeout > 0) {
-                        b = future.get(testTimeout, TimeUnit.MILLISECONDS);
-                    } else {
-                        b = future.get();
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
-                } catch (TimeoutException e) {
-                    TetradLogger.getInstance().log("Timeout while fetching paths from pag.");
-                    continue;
+                if (paths == null) {
+                    return;
                 }
 
-                int _depth2 = depth == -1 ? common.size() : depth;
-                _depth2 = Math.min(_depth2, common.size());
-
-                SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
-                int[] choice2;
-
-                W:
-                while ((choice2 = gen2.next()) != null) {
-                    if (!pag.isAdjacentTo(x, y)) {
-                        break;
+                for (DiscriminatingPath path : paths) {
+                    if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                        perhapsNotFollowed.add(path.getV());
                     }
+                }
 
-                    Set<Node> c = GraphUtils.asSet(choice2, common);
+                List<Node> E = new ArrayList<>(perhapsNotFollowed);
 
-                    for (Node node : c) {
-                        if (pag.isDefCollider(x, node, y)) {
-                            continue W;
-                        }
-                    }
+                int _depth = depth == -1 ? E.size() : depth;
+                _depth = Math.min(_depth, E.size());
 
-                    b.removeAll(c);
-                    if (S.contains(b)) continue;
-                    S.add(new HashSet<>(b));
+                // Generate subsets and check blocking paths
+                SublistGenerator gen = new SublistGenerator(E.size(), _depth);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    Set<Node> notFollowed = GraphUtils.asSet(choice, E);
+
+                    // Instead of newSingleThreadExecutor(), we use the shared 'executor'
+                    Future<Set<Node>> future = executor.submit(() ->
+                            SepsetFinder.blockPathsRecursively(
+                                    pag, x, y, Set.of(), notFollowed, maxBlockingPathLength
+                            )
+                    );
+
+                    // Try to get the result within the specified timeout (e.g., 5 seconds)
+                    Set<Node> b;
 
                     try {
-                        if (ensureMarkovHelper.markovIndependence(x, y, b)) {
-                            if (verbose) {
-                                TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                            }
-
-                            extraSepsets.put(pag.getEdge(x, y), b);
-                            pag.removeEdge(x, y);
+                        if (testTimeout > 0) {
+                            b = future.get(testTimeout, TimeUnit.MILLISECONDS);
+                        } else {
+                            b = future.get();
                         }
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException | ExecutionException e) {
                         throw new RuntimeException(e);
+                    } catch (TimeoutException e) {
+                        TetradLogger.getInstance().log("Timeout while fetching paths from pag.");
+                        continue;
+                    }
+
+                    // b will be null if the search did not conclude with set that is known to either m-separate
+                    // or not m-separate x and y.
+                    if (b == null) {
+                        continue;
+                    }
+
+                    int _depth2 = depth == -1 ? common.size() : depth;
+                    _depth2 = Math.min(_depth2, common.size());
+
+                    SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
+                    int[] choice2;
+
+                    W:
+                    while ((choice2 = gen2.next()) != null) {
+                        if (!pag.isAdjacentTo(x, y)) {
+                            break;
+                        }
+
+                        Set<Node> c = GraphUtils.asSet(choice2, common);
+
+                        for (Node node : c) {
+                            if (pag.isDefCollider(x, node, y)) {
+                                continue W;
+                            }
+                        }
+
+                        b.removeAll(c);
+                        if (S.contains(b)) continue;
+                        S.add(new HashSet<>(b));
+
+                        try {
+                            if (ensureMarkovHelper.markovIndependence(x, y, b)) {
+                                if (verbose) {
+                                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
+                                }
+
+                                extraSepsets.put(pag.getEdge(x, y), b);
+                                pag.removeEdge(x, y);
+                            }
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         return discriminatingPaths;
     }
