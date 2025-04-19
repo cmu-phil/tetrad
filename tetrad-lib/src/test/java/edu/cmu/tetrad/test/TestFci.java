@@ -46,8 +46,8 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static edu.cmu.tetrad.search.SepsetFinder.getPathBlockingSetRecursive;
+import static org.junit.Assert.*;
 
 
 /**
@@ -540,6 +540,30 @@ public class TestFci {
 
         assertTrue(B.isEmpty());
         assertTrue(indep);
+    }
+
+    @Test
+    public void test20() throws InterruptedException {
+        Graph g = new EdgeListGraph();
+        Node x = new GraphNode("x");
+        Node y = new GraphNode("y");
+        Node b1 = new GraphNode("b1");
+        Node b2 = new GraphNode("b2");
+        Node t  = new GraphNode("t");
+
+        g.addNode(x); g.addNode(y); g.addNode(b1); g.addNode(b2); g.addNode(t);
+        g.addDirectedEdge(x, b1);
+        g.addDirectedEdge(b1, y);
+        g.addDirectedEdge(x, b2);
+        g.addDirectedEdge(b2, t);
+        g.addDirectedEdge(t,  y);
+
+        MsepTest msepTest = new MsepTest(g);
+
+        Set<Node> Z = getPathBlockingSetRecursive(g, x, y,
+                Collections.emptySet(), -1,
+                Collections.emptySet(), g.paths().getDescendantsMap());
+        assertTrue(msepTest.checkIndependence(x, y, Z).isIndependent());
     }
 
     private boolean ancestral(Node n, Node q, Graph pag) {

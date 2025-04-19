@@ -430,21 +430,6 @@ public class SepsetFinder {
 
         Set<Node> z = new HashSet<>(containing);
 
-        for (Node b : graph.getAdjacentNodes(x)) {
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException();
-            }
-
-            for (Node c : graph.getAdjacentNodes(b)) {
-                if (c == x) continue;
-                if (c != y) continue;
-
-                if (graph.isDefNoncollider(x, b, y)) {
-                    z.add(b);
-                }
-            }
-        }
-
         Set<Node> path = new HashSet<>();
         path.add(x);
 
@@ -640,7 +625,7 @@ public class SepsetFinder {
             }
 
             path.remove(b);
-            return Blockable.BLOCKABLE; // blocked.
+            return Blockable.BLOCKED; // blocked.
         } else {
 
             // We're going to look to see whether the path to y has already been blocked by z. If it has, we can
@@ -666,7 +651,7 @@ public class SepsetFinder {
 
             if (blockable1) {
                 path.remove(b);
-                return Blockable.BLOCKABLE;
+                return Blockable.BLOCKED;
             }
 
             z.add(b);
@@ -690,7 +675,7 @@ public class SepsetFinder {
 
             if (blockable2) {
                 path.remove(b);
-                return Blockable.BLOCKABLE;
+                return Blockable.BLOCKED;
             }
 
             path.remove(b);
@@ -1189,6 +1174,6 @@ public class SepsetFinder {
         }
     }
 
-    public static enum Blockable {UNBLOCKABLE, BLOCKABLE, INDETERMINATE}
+    public static enum Blockable {BLOCKED, UNBLOCKABLE, INDETERMINATE}
 
 }
