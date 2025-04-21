@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -118,16 +117,6 @@ public final class Fcit implements IGraphSearch {
      * A helper class to help perserve Markov.
      */
     private EnsureMarkov ensureMarkovHelper = null;
-    /**
-     * The unshielded colliders encountered in search.
-     */
-    private Set<Triple> unshieldedColliers;
-    /**
-     * A map that associates each {@code Edge} with a corresponding set of {@code Node} objects representing additional
-     * separating sets within a graph. This data structure is typically used to manage extra separation information
-     * between nodes connected by edges in applications such as graphical models or causal inference algorithms.
-     */
-    private Map<Edge, Set<Node>> extraSepsets;
     /**
      * Represents whether the payment guarantee feature is enabled or not. This variable is a flag to determine if the
      * guarantee payment option is active in the current context.
@@ -253,9 +242,9 @@ public final class Fcit implements IGraphSearch {
             long start = MillisecondTimes.wallTimeMillis();
 
             Boss subAlg = new Boss(this.score);
-            subAlg.setUseBes(false);
+            subAlg.setUseBes(this.useBes);
             subAlg.setNumStarts(this.numStarts);
-            subAlg.setNumThreads(30);
+            subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
             subAlg.setVerbose(verbose);
             PermutationSearch alg = new PermutationSearch(subAlg);
             alg.setKnowledge(this.knowledge);
@@ -394,9 +383,9 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
-        copyUnshieldedCollidersFromCpdag(best, pag, checked, cpdag, scorer, unshieldedColliders, fciOrient);
+        copyUnshieldedCollidersFromCpdag(best, pag, checked, cpdag, scorer, unshieldedColliders);
 
-        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
+        refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
         // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
@@ -408,13 +397,13 @@ public final class Fcit implements IGraphSearch {
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
         Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength);
-        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
+        refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
             oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength);
-            pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
+            refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
             if (_pag.equals(pag)) {
                 break;
@@ -450,9 +439,6 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Guarantee PAG time: " + (stop3 - start3) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop3 - start1) + " ms.");
 
-        this.unshieldedColliers = unshieldedColliders;
-        this.extraSepsets = extraSepsets;
-
         if (guaranteePag) {
             pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
         }
@@ -460,7 +446,7 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
-    private void copyUnshieldedCollidersFromCpdag(List<Node> best, Graph pag, Set<Triple> checked, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders, FciOrient fciOrient) {
+    private void copyUnshieldedCollidersFromCpdag(List<Node> best, Graph pag, Set<Triple> checked, Graph cpdag, TeyssierScorer scorer, Set<Triple> unshieldedColliders) {
         // We're looking for unshielded colliders in these next steps that we can detect without using only
         // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
         // unshielded colliders from the BOSS graph into the estimated PAG. This step is justified in the
@@ -480,13 +466,12 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
-    private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders,
-                               FciOrient fciOrient) {
+    private void refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders,
+                              FciOrient fciOrient) {
         GraphUtils.reorientWithCircles(pag, verbose);
         adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-        return pag;
     }
 
     private void adjustForExtraSepsets(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders) {
@@ -672,27 +657,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Parameterizes and returns a new BOSS search.
-     *
-     * @return A new BOSS search.
-     * @throws InterruptedException if any
-     */
-    private @NotNull PermutationSearch getBossSearch() throws InterruptedException {
-        var suborderSearch = new Boss(score);
-        suborderSearch.setResetAfterBM(true);
-        suborderSearch.setResetAfterRS(true);
-        suborderSearch.setVerbose(false);
-        suborderSearch.setUseBes(useBes);
-        suborderSearch.setUseDataOrder(useDataOrder);
-        suborderSearch.setNumStarts(numStarts);
-        suborderSearch.setVerbose(verbose);
-        var permutationSearch = new PermutationSearch(suborderSearch);
-        permutationSearch.setKnowledge(knowledge);
-        permutationSearch.search();
-        return permutationSearch;
-    }
-
-    /**
      * Parameterizes and returns a new GRaSP search.
      *
      * @return A new GRaSP search.
@@ -800,102 +764,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
-    }
-
-    /**
-     * Tries removing extra edges from the PAG using a test with sepsets obtained by examining the BOSS/GRaSP DAG.
-     *
-     * @param pag          The graph in which to remove extra edges.
-     * @param extraSepsets A map of edges to remove to sepsets used to remove them. The sepsets are the conditioning
-     *                     sets used to remove the edges. These can be used to do orientation of common adjacents, as x
-     *                     *-&gt: b &lt;-* y just in case b is not in this sepset.
-     */
-    private void removeExtraEdgesCommonColliders(Graph pag, Map<Edge, Set<Node>> extraSepsets) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Checking for additional sepsets:");
-        }
-
-        List<Callable<Pair<Edge, Set<Node>>>> tasks = new ArrayList<>();
-
-        for (Edge edge : pag.getEdges()) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Checking " + edge + " for additional sepsets.");
-            }
-
-            tasks.add(() -> {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                List<Node> common = pag.getAdjacentNodes(x);
-                common.retainAll(pag.getAdjacentNodes(y));
-
-                Set<Node> blockers = SepsetFinder.blockPathsRecursively(pag, x,
-                        y, new HashSet<>(), Set.of(), maxBlockingPathLength);
-
-                int _depth2 = depth == -1 ? common.size() : depth;
-                _depth2 = Math.min(_depth2, common.size());
-
-                SublistGenerator gen = new SublistGenerator(common.size(), _depth2);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    Set<Node> e = GraphUtils.asSet(choice, common);
-
-                    for (Node z : e) {
-                        if (pag.isDefCollider(x, z, y)) {
-                            continue;
-                        }
-                    }
-
-                    Set<Node> _blocking = new HashSet<>(blockers);
-                    _blocking.removeAll(e);
-
-                    if (ensureMarkovHelper.markovIndependence(x, y, _blocking)) {
-                        if (verbose) {
-                            TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential " +
-                                                           "DDP collider orientations.");
-                        }
-
-                        extraSepsets.put(edge, _blocking);
-                        pag.removeEdge(x, y);
-                        return Pair.of(edge, _blocking);
-                    }
-                }
-
-                return Pair.of(edge, null);
-            });
-        }
-
-        List<Pair<Edge, Set<Node>>> results;
-
-        if (testTimeout == -1) {
-            results = tasks.parallelStream().map(task -> {
-                try {
-                    return task.call();
-                } catch (Exception e) {
-                    return null;
-                }
-            }).toList();
-        } else if (testTimeout > 0) {
-            results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout,
-                    TimeUnit.MILLISECONDS)).toList();
-        } else {
-            throw new IllegalArgumentException("Test timeout must be -1 (unlimited) or > 0: " + testTimeout);
-        }
-
-        for (Pair<Edge, Set<Node>> _edge : results) {
-            if (_edge != null && _edge.getRight() != null) {
-                extraSepsets.put(_edge.getLeft(), _edge.getRight());
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("Marking " + _edge.getLeft() + " for removal because of additional sepset.");
-                }
-            }
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Done checking for additional sepsets max length = " + maxBlockingPathLength + ".");
-        }
     }
 
     /**
@@ -1013,25 +881,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Retrieves the set of unshielded colliers.
-     *
-     * @return a Set containing Triple objects that represent unshielded colliers
-     */
-    public Set<Triple> getUnshieldedColliers() {
-        return new HashSet<>(unshieldedColliers);
-    }
-
-    /**
-     * Retrieves a map containing additional separation sets. Each entry in the map associates an edge with a set of
-     * nodes that constitute the separation set for that edge.
-     *
-     * @return a map where the keys are edges and the values are sets of nodes representing the separation sets
-     */
-    public Map<Edge, Set<Node>> getExtraSepsets() {
-        return new HashMap<>(extraSepsets);
-    }
-
-    /**
      * Sets the value of the guaranteePag property.
      *
      * @param guaranteePag a boolean value indicating whether the guaranteePag is enabled or not
@@ -1060,21 +909,5 @@ public final class Fcit implements IGraphSearch {
          * Starts with an initial CPDAG over the variables of the independence test that is given in the constructor.
          */
         INITIAL_GRAPH
-    }
-
-    /**
-     * The ExtraEdgeRemovalStyle enum specifies the styles for removing extra edges.
-     */
-    public enum ExtraEdgeRemovalStyle {
-
-        /**
-         * Remove extra edges in parallel.
-         */
-        PARALLEL,
-
-        /**
-         * Remove extra edges in serial.
-         */
-        SERIAL,
     }
 }
