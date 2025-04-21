@@ -507,7 +507,6 @@ public final class Fcit implements IGraphSearch {
                                                         Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
         Set<Edge> edges = pag.getEdges();
-//        Map<Node, Set<Node>> ancestorMap = pag.paths().getAncestorsMap();
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
 
@@ -561,7 +560,7 @@ public final class Fcit implements IGraphSearch {
                 Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
                 Set<Node> perhapsNotFollowed = new HashSet<>();
 
-                // Don't repeat the same independence test twice for thie edge x *-* y.
+                // Don't repeat the same independence test twice for this edge x *-* y.
                 Set<Set<Node>> S = new HashSet<>();
 
                 if (paths == null) {
