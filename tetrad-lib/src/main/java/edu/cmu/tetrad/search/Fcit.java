@@ -396,7 +396,7 @@ public final class Fcit implements IGraphSearch {
 
         copyUnshieldedCollidersFromCpdag(best, pag, checked, cpdag, scorer, unshieldedColliders, fciOrient);
 
-        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
+        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
         // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
@@ -408,13 +408,13 @@ public final class Fcit implements IGraphSearch {
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
         Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength);
-        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
+        pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
             oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength);
-            pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient, best);
+            pag = refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
             if (_pag.equals(pag)) {
                 break;
@@ -481,15 +481,15 @@ public final class Fcit implements IGraphSearch {
     }
 
     private Graph refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders,
-                               FciOrient fciOrient, List<Node> best) {
+                               FciOrient fciOrient) {
         GraphUtils.reorientWithCircles(pag, verbose);
-        pag = adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
+        adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
         return pag;
     }
 
-    private Graph adjustForExtraSepsets(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders) {
+    private void adjustForExtraSepsets(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders) {
         for (Triple triple : new HashSet<>(unshieldedColliders)) {
             if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
                 unshieldedColliders.remove(triple);
@@ -499,8 +499,6 @@ public final class Fcit implements IGraphSearch {
         extraSepsets.keySet().parallelStream().forEach(edge ->
                 orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets)
         );
-
-        return pag;
     }
 
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Graph pag, Set<DiscriminatingPath> oldDiscriminatingPaths,
@@ -688,20 +686,6 @@ public final class Fcit implements IGraphSearch {
         suborderSearch.setUseDataOrder(useDataOrder);
         suborderSearch.setNumStarts(numStarts);
         suborderSearch.setVerbose(verbose);
-        var permutationSearch = new PermutationSearch(suborderSearch);
-        permutationSearch.setKnowledge(knowledge);
-        permutationSearch.search();
-        return permutationSearch;
-    }
-
-    /**
-     * Returns an SP search.
-     *
-     * @return a PermutationSearch
-     * @throws InterruptedException
-     */
-    private @NotNull PermutationSearch getSpSearch() throws InterruptedException {
-        var suborderSearch = new Sp(score);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
         permutationSearch.search();
@@ -923,9 +907,7 @@ public final class Fcit implements IGraphSearch {
      * @param unshieldedColliders The set of unshielded colliders to add the new unshielded collider to.
      * @param extraSepsets        The map of edges to sepsets used to remove them.
      */
-    private boolean orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
-        boolean changed = false;
-
+    private void orientCommonAdjacents(Edge edge, Graph pag, Set<Triple> unshieldedColliders, Map<Edge, Set<Node>> extraSepsets) {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
 
@@ -947,12 +929,9 @@ public final class Fcit implements IGraphSearch {
                     }
 
                     unshieldedColliders.add(new Triple(x, node, y));
-                    changed = true;
                 }
             }
         }
-
-        return changed;
     }
 
     /**
