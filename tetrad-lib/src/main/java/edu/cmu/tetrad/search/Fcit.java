@@ -73,7 +73,7 @@ public final class Fcit implements IGraphSearch {
     /**
      * The depth of the GRaSP if it is used.
      */
-    private int recursionDepth = -1;
+    private int recursionDepth = 3;
     /**
      * The maximum path length for blocking paths.
      */
@@ -550,7 +550,7 @@ public final class Fcit implements IGraphSearch {
 
             // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
             // there in this graph.
-            pag.getEdges().parallelStream().forEach(edge -> {
+            pag.getEdges().forEach(edge -> {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
