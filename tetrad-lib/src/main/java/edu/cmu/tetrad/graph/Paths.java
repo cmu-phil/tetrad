@@ -2,6 +2,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.*;
@@ -315,7 +316,7 @@ public class Paths implements TetradSerializable {
 
                 if (__g.paths().isLegalPag()) {
                     Graph _g = new EdgeListGraph(g);
-                    FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
+                    FciOrient fciOrient = new FciOrient(RecursiveDiscriminatingPathRule.defaultConfiguration(pag, new Knowledge()));
                     fciOrient.finalOrientation(pag);
                     return g.equals(_g);
                 }

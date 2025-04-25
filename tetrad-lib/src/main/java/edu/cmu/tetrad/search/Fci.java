@@ -204,7 +204,7 @@ public final class Fci implements IGraphSearch {
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: possible dsep. (Needed for correctness but very time-consuming.)
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) RecursiveDiscriminatingPathRule.specialConfiguration(independenceTest,
                 knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);

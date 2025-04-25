@@ -214,7 +214,7 @@ public final class Fcit implements IGraphSearch {
         strategy.setDepth(depth);
         strategy.setMaxLength(maxBlockingPathLength);
         strategy.setEnsureMarkovHelper(ensureMarkovHelper);
-        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
+        strategy.setBlockingType(RecursiveDiscriminatingPathRule.BlockingType.RECURSIVE);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);

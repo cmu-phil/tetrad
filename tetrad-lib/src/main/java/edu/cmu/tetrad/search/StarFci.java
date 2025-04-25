@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -373,7 +372,7 @@ public abstract class StarFci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) RecursiveDiscriminatingPathRule.specialConfiguration(independenceTest, knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);
         FciOrient fciOrient = new FciOrient(strategy);

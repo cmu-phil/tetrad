@@ -158,7 +158,7 @@ public final class FciMax implements IGraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
         if (this.possibleDsepSearchDone) {
-            FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
+            FciOrient fciOrient = new FciOrient(RecursiveDiscriminatingPathRule.defaultConfiguration(independenceTest, new Knowledge()));
             pag.paths().removeByPossibleDsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
@@ -167,7 +167,7 @@ public final class FciMax implements IGraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) RecursiveDiscriminatingPathRule.specialConfiguration(independenceTest,
                 knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);
