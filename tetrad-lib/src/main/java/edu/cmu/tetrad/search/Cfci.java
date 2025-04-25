@@ -195,7 +195,7 @@ public final class Cfci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) RecursiveDiscriminatingPathRule.specialConfiguration(independenceTest,
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
                 knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);

@@ -24,8 +24,8 @@
     import edu.cmu.tetrad.data.ContinuousVariable;
     import edu.cmu.tetrad.data.Knowledge;
     import edu.cmu.tetrad.graph.*;
-    import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
     import edu.cmu.tetrad.search.utils.FciOrient;
+    import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
     import edu.cmu.tetrad.util.RandomUtil;
     import org.jetbrains.annotations.Nullable;
     import org.junit.Test;
@@ -337,7 +337,7 @@
 
             Set<Triple> unshieldedTriples = new HashSet<>();
 
-            FciOrient fciOrientation = new FciOrient(RecursiveDiscriminatingPathRule.defaultConfiguration(graph, knowledge));
+            FciOrient fciOrientation = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(graph, knowledge));
             fciOrientation.orient(_graph, unshieldedTriples);
 
             _graph.removeEdge(x, y);

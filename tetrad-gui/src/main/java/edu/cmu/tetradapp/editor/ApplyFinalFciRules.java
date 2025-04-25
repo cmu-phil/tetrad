@@ -24,8 +24,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -77,7 +77,7 @@ public class ApplyFinalFciRules extends AbstractAction implements ClipboardOwner
         }
 
         Graph __g = new EdgeListGraph(graph);
-        FciOrient finalFciRules = new FciOrient(RecursiveDiscriminatingPathRule.defaultConfiguration(graph, new Knowledge()));
+        FciOrient finalFciRules = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(graph, new Knowledge()));
         finalFciRules.finalOrientation(__g);
         workbench.setGraph(__g);
     }

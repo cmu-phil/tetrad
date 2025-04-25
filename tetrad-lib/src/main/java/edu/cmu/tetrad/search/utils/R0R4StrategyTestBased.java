@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.SepsetFinder;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -102,6 +103,62 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public R0R4StrategyTestBased(IndependenceTest test) {
         this.test = test;
+    }
+
+    /**
+     * Provides a special configuration for creating an instance of FciOrientDataExaminationStrategy.
+     *
+     * @param test      the IndependenceTest object used by the strategy
+     * @param knowledge the Knowledge object used by the strategy
+     * @param verbose   boolean indicating whether to provide verbose output
+     * @return a configured FciOrientDataExaminationStrategy object
+     * @throws IllegalArgumentException if test or knowledge is null
+     */
+    public static R0R4Strategy specialConfiguration(IndependenceTest test, Knowledge knowledge, boolean verbose) {
+        if (test == null) {
+            throw new IllegalArgumentException("Test is null.");
+        }
+
+        if (knowledge == null) {
+            throw new IllegalArgumentException("Knowledge is null.");
+        }
+
+        if (test instanceof MsepTest) {
+            R0R4Strategy r0R4Strategy = defaultConfiguration(((MsepTest) test).getGraph(), knowledge);
+            R0R4StrategyTestBased _r0R4Strategy = (R0R4StrategyTestBased) r0R4Strategy;
+            _r0R4Strategy.setVerbose(verbose);
+            return _r0R4Strategy;
+        } else {
+            R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+            strategy.setKnowledge(knowledge);
+            strategy.setVerbose(verbose);
+            return strategy;
+        }
+    }
+
+    /**
+     * Returns a default configuration of the FciOrientDataExaminationStrategy object.
+     *
+     * @param dag       the graph representation
+     * @param knowledge the Knowledge object used by the strategy
+     * @return a default configured FciOrientDataExaminationStrategy object
+     */
+    public static R0R4Strategy defaultConfiguration(Graph dag, Knowledge knowledge) {
+        return defaultConfiguration(new MsepTest(dag), knowledge);
+    }
+
+    /**
+     * Returns a default configuration of the FciOrientDataExaminationStrategy object.
+     *
+     * @param test      the IndependenceTest object used by the strategy
+     * @param knowledge the Knowledge object used by the strategy
+     * @return a configured FciOrientDataExaminationStrategy object
+     * @throws IllegalArgumentException if test or knowledge is null
+     */
+    public static R0R4Strategy defaultConfiguration(IndependenceTest test, Knowledge knowledge) {
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+        strategy.setKnowledge(knowledge);
+        return strategy;
     }
 
     /**

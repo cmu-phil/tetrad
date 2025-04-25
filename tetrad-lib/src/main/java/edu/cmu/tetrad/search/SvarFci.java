@@ -177,7 +177,7 @@ public final class SvarFci implements IGraphSearch {
         SepsetProducer sp = new SepsetsPossibleDsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxDiscriminatingPathLength);
         sp.setVerbose(this.verbose);
 
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) RecursiveDiscriminatingPathRule.specialConfiguration(independenceTest,
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
                 knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);

@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.PagCache;
@@ -198,7 +197,7 @@ public class GraphTransforms {
                     pag.setEndpoint(edge.getFirst(), edge.getSecond(), Endpoint.ARROW);
                 }
 
-                FciOrient fciOrient = new FciOrient(RecursiveDiscriminatingPathRule.defaultConfiguration(pag, new Knowledge()));
+                FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
                 fciOrient.finalOrientation(pag);
             }
         }

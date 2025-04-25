@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -201,7 +200,7 @@ public final class TsDagToPag {
         }
 
         FciOrient fciOrient = new FciOrient(
-                RecursiveDiscriminatingPathRule.defaultConfiguration(dag, new Knowledge()));
+                R0R4StrategyTestBased.defaultConfiguration(dag, new Knowledge()));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.finalOrientation(graph);
