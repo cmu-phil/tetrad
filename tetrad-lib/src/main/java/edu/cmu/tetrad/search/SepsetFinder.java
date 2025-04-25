@@ -277,11 +277,6 @@ public class SepsetFinder {
         adjx.remove(y);
         adjy.remove(x);
 
-//        if (containing != null) {
-//            adjx.removeAll(containing);
-//            adjy.removeAll(containing);
-//        }
-
         // Remove latent nodes.
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
