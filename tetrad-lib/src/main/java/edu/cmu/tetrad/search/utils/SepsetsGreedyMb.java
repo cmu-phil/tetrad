@@ -80,7 +80,7 @@ public class SepsetsGreedyMb implements SepsetProducer {
      *         separating set is found
      */
     public Set<Node> getSepset(Node i, Node k, int depth, List<Node> order) {
-        return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, new HashSet<>(), this.independenceTest, depth, order);
+        return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, new HashSet<>(), this.independenceTest, depth);
     }
 
     /**
@@ -95,14 +95,14 @@ public class SepsetsGreedyMb implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) {
-        return SepsetFinder.getSepsetContainingGreedySubsetMb(graph, cpdag, i, k, s, this.independenceTest, depth, null);
+        return SepsetFinder.getSepsetContainingGreedySubsetMb(graph, cpdag, i, k, s, this.independenceTest, depth);
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) {
-        Set<Node> set = SepsetFinder.getSepsetContainingGreedySubsetMb(graph, cpdag, i, k, null, this.independenceTest, depth, null);
+        Set<Node> set = SepsetFinder.getSepsetContainingGreedySubsetMb(graph, cpdag, i, k, null, this.independenceTest, depth);
         return set != null && !set.contains(j);
     }
 

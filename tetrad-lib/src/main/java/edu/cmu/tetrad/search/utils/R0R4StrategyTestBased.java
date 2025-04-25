@@ -174,7 +174,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
-        Set<Node> sepset = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, new HashSet<>(), test, depth, null);
+        Set<Node> sepset = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, new HashSet<>(), test, depth);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -301,7 +301,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
     private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
         Set<Node> blocking;
-        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth, null);
+        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
 
         Set<Node> b1 = new HashSet<>(blocking);
         b1.remove(v);
