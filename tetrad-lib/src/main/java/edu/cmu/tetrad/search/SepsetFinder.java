@@ -48,22 +48,12 @@ public class SepsetFinder {
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
                 .filter(subset -> {
                     try {
-//                        if (order != null) {
-//                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
-//
-//                            for (Node node : subset) {
-//                                if (order.indexOf(node) > order.indexOf(_y)) {
-//                                    return false;
-//                                }
-//                            }
-//                        }
-
                         return separates(x, y, subset, test);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }) // Further filter by separating sets
-                .findFirst() // Return the first matching subset
+                .findFirst()
                 .orElse(null);
 
         if (sepset != null) {
@@ -139,21 +129,11 @@ public class SepsetFinder {
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
                 .filter(subset -> {
                     try {
-//                        if (order != null) {
-//                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
-//
-//                            for (Node node : subset) {
-//                                if (order.indexOf(node) > order.indexOf(_y)) {
-//                                    return false;
-//                                }
-//                            }
-//                        }
-
                         return separates(x, y, subset, test);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                }) // Further filter by separating sets
+                })
                 .findFirst() // Return the first matching subset
                 .orElse(null);
 
@@ -161,35 +141,8 @@ public class SepsetFinder {
             return sepset;
         }
 
-//        choices = getChoices(mby, depth);
-//
-//        sepset = choices.parallelStream()
-//                .map(choice -> combination(choice, mby)) // Generate combinations in parallel
-//                .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-//                .filter(subset -> {
-//                    try {
-////                        if (order != null) {
-////                            Node _y = order.indexOf(x) < order.indexOf(y) ? y : x;
-////
-////                            for (Node node : subset) {
-////                                if (order.indexOf(node) > order.indexOf(_y)) {
-////                                    return false;
-////                                }
-////                            }
-////                        }
-//
-//                        return separates(x, y, subset, test);
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }) // Further filter by separating sets
-//                .findFirst() // Return the first matching subset
-//                .orElse(null);
-
-
         return sepset;
     }
-
 
     /**
      * Returns the set of nodes that act as a separating set between two given nodes (x and y) in a graph. The method
@@ -258,7 +211,6 @@ public class SepsetFinder {
 
         return null;
     }
-
 
     /**
      * Returns the sepset containing the minimum p-value for the given variables x and y.
@@ -346,61 +298,6 @@ public class SepsetFinder {
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
         return RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength);
-    }
-
-    /**
-     * Finds a set of nodes that blocks all paths from node x to node y in a graph, considering a maximum path length
-     * and a set of nodes that must be included in the blocking set.
-     *
-     * @param graph         The graph containing the nodes.
-     * @param x             The starting node of the path.
-     * @param y             The ending node of the path.
-     * @param containing    The set of nodes that must be included in the blocking set.
-     * @param maxPathLength The maximum length of the paths to consider.
-     * @param notFollowing  A set of notes that should not be followed along paths.
-     * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
-     */
-    public static Set<Node> getPathBlockingSetRecursive(Graph graph, Node x, Node y, Set<Node> containing, int maxPathLength,
-                                                        Set<Node> notFollowing, Map<Node, Set<Node>> ancestorMap)
-            throws InterruptedException {
-        return getPathBlockingSetRecursiveVisit(graph, x, y, containing, notFollowing, maxPathLength, ancestorMap);
-    }
-
-    /**
-     * Helper method to find a set of nodes that blocks all paths from node x to node y in a graph, considering a
-     * maximum path length and a set of nodes that must be included in the blocking set.
-     *
-     * @param graph         The graph containing the nodes.
-     * @param x             The starting node of the path.
-     * @param y             The ending node of the path.
-     * @param containing    The set of nodes that must be included in the blocking set.
-     * @param notFollowed   The set of nodes that should not be followed along paths.
-     * @param maxPathLength The maximum length of the paths to consider.
-     * @return A set of nodes that blocks all paths from node x to node y, or null if no such set exists.
-     */
-    private static Set<Node> getPathBlockingSetRecursiveVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                              Set<Node> notFollowed, int maxPathLength, Map<Node, Set<Node>> ancestorMap)
-            throws InterruptedException {
-        if (x == y) {
-            return null;
-        }
-
-        Set<Node> z = new HashSet<>(containing);
-        Set<Node> previousZ;
-
-        do {
-            previousZ = new HashSet<>(z);
-
-            Set<Node> path = new HashSet<>();
-            path.add(x);
-
-            // Iterate over adjacent nodes to find potential paths.
-            for (Node b : graph.getAdjacentNodes(x)) {
-                RecursiveBlocking.findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
-            }
-        } while (!previousZ.equals(z)); // Repeat if the set z changes.
-
-        return z;
     }
 
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {

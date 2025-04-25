@@ -46,7 +46,6 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
-import static edu.cmu.tetrad.search.SepsetFinder.getPathBlockingSetRecursive;
 import static org.junit.Assert.*;
 
 
