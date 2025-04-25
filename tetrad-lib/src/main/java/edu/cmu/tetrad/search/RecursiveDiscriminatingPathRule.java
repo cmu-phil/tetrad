@@ -248,27 +248,6 @@ public class RecursiveDiscriminatingPathRule {
         return false;
     }
 
-    /**
-     * Enum representing the different types of blocking strategies.
-     * <p>
-     * The available blocking strategies are:
-     * <p>
-     * RECURSIVE - This strategy involves a recursive approach to blocking. GREEDY - This strategy involves a greedy
-     * approach to blocking.
-     */
-    public enum BlockingType {
-        /**
-         * Recursive blocking. This calculates the blocking set B recursively that must include V and then checks the
-         * independence of X and Y given B.
-         */
-        RECURSIVE,
-        /**
-         * Greedy blocking. This searches greedily, in the distribution, for a sepset B of X and Y and then looks to see
-         * if V is in B.
-         */
-        GREEDY,
-    }
-
     /** Simple custom exception to indicate "I couldn't find a solution." */
     public static class NoSolutionFoundException extends Exception {
         public NoSolutionFoundException(String message) {

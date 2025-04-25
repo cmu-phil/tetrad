@@ -36,7 +36,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
      */
-    private RecursiveDiscriminatingPathRule.BlockingType blockingType = RecursiveDiscriminatingPathRule.BlockingType.GREEDY;
+    private BlockingType blockingType = BlockingType.GREEDY;
     /**
      * Private variable representing the knowledge.
      * <p>
@@ -152,10 +152,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         Set<Node> blocking = null;
 
-        if (blockingType == RecursiveDiscriminatingPathRule.BlockingType.RECURSIVE) {
+        if (blockingType == BlockingType.RECURSIVE) {
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
                     maxLength, maxLength, ensureMarkovHelper, depth);
-        } else if (blockingType == RecursiveDiscriminatingPathRule.BlockingType.GREEDY) {
+        } else if (blockingType == BlockingType.GREEDY) {
             blocking = findAdjSetSepset(graph, x, y, path, v);
         } else {
             throw new IllegalArgumentException("Unknown blocking type.");
@@ -170,15 +170,15 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         // This is needed for greedy and anteriority methods, which return sepsets, not recursive, which always
         // returns a blocking set.
-        if (blockingType == RecursiveDiscriminatingPathRule.BlockingType.GREEDY && blocking == null) {
+        if (blockingType == BlockingType.GREEDY && blocking == null) {
             throw new IllegalArgumentException("Sepset is null.");
         }
 
-        if (blockingType == RecursiveDiscriminatingPathRule.BlockingType.RECURSIVE && !(blocking.containsAll(path) && blocking.contains(w))) {
+        if (blockingType == BlockingType.RECURSIVE && !(blocking.containsAll(path) && blocking.contains(w))) {
             throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
         }
 
-        if (blockingType == RecursiveDiscriminatingPathRule.BlockingType.GREEDY && !blocking.containsAll(path)) {
+        if (blockingType == BlockingType.GREEDY && !blocking.containsAll(path)) {
             throw new IllegalArgumentException("Blocking set is not correct; it should contain the path.");
         }
 
@@ -188,10 +188,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // must contain V by construction.
         if (blockingType != null) {
             boolean noncollider = switch (blockingType) {
-                case RecursiveDiscriminatingPathRule.BlockingType.RECURSIVE ->
+                case BlockingType.RECURSIVE ->
                         RecursiveDiscriminatingPathRule.checkIndependenceRecursive(test, x, y, blocking, vNodes,
                                 discriminatingPath, ensureMarkovHelper);
-                case RecursiveDiscriminatingPathRule.BlockingType.GREEDY -> blocking.contains(v);
+                case BlockingType.GREEDY -> blocking.contains(v);
             };
 
             if (noncollider) {
@@ -384,8 +384,28 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      *
      * @param blockingType the blocking type to be set, which can be either RECURSIVE or GREEDY.
      */
-    public void setBlockingType(RecursiveDiscriminatingPathRule.BlockingType blockingType) {
+    public void setBlockingType(BlockingType blockingType) {
         this.blockingType = blockingType;
     }
 
+    /**
+     * Enum representing the different types of blocking strategies.
+     * <p>
+     * The available blocking strategies are:
+     * <p>
+     * RECURSIVE - This strategy involves a recursive approach to blocking. GREEDY - This strategy involves a greedy
+     * approach to blocking.
+     */
+    public enum BlockingType {
+        /**
+         * Recursive blocking. This calculates the blocking set B recursively that must include V and then checks the
+         * independence of X and Y given B.
+         */
+        RECURSIVE,
+        /**
+         * Greedy blocking. This searches greedily, in the distribution, for a sepset B of X and Y and then looks to see
+         * if V is in B.
+         */
+        GREEDY,
+    }
 }
