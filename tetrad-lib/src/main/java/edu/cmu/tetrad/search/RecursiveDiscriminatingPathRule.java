@@ -4,7 +4,9 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.DiscriminatingPath;
+import edu.cmu.tetrad.search.utils.EnsureMarkov;
+import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.util.ArrayList;
@@ -16,27 +18,37 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 
 /**
- * Implements the R4 Discriminating Path rule in the final FCI orientation rules (Zhang 2008) using
- * the block_paths_recursively method as a optimization.
+ * Implements the R4 Discriminating Path rule in the final FCI orientation rules (Zhang 2008) using the
+ * block_paths_recursively method as a optimization.
  *
  * @author josephramsey
  */
 public class RecursiveDiscriminatingPathRule {
 
     /**
-     * Checks for conditional independence between two nodes {@code x} and {@code y} in the context of
-     * a given blocking set, recursively analyzing potential discriminating paths. This method evaluates
-     * combinations of nodes in the blocking set that satisfy independence conditions.
+     * Creates a new instance of the RecursiveDiscriminatingPathRule class. This constructor is private to ensure that
+     * the class cannot be instantiated directly. The class is designed to provide static methods for evaluating
+     * conditional independence and finding separating sets in graph structures through recursive analysis of
+     * discriminating paths.
+     */
+    private RecursiveDiscriminatingPathRule() {
+
+    }
+
+    /**
+     * Checks for conditional independence between two nodes {@code x} and {@code y} in the context of a given blocking
+     * set, recursively analyzing potential discriminating paths. This method evaluates combinations of nodes in the
+     * blocking set that satisfy independence conditions.
      *
-     * @param test                 The independence test object used to evaluate conditional independence.
-     * @param x                    The first node for which independence is being checked.
-     * @param y                    The second node for which independence is being checked.
-     * @param blocking             The initial set of nodes considered as the blocking set for independence tests.
-     * @param vNodes               The subset of nodes identifying possible colliders in the analysis.
-     * @param discriminatingPath   The discriminating path data structure containing relevant path information.
-     * @param ensureMarkovHelper   A helper object for ensuring adherence to the Markov property during the checks.
-     * @return                     {@code true} if the nodes {@code x} and {@code y} are conditionally independent
-     *                             given the blocking set; otherwise, {@code false}.
+     * @param test               The independence test object used to evaluate conditional independence.
+     * @param x                  The first node for which independence is being checked.
+     * @param y                  The second node for which independence is being checked.
+     * @param blocking           The initial set of nodes considered as the blocking set for independence tests.
+     * @param vNodes             The subset of nodes identifying possible colliders in the analysis.
+     * @param discriminatingPath The discriminating path data structure containing relevant path information.
+     * @param ensureMarkovHelper A helper object for ensuring adherence to the Markov property during the checks.
+     * @return {@code true} if the nodes {@code x} and {@code y} are conditionally independent given the blocking set;
+     * otherwise, {@code false}.
      * @throws InterruptedException If the process is interrupted during execution.
      */
     public static boolean checkIndependenceRecursive(IndependenceTest test, Node x, Node y, Set<Node> blocking, Set<Node> vNodes,
@@ -78,21 +90,24 @@ public class RecursiveDiscriminatingPathRule {
 
 
     /**
-     * Finds the set of nodes (separator set) for the Recursive Discriminating Path rule in a graph.
-     * This method uses a recursive approach to evaluate possible discriminating paths between
-     * two nodes {@code x} and {@code y} in the provided graph {@code pag}. It involves complex
-     * independence checks and is computationally intensive.
+     * Finds the set of nodes (separator set) for the Recursive Discriminating Path rule in a graph. This method uses a
+     * recursive approach to evaluate possible discriminating paths between two nodes {@code x} and {@code y} in the
+     * provided graph {@code pag}. It involves complex independence checks and is computationally intensive.
      *
-     * @param test                 The independence test object used to check for conditional independence between nodes.
-     * @param pag                  The graph structure, typically a partial ancestral graph (PAG), being analyzed.
-     * @param x                    The first target node in the analysis.
-     * @param y                    The second target node in the analysis.
-     * @param fciOrient            An orientation helper object used to apply FCI rules to edges in the graph.
+     * @param test                  The independence test object used to check for conditional independence between
+     *                              nodes.
+     * @param pag                   The graph structure, typically a partial ancestral graph (PAG), being analyzed.
+     * @param x                     The first target node in the analysis.
+     * @param y                     The second target node in the analysis.
+     * @param fciOrient             An orientation helper object used to apply FCI rules to edges in the graph.
      * @param maxBlockingPathLength The maximum allowable length of a blocking path for the analysis.
      * @param maxDdpPathLength      The maximum allowable discriminating path length considered for the analysis.
-     * @param ensureMarkovHelper    A helper object for additional Markov property checks during the independence tests.
-     * @param depth                 The maximum subset depth allowed during subset evaluations; a value of -1 allows all subsets.
-     * @return A set of nodes that constitutes the separating set (sepset) between {@code x} and {@code y}, or {@code null} if no such set exists.
+     * @param ensureMarkovHelper    A helper object for additional Markov property checks during the independence
+     *                              tests.
+     * @param depth                 The maximum subset depth allowed during subset evaluations; a value of -1 allows all
+     *                              subsets.
+     * @return A set of nodes that constitutes the separating set (sepset) between {@code x} and {@code y}, or
+     * {@code null} if no such set exists.
      */
     public static Set<Node> findDdpSepsetRecursive(
             IndependenceTest test, Graph pag, Node x, Node y, FciOrient fciOrient,
@@ -235,6 +250,12 @@ public class RecursiveDiscriminatingPathRule {
      * Simple custom exception to indicate "I couldn't find a solution."
      */
     public static class NoSolutionFoundException extends Exception {
+
+        /**
+         * Constructs a NoSolutionFoundException with the specified detail message.
+         *
+         * @param message the detail message providing information about the exception
+         */
         public NoSolutionFoundException(String message) {
             super(message);
         }
