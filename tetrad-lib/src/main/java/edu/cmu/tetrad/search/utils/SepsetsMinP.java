@@ -99,7 +99,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @return The sepset between the two nodes
      */
     public Set<Node> getSepset(Node i, Node k, int depth, List<Node> order) throws InterruptedException {
-        return SepsetFinder.getSepsetContainingMinPHybrid(graph, i, k, null, this.independenceTest, depth);
+        return SepsetFinder.getSepsetContainingMinPHybrid(graph, i, k, this.independenceTest, depth);
     }
 
     /**
@@ -114,7 +114,7 @@ public class SepsetsMinP implements SepsetProducer {
      */
     @Override
     public Set<Node> getSepsetContaining(Node i, Node k, Set<Node> s, int depth) throws InterruptedException {
-        return SepsetFinder.getSepsetContainingMinPHybrid(graph, i, k, s, this.independenceTest, depth);
+        return SepsetFinder.getSepsetContainingMinPHybrid(graph, i, k, this.independenceTest, depth);
     }
 
     /**
@@ -127,7 +127,7 @@ public class SepsetsMinP implements SepsetProducer {
      * @return true if the collider node is unshielded between the two nodes, false otherwise.
      */
     public boolean isUnshieldedCollider(Node i, Node j, Node k, int depth) throws InterruptedException {
-        Set<Node> set = SepsetFinder.getSepsetContainingMinPHybrid(graph, i, k, null, this.independenceTest, depth);
+        Set<Node> set = SepsetFinder.getSepsetContainingMinPHybrid(graph, i, k, this.independenceTest, depth);
         return set != null && !set.contains(j);
     }
 

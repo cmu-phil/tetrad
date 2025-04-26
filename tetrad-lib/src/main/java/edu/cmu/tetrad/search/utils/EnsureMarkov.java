@@ -84,20 +84,20 @@ public class EnsureMarkov {
 
         var _pValues = new HashMap<>(pValues);
 
-        Set<Node> parentsX = new HashSet<>(graph.getParents(x));
+        Set<Node> mbx = new HashSet<>(graph.paths().markovBlanket(x));
 
-        for (Node node : parentsX) {
+        for (Node node : mbx) {
             if (node.equals(y)) {
-                parentsX.remove(node);
+                mbx.remove(node);
                 break;
             }
         }
 
-        Set<Node> parentsY = new HashSet<>(graph.getParents(y));
+        Set<Node> mby = new HashSet<>(graph.paths().markovBlanket(y));
 
-        for (Node node : parentsY) {
+        for (Node node : mby) {
             if (node.equals(x)) {
-                parentsY.remove(node);
+                mby.remove(node);
                 break;
             }
         }
@@ -110,8 +110,8 @@ public class EnsureMarkov {
                 continue;
             }
 
-            if (!parentsX.contains(_y) && !graph.paths().existsDirectedPath(x, _y, withoutPair)) {
-                IndependenceResult result = test.checkIndependence(x, _y, parentsX);
+            if (!mbx.contains(_y)) {// && !graph.paths().existsDirectedPath(x, _y, withoutPair)) {
+                IndependenceResult result = test.checkIndependence(x, _y, mbx);
                 _pValues.putIfAbsent(Pair.of(x, _y), new HashSet<>());
                 _pValues.get(Pair.of(x, _y)).add(result.getPValue());
             }
@@ -122,8 +122,8 @@ public class EnsureMarkov {
                 continue;
             }
 
-            if (!parentsY.contains(_x) && !graph.paths().existsDirectedPath(y, _x, withoutPair)) {
-                IndependenceResult result = test.checkIndependence(y, _x, parentsY);
+            if (!mby.contains(_x)) {// && !graph.paths().existsDirectedPath(y, _x, withoutPair)) {
+                IndependenceResult result = test.checkIndependence(y, _x, mby);
                 _pValues.putIfAbsent(Pair.of(y, _x), new HashSet<>());
                 _pValues.get(Pair.of(y, _x)).add(result.getPValue());
             }

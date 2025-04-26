@@ -157,7 +157,7 @@ public class TestSepsetMethods {
                         }
                     }
                     case BLOCK_PATHS_GREEDY -> {
-                        blockingSet = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(), msepTest, -1, null);
+                        blockingSet = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(), msepTest, -1);
                     }
                     case BLOCK_PATHS_MAX_P -> {
                         try {
@@ -168,7 +168,7 @@ public class TestSepsetMethods {
                     }
                     case BLOCK_PATHS_MIN_P -> {
                         try {
-                            blockingSet = SepsetFinder.getSepsetContainingMinPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+                            blockingSet = SepsetFinder.getSepsetContainingMinPHybrid(graph, x, y, msepTest, -1);
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }

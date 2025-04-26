@@ -295,11 +295,8 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents)
             throws InterruptedException {
-        Map<Node, Set<Node>> ancestorMap = graph.paths().getAncestorsMap();
-
-        // Delegates the minimal conditioning set finding to the proven recursive method.
-        return SepsetFinder.getPathBlockingSetRecursive(
-                graph, childA, childB, new HashSet<>(), -1, new HashSet<>(), ancestorMap
+        return SepsetFinder.blockPathsRecursively(
+                graph, childA, childB, new HashSet<>(),  new HashSet<>(), -1
         );
     }
 

@@ -3,18 +3,16 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.*;
 
 /**
  * The FciOrientDataExaminationStrategyTestBased class implements the FciOrientDataExaminationStrategy interface and
@@ -126,7 +124,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         if (test instanceof MsepTest) {
-            R0R4Strategy r0R4Strategy = R0R4StrategyTestBased.defaultConfiguration(((MsepTest) test).getGraph(), knowledge);
+            R0R4Strategy r0R4Strategy = defaultConfiguration(((MsepTest) test).getGraph(), knowledge);
             R0R4StrategyTestBased _r0R4Strategy = (R0R4StrategyTestBased) r0R4Strategy;
             _r0R4Strategy.setVerbose(verbose);
             return _r0R4Strategy;
@@ -174,7 +172,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
-        Set<Node> sepset = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, new HashSet<>(), test, depth, null);
+        Set<Node> sepset = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, new HashSet<>(), test, depth);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -212,7 +210,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         Set<Node> blocking = null;
 
         if (blockingType == BlockingType.RECURSIVE) {
-            blocking = findDdpSepset(graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)), maxLength, -1);
+            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
+                    maxLength, maxLength, ensureMarkovHelper, depth);
         } else if (blockingType == BlockingType.GREEDY) {
             blocking = findAdjSetSepset(graph, x, y, path, v);
         } else {
@@ -245,8 +244,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // blocking contains v. These are two ways to express the same idea, since for the recursive case blocking
         // must contain V by construction.
         if (blockingType != null) {
-            if ((blockingType == BlockingType.RECURSIVE && checkIndependenceRecursive(x, y, blocking, vNodes, discriminatingPath, test))
-                || (blockingType == BlockingType.GREEDY && blocking.contains(v))) {
+            boolean noncollider = switch (blockingType) {
+                case BlockingType.RECURSIVE ->
+                        RecursiveDiscriminatingPathRule.checkIndependenceRecursive(test, x, y, blocking, vNodes,
+                                discriminatingPath, ensureMarkovHelper);
+                case BlockingType.GREEDY -> blocking.contains(v);
+            };
+
+            if (noncollider) {
                 if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
                     return Pair.of(discriminatingPath, false);
                 }
@@ -301,7 +306,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
     private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
         Set<Node> blocking;
-        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth, null);
+        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
 
         Set<Node> b1 = new HashSet<>(blocking);
         b1.remove(v);
@@ -322,188 +327,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
         return blocking;
     }
-
-    private boolean checkIndependenceRecursive(Node x, Node y, Set<Node> blocking, Set<Node> vNodes,
-                                               DiscriminatingPath discriminatingPath, IndependenceTest test) throws InterruptedException {
-
-        List<Node> vs = new ArrayList<>();
-        List<Node> nonVs = new ArrayList<>();
-
-        for (Node v : blocking) {
-            if (vNodes.contains(v)) {
-                vs.add(v);
-            } else {
-                nonVs.add(v);
-            }
-        }
-
-        Node v = discriminatingPath.getV();
-        vs.remove(v);
-
-        SublistGenerator generator = new SublistGenerator(vs.size(), vs.size());
-        int[] choice;
-
-        while ((choice = generator.next()) != null) {
-            Set<Node> newBlocking = GraphUtils.asSet(choice, vs);
-            newBlocking.add(v);
-            newBlocking.addAll(nonVs);
-
-            // You didn't condition on any colliders. V is in the set. So V is a noncollider.
-            boolean independent = ensureMarkovHelper != null ? ensureMarkovHelper.markovIndependence(x, y, newBlocking) :
-                    test.checkIndependence(x, y, newBlocking).isIndependent();
-
-            if (independent) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public Set<Node> findDdpSepset(
-            Graph pag, Node x, Node y, FciOrient fciOrient,
-            int maxBlockingPathLength, int maxDdpPathLength) {
-        // 1) Preliminary orientation steps
-        fciOrient.setDoR4(false);
-        fciOrient.finalOrientation(pag);
-        fciOrient.setDoR4(true);
-
-        // 2) List possible "DiscriminatingPath" objects
-        Set<DiscriminatingPath> discriminatingPaths =
-                FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
-
-        // 3) Figure out which nodes might be "notFollowed"
-        Set<DiscriminatingPath> relevantPaths = new HashSet<>();
-        for (DiscriminatingPath path : discriminatingPaths) {
-            if ((path.getX() == x && path.getY() == y) || (path.getX() == y && path.getY() == x)) {
-                relevantPaths.add(path);
-            }
-        }
-
-        Set<Node> perhapsNotFollowed = new HashSet<>();
-        for (DiscriminatingPath path : relevantPaths) {
-            if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                perhapsNotFollowed.add(path.getV());
-            }
-        }
-        List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
-
-        // 4) Possibly limit subset size by "depth".
-        int _depth = (depth == -1) ? _perhapsNotFollowed.size() : depth;
-        _depth = Math.min(_depth, _perhapsNotFollowed.size());
-
-        // Generate all subsets from _perhapsNotFollowed
-        SublistGenerator gen = new SublistGenerator(_perhapsNotFollowed.size(), _depth);
-        List<int[]> allChoices = new ArrayList<>();
-        int[] choice;
-        while ((choice = gen.next()) != null) {
-            allChoices.add(choice.clone());
-        }
-
-        // 5) Build "common" neighbors
-        List<Node> common = new ArrayList<>(pag.getAdjacentNodes(x));
-        common.retainAll(pag.getAdjacentNodes(y));
-        int _depth2 = (depth == -1) ? common.size() : depth;
-        _depth2 = Math.min(_depth2, common.size());
-
-        int __depth2 = _depth2;
-
-        // 6) Build a Callable for each subset. We throw an exception if no solution is found.
-        List<Callable<Set<Node>>> tasks = new ArrayList<>();
-        for (int[] indices : allChoices) {
-            tasks.add(() -> {
-                // Check for interruption at the start (optional)
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new NoSolutionFoundException("Thread interrupted before start");
-                }
-
-                // Convert indices -> actual nodes
-                Set<Node> notFollowedSet = GraphUtils.asSet(indices, _perhapsNotFollowed);
-
-                // (A) blockPathsRecursively
-                Set<Node> b = SepsetFinder.blockPathsRecursively(
-                        pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
-                );
-
-                // (B) For each subset of "common," check independence
-                SublistGenerator gen2 = new SublistGenerator(common.size(), __depth2);
-                int[] choice2;
-
-                outerLoop:
-                while ((choice2 = gen2.next()) != null) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        throw new NoSolutionFoundException("Thread interrupted in loop");
-                    }
-
-                    Set<Node> c = GraphUtils.asSet(choice2, common);
-
-                    // Skip if there's a definite collider x->node<-y
-                    for (Node node : c) {
-                        if (pag.isDefCollider(x, node, y)) {
-                            continue outerLoop;
-                        }
-                    }
-
-                    // b minus c
-                    Set<Node> testSet = new HashSet<>(b);
-                    testSet.removeAll(c);
-
-                    // Check independence
-                    boolean independent;
-                    if (ensureMarkovHelper != null) {
-                        independent = ensureMarkovHelper.markovIndependence(x, y, testSet);
-                    } else {
-                        independent = test.checkIndependence(x, y, testSet).isIndependent();
-                    }
-
-                    if (independent) {
-                        // Found a valid solution => return it
-                        return testSet;
-                    }
-                }
-                // If we never find a solution in this task => throw
-                throw new NoSolutionFoundException("No solution in this subset");
-            });
-        }
-
-        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() / 2);
-
-        try {
-            // 8) Use invokeAny => returns as soon as one task completes successfully
-            // i.e., doesn't throw an exception
-            Set<Node> result = forkJoinPool.invokeAny(tasks);
-
-            // 9) If we get here, 'result' is from the first successfully completed task
-            // We can shut down forcibly, to kill all other tasks
-            forkJoinPool.shutdownNow();
-            return result;
-
-        } catch (InterruptedException e) {
-            // If the main thread is interrupted
-            forkJoinPool.shutdownNow();
-            throw new RuntimeException(e);
-
-        } catch (ExecutionException e) {
-            // This means *all* tasks either threw or never completed
-            // Typically indicates no solution was found (or some other error).
-            forkJoinPool.shutdownNow();
-            // You might choose to return null or rethrow
-            return null;
-
-        } finally {
-            if (!forkJoinPool.isShutdown()) {
-                forkJoinPool.shutdownNow();
-            }
-        }
-    }
-
-    /** Simple custom exception to indicate "I couldn't find a solution." */
-    private static class NoSolutionFoundException extends Exception {
-        public NoSolutionFoundException(String message) {
-            super(message);
-        }
-    }
-
 
     /**
      * Sets the knowledge object used by the FciOrientDataExaminationStrategy.
