@@ -13,13 +13,22 @@ import java.util.List;
 public class DataSetHelper {
 
     /**
-     * Creates a new {@link DataSet} instance from the specified inputs, including
-     * continuous and discrete data along with variable definitions.
+     * Private constructor to prevent instantiation of the utility class.
+     * <p>
+     * This constructor enforces the utility nature of {@code DataSetHelper} by restricting object creation.
+     */
+    private DataSetHelper() {
+
+    }
+
+    /**
+     * Creates a new {@link DataSet} instance from the specified inputs, including continuous and discrete data along
+     * with variable definitions.
      *
-     * @param vars the list of variables, represented as {@link Node} objects
+     * @param vars  the list of variables, represented as {@link Node} objects
      * @param nrows the number of rows in the resulting dataset
-     * @param cont a 2D array of continuous data values
-     * @param disc a 2D array of discrete data values
+     * @param cont  a 2D array of continuous data values
+     * @param disc  a 2D array of discrete data values
      * @return a {@link DataSet} instance containing the specified data
      */
     public static DataSet fromR(List<Node> vars, int nrows, double[][] cont, int[][] disc) {

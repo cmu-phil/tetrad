@@ -1861,6 +1861,7 @@ public class Paths implements TetradSerializable {
      * @param containing    the set of nodes that the sepset must contain
      * @param maxPathLength the maximum length of the path to search for the blocking set
      * @return the sepset between the two nodes
+     * @throws InterruptedException if any.
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) throws InterruptedException {
         Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength);

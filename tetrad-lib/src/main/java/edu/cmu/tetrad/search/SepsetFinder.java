@@ -294,6 +294,7 @@ public class SepsetFinder {
      * @param maxPathLength the maximum length of a path to consider
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
+     * @throws InterruptedException if any.
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
@@ -355,6 +356,7 @@ public class SepsetFinder {
      *                  needed to make sure the proper version of the separation algorithm is used.
      * @return A set of nodes that can block all blockable paths from x to y that can be blocked with noncolliders only,
      * or null if no such set exists.
+     * @throws InterruptedException If any.
      */
     public static Set<Node> blockPathsNoncollidersOnly(Graph graph, Node x, Node y, int maxLength, boolean isPag)
             throws InterruptedException {

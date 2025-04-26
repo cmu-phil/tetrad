@@ -6,7 +6,22 @@ import edu.cmu.tetrad.graph.NodeType;
 
 import java.util.*;
 
+/**
+ * The {@code RecursiveBlocking} class provides methods for assessing the blockability of paths in a graph based on
+ * specified conditions. It includes recursive mechanisms to determine whether specific sets of nodes can block paths
+ * and prevent certain graph traversal directions. This class is utilized in graph analysis to evaluate separation
+ * criteria, particularly in directed acyclic graphs (DAGs).
+ */
 public class RecursiveBlocking {
+
+    /**
+     * Private constructor to prevent instantiation of the RecursiveBlocking class. This class is designed to provide
+     * static utility methods for analyzing graph structures and identifying specific blocking sets or paths within
+     * directed acyclic graphs (DAGs). As a utility class, instantiation is not necessary.
+     */
+    private RecursiveBlocking() {
+
+    }
 
     /**
      * Retrieves set that blocks all blockable paths between x and y in the given graph, where this set contains the
@@ -20,6 +35,7 @@ public class RecursiveBlocking {
      * @param maxPathLength the maximum length of a path to consider
      * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
      * {@code null} if no sepset can be found.
+     * @throws InterruptedException if any.
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
@@ -65,10 +81,12 @@ public class RecursiveBlocking {
      *                      built.
      * @param maxPathLength The maximum length of the paths to consider.
      * @param notFollowed   A set of nodes that should not be followed along paths.
-     * @return True if the path can be blocked, false otherwise.
+     * @param ancestorMap   Map used to check to see if descendants of colliders are conditioned on.
+     * @return True if the path can be blocked.
+     * @throws InterruptedException if any.
      */
     public static Blockable findPathToTarget(Graph graph, Node a, Node b, Node y, Set<Node> path, Set<Node> z,
-                                                          int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
+                                             int maxPathLength, Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap)
             throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
             return Blockable.INDETERMINATE;
@@ -207,5 +225,36 @@ public class RecursiveBlocking {
         }
     }
 
-    public static enum Blockable {BLOCKED, UNBLOCKABLE, INDETERMINATE}
+    /**
+     * Enum representing the blocking status for graph-path-related operations in the {@code RecursiveBlocking} class.
+     * <p>
+     * This enum is used to categorize whether a path in a graph is blocked, unblockable, or its status cannot be
+     * determined (indeterminate).
+     */
+    public static enum Blockable {
+
+        /**
+         * Represents the state where a path in a graph is blocked and cannot be traversed.
+         * <p>
+         * This enum constant is part of the {@code Blockable} enumeration used for classifying graph-path-related
+         * blocking statuses.
+         */
+        BLOCKED,
+
+        /**
+         * Represents the state where a path in a graph cannot be blocked and is always traversable.
+         * <p>
+         * This enum constant is part of the {@code Blockable} enumeration, which categorizes the blocking status of
+         * paths in graph-related operations.
+         */
+        UNBLOCKABLE,
+
+        /**
+         * Represents the state where the blocking status of a path in a graph cannot be determined.
+         * <p>
+         * This enum constant is part of the {@code Blockable} enumeration and is used to classify graph-path-related
+         * blocking statuses that are uncertain or indeterminate.
+         */
+        INDETERMINATE
+    }
 }
