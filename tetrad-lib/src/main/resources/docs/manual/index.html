@@ -360,6 +360,17 @@
     <p>Isolates the subgraph of the input graph involving all and only
         latent variables.</p>
 
+    <h3 id="ui-indicator-expansion">Discrete-to-Indicator Expansion</h3>
+    <p>
+        In <b>Data ▸ Transform</b>, the new <b><i>Indicator</i></b> button converts
+        a discrete column into <i>k−1</i> {0,1} dummies preserving rank.
+    </p>
+
+    <h3 id="ui-bootstrap-options">Bootstrap “Sample w/out Replacement”</h3>
+    <p>
+        The bootstrap dialog now offers <b>Without replacement</b>.
+        Useful for exact subsampling when the sample size is small.
+    </p>
 
     <h2>Other Graph Box Functions</h2>
 
@@ -2409,10 +2420,43 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </li>
     </ul>
 
-    <h5>Boolean Glass</h5>
+    <!-- ─────────────  NEW SIMULATORS  ───────────── -->
+    <h3 id="sim-functional-causal">Functional–Causal Simulator (Zhang 2015)</h3>
+    <p>
+        Generates data from an additive, potentially nonlinear functional-causal
+        model&nbsp;<span class="cite">(Zhang 2015)</span>.
+        Each variable <i>X<sub>i</sub></i> is produced as
+        <code>X<sub>i</sub> := f<sub>i</sub>(PA<sub>i</sub>) + U<sub>i</sub></code>,
+        where <i>U<sub>i</sub></i> are mutually independent noise terms.
+    </p>
+    <ul>
+        <li><b>GUI:</b> <b>Simulate ▸ Functional-Causal</b></li>
+        <li><b>CLI:</b> <code>-sim-func -n {samples} -dag {graphSpec}</code></li>
+        <li><b>Outputs:</b> continuous data set; ground-truth DAG.</li>
+    </ul>
 
-    <p> The instantiated model used to simulate the data will be
-        re-parameterized for each run of the simulation.</p>
+    <h3 id="sim-additive-noise">Additive-Noise Simulator (Peters 2014)</h3>
+    <p>
+        Implements the linear/non-linear additive-noise model used by
+        <span class="cite">Peters et al., 2014</span>.
+        Noise variance is user-selectable; functions are sampled
+        from Gaussian processes.
+    </p>
+    <!-- parameter table comes from existing template; omit here -->
+
+    <h3 id="sim-pnl">Post-Non-Linear Simulator (Zhang & Hyv&auml;rinen 2009)</h3>
+    <p>
+        Samples data from the PNL causal model
+        <code>X := g(f(PA) + U)</code>,
+        covering non-monotone <i>g</i> when required.
+    </p>
+
+    <h3 id="sim-causal-perceptron">Causal-Perceptron Network (DJI)</h3>
+    <p>
+        Experimental simulator for deep causal generative networks
+        (Dji internal research).  <em>Currently marked “beta”.</em>
+    </p>
+
 
 
     <h3>The Simulation Box with a Graph Input</h3>
@@ -2467,6 +2511,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </li>
         <li>A knowledge box</li>
     </ul>
+
+
 
 
     <h2>Possible Child Boxes of the Simulation Box</h2>
@@ -2530,7 +2576,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>Notably there are some experimental algorithms available in this box.
         To see these, select File->Settings->Enable Experimental.</p>
-
 
     <h2>Search Algorithms</h2>
 
@@ -3461,32 +3506,38 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#alpha">alpha</a>, <a href="#depth">depth</a></p>
 
-    <h3>The MGM Algorithm</h3>
+    <h3 id="legacy">Legacy Components</h3>
+    <ul>
+        <li><b>MGM (mixed graphical model)</b> – moved to <code>legacy/</code>;
+            still invocable via <code>-search mgm</code> but no longer maintained.</li>
+    </ul>
 
-    <h4>Description</h4>
+<!--    <h3>The MGM Algorithm</h3>-->
 
-    <div id="mgm">
+<!--    <h4>Description</h4>-->
 
-        <p>Need reference. Finds a Markov random field (with parents
-            married) for a dataset in which continuous and discrete variables are
-            mixed together. For example, if X->Y<-Z, the output will be X—Y—Z
-            with X—Z. The parents of Y will be joined by an undirected edge,
-            morally, even though this edge does not occur in the true model.</p>
+<!--    <div id="mgm">-->
 
-    </div>
+<!--        <p>Need reference. Finds a Markov random field (with parents-->
+<!--            married) for a dataset in which continuous and discrete variables are-->
+<!--            mixed together. For example, if X->Y<-Z, the output will be X—Y—Z-->
+<!--            with X—Z. The parents of Y will be joined by an undirected edge,-->
+<!--            morally, even though this edge does not occur in the true model.</p>-->
 
-    <h4>Input Assumptions</h4>
+<!--    </div>-->
 
-    <p>Data are mixed.</p>
+<!--    <h4>Input Assumptions</h4>-->
 
-    <h4>Output Format</h4>
+<!--    <p>Data are mixed.</p>-->
 
-    <p>A Markov random field for the data.</p>
+<!--    <h4>Output Format</h4>-->
 
-    <h4>Parameters</h4>
+<!--    <p>A Markov random field for the data.</p>-->
 
-    <p><a href="#mgmParam1">mgmParam1</a>, <a
-            href="#mgmParam2">mgmParam2</a>, <a href="#mgmParam3">mgmParam3</a></p>
+<!--    <h4>Parameters</h4>-->
+
+<!--    <p><a href="#mgmParam1">mgmParam1</a>, <a-->
+<!--            href="#mgmParam2">mgmParam2</a>, <a href="#mgmParam3">mgmParam3</a></p>-->
 
     <h3>The SP Algorithm</h3>
 
@@ -4215,6 +4266,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>Same as for PC.</p>
 
+    <h3 id="search-dm-fcit">Dm / DmFcit Latent-Discovery</h3>
+    <p>
+        <b>Dm</b> (Deterministic-Maximisation) and
+        <b>DmFcit</b> extend FGES to identify intermediate latent
+        variables that act as deterministic “multipliers” of observed parents.
+    <ul>
+        <li><b>CLI:</b> <code>-search dm</code> or <code>-search dmfcit</code></li>
+        <li>Outputs a PAG with latent nodes <em>L<sub>∗</sub></em> in grey.</li>
+    </ul>
+    </p>
+
 
     <h2>Statistical Tests</h2>
 
@@ -4660,6 +4722,18 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         false positive risk probability).
     </p>
     </div>
+
+    <!-- ─────────────  NEW SCORES  ───────────── -->
+    <h3 id="score-cca-bic">CCA Scores (Wishart, Bollen–Ting)</h3>
+    <p>
+        Four alternative SEM scores are now available:
+    <ul>
+        <li><b>CCA-BIC</b> &nbsp;– Bayesian information on canonical correlation.</li>
+        <li><b>CCA-LRT</b> &nbsp;– Likelihood-ratio Wishart test.</li>
+        <li><b>BF-BIC / BF-LRT</b> &nbsp;– Bayes-factor counterparts for finite samples.</li>
+    </ul>
+    Activate via <code>-score cca-bic</code>, <code>-score bf-lrt</code>, etc.
+    </p>
 
     <div id="parameters"><h2>Search Parameters</h2>
 
