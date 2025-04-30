@@ -908,13 +908,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                                     throw new RuntimeException(e);
                                 }
                                 break;
-                            case NONCOLLIDERS_ONLY:
-                                try {
-                                    z = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, maxLength, true);
-                                } catch (InterruptedException e) {
-                                    throw new RuntimeException(e);
-                                }
-                                break;
                             default:
                                 throw new IllegalArgumentException("Unknown separation set type: " + setType);
                         }

@@ -70,14 +70,12 @@ public class TestSepsetMethods {
             BLOCK_PATHS_MAX_P,
             BLOCK_PATHS_MIN_P,
             BLOCK_PATHS_RECURSIVELY,
-            BLOCK_PATHS_NONCOLLIDERS_ONLY
         }
 
         List<Method> methods = List.of(
 //                Method.BLOCK_PATHS_WITH_MARKOV_BLANKET,
 //                Method.BLOCK_PATHS_LOCAL_MARKOV,
                 Method.BLOCK_PATHS_RECURSIVELY
-//                Method.BLOCK_PATHS_NONCOLLIDERS_ONLY,
 //                Method.BLOCK_PATHS_GREEDY,
 //                Method.BLOCK_PATHS_MAX_P,
 //                Method.BLOCK_PATHS_MIN_P
@@ -148,13 +146,6 @@ public class TestSepsetMethods {
                     }
                     case BLOCK_PATHS_LOCAL_MARKOV -> {
                         blockingSet = blockPathsLocalMarkov(graph, x);
-                    }
-                    case BLOCK_PATHS_NONCOLLIDERS_ONLY -> {
-                        try {
-                            blockingSet = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, -1, graphType == GraphType.PAG);
-                        } catch (InterruptedException ex) {
-                            throw new RuntimeException(ex);
-                        }
                     }
                     case BLOCK_PATHS_GREEDY -> {
                         blockingSet = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(), msepTest, -1);
