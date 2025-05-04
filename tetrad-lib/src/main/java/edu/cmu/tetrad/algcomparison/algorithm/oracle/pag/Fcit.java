@@ -149,7 +149,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
 //        search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
-        search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
+//        search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 //        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
@@ -224,7 +224,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
 //        params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
-        params.add(Params.ENSURE_MARKOV);
+//        params.add(Params.ENSURE_MARKOV);
 //        params.add(Params.GUARANTEE_PAG);
 //        params.add(Params.TEST_TIMEOUT);
 

@@ -112,7 +112,7 @@ public final class Fcit implements IGraphSearch {
     /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
-    private boolean ensureMarkov = true;
+    private boolean ensureMarkov = false;
     /**
      * A helper class to help perserve Markov.
      */
@@ -218,6 +218,7 @@ public final class Fcit implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
+        fciOrient.setDoR4(true);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setTestTimeout(testTimeout);
         fciOrient.setVerbose(verbose);

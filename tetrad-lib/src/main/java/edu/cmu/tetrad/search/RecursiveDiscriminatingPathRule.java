@@ -114,6 +114,7 @@ public class RecursiveDiscriminatingPathRule {
             int maxBlockingPathLength, int maxDdpPathLength, EnsureMarkov ensureMarkovHelper, int depth) {
         // 1) Preliminary orientation steps
         fciOrient.setDoR4(false);
+        fciOrient.setCompleteRuleSetUsed(false);
         fciOrient.finalOrientation(pag);
         fciOrient.setDoR4(true);
 
