@@ -59,7 +59,7 @@ public class RecursiveBlocking {
                 return null;
             }
 
-            findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
+           findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
         }
 
         return z;

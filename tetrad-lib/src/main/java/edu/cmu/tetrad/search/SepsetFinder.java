@@ -284,7 +284,9 @@ public class SepsetFinder {
 
     /**
      * Retrieves set that blocks all blockable paths between x and y in the given graph, where this set contains the
-     * given nodes.
+     * given nodes, assuming ~adj(x, y). If there is an x--y edge in the graph, it is removed before looking for
+     * a blocking set and then re-added. This is to ensure a minimal blocking set is found that m-separates all paths
+     * from x to y.
      *
      * @param graph         the graph to analyze
      * @param x             the first node
@@ -298,7 +300,10 @@ public class SepsetFinder {
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
-        return RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength);
+        Set<Node> nodes = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength);
+//        Set<Node> nodes = RecursiveBlockingChokePointB.blockPathsRecursively(graph, x, y, notFollowed, maxPathLength);
+
+        return nodes;
     }
 
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {

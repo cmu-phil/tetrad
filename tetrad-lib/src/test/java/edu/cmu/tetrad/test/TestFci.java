@@ -651,6 +651,26 @@ public class TestFci {
         return pathThrough;
     }
 
+    @Test
+    public void testChokePoint() {
+        Graph graph = GraphUtils.convert("x-->r,x-->s,r-->c,s-->c,c-->w,c-->v,w-->y,v-->y");
+
+        try {
+            Set<Node> B = RecursiveBlockingChokePointB.blockPathsRecursively(graph, graph.getNode("x"), graph.getNode("y"),
+                    Set.of(), -1);
+//            Set<Node> B = RecursiveBlocking.blockPathsRecursively(graph, graph.getNode("x"), graph.getNode("y"),
+//                    Set.of(), Set.of(), -1);
+
+            System.out.println("B = " + B);
+
+            MsepTest msepTest = new MsepTest(graph);
+
+            System.out.println("independent = " + msepTest.checkIndependence(graph.getNode("x"), graph.getNode("y"), B).isIndependent());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
 
 

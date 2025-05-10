@@ -219,7 +219,7 @@ public final class Fcit implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
         fciOrient.setDoR4(true);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setTestTimeout(testTimeout);
         fciOrient.setVerbose(verbose);
         fciOrient.setParallel(true);
@@ -496,7 +496,7 @@ public final class Fcit implements IGraphSearch {
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        edges.parallelStream().forEach(edge -> {
+        edges.forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
