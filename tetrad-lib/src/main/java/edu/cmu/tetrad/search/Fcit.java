@@ -121,7 +121,7 @@ public final class Fcit implements IGraphSearch {
      * Represents whether the payment guarantee feature is enabled or not. This variable is a flag to determine if the
      * guarantee payment option is active in the current context.
      */
-    private boolean guaranteePag;
+    private boolean guaranteePag = false;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -496,7 +496,7 @@ public final class Fcit implements IGraphSearch {
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        edges.forEach(edge -> {
+        edges.parallelStream().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
