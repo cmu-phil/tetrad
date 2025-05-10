@@ -471,8 +471,8 @@ public final class Fcit implements IGraphSearch {
     private void refreshGraph(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders,
                               FciOrient fciOrient) {
         GraphUtils.reorientWithCircles(pag, verbose);
-        adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+        adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
     }
 
@@ -488,11 +488,11 @@ public final class Fcit implements IGraphSearch {
             }
         }
 
-        for (Triple triple : new HashSet<>(unshieldedColliders)) {
-            if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
-                unshieldedColliders.remove(triple);
-            }
-        }
+//        for (Triple triple : new HashSet<>(unshieldedColliders)) {
+//            if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
+//                unshieldedColliders.remove(triple);
+//            }
+//        }
     }
 
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Graph pag, Set<DiscriminatingPath> oldDiscriminatingPaths,
@@ -806,7 +806,7 @@ public final class Fcit implements IGraphSearch {
                         TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
                     }
 
-                    unshieldedColliders.add(new Triple(x, node, y));
+//                    unshieldedColliders.add(new Triple(x, node, y));
                 }
             }
         }
