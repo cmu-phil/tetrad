@@ -397,13 +397,13 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
-        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength);
+        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength, unshieldedColliders);
         refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
-            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength);
+            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength, unshieldedColliders);
             refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
             if (_pag.equals(pag)) {
@@ -472,24 +472,35 @@ public final class Fcit implements IGraphSearch {
                               FciOrient fciOrient) {
         GraphUtils.reorientWithCircles(pag, verbose);
         adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         GraphUtils.recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
     }
 
     private void adjustForExtraSepsets(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders) {
+        for (Triple triple : new HashSet<>(unshieldedColliders)) {
+//            if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
+//                unshieldedColliders.remove(triple);
+//            }
+
+            if (pag.isAdjacentTo(triple.getX(), triple.getZ())) {
+                TetradLogger.getInstance().log("Removing edge " + pag.getEdge(triple.getX(), triple.getZ()));
+                pag.removeEdge(triple.getX(), triple.getZ());
+
+                extraSepsets.keySet().parallelStream().forEach(edge ->
+                        orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets)
+                );
+            }
+        }
+
         for (Triple triple : new HashSet<>(unshieldedColliders)) {
             if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
                 unshieldedColliders.remove(triple);
             }
         }
-
-        extraSepsets.keySet().parallelStream().forEach(edge ->
-                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets)
-        );
     }
 
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Graph pag, Set<DiscriminatingPath> oldDiscriminatingPaths,
-                                                        Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
+                                                        Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength, Set<Triple> unshieldedColliders) {
         fciOrient.finalOrientation(pag);
         Set<Edge> edges = pag.getEdges();
 
@@ -497,7 +508,7 @@ public final class Fcit implements IGraphSearch {
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        edges.forEach(edge -> {
+        edges.parallelStream().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -535,7 +546,7 @@ public final class Fcit implements IGraphSearch {
 
             // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
             // there in this graph.
-            pag.getEdges().forEach(edge -> {
+            pag.getEdges().parallelStream().forEach(edge -> {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
@@ -630,7 +641,10 @@ public final class Fcit implements IGraphSearch {
                                 }
 
                                 extraSepsets.put(pag.getEdge(x, y), b);
-                                pag.removeEdge(x, y);
+//                                pag.removeEdge(x, y);
+//
+//                                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
+
                                 break;
                             }
                         } catch (InterruptedException e) {
