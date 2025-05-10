@@ -418,7 +418,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.setDoR4(true);
-        fciOrient.setCompleteRuleSetUsed(true);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.finalOrientation(pag);
 
         long stop2 = System.currentTimeMillis();
