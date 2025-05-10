@@ -121,7 +121,7 @@ public final class Fcit implements IGraphSearch {
      * Represents whether the payment guarantee feature is enabled or not. This variable is a flag to determine if the
      * guarantee payment option is active in the current context.
      */
-    private boolean guaranteePag;
+    private boolean guaranteePag = false;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -219,7 +219,7 @@ public final class Fcit implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
         fciOrient.setDoR4(true);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setCompleteRuleSetUsed(false);
         fciOrient.setTestTimeout(testTimeout);
         fciOrient.setVerbose(verbose);
         fciOrient.setParallel(true);
@@ -418,6 +418,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient.setInitialAllowedColliders(new HashSet<>());
         fciOrient.setDoR4(true);
+        fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.finalOrientation(pag);
 
         long stop2 = System.currentTimeMillis();
@@ -496,7 +497,7 @@ public final class Fcit implements IGraphSearch {
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        edges.parallelStream().forEach(edge -> {
+        edges.forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -630,6 +631,7 @@ public final class Fcit implements IGraphSearch {
 
                                 extraSepsets.put(pag.getEdge(x, y), b);
                                 pag.removeEdge(x, y);
+                                break;
                             }
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
