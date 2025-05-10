@@ -300,18 +300,8 @@ public class SepsetFinder {
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
-//        Edge xy = graph.getEdge(x, y);
-//
-//        if (xy != null) {
-//            graph.removeEdge(xy);
-//        }
-
         Set<Node> nodes = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength);
 //        Set<Node> nodes = RecursiveBlockingChokePointB.blockPathsRecursively(graph, x, y, notFollowed, maxPathLength);
-
-//        if (xy != null) {
-//            graph.addEdge(xy);
-//        }
 
         return nodes;
     }

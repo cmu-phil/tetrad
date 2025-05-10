@@ -397,13 +397,13 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
-        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength, unshieldedColliders);
+        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength);
         refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
-            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength, unshieldedColliders);
+            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength);
             refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
             if (_pag.equals(pag)) {
@@ -500,7 +500,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Graph pag, Set<DiscriminatingPath> oldDiscriminatingPaths,
-                                                        Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength, Set<Triple> unshieldedColliders) {
+                                                        Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
         Set<Edge> edges = pag.getEdges();
 
@@ -578,6 +578,7 @@ public final class Fcit implements IGraphSearch {
                 SublistGenerator gen = new SublistGenerator(E.size(), _depth);
                 int[] choice;
 
+                W:
                 while ((choice = gen.next()) != null) {
                     Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
@@ -616,17 +617,17 @@ public final class Fcit implements IGraphSearch {
                     SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
                     int[] choice2;
 
-                    W:
+                    W2:
                     while ((choice2 = gen2.next()) != null) {
                         if (!pag.isAdjacentTo(x, y)) {
-                            break;
+                            break W;
                         }
 
                         Set<Node> c = GraphUtils.asSet(choice2, common);
 
                         for (Node node : c) {
                             if (pag.isDefCollider(x, node, y)) {
-                                continue W;
+                                continue W2;
                             }
                         }
 
@@ -641,11 +642,7 @@ public final class Fcit implements IGraphSearch {
                                 }
 
                                 extraSepsets.put(pag.getEdge(x, y), b);
-//                                pag.removeEdge(x, y);
-//
-//                                orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets);
-
-                                break;
+                                break W;
                             }
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
