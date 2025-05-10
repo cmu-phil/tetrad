@@ -284,7 +284,9 @@ public class SepsetFinder {
 
     /**
      * Retrieves set that blocks all blockable paths between x and y in the given graph, where this set contains the
-     * given nodes.
+     * given nodes, assuming ~adj(x, y). If there is an x--y edge in the graph, it is removed before looking for
+     * a blocking set and then re-added. This is to ensure a minimal blocking set is found that m-separates all paths
+     * from x to y.
      *
      * @param graph         the graph to analyze
      * @param x             the first node
@@ -298,7 +300,10 @@ public class SepsetFinder {
      */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
-        return RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength);
+        Set<Node> nodes = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength);
+//        Set<Node> nodes = RecursiveBlockingChokePointB.blockPathsRecursively(graph, x, y, notFollowed, maxPathLength);
+
+        return nodes;
     }
 
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {
@@ -341,94 +346,6 @@ public class SepsetFinder {
             return 0.0;
         }
         return Double.isNaN(pValue) ? 1.0 : pValue;
-    }
-
-    /**
-     * Returns a set that blocks all paths that can be blocked by conditioning on noncolliders only, searching outward
-     * from x.
-     *
-     * @param graph     The graph representing the Markov equivalence class that contains the nodes.
-     * @param x         The first node in the pair.
-     * @param y         The second node in the pair.
-     * @param maxLength The maximum length of the paths to consider. If set to a negative value or a value greater than
-     *                  the number of nodes minus one, it is adjusted accordingly.
-     * @param isPag     A flag indicating whether the graph is a PAG or a CPDAG, true = PAG, false = MPDAG. This is
-     *                  needed to make sure the proper version of the separation algorithm is used.
-     * @return A set of nodes that can block all blockable paths from x to y that can be blocked with noncolliders only,
-     * or null if no such set exists.
-     * @throws InterruptedException If any.
-     */
-    public static Set<Node> blockPathsNoncollidersOnly(Graph graph, Node x, Node y, int maxLength, boolean isPag)
-            throws InterruptedException {
-        Set<Node> cond = new HashSet<>();
-        Set<Node> blackList = new HashSet<>();
-
-        Deque<List<Node>> queue = new LinkedList<>();
-        queue.add(Collections.singletonList(x));
-
-        while (!queue.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException();
-            }
-
-            List<Node> path = queue.poll();
-
-            if (maxLength != -1 && path.size() > maxLength) {
-                continue;
-            }
-
-            Node node = path.getLast();
-
-            if (node == y) continue;
-
-            Map<Node, Boolean> blocked = new HashMap<>();
-
-            for (Node adjacent : graph.getAdjacentNodes(node)) {
-                blocked.put(adjacent, false);
-
-                if (!path.contains(adjacent)) {
-                    List<Node> newPath = new ArrayList<>(path);
-                    newPath.add(adjacent);
-
-                    // If the path length is less than 3, it cannot form a triple and is added directly.
-                    if (newPath.size() < 3) {
-                        queue.add(newPath);
-                    } else {
-                        for (int i = 1; i < newPath.size() - 1; i++) {
-                            if (blocked.get(adjacent)) {
-                                break;
-                            }
-
-                            Node z1 = newPath.get(i - 1);
-                            Node z2 = newPath.get(i);
-                            Node z3 = newPath.get(i + 1);
-
-                            // Skip this node if it forms a collider in the path, but move past it to
-                            // find a noncollider.
-                            if (graph.isDefCollider(z1, z2, z3)) {
-                                blackList.add(z2);  // Mark the collider to prevent conditioning.
-
-                                // This is a collider; if the path is not already blocked by a noncollider,
-                                // we want to move past it to find a noncollider.
-                                if (graph.paths().isMConnectingPath(path, cond, isPag)) {
-                                    queue.offer(newPath);
-                                }
-                            } else {
-                                if (!blackList.contains(z2)) {
-                                    if (!graph.isAdjacentTo(z1, z3)) {
-                                        cond.add(z2);
-                                        blackList.addAll(graph.paths().getDescendants(z2));
-                                        blocked.put(adjacent, true);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return cond;
     }
 
     /**

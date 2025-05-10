@@ -114,6 +114,7 @@ public class RecursiveDiscriminatingPathRule {
             int maxBlockingPathLength, int maxDdpPathLength, EnsureMarkov ensureMarkovHelper, int depth) {
         // 1) Preliminary orientation steps
         fciOrient.setDoR4(false);
+        fciOrient.setCompleteRuleSetUsed(false);
         fciOrient.finalOrientation(pag);
         fciOrient.setDoR4(true);
 
@@ -173,6 +174,10 @@ public class RecursiveDiscriminatingPathRule {
                 Set<Node> b = SepsetFinder.blockPathsRecursively(
                         pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
                 );
+
+                if (b == null) {
+                    return null;
+                }
 
                 // (B) For each subset of "common," check independence
                 SublistGenerator gen2 = new SublistGenerator(common.size(), __depth2);

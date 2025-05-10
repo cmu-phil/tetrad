@@ -112,7 +112,7 @@ public final class Fcit implements IGraphSearch {
     /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
-    private boolean ensureMarkov = true;
+    private boolean ensureMarkov = false;
     /**
      * A helper class to help perserve Markov.
      */
@@ -121,7 +121,7 @@ public final class Fcit implements IGraphSearch {
      * Represents whether the payment guarantee feature is enabled or not. This variable is a flag to determine if the
      * guarantee payment option is active in the current context.
      */
-    private boolean guaranteePag;
+    private boolean guaranteePag = false;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -218,7 +218,8 @@ public final class Fcit implements IGraphSearch {
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setDoR4(true);
+        fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setTestTimeout(testTimeout);
         fciOrient.setVerbose(verbose);
         fciOrient.setParallel(true);

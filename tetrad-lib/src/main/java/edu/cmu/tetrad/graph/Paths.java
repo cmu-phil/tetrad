@@ -356,7 +356,11 @@ public class Paths implements TetradSerializable {
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
+        GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection));
+
+        return legalPag.isLegalPag();
+
+//        return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
     /**
