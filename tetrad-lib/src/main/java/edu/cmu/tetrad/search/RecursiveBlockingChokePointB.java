@@ -7,32 +7,22 @@ import edu.cmu.tetrad.graph.NodeType;
 import java.util.*;
 
 /**
- * Alternative “choke‑point first” strategy (Option B).
- * <p>
- * Differences from <code>RecursiveBlockingChokePointA</code>:
- * <ol>
- *     <li>We still restart exploration from <code>x</code> only (so the DFS
- *         can branch into every still‑open X–Y path) but
- *         <strong>we deliberately ignore the <em>first</em> complete path</strong>
- *         that the DFS finds when seeding the intersection.  The second
- *         path becomes the initial intersection set; every subsequent path
- *         then intersects as usual.</li>
- *     <li>That little tweak avoids copying potentially large interior
- *         lists just to throw most of them away on the very next retain.
- *         Empirically it trims a few percent off runtime on big graphs but
- *         returns exactly the same separating set as Option A.</li>
- * </ol>
- * Soundness and termination are unchanged.  Weak‑minimality is still not
- * guaranteed.
+ * Option B, but
+ *   – completely ignores the direct edge x *-* y while searching, and
+ *   – returns {@code null} if it proves impossible to block the remaining
+ *     x–y paths with eligible non-colliders.
  */
 public final class RecursiveBlockingChokePointB {
 
     private RecursiveBlockingChokePointB() {}
 
     /* ------------------------------------------------------------------ */
-    /*  Public entry point                                                */
+    /*  Public entry point                                                 */
     /* ------------------------------------------------------------------ */
 
+    /** @return { B } if a separator is found, ∅ if none is needed,
+     *           or {@code null} if no separator exists (w.r.t. the
+     *           ignored edge). */
     public static Set<Node> blockPathsRecursively(Graph G,
                                                   Node x,
                                                   Node y,
@@ -47,45 +37,59 @@ public final class RecursiveBlockingChokePointB {
 
         /* -------------------  outer loop  --------------------------- */
         while (true) {
-            Path witness = firstOpenPath(G, x, y, B, maxPathLength, desc, forbidden);
-            if (witness == null) break;
+            Path witness = firstOpenPath(G, x, y, B,
+                    maxPathLength, desc, forbidden);
+            if (witness == null) break;                 // all other paths blocked
 
-            Path prefix = Path.single(x, forbidden);  // always start DFS from x
-
+            Path prefix = Path.single(x, forbidden);    // always seed DFS at x
             Set<Node> I = intersectionSkipFirst(G, prefix, y, B,
                     maxPathLength, desc, forbidden);
-            if (!I.isEmpty()) {
+
+            if (!I.isEmpty()) {          // ordinary ‘choke-point’ step
                 B.addAll(I);
                 continue;
             }
 
-            // Fallback (should be rare): add first eligible non‑collider.
+            /* ---------- fallback: first eligible non-collider ---------- */
+            boolean added = false;
             for (Node v : witness.interiorEligibleNonColliders(G, B)) {
                 B.add(v);
+                added = true;
                 break;
+            }
+            if (!added) {                       // nothing left to try – fail
+                return null;
             }
         }
         return B;
     }
 
     /* ------------------------------------------------------------------ */
-    /*  firstOpenPath – DFS until we hit y on a path open w.r.t B         */
+    /*  firstOpenPath – DFS until y is reached on an open path            */
     /* ------------------------------------------------------------------ */
 
     private static Path firstOpenPath(Graph G, Node x, Node y, Set<Node> B,
-                                      int maxLen, Map<Node, Set<Node>> desc, Set<Node> forbidden)
+                                      int maxLen, Map<Node, Set<Node>> desc,
+                                      Set<Node> forbidden)
             throws InterruptedException {
 
         record Frame(Node node, Iterator<Node> it, Path soFar) {}
         Deque<Frame> S = new ArrayDeque<>();
-        S.push(new Frame(x, G.getAdjacentNodes(x).iterator(), Path.single(x, forbidden)));
+        S.push(new Frame(x, G.getAdjacentNodes(x).iterator(),
+                Path.single(x, forbidden)));
 
         while (!S.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-            Frame f = S.peek();
+            if (Thread.currentThread().isInterrupted())
+                throw new InterruptedException();
 
+            Frame f = S.peek();
             if (!f.it.hasNext()) { S.pop(); continue; }
+
             Node nbr = f.it.next();
+
+            /* ---------  NEW: ignore the direct edge x *-* y  --------- */
+            if (isXYEdge(f.node, nbr, x, y)) continue;
+
             if (f.soFar.contains(nbr)) continue;
             if (!segmentPasses(G, f.node, nbr, B, desc)) continue;
             Path next = f.soFar.extend(nbr);
@@ -99,12 +103,13 @@ public final class RecursiveBlockingChokePointB {
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Intersection routine that skips the first complete path           */
+    /*  intersectionSkipFirst – takes same ‘ignore-edge’ shortcut         */
     /* ------------------------------------------------------------------ */
 
     private static Set<Node> intersectionSkipFirst(Graph G, Path prefix, Node y,
                                                    Set<Node> B, int maxLen,
-                                                   Map<Node, Set<Node>> desc, Set<Node> forbidden)
+                                                   Map<Node, Set<Node>> desc,
+                                                   Set<Node> forbidden)
             throws InterruptedException {
 
         Deque<Path> todo = new ArrayDeque<>();
@@ -114,26 +119,26 @@ public final class RecursiveBlockingChokePointB {
         Set<Node> inter = null;
 
         while (!todo.isEmpty()) {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            if (Thread.currentThread().isInterrupted())
+                throw new InterruptedException();
+
             Path p = todo.pop();
             Node tail = p.tail();
 
             if (tail.equals(y)) {
-                if (!skippedFirst) {           // ignore the first witness path
-                    skippedFirst = true;
-                    continue;
-                }
+                if (!skippedFirst) { skippedFirst = true; continue; }
                 List<Node> interior = p.interiorEligibleNonColliders(G, B);
-                if (inter == null) inter = new HashSet<>(interior);
-                else inter.retainAll(interior);
+                if (inter == null)      inter = new HashSet<>(interior);
+                else                    inter.retainAll(interior);
                 continue;
             }
             if (maxLen != -1 && p.length() >= maxLen) continue;
 
             for (Node w : G.getAdjacentNodes(tail)) {
-                if (forbidden.contains(w)) continue;
-                if (p.contains(w)) continue;
-                if (!segmentPasses(G, tail, w, B, desc)) continue;
+                if (isXYEdge(tail, w, prefix.nodes.get(0), y)) continue;
+                if (forbidden.contains(w))                continue;
+                if (p.contains(w))                        continue;
+                if (!segmentPasses(G, tail, w, B, desc))  continue;
                 todo.push(p.extend(w));
             }
         }
@@ -143,6 +148,12 @@ public final class RecursiveBlockingChokePointB {
     /* ------------------------------------------------------------------ */
     /*  Helpers                                                           */
     /* ------------------------------------------------------------------ */
+
+    /** Skip the one undirected edge we want to pretend does not exist. */
+    private static boolean isXYEdge(Node a, Node b, Node x, Node y) {
+        return (a.equals(x) && b.equals(y)) ||
+               (a.equals(y) && b.equals(x));
+    }
 
     private static boolean segmentPasses(Graph G, Node a, Node b,
                                          Set<Node> B, Map<Node, Set<Node>> desc) {
@@ -155,19 +166,18 @@ public final class RecursiveBlockingChokePointB {
     }
 
     private static boolean isEligibleNonCollider(Graph G, List<Node> prefix,
-                                                 Node v, Set<Node> B, Set<Node> forbidden) {
-        if (forbidden.contains(v)) return false;
+                                                 Node v, Set<Node> B,
+                                                 Set<Node> forbidden) {
+        if (forbidden.contains(v))      return false;
         if (v.getNodeType() == NodeType.LATENT) return false;
-        if (B.contains(v)) return false;
+        if (B.contains(v))              return false;
         int i = prefix.size() - 1;
         if (i < 1) return false;
         Node a = prefix.get(i - 1), b = prefix.get(i);
         return !G.isDefCollider(a, b, v);
     }
 
-    /* ------------------------------------------------------------------ */
-    /*  Immutable Path helper                                             */
-    /* ------------------------------------------------------------------ */
+    /* ---------------  immutable Path helper  ------------------------- */
 
     private static final class Path {
         private final List<Node> nodes;
@@ -176,19 +186,22 @@ public final class RecursiveBlockingChokePointB {
             this.nodes = nodes;
             this.forbidden = forbidden;
         }
-
-        static Path single(Node v, Set<Node> forbidden) { return new Path(new ArrayList<>(List.of(v)), forbidden); }
-
-        int length() { return nodes.size() - 1; }
-        Node tail()  { return nodes.get(nodes.size() - 1); }
+        static Path single(Node v, Set<Node> forbidden) {
+            return new Path(new ArrayList<>(List.of(v)), forbidden);
+        }
+        int length()     { return nodes.size() - 1; }
+        Node tail()      { return nodes.get(nodes.size() - 1); }
         boolean contains(Node v) { return nodes.contains(v); }
-        Path extend(Node w) { List<Node> n = new ArrayList<>(nodes); n.add(w); return new Path(n, forbidden); }
-
+        Path extend(Node w) {
+            List<Node> n = new ArrayList<>(nodes); n.add(w);
+            return new Path(n, forbidden);
+        }
         List<Node> interiorEligibleNonColliders(Graph G, Set<Node> B) {
             List<Node> rs = new ArrayList<>();
             for (int i = 1; i < nodes.size() - 1; i++) {
                 Node v = nodes.get(i);
-                if (isEligibleNonCollider(G, nodes.subList(0, i + 1), v, B, forbidden)) rs.add(v);
+                if (isEligibleNonCollider(G, nodes.subList(0, i + 1),
+                        v, B, forbidden)) rs.add(v);
             }
             return rs;
         }

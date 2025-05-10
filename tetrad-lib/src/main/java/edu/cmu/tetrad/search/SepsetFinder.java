@@ -307,7 +307,7 @@ public class SepsetFinder {
 //        }
 
         Set<Node> nodes = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength);
-//        Set<Node> nodes = RecursiveBlockingChokePointA.blockPathsRecursively(graph, x, y, notFollowed, maxPathLength);
+//        Set<Node> nodes = RecursiveBlockingChokePointB.blockPathsRecursively(graph, x, y, notFollowed, maxPathLength);
 
 //        if (xy != null) {
 //            graph.addEdge(xy);
