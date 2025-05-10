@@ -478,10 +478,6 @@ public final class Fcit implements IGraphSearch {
 
     private void adjustForExtraSepsets(Graph pag, Map<Edge, Set<Node>> extraSepsets, Set<Triple> unshieldedColliders) {
         for (Triple triple : new HashSet<>(unshieldedColliders)) {
-//            if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
-//                unshieldedColliders.remove(triple);
-//            }
-
             if (pag.isAdjacentTo(triple.getX(), triple.getZ())) {
                 TetradLogger.getInstance().log("Removing edge " + pag.getEdge(triple.getX(), triple.getZ()));
                 pag.removeEdge(triple.getX(), triple.getZ());
