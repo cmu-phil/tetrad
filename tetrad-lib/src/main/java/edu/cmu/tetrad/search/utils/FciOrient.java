@@ -112,7 +112,7 @@ public class FciOrient {
     /**
      * Indicates whether the discriminating path step should be run in parallel.
      */
-    private boolean parallel = true;
+    private boolean parallel = false;
     /**
      * The endpoint strategy to use for setting endpoints.
      */

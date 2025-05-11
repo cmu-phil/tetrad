@@ -397,13 +397,13 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
-        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength);
+        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(pag, null, extraSepsets, fciOrient, maxBlockingPathLength, unshieldedColliders);
         refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
-            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength);
+            oldPaths = removeExtraEdgesDdp(pag, oldPaths, extraSepsets, fciOrient, maxBlockingPathLength, unshieldedColliders);
             refreshGraph(pag, extraSepsets, unshieldedColliders, fciOrient);
 
             if (_pag.equals(pag)) {
@@ -488,7 +488,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Graph pag, Set<DiscriminatingPath> oldDiscriminatingPaths,
-                                                        Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength) {
+                                                        Map<Edge, Set<Node>> extraSepsets, FciOrient fciOrient, int maxBlockingPathLength, Set<Triple> unshieldedColliders) {
         fciOrient.finalOrientation(pag);
         Set<Edge> edges = pag.getEdges();
 
@@ -592,12 +592,6 @@ public final class Fcit implements IGraphSearch {
                         continue;
                     }
 
-                    // b will be null if the search did not conclude with set that is known to either m-separate
-                    // or not m-separate x and y.
-                    if (b == null) {
-                        continue;
-                    }
-
                     int _depth2 = depth == -1 ? common.size() : depth;
                     _depth2 = Math.min(_depth2, common.size());
 
@@ -630,6 +624,7 @@ public final class Fcit implements IGraphSearch {
 
                                 extraSepsets.put(pag.getEdge(x, y), b);
                                 pag.removeEdge(x, y);
+                                adjustForExtraSepsets(pag, extraSepsets, unshieldedColliders);
                             }
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);

@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -49,6 +50,12 @@ public class RecursiveBlocking {
             return null;
         }
 
+        Edge edge = graph.getEdge(x, y);
+
+        if (edge != null) {
+            graph.removeEdge(edge);
+        }
+
         Set<Node> z = new HashSet<>(containing);
 
         Set<Node> path = new HashSet<>();
@@ -60,6 +67,10 @@ public class RecursiveBlocking {
             }
 
            findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
+        }
+
+        if (edge != null) {
+            graph.addEdge(edge);
         }
 
         return z;
