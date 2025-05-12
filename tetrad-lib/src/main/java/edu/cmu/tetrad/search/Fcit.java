@@ -482,7 +482,7 @@ public final class Fcit implements IGraphSearch {
             }
         }
 
-        extraSepsets.keySet().parallelStream().forEach(edge ->
+        extraSepsets.keySet().forEach(edge ->
                 orientCommonAdjacents(edge, pag, unshieldedColliders, extraSepsets)
         );
     }
@@ -496,7 +496,7 @@ public final class Fcit implements IGraphSearch {
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        edges.parallelStream().forEach(edge -> {
+        edges.forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
