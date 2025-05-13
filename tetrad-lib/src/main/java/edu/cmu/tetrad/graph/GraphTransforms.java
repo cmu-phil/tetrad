@@ -411,7 +411,11 @@ public class GraphTransforms {
 
         graph.reorientAllWith(Endpoint.TAIL);
 
-        for (Edge edge : graph.getEdges()) {
+        Set<Edge> edges = graph.getEdges();
+        List<Edge> _edges = new ArrayList<>(edges);
+        Collections.sort(_edges);
+
+        for (Edge edge : _edges) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 

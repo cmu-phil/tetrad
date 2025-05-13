@@ -2689,7 +2689,7 @@ public final class GraphUtils {
                                             Set<Triple> unshieldedColliders, boolean verbose) {
             reorientWithCircles(pag, verbose);
             fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-            recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
+            recallUnshieldedColliders(pag, unshieldedColliders, knowledge);
             fciOrient.setAllowedColliders(unshieldedColliders);
             fciOrient.finalOrientation(pag);
         }
@@ -3331,7 +3331,7 @@ public final class GraphUtils {
      * @param unshieldedColliders The set of unshielded colliders that need to be recalled.
      * @param knowledge           the knowledge object.
      */
-    public static void recallUnshieldedTriples(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge) {
+    public static void recallUnshieldedColliders(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge) {
         for (Triple triple : new HashSet<>(unshieldedColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();
