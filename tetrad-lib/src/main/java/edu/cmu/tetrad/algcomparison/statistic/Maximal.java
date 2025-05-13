@@ -9,6 +9,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -51,12 +52,6 @@ public class Maximal implements Statistic {
         List<Node> nodes = estGraph.getNodes();
         boolean maximal = true;
 
-        List<Node> latent = nodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
-
-        List<Node> measured = nodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
-
         List<Node> selection = nodes.stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
@@ -71,6 +66,26 @@ public class Maximal implements Statistic {
                         TetradLogger.getInstance().log("Maximality check: Found an inducing path for "
                                                        + n1 + "..." + n2 + ": "
                                                        + GraphUtils.pathString(estGraph, inducingPath, false));
+
+                        for (int k = 1; k < inducingPath.size() - 1; k++) {
+                            List<Node> collider = new ArrayList<>();
+                            collider.add(inducingPath.get(k - 1));
+                            collider.add(inducingPath.get(k));
+                            collider.add(inducingPath.get(k + 1));
+
+                            System.out.print("\t" + GraphUtils.pathString(estGraph, collider, false) + ": ");
+
+                            if (estGraph.isAncestorOf(inducingPath.get(k), inducingPath.get(k - 1))) {
+                                System.out.print(inducingPath.get(k) + " ancestor of " + inducingPath.get(k - 1));
+                            }
+
+                            if (estGraph.isAncestorOf(inducingPath.get(k), inducingPath.get(k + 1))) {
+                                System.out.print(inducingPath.get(k) + " ancestor of " + inducingPath.get(k + 1));
+                            }
+
+                            System.out.println();
+                        }
+
                         maximal = false;
                     }
                 }

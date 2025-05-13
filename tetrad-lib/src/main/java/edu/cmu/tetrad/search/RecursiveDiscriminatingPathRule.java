@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.utils.DiscriminatingPath;
 import edu.cmu.tetrad.search.utils.EnsureMarkov;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.util.SublistGenerator;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -171,13 +172,13 @@ public class RecursiveDiscriminatingPathRule {
                 Set<Node> notFollowedSet = GraphUtils.asSet(indices, _perhapsNotFollowed);
 
                 // (A) blockPathsRecursively
-                Set<Node> b = SepsetFinder.blockPathsRecursively(
+                Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(
                         pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
                 );
 
-                if (b == null) {
-                    return null;
-                }
+//                if (!b.getRight()) {
+//                    throw new IllegalArgumentException("Expecting all paths blocked.");
+//                }
 
                 // (B) For each subset of "common," check independence
                 SublistGenerator gen2 = new SublistGenerator(common.size(), __depth2);
@@ -199,7 +200,7 @@ public class RecursiveDiscriminatingPathRule {
                     }
 
                     // b minus c
-                    Set<Node> testSet = new HashSet<>(b);
+                    Set<Node> testSet = new HashSet<>(b.getLeft());
                     testSet.removeAll(c);
 
                     // Check independence
