@@ -576,13 +576,13 @@ public final class Fcit implements IGraphSearch {
                     );
 
                     // Try to get the result within the specified timeout (e.g., 5 seconds)
-                    Set<Node> bb;
+                    Set<Node> b;
 
                     try {
                         if (testTimeout > 0) {
-                            bb = future.get(testTimeout, TimeUnit.MILLISECONDS);
+                            b = future.get(testTimeout, TimeUnit.MILLISECONDS);
                         } else {
-                            bb = future.get();
+                            b = future.get();
                         }
                     } catch (InterruptedException | ExecutionException e) {
                         throw new RuntimeException(e);
@@ -593,7 +593,7 @@ public final class Fcit implements IGraphSearch {
 
                     // b will be null if the search did not conclude with set that is known to either m-separate
                     // or not m-separate x and y.
-                    if (bb == null) {
+                    if (b == null) {
                         continue;
                     }
 
@@ -608,8 +608,6 @@ public final class Fcit implements IGraphSearch {
                         if (!pag.isAdjacentTo(x, y)) {
                             break;
                         }
-
-                        Set<Node> b = new HashSet<>(bb);
 
                         Set<Node> c = GraphUtils.asSet(choice2, common);
 
@@ -842,21 +840,6 @@ public final class Fcit implements IGraphSearch {
             }
         } else {
             throw new IllegalArgumentException("No CPDAG or scorer available.");
-        }
-    }
-
-    private static void checkMaximality(Graph pag) {
-        List<Node> _nodes = pag.getNodes();
-
-        for (int i = 0; i < _nodes.size(); i++) {
-            for (int j = i + 1; j < _nodes.size(); j++) {
-                Node x = _nodes.get(i);
-                Node y = _nodes.get(j);
-
-                if (!pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, Set.of())) {
-                    throw new IllegalArgumentException("Found an errant inducing path for a non-adjacent pair of nodes.");
-                }
-            }
         }
     }
 
