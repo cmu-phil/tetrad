@@ -843,6 +843,23 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
+    private static boolean checkMaximality(Graph pag) {
+        List<Node> _nodes = pag.getNodes();
+
+        for (int i = 0; i < _nodes.size(); i++) {
+            for (int j = i + 1; j < _nodes.size(); j++) {
+                Node x = _nodes.get(i);
+                Node y = _nodes.get(j);
+
+                if (!pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, Set.of())) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Sets the maximum size of the separating set used in the graph search algorithm.
      *
