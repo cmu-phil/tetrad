@@ -576,13 +576,13 @@ public final class Fcit implements IGraphSearch {
                     );
 
                     // Try to get the result within the specified timeout (e.g., 5 seconds)
-                    Set<Node> b;
+                    Set<Node> bb;
 
                     try {
                         if (testTimeout > 0) {
-                            b = future.get(testTimeout, TimeUnit.MILLISECONDS);
+                            bb = future.get(testTimeout, TimeUnit.MILLISECONDS);
                         } else {
-                            b = future.get();
+                            bb = future.get();
                         }
                     } catch (InterruptedException | ExecutionException e) {
                         throw new RuntimeException(e);
@@ -593,7 +593,7 @@ public final class Fcit implements IGraphSearch {
 
                     // b will be null if the search did not conclude with set that is known to either m-separate
                     // or not m-separate x and y.
-                    if (b == null) {
+                    if (bb == null) {
                         continue;
                     }
 
@@ -608,6 +608,8 @@ public final class Fcit implements IGraphSearch {
                         if (!pag.isAdjacentTo(x, y)) {
                             break;
                         }
+
+                        Set<Node> b = new HashSet<>(bb);
 
                         Set<Node> c = GraphUtils.asSet(choice2, common);
 
