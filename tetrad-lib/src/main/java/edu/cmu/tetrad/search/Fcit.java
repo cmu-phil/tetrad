@@ -406,8 +406,8 @@ public final class Fcit implements IGraphSearch {
         refreshGraph();
 
         if (!pag.paths().maximal()) {
-            TetradLogger.getInstance().log("Maximality check failed for the initial PAG.");
-//            throw new IllegalStateException("Maximality check failed for the initial PAG.");
+//            TetradLogger.getInstance().log("Maximality check failed for the initial PAG.");
+            throw new IllegalStateException("Maximality check failed for the initial PAG.");
         }
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
@@ -444,29 +444,35 @@ public final class Fcit implements IGraphSearch {
 
         long stop2 = System.currentTimeMillis();
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Finished implied orientation.");
-        }
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Finished implied orientation.");
+//        }
 
-        long start3 = System.currentTimeMillis();
+//        long start3 = System.currentTimeMillis();
 
 //        DagToPag dagToPag = new DagToPag(pag);
 //        dagToPag.setKnowledge(knowledge);
 //        fciOrient.finalOrientation(pag);
 
-        long stop3 = System.currentTimeMillis();
+//        long stop3 = System.currentTimeMillis();
 
         TetradLogger.getInstance().log("FCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
-        TetradLogger.getInstance().log("Guarantee PAG time: " + (stop3 - start3) + " ms.");
-        TetradLogger.getInstance().log("Total time: " + (stop3 - start1) + " ms.");
+//        TetradLogger.getInstance().log("Guarantee PAG time: " + (stop3 - start3) + " ms.");
+        TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
 //        if (guaranteePag) {
 //            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, knownColliders, knownColliders, verbose, new HashSet<>());
 //        }
 
-        return GraphUtils.replaceNodes(pag, nodes);
+        Graph graph = GraphUtils.replaceNodes(pag, nodes);
+
+        if (!graph.paths().maximal()) {
+            throw new IllegalStateException("Maximality check failed after final replace nodes step in FCIT.");
+        }
+
+        return graph;
     }
 
     private void copyKnownCollidersFromCpdag(List<Node> best, Graph cpdag, TeyssierScorer scorer) {

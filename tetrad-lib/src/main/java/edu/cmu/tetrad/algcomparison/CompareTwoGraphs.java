@@ -100,8 +100,8 @@ public class CompareTwoGraphs {
         }
 
         builder.append("""
-
-
+                
+                
                 Two-cycles in true correctly adjacent in estimated:""");
 
         sort(allSingleEdges);
@@ -159,8 +159,8 @@ public class CompareTwoGraphs {
 
         {
             builder.append("""
-
-
+                    
+                    
                     Edges incompatibly (incorrectly) oriented:""");
 
             if (incorrect.isEmpty()) {
@@ -180,8 +180,8 @@ public class CompareTwoGraphs {
 
         {
             builder.append("""
-
-
+                    
+                    
                     Edges compatibly oriented (but different):""");
 
             if (compatible.isEmpty()) {
@@ -201,8 +201,8 @@ public class CompareTwoGraphs {
 
         {
             builder.append("""
-
-
+                    
+                    
                     Edges correctly oriented:""");
 
             List<Edge> correct = new ArrayList<>();
@@ -252,6 +252,9 @@ public class CompareTwoGraphs {
      */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
+
+//        System.out.println("_target graph =  " + _targetGraph);
+//        System.out.println("target graph = " + targetGraph);
 
         List<Statistic> statistics = statistics();
 

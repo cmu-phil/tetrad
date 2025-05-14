@@ -3046,6 +3046,9 @@ public class Paths implements TetradSerializable {
     }
 
     public boolean maximal() {
+        List<Node> selection = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
         List<Node> _nodes = graph.getNodes();
 
         for (int i = 0; i < _nodes.size(); i++) {
@@ -3053,7 +3056,7 @@ public class Paths implements TetradSerializable {
                 Node x = _nodes.get(i);
                 Node y = _nodes.get(j);
 
-                if (!graph.isAdjacentTo(x, y) && graph.paths().existsInducingPath(x, y, Set.of())) {
+                if (!graph.isAdjacentTo(x, y) && graph.paths().existsInducingPath(x, y,  new HashSet<>(selection))) {
                     return false;
                 }
             }

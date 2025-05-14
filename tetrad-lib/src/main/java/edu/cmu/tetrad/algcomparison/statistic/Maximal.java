@@ -49,7 +49,13 @@ public class Maximal implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        return estGraph.paths().maximal() ? 1.0 : 0.0;
+        boolean maximal = estGraph.paths().maximal();
+
+        if (!maximal) {
+            throw new IllegalArgumentException("Maximality condition fails in Maximal statistic.");
+        }
+
+        return maximal ? 1.0 : 0.0;
     }
 
     /**
