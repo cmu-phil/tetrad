@@ -49,50 +49,7 @@ public class Maximal implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        List<Node> nodes = estGraph.getNodes();
-        boolean maximal = true;
-
-        List<Node> selection = nodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                Node n1 = nodes.get(i);
-                Node n2 = nodes.get(j);
-                if (!estGraph.isAdjacentTo(n1, n2)) {
-                    List<Node> inducingPath = estGraph.paths().getInducingPath(n1, n2, new HashSet<>(selection));
-
-                    if (inducingPath != null) {
-                        TetradLogger.getInstance().log("Maximality check: Found an inducing path for "
-                                                       + n1 + "..." + n2 + ": "
-                                                       + GraphUtils.pathString(estGraph, inducingPath, false));
-
-                        for (int k = 1; k < inducingPath.size() - 1; k++) {
-                            List<Node> collider = new ArrayList<>();
-                            collider.add(inducingPath.get(k - 1));
-                            collider.add(inducingPath.get(k));
-                            collider.add(inducingPath.get(k + 1));
-
-                            System.out.print("\t" + GraphUtils.pathString(estGraph, collider, false) + ": ");
-
-                            if (estGraph.isAncestorOf(inducingPath.get(k), inducingPath.get(k - 1))) {
-                                System.out.print(inducingPath.get(k) + " ancestor of " + inducingPath.get(k - 1));
-                            }
-
-                            if (estGraph.isAncestorOf(inducingPath.get(k), inducingPath.get(k + 1))) {
-                                System.out.print(inducingPath.get(k) + " ancestor of " + inducingPath.get(k + 1));
-                            }
-
-                            System.out.println();
-                        }
-
-                        maximal = false;
-                    }
-                }
-            }
-        }
-
-        return maximal ? 1.0 : 0.0;
+        return estGraph.paths().maximal() ? 1.0 : 0.0;
     }
 
     /**

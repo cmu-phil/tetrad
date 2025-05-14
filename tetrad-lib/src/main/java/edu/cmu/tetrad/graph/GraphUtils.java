@@ -2535,13 +2535,13 @@ public final class GraphUtils {
          * @param fciOrient the FCI (Fast Causal Inference) orientation utility for edge orientation
          * @param knowledge the background knowledge to enforce during the repair process
          * @param unshieldedColliders a set of triples representing unshielded colliders to be enforced
-         * @param extraUnshieldedColliders an additional set of unshielded colliders to be considered during the repair
+         * @param extraKnownColliders an additional set of unshielded colliders to be considered during the repair
          * @param verbose whether to provide detailed logging of the repair process
          * @param selection a set of nodes to be considered during the maximality repair
          * @return the repaired PAG that satisfies required constraints and is free of faults
          */
         public static Graph  guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                         Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders,
+                                         Set<Triple> unshieldedColliders, Set<Triple> extraKnownColliders,
                                          boolean verbose, Set<Node> selection) {
             if (verbose) {
                 TetradLogger.getInstance().log("Repairing faulty PAG...");
@@ -2559,7 +2559,7 @@ public final class GraphUtils {
             do {
                 changed = false;
 
-                changed |= removeAlmostCycles(pag, extraUnshieldedColliders, verbose);
+                changed |= removeAlmostCycles(pag, extraKnownColliders, verbose);
                 changed |= repairMaximality(pag, verbose, selection);
                 changed |= removeCycles(pag, verbose);
 
@@ -2581,7 +2581,7 @@ public final class GraphUtils {
         }
 
     private static boolean removeAlmostCycles(Graph pag,
-                                              Set<Triple> extraUnshieldedColliders,
+                                              Set<Triple> extraKnownColliders,
                                               boolean verbose) {
 
         boolean changedOverall = false;
@@ -2607,7 +2607,7 @@ public final class GraphUtils {
             for (Edge edge : candidates) {
                 Node x = edge.getNode1(), y = edge.getNode2();
 
-                for (Iterator<Triple> it = extraUnshieldedColliders.iterator();
+                for (Iterator<Triple> it = extraKnownColliders.iterator();
                      it.hasNext(); ) {
 
                     Triple t = it.next();
@@ -2689,7 +2689,7 @@ public final class GraphUtils {
                                             Set<Triple> unshieldedColliders, boolean verbose) {
             reorientWithCircles(pag, verbose);
             fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-            recallUnshieldedColliders(pag, unshieldedColliders, knowledge);
+            recallKnownColliders(pag, unshieldedColliders, knowledge);
             fciOrient.setAllowedColliders(unshieldedColliders);
             fciOrient.finalOrientation(pag);
         }
@@ -3104,13 +3104,13 @@ public final class GraphUtils {
 //     *
 //     * @param pag                      the graph
 //     * @param unshieldedColliders      a set of unshielded colliders
-//     * @param extraUnshieldedColliders a set of unshielded colliders oriented after the initial scoring step.
+//     * @param extraKnownColliders a set of unshielded colliders oriented after the initial scoring step.
 //     * @param fciOrient                the FciOrient object
 //     * @param knowledge                the knowledge base
 //     * @param verbose                  a flag indicating whether to log verbose output
 //     * @return AtomicBoolean(true) if any almost cycles were removed, AtomicBoolean(false) otherwise
 //     */
-//    public static boolean removeAlmostCycles(Graph pag, Set<Triple> unshieldedColliders, Set<Triple> extraUnshieldedColliders, FciOrient fciOrient,
+//    public static boolean removeAlmostCycles(Graph pag, Set<Triple> unshieldedColliders, Set<Triple> extraKnownColliders, FciOrient fciOrient,
 //                                             Knowledge knowledge, boolean verbose) {
 //        if (verbose) {
 //            TetradLogger.getInstance().log("Removing almost cycles.");
@@ -3171,15 +3171,15 @@ public final class GraphUtils {
 //                Node x = almostCycle.getNode1();
 //                Node y = almostCycle.getNode2();
 //
-//                // Find all unshielded triples z *→ x ↔ y in subsequentUnshieldedColliders
+//                // Find all unshielded triples z *→ x ↔ y in subsequentKnownColliders
 //                Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
 //
-//                for (Triple triple : new HashSet<>(extraUnshieldedColliders)) {
+//                for (Triple triple : new HashSet<>(extraKnownColliders)) {
 //                    if (triple.getY().equals(x) && triple.getZ().equals(y)) {
 //                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
 //                            pag.addNondirectedEdge(triple.getX(), triple.getZ());
 ////                            unshieldedColliders.remove(triple);
-////                            extraUnshieldedColliders.remove(triple);
+////                            extraKnownColliders.remove(triple);
 //                            unshieldedTriplesIntoX.add(triple);
 //                            changed = true;
 //                        }
@@ -3187,7 +3187,7 @@ public final class GraphUtils {
 //                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
 //                            pag.addNondirectedEdge(triple.getX(), triple.getZ());
 ////                            unshieldedColliders.remove(triple);
-////                            extraUnshieldedColliders.remove(triple);
+////                            extraKnownColliders.remove(triple);
 //                            unshieldedTriplesIntoX.add(triple);
 //                            changed = true;
 //                        }
@@ -3331,7 +3331,7 @@ public final class GraphUtils {
      * @param unshieldedColliders The set of unshielded colliders that need to be recalled.
      * @param knowledge           the knowledge object.
      */
-    public static void recallUnshieldedColliders(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge) {
+    public static void recallKnownColliders(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge) {
         for (Triple triple : new HashSet<>(unshieldedColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();

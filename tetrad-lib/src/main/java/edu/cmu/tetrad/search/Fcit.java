@@ -125,12 +125,12 @@ public final class Fcit implements IGraphSearch {
 
     private Graph pag = null;
     private Map<Edge, Set<Node>> extraSepsets = new HashMap<>();
-    private Set<Triple> unshieldedColliders = new HashSet<>();
+    private Set<Triple> knownColliders = new HashSet<>();
     private FciOrient fciOrient = null;
 
     private Graph lastPag = null;
     private Map<Edge, Set<Node>> lastExtraSepsets = null;
-    private Set<Triple> lastUnshieldedColliders = null;
+    private Set<Triple> lastKnownColliders = null;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -201,23 +201,6 @@ public final class Fcit implements IGraphSearch {
         test.setVerbose(false);
     }
 
-    private static boolean maximal(Graph pag) {
-        List<Node> _nodes = pag.getNodes();
-
-        for (int i = 0; i < _nodes.size(); i++) {
-            for (int j = i + 1; j < _nodes.size(); j++) {
-                Node x = _nodes.get(i);
-                Node y = _nodes.get(j);
-
-                if (!pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, Set.of())) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     /**
      * Run the search and return s a PAG.
      *
@@ -274,7 +257,7 @@ public final class Fcit implements IGraphSearch {
             PermutationSearch alg = new PermutationSearch(subAlg);
             alg.setKnowledge(this.knowledge);
 
-            dag = alg.search(false);
+            dag = alg.search(true);
             best = dag.paths().getValidOrder(dag.getNodes(), true);
 
             long stop = MillisecondTimes.wallTimeMillis();
@@ -298,7 +281,7 @@ public final class Fcit implements IGraphSearch {
 
             Grasp grasp = getGraspSearch();
             best = grasp.bestOrder(nodes);
-            dag = grasp.getGraph(false);
+            dag = grasp.getGraph(true);
 
             long stop = MillisecondTimes.wallTimeMillis();
 
@@ -406,13 +389,26 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
-        copyUnshieldedCollidersFromCpdag(best, cpdag, scorer);
+        copyKnownCollidersFromCpdag(best, cpdag, scorer);
 
         refreshGraph();
 
-//        if (!maximal(pag)) {
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                if (!pag.isAdjacentTo(nodes.get(i), nodes.get(j))) {
+                    if (pag.paths().existsInducingPath(nodes.get(i), nodes.get(j), Set.of())) {
+                        pag.addNondirectedEdge(nodes.get(i), nodes.get(j));
+                    }
+                }
+            }
+        }
+
+        refreshGraph();
+
+        if (!pag.paths().maximal()) {
+            TetradLogger.getInstance().log("Maximality check failed for the initial PAG.");
 //            throw new IllegalStateException("Maximality check failed for the initial PAG.");
-//        }
+        }
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
         // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
@@ -467,13 +463,13 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Total time: " + (stop3 - start1) + " ms.");
 
 //        if (guaranteePag) {
-//            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
+//            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, knownColliders, knownColliders, verbose, new HashSet<>());
 //        }
 
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
-    private void copyUnshieldedCollidersFromCpdag(List<Node> best, Graph cpdag, TeyssierScorer scorer) {
+    private void copyKnownCollidersFromCpdag(List<Node> best, Graph cpdag, TeyssierScorer scorer) {
         // We're looking for unshielded colliders in these next steps that we can detect without using only
         // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
         // unshielded colliders from the BOSS graph into the estimated PAG. This step is justified in the
@@ -495,26 +491,26 @@ public final class Fcit implements IGraphSearch {
 
     private void refreshGraph() {
         GraphUtils.reorientWithCircles(pag, verbose);
-        GraphUtils.recallUnshieldedColliders(pag, unshieldedColliders, knowledge);
+        GraphUtils.recallKnownColliders(pag, knownColliders, knowledge);
         adjustForExtraSepsets();
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         fciOrient.finalOrientation(pag);
 
-        if (!maximal(pag) && lastPag != null) {
+        if (!pag.paths().maximal() && lastPag != null) {
             pag = lastPag;
-            unshieldedColliders = lastUnshieldedColliders;
+            knownColliders = lastKnownColliders;
             extraSepsets = lastExtraSepsets;
         } else {
             lastPag = new EdgeListGraph(pag);
-            lastUnshieldedColliders = new HashSet<>(unshieldedColliders);
+            lastKnownColliders = new HashSet<>(knownColliders);
             lastExtraSepsets = new HashMap<>(extraSepsets);
         }
     }
 
     private void adjustForExtraSepsets() {
-        for (Triple triple : new HashSet<>(unshieldedColliders)) {
+        for (Triple triple : new HashSet<>(knownColliders)) {
             if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
-                unshieldedColliders.remove(triple);
+                knownColliders.remove(triple);
             }
         }
 
@@ -825,7 +821,7 @@ public final class Fcit implements IGraphSearch {
                         TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
                     }
 
-                    unshieldedColliders.add(new Triple(x, node, y));
+                    knownColliders.add(new Triple(x, node, y));
                 }
             }
         }
@@ -845,7 +841,7 @@ public final class Fcit implements IGraphSearch {
 //        if (cpdag != null) {
         if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
             if (cpdag.isDefCollider(x, b, y)) {// && !cpdag.isAdjacentTo(x, y)) {
-                unshieldedColliders.add(new Triple(x, b, y));
+                knownColliders.add(new Triple(x, b, y));
 
                 if (verbose) {
                     TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
@@ -855,7 +851,7 @@ public final class Fcit implements IGraphSearch {
 //        } else if (score != null) {
 //            if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
 //                if (scorer.unshieldedCollider(x, b, y)) {
-//                    unshieldedColliders.add(new Triple(x, b, y));
+//                    knownColliders.add(new Triple(x, b, y));
 //                    checked.add(new Triple(x, b, y));
 //
 //                    if (verbose) {

@@ -113,11 +113,12 @@ public class RecursiveDiscriminatingPathRule {
     public static Set<Node> findDdpSepsetRecursive(
             IndependenceTest test, Graph pag, Node x, Node y, FciOrient fciOrient,
             int maxBlockingPathLength, int maxDdpPathLength, EnsureMarkov ensureMarkovHelper, int depth) {
-        // 1) Preliminary orientation steps
-        fciOrient.setDoR4(false);
-        fciOrient.setCompleteRuleSetUsed(false);
-        fciOrient.finalOrientation(pag);
-        fciOrient.setDoR4(true);
+
+//        // 1) Preliminary orientation steps
+//        fciOrient.setDoR4(false);
+//        fciOrient.setCompleteRuleSetUsed(false);
+//        fciOrient.finalOrientation(pag);
+//        fciOrient.setDoR4(true);
 
         // 2) List possible "DiscriminatingPath" objects
         Set<DiscriminatingPath> discriminatingPaths =

@@ -3044,5 +3044,22 @@ public class Paths implements TetradSerializable {
             return result;
         }
     }
+
+    public boolean maximal() {
+        List<Node> _nodes = graph.getNodes();
+
+        for (int i = 0; i < _nodes.size(); i++) {
+            for (int j = i + 1; j < _nodes.size(); j++) {
+                Node x = _nodes.get(i);
+                Node y = _nodes.get(j);
+
+                if (!graph.isAdjacentTo(x, y) && graph.paths().existsInducingPath(x, y, Set.of())) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
 
