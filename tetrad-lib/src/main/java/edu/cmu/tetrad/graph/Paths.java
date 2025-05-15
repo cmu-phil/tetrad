@@ -3045,7 +3045,7 @@ public class Paths implements TetradSerializable {
         }
     }
 
-    public boolean maximal() {
+    public boolean isMaximal() {
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 

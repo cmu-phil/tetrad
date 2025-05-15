@@ -177,9 +177,9 @@ public class RecursiveDiscriminatingPathRule {
                         pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
                 );
 
-//                if (!b.getRight()) {
-//                    throw new IllegalArgumentException("Expecting all paths blocked.");
-//                }
+                if (!b.getRight()) {
+                    // ignore
+                }
 
                 // (B) For each subset of "common," check independence
                 SublistGenerator gen2 = new SublistGenerator(common.size(), __depth2);

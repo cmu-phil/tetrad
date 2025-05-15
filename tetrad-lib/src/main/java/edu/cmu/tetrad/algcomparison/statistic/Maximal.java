@@ -2,16 +2,9 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * Checks whether a PAG is maximal.
@@ -49,7 +42,7 @@ public class Maximal implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        boolean maximal = estGraph.paths().maximal();
+        boolean maximal = estGraph.paths().isMaximal();
 
         if (!maximal) {
             throw new IllegalArgumentException("Maximality condition fails in Maximal statistic.");

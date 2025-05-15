@@ -34,7 +34,7 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.score.GicScores;
-import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
+import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -1581,7 +1581,7 @@ public final class TestGrasp {
 //        GraphScore score = new GraphScore(graph);
         Set<Node> order = set(x1, x2, x3, x4, x5);
 
-        Grasp boss = new Grasp(new MSeparationTest(graph), new MSeparationScore(graph));
+        Grasp boss = new Grasp(new MSeparationTest(graph), new MSepScore(graph));
 
         Parameters parameters = new Parameters();
         parameters.set(Params.GRASP_USE_RASKUTTI_UHLER, true);
@@ -2679,7 +2679,7 @@ public final class TestGrasp {
             Map<String, Map<Statistic, Double>> algNameMap = trueGraphMap.get(i);
 
             IndependenceWrapper test = new MSeparationTest(new EdgeListGraph(trueGraph));
-            ScoreWrapper score = new MSeparationScore(new EdgeListGraph(trueGraph));
+            ScoreWrapper score = new MSepScore(new EdgeListGraph(trueGraph));
 
             Algorithms algorithms = new Algorithms();
 

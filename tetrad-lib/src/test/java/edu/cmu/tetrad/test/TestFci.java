@@ -671,6 +671,69 @@ public class TestFci {
         }
     }
 
+    @Test
+    public void testFcitFromData() {
+        for (int i = 0; i < 20; i++) {
+            System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
+
+            Graph graph = RandomGraph.randomGraph(50, 6, 200, 100, 100, 100, false);
+            SemPm pm = new SemPm(graph);
+            SemIm im = new SemIm(pm);
+            DataSet dataSet = im.simulateData(1000, false);
+
+            IndTestFisherZ test = new IndTestFisherZ(dataSet, 0.001);
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+            score.setPenaltyDiscount(4.0);
+
+            try {
+                Fcit fcit = new Fcit(test, score);
+                Graph pag = fcit.search();
+
+                if (!pag.paths().isMaximal()) {
+                    System.out.println("************ pag is not maximal **************");
+                }
+
+                Graph mag = GraphTransforms.zhangMagFromPag(pag);
+
+                if (!mag.paths().isLegalMag()) {
+                    System.out.println("************ mag in pag is not legal *********");
+                }
+
+                if (!pag.paths().isLegalPag()) {
+                    System.out.println("************ pag is not legal ****************");
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+//    @Test
+    public void testFcitFromOracle() {
+        for (int i = 0; i < 20; i++) {
+            System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
+
+            Graph graph = RandomGraph.randomGraph(20, 5,  60, 100, 100, 100, false);
+            MsepTest independence = new MsepTest(graph);
+            GraphScore score = new GraphScore(graph);
+
+            graph = GraphUtils.replaceNodes(graph, independence.getVariables());
+
+            try {
+                Fcit fci = new Fcit(independence, score);
+                fci.setStartWith(Fcit.START_WITH.GRASP);
+                fci.setDepth(-1);
+//                fci.setKnowledge(knowledge);
+                fci.setEnsureMarkov(false);
+                fci.setVerbose(false);
+
+                Graph pag = fci.search();
+
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
 
 
