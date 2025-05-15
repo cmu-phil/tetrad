@@ -654,6 +654,7 @@ public final class Fcit implements IGraphSearch {
         return discriminatingPaths;
     }
 
+    // "Pure" version without threading
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Set<DiscriminatingPath> oldDiscriminatingPaths,
                                                         int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
