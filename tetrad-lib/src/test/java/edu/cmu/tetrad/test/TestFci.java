@@ -32,6 +32,8 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -46,7 +48,8 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -71,6 +74,14 @@ public class TestFci {
         assertEquals(pag, resultGraph);
 //        System.out.println("DAG to PAG: " + dagToPag(graph));
 //        assertEquals(pag, dagToPag(graph));
+    }
+
+    private static boolean isUnshieldedCollider(Node x, Node y, Node z, Graph g) {
+        if (!(g.isAdjacentTo(x, y) && g.isAdjacentTo(y, z) && !g.isAdjacentTo(x, z))) {
+            return false;
+        }
+
+        return g.getEndpoint(x, y) == Endpoint.ARROW && g.getEndpoint(z, y) == Endpoint.ARROW;
     }
 
     @Test
@@ -548,14 +559,18 @@ public class TestFci {
         Node y = new GraphNode("y");
         Node b1 = new GraphNode("b1");
         Node b2 = new GraphNode("b2");
-        Node t  = new GraphNode("t");
+        Node t = new GraphNode("t");
 
-        g.addNode(x); g.addNode(y); g.addNode(b1); g.addNode(b2); g.addNode(t);
+        g.addNode(x);
+        g.addNode(y);
+        g.addNode(b1);
+        g.addNode(b2);
+        g.addNode(t);
         g.addDirectedEdge(x, b1);
         g.addDirectedEdge(b1, y);
         g.addDirectedEdge(x, b2);
         g.addDirectedEdge(b2, t);
-        g.addDirectedEdge(t,  y);
+        g.addDirectedEdge(t, y);
 
         MsepTest msepTest = new MsepTest(g);
 
@@ -687,6 +702,8 @@ public class TestFci {
 
             try {
                 Fcit fcit = new Fcit(test, score);
+                fcit.setGuaranteePag(true);
+                fcit.setVerbose(false);
                 Graph pag = fcit.search();
 
                 if (!pag.paths().isMaximal()) {
@@ -699,8 +716,14 @@ public class TestFci {
                     System.out.println("************ mag in pag is not legal *********");
                 }
 
-                if (!pag.paths().isLegalPag()) {
+                List<Node> selection = graph.getNodes().stream()
+                        .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+                GraphSearchUtils.LegalPagRet ret = GraphSearchUtils.isLegalPag(pag, new HashSet<>(selection));
+
+                if (!ret.isLegalPag()) {
                     System.out.println("************ pag is not legal ****************");
+                    System.out.println("**** Reason = " + ret.getReason());
                 }
 
                 if (mag.paths().isLegalMag() && !pag.paths().isLegalPag()) {
@@ -715,9 +738,8 @@ public class TestFci {
 
                                 if (isUnshieldedCollider(x, y, z, mag)) {
                                     if (!isUnshieldedCollider(x, y, z, pag)) {
-                                        System.out.println("a Zhang mag = " + GraphUtils.pathString(mag, x, y, z) + " adj(" + x + ", " +  z + ") = " + mag.isAdjacentTo(x, z));
-                                        System.out.println("z pag = " + GraphUtils.pathString(pag, x, y, z) + " adj(" + x + ", " +  z + ") = " + mag.isAdjacentTo(x, z));
-//                                        throw new RuntimeException("Unshielded collider discrepancy");
+                                        System.out.println("a Zhang mag = " + GraphUtils.pathString(mag, x, y, z) + " adj(" + x + ", " + z + ") = " + mag.isAdjacentTo(x, z));
+                                        System.out.println("a pag = " + GraphUtils.pathString(pag, x, y, z) + " adj(" + x + ", " + z + ") = " + mag.isAdjacentTo(x, z));
                                     }
                                 }
                             }
@@ -733,14 +755,32 @@ public class TestFci {
 
                                 if (isUnshieldedCollider(x, y, z, pag)) {
                                     if (!isUnshieldedCollider(x, y, z, mag)) {
-                                        System.out.println("b Zhang mag = " + GraphUtils.pathString(mag, x, y, z) + " adj(" + x + ", " +  z + ") = " + mag.isAdjacentTo(x, z));
-                                        System.out.println("b pag = " + GraphUtils.pathString(pag, x, y, z) + " adj(" + x + ", " +  z + ") = " + mag.isAdjacentTo(x, z));
-//                                        throw new RuntimeException("Unshielded collider discrepancy");
+                                        System.out.println("b Zhang mag = " + GraphUtils.pathString(mag, x, y, z) + " adj(" + x + ", " + z + ") = " + mag.isAdjacentTo(x, z));
+                                        System.out.println("b pag = " + GraphUtils.pathString(pag, x, y, z) + " adj(" + x + ", " + z + ") = " + mag.isAdjacentTo(x, z));
                                     }
                                 }
                             }
                         }
                     }
+
+                    DagToPag dagToPag = new DagToPag(mag);
+                    Graph reconstitutedPag = dagToPag.convert();
+
+                    for (Edge pagEdge : pag.getEdges()) {
+                        Edge reconstitutedPagEdge = reconstitutedPag.getEdge(pagEdge.getNode1(), pagEdge.getNode2());
+
+                        if (!pagEdge.equals(reconstitutedPagEdge)) {
+                            System.out.println("Edge discrepancy: pagEdge = " + pagEdge + " reconstituted PAG edge = " + reconstitutedPagEdge);
+                        }
+                    }
+
+//                    for (Edge reconstitutedPagEdge : reconstitutedPag.getEdges()) {
+//                        Edge pagEdge = pag.getEdge(reconstitutedPagEdge.getNode1(), reconstitutedPagEdge.getNode2());
+//
+//                        if (!reconstitutedPagEdge.equals(pagEdge)) {
+//                            System.out.println("Edge discrepancy: reconstituted PAG edge = " + reconstitutedPagEdge + " pag edge = " + pagEdge);
+//                        }
+//                    }
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -748,24 +788,15 @@ public class TestFci {
         }
     }
 
-    private static boolean isUnshieldedCollider(Node x, Node y, Node z, Graph g) {
-        if (!(g.isAdjacentTo(x, y) && g.isAdjacentTo(y, z) && !g.isAdjacentTo(x, z))) {
-            return false;
-        }
-
-        return g.getEndpoint(x, y) == Endpoint.ARROW && g.getEndpoint(z, y) == Endpoint.ARROW;
-    }
-
-    //    @Test
+    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 20; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
-            Graph graph = RandomGraph.randomGraph(20, 5,  60, 100, 100, 100, false);
+            Graph graph = RandomGraph.randomGraph(20, 5, 60, 100, 100, 100, false);
             MsepTest independence = new MsepTest(graph);
-            GraphScore score = new GraphScore(graph);
-
             graph = GraphUtils.replaceNodes(graph, independence.getVariables());
+            GraphScore score = new GraphScore(graph);
 
             try {
                 Fcit fci = new Fcit(independence, score);
@@ -776,6 +807,10 @@ public class TestFci {
                 fci.setVerbose(false);
 
                 Graph pag = fci.search();
+
+                if (!pag.paths().isLegalPag()) {
+                    throw new RuntimeException("pag is not legal pag");
+                }
 
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

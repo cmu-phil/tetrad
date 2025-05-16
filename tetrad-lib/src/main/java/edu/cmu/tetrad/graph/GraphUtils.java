@@ -2547,7 +2547,7 @@ public final class GraphUtils {
                 TetradLogger.getInstance().log("Repairing faulty PAG...");
             }
 
-            fciOrient.setVerbose(true);
+            fciOrient.setVerbose(verbose);
             fciOrient.setKnowledge(knowledge);
             fciOrient.setAllowedColliders(unshieldedColliders);
             fciOrient.setDoR4(true);
