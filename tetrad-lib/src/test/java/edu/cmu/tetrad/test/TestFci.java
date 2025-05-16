@@ -702,13 +702,61 @@ public class TestFci {
                 if (!pag.paths().isLegalPag()) {
                     System.out.println("************ pag is not legal ****************");
                 }
+
+                if (mag.paths().isLegalMag() && !pag.paths().isLegalPag()) {
+                    List<Node> nodes = pag.getNodes();
+
+                    for (Node y : nodes) {
+                        List<Node> adjacentNodes = mag.getAdjacentNodes(y);
+
+                        for (Node x : adjacentNodes) {
+                            for (Node z : adjacentNodes) {
+                                if (x == z) continue;
+
+                                if (isUnshieldedCollider(x, y, z, mag)) {
+                                    if (!isUnshieldedCollider(x, y, z, pag)) {
+                                        System.out.println("a Zhang mag = " + GraphUtils.pathString(mag, x, y, z) + " adj(" + x + ", " +  z + ") = " + mag.isAdjacentTo(x, z));
+                                        System.out.println("z pag = " + GraphUtils.pathString(pag, x, y, z) + " adj(" + x + ", " +  z + ") = " + mag.isAdjacentTo(x, z));
+//                                        throw new RuntimeException("Unshielded collider discrepancy");
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    for (Node y : nodes) {
+                        List<Node> adjacentNodes = pag.getAdjacentNodes(y);
+
+                        for (Node x : adjacentNodes) {
+                            for (Node z : adjacentNodes) {
+                                if (x == z) continue;
+
+                                if (isUnshieldedCollider(x, y, z, pag)) {
+                                    if (!isUnshieldedCollider(x, y, z, mag)) {
+                                        System.out.println("b Zhang mag = " + GraphUtils.pathString(mag, x, y, z) + " adj(" + x + ", " +  z + ") = " + mag.isAdjacentTo(x, z));
+                                        System.out.println("b pag = " + GraphUtils.pathString(pag, x, y, z) + " adj(" + x + ", " +  z + ") = " + mag.isAdjacentTo(x, z));
+//                                        throw new RuntimeException("Unshielded collider discrepancy");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-//    @Test
+    private static boolean isUnshieldedCollider(Node x, Node y, Node z, Graph g) {
+        if (!(g.isAdjacentTo(x, y) && g.isAdjacentTo(y, z) && !g.isAdjacentTo(x, z))) {
+            return false;
+        }
+
+        return g.getEndpoint(x, y) == Endpoint.ARROW && g.getEndpoint(z, y) == Endpoint.ARROW;
+    }
+
+    //    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 20; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
