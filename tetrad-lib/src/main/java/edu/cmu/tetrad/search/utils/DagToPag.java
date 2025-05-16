@@ -87,7 +87,7 @@ public final class DagToPag {
 
         Graph graph = new EdgeListGraph(measured);
 
-        IntStream.range(0, measured.size()).parallel().forEach(i -> {
+        IntStream.range(0, measured.size()).forEach(i -> {
             Node n1 = measured.get(i);
             IntStream.range(i + 1, measured.size()).forEach(j -> {
                 Node n2 = measured.get(j);

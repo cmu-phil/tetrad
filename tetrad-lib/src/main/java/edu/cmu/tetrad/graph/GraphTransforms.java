@@ -86,7 +86,7 @@ public class GraphTransforms {
      */
     public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
         Graph dag = new EdgeListGraph(cpdag);
-        transformCpdagIntoDag(dag, knowledge, meekPreventCycles, verbose);
+        transformCpdagIntoDag(dag, knowledge, verbose);
         return dag;
     }
 
@@ -94,13 +94,15 @@ public class GraphTransforms {
      * Transforms a completed partially directed acyclic graph (CPDAG) into a directed acyclic graph (DAG) by orienting
      * the undirected edges in the CPDAG.
      *
-     * @param graph             The original graph from which the CPDAG was derived.
-     * @param knowledge         The knowledge available to check if a potential DAG violates any constraints.
-     * @param meekPreventCycles Whether to prevent cycles using the Meek rules by orienting additional arbitrary
-     *                          unshielded colliders in the graph.
-     * @param verbose           Whether to print verbose output.
+     * @param graph     The original graph from which the CPDAG was derived.
+     * @param knowledge The knowledge available to check if a potential DAG violates any constraints.
+     * @param verbose   Whether to print verbose output.
      */
-    public static void transformCpdagIntoDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
+    public static void transformCpdagIntoDag(Graph graph, Knowledge knowledge, boolean verbose) {
+        if (graph.paths().existsDirectedCycle()) {
+            throw new IllegalArgumentException("Directed cycle found when trying to transform CPDAG to DAG.");
+        }
+
         List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
@@ -115,9 +117,19 @@ public class GraphTransforms {
             return s1.compareTo(s2);
         });
 
+        List<Node> order = graph.getNodes();
+        order.sort((node1, node2) -> {
+            if (graph.paths().isAncestorOf(node1, node2)) {
+                return -1;
+            } else if (graph.paths().isAncestorOf(node2, node1)) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
 
         MeekRules rules = new MeekRules();
-        rules.setMeekPreventCycles(meekPreventCycles);
+        rules.setMeekPreventCycles(true);
         rules.setVerbose(verbose);
 
         if (knowledge != null) {
@@ -133,17 +145,16 @@ public class GraphTransforms {
                 Node y = edge.getNode2();
 
                 if (Edges.isUndirectedEdge(graph.getEdge(x, y))) {
-                    if (!graph.paths().isAncestorOf(y, x)) {
-                        direct(x, y, graph);
-                    } else if (!graph.paths().isAncestorOf(x, y)) {
+                    if (!graph.paths().isAncestorOf(x, y)) {
                         direct(y, x, graph);
+                    } else if (!graph.paths().isAncestorOf(y, x)) {
+                        direct(x, y, graph);
+                    } else if (order.indexOf(x) < order.indexOf(y)) {
+                        direct(x, y, graph);
                     } else {
-                        if (x.getName().compareTo(y.getName()) < 0) {
-                            direct(x, y, graph);
-                        } else {
-                            direct(y, x, graph);
-                        }
+                        direct(y, x, graph);
                     }
+
                     rules.orientImplied(graph);
                     continue NEXT;
                 }
@@ -212,25 +223,29 @@ public class GraphTransforms {
     public static Graph zhangMagFromPag(Graph pag) {
         List<Node> nodes = pag.getNodes();
 
-        Graph pcafci = new EdgeListGraph(pag);
+        Graph pafci = new EdgeListGraph(pag);
 
-        // pcafcic is the graph with only the circle-circle edges
-        Graph pcafcic = new EdgeListGraph(pag.getNodes());
+        // pcafci is the graph with only the circle-circle edges
+        Graph pcafci = new EdgeListGraph(pag.getNodes());
 
-        for (Edge e : pcafci.getEdges()) {
+        for (Edge e : pafci.getEdges()) {
             if (Edges.isNondirectedEdge(e)) {
-                pcafcic.addUndirectedEdge(e.getNode1(), e.getNode2());
+                pcafci.addUndirectedEdge(e.getNode1(), e.getNode2());
             }
         }
 
-        pcafcic = GraphTransforms.dagFromCpdag(pcafcic, new Knowledge(), true, false);
+        pcafci = GraphTransforms.dagFromCpdag(pcafci, new Knowledge(), false, false);
 
-        for (Edge e : pcafcic.getEdges()) {
-            pcafci.removeEdge(e.getNode1(), e.getNode2());
-            pcafci.addEdge(e);
+        if (pcafci.paths().existsDirectedCycle()) {
+            throw new IllegalStateException("Directed cycle found in PCAFCI.");
         }
 
-        Graph H = new EdgeListGraph(pcafci);
+        for (Edge e : pcafci.getEdges()) {
+            pafci.removeEdge(e.getNode1(), e.getNode2());
+            pafci.addEdge(e);
+        }
+
+        Graph H = new EdgeListGraph(pafci);
 
         for (Node x : nodes) {
             for (Node y : nodes) {
