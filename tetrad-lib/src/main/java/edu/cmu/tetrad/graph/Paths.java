@@ -335,12 +335,6 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a legal mag, false otherwise
      */
     public boolean isLegalMag() {
-        List<Node> latent = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
-
-        List<Node> measured = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
-
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
@@ -355,12 +349,7 @@ public class Paths implements TetradSerializable {
     public boolean isLegalPag() {
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
-        GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection));
-
-        return legalPag.isLegalPag();
-
-//        return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
+        return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
     /**
@@ -3054,6 +3043,26 @@ public class Paths implements TetradSerializable {
             result.add(element);
             return result;
         }
+    }
+
+    public boolean isMaximal() {
+        List<Node> selection = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        List<Node> _nodes = graph.getNodes();
+
+        for (int i = 0; i < _nodes.size(); i++) {
+            for (int j = i + 1; j < _nodes.size(); j++) {
+                Node x = _nodes.get(i);
+                Node y = _nodes.get(j);
+
+                if (!graph.isAdjacentTo(x, y) && graph.paths().existsInducingPath(x, y,  new HashSet<>(selection))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
 

@@ -23,7 +23,7 @@ import java.util.List;
         command = "m-sep-score",
         dataType = DataType.Graph
 )
-public class MSeparationScore implements ScoreWrapper {
+public class MSepScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -41,7 +41,7 @@ public class MSeparationScore implements ScoreWrapper {
     /**
      * Use this empty constructor to satisfy the java reflection
      */
-    public MSeparationScore() {
+    public MSepScore() {
 
     }
 
@@ -50,7 +50,7 @@ public class MSeparationScore implements ScoreWrapper {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public MSeparationScore(Graph graph) {
+    public MSepScore(Graph graph) {
         this.graph = graph;
     }
 

@@ -7252,11 +7252,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                 class="parameter_description_list">
             <li>Short Description: <span
                     id="ensureMarkov_short_desc">
-                    Ensure the local Markov property holds if initial graph is Markov
+                    Preserve the Markov property (checking MBs) if initial graph is Markov
         </span></li>
             <li>Long Description: <span
                     id="ensureMarkov_long_desc">
-                Local Markov says that if msep(x, y | parents(x)) then x _||_ y | parents(x).
+                The Markov property checking MBs says that if msep(x, y | MB(x)) then x _||_ y | MB(x).
                 Checking true for this property will tell the algorithm to ensure
                 this property if the scoring step produces a Markov graph. Not applicable
                 when running the algorithm from Oracle.

@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -37,13 +38,13 @@ public class RecursiveBlocking {
      * {@code null} if no sepset can be found.
      * @throws InterruptedException if any.
      */
-    public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
+    public static Pair<Set<Node>, Boolean> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
         return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
-    private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
+    private static Pair<Set<Node>, Boolean> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
+                                                                       Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
             throws InterruptedException {
         if (x == y) {
             return null;
@@ -53,16 +54,25 @@ public class RecursiveBlocking {
 
         Set<Node> path = new HashSet<>();
         path.add(x);
+        boolean allBlocked = true;
 
         for (Node b : graph.getAdjacentNodes(x)) {
             if (Thread.currentThread().isInterrupted()) {
                 return null;
             }
 
-           findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
+            if (b == y) continue;
+
+            Blockable blockable = findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
+
+            if (blockable != Blockable.BLOCKED) {
+                allBlocked = false;
+            }
         }
 
-        return z;
+        return Pair.of(z, allBlocked);
+//
+//        return allBlocked ? z : null;
     }
 
     /**

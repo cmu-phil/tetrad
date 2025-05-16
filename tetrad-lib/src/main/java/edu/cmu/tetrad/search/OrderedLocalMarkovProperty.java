@@ -33,7 +33,9 @@ public class OrderedLocalMarkovProperty {
         Paths paths = new Paths(mag);
 
         if (!paths.isLegalMag()) {
-            GraphSearchUtils.LegalMagRet ret = GraphSearchUtils.isLegalMag(mag, new HashSet<>());
+            List<Node> selection = mag.getNodes().stream()
+                    .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+            GraphSearchUtils.LegalMagRet ret = GraphSearchUtils.isLegalMag(mag, new HashSet<>(selection));
             throw new IllegalArgumentException("MAG not valid, reason = " + ret.getReason());
         }
 

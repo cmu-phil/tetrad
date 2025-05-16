@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.utils.DiscriminatingPath;
 import edu.cmu.tetrad.search.utils.EnsureMarkov;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.util.SublistGenerator;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -112,11 +113,12 @@ public class RecursiveDiscriminatingPathRule {
     public static Set<Node> findDdpSepsetRecursive(
             IndependenceTest test, Graph pag, Node x, Node y, FciOrient fciOrient,
             int maxBlockingPathLength, int maxDdpPathLength, EnsureMarkov ensureMarkovHelper, int depth) {
-        // 1) Preliminary orientation steps
-        fciOrient.setDoR4(false);
-        fciOrient.setCompleteRuleSetUsed(false);
-        fciOrient.finalOrientation(pag);
-        fciOrient.setDoR4(true);
+
+//        // 1) Preliminary orientation steps
+//        fciOrient.setDoR4(false);
+//        fciOrient.setCompleteRuleSetUsed(false);
+//        fciOrient.finalOrientation(pag);
+//        fciOrient.setDoR4(true);
 
         // 2) List possible "DiscriminatingPath" objects
         Set<DiscriminatingPath> discriminatingPaths =
@@ -171,12 +173,12 @@ public class RecursiveDiscriminatingPathRule {
                 Set<Node> notFollowedSet = GraphUtils.asSet(indices, _perhapsNotFollowed);
 
                 // (A) blockPathsRecursively
-                Set<Node> b = SepsetFinder.blockPathsRecursively(
+                Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(
                         pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
                 );
 
-                if (b == null) {
-                    return null;
+                if (!b.getRight()) {
+                    // ignore
                 }
 
                 // (B) For each subset of "common," check independence
@@ -199,7 +201,7 @@ public class RecursiveDiscriminatingPathRule {
                     }
 
                     // b minus c
-                    Set<Node> testSet = new HashSet<>(b);
+                    Set<Node> testSet = new HashSet<>(b.getLeft());
                     testSet.removeAll(c);
 
                     // Check independence

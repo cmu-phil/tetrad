@@ -26,7 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
-import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
+import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -396,8 +396,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             if (algo instanceof UsesScoreWrapper) {
                 // We inject the graph to the score to satisfy the tests like MSeparationScore - Zhou
                 ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
-                if (scoreWrapper instanceof MSeparationScore) {
-                    ((MSeparationScore) scoreWrapper).setGraph(getSourceGraph());
+                if (scoreWrapper instanceof MSepScore) {
+                    ((MSepScore) scoreWrapper).setGraph(getSourceGraph());
                 }
             }
 
