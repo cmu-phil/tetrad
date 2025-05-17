@@ -689,8 +689,11 @@ public class SemBicScore implements Score {
 
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
-        this.matrix = this.covariances.getMatrix();
-
+        
+        if (this.dataModel == null) {
+            this.matrix = this.covariances.getMatrix();
+        }
+        
         this.dataModel = covariances;
 
     }
