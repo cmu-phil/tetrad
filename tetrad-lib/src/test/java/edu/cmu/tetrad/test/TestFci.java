@@ -688,7 +688,7 @@ public class TestFci {
 
     @Test
     public void testFcitFromData() {
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 3000; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
             Graph graph = RandomGraph.randomGraph(50, 6, 200, 100, 100, 100, false);
@@ -724,6 +724,8 @@ public class TestFci {
                 if (!ret.isLegalPag()) {
                     System.out.println("************ pag is not legal ****************");
                     System.out.println("**** Reason = " + ret.getReason());
+
+                    throw new IllegalStateException("**** Reason = " + ret.getReason());
                 }
 
                 if (mag.paths().isLegalMag() && !pag.paths().isLegalPag()) {

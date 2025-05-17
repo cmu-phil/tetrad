@@ -730,13 +730,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     public synchronized boolean setEndpoint(Node from, Node to, Endpoint endPoint)
             throws IllegalArgumentException {
         if (!isAdjacentTo(from, to)) throw new IllegalArgumentException("Not adjacent");
-
         Edge edge = getEdge(from, to);
-
+        Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
         removeEdge(edge);
-
-        Edge newEdge = new Edge(from, to,
-                edge.getProximalEndpoint(from), endPoint);
         addEdge(newEdge);
         return true;
     }

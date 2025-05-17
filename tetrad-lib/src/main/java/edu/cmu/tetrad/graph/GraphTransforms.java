@@ -247,22 +247,36 @@ public class GraphTransforms {
 
         Graph H = new EdgeListGraph(pafci);
 
-        for (Node x : nodes) {
-            for (Node y : nodes) {
-                if (x.equals(y)) {
-                    continue;
+        for (Node _x : nodes) {
+            for (Node _y : H.getAdjacentNodes(_x)) {
+                Edge e = pafci.getEdge(_x, _y);
+
+                Node x = e.getNode1();
+                Node y = e.getNode2();
+                Endpoint endx = e.getEndpoint1();
+                Endpoint endy = e.getEndpoint2();
+
+                Edge xy = Edges.directedEdge(x, y);
+                Edge yx = Edges.directedEdge(y, x);
+
+                if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW) {
+                    H.removeEdge(e);
+                    H.addEdge(xy);
                 }
 
-                if (!H.isAdjacentTo(x, y)) {
-                    continue;
+                if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE) {
+                    H.removeEdge(e);
+                    H.addEdge(yx);
                 }
 
-                if (H.getEndpoint(y, x) == Endpoint.CIRCLE && H.getEndpoint(x, y) == Endpoint.ARROW) {
-                    H.setEndpoint(y, x, Endpoint.TAIL);
+                if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE) {
+                    H.removeEdge(e);
+                    H.addEdge(xy);
                 }
 
-                if (H.getEndpoint(y, x) == Endpoint.TAIL && H.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                    H.setEndpoint(x, y, Endpoint.ARROW);
+                if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL) {
+                    H.removeEdge(e);
+                    H.addEdge(yx);
                 }
             }
         }
