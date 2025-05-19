@@ -210,7 +210,7 @@ public class GraphTransforms {
 //            }
 //        });
 
-        MeekRules2 rules = new MeekRules2();
+        PagMeekRules rules = new PagMeekRules();
         rules.setMeekPreventCycles(true);
         rules.setVerbose(verbose);
 

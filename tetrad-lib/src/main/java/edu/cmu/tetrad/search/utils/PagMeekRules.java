@@ -30,21 +30,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.*;
 
 /**
- * Implements Meek's complete orientation rule set for PC (Chris Meek (1995), "Causal inference and causal explanation
- * orienting.
- * <p>
- * Rule R4 is only performed if knowledge is nonempty.
- * <p>
- * Note that the meekPreventCycles flag is set to true by default. This means that the algorithm will prevent cycles
- * from being created in the graph by adding arbitrary unshielded colliders to the graph. The user can turn this off if
- * they want to by setting the Meek prevent cycles flag to false, in which case the algorithm will not prevent cycles
- * from being created, e.g., by repeated applications of R1. This behavior was adjusted 2024-6-24, as a way to allow the
- * PC algorithm to always output a CPDAG.
+ * Implements a version of Meek's rules for picking a MAG from a PAG.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public class MeekRules2 {
+public class PagMeekRules {
 
     /**
      * The logger to use.
@@ -75,7 +66,7 @@ public class MeekRules2 {
     /**
      * Constructs the <code>MeekRules</code> with no logging.
      */
-    public MeekRules2() {
+    public PagMeekRules() {
         this.useRule4 = !this.knowledge.isEmpty();
     }
 
@@ -346,7 +337,7 @@ public class MeekRules2 {
      * @return True if the edge was directed.
      */
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
-        if (!MeekRules2.isArrowheadAllowed(a, c, this.knowledge)) return false;
+        if (!PagMeekRules.isArrowheadAllowed(a, c, this.knowledge)) return false;
         if (!Edges.isNondirectedEdge(graph.getEdge(a, c))) return false;
 
         Edge before = graph.getEdge(a, c);
