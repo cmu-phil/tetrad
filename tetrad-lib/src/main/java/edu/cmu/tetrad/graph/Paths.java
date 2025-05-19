@@ -2688,6 +2688,11 @@ public class Paths implements TetradSerializable {
         return edge != null && edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
     }
 
+    public boolean isNondirected(Node node1, Node node2) {
+        Edge edge = graph.getEdge(node1, node2);
+        return edge != null && edge.getEndpoint1() == Endpoint.CIRCLE && edge.getEndpoint2() == Endpoint.CIRCLE;
+    }
+
     /**
      * <p>possibleAncestor.</p>
      *
