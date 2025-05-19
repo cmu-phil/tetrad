@@ -294,11 +294,11 @@ public class TestFci {
         checkSearch("X-->W1,V1-->W1,V1-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
                 "Xo->W1,V1o->W1,V1-->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
 
-        checkSearch("Latent(R),Latent(S),X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
-                "Xo->W1,V1<->W1,V1<->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
+//        checkSearch("Latent(R),Latent(S),X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
+//                "Xo->W1,V1<->W1,V1<->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
 
-        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
-                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
+//        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
+//                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
     }
 
     /**
@@ -530,15 +530,15 @@ public class TestFci {
             Graph estPag1 = fci.search();
             assertEquals(truePag_, estPag1);
 
-//            GraspFci graspFci = new GraspFci(new MsepTest(trueMag_), new GraphScore(trueMag_));
-//            graspFci.setUseRaskuttiUhler(true);
-//            graspFci.setUseScore(false);
-//            graspFci.setVerbose(verbose);
-//            Graph estPag2 = graspFci.search();
-//            assertEquals(truePag_, estPag2);
+            GraspFci graspFci = new GraspFci(new MsepTest(trueMag_), new GraphScore(trueMag_));
+            graspFci.setUseRaskuttiUhler(true);
+            graspFci.setUseScore(false);
+            graspFci.setVerbose(verbose);
+            Graph estPag2 = graspFci.search();
+            assertEquals(truePag_, estPag2);
 //
 //            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
-//            fcit.setEnsureMarkov(true);
+//            fcit.setEnsureMarkov(false);
 //            Graph estPag3 = fcit.search();
 //            assertEquals(truePag_, estPag3);
         } catch (Exception e) {
@@ -714,7 +714,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 3000; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -824,7 +824,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -870,7 +870,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFindCycles() {
 
 

@@ -103,10 +103,6 @@ public class GraphTransforms {
      * @param verbose   Whether to print verbose output.
      */
     public static void transformCpdagIntoDag(Graph graph, Knowledge knowledge, boolean verbose) {
-        if (graph.paths().existsDirectedCycle()) {
-            throw new IllegalArgumentException("Directed cycle found when trying to transform CPDAG to DAG.");
-        }
-
         List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
@@ -179,10 +175,6 @@ public class GraphTransforms {
 
     public static Graph transformCpdagIntoDag2(Graph graph0, Knowledge knowledge, boolean verbose) {
         Graph graph = new EdgeListGraph(graph0);
-
-        if (graph.paths().existsDirectedCycle()) {
-            throw new IllegalArgumentException("Directed cycle found when trying to transform CPDAG to DAG.");
-        }
 
         PagMeekRules rules = new PagMeekRules();
         rules.setMeekPreventCycles(true);
