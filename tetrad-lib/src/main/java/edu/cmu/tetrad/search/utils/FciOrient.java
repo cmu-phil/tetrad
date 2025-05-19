@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FciOrientDijkstra;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -666,28 +667,45 @@ public class FciOrient {
             ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 3);
             int[] choice;
 
+            WH:
             while ((choice = gen.next()) != null) {
                 List<Node> B = GraphUtils.asList(choice, adj);
 
-                Node a = B.get(0);
-                Node c = B.get(1);
-                Node d = B.get(2);
+                PermutationGenerator pg = new PermutationGenerator(B.size());
+                int[] perm;
 
-                if (!graph.isAdjacentTo(a, c) && graph.isAdjacentTo(a, d) && graph.isAdjacentTo(c, d)) {
-                    if (graph.isDefCollider(a, b, c) && graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE
-                        && graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
-                        if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
-                            continue;
-                        }
+                while ((perm = pg.next()) != null) {
 
-                        setEndpoint(graph, d, b, Endpoint.ARROW);
 
-                        if (this.verbose) {
-                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
-                        }
+                    Node a = B.get(perm[0]);
+                    Node d = B.get(perm[1]);
+                    Node c = B.get(perm[2]);
 
-                        this.changeFlag = true;
+                    if (!graph.isAdjacentTo(a, b) && graph.isAdjacentTo(d, b) && graph.isAdjacentTo(c, b)) {
+                        continue;
                     }
+
+                    if (!graph.isDefCollider(a, b, c)) {
+                        continue;
+                    }
+
+                    if (!(graph.getEndpoint(b, a) == Endpoint.CIRCLE && graph.getEndpoint(b, c) == Endpoint.CIRCLE
+                          && graph.getEndpoint(d, b) == Endpoint.CIRCLE)) {
+                        continue;
+                    }
+
+                    if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
+                        continue;
+                    }
+
+                    setEndpoint(graph, d, b, Endpoint.ARROW);
+
+                    if (this.verbose) {
+                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
+                    }
+
+                    this.changeFlag = true;
+                    break WH;
                 }
             }
         }
@@ -1120,7 +1138,8 @@ public class FciOrient {
     /**
      * R10 Suppose α o→ γ, β → γ ← θ, p1 is an uncovered potentially directed (semidirected) path from α to β, and p2 is
      * an uncovered p.d. path from α to θ. Let μ be the vertex adjacent to α on p1 (μ could be β), and ω be the vertex
-     * adjacent to α on p2 (ω could be θ). If μ and ω ar    e distinct, and are not adjacent, then orient α o→ γ as α → γ.
+     * adjacent to α on p2 (ω could be θ). If μ and ω ar    e distinct, and are not adjacent, then orient α o→ γ as α →
+     * γ.
      *
      * @param alpha α
      * @param gamma γ

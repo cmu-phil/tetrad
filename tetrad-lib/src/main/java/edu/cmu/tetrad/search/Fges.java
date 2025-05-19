@@ -272,7 +272,7 @@ public final class Fges implements IGraphSearch, DagScorer {
             this.logger.log("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null, true, verbose), true);
+        this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null, verbose), true);
 
         return graph;
     }

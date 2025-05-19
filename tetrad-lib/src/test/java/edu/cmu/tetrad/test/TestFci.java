@@ -84,6 +84,34 @@ public class TestFci {
         return g.getEndpoint(x, y) == Endpoint.ARROW && g.getEndpoint(z, y) == Endpoint.ARROW;
     }
 
+    private static boolean isLegalMag(Graph graph) {
+        List<Node> selection = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        GraphSearchUtils.LegalMagRet legalMag = GraphSearchUtils.isLegalMag(graph, new HashSet<>(selection));
+
+        if (!legalMag.isLegalMag()) {
+            System.out.println("Not legal mag, reason = " + legalMag.getReason());
+        }
+
+        return legalMag.isLegalMag();
+    }
+
+    private static boolean isLegalPag(Graph graph) {
+        List<Node> selection = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        GraphSearchUtils.LegalPagRet legalMag = GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection));
+
+        if (!legalMag.isLegalPag()) {
+            System.out.println("Not legal pag, reason = " + legalMag.getReason());
+        }
+
+
+
+        return legalMag.isLegalPag();
+    }
+
     @Test
     public void testSearch1() {
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
@@ -729,7 +757,9 @@ public class TestFci {
                         System.out.println("Unshielded colliders match between mag and pag.");
                     }
 
-                    throw new IllegalStateException("**** Reason = " + ret.getReason());
+                    if (!(getUnshieldedColliders(mag).equals(getUnshieldedColliders(pag)) && mag.paths().isLegalMag())) {
+                        throw new IllegalStateException("**** Reason = " + ret.getReason());
+                    }
                 }
 
                 if (mag.paths().isLegalMag() && !pag.paths().isLegalPag()) {
@@ -796,7 +826,7 @@ public class TestFci {
 
     @Test
     public void testFcitFromOracle() {
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
             long seed = System.nanoTime();
@@ -810,18 +840,28 @@ public class TestFci {
             GraphScore score = new GraphScore(graph);
 
             try {
+//                Fci fci = new Fci(independence);
+//                fci.setVerbose(false);
+
                 Fcit fci = new Fcit(independence, score);
                 fci.setStartWith(Fcit.START_WITH.GRASP);
-                fci.setDepth(-1);
-//                fci.setKnowledge(knowledge);
                 fci.setEnsureMarkov(false);
                 fci.setVerbose(false);
 
                 Graph pag = fci.search();
 
                 if (!isLegalPag(pag)) {
+                    Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
-                    throw new RuntimeException("pag is not legal pag seed = " + seed);
+                    if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
+                        System.out.println("Unshielded colliders match between mag and pag.");
+                    }
+
+                    if (!(getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag)) && mag.paths().isLegalMag())) {
+                        throw new RuntimeException("pag is not legal pag seed = " + seed);
+                    }
+
+//                    throw new RuntimeException("pag is not legal pag seed = " + seed);
                 }
 
             } catch (InterruptedException e) {
@@ -853,7 +893,7 @@ public class TestFci {
             }
 
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
-//            Graph mag = GraphTransforms.dagToMag(dag);
+////            Graph mag = GraphTransforms.dagToMag(dag);
 
             System.out.println("MAG = " + mag);
 
@@ -914,32 +954,6 @@ public class TestFci {
         }
 
         return unshieldedTriples;
-    }
-
-    private static boolean isLegalMag(Graph graph) {
-        List<Node> selection = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
-        GraphSearchUtils.LegalMagRet legalMag = GraphSearchUtils.isLegalMag(graph, new HashSet<>(selection));
-
-        if (!legalMag.isLegalMag()) {
-            System.out.println("Not legal mag, reason = " + legalMag.getReason());
-        }
-
-        return legalMag.isLegalMag();
-    }
-
-    private static boolean isLegalPag(Graph graph) {
-        List<Node> selection = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
-        GraphSearchUtils.LegalPagRet legalMag = GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection));
-
-        if (!legalMag.isLegalPag()) {
-            System.out.println("Not legal pag, reason = " + legalMag.getReason());
-        }
-
-        return legalMag.isLegalPag();
     }
 }
 

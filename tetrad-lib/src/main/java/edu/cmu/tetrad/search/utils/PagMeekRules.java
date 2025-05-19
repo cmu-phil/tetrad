@@ -345,7 +345,7 @@ public class PagMeekRules {
 
         // We prevent new cycles in the graph by adding arbitrary unshielded colliders to prevent cycles.
         // The user can turn this off if they want to by setting the Meek prevent cycles flag to false.
-        if (meekPreventCycles && graph.paths().existsDirectedPath(c, a)) {
+        if (graph.paths().existsDirectedPath(c, a)) {
 
             // Log this before adding a <-- c back so that we don't accidentally say we added c --> a <--c
             // as an unshielded collider.
@@ -359,22 +359,6 @@ public class PagMeekRules {
 
             graph.addEdge(before);
             return false;
-
-//            graph.addEdge(Edges.directedEdge(c, a));
-//
-//            visited.add(a);
-//            visited.add(c);
-//
-//            return true;
-        }
-
-        List<Node> adjc = graph.getAdjacentNodes(c);
-
-        for (Node parent : adjc) {
-            if (!graph.isAdjacentTo(parent, a) && graph.getEndpoint(parent, c) == Endpoint.ARROW) {
-                graph.addEdge(before);
-                return false;
-            }
         }
 
         Edge after = Edges.directedEdge(a, c);
@@ -383,22 +367,6 @@ public class PagMeekRules {
         visited.add(c);
 
         graph.addEdge(after);
-
-//        for (Node parent : adjc) {
-//            if (!graph.isAdjacentTo(parent, a) && !graph.paths().existsInducingPath(parent, a, Set.of())) {
-//                graph.removeEdge(after);
-//                graph.addEdge(before);
-//                return false;
-//            }
-//        }
-//
-//        Edge after = Edges.directedEdge(a, c);
-//
-//        visited.add(a);
-//        visited.add(c);
-//
-//        graph.addEdge(after);
-
         return true;
     }
 
