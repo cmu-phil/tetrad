@@ -391,6 +391,12 @@ public final class Fcit implements IGraphSearch {
 
         copyKnownCollidersFromCpdag(best, cpdag, scorer);
 
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        GraphUtils.recallKnownColliders(pag, knownColliders, knowledge);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        fciOrient.setDoR4(false);
+        fciOrient.finalOrientation(pag);
+
         lastPag = new EdgeListGraph(pag);
         lastKnownColliders = new HashSet<>(knownColliders);
         lastExtraSepsets = new HashMap<>(extraSepsets);
@@ -658,13 +664,12 @@ public final class Fcit implements IGraphSearch {
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Set<DiscriminatingPath> oldDiscriminatingPaths,
                                                         int maxBlockingPathLength) {
         fciOrient.finalOrientation(pag);
-        Set<Edge> edges = pag.getEdges();
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        edges.forEach(edge -> {
+        pag.getEdges().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 

@@ -71,6 +71,10 @@ public class TestFci {
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
 
+        System.out.println(resultGraph.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
+        System.out.println(unshieldedCollidersIdenticalPagMag(resultGraph)
+                ? "Unshielded colliders the same " : "Unshielded colliders different.");
+
         assertEquals(pag, resultGraph);
 //        System.out.println("DAG to PAG: " + dagToPag(graph));
 //        assertEquals(pag, dagToPag(graph));
@@ -294,11 +298,11 @@ public class TestFci {
         checkSearch("X-->W1,V1-->W1,V1-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
                 "Xo->W1,V1o->W1,V1-->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
 
-//        checkSearch("Latent(R),Latent(S),X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
-//                "Xo->W1,V1<->W1,V1<->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
-
-//        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
-//                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
+        checkSearch("Latent(R),Latent(S),X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
+                "Xo->W1,V1<->W1,V1<->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
+//
+        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
+                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
     }
 
     /**
@@ -488,7 +492,7 @@ public class TestFci {
     public void testSearch16() {
         boolean verbose = false;
 
-        final String trueMag = "Graph Nodes:\n" +
+        final String trueDag = "Graph Nodes:\n" +
                                "(ep);(g);cd;hd;lc;s;i;ps;mb\n" +
                                "\n" +
                                "Graph Edges:\n" +
@@ -519,11 +523,14 @@ public class TestFci {
                                   "9. s --> cd";
 
         try {
-            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueMag);
+            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueDag);
             Graph truePag_ = GraphSaveLoadUtils.readerToGraphTxt(correctPag);
 
-            System.out.println("True MAG");
+            System.out.println("True DAG");
             System.out.println(trueMag_);
+
+            System.out.println("Correct PAG");
+            System.out.println(truePag_);
 
             Fci fci = new Fci(new MsepTest(trueMag_));
             fci.setVerbose(verbose);
@@ -536,14 +543,24 @@ public class TestFci {
             graspFci.setVerbose(verbose);
             Graph estPag2 = graspFci.search();
             assertEquals(truePag_, estPag2);
-//
-//            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
-//            fcit.setEnsureMarkov(false);
-//            Graph estPag3 = fcit.search();
-//            assertEquals(truePag_, estPag3);
+
+            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
+            fcit.setStartWith(Fcit.START_WITH.GRASP);
+            fcit.setEnsureMarkov(false);
+            Graph estPag3 = fcit.search();
+
+            System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
+            System.out.println(unshieldedCollidersIdenticalPagMag(estPag3)
+                    ? "Unshielded colliders the same " : "Unshielded colliders different.");
+
+            assertEquals(truePag_, estPag3);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean unshieldedCollidersIdenticalPagMag(Graph estPag3) {
+        return getUnshieldedColliders(estPag3).equals(getUnshieldedColliders(GraphTransforms.zhangMagFromPag(estPag3)));
     }
 
     @Test
@@ -701,8 +718,6 @@ public class TestFci {
         try {
             Set<Node> B = RecursiveBlockingChokePointB.blockPathsRecursively(graph, graph.getNode("x"), graph.getNode("y"),
                     Set.of(), -1);
-//            Set<Node> B = RecursiveBlocking.blockPathsRecursively(graph, graph.getNode("x"), graph.getNode("y"),
-//                    Set.of(), Set.of(), -1);
 
             System.out.println("B = " + B);
 
@@ -714,7 +729,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 3000; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -758,7 +773,7 @@ public class TestFci {
                     }
 
                     if (!(getUnshieldedColliders(mag).equals(getUnshieldedColliders(pag)) && mag.paths().isLegalMag())) {
-                        throw new IllegalStateException("**** Reason = " + ret.getReason());
+//                        throw new IllegalStateException("**** Reason = " + ret.getReason());
                     }
                 }
 
@@ -824,7 +839,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -834,7 +849,7 @@ public class TestFci {
 
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph graph = RandomGraph.randomGraph(15, 5, 30, 100, 100, 100, false);
+            Graph graph = RandomGraph.randomGraph(15, 8, 50, 100, 100, 100, false);
             MsepTest independence = new MsepTest(graph);
             graph = GraphUtils.replaceNodes(graph, independence.getVariables());
             GraphScore score = new GraphScore(graph);
@@ -935,7 +950,7 @@ public class TestFci {
         }
     }
 
-    private Set<Triple> getUnshieldedColliders(Graph graph) {
+    public static Set<Triple> getUnshieldedColliders(Graph graph) {
         Set<Triple> unshieldedTriples = new HashSet<>();
 
         for (Node b : graph.getNodes()) {

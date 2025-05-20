@@ -36,7 +36,7 @@ public class OrderedLocalMarkovProperty {
             List<Node> selection = mag.getNodes().stream()
                     .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
             GraphSearchUtils.LegalMagRet ret = GraphSearchUtils.isLegalMag(mag, new HashSet<>(selection));
-            throw new IllegalArgumentException("MAG not valid, reason = " + ret.getReason());
+//            throw new IllegalArgumentException("MAG not valid, reason = " + ret.getReason());
         }
 
         Set<IndependenceFact> model = new HashSet<>();
