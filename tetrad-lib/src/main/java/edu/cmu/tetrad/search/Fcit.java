@@ -396,7 +396,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         GraphUtils.recallKnownColliders(pag, knownColliders, knowledge);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        fciOrient.setDoR4(false);
+        fciOrient.setDoR4(true);
         fciOrient.finalOrientation(pag);
 
         lastPag = new EdgeListGraph(pag);
@@ -404,8 +404,6 @@ public final class Fcit implements IGraphSearch {
         lastExtraSepsets = new HashMap<>(extraSepsets);
 
         refreshGraph();
-
-        if (true) return pag;
 
         if (!pag.paths().isMaximal()) {
             TetradLogger.getInstance().log("****** Maximality check failed for the initial PAG ******");
@@ -470,9 +468,12 @@ public final class Fcit implements IGraphSearch {
         for (Node b : best) {
             var adj = pag.getAdjacentNodes(b);
 
-            for (Node x : adj) {
-                for (Node y : adj) {
-                    if (GraphUtils.distinct(x, b, y)) {// && !checked.contains(new Triple(x, b, y))) {
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node x = adj.get(i);
+                    Node y = adj.get(j);
+
+                    if (GraphUtils.distinct(x, b, y)) {
                         copyUnshieldedCollider(x, b, y, cpdag, scorer);
                     }
                 }
@@ -667,6 +668,10 @@ public final class Fcit implements IGraphSearch {
     // "Pure" version without threading
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Set<DiscriminatingPath> oldDiscriminatingPaths,
                                                         int maxBlockingPathLength) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
+        }
+
         fciOrient.finalOrientation(pag);
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
@@ -687,22 +692,22 @@ public final class Fcit implements IGraphSearch {
                 }
             }
 
-            if (oldDiscriminatingPaths != null) {
-                Set<DiscriminatingPath> oldPaths = new HashSet<>();
-
-                for (DiscriminatingPath path : oldDiscriminatingPaths) {
-                    if (path.getX() == x && path.getY() == y) {
-                        oldPaths.add(path);
-                    } else if (path.getX() == y && path.getY() == x) {
-                        oldPaths.add(path);
-                    }
-                }
-
-                if (paths.equals(oldPaths)) {
-                    pathsByEdge.put(Set.of(x, y), null);
-                    return;
-                }
-            }
+//            if (oldDiscriminatingPaths != null) {
+//                Set<DiscriminatingPath> oldPaths = new HashSet<>();
+//
+//                for (DiscriminatingPath path : oldDiscriminatingPaths) {
+//                    if (path.getX() == x && path.getY() == y) {
+//                        oldPaths.add(path);
+//                    } else if (path.getX() == y && path.getY() == x) {
+//                        oldPaths.add(path);
+//                    }
+//                }
+//
+////                if (paths.equals(oldPaths)) {
+////                    pathsByEdge.put(Set.of(x, y), null);
+////                    return;
+////                }
+//            }
 
             pathsByEdge.put(Set.of(x, y), paths);
         });
@@ -710,6 +715,8 @@ public final class Fcit implements IGraphSearch {
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         pag.getEdges().forEach(edge -> {
+//            TetradLogger.getInstance().log("Considering removing edge " + edge);
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -718,6 +725,10 @@ public final class Fcit implements IGraphSearch {
 
             Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
             Set<Node> perhapsNotFollowed = new HashSet<>();
+
+            if (verbose) {
+//                TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
+            }
 
             // Don't repeat the same independence test twice for this edge x *-* y.
             Set<Set<Node>> S = new HashSet<>();
@@ -750,6 +761,10 @@ public final class Fcit implements IGraphSearch {
                     b = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
+                }
+
+                if (verbose) {
+//                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + b);
                 }
 
                 // b will be null if the search did not conclude with set that is known to either m-separate
