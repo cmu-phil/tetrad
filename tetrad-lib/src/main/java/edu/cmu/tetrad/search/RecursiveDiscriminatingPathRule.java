@@ -180,7 +180,7 @@ public class RecursiveDiscriminatingPathRule {
                         pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
                 );
 
-                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + b.getLeft());
+//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + b.getLeft());
 
 //                if (!b.getRight()) {
 //                    return Set.of();
@@ -217,7 +217,7 @@ public class RecursiveDiscriminatingPathRule {
                         independent = test.checkIndependence(x, y, testSet).isIndependent();
                     }
 
-                    System.out.println("b = " + b.getLeft() + " c = " + c + " fact = " + LogUtilsSearch.independenceFact(x, y, testSet) + " independent: " + independent);
+//                    System.out.println("b = " + b.getLeft() + " c = " + c + " fact = " + LogUtilsSearch.independenceFact(x, y, testSet) + " independent: " + independent);
 
                     if (independent) {
                         // Found a valid solution => return it

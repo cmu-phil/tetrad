@@ -2544,7 +2544,7 @@ public final class GraphUtils {
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> knownColliders,
                                      boolean verbose, Set<Node> selection) {
-        System.out.println("In guarantee PAG, unshielded colliders: " + knownColliders);
+//        System.out.println("In guarantee PAG, unshielded colliders: " + knownColliders);
 
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
