@@ -94,7 +94,7 @@ public class RecursiveDiscriminatingPathRule {
     /**
      * Finds the set of nodes (separator set) for the Recursive Discriminating Path rule in a graph. This method uses a
      * recursive approach to evaluate possible discriminating paths between two nodes {@code x} and {@code y} in the
-     * provided graph {@code pag}. It involves complex independence checks and is computationally intensive.
+     * provided graph {@code pag}.
      *
      * @param test                  The independence test object used to check for conditional independence between
      *                              nodes.
@@ -180,11 +180,11 @@ public class RecursiveDiscriminatingPathRule {
                         pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
                 );
 
-//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + b.getLeft());
+                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + b.getLeft());
 
-                if (!b.getRight()) {
+//                if (!b.getRight()) {
 //                    return Set.of();
-                }
+//                }
 
                 // (B) For each subset of "common," check independence
                 SublistGenerator gen2 = new SublistGenerator(common.size(), __depth2);
@@ -217,7 +217,7 @@ public class RecursiveDiscriminatingPathRule {
                         independent = test.checkIndependence(x, y, testSet).isIndependent();
                     }
 
-//                    System.out.println("b = " + b.getLeft() + " c = " + c + " fact = " + LogUtilsSearch.independenceFact(x, y, testSet) + " independent: " + independent);
+                    System.out.println("b = " + b.getLeft() + " c = " + c + " fact = " + LogUtilsSearch.independenceFact(x, y, testSet) + " independent: " + independent);
 
                     if (independent) {
                         // Found a valid solution => return it

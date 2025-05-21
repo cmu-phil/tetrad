@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -202,6 +200,8 @@ public class RecursiveBlocking {
             if (c == a) {
                 continue;
             }
+
+//            if (graph.isAdjacentTo(a, c) && !graph.isDefNoncollider(a, b, c)) continue;
 
             if (reachable(graph, a, b, c, z, ancestorMap)) {
                 passNodes.add(c);

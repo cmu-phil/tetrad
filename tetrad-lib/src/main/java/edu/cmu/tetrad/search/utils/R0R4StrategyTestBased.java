@@ -189,6 +189,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) throws InterruptedException {
+        System.out.println("CONSIDERING DISCRIMINATING PATH " + discriminatingPath);
+
         Node x = discriminatingPath.getX();
         Node w = discriminatingPath.getW();
         Node v = discriminatingPath.getV();
@@ -217,6 +219,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         } else {
             throw new IllegalArgumentException("Unknown blocking type.");
         }
+
+        System.out.println("BLOCKING " + blocking);
 
         //  *         V
         // *         **            * is either an arrowhead, a tail, or a circle
@@ -444,7 +448,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * @param blockingType the blocking type to be set, which can be either RECURSIVE or GREEDY.
      */
     public void setBlockingType(BlockingType blockingType) {
-        this.blockingType = blockingType;
+//        this.blockingType = blockingType;
     }
 
     /**
