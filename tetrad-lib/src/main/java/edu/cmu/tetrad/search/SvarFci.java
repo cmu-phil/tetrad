@@ -222,7 +222,7 @@ public final class SvarFci implements IGraphSearch {
         fciOrient.finalOrientation(this.graph);
 
         if (guaranteePag) {
-            this.graph = GraphUtils.guaranteePag(this.graph, fciOrient, knowledge, unshieldedTriples, unshieldedTriples, verbose,
+            this.graph = GraphUtils.guaranteePag(this.graph, fciOrient, knowledge, unshieldedTriples, verbose,
                     new HashSet<>());
         }
 

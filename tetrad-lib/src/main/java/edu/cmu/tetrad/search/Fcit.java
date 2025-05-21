@@ -283,6 +283,8 @@ public final class Fcit implements IGraphSearch {
             best = grasp.bestOrder(nodes);
             dag = grasp.getGraph(false);
 
+//            System.out.println("initial cpdag = " + GraphTransforms.dagToCpdag(dag));
+
             long stop = MillisecondTimes.wallTimeMillis();
 
             if (verbose) {
@@ -403,6 +405,8 @@ public final class Fcit implements IGraphSearch {
 
         refreshGraph();
 
+        if (true) return pag;
+
         if (!pag.paths().isMaximal()) {
             TetradLogger.getInstance().log("****** Maximality check failed for the initial PAG ******");
         }
@@ -450,7 +454,7 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, knownColliders, knownColliders, verbose, new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, knownColliders, verbose, new HashSet<>());
         }
 
         return GraphUtils.replaceNodes(pag, nodes);
