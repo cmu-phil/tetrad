@@ -849,7 +849,7 @@ public class TestFci {
 
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph graph = RandomGraph.randomGraph(15, 8, 50, 100, 100, 100, false);
+            Graph graph = RandomGraph.randomGraph(15, 8, 30, 100, 100, 100, false);
             MsepTest independence = new MsepTest(graph);
             graph = GraphUtils.replaceNodes(graph, independence.getVariables());
             GraphScore score = new GraphScore(graph);

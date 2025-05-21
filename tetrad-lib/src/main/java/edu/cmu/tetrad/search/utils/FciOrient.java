@@ -675,13 +675,15 @@ public class FciOrient {
                 int[] perm;
 
                 while ((perm = pg.next()) != null) {
+                    Node a = nodes.get(choice[perm[0]]);
+                    Node d = nodes.get(choice[perm[1]]);
+                    Node c = nodes.get(choice[perm[2]]);
 
+                    if (!(graph.isAdjacentTo(a, b) && graph.isAdjacentTo(d, b) && graph.isAdjacentTo(c, b))) {
+                        continue;
+                    }
 
-                    Node a = B.get(perm[0]);
-                    Node d = B.get(perm[1]);
-                    Node c = B.get(perm[2]);
-
-                    if (!graph.isAdjacentTo(a, b) && graph.isAdjacentTo(d, b) && graph.isAdjacentTo(c, b)) {
+                    if (!(graph.isAdjacentTo(a, d) && graph.isAdjacentTo(c, d))) {
                         continue;
                     }
 
@@ -689,8 +691,8 @@ public class FciOrient {
                         continue;
                     }
 
-                    if (!(graph.getEndpoint(b, a) == Endpoint.CIRCLE && graph.getEndpoint(b, c) == Endpoint.CIRCLE
-                          && graph.getEndpoint(d, b) == Endpoint.CIRCLE)) {
+                    if (!(graph.getEndpoint(d, b) == Endpoint.CIRCLE && graph.getEndpoint(a, d) == Endpoint.CIRCLE
+                          && graph.getEndpoint(c, d) == Endpoint.CIRCLE)) {
                         continue;
                     }
 
@@ -858,7 +860,7 @@ public class FciOrient {
                 // Returns a map from each node to its predecessor in the shortest path. This is needed to reconstruct
                 // the path, since the Dijkstra algorithm proper does not pay attention to the path, only to the
                 // shortest distances. So we need to record this information.
-                Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+                Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, graph, x, y).getRight();
 
                 // This reconstructs the path given the predecessor map.
                 List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
@@ -1114,7 +1116,7 @@ public class FciOrient {
         // This returns a map from each node to its predecessor on the path, so that we can reconstruct the path.
         // (Dijkstra's algorithm proper doesn't specify that the paths be recorded, only that the shortest distances
         // be recorded, but we can keep track of the paths as well.
-        Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+        Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, graph, x, y).getRight();
 
         // This gets the path from the predecessor map.
         List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
