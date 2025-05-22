@@ -121,7 +121,7 @@ public class FciOrient {
     /**
      * Indicates whether to run R4 or not.
      */
-    private boolean doR4 = true;
+    private boolean useR4 = true;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified R4Strategy.
@@ -721,7 +721,7 @@ public class FciOrient {
      */
     public void ruleR4(Graph graph) {
 
-        if (!doR4) {
+        if (!useR4) {
             return;
         }
 
@@ -738,7 +738,7 @@ public class FciOrient {
             while (true) {
                 List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
 
-                List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream()
+                List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream()
                         .map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
                         .toList();
 
@@ -1399,9 +1399,9 @@ public class FciOrient {
     /**
      * Sets whether R4 should be run.
      *
-     * @param doR4 True, if so.
+     * @param useR4 True, if so.
      */
-    public void setDoR4(boolean doR4) {
-        this.doR4 = doR4;
+    public void setUseR4(boolean useR4) {
+        this.useR4 = useR4;
     }
 }

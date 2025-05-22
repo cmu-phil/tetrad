@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -37,7 +40,7 @@ public class RecursiveBlocking {
      * @throws InterruptedException if any.
      */
     public static Pair<Set<Node>, Boolean> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
-                                                  int maxPathLength) throws InterruptedException {
+                                                                 int maxPathLength) throws InterruptedException {
         return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
@@ -201,7 +204,12 @@ public class RecursiveBlocking {
                 continue;
             }
 
-//            if (graph.isAdjacentTo(a, c) && !graph.isDefNoncollider(a, b, c)) continue;
+            if (graph.isAdjacentTo(a, c) && graph.getEndpoint(a, b) == Endpoint.CIRCLE
+                && graph.getEndpoint(c, b) == Endpoint.CIRCLE) continue;
+
+//            if (graph.isAdjacentTo(a, c) && graph.getEndpoint(a, b) == Endpoint.ARROW
+//                && graph.getEndpoint(c, b) == Endpoint.ARROW) passNodes.add(b);
+
 
             if (reachable(graph, a, b, c, z, ancestorMap)) {
                 passNodes.add(c);

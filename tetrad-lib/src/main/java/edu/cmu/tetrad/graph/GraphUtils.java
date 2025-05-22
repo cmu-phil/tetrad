@@ -2553,7 +2553,7 @@ public final class GraphUtils {
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setAllowedColliders(knownColliders);
-        fciOrient.setDoR4(true);
+        fciOrient.setUseR4(true);
 
         Graph orig = new EdgeListGraph(pag);
 

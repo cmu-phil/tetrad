@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -283,8 +284,6 @@ public final class Fcit implements IGraphSearch {
             best = grasp.bestOrder(nodes);
             dag = grasp.getGraph(false);
 
-//            System.out.println("initial cpdag = " + GraphTransforms.dagToCpdag(dag));
-
             long stop = MillisecondTimes.wallTimeMillis();
 
             if (verbose) {
@@ -396,7 +395,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         GraphUtils.recallKnownColliders(pag, knownColliders, knowledge);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        fciOrient.setDoR4(true);
+        fciOrient.setUseR4(true);
         fciOrient.finalOrientation(pag);
 
         lastPag = new EdgeListGraph(pag);
@@ -486,7 +485,7 @@ public final class Fcit implements IGraphSearch {
         GraphUtils.recallKnownColliders(pag, knownColliders, knowledge);
         adjustForExtraSepsets();
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        fciOrient.setDoR4(true);
+        fciOrient.setUseR4(true);
         fciOrient.finalOrientation(pag);
 
         if (!pag.paths().isMaximal()) {
@@ -596,7 +595,7 @@ public final class Fcit implements IGraphSearch {
                     Future<Set<Node>> future = executor.submit(() ->
                             SepsetFinder.blockPathsRecursively(
                                     pag, x, y, Set.of(), notFollowed, maxBlockingPathLength
-                            )
+                            ).getLeft()
                     );
 
                     // Try to get the result within the specified timeout (e.g., 5 seconds)
@@ -715,7 +714,9 @@ public final class Fcit implements IGraphSearch {
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         pag.getEdges().forEach(edge -> {
-//            TetradLogger.getInstance().log("Considering removing edge " + edge);
+            if (verbose) {
+                TetradLogger.getInstance().log("Considering removing edge " + edge);
+            }
 
             Node x = edge.getNode1();
             Node y = edge.getNode2();
@@ -727,7 +728,7 @@ public final class Fcit implements IGraphSearch {
             Set<Node> perhapsNotFollowed = new HashSet<>();
 
             if (verbose) {
-//                TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
+                TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
             }
 
             // Don't repeat the same independence test twice for this edge x *-* y.
@@ -756,22 +757,34 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
                 // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Set<Node> b = null;
+                Pair<Set<Node>, Boolean> B = null;
                 try {
-                    b = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
+                    B = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
 
                 if (verbose) {
-//                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + b);
+                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + B.getLeft());
                 }
 
                 // b will be null if the search did not conclude with set that is known to either m-separate
                 // or not m-separate x and y.
-                if (b == null) {
+                if (B == null) {
+                    if (verbose) {
+                        System.out.println("B is null");
+                    }
                     continue;
                 }
+
+                if (!B.getRight()) {
+                    if (verbose) {
+                        System.out.println("B.getRight() = " + B.getRight());
+                    }
+                    continue;
+                }
+
+                Set<Node> b = B.getLeft();
 
                 int _depth2 = depth == -1 ? common.size() : depth;
                 _depth2 = Math.min(_depth2, common.size());

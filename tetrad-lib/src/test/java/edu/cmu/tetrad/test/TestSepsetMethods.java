@@ -139,7 +139,7 @@ public class TestSepsetMethods {
                     }
                     case BLOCK_PATHS_RECURSIVELY -> {
                         try {
-                            blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), -1);
+                            blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), -1).getLeft();
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }
@@ -212,7 +212,7 @@ public class TestSepsetMethods {
         Set<Node> blocking = null;
         try {
             blocking = SepsetFinder.blockPathsRecursively(graph, graph.getNode("X"), graph.getNode("Z"),
-                    new HashSet<>(), Set.of(), -1);
+                    new HashSet<>(), Set.of(), -1).getLeft();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -260,7 +260,7 @@ public class TestSepsetMethods {
 
                 Set<Node> blocking = null;
                 try {
-                    blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1);
+                    blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1).getLeft();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

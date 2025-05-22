@@ -297,7 +297,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
             throws InterruptedException {
         return SepsetFinder.blockPathsRecursively(
                 graph, childA, childB, new HashSet<>(),  new HashSet<>(), -1
-        );
+        ).getLeft();
     }
 
     /**

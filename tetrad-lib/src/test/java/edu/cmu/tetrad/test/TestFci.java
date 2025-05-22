@@ -583,7 +583,7 @@ public class TestFci {
 
         Set<Node> B = null;
         try {
-            B = SepsetFinder.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1);
+            B = SepsetFinder.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1).getLeft();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -845,7 +845,7 @@ public class TestFci {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
             long seed = System.nanoTime();
-//            long seed = 591587242665791L;
+//            long seed = 24723257885916L;
 
             RandomUtil.getInstance().setSeed(seed);
 
@@ -874,6 +874,17 @@ public class TestFci {
 
                     if (!(getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag)) && mag.paths().isLegalMag())) {
 //                        throw new RuntimeException("pag is not legal pag seed = " + seed);
+                    }
+
+                    DagToPag dagToPag = new DagToPag(mag);
+                    Graph reconstitutedPag = dagToPag.convert();
+
+                    for (Edge pagEdge : pag.getEdges()) {
+                        Edge reconstitutedPagEdge = reconstitutedPag.getEdge(pagEdge.getNode1(), pagEdge.getNode2());
+
+                        if (!pagEdge.equals(reconstitutedPagEdge)) {
+                            System.out.println("Edge discrepancy: pagEdge = " + pagEdge + " reconstituted PAG edge = " + reconstitutedPagEdge);
+                        }
                     }
 
                     System.out.println("pag is not legal pag seed = " + seed);
