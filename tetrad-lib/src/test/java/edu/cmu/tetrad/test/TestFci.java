@@ -560,7 +560,7 @@ public class TestFci {
     }
 
     public static boolean unshieldedCollidersIdenticalPagMag(Graph estPag3) {
-        return getUnshieldedColliders(estPag3).equals(getUnshieldedColliders(GraphTransforms.zhangMagFromPag(estPag3)));
+        return getUnshieldedColliders(estPag3).equals(getUnshieldedColliders(GraphTransforms.magFromPag(estPag3)));
     }
 
     @Test
@@ -753,7 +753,7 @@ public class TestFci {
                     System.out.println("************ pag is not maximal **************");
                 }
 
-                Graph mag = GraphTransforms.zhangMagFromPag(pag);
+                Graph mag = GraphTransforms.magFromPag(pag);
 
                 if (!mag.paths().isLegalMag()) {
                     System.out.println("************ mag in pag is not legal *********");
@@ -866,7 +866,7 @@ public class TestFci {
                 Graph pag = fci.search();
 
                 if (!isLegalPag(pag)) {
-                    Graph mag = GraphTransforms.zhangMagFromPag(pag);
+                    Graph mag = GraphTransforms.magFromPag(pag);
 
                     if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
                         System.out.println("Unshielded colliders match between mag and pag.");
@@ -896,13 +896,12 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFindCycles() {
-
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.
 
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 100; i++) {
             System.out.println("================= RUN " + (i + 1) + " TEST ====================");
 
             long seed = RandomUtil.getInstance().nextLong();
@@ -919,21 +918,11 @@ public class TestFci {
             }
 
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
-////            Graph mag = GraphTransforms.dagToMag(dag);
 
             System.out.println("MAG = " + mag);
 
-            Set<Triple> dagUnshieldedTriples = getUnshieldedColliders(dag);
             Set<Triple> magUnshieldedTriples = getUnshieldedColliders(mag);
             Set<Triple> pagUnshieldedTriples = getUnshieldedColliders(pag);
-
-//            if (!dagUnshieldedTriples.equals(magUnshieldedTriples)) {
-//                throw new IllegalArgumentException("DAG and MAG unshielded triples not the same.");
-//            }
-
-//            if (!dagUnshieldedTriples.equals(pagUnshieldedTriples)) {
-//                throw new IllegalArgumentException("DAG and PAG unshielded triples not the same.");
-//            }
 
             if (!magUnshieldedTriples.equals(pagUnshieldedTriples)) {
                 System.out.println("magUnshieldedTriples = " + magUnshieldedTriples);

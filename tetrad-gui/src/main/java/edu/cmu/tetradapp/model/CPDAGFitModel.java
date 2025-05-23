@@ -141,7 +141,7 @@ public final class CPDAGFitModel implements SessionModel {
                 } catch (Exception e) {
                     e.printStackTrace();
 
-                    Graph mag = GraphTransforms.zhangMagFromPag(graphs.getFirst());
+                    Graph mag = GraphTransforms.magFromPag(graphs.getFirst());
 //                    Ricf.RicfResult result = estimatePag(dataSet, mag);
 
                     SemGraph graph = new SemGraph(mag);

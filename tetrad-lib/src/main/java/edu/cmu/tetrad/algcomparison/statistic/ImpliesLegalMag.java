@@ -58,7 +58,7 @@ public class ImpliesLegalMag implements Statistic {
         List<Node> selection = trueGraph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
+        Graph mag = GraphTransforms.magFromPag(estGraph);
         GraphSearchUtils.LegalMagRet legalPag = GraphSearchUtils.isLegalMag(estGraph, new HashSet<>(selection));
 
         if (legalPag.isLegalMag()) {

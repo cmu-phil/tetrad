@@ -69,7 +69,7 @@ public class PickZhangMagInPagAction extends AbstractAction {
             return;
         }
 
-        graph = GraphTransforms.zhangMagFromPag(graph);
+        graph = GraphTransforms.magFromPag(graph);
         workbench.setGraph(graph);
     }
 }
