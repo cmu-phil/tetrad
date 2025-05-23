@@ -815,10 +815,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.parentsHash.remove(node1);
         this.parentsHash.remove(node2);
 
-
         ancestorCache.clear();
         semidirectedPathCache.clear();
-//        }
 
         if (Edges.isDirectedEdge(edge)) {
             Node node = Edges.getDirectedEdgeTail(edge);

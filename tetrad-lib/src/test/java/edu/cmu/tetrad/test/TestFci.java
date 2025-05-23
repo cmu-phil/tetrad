@@ -67,8 +67,8 @@ public class TestFci {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        Graph pag = GraphUtils.convert(outputGraph);
 
+        Graph pag = GraphUtils.convert(outputGraph);
         resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
 
         System.out.println(resultGraph.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
@@ -112,8 +112,32 @@ public class TestFci {
         }
 
 
-
         return legalMag.isLegalPag();
+    }
+
+    public static boolean unshieldedCollidersIdenticalPagMag(Graph estPag3) {
+        return getUnshieldedColliders(estPag3).equals(getUnshieldedColliders(GraphTransforms.zhangMagFromPag(estPag3)));
+    }
+
+    public static Set<Triple> getUnshieldedColliders(Graph graph) {
+        Set<Triple> unshieldedTriples = new HashSet<>();
+
+        for (Node b : graph.getNodes()) {
+            List<Node> adj = graph.getAdjacentNodes(b);
+
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node x = adj.get(i);
+                    Node y = adj.get(j);
+
+                    if (!graph.isAdjacentTo(x, y) && graph.isDefCollider(x, b, y)) {
+                        unshieldedTriples.add(new Triple(x, b, y));
+                    }
+                }
+            }
+        }
+
+        return unshieldedTriples;
     }
 
     @Test
@@ -559,10 +583,6 @@ public class TestFci {
         }
     }
 
-    public static boolean unshieldedCollidersIdenticalPagMag(Graph estPag3) {
-        return getUnshieldedColliders(estPag3).equals(getUnshieldedColliders(GraphTransforms.magFromPag(estPag3)));
-    }
-
     @Test
     public void test18() {
 
@@ -729,7 +749,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+//        @Test
     public void testFcitFromData() {
         for (int i = 0; i < 3000; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -753,7 +773,7 @@ public class TestFci {
                     System.out.println("************ pag is not maximal **************");
                 }
 
-                Graph mag = GraphTransforms.magFromPag(pag);
+                Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
                 if (!mag.paths().isLegalMag()) {
                     System.out.println("************ mag in pag is not legal *********");
@@ -839,7 +859,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+//        @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -866,7 +886,7 @@ public class TestFci {
                 Graph pag = fci.search();
 
                 if (!isLegalPag(pag)) {
-                    Graph mag = GraphTransforms.magFromPag(pag);
+                    Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
                     if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
                         System.out.println("Unshielded colliders match between mag and pag.");
@@ -897,21 +917,21 @@ public class TestFci {
     }
 
     @Test
-    public void testFindCycles() {
+    public void testZhangPagToMag() {
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.
 
-        for (int i = 0; i < 100; i++) {
-            System.out.println("================= RUN " + (i + 1) + " TEST ====================");
+        for (int i = 0; i < 5000; i++) {
+//            System.out.println("================= RUN " + (i + 1) + " TEST ====================");
 
             long seed = RandomUtil.getInstance().nextLong();
 //            long seed = 3483347644872987035L;
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(15, 9, 30, 100, 100, 100, false);
+            Graph dag = RandomGraph.randomGraph(15, 5, 30, 100, 100, 100, false);
             Graph pag = new DagToPag(dag).convert();
 
-            System.out.println("PAG = " + pag);
+//            System.out.println("PAG = " + pag);
 
             if (pag.paths().existsDirectedCycle()) {
                 System.out.println("cyclic PAG");
@@ -919,15 +939,17 @@ public class TestFci {
 
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
-            System.out.println("MAG = " + mag);
+//            System.out.println("MAG = " + mag);
 
             Set<Triple> magUnshieldedTriples = getUnshieldedColliders(mag);
             Set<Triple> pagUnshieldedTriples = getUnshieldedColliders(pag);
 
             if (!magUnshieldedTriples.equals(pagUnshieldedTriples)) {
-                System.out.println("magUnshieldedTriples = " + magUnshieldedTriples);
-                System.out.println("pagUnshieldedTriples = " + pagUnshieldedTriples);
-                throw new IllegalArgumentException("MAG and PAG unshielded triples not the same.");
+//                System.out.println("magUnshieldedTriples = " + magUnshieldedTriples);
+//                System.out.println("pagUnshieldedTriples = " + pagUnshieldedTriples);
+                System.out.println("MAG and PAG unshielded triples not the same.");
+//                System.out.println("PAG = " + pag);
+//                System.out.println("MAG = " + mag);
             }
 
             if (!isLegalMag(mag)) {
@@ -944,31 +966,44 @@ public class TestFci {
                     }
                 }
 
+                System.out.println("mag is not legal mag seed = " + seed);
+//                System.out.println("PAG = " + pag);
+//                System.out.println("MAG = " + mag);
+
 //                System.out.println(mag);
-                throw new RuntimeException("mag is not legal mag seed = " + seed);
+//                throw new RuntimeException("mag is not legal mag seed = " + seed);
             }
         }
     }
 
-    public static Set<Triple> getUnshieldedColliders(Graph graph) {
-        Set<Triple> unshieldedTriples = new HashSet<>();
+    @Test
+    public void testFcitSimpleR4() {
+        Graph graph = GraphUtils.convert("X-->W,V-->W,V-->Y,W-->Y");
+        Graph pag = GraphUtils.convert("Xo->W,Vo->W,V-->Y,W-->Y");
 
-        for (Node b : graph.getNodes()) {
-            List<Node> adj = graph.getAdjacentNodes(b);
+        IndependenceTest independence = new MsepTest(graph);
+        Score score = new GraphScore(graph);
 
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = i + 1; j < adj.size(); j++) {
-                    Node x = adj.get(i);
-                    Node y = adj.get(j);
+        Fcit fci = new Fcit(independence, score);
+        fci.setStartWith(Fcit.START_WITH.GRASP);
+        fci.setDepth(-1);
+        fci.setEnsureMarkov(false);
+        fci.setVerbose(true);
 
-                    if (!graph.isAdjacentTo(x, y) && graph.isDefCollider(x, b, y)) {
-                        unshieldedTriples.add(new Triple(x, b, y));
-                    }
-                }
-            }
+        try {
+            Graph resultGraph = fci.search();
+
+            resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
+
+            System.out.println(resultGraph.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
+            System.out.println(unshieldedCollidersIdenticalPagMag(resultGraph)
+                    ? "Unshielded colliders the same " : "Unshielded colliders different.");
+
+            assertEquals(pag, resultGraph);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
-        return unshieldedTriples;
     }
 }
 

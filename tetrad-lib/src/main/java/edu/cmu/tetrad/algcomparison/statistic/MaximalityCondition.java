@@ -60,7 +60,7 @@ public class MaximalityCondition implements Statistic {
         List<Node> selection = trueGraph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
-        Graph mag = GraphTransforms.magFromPag(estGraph);
+        Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
 
         List<Node> nodes = pag.getNodes();
 

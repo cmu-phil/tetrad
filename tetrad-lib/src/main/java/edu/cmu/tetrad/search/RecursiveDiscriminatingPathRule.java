@@ -115,11 +115,11 @@ public class RecursiveDiscriminatingPathRule {
             IndependenceTest test, Graph pag, Node x, Node y, FciOrient fciOrient,
             int maxBlockingPathLength, int maxDdpPathLength, EnsureMarkov ensureMarkovHelper, int depth) {
 
-//        // 1) Preliminary orientation steps
-//        fciOrient.setDoR4(false);
-//        fciOrient.setCompleteRuleSetUsed(false);
-//        fciOrient.finalOrientation(pag);
-//        fciOrient.setDoR4(true);
+        // 1) Preliminary orientation steps
+        fciOrient.setUseR4(false);
+        fciOrient.setCompleteRuleSetUsed(false);
+        fciOrient.finalOrientation(pag);
+        fciOrient.setUseR4(true);
 
         // 2) List possible "DiscriminatingPath" objects
         Set<DiscriminatingPath> discriminatingPaths =
@@ -180,7 +180,16 @@ public class RecursiveDiscriminatingPathRule {
                         pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
                 );
 
-//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + b.getLeft());
+                Set<Node> blocking = b.getLeft();
+
+
+                for (Node f : perhapsNotFollowed) {
+                    if (!notFollowedSet.contains(f)) {
+                        blocking.add(f);
+                    }
+                }
+
+//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + blocking);
 
 //                if (!b.getRight()) {
 //                    return Set.of();
@@ -206,7 +215,7 @@ public class RecursiveDiscriminatingPathRule {
                     }
 
                     // b minus c
-                    Set<Node> testSet = new HashSet<>(b.getLeft());
+                    Set<Node> testSet = new HashSet<>(blocking);
                     testSet.removeAll(c);
 
                     // Check independence
@@ -217,7 +226,7 @@ public class RecursiveDiscriminatingPathRule {
                         independent = test.checkIndependence(x, y, testSet).isIndependent();
                     }
 
-//                    System.out.println("b = " + b.getLeft() + " c = " + c + " fact = " + LogUtilsSearch.independenceFact(x, y, testSet) + " independent: " + independent);
+//                    System.out.println("b = " + blocking + " c = " + c + " fact = " + LogUtilsSearch.independenceFact(x, y, testSet) + " independent: " + independent);
 
                     if (independent) {
                         // Found a valid solution => return it
