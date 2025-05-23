@@ -532,7 +532,7 @@ public class Gfci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>());
         }
 
         if (verbose) {

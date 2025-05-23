@@ -38,21 +38,21 @@ public class R5R9Dijkstra {
     }
 
     /**
-     * Finds shortest distances from a x node to all other nodes in a graph, subject to the following constraints. (1)
+     * Finds shortest distances from a x node to all other nodes in a dijkstraGraph, subject to the following constraints. (1)
      * Length 1 paths are not considered. (2) Length 2 paths are not considered. (3) Covered triples are not considered.
-     * (4) The y node is used to stop the algorithm once that node has been visited. (5) The graph is assumed to be
+     * (4) The y node is used to stop the algorithm once that node has been visited. (5) The dijkstraGraph is assumed to be
      * undirected.
      * <p>
      * Nodes that are not reached by the algorithm are reported as being at a distance of Integer.MAX_VALUE.
      *
-     * @param graph The graph to search; should include only the relevant edge in the graph.
+     * @param dijkstraGraph The dijkstraGraph to search; should include only the relevant edge in the dijkstraGraph.
      * @param x     The starting node.
      * @param y     The ending node. The algorithm will stop when this node is reached.
-     * @return A map of distances from the start node to each node in the graph, and a map of predecessors for each
+     * @return A map of distances from the start node to each node in the dijkstraGraph, and a map of predecessors for each
      * node.
      */
-    public static Pair<Map<Node, Integer>, Map<Node, Node>> distances(Graph graph, Node x, Node y) {
-        if (graph == null) {
+    public static Pair<Map<Node, Integer>, Map<Node, Node>> distances(Graph dijkstraGraph, edu.cmu.tetrad.graph.Graph graph, Node x, Node y) {
+        if (dijkstraGraph == null) {
             throw new IllegalArgumentException("Graph cannot be null.");
         }
 
@@ -67,7 +67,7 @@ public class R5R9Dijkstra {
         Set<Node> visited = new HashSet<>();
 
         // Initialize distances
-        for (Node node : graph.getNodes()) {
+        for (Node node : dijkstraGraph.getNodes()) {
             distances.put(node, Integer.MAX_VALUE);
             predecessors.put(node, null);
         }
@@ -83,7 +83,7 @@ public class R5R9Dijkstra {
                 continue;
             }
 
-            for (DijkstraEdge dijkstraEdge : graph.getNeighbors(currentVertex)) {
+            for (DijkstraEdge dijkstraEdge : dijkstraGraph.getNeighbors(currentVertex)) {
                 Node predecessor = predecessors.get(currentVertex);
 
                 // Skip length-1 paths.
@@ -104,10 +104,14 @@ public class R5R9Dijkstra {
                     continue;
                 }
 
-                // Skip covered triples.
-                if (adjacent(graph, dijkstraEdge.getToNode(), predecessor)) {
+                if (graph.isAdjacentTo(dijkstraEdge.getToNode(), predecessor)) {
                     continue;
                 }
+
+//                // Skip covered triples.
+//                if (adjacent(dijkstraGraph, dijkstraEdge.getToNode(), predecessor)) {
+//                    continue;
+//                }
 
                 Node neighbor = dijkstraEdge.getToNode();
                 int newDist = distances.get(currentVertex) + dijkstraEdge.getWeight();
@@ -129,25 +133,25 @@ public class R5R9Dijkstra {
         return Pair.of(distances, predecessors);
     }
 
-    /**
-     * Determines whether there is an edge from x to y in the Dijkstra graph.
-     *
-     * @param graph The graph to search.
-     * @param x     The one node.
-     * @param y     The other node.
-     * @return True if there is an edge from x to y in the graph.
-     */
-    private static boolean adjacent(Graph graph, Node x, Node y) {
-        List<DijkstraEdge> dijkstraEdges = graph.getNeighbors(x);
-
-        for (DijkstraEdge dijkstraEdge : dijkstraEdges) {
-            if (dijkstraEdge.getToNode().equals(y)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+//    /**
+//     * Determines whether there is an edge from x to y in the Dijkstra graph.
+//     *
+//     * @param graph The graph to search.
+//     * @param x     The one node.
+//     * @param y     The other node.
+//     * @return True if there is an edge from x to y in the graph.
+//     */
+//    private static boolean adjacent(Graph graph, Node x, Node y) {
+//        List<DijkstraEdge> dijkstraEdges = graph.getNeighbors(x);
+//
+//        for (DijkstraEdge dijkstraEdge : dijkstraEdges) {
+//            if (dijkstraEdge.getToNode().equals(y)) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
 
     /**
      * A simple test of the Dijkstra algorithm. TODO This could be moved to a unit test.
@@ -185,7 +189,7 @@ public class R5R9Dijkstra {
 
         Graph _graph = new Graph(graph, R5R9Dijkstra.Rule.R5);
 
-        Map<Node, Integer> distances = R5R9Dijkstra.distances(_graph, index.get("1"), index.get("3")).getLeft();
+        Map<Node, Integer> distances = R5R9Dijkstra.distances(_graph, graph, index.get("1"), index.get("3")).getLeft();
 
         for (Map.Entry<Node, Integer> entry : distances.entrySet()) {
             System.out.println("Distance from 1 to " + entry.getKey() + " is " + entry.getValue());

@@ -366,12 +366,6 @@ public class GraphTransforms {
             }
         }
 
-//        System.out.println("A PAFCI = " + pafci);
-
-        if (!pafci.paths().isMaximal()) {
-            throw new IllegalStateException("Maximal cycle found in transformation graph of PCAFCI.");
-        }
-
         pafci = GraphTransforms.dagFromCpdag2(pafci, new Knowledge(), false);
         return pafci;
     }

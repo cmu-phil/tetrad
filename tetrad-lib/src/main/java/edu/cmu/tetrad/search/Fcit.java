@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -391,6 +392,12 @@ public final class Fcit implements IGraphSearch {
 
         copyKnownCollidersFromCpdag(best, cpdag, scorer);
 
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        GraphUtils.recallKnownColliders(pag, knownColliders, knowledge);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        fciOrient.setUseR4(true);
+        fciOrient.finalOrientation(pag);
+
         lastPag = new EdgeListGraph(pag);
         lastKnownColliders = new HashSet<>(knownColliders);
         lastExtraSepsets = new HashMap<>(extraSepsets);
@@ -444,7 +451,7 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, knownColliders, knownColliders, verbose, new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, knownColliders, verbose, new HashSet<>());
         }
 
         return GraphUtils.replaceNodes(pag, nodes);
@@ -460,9 +467,12 @@ public final class Fcit implements IGraphSearch {
         for (Node b : best) {
             var adj = pag.getAdjacentNodes(b);
 
-            for (Node x : adj) {
-                for (Node y : adj) {
-                    if (GraphUtils.distinct(x, b, y)) {// && !checked.contains(new Triple(x, b, y))) {
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node x = adj.get(i);
+                    Node y = adj.get(j);
+
+                    if (GraphUtils.distinct(x, b, y)) {
                         copyUnshieldedCollider(x, b, y, cpdag, scorer);
                     }
                 }
@@ -475,7 +485,7 @@ public final class Fcit implements IGraphSearch {
         GraphUtils.recallKnownColliders(pag, knownColliders, knowledge);
         adjustForExtraSepsets();
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        fciOrient.setDoR4(true);
+        fciOrient.setUseR4(true);
         fciOrient.finalOrientation(pag);
 
         if (!pag.paths().isMaximal()) {
@@ -585,7 +595,7 @@ public final class Fcit implements IGraphSearch {
                     Future<Set<Node>> future = executor.submit(() ->
                             SepsetFinder.blockPathsRecursively(
                                     pag, x, y, Set.of(), notFollowed, maxBlockingPathLength
-                            )
+                            ).getLeft()
                     );
 
                     // Try to get the result within the specified timeout (e.g., 5 seconds)
@@ -657,14 +667,17 @@ public final class Fcit implements IGraphSearch {
     // "Pure" version without threading
     private Set<DiscriminatingPath> removeExtraEdgesDdp(Set<DiscriminatingPath> oldDiscriminatingPaths,
                                                         int maxBlockingPathLength) {
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
+        }
+
         fciOrient.finalOrientation(pag);
-        Set<Edge> edges = pag.getEdges();
 
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
-        edges.forEach(edge -> {
+        pag.getEdges().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -689,10 +702,10 @@ public final class Fcit implements IGraphSearch {
                     }
                 }
 
-                if (paths.equals(oldPaths)) {
-                    pathsByEdge.put(Set.of(x, y), null);
-                    return;
-                }
+//                if (paths.equals(oldPaths)) {
+//                    pathsByEdge.put(Set.of(x, y), null);
+//                    return;
+//                }
             }
 
             pathsByEdge.put(Set.of(x, y), paths);
@@ -701,6 +714,10 @@ public final class Fcit implements IGraphSearch {
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         pag.getEdges().forEach(edge -> {
+            if (verbose) {
+                TetradLogger.getInstance().log("Considering removing edge " + edge);
+            }
+
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
@@ -709,6 +726,10 @@ public final class Fcit implements IGraphSearch {
 
             Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
             Set<Node> perhapsNotFollowed = new HashSet<>();
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
+            }
 
             // Don't repeat the same independence test twice for this edge x *-* y.
             Set<Set<Node>> S = new HashSet<>();
@@ -736,18 +757,34 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
                 // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Set<Node> b = null;
+                Pair<Set<Node>, Boolean> B = null;
                 try {
-                    b = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
+                    B = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
 
+                if (verbose) {
+                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + B.getLeft());
+                }
+
                 // b will be null if the search did not conclude with set that is known to either m-separate
                 // or not m-separate x and y.
-                if (b == null) {
+                if (B == null) {
+                    if (verbose) {
+                        System.out.println("B is null");
+                    }
                     continue;
                 }
+
+                if (!B.getRight()) {
+                    if (verbose) {
+                        System.out.println("B.getRight() = " + B.getRight());
+                    }
+                    continue;
+                }
+
+                Set<Node> b = B.getLeft();
 
                 int _depth2 = depth == -1 ? common.size() : depth;
                 _depth2 = Math.min(_depth2, common.size());

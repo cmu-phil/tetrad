@@ -27,7 +27,9 @@ import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -2526,59 +2528,60 @@ public final class GraphUtils {
         return existsLatentConfounder;
     }
 
-        /**
-         * Guarantees the correctness of a Partial Ancestral Graph (PAG) by repairing faulty structures
-         * such as cycles, violations of maximality, and incorrectly oriented edges. It uses FCI orientation
-         * rules and knowledge constraints to perform the repair process.
-         *
-         * @param pag the initial PAG to be repaired
-         * @param fciOrient the FCI (Fast Causal Inference) orientation utility for edge orientation
-         * @param knowledge the background knowledge to enforce during the repair process
-         * @param unshieldedColliders a set of triples representing unshielded colliders to be enforced
-         * @param extraKnownColliders an additional set of unshielded colliders to be considered during the repair
-         * @param verbose whether to provide detailed logging of the repair process
-         * @param selection a set of nodes to be considered during the maximality repair
-         * @return the repaired PAG that satisfies required constraints and is free of faults
-         */
-        public static Graph  guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                         Set<Triple> unshieldedColliders, Set<Triple> extraKnownColliders,
-                                         boolean verbose, Set<Node> selection) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Repairing faulty PAG...");
-            }
+    /**
+     * Guarantees the correctness of a Partial Ancestral Graph (PAG) by repairing faulty structures such as cycles,
+     * violations of maximality, and incorrectly oriented edges. It uses FCI orientation rules and knowledge constraints
+     * to perform the repair process.
+     *
+     * @param pag            the initial PAG to be repaired
+     * @param fciOrient      the FCI (Fast Causal Inference) orientation utility for edge orientation
+     * @param knowledge      the background knowledge to enforce during the repair process
+     * @param knownColliders a set of triples representing unshielded colliders to be enforced
+     * @param verbose        whether to provide detailed logging of the repair process
+     * @param selection      a set of nodes to be considered during the maximality repair
+     * @return the repaired PAG that satisfies required constraints and is free of faults
+     */
+    public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                     Set<Triple> knownColliders,
+                                     boolean verbose, Set<Node> selection) {
+//        System.out.println("In guarantee PAG, unshielded colliders: " + knownColliders);
 
-            fciOrient.setVerbose(verbose);
-            fciOrient.setKnowledge(knowledge);
-            fciOrient.setAllowedColliders(unshieldedColliders);
-            fciOrient.setDoR4(true);
-
-            Graph orig = new EdgeListGraph(pag);
-
-            boolean changed;
-
-            do {
-                changed = false;
-
-                changed |= removeAlmostCycles(pag, extraKnownColliders, verbose);
-                changed |= repairMaximality(pag, verbose, selection);
-                changed |= removeCycles(pag, verbose);
-
-                reorientWithFci(pag, fciOrient, knowledge, unshieldedColliders, verbose);
-
-            } while (changed);
-
-            DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
-            dagToPag.setKnowledge(knowledge);
-            Graph pag2 = dagToPag.convert();
-
-            if (pag2.equals(orig)) {
-                if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
-            } else {
-                if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
-            }
-
-            return pag2;
+        if (verbose) {
+            TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
+
+        fciOrient.setVerbose(verbose);
+        fciOrient.setKnowledge(knowledge);
+        fciOrient.setAllowedColliders(knownColliders);
+        fciOrient.setUseR4(true);
+
+        Graph orig = new EdgeListGraph(pag);
+
+        boolean changed;
+
+        do {
+            changed = false;
+
+            changed |= removeAlmostCycles(pag, knownColliders, verbose);
+            changed |= repairMaximality(pag, verbose, selection);
+            changed |= removeCycles(pag, verbose);
+
+            reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
+
+        } while (changed);
+
+        DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
+        dagToPag.setKnowledge(knowledge);
+        Graph pag2 = dagToPag.convert();
+
+        if (pag2.equals(orig)) {
+            if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
+        } else {
+            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
+        }
+
+        return pag2;
+    }
 
     private static boolean removeAlmostCycles(Graph pag,
                                               Set<Triple> extraKnownColliders,
@@ -2620,7 +2623,7 @@ public final class GraphUtils {
                             pag.addNondirectedEdge(u, y);
                             it.remove();
                             changedThisRound = true;
-                            changedOverall   = true;
+                            changedOverall = true;
                         }
                     }
                 }
@@ -2639,70 +2642,70 @@ public final class GraphUtils {
 
 
     private static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
-            boolean changed = false;
-            for (Node x : pag.getNodes()) {
-                for (Node y : pag.getNodes()) {
-                    if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, selection)) {
-                        if (!pag.isAdjacentTo(x, y)) {
-                            pag.addNondirectedEdge(x, y);
-                            changed = true;
-                            if (verbose) TetradLogger.getInstance().log("Maximality repair: added edge " + x + " o-o " + y);
-                        }
+        boolean changed = false;
+        for (Node x : pag.getNodes()) {
+            for (Node y : pag.getNodes()) {
+                if (x != y && !pag.isAdjacentTo(x, y) && pag.paths().existsInducingPath(x, y, selection)) {
+                    if (!pag.isAdjacentTo(x, y)) {
+                        pag.addNondirectedEdge(x, y);
+                        changed = true;
+                        if (verbose) TetradLogger.getInstance().log("Maximality repair: added edge " + x + " o-o " + y);
                     }
                 }
             }
-            return changed;
         }
+        return changed;
+    }
 
-        private static boolean removeCycles(Graph pag, boolean verbose) {
-            boolean changed = false;
-            Graph mag = GraphTransforms.zhangMagFromPag(pag);
-            Map<Node, Set<Node>> reachableFrom = buildDescendantsMap(mag);
+    private static boolean removeCycles(Graph pag, boolean verbose) {
+        boolean changed = false;
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        Map<Node, Set<Node>> reachableFrom = buildDescendantsMap(mag);
 
-            for (Node x : mag.getNodes()) {
-                if (reachableFrom.get(x).contains(x)) {
-                    List<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
-                    for (List<Node> path : paths) {
-                        for (int i = 1; i < path.size() - 1; i++) {
-                            Node y = path.get(i);
-                            Node a = path.get(i - 1);
-                            Node b = path.get(i + 1);
-                            if (pag.isParentOf(a, y) && pag.isParentOf(b, y) && !pag.isAdjacentTo(a, b)) {
-                                if (!pag.isAdjacentTo(a, b)) {
-                                    pag.addNondirectedEdge(a, b);
-                                    changed = true;
-                                }
+        for (Node x : mag.getNodes()) {
+            if (reachableFrom.get(x).contains(x)) {
+                List<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
+                for (List<Node> path : paths) {
+                    for (int i = 1; i < path.size() - 1; i++) {
+                        Node y = path.get(i);
+                        Node a = path.get(i - 1);
+                        Node b = path.get(i + 1);
+                        if (pag.isParentOf(a, y) && pag.isParentOf(b, y) && !pag.isAdjacentTo(a, b)) {
+                            if (!pag.isAdjacentTo(a, b)) {
+                                pag.addNondirectedEdge(a, b);
+                                changed = true;
                             }
                         }
                     }
                 }
             }
-
-            if (verbose && changed) {
-                TetradLogger.getInstance().log("Cycles removed via covering colliders.");
-            }
-
-            return changed;
         }
 
-        private static void reorientWithFci(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-                                            Set<Triple> unshieldedColliders, boolean verbose) {
-            reorientWithCircles(pag, verbose);
-            fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-            recallKnownColliders(pag, unshieldedColliders, knowledge);
-            fciOrient.setAllowedColliders(unshieldedColliders);
-            fciOrient.finalOrientation(pag);
+        if (verbose && changed) {
+            TetradLogger.getInstance().log("Cycles removed via covering colliders.");
         }
 
-        private static Map<Node, Set<Node>> buildDescendantsMap(Graph graph) {
-            Map<Node, Set<Node>> map = new HashMap<>();
-            for (Node node : graph.getNodes()) {
-                Set<Node> descendants = new HashSet<>(graph.paths().getDescendants(node));
-                descendants.remove(node);
-                map.put(node, descendants);
-            }
-            return map;
+        return changed;
+    }
+
+    private static void reorientWithFci(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                        Set<Triple> unshieldedColliders, boolean verbose) {
+        reorientWithCircles(pag, verbose);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        recallKnownColliders(pag, unshieldedColliders, knowledge);
+        fciOrient.setAllowedColliders(unshieldedColliders);
+        fciOrient.finalOrientation(pag);
+    }
+
+    private static Map<Node, Set<Node>> buildDescendantsMap(Graph graph) {
+        Map<Node, Set<Node>> map = new HashMap<>();
+        for (Node node : graph.getNodes()) {
+            Set<Node> descendants = new HashSet<>(graph.paths().getDescendants(node));
+            descendants.remove(node);
+            map.put(node, descendants);
         }
+        return map;
+    }
 
     /**
      * Calculates the number of induced adjacencies in the given estiamted Partial Ancestral (PAG) with respect to the

@@ -281,8 +281,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
                 if (initialAllowedColliders != null) {
                     initialAllowedColliders.add(new Triple(w, v, y));
+                    allowedColliders.add(new Triple(w, v, y));
                 } else {
                     if (allowedColliders != null && !allowedColliders.contains(new Triple(w, v, y))) {
+                        allowedColliders.add(new Triple(w, v, y));
                         return Pair.of(discriminatingPath, false);
                     }
                 }

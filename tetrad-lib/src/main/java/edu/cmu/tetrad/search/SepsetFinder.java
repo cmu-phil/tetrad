@@ -4,6 +4,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -298,12 +299,9 @@ public class SepsetFinder {
      * {@code null} if no sepset can be found.
      * @throws InterruptedException if any.
      */
-    public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
-                                                  int maxPathLength) throws InterruptedException {
-        Set<Node> nodes = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength).getLeft();
-//        Set<Node> nodes = RecursiveBlockingChokePointB.blockPathsRecursively(graph, x, y, notFollowed, maxPathLength);
-
-        return nodes;
+    public static Pair<Set<Node>, Boolean> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
+                                                                 int maxPathLength) throws InterruptedException {
+        return RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength);
     }
 
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {

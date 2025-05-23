@@ -387,7 +387,7 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose, new HashSet<>());
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>());
 
 //            pag = new DagToPag(pag).convert();
         }

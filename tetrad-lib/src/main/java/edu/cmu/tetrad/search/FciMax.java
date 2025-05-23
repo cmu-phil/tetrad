@@ -196,7 +196,7 @@ public final class FciMax implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColldiders, unshieldedColldiders, verbose,
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColldiders, verbose,
                     new HashSet<>());
         }
 

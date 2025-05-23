@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.DiscriminatingPath;
 import edu.cmu.tetrad.search.utils.EnsureMarkov;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -93,7 +94,7 @@ public class RecursiveDiscriminatingPathRule {
     /**
      * Finds the set of nodes (separator set) for the Recursive Discriminating Path rule in a graph. This method uses a
      * recursive approach to evaluate possible discriminating paths between two nodes {@code x} and {@code y} in the
-     * provided graph {@code pag}. It involves complex independence checks and is computationally intensive.
+     * provided graph {@code pag}.
      *
      * @param test                  The independence test object used to check for conditional independence between
      *                              nodes.
@@ -135,10 +136,12 @@ public class RecursiveDiscriminatingPathRule {
         Set<Node> perhapsNotFollowed = new HashSet<>();
         for (DiscriminatingPath path : relevantPaths) {
             if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+//                System.out.println("Path: " + path);
                 perhapsNotFollowed.add(path.getV());
             }
         }
         List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
+//        System.out.println("Perhaps not followed: " + _perhapsNotFollowed);
 
         // 4) Possibly limit subset size by "depth".
         int _depth = (depth == -1) ? _perhapsNotFollowed.size() : depth;
@@ -177,9 +180,11 @@ public class RecursiveDiscriminatingPathRule {
                         pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength
                 );
 
-                if (!b.getRight()) {
-                    // ignore
-                }
+//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + b.getLeft());
+
+//                if (!b.getRight()) {
+//                    return Set.of();
+//                }
 
                 // (B) For each subset of "common," check independence
                 SublistGenerator gen2 = new SublistGenerator(common.size(), __depth2);
@@ -211,6 +216,8 @@ public class RecursiveDiscriminatingPathRule {
                     } else {
                         independent = test.checkIndependence(x, y, testSet).isIndependent();
                     }
+
+//                    System.out.println("b = " + b.getLeft() + " c = " + c + " fact = " + LogUtilsSearch.independenceFact(x, y, testSet) + " independent: " + independent);
 
                     if (independent) {
                         // Found a valid solution => return it
