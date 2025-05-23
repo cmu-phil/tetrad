@@ -15,7 +15,7 @@ public class TestOrderedLocalMarkovProperty {
     public void test1() {
         Graph g = RandomGraph.randomGraph(10, 2, 10, 100, 100, 100, false);
         Graph pag = GraphTransforms.dagToPag(g);
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        Graph mag = GraphTransforms.magFromPag(pag);
 
         Set<IndependenceFact> im = OrderedLocalMarkovProperty.getModel(mag);
 

@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.PagCache;
-import edu.cmu.tetrad.util.RandomUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -88,10 +87,58 @@ public class GraphTransforms {
         return dag;
     }
 
-    public static Graph dagFromCpdag2(Graph graph, Knowledge knowledge, boolean verbose) {
-        Graph dag = new EdgeListGraph(graph);
-        dag = transformCpdagIntoDag2(dag, knowledge, verbose);
-        return dag;
+    public static Graph magFromPfaci(Graph pfaci, Knowledge knowledge, boolean verbose) {
+        Graph graph = new EdgeListGraph(pfaci);
+
+        PagMeekRules rules = new PagMeekRules();
+        rules.setMeekPreventCycles(true);
+        rules.setRevertToUnshieldedColliders(false);
+        rules.setVerbose(verbose);
+
+        if (knowledge != null) {
+            rules.setKnowledge(knowledge);
+        }
+
+        List<Edge> nondirectedEdges = getNondirectedEdges(graph);
+        List<Node> order = getOrder(graph);
+
+        NEXT:
+        while (true) {
+            for (Edge edge : nondirectedEdges) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                if (Edges.isNondirectedEdge(graph.getEdge(x, y))) {
+                    if (!graph.isAncestorOf(y, x)) {
+                        graph.removeEdge(x, y);
+                        graph.addDirectedEdge(x, y);
+
+                        if (!graph.paths().isMaximal()) {
+                            graph.removeEdge(y, x);
+                            graph.addDirectedEdge(y, x);
+                        }
+
+                        rules.orientImplied(graph);
+                        continue NEXT;
+                    } else {
+                        graph.removeEdge(y, x);
+                        graph.addDirectedEdge(y, x);
+
+                        if (!graph.paths().isMaximal()) {
+                            graph.removeEdge(x, y);
+                            graph.addDirectedEdge(x, y);
+                        }
+
+                        rules.orientImplied(graph);
+                        continue NEXT;
+                    }
+                }
+            }
+
+            break;
+        }
+
+        return graph;
     }
 
     /**
@@ -173,50 +220,9 @@ public class GraphTransforms {
         }
     }
 
-    public static Graph transformCpdagIntoDag2(Graph graph0, Knowledge knowledge, boolean verbose) {
-        Graph graph = new EdgeListGraph(graph0);
-
-        PagMeekRules rules = new PagMeekRules();
-        rules.setMeekPreventCycles(true);
-        rules.setRevertToUnshieldedColliders(false);
-        rules.setVerbose(verbose);
-
-        if (knowledge != null) {
-            rules.setKnowledge(knowledge);
-        }
-
-        List<Edge> nondirectedEdges = getNondirectedEdges(graph);
-        List<Node> order = getOrder(graph);
-
-        NEXT:
-        while (true) {
-            for (Edge edge : nondirectedEdges) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                if (Edges.isNondirectedEdge(graph.getEdge(x, y))) {
-                    if (order.indexOf(x) < order.indexOf(y)) {
-                        graph.removeEdge(x, y);
-                        graph.addDirectedEdge(x, y);
-                        rules.orientImplied(graph);
-                        continue NEXT;
-                    } else {
-                        graph.removeEdge(y, x);
-                        graph.addDirectedEdge(y, x);
-                        rules.orientImplied(graph);
-                        continue NEXT;
-                    }
-                }
-            }
-
-            break;
-        }
-
-        return graph;
-    }
-
     private static @NotNull List<Node> getOrder(Graph graph) {
         List<Node> order = graph.getNodes();
+        Collections.shuffle(order);
 
         order.sort((node1, node2) -> {
             if (graph.paths().isAncestorOf(node1, node2)) {
@@ -254,7 +260,7 @@ public class GraphTransforms {
      * @param pag The partially ancestral graph to transform.
      * @return The maximally ancestral graph obtained from the PAG.
      */
-    public static Graph zhangMagFromPag1(Graph pag) {
+    public static Graph zhangMagFromPag(Graph pag) {
         List<Node> nodes = pag.getNodes();
 
         Graph pafci = new EdgeListGraph(pag);
@@ -318,22 +324,10 @@ public class GraphTransforms {
         return H;
     }
 
-    public static Graph zhangMagFromPag(Graph pag) {
+    public static Graph magFromPag(Graph pag) {
         List<Node> nodes = pag.getNodes();
 
         Graph pafci = new EdgeListGraph(pag);
-
-        // pcafci is the graph with only the circle-circle edges
-        Graph pcafci = new EdgeListGraph(pag.getNodes());
-
-        if (pcafci.paths().existsDirectedCycle()) {
-            throw new IllegalStateException("Directed cycle found in PCAFCI.");
-        }
-
-        for (Edge e : pcafci.getEdges()) {
-            pafci.removeEdge(e.getNode1(), e.getNode2());
-            pafci.addEdge(e);
-        }
 
         for (Node _x : nodes) {
             for (Node _y : pafci.getAdjacentNodes(_x)) {
@@ -344,30 +338,29 @@ public class GraphTransforms {
                 Endpoint endx = e.getEndpoint1();
                 Endpoint endy = e.getEndpoint2();
 
-                if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW && !pafci.isAncestorOf(y, x)) {
+                if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW) {
                     pafci.removeEdge(e);
                     pafci.addDirectedEdge(x, y);
                 }
 
-                if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE && !pafci.isAncestorOf(x, y)) {
+                if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE) {
                     pafci.removeEdge(e);
                     pafci.addDirectedEdge(y, x);
                 }
 
-                if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE && !pafci.isAncestorOf(y, x)) {
+                if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE) {
                     pafci.removeEdge(e);
                     pafci.addDirectedEdge(x, y);
                 }
 
-                if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL && !pafci.isAncestorOf(x, y)) {
+                if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL) {
                     pafci.removeEdge(e);
                     pafci.addDirectedEdge(y, x);
                 }
             }
         }
 
-        pafci = GraphTransforms.dagFromCpdag2(pafci, new Knowledge(), false);
-        return pafci;
+        return GraphTransforms.magFromPfaci(pafci, new Knowledge(), false);
     }
 
     /**

@@ -669,25 +669,25 @@ public class FciOrient {
 
             WH:
             while ((choice = gen.next()) != null) {
-                List<Node> B = GraphUtils.asList(choice, adj);
+                List<Node> adjb = GraphUtils.asList(choice, adj);
 
-                PermutationGenerator pg = new PermutationGenerator(B.size());
+                PermutationGenerator pg = new PermutationGenerator(adjb.size());
                 int[] perm;
 
                 while ((perm = pg.next()) != null) {
-                    Node a = nodes.get(choice[perm[0]]);
-                    Node d = nodes.get(choice[perm[1]]);
-                    Node c = nodes.get(choice[perm[2]]);
+                    Node a = adjb.get(perm[0]);
+                    Node d = adjb.get(perm[1]);
+                    Node c = adjb.get(perm[2]);
+
+                    if (!graph.isDefCollider(a, b, c)) {
+                        continue;
+                    }
 
                     if (!(graph.isAdjacentTo(a, b) && graph.isAdjacentTo(d, b) && graph.isAdjacentTo(c, b))) {
                         continue;
                     }
 
                     if (!(graph.isAdjacentTo(a, d) && graph.isAdjacentTo(c, d))) {
-                        continue;
-                    }
-
-                    if (!graph.isDefCollider(a, b, c)) {
                         continue;
                     }
 
