@@ -908,7 +908,7 @@ public class TestFci {
 //            long seed = 3483347644872987035L;
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(8, 3, 10, 100, 100, 100, false);
+            Graph dag = RandomGraph.randomGraph(15, 9, 30, 100, 100, 100, false);
             Graph pag = new DagToPag(dag).convert();
 
             System.out.println("PAG = " + pag);
