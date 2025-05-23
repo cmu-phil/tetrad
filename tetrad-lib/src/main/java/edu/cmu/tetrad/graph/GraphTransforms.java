@@ -265,30 +265,8 @@ public class GraphTransforms {
 
         Graph pafci = new EdgeListGraph(pag);
 
-        // pcafci is the graph with only the circle-circle edges
-        Graph pcafci = new EdgeListGraph(pag.getNodes());
-
-        for (Edge e : pafci.getEdges()) {
-            if (Edges.isNondirectedEdge(e)) {
-                pcafci.addUndirectedEdge(e.getNode1(), e.getNode2());
-            }
-        }
-
-        pcafci = GraphTransforms.dagFromCpdag(pcafci, new Knowledge(), false);
-
-        if (pcafci.paths().existsDirectedCycle()) {
-            throw new IllegalStateException("Directed cycle found in PCAFCI.");
-        }
-
-        for (Edge e : pcafci.getEdges()) {
-            pafci.removeEdge(e.getNode1(), e.getNode2());
-            pafci.addEdge(e);
-        }
-
-        Graph H = new EdgeListGraph(pafci);
-
         for (Node _x : nodes) {
-            for (Node _y : H.getAdjacentNodes(_x)) {
+            for (Node _y : pafci.getAdjacentNodes(_x)) {
                 Edge e = pafci.getEdge(_x, _y);
 
                 Node x = e.getNode1();
@@ -300,28 +278,44 @@ public class GraphTransforms {
                 Edge yx = Edges.directedEdge(y, x);
 
                 if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW) {
-                    H.removeEdge(e);
-                    H.addEdge(xy);
+                    pafci.removeEdge(e);
+                    pafci.addEdge(xy);
                 }
 
                 if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE) {
-                    H.removeEdge(e);
-                    H.addEdge(yx);
+                    pafci.removeEdge(e);
+                    pafci.addEdge(yx);
                 }
 
                 if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE) {
-                    H.removeEdge(e);
-                    H.addEdge(xy);
+                    pafci.removeEdge(e);
+                    pafci.addEdge(xy);
                 }
 
                 if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL) {
-                    H.removeEdge(e);
-                    H.addEdge(yx);
+                    pafci.removeEdge(e);
+                    pafci.addEdge(yx);
                 }
             }
         }
 
-        return H;
+        // pcafci is the graph with only the circle-circle edges
+        Graph pcafci = new EdgeListGraph(pafci.getNodes());
+
+        for (Edge e : pafci.getEdges()) {
+            if (Edges.isNondirectedEdge(e)) {
+                pcafci.addUndirectedEdge(e.getNode1(), e.getNode2());
+            }
+        }
+
+        pcafci = GraphTransforms.dagFromCpdag(pcafci, new Knowledge(), false);
+
+        for (Edge e : pcafci.getEdges()) {
+            pafci.removeEdge(e.getNode1(), e.getNode2());
+            pafci.addEdge(e);
+        }
+
+        return pafci;
     }
 
     public static Graph magFromPag(Graph pag) {
