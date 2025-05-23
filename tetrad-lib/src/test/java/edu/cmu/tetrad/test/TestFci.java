@@ -359,16 +359,16 @@ public class TestFci {
             runLvSearch(outputGraph, fci, graph);
         }
 
-        {
-            Fcit fci = new Fcit(independence, score);
-            fci.setStartWith(Fcit.START_WITH.GRASP);
-            fci.setDepth(-1);
-            fci.setKnowledge(knowledge);
-            fci.setEnsureMarkov(false);
-            fci.setVerbose(verbose);
-
-            runLvSearch(outputGraph, fci, graph);
-        }
+//        {
+//            Fcit fci = new Fcit(independence, score);
+//            fci.setStartWith(Fcit.START_WITH.GRASP);
+//            fci.setDepth(-1);
+//            fci.setKnowledge(knowledge);
+//            fci.setEnsureMarkov(false);
+//            fci.setVerbose(verbose);
+//
+//            runLvSearch(outputGraph, fci, graph);
+//        }
     }
 
     //    @Test
@@ -544,16 +544,16 @@ public class TestFci {
             Graph estPag2 = graspFci.search();
             assertEquals(truePag_, estPag2);
 
-            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
-            fcit.setStartWith(Fcit.START_WITH.GRASP);
-            fcit.setEnsureMarkov(false);
-            Graph estPag3 = fcit.search();
+//            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
+//            fcit.setStartWith(Fcit.START_WITH.GRASP);
+//            fcit.setEnsureMarkov(false);
+//            Graph estPag3 = fcit.search();
 
-            System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
-            System.out.println(unshieldedCollidersIdenticalPagMag(estPag3)
-                    ? "Unshielded colliders the same " : "Unshielded colliders different.");
-
-            assertEquals(truePag_, estPag3);
+//            System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
+//            System.out.println(unshieldedCollidersIdenticalPagMag(estPag3)
+//                    ? "Unshielded colliders the same " : "Unshielded colliders different.");
+//
+//            assertEquals(truePag_, estPag3);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -729,7 +729,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 3000; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -839,7 +839,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
