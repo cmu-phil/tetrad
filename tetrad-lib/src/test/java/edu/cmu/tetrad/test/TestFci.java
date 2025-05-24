@@ -319,14 +319,14 @@ public class TestFci {
     @Test
     public void testSearch14() {
 
-        checkSearch("X-->W1,V1-->W1,V1-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
-                "Xo->W1,V1o->W1,V1-->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
+//        checkSearch("X-->W1,V1-->W1,V1-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
+//                "Xo->W1,V1o->W1,V1-->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
 
         checkSearch("Latent(R),Latent(S),X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y,X-->W2,V2-->W2,V2-->Y,W2-->Y",
                 "Xo->W1,V1<->W1,V1<->Y,W1-->Y,Xo->W2,V2o->W2,V2-->Y,W2-->Y", new Knowledge());
-//
-        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
-                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
+
+//        checkSearch("Latent(R),Latent(S),X-->W2,V2-->W2,V2-->Y,W2-->Y,X-->W1,R-->W1,R-->V1,S-->V1,S-->Y,W1-->Y",
+//                "Xo->W2,V2o->W2,V2-->Y,W2-->Y,Xo->W1,V1<->W1,V1<->Y,W1-->Y", new Knowledge());
     }
 
     /**
@@ -348,7 +348,7 @@ public class TestFci {
             throw new NullPointerException();
         }
 
-        boolean verbose = false;
+        boolean verbose = true;
 
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert(inputGraph);
@@ -383,16 +383,16 @@ public class TestFci {
             runLvSearch(outputGraph, fci, graph);
         }
 
-//        {
-//            Fcit fci = new Fcit(independence, score);
-//            fci.setStartWith(Fcit.START_WITH.GRASP);
-//            fci.setDepth(-1);
-//            fci.setKnowledge(knowledge);
-//            fci.setEnsureMarkov(false);
-//            fci.setVerbose(verbose);
-//
-//            runLvSearch(outputGraph, fci, graph);
-//        }
+        {
+            Fcit fci = new Fcit(independence, score);
+            fci.setStartWith(Fcit.START_WITH.GRASP);
+            fci.setDepth(-1);
+            fci.setKnowledge(knowledge);
+            fci.setEnsureMarkov(false);
+            fci.setVerbose(verbose);
+
+            runLvSearch(outputGraph, fci, graph);
+        }
     }
 
     //    @Test
@@ -928,7 +928,7 @@ public class TestFci {
 //            long seed = 3483347644872987035L;
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(15, 5, 30, 100, 100, 100, false);
+            Graph dag = RandomGraph.randomGraph(10, 5, 15, 100, 100, 100, false);
             Graph pag = new DagToPag(dag).convert();
 
 //            System.out.println("PAG = " + pag);

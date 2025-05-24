@@ -136,12 +136,12 @@ public class RecursiveDiscriminatingPathRule {
         Set<Node> perhapsNotFollowed = new HashSet<>();
         for (DiscriminatingPath path : relevantPaths) {
             if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-//                System.out.println("Path: " + path);
+                System.out.println("Path: " + path);
                 perhapsNotFollowed.add(path.getV());
             }
         }
         List<Node> _perhapsNotFollowed = new ArrayList<>(perhapsNotFollowed);
-//        System.out.println("Perhaps not followed: " + _perhapsNotFollowed);
+        System.out.println("Perhaps not followed: " + _perhapsNotFollowed);
 
         // 4) Possibly limit subset size by "depth".
         int _depth = (depth == -1) ? _perhapsNotFollowed.size() : depth;
@@ -189,7 +189,7 @@ public class RecursiveDiscriminatingPathRule {
                     }
                 }
 
-//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + blocking);
+                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + blocking);
 
 //                if (!b.getRight()) {
 //                    return Set.of();
