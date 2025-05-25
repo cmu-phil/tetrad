@@ -114,7 +114,8 @@ public class RecursiveDiscriminatingPathRule {
 //        fciOrient.setUseR4(false);
 //        fciOrient.setCompleteRuleSetUsed(false);
 //        fciOrient.finalOrientation(pag);
-//        fciOrient.setUseR4(false);
+//        fciOrient.setCompleteRuleSetUsed(true);
+//        fciOrient.setUseR4(true);
 
         // Get the V nodes--these need to be blocked in every combination, as we don't know which of these are colliders
         // on their respective discriminating paths.
@@ -149,20 +150,23 @@ public class RecursiveDiscriminatingPathRule {
             for (int[] indices : allChoices) {
 
                 // Convert indices -> actual nodes
-                Set<Node> notFollowedSet = GraphUtils.asSet(indices, _perhapsNotFollowed);
+                Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
+
+                Set<Node> vNodesFollowed = new HashSet<>(vNodes);
+                vNodesFollowed.removeAll(vNodesNotFollowed);
 
                 // (A) blockPathsRecursively
-                Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength);
+                Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
 
                 Set<Node> blocking = b.getLeft();
 
                 for (Node f : vNodes) {
-                    if (!notFollowedSet.contains(f)) {
+                    if (!vNodesNotFollowed.contains(f)) {
                         blocking.add(f);
                     }
                 }
 
-//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + blocking);
+                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + vNodesNotFollowed + " = " + blocking);
 
                 // b minus c
                 Set<Node> testSet = new HashSet<>(blocking);

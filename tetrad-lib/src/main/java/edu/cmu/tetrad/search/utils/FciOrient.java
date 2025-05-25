@@ -113,7 +113,7 @@ public class FciOrient {
     /**
      * Indicates whether the discriminating path step should be run in parallel.
      */
-    private boolean parallel = true;
+    private boolean parallel = false;
     /**
      * The endpoint strategy to use for setting endpoints.
      */
@@ -733,7 +733,7 @@ public class FciOrient {
 
         int testTimeout = this.testTimeout == -1 ? Integer.MAX_VALUE : (int) this.testTimeout;
 
-        // Parallel is the default.
+        // Not parallel is the default.
         if (parallel) {
             while (true) {
                 List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
@@ -765,7 +765,8 @@ public class FciOrient {
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
                     try {
-                        return GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS);
+                        return task.call();
+//                        return GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
                         return null;
                     }

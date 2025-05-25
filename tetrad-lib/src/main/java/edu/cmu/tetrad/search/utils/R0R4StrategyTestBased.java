@@ -189,6 +189,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) throws InterruptedException {
+        System.out.println("doDiscriminatingPathOrientation path = " + discriminatingPath);
+
         Node x = discriminatingPath.getX();
         Node w = discriminatingPath.getW();
         Node v = discriminatingPath.getV();
