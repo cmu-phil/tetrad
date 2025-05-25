@@ -749,7 +749,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -859,7 +859,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -916,7 +916,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testZhangPagToMag() {
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.

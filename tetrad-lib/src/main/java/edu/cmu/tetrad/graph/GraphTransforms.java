@@ -90,60 +90,6 @@ public class GraphTransforms {
         return dag;
     }
 
-    public static Graph magFromPfaci(Graph pfaci, Knowledge knowledge, boolean verbose) {
-        Graph graph = new EdgeListGraph(pfaci);
-
-        PagMeekRules rules = new PagMeekRules();
-        rules.setMeekPreventCycles(true);
-        rules.setRevertToUnshieldedColliders(false);
-        rules.setVerbose(verbose);
-
-        if (knowledge != null) {
-            rules.setKnowledge(knowledge);
-        }
-
-        List<Edge> nondirectedEdges = getNondirectedEdges(graph);
-        List<Node> order = getOrder(graph);
-
-        NEXT:
-        while (true) {
-            for (Edge edge : nondirectedEdges) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                if (Edges.isNondirectedEdge(graph.getEdge(x, y))) {
-                    if (!graph.isAncestorOf(y, x)) {
-                        graph.removeEdge(x, y);
-                        graph.addDirectedEdge(x, y);
-
-                        if (!graph.paths().isMaximal()) {
-                            graph.removeEdge(y, x);
-                            graph.addDirectedEdge(y, x);
-                        }
-
-                        rules.orientImplied(graph);
-                        continue NEXT;
-                    } else {
-                        graph.removeEdge(y, x);
-                        graph.addDirectedEdge(y, x);
-
-                        if (!graph.paths().isMaximal()) {
-                            graph.removeEdge(x, y);
-                            graph.addDirectedEdge(x, y);
-                        }
-
-                        rules.orientImplied(graph);
-                        continue NEXT;
-                    }
-                }
-            }
-
-            break;
-        }
-
-        return graph;
-    }
-
     /**
      * Transforms a completed partially directed acyclic graph (CPDAG) into a directed acyclic graph (DAG) by orienting
      * the undirected edges in the CPDAG.
@@ -207,50 +153,6 @@ public class GraphTransforms {
         }
     }
 
-    private static boolean newUnshieldedCollider(Graph graph, Node x, Node y) {
-        for (Node p : graph.getParents(y)) {
-            if (!graph.isAdjacentTo(p, x) && !graph.isDefCollider(x, y, p)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static @NotNull List<Node> getOrder(Graph graph) {
-        List<Node> order = graph.getNodes();
-        Collections.shuffle(order);
-
-        order.sort((node1, node2) -> {
-            if (graph.paths().isAncestorOf(node1, node2)) {
-                return -1;
-            } else if (graph.paths().isAncestorOf(node2, node1)) {
-                return 1;
-            } else {
-                return 0;
-            }
-        });
-
-        return order;
-    }
-
-    private static @NotNull List<Edge> getNondirectedEdges(Graph graph) {
-        List<Edge> nondirectedEdges = new ArrayList<>();
-
-        for (Edge edge : graph.getEdges()) {
-            if (Edges.isNondirectedEdge(edge)) {
-                nondirectedEdges.add(edge);
-            }
-        }
-
-        nondirectedEdges.sort((e1, e2) -> {
-            String s1 = e1.getNode1().getName() + e1.getNode2().getName();
-            String s2 = e2.getNode1().getName() + e2.getNode2().getName();
-            return s1.compareTo(s2);
-        });
-        return nondirectedEdges;
-    }
-
     /**
      * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem 2.
      *
@@ -298,45 +200,6 @@ public class GraphTransforms {
         }
 
         return pafci;
-    }
-
-    public static Graph magFromPag2(Graph pag) {
-        List<Node> nodes = pag.getNodes();
-
-        Graph pafci = new EdgeListGraph(pag);
-
-        for (Node _x : nodes) {
-            for (Node _y : pafci.getAdjacentNodes(_x)) {
-                Edge e = pafci.getEdge(_x, _y);
-
-                Node x = e.getNode1();
-                Node y = e.getNode2();
-                Endpoint endx = e.getEndpoint1();
-                Endpoint endy = e.getEndpoint2();
-
-                if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW) {
-                    pafci.removeEdge(e);
-                    pafci.addDirectedEdge(x, y);
-                }
-
-                if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE) {
-                    pafci.removeEdge(e);
-                    pafci.addDirectedEdge(y, x);
-                }
-
-                if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE) {
-                    pafci.removeEdge(e);
-                    pafci.addDirectedEdge(x, y);
-                }
-
-                if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL) {
-                    pafci.removeEdge(e);
-                    pafci.addDirectedEdge(y, x);
-                }
-            }
-        }
-
-        return GraphTransforms.magFromPfaci(pafci, new Knowledge(), false);
     }
 
     /**
