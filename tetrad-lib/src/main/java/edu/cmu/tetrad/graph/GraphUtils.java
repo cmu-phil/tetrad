@@ -2570,7 +2570,7 @@ public final class GraphUtils {
 
         } while (changed);
 
-        DagToPag dagToPag = new DagToPag(GraphTransforms.magFromPag(pag));
+        DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
         dagToPag.setKnowledge(knowledge);
         Graph pag2 = dagToPag.convert();
 
@@ -2596,7 +2596,7 @@ public final class GraphUtils {
             changedThisRound = false;
             round++;
 
-            Graph mag = GraphTransforms.magFromPag(pag);
+            Graph mag = GraphTransforms.zhangMagFromPag(pag);
             Map<Node, Set<Node>> reachable =
                     buildDescendantsMap(mag);
 
@@ -2659,7 +2659,7 @@ public final class GraphUtils {
 
     private static boolean removeCycles(Graph pag, boolean verbose) {
         boolean changed = false;
-        Graph mag = GraphTransforms.magFromPag(pag);
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
         Map<Node, Set<Node>> reachableFrom = buildDescendantsMap(mag);
 
         for (Node x : mag.getNodes()) {

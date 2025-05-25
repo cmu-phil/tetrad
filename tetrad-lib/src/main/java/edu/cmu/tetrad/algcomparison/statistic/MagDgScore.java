@@ -48,7 +48,7 @@ public class MagDgScore implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet)) throw new IllegalArgumentException("Expecting a dataset for MAG DG Score.");
 
-        Graph mag = GraphTransforms.magFromPag(estGraph);
+        Graph mag = GraphTransforms.zhangMagFromPag(estGraph);
         MagDgBicScore magDgScore = new MagDgBicScore((DataSet) dataModel);
         magDgScore.setMag(mag);
         List<Node> nodes = mag.getNodes();

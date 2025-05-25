@@ -247,7 +247,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             boolean noncollider = switch (blockingType) {
                 case BlockingType.RECURSIVE ->
                         RecursiveDiscriminatingPathRule.checkIndependenceRecursive(test, x, y, blocking, vNodes,
-                                discriminatingPath, ensureMarkovHelper);
+                                discriminatingPath, ensureMarkovHelper).contains(v);
                 case BlockingType.GREEDY -> blocking.contains(v);
             };
 
