@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
 import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.search.utils.PagMeekRules;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.PagCache;
 import org.jetbrains.annotations.NotNull;
