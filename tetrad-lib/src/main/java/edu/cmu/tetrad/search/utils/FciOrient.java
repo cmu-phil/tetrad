@@ -179,10 +179,10 @@ public class FciOrient {
      *
      * @param graph                       the graph to analyze
      * @param maxDiscriminatingPathLength the maximum length of a discriminating path
-     * @param checkEcNonadjacency         whether to check for EC nonadjacency
+     * @param checkXyNonadjacency         whether to check for EC nonadjacency
      * @return a set of discriminating paths found in the graph
      */
-    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean checkXyNonadjacency) {
         Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
 
         List<Node> nodes = graph.getNodes();
@@ -198,7 +198,7 @@ public class FciOrient {
             }
 
             for (Node y : graph.getAdjacentNodes(w)) {
-                discriminatingPaths.addAll(listDiscriminatingPaths(graph, w, y, maxDiscriminatingPathLength, checkEcNonadjacency));
+                discriminatingPaths.addAll(listDiscriminatingPaths(graph, w, y, maxDiscriminatingPathLength, checkXyNonadjacency));
             }
         }
 

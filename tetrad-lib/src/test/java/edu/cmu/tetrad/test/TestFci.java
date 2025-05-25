@@ -749,12 +749,12 @@ public class TestFci {
         }
     }
 
-//        @Test
+    @Test
     public void testFcitFromData() {
-        for (int i = 0; i < 3000; i++) {
+        for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
-            Graph graph = RandomGraph.randomGraph(50, 6, 200, 100, 100, 100, false);
+            Graph graph = RandomGraph.randomGraph(50, 6, 100, 100, 100, 100, false);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             DataSet dataSet = im.simulateData(1000, false);
@@ -859,7 +859,7 @@ public class TestFci {
         }
     }
 
-//        @Test
+    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
