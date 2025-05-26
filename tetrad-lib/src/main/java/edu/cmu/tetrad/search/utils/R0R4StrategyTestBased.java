@@ -189,8 +189,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) throws InterruptedException {
-        System.out.println("doDiscriminatingPathOrientation path = " + discriminatingPath);
-
         Node x = discriminatingPath.getX();
         Node w = discriminatingPath.getW();
         Node v = discriminatingPath.getV();
@@ -214,6 +212,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         if (blockingType == BlockingType.RECURSIVE) {
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
                     maxLength, maxLength, ensureMarkovHelper, depth);
+
+            if (blocking == null) {
+                blocking = findAdjSetSepset(graph, x, y, path, v);
+            }
         } else if (blockingType == BlockingType.GREEDY) {
             blocking = findAdjSetSepset(graph, x, y, path, v);
         } else {

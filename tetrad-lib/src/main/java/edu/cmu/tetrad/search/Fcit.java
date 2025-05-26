@@ -691,22 +691,22 @@ public final class Fcit implements IGraphSearch {
                 }
             }
 
-            if (oldDiscriminatingPaths != null) {
-                Set<DiscriminatingPath> oldPaths = new HashSet<>();
-
-                for (DiscriminatingPath path : oldDiscriminatingPaths) {
-                    if (path.getX() == x && path.getY() == y) {
-                        oldPaths.add(path);
-                    } else if (path.getX() == y && path.getY() == x) {
-                        oldPaths.add(path);
-                    }
-                }
-
-//                if (paths.equals(oldPaths)) {
-//                    pathsByEdge.put(Set.of(x, y), null);
-//                    return;
+//            if (oldDiscriminatingPaths != null) {
+////                Set<DiscriminatingPath> oldPaths = new HashSet<>();
+//
+//                for (DiscriminatingPath path : oldDiscriminatingPaths) {
+//                    if (path.getX() == x && path.getY() == y) {
+//                        oldPaths.add(path);
+//                    } else if (path.getX() == y && path.getY() == x) {
+//                        oldPaths.add(path);
+//                    }
 //                }
-            }
+//
+////                if (paths.equals(oldPaths)) {
+////                    pathsByEdge.put(Set.of(x, y), null);
+////                    return;
+////                }
+//            }
 
             pathsByEdge.put(Set.of(x, y), paths);
         });

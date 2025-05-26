@@ -152,9 +152,6 @@ public class RecursiveDiscriminatingPathRule {
                 // Convert indices -> actual nodes
                 Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
 
-                Set<Node> vNodesFollowed = new HashSet<>(vNodes);
-                vNodesFollowed.removeAll(vNodesNotFollowed);
-
                 // (A) blockPathsRecursively
                 Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
 
@@ -166,7 +163,7 @@ public class RecursiveDiscriminatingPathRule {
                     }
                 }
 
-                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + vNodesNotFollowed + " = " + blocking);
+//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + vNodesNotFollowed + " = " + blocking);
 
                 // b minus c
                 Set<Node> testSet = new HashSet<>(blocking);
