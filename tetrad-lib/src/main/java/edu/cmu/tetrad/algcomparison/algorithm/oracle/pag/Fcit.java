@@ -141,7 +141,6 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
         // FCIT
-        search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
@@ -215,7 +214,6 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
 
         // FCIT
         params.add(Params.FCIT_STARTS_WITH);
-        params.add(Params.MAX_BLOCKING_PATH_LENGTH);
         params.add(Params.DEPTH);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.ENSURE_MARKOV);

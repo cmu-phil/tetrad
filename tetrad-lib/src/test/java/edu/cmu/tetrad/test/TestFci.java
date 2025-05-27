@@ -749,9 +749,9 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromData() {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
             Graph graph = RandomGraph.randomGraph(50, 6, 150, 100, 100, 100, false);
@@ -855,7 +855,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
