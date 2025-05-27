@@ -403,10 +403,6 @@ public final class Fcit implements IGraphSearch {
 
         refreshGraph();
 
-        if (!pag.paths().isMaximal()) {
-            TetradLogger.getInstance().log("****** Maximality check failed for the initial PAG ******");
-        }
-
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
         // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
         // each side. So in a dense graph, this can take a very long time to complete. Here, we look for a sepset
@@ -420,19 +416,11 @@ public final class Fcit implements IGraphSearch {
         Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(null, maxBlockingPathLength);
         refreshGraph();
 
-        if (!pag.paths().isMaximal()) {
-            TetradLogger.getInstance().log("****** Maximality check failed after first refresh ******");
-        }
-
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
             oldPaths = removeExtraEdgesDdp(oldPaths, maxBlockingPathLength);
             refreshGraph();
-
-            if (!pag.paths().isMaximal()) {
-                TetradLogger.getInstance().log("****** Maximality check failed after subsequent refresh ******");
-            }
 
             if (_pag.equals(pag)) {
                 break;
