@@ -2692,7 +2692,7 @@ public final class GraphUtils {
                                         Set<Triple> unshieldedColliders, boolean verbose) {
         reorientWithCircles(pag, verbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        recallKnownColliders(pag, unshieldedColliders, knowledge);
+        recallCollidersFromCpdag(pag, unshieldedColliders, knowledge);
         fciOrient.setAllowedColliders(unshieldedColliders);
         fciOrient.finalOrientation(pag);
     }
@@ -3102,217 +3102,6 @@ public final class GraphUtils {
         return dsep;
     }
 
-//    /**
-//     * Removes almost cycles from a graph.
-//     *
-//     * @param pag                      the graph
-//     * @param unshieldedColliders      a set of unshielded colliders
-//     * @param extraKnownColliders a set of unshielded colliders oriented after the initial scoring step.
-//     * @param fciOrient                the FciOrient object
-//     * @param knowledge                the knowledge base
-//     * @param verbose                  a flag indicating whether to log verbose output
-//     * @return AtomicBoolean(true) if any almost cycles were removed, AtomicBoolean(false) otherwise
-//     */
-//    public static boolean removeAlmostCycles(Graph pag, Set<Triple> unshieldedColliders, Set<Triple> extraKnownColliders, FciOrient fciOrient,
-//                                             Knowledge knowledge, boolean verbose) {
-//        if (verbose) {
-//            TetradLogger.getInstance().log("Removing almost cycles.");
-//        }
-//
-//        boolean changed = false;
-//
-//        fciOrient.setInitialAllowedColliders(new HashSet<>());
-//        fciOrient.finalOrientation(pag);
-//        unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
-//        fciOrient.setInitialAllowedColliders(null);
-//
-//        Set<Edge> _almostCycles = new HashSet<>();
-//
-//        int round = 0;
-//
-//        while (!Thread.currentThread().isInterrupted()) {
-//            round++;
-//            Graph mag = GraphTransforms.zhangMagFromPag(pag);
-//
-//            // Make a list of all <x, y> where x ↔ y and x ~~> y.
-//            Set<Edge> almostCyclesSet = new HashSet<>();
-//
-//            for (Edge edge : mag.getEdges()) {
-//                if (Edges.isBidirectedEdge(edge)) {
-//                    if (mag.paths().existsDirectedPath(edge.getNode1(), edge.getNode2())) {
-//                        Edge e = Edges.directedEdge(edge.getNode1(), edge.getNode2());
-//                        almostCyclesSet.add(e);
-//                    } else if (mag.paths().existsDirectedPath(edge.getNode2(), edge.getNode1())) {
-//                        Edge e = Edges.directedEdge(edge.getNode2(), edge.getNode1());
-//                        almostCyclesSet.add(e);
-//                    }
-//                }
-//            }
-//
-//            if (almostCyclesSet.equals(_almostCycles)) {
-//                break;
-//            }
-//
-//            _almostCycles = new HashSet<>(almostCyclesSet);
-//
-//            if (verbose) {
-//                StringBuilder sb = new StringBuilder();
-//
-//                sb.append("Almost cycles round ").append(round).append(": ");
-//
-//                for (Edge _almostCycle : almostCyclesSet) {
-//                    sb.append(_almostCycle.getNode1()).append(" ~~> ").append(_almostCycle.getNode2()).append(" ");
-//                }
-//
-//                TetradLogger.getInstance().log(sb.toString());
-//
-//                TetradLogger.getInstance().log("# almost cycles = " + almostCyclesSet.size());
-//            }
-//
-//            for (Edge almostCycle : almostCyclesSet) {
-//
-//                Node x = almostCycle.getNode1();
-//                Node y = almostCycle.getNode2();
-//
-//                // Find all unshielded triples z *→ x ↔ y in subsequentKnownColliders
-//                Set<Triple> unshieldedTriplesIntoX = new HashSet<>();
-//
-//                for (Triple triple : new HashSet<>(extraKnownColliders)) {
-//                    if (triple.getY().equals(x) && triple.getZ().equals(y)) {
-//                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getX())) {
-//                            pag.addNondirectedEdge(triple.getX(), triple.getZ());
-////                            unshieldedColliders.remove(triple);
-////                            extraKnownColliders.remove(triple);
-//                            unshieldedTriplesIntoX.add(triple);
-//                            changed = true;
-//                        }
-//                    } else if (triple.getY().equals(x) && triple.getX().equals(y)) {
-//                        if (mag.getNodesInTo(x, Endpoint.ARROW).contains(triple.getZ())) {
-//                            pag.addNondirectedEdge(triple.getX(), triple.getZ());
-////                            unshieldedColliders.remove(triple);
-////                            extraKnownColliders.remove(triple);
-//                            unshieldedTriplesIntoX.add(triple);
-//                            changed = true;
-//                        }
-//                    }
-//                }
-//
-//                if (!unshieldedColliders.isEmpty() && verbose) {
-//                    TetradLogger.getInstance().log("Removing almost cycle " + almostCycle.getNode1() + " ~~> " + almostCycle.getNode2());
-//                    TetradLogger.getInstance().log("Removing triples : " + unshieldedTriplesIntoX);
-//                }
-//            }
-//
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Done removing almost cycles this round.");
-//            }
-//
-//            // Rebuild the PAG with this new unshielded collider set.
-//
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Rebuilding graph.");
-//            }
-//
-//            reorientWithCircles(pag, verbose);
-//            fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-//            recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-//
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Finished rebuilding graph.");
-//            }
-//
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Final orientation.");
-//            }
-//
-//            fciOrient.setVerbose(false);
-//            fciOrient.setAllowedColliders(unshieldedColliders);
-//            fciOrient.setDoR4(false);
-//            fciOrient.finalOrientation(pag);
-//
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Finished final orientation.");
-//            }
-//
-//            if (verbose) {
-//                TetradLogger.getInstance().log("All done removing almost cycles, round " + round + ".");
-//            }
-//        }
-//
-//        return changed;
-//    }
-
-//    /**
-//     * Removes cycles from the given graph using the Fast Causal Inference (FCI) algorithm.
-//     *
-//     * @param unshieldedColliders the set of unshielded colliders.
-//     * @param fciOrient           the FciOrient object used for orientation
-//     * @param pag                 the graph to remove cycles from
-//     * @param knowledge           the knowledge base used by the FCI algorithm
-//     * @param verbose             a flag indicating whether to log verbose information
-//     * @return AtomicBoolean(true) if any cycles were removed, AtomicBoolean(false) otherwise
-//     */
-//    public static boolean removeCycles(Set<Triple> unshieldedColliders, FciOrient fciOrient,
-//                                       Graph pag, Knowledge knowledge, boolean verbose) {
-//        if (verbose) {
-//            TetradLogger.getInstance().log("Removing cycles.");
-//        }
-//
-//        boolean changed = false;
-//
-//        fciOrient.setInitialAllowedColliders(new HashSet<>());
-//        fciOrient.finalOrientation(pag);
-//        unshieldedColliders.addAll(fciOrient.getInitialAllowedColliders());
-//        fciOrient.setInitialAllowedColliders(null);
-//
-//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-//
-//        while (mag.paths().existsDirectedCycle()) {
-//            boolean didCover = false;
-//
-//            for (Node x : mag.getNodes()) {
-//                if (mag.paths().existsDirectedPath(x, x)) {
-//                    List<List<Node>> paths = mag.paths().directedPaths(x, x, -1);
-//
-//                    for (List<Node> path : paths) {
-//                        if (path.size() >= 3) {
-//                            for (int i = 1; i < path.size() - 1; i++) {
-//                                Node y = path.get(i);
-//                                Node prev = path.get(i - 1);
-//                                Node next = path.get(i + 1);
-//
-//                                if (pag.isParentOf(prev, y) && pag.isParentOf(next, y) &&
-//                                    !pag.isAdjacentTo(prev, next)) {
-//                                    // Cover the unshielded collider
-//                                    pag.addNondirectedEdge(prev, next);
-//                                    didCover = true;
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            if (!didCover) break;
-//
-//            // Rebuild the PAG
-//            reorientWithCircles(pag, verbose);
-//            fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-//            recallUnshieldedTriples(pag, unshieldedColliders, knowledge);
-//            fciOrient.setAllowedColliders(unshieldedColliders);
-//            fciOrient.finalOrientation(pag);
-//
-//            mag = GraphTransforms.zhangMagFromPag(pag);
-//            changed = true;
-//        }
-//
-//        if (verbose) {
-//            TetradLogger.getInstance().log("All done removing cycles.");
-//        }
-//
-//        return changed;
-//    }
-
     /**
      * Reorients all edges in a Graph as o-o. This method is used to apply the o-o orientation to all edges in the given
      * Graph following the PAG (Partially Ancestral Graph) structure.
@@ -3330,32 +3119,19 @@ public final class GraphUtils {
     /**
      * Recall unshielded triples in a given graph.
      *
-     * @param pag                 The graph to recall unshielded triples from.
-     * @param unshieldedColliders The set of unshielded colliders that need to be recalled.
-     * @param knowledge           the knowledge object.
+     * @param pag            The graph to recall unshielded triples from.
+     * @param knownColliders The set of unshielded colliders that need to be recalled from the CPDAG.
+     * @param knowledge      the knowledge object.
      */
-    public static void recallKnownColliders(Graph pag, Set<Triple> unshieldedColliders, Knowledge knowledge) {
-        for (Triple triple : new HashSet<>(unshieldedColliders)) {
+    public static void recallCollidersFromCpdag(Graph pag, Set<Triple> knownColliders, Knowledge knowledge) {
+        for (Triple triple : new HashSet<>(knownColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
 
-            if (!pag.isAdjacentTo(x, b) || !pag.isAdjacentTo(b, y)) {
-                unshieldedColliders.remove(triple);
-                continue;
-            }
-
-            if (pag.isAdjacentTo(x, y)) {
-                unshieldedColliders.remove(triple);
-                continue;
-            }
-
-            // We can avoid creating almost cycles here, but this does not solve the problem, as we can still
-            // creat almost cycles in final orientation.
-            if (colliderAllowed(pag, x, b, y, knowledge) && triple(pag, x, b, y)) {// && !couldCreateAlmostCycle(pag, x, y)) {
+            if (triple(pag, x, b, y) && colliderAllowed(pag, x, b, y, knowledge)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
-                pag.removeEdge(x, y);
             }
         }
     }

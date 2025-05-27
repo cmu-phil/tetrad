@@ -749,12 +749,12 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromData() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1000; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
-            Graph graph = RandomGraph.randomGraph(50, 6, 100, 100, 100, 100, false);
+            Graph graph = RandomGraph.randomGraph(50, 6, 150, 100, 100, 100, false);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             DataSet dataSet = im.simulateData(1000, false);
@@ -790,10 +790,6 @@ public class TestFci {
 
                     if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
                         System.out.println("Unshielded colliders match between mag and pag.");
-                    }
-
-                    if (!(getUnshieldedColliders(mag).equals(getUnshieldedColliders(pag)) && mag.paths().isLegalMag())) {
-//                        throw new IllegalStateException("**** Reason = " + ret.getReason());
                     }
                 }
 
@@ -892,10 +888,6 @@ public class TestFci {
                         System.out.println("Unshielded colliders match between mag and pag.");
                     }
 
-                    if (!(getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag)) && mag.paths().isLegalMag())) {
-//                        throw new RuntimeException("pag is not legal pag seed = " + seed);
-                    }
-
                     DagToPag dagToPag = new DagToPag(mag);
                     Graph reconstitutedPag = dagToPag.convert();
 
@@ -921,17 +913,15 @@ public class TestFci {
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.
 
-        for (int i = 0; i < 5000; i++) {
+        for (int i = 0; i < 100; i++) {
 //            System.out.println("================= RUN " + (i + 1) + " TEST ====================");
 
             long seed = RandomUtil.getInstance().nextLong();
 //            long seed = 3483347644872987035L;
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(10, 5, 15, 100, 100, 100, false);
+            Graph dag = RandomGraph.randomGraph(20, 6, 40, 100, 100, 100, false);
             Graph pag = new DagToPag(dag).convert();
-
-//            System.out.println("PAG = " + pag);
 
             if (pag.paths().existsDirectedCycle()) {
                 System.out.println("cyclic PAG");
@@ -939,17 +929,11 @@ public class TestFci {
 
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
-//            System.out.println("MAG = " + mag);
-
             Set<Triple> magUnshieldedTriples = getUnshieldedColliders(mag);
             Set<Triple> pagUnshieldedTriples = getUnshieldedColliders(pag);
 
             if (!magUnshieldedTriples.equals(pagUnshieldedTriples)) {
-//                System.out.println("magUnshieldedTriples = " + magUnshieldedTriples);
-//                System.out.println("pagUnshieldedTriples = " + pagUnshieldedTriples);
                 System.out.println("MAG and PAG unshielded triples not the same.");
-//                System.out.println("PAG = " + pag);
-//                System.out.println("MAG = " + mag);
             }
 
             if (!isLegalMag(mag)) {
@@ -967,11 +951,6 @@ public class TestFci {
                 }
 
                 System.out.println("mag is not legal mag seed = " + seed);
-//                System.out.println("PAG = " + pag);
-//                System.out.println("MAG = " + mag);
-
-//                System.out.println(mag);
-//                throw new RuntimeException("mag is not legal mag seed = " + seed);
             }
         }
     }

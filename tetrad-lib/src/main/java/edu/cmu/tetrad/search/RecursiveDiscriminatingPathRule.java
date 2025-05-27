@@ -110,13 +110,6 @@ public class RecursiveDiscriminatingPathRule {
                                                    int maxBlockingPathLength, int maxDdpPathLength, EnsureMarkov ensureMarkovHelper, int depth)
             throws InterruptedException {
 
-        // Preliminary orientation (do we need this? Maybe not; this is already in the context of a final orienation procedure))
-//        fciOrient.setUseR4(false);
-//        fciOrient.setCompleteRuleSetUsed(false);
-//        fciOrient.finalOrientation(pag);
-//        fciOrient.setCompleteRuleSetUsed(true);
-//        fciOrient.setUseR4(true);
-
         // Get the V nodes--these need to be blocked in every combination, as we don't know which of these are colliders
         // on their respective discriminating paths.
         List<Node> vNodes = getVNodes(pag, x, y, maxDdpPathLength);
@@ -129,7 +122,6 @@ public class RecursiveDiscriminatingPathRule {
         SublistGenerator gen1 = new SublistGenerator(common.size(), common.size());
         int[] choice2;
 
-        outerLoop:
         while ((choice2 = gen1.next()) != null) {
             Set<Node> c = GraphUtils.asSet(choice2, common);
             Set<Node> perhapsNotFollowed = new HashSet<>(vNodes);
