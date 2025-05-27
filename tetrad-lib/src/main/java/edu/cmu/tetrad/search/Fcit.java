@@ -120,14 +120,6 @@ public final class Fcit implements IGraphSearch {
      */
     private Map<Edge, Set<Node>> extraSepsets = new HashMap<>();
     /**
-     * A set to store unshielded colliders identified from the CPDAG (Completed Partially Directed Acyclic Graph).
-     * <p>
-     * Colliders represent triples of nodes (X, Y, Z) where X → Y ← Z. These are unshielded colliders, meaning there is
-     * no direct edge between X and Z. This set maintains all such colliders during the search process for constructing
-     * and analyzing the causal structure.
-     */
-    private Set<Triple> cpdagColliders = new HashSet<>();
-    /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
      * Ancestral Graph). This variable determines how unshielded colliders, discriminating paths, and other structural
      * elements of the PAG are identified and processed during the search. The orientation strategy implemented in this
@@ -161,6 +153,7 @@ public final class Fcit implements IGraphSearch {
      * ensuring that the search algorithm respects these previously identified relationships.
      */
     private Set<Triple> lastKnownColliders = null;
+    private Set<Triple> cpdagColliders;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -334,14 +327,10 @@ public final class Fcit implements IGraphSearch {
             scorer.bookmark();
         }
 
-        ensureMarkovHelper = new EnsureMarkov(dag, test);
-        ensureMarkovHelper.setEnsureMarkov(ensureMarkov);
-
-        // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
-        pag = new EdgeListGraph(cpdag);
+        this.pag = new EdgeListGraph(cpdag);
 
         if (verbose) {
-            TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
+            TetradLogger.getInstance().log("Initializing PAG to PAG of BOSS DAG.");
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
@@ -350,31 +339,22 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        extraSepsets = new HashMap<>();
-
         if (scorer != null) {
             scorer.score(best);
         }
-
-        GraphUtils.reorientWithCircles(pag, verbose);
-        fciOrient.fciOrientbk(knowledge, pag, nodes);
 
         if (verbose) {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
-        noteKnownCollidersFromCpdag(best, cpdag);
+        this.pag = GraphTransforms.dagToPag(dag);
+        this.cpdagColliders = noteKnownCollidersFromCpdag(best, pag);
+        this.extraSepsets = new HashMap<>();
 
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        fciOrient.setUseR4(true);
-        GraphUtils.recallCollidersFromCpdag(pag, cpdagColliders, knowledge);
-        fciOrient.finalOrientation(pag);
+        ensureMarkovHelper = new EnsureMarkov(pag, test);
+        ensureMarkovHelper.setEnsureMarkov(ensureMarkov);
 
-        lastPag = new EdgeListGraph(pag);
-        lastKnownColliders = new HashSet<>(cpdagColliders);
-        lastExtraSepsets = new HashMap<>(extraSepsets);
-
-        refreshGraph();
+        storeState();
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
         // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
@@ -434,7 +414,28 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
-    private void noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag) {
+    private void storeState() {
+        this.lastPag = new EdgeListGraph(this.pag);
+        this.lastKnownColliders = new HashSet<>(this.cpdagColliders);
+        this.lastExtraSepsets = new HashMap<>(this.extraSepsets);
+    }
+
+    private void retrieveState() {
+        this.pag = new EdgeListGraph(this.lastPag);
+        this.cpdagColliders = new HashSet<>(this.lastKnownColliders);
+        this.extraSepsets = new HashMap<>(this.lastExtraSepsets);
+    }
+
+    private void printStateLegal(Graph myPag, String messageNotlegal, String messageLegal) {
+        if (!myPag.paths().isLegalPag()) {
+            TetradLogger.getInstance().log(messageNotlegal);
+        } else {
+            TetradLogger.getInstance().log(messageLegal);
+        }
+    }
+
+    private Set<Triple> noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag) {
+        Set<Triple> cpdagColliders = new HashSet<>();
 
         // We're looking for unshielded colliders in these next steps that we can detect from the CPDAG.
         // We do this by looking at the structure of the CPDAG implied by the BOSS graph and copying
@@ -443,7 +444,7 @@ public final class Fcit implements IGraphSearch {
         // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
         // PMLR.
         for (Node b : best) {
-            var adj = pag.getAdjacentNodes(b);
+            var adj = this.pag.getAdjacentNodes(b);
 
             for (int i = 0; i < adj.size(); i++) {
                 for (int j = i + 1; j < adj.size(); j++) {
@@ -452,7 +453,7 @@ public final class Fcit implements IGraphSearch {
 
                     if (GraphUtils.distinct(x, b, y)) {
                         if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
-                            if (cpdag.isDefCollider(x, b, y)) {
+                            if (cpdag.isDefCollider(x, b, y) && !cpdag.isAdjacentTo(x, y)) {
                                 cpdagColliders.add(new Triple(x, b, y));
 
                                 if (verbose) {
@@ -464,6 +465,8 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         }
+
+        return cpdagColliders;
     }
 
     private void refreshGraph() {
@@ -474,16 +477,13 @@ public final class Fcit implements IGraphSearch {
         fciOrient.setUseR4(true);
         fciOrient.finalOrientation(pag);
 
-        if (!pag.paths().isMaximal()) {
-            pag = new EdgeListGraph(lastPag);
-            cpdagColliders = new HashSet<>(lastKnownColliders);
-            extraSepsets = new HashMap<>(lastExtraSepsets);
+        if (!pag.paths().isLegalPag()) {
+            retrieveState();
         } else {
-            lastPag = new EdgeListGraph(pag);
-            lastKnownColliders = new HashSet<>(cpdagColliders);
-            lastExtraSepsets = new HashMap<>(extraSepsets);
+            storeState();
         }
     }
+
 
     private void adjustForExtraSepsets() {
         extraSepsets.keySet().forEach(edge -> {
@@ -541,9 +541,9 @@ public final class Fcit implements IGraphSearch {
 
             try {
                 if (ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
-//                    if (verbose) {
+                    if (verbose) {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
-//                    }
+                    }
 
                     extraSepsets.put(pag.getEdge(x, y), Set.of());
                     pag.removeEdge(x, y);
@@ -584,7 +584,7 @@ public final class Fcit implements IGraphSearch {
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
-        pag.getEdges().forEach(edge -> {
+        for (Edge edge : pag.getEdges()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Considering removing edge " + edge);
             }
@@ -685,6 +685,7 @@ public final class Fcit implements IGraphSearch {
                                 extraSepsets.put(pag.getEdge(x, y), b);
                                 pag.removeEdge(x, y);
                             }
+
 //                            else if (ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
 //                                if (verbose) {
 //                                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
@@ -699,7 +700,7 @@ public final class Fcit implements IGraphSearch {
                     }
                 }
             }
-        });
+        }
     }
 
     /**

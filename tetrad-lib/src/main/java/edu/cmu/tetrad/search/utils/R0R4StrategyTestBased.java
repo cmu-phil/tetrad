@@ -215,7 +215,12 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             if (blocking == null) {
                 blocking = findAdjSetSepset(graph, x, y, path, v);
-                TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
+
+                if (blocking != null) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
+                    }
+                }
             }
         } else if (blockingType == BlockingType.GREEDY) {
             blocking = findAdjSetSepset(graph, x, y, path, v);
@@ -229,15 +234,17 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // *       v    *
         // * X....W --> Y
 
-
         // This is needed for greedy and anteriority methods, which return sepsets, not recursive, which always
         // returns a blocking set.
-        if (blockingType == BlockingType.GREEDY && blocking == null) {
-            throw new IllegalArgumentException("Sepset is null.");
+        if (blocking == null) {
+            TetradLogger.getInstance().log("Blocking set is null in R4.");
+            throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 
-        if (blockingType == BlockingType.RECURSIVE && !(blocking.containsAll(path) && blocking.contains(w))) {
-            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
+        if (blockingType == BlockingType.RECURSIVE) {
+            if (!(blocking.containsAll(path) && blocking.contains(w))) {
+                throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
+            }
         }
 
         if (blockingType == BlockingType.GREEDY && !blocking.containsAll(path)) {
@@ -248,66 +255,57 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // can orient W<-*V*->Y as a non-collider, otherwise as a collider. For the greedy case, we need to know whether
         // blocking contains v. These are two ways to express the same idea, since for the recursive case blocking
         // must contain V by construction.
-        if (blockingType != null) {
-            boolean noncollider = switch (blockingType) {
-                case BlockingType.RECURSIVE ->
-                        RecursiveDiscriminatingPathRule.checkIndependenceRecursive(test, x, y, blocking, vNodes,
-                                discriminatingPath, ensureMarkovHelper).contains(v);
-                case BlockingType.GREEDY -> blocking.contains(v);
-            };
+        boolean noncollider = blocking.contains(v);
 
-            if (noncollider) {
-                if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                graph.setEndpoint(y, v, Endpoint.TAIL);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
-                    TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, w, v, y));
-                    TetradLogger.getInstance().log("    Collider path = " + path);
-                    TetradLogger.getInstance().log("    Blocking set for " + x + " and " + y + " is " + blocking);
-                }
-
-                return Pair.of(discriminatingPath, true);
-            } else {
-                if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (initialAllowedColliders != null) {
-                    initialAllowedColliders.add(new Triple(w, v, y));
-                    allowedColliders.add(new Triple(w, v, y));
-                } else {
-                    if (allowedColliders != null && !allowedColliders.contains(new Triple(w, v, y))) {
-                        allowedColliders.add(new Triple(w, v, y));
-                        return Pair.of(discriminatingPath, false);
-                    }
-                }
-
-                graph.setEndpoint(w, v, Endpoint.ARROW);
-                graph.setEndpoint(y, v, Endpoint.ARROW);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
-                    TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, w, v, y));
-                    TetradLogger.getInstance().log("    Collider path = " + path);
-                    TetradLogger.getInstance().log("    Blocking set for " + x + " and " + y + " is " + blocking);
-                }
-
-                return Pair.of(discriminatingPath, true);
+        if (noncollider) {
+            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
+                return Pair.of(discriminatingPath, false);
             }
+
+            graph.setEndpoint(y, v, Endpoint.TAIL);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
+                TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, w, v, y));
+                TetradLogger.getInstance().log("    Collider path = " + path);
+                TetradLogger.getInstance().log("    Blocking set for " + x + " and " + y + " is " + blocking);
+            }
+
+            return Pair.of(discriminatingPath, true);
         } else {
-            return Pair.of(discriminatingPath, false);
+            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (initialAllowedColliders != null) {
+                initialAllowedColliders.add(new Triple(w, v, y));
+                allowedColliders.add(new Triple(w, v, y));
+            } else {
+                if (allowedColliders != null && !allowedColliders.contains(new Triple(w, v, y))) {
+                    allowedColliders.add(new Triple(w, v, y));
+                    return Pair.of(discriminatingPath, false);
+                }
+            }
+
+            graph.setEndpoint(w, v, Endpoint.ARROW);
+            graph.setEndpoint(y, v, Endpoint.ARROW);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("R4: Discriminating path ORIENTED: " + discriminatingPath);
+                TetradLogger.getInstance().log("    Oriented as: " + GraphUtils.pathString(graph, w, v, y));
+                TetradLogger.getInstance().log("    Collider path = " + path);
+                TetradLogger.getInstance().log("    Blocking set for " + x + " and " + y + " is " + blocking);
+            }
+
+            return Pair.of(discriminatingPath, true);
         }
     }
 
