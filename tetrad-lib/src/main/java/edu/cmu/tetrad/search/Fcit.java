@@ -389,7 +389,7 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
-        copyKnownCollidersFromCpdag(best, cpdag, scorer);
+        noteKnownCollidersFromCpdag(best, cpdag, scorer);
 
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         GraphUtils.recallCollidersFromCpdag(pag, knownColliders, knowledge);
@@ -413,13 +413,13 @@ public final class Fcit implements IGraphSearch {
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
         checkUnconditionalIndependence();
-        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(null, maxBlockingPathLength);
+        removeExtraEdgesDdp(maxBlockingPathLength);
         refreshGraph();
 
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
-            oldPaths = removeExtraEdgesDdp(oldPaths, maxBlockingPathLength);
+            removeExtraEdgesDdp(maxBlockingPathLength);
             refreshGraph();
 
             if (_pag.equals(pag)) {
@@ -445,10 +445,11 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
-    private void copyKnownCollidersFromCpdag(List<Node> best, Graph cpdag, TeyssierScorer scorer) {
-        // We're looking for unshielded colliders in these next steps that we can detect without using only
-        // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
-        // unshielded colliders from the BOSS graph into the estimated PAG. This step is justified in the
+    private void noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag, TeyssierScorer scorer) {
+
+        // We're looking for unshielded colliders in these next steps that we can detect from the CPDAG.
+        // We do this by looking at the structure of the CPDAG implied by the BOSS graph and copying
+        // colliders from the BOSS graph into the estimated PAG. This step is justified in the
         // GFCI algorithm. Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
         // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
         // PMLR.
@@ -461,7 +462,15 @@ public final class Fcit implements IGraphSearch {
                     Node y = adj.get(j);
 
                     if (GraphUtils.distinct(x, b, y)) {
-                        copyUnshieldedCollider(x, b, y, cpdag, scorer);
+                        if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
+                            if (cpdag.isDefCollider(x, b, y)) {
+                                knownColliders.add(new Triple(x, b, y));
+
+                                if (verbose) {
+                                    TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -526,12 +535,9 @@ public final class Fcit implements IGraphSearch {
                 throw new RuntimeException(e);
             }
         });
-
     }
 
-    // "Pure" version without threading
-    private Set<DiscriminatingPath> removeExtraEdgesDdp(Set<DiscriminatingPath> oldDiscriminatingPaths,
-                                                        int maxBlockingPathLength) {
+    private void removeExtraEdgesDdp(int maxBlockingPathLength) {
         if (verbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -619,16 +625,10 @@ public final class Fcit implements IGraphSearch {
                 // b will be null if the search did not conclude with set that is known to either m-separate
                 // or not m-separate x and y.
                 if (B == null) {
-                    if (verbose) {
-                        System.out.println("B is null");
-                    }
                     continue;
                 }
 
                 if (!B.getRight()) {
-                    if (verbose) {
-                        System.out.println("B.getRight() = " + B.getRight());
-                    }
                     continue;
                 }
 
@@ -673,20 +673,6 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         });
-
-        return discriminatingPaths;
-    }
-
-    /**
-     * Try adding an unshielded collider by checking the BOSS/GRaSP DAG.
-     *
-     * @param x      Node - The first node.
-     * @param b      Node - The second node.
-     * @param y      Node - The third node.
-     * @param scorer The scorer to use for scoring the colliders.
-     */
-    private void copyUnshieldedCollider(Node x, Node b, Node y, Graph cpdag, TeyssierScorer scorer) {
-        tryAddingCollider(x, b, y, cpdag, scorer, knowledge, verbose);
     }
 
     /**
@@ -724,15 +710,6 @@ public final class Fcit implements IGraphSearch {
         }
 
         this.maxBlockingPathLength = maxBlockingPathLength;
-    }
-
-    /**
-     * Sets the depth of the GRaSP if it is used.
-     *
-     * @param recursionDepth The depth of the GRaSP.
-     */
-    public void setRecursionDepth(int recursionDepth) {
-        this.recursionDepth = recursionDepth;
     }
 
     /**
@@ -830,43 +807,6 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         }
-    }
-
-    /**
-     * Adds a collider if it's a collider in the current scorer and knowledge permits it in the current PAG.
-     *
-     * @param x         The first node of the unshielded collider.
-     * @param b         The second node of the unshielded collider.
-     * @param y         The third node of the unshielded collider.
-     * @param scorer    The scorer to use for scoring the unshielded collider.
-     * @param knowledge The knowledge object.
-     * @param verbose   A boolean flag indicating whether verbose output should be printed.
-     */
-    private void tryAddingCollider(Node x, Node b, Node y, Graph cpdag, TeyssierScorer scorer, Knowledge knowledge, boolean verbose) {
-//        if (cpdag != null) {
-        if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
-            if (cpdag.isDefCollider(x, b, y) && !cpdag.isAdjacentTo(x, y)) {
-                knownColliders.add(new Triple(x, b, y));
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                }
-            }
-        }
-//        } else if (score != null) {
-//            if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
-//                if (scorer.unshieldedCollider(x, b, y)) {
-//                    knownColliders.add(new Triple(x, b, y));
-//                    checked.add(new Triple(x, b, y));
-//
-//                    if (verbose) {
-//                        TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-//                    }
-//                }
-//            }
-//        } else {
-//            throw new IllegalArgumentException("No CPDAG or scorer available.");
-//        }
     }
 
     /**
