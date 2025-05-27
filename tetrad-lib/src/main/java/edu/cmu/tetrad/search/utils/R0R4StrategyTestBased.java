@@ -215,6 +215,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             if (blocking == null) {
                 blocking = findAdjSetSepset(graph, x, y, path, v);
+                TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
             }
         } else if (blockingType == BlockingType.GREEDY) {
             blocking = findAdjSetSepset(graph, x, y, path, v);

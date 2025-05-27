@@ -541,9 +541,9 @@ public final class Fcit implements IGraphSearch {
 
             try {
                 if (ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
-                    if (verbose) {
+//                    if (verbose) {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
-                    }
+//                    }
 
                     extraSepsets.put(pag.getEdge(x, y), Set.of());
                     pag.removeEdge(x, y);
