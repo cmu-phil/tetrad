@@ -340,9 +340,6 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
-        // FCI-ORIENT
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
         // FCIT
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));

@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
  * model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
- * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph,    then finishes with a testing
+ * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing
  * step to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
  * graph.
  *
@@ -70,10 +70,6 @@ public final class Fcit implements IGraphSearch {
      */
     private int numStarts = 1;
     /**
-     * The depth of the GRaSP if it is used.
-     */
-    private int recursionDepth = 3;
-    /**
      * The maximum path length for blocking paths.
      */
     private int maxBlockingPathLength = -1;
@@ -81,10 +77,6 @@ public final class Fcit implements IGraphSearch {
      * The maximum size of any conditioning set.
      */
     private int depth = -1;
-    /**
-     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
     /**
      * Flag indicating whether to use data order.
      */
@@ -106,15 +98,11 @@ public final class Fcit implements IGraphSearch {
      */
     private int maxDdpPathLength = -1;
     /**
-     * The timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
-     */
-    private long testTimeout = -1;
-    /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
     private boolean ensureMarkov = false;
     /**
-     * A helper class to help perserve Markov.
+     * A helper class to help preserve Markov.
      */
     private EnsureMarkov ensureMarkovHelper = null;
     /**
@@ -177,7 +165,7 @@ public final class Fcit implements IGraphSearch {
      * unshielded colliders from the CPDAG into the estimated PAG. This step is justified in the GFCI algorithm.
      * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent
      * variable models. In Conference on probabilistic graphical models (pp. 368-379). PMLR. The idea is we start with
-     * this initial estimated of the PAG, with edges reoriented as o-o edges. Then we use the scorer to copy unshielded
+     * this initial estimate of the PAG, with edges reoriented as o-o edges. Then we use the scorer to copy unshielded
      * colliders from the CPDAG into the estimated PAG, as an initial step of converting the initial CPDAG into a PAG.
      *
      * @param cpdag The initial CPDAG.
@@ -226,9 +214,6 @@ public final class Fcit implements IGraphSearch {
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
 
         fciOrient = new FciOrient(strategy);
-//        fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
-//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-//        fciOrient.setTestTimeout(testTimeout);
         fciOrient.setVerbose(verbose);
         fciOrient.setParallel(false);
         fciOrient.setKnowledge(knowledge);
@@ -389,7 +374,7 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
-        noteKnownCollidersFromCpdag(best, cpdag, scorer);
+        noteKnownCollidersFromCpdag(best, cpdag);
 
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         GraphUtils.recallCollidersFromCpdag(pag, knownColliders, knowledge);
@@ -445,7 +430,7 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
-    private void noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag, TeyssierScorer scorer) {
+    private void noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag) {
 
         // We're looking for unshielded colliders in these next steps that we can detect from the CPDAG.
         // We do this by looking at the structure of the CPDAG implied by the BOSS graph and copying
@@ -513,10 +498,6 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient.finalOrientation(pag);
 
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
-
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-
         pag.getEdges().forEach(edge -> {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
@@ -529,7 +510,6 @@ public final class Fcit implements IGraphSearch {
 
                     extraSepsets.put(pag.getEdge(x, y), Set.of());
                     pag.removeEdge(x, y);
-                    return;
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -611,7 +591,7 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
                 // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Pair<Set<Node>, Boolean> B = null;
+                Pair<Set<Node>, Boolean> B;
                 try {
                     B = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
                 } catch (InterruptedException e) {
@@ -622,7 +602,7 @@ public final class Fcit implements IGraphSearch {
                     TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + B.getLeft());
                 }
 
-                // b will be null if the search did not conclude with set that is known to either m-separate
+                // b will be null if the search did not conclude with a set known to either m-separate
                 // or not m-separate x and y.
                 if (B == null) {
                     continue;
@@ -684,7 +664,7 @@ public final class Fcit implements IGraphSearch {
         Grasp grasp = new Grasp(test, score);
 
         grasp.setSeed(-1);
-        grasp.setDepth(recursionDepth);
+        grasp.setDepth(3);
         grasp.setUncoveredDepth(1);
         grasp.setNonSingularDepth(1);
         grasp.setOrdered(true);
@@ -713,9 +693,9 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets the algorithm to use to obtain the initial CPDAG.
+     * Sets the algorithm to use to get the initial CPDAG.
      *
-     * @param startWith the algorithm to use to obtain the initial CPDAG.
+     * @param startWith the algorithm to use to get the initial CPDAG.
      */
     public void setStartWith(START_WITH startWith) {
         this.startWith = startWith;
@@ -728,16 +708,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether the complete rule set should be used during the search algorithm. By default, the complete rule set
-     * is not used.
-     *
-     * @param completeRuleSetUsed true if the complete rule set should be used, false otherwise
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
@@ -825,16 +795,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setMaxDdpPathLength(int maxDdpPathLength) {
         this.maxDdpPathLength = maxDdpPathLength;
-    }
-
-    /**
-     * Sets the timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
-     *
-     * @param testTimeout the timeout for the testing steps, for the extra edge removal steps and the discriminating
-     *                    path steps.
-     */
-    public void setTestTimeout(long testTimeout) {
-        this.testTimeout = testTimeout;
     }
 
     /**

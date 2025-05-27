@@ -140,11 +140,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
-        // FCI-ORIENT
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
         // FCIT
-//        search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
         search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
