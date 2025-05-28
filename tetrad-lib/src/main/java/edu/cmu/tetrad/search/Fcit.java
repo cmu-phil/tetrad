@@ -198,7 +198,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Run the search and return s a PAG.
+     * Run the search and return a PAG.
      *
      * @return The PAG.
      * @throws InterruptedException if any
@@ -403,6 +403,14 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(pag, nodes);
     }
 
+    /**
+     * Configures and returns a new instance of PermutationSearch using the BOSS algorithm. The method initializes the
+     * BOSS algorithm with parameters such as the score function, verbosity, number of starts, number of threads, and
+     * whether to use the BES algorithm. The constructed PermutationSearch is further configured with the existing
+     * knowledge.
+     *
+     * @return A fully configured PermutationSearch instance using the BOSS algorithm.
+     */
     private @NotNull PermutationSearch getBossSearch() {
         Boss subAlg = new Boss(this.score);
         subAlg.setUseBes(this.useBes);
@@ -438,6 +446,14 @@ public final class Fcit implements IGraphSearch {
         return grasp;
     }
 
+    /**
+     * Captures and stores the current state of several key fields in the algorithm for later restoration. This method
+     * creates copies of the current state of `pag`, known colliders, separation set map, and the `ensureMarkovHelper`
+     * instance. These copies are saved into respective fields to preserve the state at that moment in time.
+     * <p>
+     * This operation is useful for checkpointing the algorithm's progress and facilitates rollback or review of
+     * previous states during the algorithm’s execution.
+     */
     private void storeState() {
         this.lastPag = new EdgeListGraph(this.pag);
         this.lastKnownColliders = new HashSet<>(this.cpdagColliders);
@@ -445,6 +461,17 @@ public final class Fcit implements IGraphSearch {
         this.lastEnsureMarkovHelper = new EnsureMarkov(ensureMarkovHelper);
     }
 
+    /**
+     * Restores the previously saved state of various fields in the algorithm.
+     * <p>
+     * This method reinitializes the following components using their last saved states: (a) The PAG graph is restored
+     * to its previous state using the last known PAG. (b) The set of known CPDAG colliders is updated using the last
+     * recorded colliders. (c) The separation set map is restored from its last saved version. (d) The
+     * `ensureMarkovHelper` object is reset to its previous state.
+     * <p>
+     * It also updates the search strategy with the restored separation set map, ensuring consistency with the previous
+     * checkpoint. This operation enables the algorithm to roll back or resume from a prior state if needed.
+     */
     private void restoreState() {
         this.pag = new EdgeListGraph(this.lastPag);
         this.cpdagColliders = new HashSet<>(this.lastKnownColliders);
@@ -453,6 +480,17 @@ public final class Fcit implements IGraphSearch {
         this.strategy.setSepsetMap(sepsetMap);
     }
 
+    /**
+     * Identifies and notes known unshielded colliders from the provided CPDAG (Completed Partially Directed Acyclic
+     * Graph) by looking at its implied structure and transferring relevant colliders to the current PAG (Partial
+     * Ancestral Graph). This process is justified in the GFCI (Generalized Fast Causal Inference) algorithm, as
+     * described in the referenced research.
+     *
+     * @param best  A list of nodes representing the best-known nodes to be evaluated during the collider identification
+     *              process.
+     * @param cpdag The CPDAG from which known colliders are identified and extracted.
+     * @return A set of triples representing the known colliders identified in the provided CPDAG.
+     */
     private Set<Triple> noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag) {
         Set<Triple> cpdagColliders = new HashSet<>();
 
@@ -488,6 +526,21 @@ public final class Fcit implements IGraphSearch {
         return cpdagColliders;
     }
 
+    /**
+     * Updates and refines the structure of the Partial Ancestral Graph (PAG) based on current configurations and
+     * knowledge, while maintaining the validity of the PAG. This method is fundamental to the iterative refinement
+     * process in the FCIT algorithm.
+     * <p>
+     * The method performs the following steps:
+     * <p>
+     * (a) Reorients the current PAG using circular structures if applicable. (b) Transfers known colliders identified
+     * from the provided CPDAG into the PAG based on given knowledge constraints. (c) Adjusts separation sets to account
+     * for extra independence information. (d) Applies background knowledge and performs structure orientation using the
+     * implemented orientation strategies, including R4-strategy.
+     * <p>
+     * If the updated PAG violates the legality constraints, restores the state to the last valid configuration;
+     * otherwise, checkpoints the current state for future reference.
+     */
     private void refreshGraph() {
         GraphUtils.reorientWithCircles(pag, verbose);
         GraphUtils.recallCollidersFromCpdag(pag, cpdagColliders, knowledge);
@@ -503,6 +556,21 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
+    /**
+     * Refines the structure of the Partial Ancestral Graph (PAG) by adjusting separation sets based on additional
+     * independence evidence and ensuring consistency with known independence and causality constraints. This method
+     * identifies and orients specific edges in the PAG to maintain its validity.
+     * <p>
+     * The method performs the following steps: (a) Iterates over all edges in the separation set map's key set. (b) For
+     * each edge, identifies adjacent nodes in the PAG and finds their common neighbors. (c) Removes adjacency between
+     * the nodes if applicable and logs the operation if verbose mode is enabled. (d) Examines each common neighbor,
+     * checking whether it is part of the separation set for the given nodes. If it is not part of the separation set
+     * and does not create a forbidden collider, the endpoints of the edge between the common neighbor and the adjacent
+     * nodes are adjusted to a directed orientation. (e) Logs oriented relationships in verbose mode.
+     * <p>
+     * This adjustment ensures proper handling of induced dependencies and maintains the correctness of the causal
+     * structure represented by the PAG. The orientation of edges follows the rules
+     */
     private void adjustForExtraSepsets() {
         sepsetMap.keySet().forEach(edge -> {
             List<Node> arr = new ArrayList<>(edge);
@@ -532,7 +600,26 @@ public final class Fcit implements IGraphSearch {
         });
     }
 
-    // requires faithfulness
+    /**
+     * Examines all edges in the PAG for unconditional independence based on the current separation set map and Markov
+     * independence checks. If two variables are found to be unconditionally independent, the edge connecting them is
+     * removed, and the separation set map is updated accordingly.
+     * <p>
+     * The method operates by iterating over all edges in the PAG and performing the following: (a) Identifies the two
+     * nodes connected by the edge. (b) Checks if there exists a separation set for the nodes in the current separation
+     * set map. If a separation set exists, it skips further processing for that edge. (c) Identifies common neighbors
+     * of the two nodes connected by the edge and determines if they form a non-collider structure. If all common
+     * neighbors create colliders, the edge is skipped. (d) Checks unconditional independence between the two nodes
+     * using the ensureMarkovHelper's Markov independence method. If independence is confirmed: (d.1) Logs the operation
+     * if verbose mode is enabled. (d.2) Updates the separation set map for the nodes to an empty set. (d.3) Removes the
+     * edge from the PAG. (e) Handles any `InterruptedException` thrown during the Markov independence check.
+     * <p>
+     * If verbose mode is enabled, relevant logging information is captured using the `TetradLogger` to provide detailed
+     * insights into the operations performed.
+     * <p>
+     * This method helps refine the PAG by ensuring its representation aligns with the detected unconditional
+     * independencies and the causal structure implied by the data.
+     */
     private void checkUnconditionalIndependence() {
         if (verbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
@@ -576,6 +663,30 @@ public final class Fcit implements IGraphSearch {
         });
     }
 
+    /**
+     * Removes extra edges from a Partial Ancestral Graph (PAG) by analyzing discriminating paths that could not be
+     * oriented using final orientation rules and applying specific conditions to validate the existence of those edges.
+     * This method is part of the causal discovery process.
+     * <p>
+     * The method performs several key steps:
+     * <p>
+     * 1. Identifies discriminating paths in the PAG that are candidates for edge removals. 2. Creates a map of
+     * discriminating paths organized by their corresponding edge pairs for efficient lookup during subsequent
+     * processing. 3. Iterates over all edges in the PAG to evaluate whether they can be removed based on conditions
+     * derived from discriminating paths and the causal implications of their removal. 4. Considers subsets of nodes for
+     * which paths may not be followed to evaluate blocking conditions recursively and determine m-separation. 5.
+     * Applies independence tests to finalize edge removals when conditions are met.
+     * <p>
+     * The method logs the intermediate steps and decisions if verbose logging is enabled. This includes information on
+     * the discriminating paths, potential collider pairs, blocking sets, and the specific edges being considered for
+     * removal.
+     * <p>
+     * The logic ensures that edges are removed only if doing so maintains the Markov property and aligns with the
+     * causal structure represented by the PAG.
+     * <p>
+     * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
+     * execution for asynchronous tasks.
+     */
     private void removeExtraEdgesDdp() {
         if (verbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
