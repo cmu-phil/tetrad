@@ -539,6 +539,10 @@ public final class Fcit implements IGraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
+            if (sepsetMap.get(x, y) != null) {
+                return;
+            }
+
             List<Node> common = pag.getAdjacentNodes(x);
             common.retainAll(pag.getAdjacentNodes(y));
 
@@ -555,14 +559,13 @@ public final class Fcit implements IGraphSearch {
             }
 
             try {
-                if (sepsetMap.get(x, y) != null || ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
+                if (ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
                     if (verbose) {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
                     }
 
                     sepsetMap.set(x, y, Set.of());
                     pag.removeEdge(x, y);
-//                    cachedIndependenceFacts.add(new IndependenceFact(x, y));
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -587,23 +590,6 @@ public final class Fcit implements IGraphSearch {
             pathsByEdge.get(Set.of(x, y)).add(path);
         }
 
-//        pag.getEdges().forEach(edge -> {
-//            Node x = edge.getNode1();
-//            Node y = edge.getNode2();
-//
-//            Set<DiscriminatingPath> paths = new HashSet<>();
-//
-//            for (DiscriminatingPath path : discriminatingPaths) {
-//                if (path.getX() == x && path.getY() == y) {
-//                    paths.add(path);
-//                } else if (path.getX() == y && path.getY() == x) {
-//                    paths.add(path);
-//                }
-//            }
-//
-//            pathsByEdge.put(Set.of(x, y), paths);
-//        });
-
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         for (Edge edge : pag.getEdges()) {
@@ -614,11 +600,21 @@ public final class Fcit implements IGraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
+            if (pag.isAdjacentTo(x, y)) {
+                if (sepsetMap.get(x, y) != null) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
+                    }
+
+                    pag.removeEdge(x, y);
+                }
+            }
+
             List<Node> common = pag.getAdjacentNodes(x);
             common.retainAll(pag.getAdjacentNodes(y));
 
             Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-            paths = paths == null ? new HashSet<>() : paths;
+            paths = paths == null ? Set.of() : paths;
             Set<Node> perhapsNotFollowed = new HashSet<>();
 
             if (verbose) {
@@ -696,14 +692,13 @@ public final class Fcit implements IGraphSearch {
 
                     try {
                         if (pag.isAdjacentTo(x, y)) {
-                            if (sepsetMap.get(x, y) != null || ensureMarkovHelper.markovIndependence(x, y, b)) {
+                            if (ensureMarkovHelper.markovIndependence(x, y, b)) {
                                 if (verbose) {
                                     TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                                 }
 
                                 sepsetMap.set(x, y, b);
                                 pag.removeEdge(x, y);
-//                                cachedIndependenceFacts.add(new IndependenceFact(x, y, b));
                                 sepsetMap.set(x, y, b);
                             }
                         }
