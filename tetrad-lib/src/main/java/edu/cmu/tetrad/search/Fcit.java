@@ -279,8 +279,6 @@ public final class Fcit implements IGraphSearch {
             scorer.bookmark();
         }
 
-        state.setPag(new EdgeListGraph(cpdag));
-
         if (verbose) {
             TetradLogger.getInstance().log("Initializing PAG to PAG of BOSS DAG.");
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
