@@ -121,15 +121,6 @@ public final class Fcit implements IGraphSearch {
      */
     private SepsetMap lastSepsetMap = null;
     /**
-     * A set that keeps track of the previously identified colliders during the execution of the FCIT search algorithm.
-     * Colliders are unshielded triples of nodes (X, Y, Z) such that X and Z are not adjacent, but are both parents of
-     * Y.
-     * <p>
-     * This variable plays a key role in maintaining state about the structure of the underlying graph and assists in
-     * ensuring that the search algorithm respects these previously identified relationships.
-     */
-    private Set<Triple> lasCpdagColliders = null;
-    /**
      * A reference to the last instance of the EnsureMarkov helper used during the search process. This variable is
      * utilized to manage and reuse the helper object across multiple steps or passes of the algorithm to enforce the
      * Markov property when required.
@@ -146,7 +137,7 @@ public final class Fcit implements IGraphSearch {
      * Each collected collider is represented as a Triple, which encapsulates the two parent nodes and the collider
      * node.
      */
-    private Set<Triple> cpdagColliders;
+    private Set<Triple> initialColliders;
     /**
      * A map that maintains separator sets (sepsets) for pairs of nodes in a graph. The separator sets are used to
      * represent conditional independence relationships identified during the graph search process. This variable is
@@ -354,7 +345,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         this.pag = GraphTransforms.dagToPag(dag);
-        this.cpdagColliders = noteKnownCollidersFromCpdag(best, pag);
+        this.initialColliders = noteInitialColliders(best, pag);
 
         ensureMarkovHelper = new EnsureMarkov(pag, test);
         ensureMarkovHelper.setEnsureMarkov(ensureMarkov);
@@ -370,32 +361,16 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
-        removeExtraEdgesDdp();
+        removeExtraEdges();
         refreshGraph();
-
-//        Graph _pag;
-
-//        do {
-//            _pag = new EdgeListGraph(pag);
-//            removeExtraEdgesDdp();
-//            refreshGraph();
-//            break;
-//        } while (!_pag.equals(pag));
 
         Graph _pag = new EdgeListGraph(pag);
         checkUnconditionalIndependence();
 
-        removeExtraEdgesDdp();
-        refreshGraph();
-
-//        if (!_pag.equals(pag)) {
-//            do {
-//                _pag = new EdgeListGraph(pag);
-//                removeExtraEdgesDdp();
-//                refreshGraph();
-//                break;
-//            } while (!_pag.equals(pag));
-//        }
+        if (!_pag.equals(this.pag)) {
+            removeExtraEdges();
+            refreshGraph();
+        }
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -464,7 +439,6 @@ public final class Fcit implements IGraphSearch {
      */
     private void storeState() {
         this.lastPag = new EdgeListGraph(this.pag);
-        this.lasCpdagColliders = new HashSet<>(this.cpdagColliders);
         this.lastSepsetMap = new SepsetMap(sepsetMap);
         this.lastEnsureMarkovHelper = new EnsureMarkov(ensureMarkovHelper);
     }
@@ -482,7 +456,6 @@ public final class Fcit implements IGraphSearch {
      */
     private void restoreState() {
         this.pag = new EdgeListGraph(this.lastPag);
-        this.cpdagColliders = new HashSet<>(this.lasCpdagColliders);
         this.sepsetMap = new SepsetMap(lastSepsetMap);
         this.ensureMarkovHelper = new EnsureMarkov(lastEnsureMarkovHelper);
         this.strategy.setSepsetMap(sepsetMap);
@@ -496,11 +469,11 @@ public final class Fcit implements IGraphSearch {
      *
      * @param best  A list of nodes representing the best-known nodes to be evaluated during the collider identification
      *              process.
-     * @param cpdag The CPDAG from which known colliders are identified and extracted.
+     * @param pag The CPDAG from which known colliders are identified and extracted.
      * @return A set of triples representing the known colliders identified in the provided CPDAG.
      */
-    private Set<Triple> noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag) {
-        Set<Triple> cpdagColliders = new HashSet<>();
+    private Set<Triple> noteInitialColliders(List<Node> best, Graph pag) {
+        Set<Triple> initialColliders = new HashSet<>();
 
         // We're looking for unshielded colliders in these next steps that we can detect from the CPDAG.
         // We do this by looking at the structure of the CPDAG implied by the BOSS graph and noting all
@@ -517,9 +490,9 @@ public final class Fcit implements IGraphSearch {
                     Node y = adj.get(j);
 
                     if (GraphUtils.distinct(x, b, y)) {
-                        if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
-                            if (cpdag.isDefCollider(x, b, y)) {// && !cpdag.isAdjacentTo(x, y)) {
-                                cpdagColliders.add(new Triple(x, b, y));
+                        if (GraphUtils.colliderAllowed(this.pag, x, b, y, knowledge)) {
+                            if (pag.isDefCollider(x, b, y)) {// && !pag.isAdjacentTo(x, y)) {
+                                initialColliders.add(new Triple(x, b, y));
 
                                 if (verbose) {
                                     TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
@@ -531,7 +504,7 @@ public final class Fcit implements IGraphSearch {
             }
         }
 
-        return cpdagColliders;
+        return initialColliders;
     }
 
     /**
@@ -551,7 +524,7 @@ public final class Fcit implements IGraphSearch {
      */
     private void refreshGraph() {
         GraphUtils.reorientWithCircles(pag, verbose);
-        GraphUtils.recallCollidersFromCpdag(pag, cpdagColliders, knowledge);
+        GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets();
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         fciOrient.setUseR4(true);
@@ -695,7 +668,7 @@ public final class Fcit implements IGraphSearch {
      * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
      * execution for asynchronous tasks.
      */
-    private void removeExtraEdgesDdp() {
+    private void removeExtraEdges() {
         if (verbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -723,14 +696,13 @@ public final class Fcit implements IGraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            if (pag.isAdjacentTo(x, y)) {
-                if (sepsetMap.get(x, y) != null) {
-                    if (verbose) {
-                        TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                    }
-
-                    pag.removeEdge(x, y);
+            if (sepsetMap.get(x, y) != null) {
+                if (verbose) {
+                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                 }
+
+                pag.removeEdge(x, y);
+                return;
             }
 
             List<Node> common = pag.getAdjacentNodes(x);
@@ -789,19 +761,12 @@ public final class Fcit implements IGraphSearch {
                 SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
                 int[] choice2;
 
-                W:
                 while ((choice2 = gen2.next()) != null) {
                     if (!pag.isAdjacentTo(x, y)) {
                         break;
                     }
 
                     Set<Node> c = GraphUtils.asSet(choice2, common);
-
-                    for (Node node : c) {
-                        if (pag.isDefCollider(x, node, y)) {
-                            continue W;
-                        }
-                    }
 
                     b.removeAll(c);
                     if (S.contains(b)) continue;

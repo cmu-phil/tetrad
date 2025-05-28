@@ -2692,7 +2692,7 @@ public final class GraphUtils {
                                         Set<Triple> unshieldedColliders, boolean verbose) {
         reorientWithCircles(pag, verbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        recallCollidersFromCpdag(pag, unshieldedColliders, knowledge);
+        recallInitialColliders(pag, unshieldedColliders, knowledge);
         fciOrient.setAllowedColliders(unshieldedColliders);
         fciOrient.finalOrientation(pag);
     }
@@ -3119,12 +3119,12 @@ public final class GraphUtils {
     /**
      * Recall unshielded triples in a given graph.
      *
-     * @param pag            The graph to recall unshielded triples from.
-     * @param knownColliders The set of unshielded colliders that need to be recalled from the CPDAG.
-     * @param knowledge      the knowledge object.
+     * @param pag              The graph to recall unshielded triples from.
+     * @param initialColliders The set of unshielded colliders that need to be recalled from the CPDAG.
+     * @param knowledge        the knowledge object.
      */
-    public static void recallCollidersFromCpdag(Graph pag, Set<Triple> knownColliders, Knowledge knowledge) {
-        for (Triple triple : new HashSet<>(knownColliders)) {
+    public static void recallInitialColliders(Graph pag, Set<Triple> initialColliders, Knowledge knowledge) {
+        for (Triple triple : new HashSet<>(initialColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
@@ -3281,19 +3281,6 @@ public final class GraphUtils {
          * The PAG graph type.
          */
         PAG
-    }
-
-    // Helper class for BFS path tracking
-    static class PathElement {
-        Node current;         // Current node
-        Node previous;        // Previous node on the path
-        Node beforePrevious;  // Two steps back in the path
-
-        PathElement(Node current, Node previous, Node beforePrevious) {
-            this.current = current;
-            this.previous = previous;
-            this.beforePrevious = beforePrevious;
-        }
     }
 
     /**
