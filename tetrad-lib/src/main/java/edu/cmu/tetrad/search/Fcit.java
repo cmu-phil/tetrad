@@ -154,6 +154,7 @@ public final class Fcit implements IGraphSearch {
      */
     private Set<Triple> lastKnownColliders = null;
     private Set<Triple> cpdagColliders;
+    private Set<IndependenceFact> cachedIndependenceFacts = new HashSet<>();
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -426,14 +427,6 @@ public final class Fcit implements IGraphSearch {
         this.extraSepsets = new HashMap<>(this.lastExtraSepsets);
     }
 
-    private void printStateLegal(Graph myPag, String messageNotlegal, String messageLegal) {
-        if (!myPag.paths().isLegalPag()) {
-            TetradLogger.getInstance().log(messageNotlegal);
-        } else {
-            TetradLogger.getInstance().log(messageLegal);
-        }
-    }
-
     private Set<Triple> noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag) {
         Set<Triple> cpdagColliders = new HashSet<>();
 
@@ -483,7 +476,6 @@ public final class Fcit implements IGraphSearch {
             storeState();
         }
     }
-
 
     private void adjustForExtraSepsets() {
         extraSepsets.keySet().forEach(edge -> {
@@ -540,13 +532,14 @@ public final class Fcit implements IGraphSearch {
             }
 
             try {
-                if (ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
+                if (cachedIndependenceFacts.contains(new IndependenceFact(x, y)) || ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
                     if (verbose) {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
                     }
 
                     extraSepsets.put(pag.getEdge(x, y), Set.of());
                     pag.removeEdge(x, y);
+                    cachedIndependenceFacts.add(new IndependenceFact(x, y));
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -677,13 +670,14 @@ public final class Fcit implements IGraphSearch {
 
                     try {
                         if (pag.isAdjacentTo(x, y)) {
-                            if (ensureMarkovHelper.markovIndependence(x, y, b)) {
+                            if (cachedIndependenceFacts.contains(new IndependenceFact(x, y, b)) || ensureMarkovHelper.markovIndependence(x, y, b)) {
                                 if (verbose) {
                                     TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                                 }
 
                                 extraSepsets.put(pag.getEdge(x, y), b);
                                 pag.removeEdge(x, y);
+                                cachedIndependenceFacts.add(new IndependenceFact(x, y, b));
                             }
                         }
                     } catch (InterruptedException e) {
