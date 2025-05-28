@@ -387,8 +387,10 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
+        Graph _pag;
+
         while (true) {
-            Graph _pag = new EdgeListGraph(pag);
+            _pag = new EdgeListGraph(pag);
 
             removeExtraEdgesDdp();
             refreshGraph();
@@ -398,19 +400,21 @@ public final class Fcit implements IGraphSearch {
             }
         }
 
+        _pag = new EdgeListGraph(pag);
         checkUnconditionalIndependence();
 
-        while (true) {
-            Graph _pag = new EdgeListGraph(pag);
+        if (!_pag.equals(pag)) {
+            while (true) {
+                _pag = new EdgeListGraph(pag);
 
-            removeExtraEdgesDdp();
-            refreshGraph();
+                removeExtraEdgesDdp();
+                refreshGraph();
 
-            if (_pag.equals(pag)) {
-                break;
+                if (_pag.equals(pag)) {
+                    break;
+                }
             }
         }
-
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
