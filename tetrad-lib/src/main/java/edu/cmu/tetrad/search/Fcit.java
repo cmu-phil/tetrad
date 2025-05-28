@@ -685,15 +685,6 @@ public final class Fcit implements IGraphSearch {
                                 extraSepsets.put(pag.getEdge(x, y), b);
                                 pag.removeEdge(x, y);
                             }
-
-//                            else if (ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
-//                                if (verbose) {
-//                                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
-//                                }
-//
-//                                extraSepsets.put(pag.getEdge(x, y), Set.of());
-//                                pag.removeEdge(x, y);
-//                            }
                         }
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);

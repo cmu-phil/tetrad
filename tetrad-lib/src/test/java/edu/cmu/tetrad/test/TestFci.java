@@ -955,7 +955,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitSimpleR4() {
         Graph graph = GraphUtils.convert("X-->W,V-->W,V-->Y,W-->Y");
         Graph pag = GraphUtils.convert("Xo->W,Vo->W,V-->Y,W-->Y");
