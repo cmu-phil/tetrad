@@ -60,7 +60,7 @@ public class PoissonPriorScore implements ScoreWrapper {
         }
 
         score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
-        score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        score.setSingularityLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
 
         return score;
     }
