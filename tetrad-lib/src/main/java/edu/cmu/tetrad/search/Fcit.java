@@ -417,7 +417,7 @@ public final class Fcit implements IGraphSearch {
                                 initialColliders.add(new Triple(x, b, y));
 
                                 if (verbose) {
-                                    TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
+                                    TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from initial PAG to PAG.");
                                 }
                             }
                         }
