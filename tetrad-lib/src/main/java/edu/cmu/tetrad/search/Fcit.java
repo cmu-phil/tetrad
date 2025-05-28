@@ -917,14 +917,15 @@ public final class Fcit implements IGraphSearch {
             this.strategy.setSepsetMap(sepsetMap);
         }
 
+
         /**
-         * Represents the learned Partial Ancestral Graph (PAG) in the FCIT search algorithm. The PAG is a graphical
-         * representation that encodes causal relationships among variables that are consistent with the observed data
-         * and assumes the presence of latent confounders but no selection bias. It is initialized to null and is
-         * populated as the search algorithm progresses.
+         * Sets the instance of the EnsureMarkov helper to be used for managing and enforcing the Markov property during
+         * the algorithm's execution.
+         *
+         * @param ensureMarkov the EnsureMarkov instance to be associated with the current state.
          */
-        public Graph getPag() {
-            return pag;
+        public void setEnsureMarkovHelper(EnsureMarkov ensureMarkov) {
+            this.ensureMarkovHelper = ensureMarkov;
         }
 
         /**
@@ -936,6 +937,25 @@ public final class Fcit implements IGraphSearch {
          */
         public void setPag(Graph pag) {
             this.pag = pag;
+        }
+
+        /**
+         * Sets the R0R4 strategy test-based instance that is used for the search algorithm.
+         *
+         * @param strategy the R0R4 strategy test-based instance to be used in the algorithm.
+         */
+        public void setStrategy(R0R4StrategyTestBased strategy) {
+            this.strategy = strategy;
+        }
+
+        /**
+         * Represents the learned Partial Ancestral Graph (PAG) in the FCIT search algorithm. The PAG is a graphical
+         * representation that encodes causal relationships among variables that are consistent with the observed data
+         * and assumes the presence of latent confounders but no selection bias. It is initialized to null and is
+         * populated as the search algorithm progresses.
+         */
+        public Graph getPag() {
+            return pag;
         }
 
         /**
@@ -955,23 +975,5 @@ public final class Fcit implements IGraphSearch {
             return ensureMarkovHelper;
         }
 
-        /**
-         * Sets the instance of the EnsureMarkov helper to be used for managing and enforcing the Markov property during
-         * the algorithm's execution.
-         *
-         * @param ensureMarkov the EnsureMarkov instance to be associated with the current state.
-         */
-        public void setEnsureMarkovHelper(EnsureMarkov ensureMarkov) {
-            this.ensureMarkovHelper = ensureMarkov;
-        }
-
-        /**
-         * Sets the R0R4 strategy test-based instance that is used for the search algorithm.
-         *
-         * @param strategy the R0R4 strategy test-based instance to be used in the algorithm.
-         */
-        public void setStrategy(R0R4StrategyTestBased strategy) {
-            this.strategy = strategy;
-        }
     }
 }
