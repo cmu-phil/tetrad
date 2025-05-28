@@ -973,6 +973,5 @@ public final class Fcit implements IGraphSearch {
         public EnsureMarkov getEnsureMarkovHelper() {
             return ensureMarkovHelper;
         }
-
     }
 }
