@@ -53,6 +53,10 @@ public final class Fcit implements IGraphSearch {
      */
     private final Score score;
     /**
+     * Represents the current status or condition of the search.
+     */
+    private State state;
+    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -104,20 +108,6 @@ public final class Fcit implements IGraphSearch {
      * node.
      */
     private Set<Triple> initialColliders;
-    /**
-     * Represents the strategy used for testing and validating during the FCIT (Fast Causal Inference Technique)
-     * algorithm process.
-     * <p>
-     * This variable defines the specific algorithmic approach or methodology (e.g., test-based strategies) applied in
-     * the initial stage of causal inference or graph construction. It integrates with the IndependenceTest and scoring
-     * mechanisms to ensure the reliability and effectiveness of the search process.
-     * <p>
-     * The choice and configuration of the strategy can influence the behavior and results of the FCIT algorithm,
-     * including its efficiency, accuracy, and compliance with causal discovery objectives.
-     */
-    private R0R4StrategyTestBased strategy;
-
-    private State state;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -168,7 +158,7 @@ public final class Fcit implements IGraphSearch {
 
         this.state = new State();
 
-        strategy = new R0R4StrategyTestBased(test);
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(state.getSepsetMap());
         strategy.setVerbose(verbose);
         strategy.setEnsureMarkovHelper(state.ensureMarkovHelper);
