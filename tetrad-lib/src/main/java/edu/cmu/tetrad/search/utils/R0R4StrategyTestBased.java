@@ -95,6 +95,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Initialized to null by default.
      */
     private EnsureMarkov ensureMarkovHelper = null;
+    private SepsetMap sepsetMap = new SepsetMap();
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -209,7 +210,9 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         Set<Node> blocking = null;
 
-        if (blockingType == BlockingType.RECURSIVE) {
+        if (sepsetMap.get(x, y) != null) {
+            blocking = sepsetMap.get(x, y);
+        } else if (blockingType == BlockingType.RECURSIVE) {
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
                     maxLength, maxLength, ensureMarkovHelper, depth);
 
@@ -222,8 +225,12 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
                     }
                 }
             }
+
+            sepsetMap.set(x, y, blocking);
         } else if (blockingType == BlockingType.GREEDY) {
             blocking = findAdjSetSepset(graph, x, y, path, v);
+
+            sepsetMap.set(x, y, blocking);
         } else {
             throw new IllegalArgumentException("Unknown blocking type.");
         }
@@ -448,6 +455,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public void setBlockingType(BlockingType blockingType) {
         this.blockingType = blockingType;
+    }
+
+    public void setSepsetMap(SepsetMap sepsetMap) {
+        this.sepsetMap = sepsetMap;
     }
 
     /**

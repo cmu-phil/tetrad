@@ -26,7 +26,7 @@ public class EnsureMarkov {
     /**
      * The initial Markov graph
      */
-    private final Graph dag;
+    private final Graph graph;
     /**
      * The independence test to use.
      */
@@ -45,14 +45,24 @@ public class EnsureMarkov {
     private boolean ensureMarkov = false;
 
     /**
-     * Constructs an EnsureMarkov class for a given Markov dag.
+     * Constructs an EnsureMarkov class for a given Markov graph.
      *
-     * @param dag  The initial Markov dag. This dag should pass a local Markov check.
+     * @param graph  The initial Markov graph. This graph should pass a local Markov check.
      * @param test The independence test to use.
      */
-    public EnsureMarkov(Graph dag, IndependenceTest test) {
-        this.dag = new EdgeListGraph(dag);
+    public EnsureMarkov(Graph graph, IndependenceTest test) {
+        this.graph = new EdgeListGraph(graph);
         this.test = test;
+    }
+
+    /**
+     * Copy constructor.
+     */
+    public EnsureMarkov(EnsureMarkov ensureMarkov) {
+        this.graph = new EdgeListGraph(ensureMarkov.graph);
+        this.test = ensureMarkov.test;
+        this.pValues = new HashMap<>(ensureMarkov.pValues);
+        this.ensureMarkov = ensureMarkov.ensureMarkov;
     }
 
     /**
@@ -143,7 +153,7 @@ public class EnsureMarkov {
 
         if (ensureMarkov) {
             double initialFraction = GraphUtils.localMarkovInitializePValues(
-                    dag, ensureMarkov, test, pValues);
+                    graph, ensureMarkov, test, pValues);
             System.out.println("Initial percent dependent = " + initialFraction);
         } else {
             pValues.clear();
@@ -167,7 +177,7 @@ public class EnsureMarkov {
 
         if (result.isIndependent()) {
             if (ensureMarkov) {
-                Map<Pair<Node, Node>, Set<Double>> _pValues = markovAdjustPValues(dag, ensureMarkov,
+                Map<Pair<Node, Node>, Set<Double>> _pValues = markovAdjustPValues(graph, ensureMarkov,
                         test, pValues, Pair.of(x, y));
 
 //                double baseline = GraphUtils.calculatePercentDependent(test, pValues);

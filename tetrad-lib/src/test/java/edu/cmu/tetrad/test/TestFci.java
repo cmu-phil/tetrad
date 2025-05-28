@@ -749,7 +749,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -840,14 +840,6 @@ public class TestFci {
                             System.out.println("Edge discrepancy: pagEdge = " + pagEdge + " reconstituted PAG edge = " + reconstitutedPagEdge);
                         }
                     }
-
-//                    for (Edge reconstitutedPagEdge : reconstitutedPag.getEdges()) {
-//                        Edge pagEdge = pag.getEdge(reconstitutedPagEdge.getNode1(), reconstitutedPagEdge.getNode2());
-//
-//                        if (!reconstitutedPagEdge.equals(pagEdge)) {
-//                            System.out.println("Edge discrepancy: reconstituted PAG edge = " + reconstitutedPagEdge + " pag edge = " + pagEdge);
-//                        }
-//                    }
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

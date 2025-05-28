@@ -53,6 +53,14 @@ public final class Fcit implements IGraphSearch {
      */
     private final Score score;
     /**
+     * A cached set of {@link IndependenceFact} objects used during the search process in the FCIT algorithm to store
+     * previously determined independence facts.
+     * <p>
+     * This cache helps optimize the algorithm by avoiding the need to repeatedly recompute the same independence facts.
+     * The set is initialized as an empty {@code HashSet}, ensuring unique {@code IndependenceFact} entries.
+     */
+    private final Set<IndependenceFact> cachedIndependenceFacts = new HashSet<>();
+    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -109,17 +117,6 @@ public final class Fcit implements IGraphSearch {
      */
     private Graph pag = null;
     /**
-     * Stores additional separating sets identified during the process of graph construction but not originally part of
-     * the main separation sets used in the search.
-     * <p>
-     * The map associates an {@link Edge} with a corresponding {@link Set} of {@link Node}s representing separating sets
-     * specific to that edge.
-     * <p>
-     * These additional separating sets are used to refine the graph structure and ensure that the inferred causality
-     * relationships adhere to the conditions of independence determined by the algorithm.
-     */
-    private Map<Edge, Set<Node>> extraSepsets = new HashMap<>();
-    /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
      * Ancestral Graph). This variable determines how unshielded colliders, discriminating paths, and other structural
      * elements of the PAG are identified and processed during the search. The orientation strategy implemented in this
@@ -143,7 +140,7 @@ public final class Fcit implements IGraphSearch {
      * separating set associated with that edge. These separating sets are used to refine the graph structure during
      * causal discovery.
      */
-    private Map<Edge, Set<Node>> lastExtraSepsets = null;
+    private SepsetMap lastExtraSepsets = null;
     /**
      * A set that keeps track of the previously identified colliders during the execution of the FCIT search algorithm.
      * Colliders are unshielded triples of nodes (X, Y, Z) such that X and Z are not adjacent, but are both parents of
@@ -153,8 +150,31 @@ public final class Fcit implements IGraphSearch {
      * ensuring that the search algorithm respects these previously identified relationships.
      */
     private Set<Triple> lastKnownColliders = null;
+    /**
+     * A reference to the last instance of the EnsureMarkov helper used during the search process.
+     * This variable is utilized to manage and reuse the helper object across multiple steps
+     * or passes of the algorithm to enforce the Markov property when required.
+     */
+    private EnsureMarkov lastEnsureMarkovHelper = null;
+    /**
+     * A set representing all identified colliders in the current CPDAG (Completed Partially Directed Acyclic Graph). A
+     * collider is a node in the graph where two edges converge, and the directions of the edges are both pointing into
+     * the node.
+     * <p>
+     * This variable is used to store colliders discovered during the execution of the FCIT search algorithm, aiding in
+     * the refinement of the graph structure and ensuring proper causal inference.
+     * <p>
+     * Each collected collider is represented as a Triple, which encapsulates the two parent nodes and the collider
+     * node.
+     */
     private Set<Triple> cpdagColliders;
-    private Set<IndependenceFact> cachedIndependenceFacts = new HashSet<>();
+    /**
+     * A map that maintains separator sets (sepsets) for pairs of nodes in a graph. The separator sets are used to
+     * represent conditional independence relationships identified during the graph search process. This variable is
+     * crucial in storing and retrieving separating sets for specific node pairs and contributes to determining the
+     * structure of the graph by encoding constraints.
+     */
+    private SepsetMap sepsetMap = new SepsetMap();
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -204,6 +224,7 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("===Starting FCIT===");
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+        strategy.setSepsetMap(sepsetMap);
         strategy.setVerbose(verbose);
         strategy.setDepth(depth);
         strategy.setEnsureMarkovHelper(ensureMarkovHelper);
@@ -350,7 +371,7 @@ public final class Fcit implements IGraphSearch {
 
         this.pag = GraphTransforms.dagToPag(dag);
         this.cpdagColliders = noteKnownCollidersFromCpdag(best, pag);
-        this.extraSepsets = new HashMap<>();
+//        this.extraSepsets = new HashMap<>();
 
         ensureMarkovHelper = new EnsureMarkov(pag, test);
         ensureMarkovHelper.setEnsureMarkov(ensureMarkov);
@@ -366,9 +387,6 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
-        removeExtraEdgesDdp();
-        refreshGraph();
-
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
 
@@ -381,9 +399,6 @@ public final class Fcit implements IGraphSearch {
         }
 
         checkUnconditionalIndependence();
-
-        removeExtraEdgesDdp();
-        refreshGraph();
 
         while (true) {
             Graph _pag = new EdgeListGraph(pag);
@@ -418,13 +433,15 @@ public final class Fcit implements IGraphSearch {
     private void storeState() {
         this.lastPag = new EdgeListGraph(this.pag);
         this.lastKnownColliders = new HashSet<>(this.cpdagColliders);
-        this.lastExtraSepsets = new HashMap<>(this.extraSepsets);
+        this.lastExtraSepsets = new SepsetMap(sepsetMap);
+        this.lastEnsureMarkovHelper = new EnsureMarkov(ensureMarkovHelper);
     }
 
     private void retrieveState() {
         this.pag = new EdgeListGraph(this.lastPag);
         this.cpdagColliders = new HashSet<>(this.lastKnownColliders);
-        this.extraSepsets = new HashMap<>(this.lastExtraSepsets);
+        this.sepsetMap = new SepsetMap(lastExtraSepsets);
+        this.ensureMarkovHelper = new EnsureMarkov(lastEnsureMarkovHelper);
     }
 
     private Set<Triple> noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag) {
@@ -446,7 +463,7 @@ public final class Fcit implements IGraphSearch {
 
                     if (GraphUtils.distinct(x, b, y)) {
                         if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
-                            if (cpdag.isDefCollider(x, b, y) && !cpdag.isAdjacentTo(x, y)) {
+                            if (cpdag.isDefCollider(x, b, y)) {// && !cpdag.isAdjacentTo(x, y)) {
                                 cpdagColliders.add(new Triple(x, b, y));
 
                                 if (verbose) {
@@ -478,9 +495,11 @@ public final class Fcit implements IGraphSearch {
     }
 
     private void adjustForExtraSepsets() {
-        extraSepsets.keySet().forEach(edge -> {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        sepsetMap.keySet().forEach(edge -> {
+            List<Node> arr = new ArrayList<>(edge);
+
+            Node x = arr.get(0);
+            Node y = arr.get(1);
 
             List<Node> common = pag.getAdjacentNodes(x);
             common.retainAll(pag.getAdjacentNodes(y));
@@ -490,7 +509,7 @@ public final class Fcit implements IGraphSearch {
             }
 
             for (Node node : common) {
-                if (!extraSepsets.get(edge).contains(node)) {
+                if (!sepsetMap.get(x, y).contains(node)) {
                     if (!pag.isDefCollider(x, node, y)) {
                         pag.setEndpoint(x, node, Endpoint.ARROW);
                         pag.setEndpoint(y, node, Endpoint.ARROW);
@@ -509,8 +528,6 @@ public final class Fcit implements IGraphSearch {
         if (verbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
-
-        fciOrient.finalOrientation(pag);
 
         pag.getEdges().forEach(edge -> {
             Node x = edge.getNode1();
@@ -532,12 +549,12 @@ public final class Fcit implements IGraphSearch {
             }
 
             try {
-                if (cachedIndependenceFacts.contains(new IndependenceFact(x, y)) || ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
+                if (sepsetMap.get(x, y) != null || ensureMarkovHelper.markovIndependence(x, y, Set.of())) {
                     if (verbose) {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
                     }
 
-                    extraSepsets.put(pag.getEdge(x, y), Set.of());
+                    sepsetMap.set(x, y, Set.of());
                     pag.removeEdge(x, y);
                     cachedIndependenceFacts.add(new IndependenceFact(x, y));
                 }
@@ -552,9 +569,12 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
-        fciOrient.finalOrientation(pag);
-
+        // The final orientation rules were applied just before this step, so this should list only
+        // discriminating paths that could not be oriented by them...
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
+        if (!discriminatingPaths.isEmpty()) {
+            System.out.println("Discriminating paths non-empty.");
+        }
 
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
 
@@ -675,9 +695,10 @@ public final class Fcit implements IGraphSearch {
                                     TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                                 }
 
-                                extraSepsets.put(pag.getEdge(x, y), b);
+                                sepsetMap.set(x, y, b);
                                 pag.removeEdge(x, y);
                                 cachedIndependenceFacts.add(new IndependenceFact(x, y, b));
+                                sepsetMap.set(x, y, b);
                             }
                         }
                     } catch (InterruptedException e) {
