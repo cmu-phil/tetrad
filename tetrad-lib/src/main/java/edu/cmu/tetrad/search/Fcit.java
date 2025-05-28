@@ -917,7 +917,6 @@ public final class Fcit implements IGraphSearch {
             this.strategy.setSepsetMap(sepsetMap);
         }
 
-
         /**
          * Sets the instance of the EnsureMarkov helper to be used for managing and enforcing the Markov property during
          * the algorithm's execution.
