@@ -128,7 +128,7 @@ public final class Fcit implements IGraphSearch {
      * This variable plays a key role in maintaining state about the structure of the underlying graph and assists in
      * ensuring that the search algorithm respects these previously identified relationships.
      */
-    private Set<Triple> lastKnownColliders = null;
+    private Set<Triple> lasCpdagColliders = null;
     /**
      * A reference to the last instance of the EnsureMarkov helper used during the search process. This variable is
      * utilized to manage and reuse the helper object across multiple steps or passes of the algorithm to enforce the
@@ -370,24 +370,32 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
-        Graph _pag;
+        removeExtraEdgesDdp();
+        refreshGraph();
 
-        do {
-            _pag = new EdgeListGraph(pag);
-            removeExtraEdgesDdp();
-            refreshGraph();
-        } while (!_pag.equals(pag));
+//        Graph _pag;
 
-        _pag = new EdgeListGraph(pag);
+//        do {
+//            _pag = new EdgeListGraph(pag);
+//            removeExtraEdgesDdp();
+//            refreshGraph();
+//            break;
+//        } while (!_pag.equals(pag));
+
+        Graph _pag = new EdgeListGraph(pag);
         checkUnconditionalIndependence();
 
-        if (!_pag.equals(pag)) {
-            do {
-                _pag = new EdgeListGraph(pag);
-                removeExtraEdgesDdp();
-                refreshGraph();
-            } while (!_pag.equals(pag));
-        }
+        removeExtraEdgesDdp();
+        refreshGraph();
+
+//        if (!_pag.equals(pag)) {
+//            do {
+//                _pag = new EdgeListGraph(pag);
+//                removeExtraEdgesDdp();
+//                refreshGraph();
+//                break;
+//            } while (!_pag.equals(pag));
+//        }
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -456,7 +464,7 @@ public final class Fcit implements IGraphSearch {
      */
     private void storeState() {
         this.lastPag = new EdgeListGraph(this.pag);
-        this.lastKnownColliders = new HashSet<>(this.cpdagColliders);
+        this.lasCpdagColliders = new HashSet<>(this.cpdagColliders);
         this.lastSepsetMap = new SepsetMap(sepsetMap);
         this.lastEnsureMarkovHelper = new EnsureMarkov(ensureMarkovHelper);
     }
@@ -474,7 +482,7 @@ public final class Fcit implements IGraphSearch {
      */
     private void restoreState() {
         this.pag = new EdgeListGraph(this.lastPag);
-        this.cpdagColliders = new HashSet<>(this.lastKnownColliders);
+        this.cpdagColliders = new HashSet<>(this.lasCpdagColliders);
         this.sepsetMap = new SepsetMap(lastSepsetMap);
         this.ensureMarkovHelper = new EnsureMarkov(lastEnsureMarkovHelper);
         this.strategy.setSepsetMap(sepsetMap);
