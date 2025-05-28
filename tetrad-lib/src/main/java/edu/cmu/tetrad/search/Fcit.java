@@ -252,13 +252,7 @@ public final class Fcit implements IGraphSearch {
 
             long start = MillisecondTimes.wallTimeMillis();
 
-            Boss subAlg = new Boss(this.score);
-            subAlg.setUseBes(this.useBes);
-            subAlg.setNumStarts(this.numStarts);
-            subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
-            subAlg.setVerbose(verbose);
-            PermutationSearch alg = new PermutationSearch(subAlg);
-            alg.setKnowledge(this.knowledge);
+            PermutationSearch alg = getBossSearch();
 
             dag = alg.search(false);
             best = dag.paths().getValidOrder(dag.getNodes(), true);
@@ -434,6 +428,42 @@ public final class Fcit implements IGraphSearch {
 
         return GraphUtils.replaceNodes(pag, nodes);
     }
+
+    private @NotNull PermutationSearch getBossSearch() {
+        Boss subAlg = new Boss(this.score);
+        subAlg.setUseBes(this.useBes);
+        subAlg.setNumStarts(this.numStarts);
+        subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
+        subAlg.setVerbose(verbose);
+        PermutationSearch alg = new PermutationSearch(subAlg);
+        alg.setKnowledge(this.knowledge);
+        return alg;
+    }
+
+    /**
+     * Parameterizes and returns a new GRaSP search.
+     *
+     * @return A new GRaSP search.
+     */
+    private @NotNull Grasp getGraspSearch() {
+        Grasp grasp = new Grasp(test, score);
+
+        grasp.setSeed(-1);
+        grasp.setDepth(3);
+        grasp.setUncoveredDepth(1);
+        grasp.setNonSingularDepth(1);
+        grasp.setOrdered(true);
+        grasp.setUseScore(true);
+        grasp.setUseRaskuttiUhler(false);
+        grasp.setUseDataOrder(useDataOrder);
+        grasp.setAllowInternalRandomness(true);
+        grasp.setVerbose(false);
+
+        grasp.setNumStarts(numStarts);
+        grasp.setKnowledge(this.knowledge);
+        return grasp;
+    }
+
 
     private void storeState() {
         this.lastPag = new EdgeListGraph(this.pag);
@@ -699,7 +729,6 @@ public final class Fcit implements IGraphSearch {
 
                                 sepsetMap.set(x, y, b);
                                 pag.removeEdge(x, y);
-                                sepsetMap.set(x, y, b);
                             }
                         }
                     } catch (InterruptedException e) {
@@ -708,30 +737,6 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         }
-    }
-
-    /**
-     * Parameterizes and returns a new GRaSP search.
-     *
-     * @return A new GRaSP search.
-     */
-    private @NotNull Grasp getGraspSearch() {
-        Grasp grasp = new Grasp(test, score);
-
-        grasp.setSeed(-1);
-        grasp.setDepth(3);
-        grasp.setUncoveredDepth(1);
-        grasp.setNonSingularDepth(1);
-        grasp.setOrdered(true);
-        grasp.setUseScore(true);
-        grasp.setUseRaskuttiUhler(false);
-        grasp.setUseDataOrder(useDataOrder);
-        grasp.setAllowInternalRandomness(true);
-        grasp.setVerbose(false);
-
-        grasp.setNumStarts(numStarts);
-        grasp.setKnowledge(this.knowledge);
-        return grasp;
     }
 
     /**
