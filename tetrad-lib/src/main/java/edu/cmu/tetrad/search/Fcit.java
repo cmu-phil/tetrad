@@ -53,14 +53,6 @@ public final class Fcit implements IGraphSearch {
      */
     private final Score score;
     /**
-     * A cached set of {@link IndependenceFact} objects used during the search process in the FCIT algorithm to store
-     * previously determined independence facts.
-     * <p>
-     * This cache helps optimize the algorithm by avoiding the need to repeatedly recompute the same independence facts.
-     * The set is initialized as an empty {@code HashSet}, ensuring unique {@code IndependenceFact} entries.
-     */
-//    private final Set<IndependenceFact> cachedIndependenceFacts = new HashSet<>();
-    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -72,10 +64,6 @@ public final class Fcit implements IGraphSearch {
      * The number of starts for GRaSP.
      */
     private int numStarts = 1;
-    /**
-     * The maximum size of any conditioning set.
-     */
-    private int depth = -1;
     /**
      * Flag indicating whether to use data order.
      */
@@ -93,10 +81,6 @@ public final class Fcit implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * The maximum length of any discriminating path.
-     */
-    private int maxDdpPathLength = -1;
-    /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
     private boolean ensureMarkov = false;
@@ -104,11 +88,6 @@ public final class Fcit implements IGraphSearch {
      * A helper class to help preserve Markov.
      */
     private EnsureMarkov ensureMarkovHelper = null;
-    /**
-     * Represents whether the payment guarantee feature is enabled or not. This variable is a flag to determine if the
-     * guarantee payment option is active in the current context.
-     */
-    private boolean guaranteePag = false;
     /**
      * Represents the learned Partial Ancestral Graph (PAG) in the FCIT search algorithm. The PAG is a graphical
      * representation that encodes causal relationships among variables that are consistent with the observed data and
@@ -151,9 +130,9 @@ public final class Fcit implements IGraphSearch {
      */
     private Set<Triple> lastKnownColliders = null;
     /**
-     * A reference to the last instance of the EnsureMarkov helper used during the search process.
-     * This variable is utilized to manage and reuse the helper object across multiple steps
-     * or passes of the algorithm to enforce the Markov property when required.
+     * A reference to the last instance of the EnsureMarkov helper used during the search process. This variable is
+     * utilized to manage and reuse the helper object across multiple steps or passes of the algorithm to enforce the
+     * Markov property when required.
      */
     private EnsureMarkov lastEnsureMarkovHelper = null;
     /**
@@ -175,6 +154,17 @@ public final class Fcit implements IGraphSearch {
      * structure of the graph by encoding constraints.
      */
     private SepsetMap sepsetMap = new SepsetMap();
+    /**
+     * Represents the strategy used for testing and validating during the FCIT (Fast Causal Inference Technique)
+     * algorithm process.
+     * <p>
+     * This variable defines the specific algorithmic approach or methodology (e.g., test-based strategies) applied in
+     * the initial stage of causal inference or graph construction. It integrates with the IndependenceTest and scoring
+     * mechanisms to ensure the reliability and effectiveness of the search process.
+     * <p>
+     * The choice and configuration of the strategy can influence the behavior and results of the FCIT algorithm,
+     * including its efficiency, accuracy, and compliance with causal discovery objectives.
+     */
     private R0R4StrategyTestBased strategy;
 
     /**
@@ -227,7 +217,6 @@ public final class Fcit implements IGraphSearch {
         strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsetMap);
         strategy.setVerbose(verbose);
-        strategy.setDepth(depth);
         strategy.setEnsureMarkovHelper(ensureMarkovHelper);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
 
@@ -366,7 +355,6 @@ public final class Fcit implements IGraphSearch {
 
         this.pag = GraphTransforms.dagToPag(dag);
         this.cpdagColliders = noteKnownCollidersFromCpdag(best, pag);
-//        this.extraSepsets = new HashMap<>();
 
         ensureMarkovHelper = new EnsureMarkov(pag, test);
         ensureMarkovHelper.setEnsureMarkov(ensureMarkov);
@@ -384,31 +372,21 @@ public final class Fcit implements IGraphSearch {
         // convergence.
         Graph _pag;
 
-        while (true) {
+        do {
             _pag = new EdgeListGraph(pag);
-
             removeExtraEdgesDdp();
             refreshGraph();
-
-            if (_pag.equals(pag)) {
-                break;
-            }
-        }
+        } while (!_pag.equals(pag));
 
         _pag = new EdgeListGraph(pag);
         checkUnconditionalIndependence();
 
         if (!_pag.equals(pag)) {
-            while (true) {
+            do {
                 _pag = new EdgeListGraph(pag);
-
                 removeExtraEdgesDdp();
                 refreshGraph();
-
-                if (_pag.equals(pag)) {
-                    break;
-                }
-            }
+            } while (!_pag.equals(pag));
         }
 
         if (verbose) {
@@ -421,10 +399,6 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
-
-        if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, cpdagColliders, verbose, new HashSet<>());
-        }
 
         return GraphUtils.replaceNodes(pag, nodes);
     }
@@ -464,7 +438,6 @@ public final class Fcit implements IGraphSearch {
         return grasp;
     }
 
-
     private void storeState() {
         this.lastPag = new EdgeListGraph(this.pag);
         this.lastKnownColliders = new HashSet<>(this.cpdagColliders);
@@ -484,9 +457,9 @@ public final class Fcit implements IGraphSearch {
         Set<Triple> cpdagColliders = new HashSet<>();
 
         // We're looking for unshielded colliders in these next steps that we can detect from the CPDAG.
-        // We do this by looking at the structure of the CPDAG implied by the BOSS graph and copying
+        // We do this by looking at the structure of the CPDAG implied by the BOSS graph and noting all
         // colliders from the BOSS graph into the estimated PAG. This step is justified in the
-        // GFCI algorithm. Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
+        // GFCI algorithm; see Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
         // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
         // PMLR.
         for (Node b : best) {
@@ -610,7 +583,8 @@ public final class Fcit implements IGraphSearch {
 
         // The final orientation rules were applied just before this step, so this should list only
         // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag,
+                -1, false);
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
         for (DiscriminatingPath path : discriminatingPaths) {
             Node x = path.getX();
@@ -662,11 +636,8 @@ public final class Fcit implements IGraphSearch {
 
             List<Node> E = new ArrayList<>(perhapsNotFollowed);
 
-            int _depth = depth == -1 ? E.size() : depth;
-            _depth = Math.min(_depth, E.size());
-
             // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(E.size(), _depth);
+            SublistGenerator gen = new SublistGenerator(E.size(), E.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -696,10 +667,7 @@ public final class Fcit implements IGraphSearch {
 
                 Set<Node> b = B.getLeft();
 
-                int _depth2 = depth == -1 ? common.size() : depth;
-                _depth2 = Math.min(_depth2, common.size());
-
-                SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
+                SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
                 int[] choice2;
 
                 W:
@@ -794,39 +762,12 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum size of the separating set used in the graph search algorithm.
-     *
-     * @param depth the maximum size of the separating set
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
-     * Sets the maximum DDP path length.
-     *
-     * @param maxDdpPathLength the maximum DDP path length to set
-     */
-    public void setMaxDdpPathLength(int maxDdpPathLength) {
-        this.maxDdpPathLength = maxDdpPathLength;
-    }
-
-    /**
      * Sets the value indicating whether the process should ensure Markov property.
      *
      * @param ensureMarkov a boolean value, true to ensure Markov property, false otherwise.
      */
     public void setEnsureMarkov(boolean ensureMarkov) {
         this.ensureMarkov = ensureMarkov;
-    }
-
-    /**
-     * Sets the value of the guaranteePag property.
-     *
-     * @param guaranteePag a boolean value indicating whether the guaranteePag is enabled or not
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
     }
 
     /**

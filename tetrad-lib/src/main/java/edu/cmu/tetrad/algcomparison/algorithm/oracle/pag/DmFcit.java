@@ -341,8 +341,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
         // FCIT
-        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+//        search.setDepth(parameters.getInt(Params.DEPTH));
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
@@ -416,8 +415,6 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
         // FCIT
         params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
-        params.add(Params.DEPTH);
-        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.GUARANTEE_PAG);
         params.add(Params.ENSURE_MARKOV);
 

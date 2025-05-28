@@ -386,7 +386,7 @@ public class TestFci {
         {
             Fcit fci = new Fcit(independence, score);
             fci.setStartWith(Fcit.START_WITH.GRASP);
-            fci.setDepth(-1);
+//            fci.setDepth(-1);
             fci.setKnowledge(knowledge);
             fci.setEnsureMarkov(false);
             fci.setVerbose(verbose);
@@ -749,7 +749,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -765,7 +765,6 @@ public class TestFci {
 
             try {
                 Fcit fcit = new Fcit(test, score);
-                fcit.setGuaranteePag(false);
                 fcit.setVerbose(false);
                 Graph pag = fcit.search();
 
@@ -847,7 +846,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -957,7 +956,7 @@ public class TestFci {
 
         Fcit fci = new Fcit(independence, score);
         fci.setStartWith(Fcit.START_WITH.GRASP);
-        fci.setDepth(-1);
+//        fci.setDepth(-1);
         fci.setEnsureMarkov(false);
         fci.setVerbose(true);
 
