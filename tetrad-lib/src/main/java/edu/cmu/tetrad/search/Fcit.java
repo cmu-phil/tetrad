@@ -59,7 +59,7 @@ public final class Fcit implements IGraphSearch {
      * This cache helps optimize the algorithm by avoiding the need to repeatedly recompute the same independence facts.
      * The set is initialized as an empty {@code HashSet}, ensuring unique {@code IndependenceFact} entries.
      */
-    private final Set<IndependenceFact> cachedIndependenceFacts = new HashSet<>();
+//    private final Set<IndependenceFact> cachedIndependenceFacts = new HashSet<>();
     /**
      * The background knowledge.
      */
@@ -140,7 +140,7 @@ public final class Fcit implements IGraphSearch {
      * separating set associated with that edge. These separating sets are used to refine the graph structure during
      * causal discovery.
      */
-    private SepsetMap lastExtraSepsets = null;
+    private SepsetMap lastSepsetMap = null;
     /**
      * A set that keeps track of the previously identified colliders during the execution of the FCIT search algorithm.
      * Colliders are unshielded triples of nodes (X, Y, Z) such that X and Z are not adjacent, but are both parents of
@@ -175,6 +175,7 @@ public final class Fcit implements IGraphSearch {
      * structure of the graph by encoding constraints.
      */
     private SepsetMap sepsetMap = new SepsetMap();
+    private R0R4StrategyTestBased strategy;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -223,7 +224,7 @@ public final class Fcit implements IGraphSearch {
 
         TetradLogger.getInstance().log("===Starting FCIT===");
 
-        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+        strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsetMap);
         strategy.setVerbose(verbose);
         strategy.setDepth(depth);
@@ -437,15 +438,16 @@ public final class Fcit implements IGraphSearch {
     private void storeState() {
         this.lastPag = new EdgeListGraph(this.pag);
         this.lastKnownColliders = new HashSet<>(this.cpdagColliders);
-        this.lastExtraSepsets = new SepsetMap(sepsetMap);
+        this.lastSepsetMap = new SepsetMap(sepsetMap);
         this.lastEnsureMarkovHelper = new EnsureMarkov(ensureMarkovHelper);
     }
 
-    private void retrieveState() {
+    private void restoreState() {
         this.pag = new EdgeListGraph(this.lastPag);
         this.cpdagColliders = new HashSet<>(this.lastKnownColliders);
-        this.sepsetMap = new SepsetMap(lastExtraSepsets);
+        this.sepsetMap = new SepsetMap(lastSepsetMap);
         this.ensureMarkovHelper = new EnsureMarkov(lastEnsureMarkovHelper);
+        this.strategy.setSepsetMap(sepsetMap);
     }
 
     private Set<Triple> noteKnownCollidersFromCpdag(List<Node> best, Graph cpdag) {
@@ -492,7 +494,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient.finalOrientation(pag);
 
         if (!pag.paths().isLegalPag()) {
-            retrieveState();
+            restoreState();
         } else {
             storeState();
         }
@@ -560,7 +562,7 @@ public final class Fcit implements IGraphSearch {
 
                     sepsetMap.set(x, y, Set.of());
                     pag.removeEdge(x, y);
-                    cachedIndependenceFacts.add(new IndependenceFact(x, y));
+//                    cachedIndependenceFacts.add(new IndependenceFact(x, y));
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -576,28 +578,31 @@ public final class Fcit implements IGraphSearch {
         // The final orientation rules were applied just before this step, so this should list only
         // discriminating paths that could not be oriented by them...
         Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
-        if (!discriminatingPaths.isEmpty()) {
-            System.out.println("Discriminating paths non-empty.");
+        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
+        for (DiscriminatingPath path : discriminatingPaths) {
+            Node x = path.getX();
+            Node y = path.getY();
+
+            pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
+            pathsByEdge.get(Set.of(x, y)).add(path);
         }
 
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-
-        pag.getEdges().forEach(edge -> {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            Set<DiscriminatingPath> paths = new HashSet<>();
-
-            for (DiscriminatingPath path : discriminatingPaths) {
-                if (path.getX() == x && path.getY() == y) {
-                    paths.add(path);
-                } else if (path.getX() == y && path.getY() == x) {
-                    paths.add(path);
-                }
-            }
-
-            pathsByEdge.put(Set.of(x, y), paths);
-        });
+//        pag.getEdges().forEach(edge -> {
+//            Node x = edge.getNode1();
+//            Node y = edge.getNode2();
+//
+//            Set<DiscriminatingPath> paths = new HashSet<>();
+//
+//            for (DiscriminatingPath path : discriminatingPaths) {
+//                if (path.getX() == x && path.getY() == y) {
+//                    paths.add(path);
+//                } else if (path.getX() == y && path.getY() == x) {
+//                    paths.add(path);
+//                }
+//            }
+//
+//            pathsByEdge.put(Set.of(x, y), paths);
+//        });
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
@@ -613,6 +618,7 @@ public final class Fcit implements IGraphSearch {
             common.retainAll(pag.getAdjacentNodes(y));
 
             Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
+            paths = paths == null ? new HashSet<>() : paths;
             Set<Node> perhapsNotFollowed = new HashSet<>();
 
             if (verbose) {
@@ -621,10 +627,6 @@ public final class Fcit implements IGraphSearch {
 
             // Don't repeat the same independence test twice for this edge x *-* y.
             Set<Set<Node>> S = new HashSet<>();
-
-            if (paths == null) {
-                return;
-            }
 
             for (DiscriminatingPath path : paths) {
                 if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
@@ -694,14 +696,14 @@ public final class Fcit implements IGraphSearch {
 
                     try {
                         if (pag.isAdjacentTo(x, y)) {
-                            if (cachedIndependenceFacts.contains(new IndependenceFact(x, y, b)) || ensureMarkovHelper.markovIndependence(x, y, b)) {
+                            if (sepsetMap.get(x, y) != null || ensureMarkovHelper.markovIndependence(x, y, b)) {
                                 if (verbose) {
                                     TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                                 }
 
                                 sepsetMap.set(x, y, b);
                                 pag.removeEdge(x, y);
-                                cachedIndependenceFacts.add(new IndependenceFact(x, y, b));
+//                                cachedIndependenceFacts.add(new IndependenceFact(x, y, b));
                                 sepsetMap.set(x, y, b);
                             }
                         }
