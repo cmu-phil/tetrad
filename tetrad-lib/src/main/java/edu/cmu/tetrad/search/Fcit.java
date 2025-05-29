@@ -33,13 +33,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
  * model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
- * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph,    then finishes with a testing
- * step to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
+ * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing step
+ * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
  * graph.
  *
  * @author josephramsey
@@ -54,10 +53,9 @@ public final class Fcit implements IGraphSearch {
      */
     private final Score score;
     /**
-     * The initial CPDAG, if this is given in the constructor. This is used in place of the DAG/CPDAG obtained from the
-     * BOSS or GRaSP algorithm, and only if the startWith parameter is set to INITIAL_GRAPH.
+     * Represents the current status or condition of the search.
      */
-    private Graph cpdag = null;
+    private State state;
     /**
      * The background knowledge.
      */
@@ -70,22 +68,6 @@ public final class Fcit implements IGraphSearch {
      * The number of starts for GRaSP.
      */
     private int numStarts = 1;
-    /**
-     * The depth of the GRaSP if it is used.
-     */
-    private int recursionDepth = 3;
-    /**
-     * The maximum path length for blocking paths.
-     */
-    private int maxBlockingPathLength = -1;
-    /**
-     * The maximum size of any conditioning set.
-     */
-    private int depth = -1;
-    /**
-     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
     /**
      * Flag indicating whether to use data order.
      */
@@ -103,35 +85,29 @@ public final class Fcit implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * The maximum length of any discriminating path.
-     */
-    private int maxDdpPathLength = -1;
-    /**
-     * The timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
-     */
-    private long testTimeout = -1;
-    /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
     private boolean ensureMarkov = false;
-    /**
-     * A helper class to help perserve Markov.
-     */
-    private EnsureMarkov ensureMarkovHelper = null;
-    /**
-     * Represents whether the payment guarantee feature is enabled or not. This variable is a flag to determine if the
-     * guarantee payment option is active in the current context.
-     */
-    private boolean guaranteePag = false;
 
-    private Graph pag = null;
-    private Map<Edge, Set<Node>> extraSepsets = new HashMap<>();
-    private Set<Triple> knownColliders = new HashSet<>();
+    /**
+     * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
+     * Ancestral Graph). This variable determines how unshielded colliders, discriminating paths, and other structural
+     * elements of the PAG are identified and processed during the search. The orientation strategy implemented in this
+     * variable can influence the causal interpretation of the resulting graph.
+     */
     private FciOrient fciOrient = null;
-
-    private Graph lastPag = null;
-    private Map<Edge, Set<Node>> lastExtraSepsets = null;
-    private Set<Triple> lastKnownColliders = null;
+    /**
+     * A set representing all identified colliders in the current CPDAG (Completed Partially Directed Acyclic Graph). A
+     * collider is a node in the graph where two edges converge, and the directions of the edges are both pointing into
+     * the node.
+     * <p>
+     * This variable is used to store colliders discovered during the execution of the FCIT search algorithm, aiding in
+     * the refinement of the graph structure and ensuring proper causal inference.
+     * <p>
+     * Each collected collider is represented as a Triple, which encapsulates the two parent nodes and the collider
+     * node.
+     */
+    private Set<Triple> initialColliders;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -164,46 +140,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Alternative FCIT constructor. Initializes a new object of FCIT search algorithm with the given initial CPDAG,
-     * along with the IndependenceTest. These should all be over variables with the same names as the variables in the
-     * supplied test.
-     * <p>
-     * This constructor allows the user to employ an external algorithm to find this initial CPDAG (and an implied order
-     * of the variables). This is useful when the user has a preferred algorithm for this task. In this case, the
-     * algorithm will perform only the steps after the CPDAG initialization step.
-     * <p>
-     * It is important here that the CPDAG be obtained from an algorithm like BOSS or GRaSP that yields a high-quality
-     * DAG or CPDAG over the variables, with a valid order, under the (possibly false) assumption that the data model is
-     * causally sufficient. The CPDAG is used to establish the initial structure of the estimated PAG and to copy
-     * unshielded colliders from the CPDAG into the estimated PAG. This step is justified in the GFCI algorithm.
-     * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent
-     * variable models. In Conference on probabilistic graphical models (pp. 368-379). PMLR. The idea is we start with
-     * this initial estimated of the PAG, with edges reoriented as o-o edges. Then we use the scorer to copy unshielded
-     * colliders from the CPDAG into the estimated PAG, as an initial step of converting the initial CPDAG into a PAG.
-     *
-     * @param cpdag The initial CPDAG.
-     * @param test  The independence test.
-     */
-    public Fcit(Graph cpdag, IndependenceTest test) {
-        this.score = null;
-        this.test = test;
-        this.cpdag = GraphUtils.replaceNodes(cpdag, this.test.getVariables());
-
-        // Check to make sure the variable names in the cpdag are the same as the variable names in the test.
-        List<String> cpdagVariableNames = cpdag.getNodes().stream().map(Node::getName).toList();
-        List<String> testVariableNames = test.getVariables().stream().map(Node::getName).toList();
-
-        if (!new HashSet<>(cpdagVariableNames).equals(new HashSet<>(testVariableNames))) {
-            throw new IllegalArgumentException("The variable names in the CPDAG must be the same as the variable names in the test.");
-        }
-
-        this.startWith = START_WITH.INITIAL_GRAPH;
-
-        test.setVerbose(false);
-    }
-
-    /**
-     * Run the search and return s a PAG.
+     * Run the search and return a PAG.
      *
      * @return The PAG.
      * @throws InterruptedException if any
@@ -219,17 +156,17 @@ public final class Fcit implements IGraphSearch {
 
         TetradLogger.getInstance().log("===Starting FCIT===");
 
+        this.state = new State();
+
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+        strategy.setSepsetMap(state.getSepsetMap());
         strategy.setVerbose(verbose);
-        strategy.setDepth(depth);
-        strategy.setMaxLength(maxBlockingPathLength);
-        strategy.setEnsureMarkovHelper(ensureMarkovHelper);
+        strategy.setEnsureMarkovHelper(state.ensureMarkovHelper);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
 
+        state.setStrategy(strategy);
+
         fciOrient = new FciOrient(strategy);
-//        fciOrient.setMaxDiscriminatingPathLength(maxDdpPathLength);
-//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-//        fciOrient.setTestTimeout(testTimeout);
         fciOrient.setVerbose(verbose);
         fciOrient.setParallel(false);
         fciOrient.setKnowledge(knowledge);
@@ -250,13 +187,7 @@ public final class Fcit implements IGraphSearch {
 
             long start = MillisecondTimes.wallTimeMillis();
 
-            Boss subAlg = new Boss(this.score);
-            subAlg.setUseBes(this.useBes);
-            subAlg.setNumStarts(this.numStarts);
-            subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
-            subAlg.setVerbose(verbose);
-            PermutationSearch alg = new PermutationSearch(subAlg);
-            alg.setKnowledge(this.knowledge);
+            PermutationSearch alg = getBossSearch();
 
             dag = alg.search(false);
             best = dag.paths().getValidOrder(dag.getNodes(), true);
@@ -323,19 +254,6 @@ public final class Fcit implements IGraphSearch {
                 TetradLogger.getInstance().log("Initializing PAG to SP CPDAG.");
                 TetradLogger.getInstance().log("Initializing scorer with SP best order.");
             }
-        } else if (startWith == START_WITH.INITIAL_GRAPH) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Using initial graph.");
-            }
-
-            cpdag = GraphUtils.replaceNodes(this.cpdag, nodes);
-            dag = GraphTransforms.dagFromCpdag(cpdag);
-            best = cpdag.paths().getValidOrder(cpdag.getNodes(), true);
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Initializing PAG to initial CPDAG.");
-                TetradLogger.getInstance().log("Initializing scorer with initial CPDAG best order.");
-            }
         } else {
             throw new IllegalArgumentException("Unknown startWith algorithm: " + startWith);
         }
@@ -361,14 +279,8 @@ public final class Fcit implements IGraphSearch {
             scorer.bookmark();
         }
 
-        ensureMarkovHelper = new EnsureMarkov(dag, test);
-        ensureMarkovHelper.setEnsureMarkov(ensureMarkov);
-
-        // We initialize the estimated PAG to the BOSS/GRaSP CPDAG, reoriented as a o-o graph.
-        pag = new EdgeListGraph(cpdag);
-
         if (verbose) {
-            TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
+            TetradLogger.getInstance().log("Initializing PAG to PAG of BOSS DAG.");
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
@@ -377,36 +289,21 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        extraSepsets = new HashMap<>();
-
         if (scorer != null) {
             scorer.score(best);
         }
-
-        GraphUtils.reorientWithCircles(pag, verbose);
-        fciOrient.fciOrientbk(knowledge, pag, nodes);
 
         if (verbose) {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
-        copyKnownCollidersFromCpdag(best, cpdag, scorer);
+        state.setPag(GraphTransforms.dagToPag(dag));
+        this.initialColliders = noteInitialColliders(best, state.getPag());
 
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        GraphUtils.recallKnownColliders(pag, knownColliders, knowledge);
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        fciOrient.setUseR4(true);
-        fciOrient.finalOrientation(pag);
+        state.setEnsureMarkovHelper(new EnsureMarkov(state.getPag(), test));
+        state.getEnsureMarkovHelper().setEnsureMarkov(ensureMarkov);
 
-        lastPag = new EdgeListGraph(pag);
-        lastKnownColliders = new HashSet<>(knownColliders);
-        lastExtraSepsets = new HashMap<>(extraSepsets);
-
-        refreshGraph();
-
-        if (!pag.paths().isMaximal()) {
-            TetradLogger.getInstance().log("****** Maximality check failed for the initial PAG ******");
-        }
+        state.storeState();
 
         // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
         // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
@@ -417,26 +314,15 @@ public final class Fcit implements IGraphSearch {
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
         // convergence.
-        Set<DiscriminatingPath> oldPaths = removeExtraEdgesDdp(null, maxBlockingPathLength);
+        removeExtraEdges();
         refreshGraph();
 
-        if (!pag.paths().isMaximal()) {
-            TetradLogger.getInstance().log("****** Maximality check failed after first refresh ******");
-        }
+        Graph _pag = new EdgeListGraph(state.getPag());
+        checkUnconditionalIndependence();
 
-        while (true) {
-            Graph _pag = new EdgeListGraph(pag);
-
-            oldPaths = removeExtraEdgesDdp(oldPaths, maxBlockingPathLength);
+        if (!_pag.equals(state.getPag())) {
+            removeExtraEdges();
             refreshGraph();
-
-            if (!pag.paths().isMaximal()) {
-                TetradLogger.getInstance().log("****** Maximality check failed after subsequent refresh ******");
-            }
-
-            if (_pag.equals(pag)) {
-                break;
-            }
         }
 
         if (verbose) {
@@ -450,395 +336,26 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
-        if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, knownColliders, verbose, new HashSet<>());
-        }
-
-        return GraphUtils.replaceNodes(pag, nodes);
-    }
-
-    private void copyKnownCollidersFromCpdag(List<Node> best, Graph cpdag, TeyssierScorer scorer) {
-        // We're looking for unshielded colliders in these next steps that we can detect without using only
-        // the scorer. We do this by looking at the structure of the DAG implied by the BOSS graph and copying
-        // unshielded colliders from the BOSS graph into the estimated PAG. This step is justified in the
-        // GFCI algorithm. Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
-        // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
-        // PMLR.
-        for (Node b : best) {
-            var adj = pag.getAdjacentNodes(b);
-
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = i + 1; j < adj.size(); j++) {
-                    Node x = adj.get(i);
-                    Node y = adj.get(j);
-
-                    if (GraphUtils.distinct(x, b, y)) {
-                        copyUnshieldedCollider(x, b, y, cpdag, scorer);
-                    }
-                }
-            }
-        }
-    }
-
-    private void refreshGraph() {
-        GraphUtils.reorientWithCircles(pag, verbose);
-        GraphUtils.recallKnownColliders(pag, knownColliders, knowledge);
-        adjustForExtraSepsets();
-        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
-        fciOrient.setUseR4(true);
-        fciOrient.finalOrientation(pag);
-
-        if (!pag.paths().isMaximal()) {
-            pag = new EdgeListGraph(lastPag);
-            knownColliders = new HashSet<>(lastKnownColliders);
-            extraSepsets = new HashMap<>(lastExtraSepsets);
-        } else {
-            lastPag = new EdgeListGraph(pag);
-            lastKnownColliders = new HashSet<>(knownColliders);
-            lastExtraSepsets = new HashMap<>(extraSepsets);
-        }
-    }
-
-    private void adjustForExtraSepsets() {
-        for (Triple triple : new HashSet<>(knownColliders)) {
-            if (!pag.isAdjacentTo(triple.getX(), triple.getY())) {
-                knownColliders.remove(triple);
-            }
-        }
-
-        extraSepsets.keySet().forEach(this::orientCommonAdjacents);
-    }
-
-    private Set<DiscriminatingPath> removeExtraEdgesDdp1(Set<DiscriminatingPath> oldDiscriminatingPaths,
-                                                         int maxBlockingPathLength) {
-        fciOrient.finalOrientation(pag);
-        Set<Edge> edges = pag.getEdges();
-
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
-
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-
-        edges.forEach(edge -> {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            Set<DiscriminatingPath> paths = new HashSet<>();
-
-            for (DiscriminatingPath path : discriminatingPaths) {
-                if (path.getX() == x && path.getY() == y) {
-                    paths.add(path);
-                } else if (path.getX() == y && path.getY() == x) {
-                    paths.add(path);
-                }
-            }
-
-            if (oldDiscriminatingPaths != null) {
-                Set<DiscriminatingPath> oldPaths = new HashSet<>();
-
-                for (DiscriminatingPath path : oldDiscriminatingPaths) {
-                    if (path.getX() == x && path.getY() == y) {
-                        oldPaths.add(path);
-                    } else if (path.getX() == y && path.getY() == x) {
-                        oldPaths.add(path);
-                    }
-                }
-
-                if (paths.equals(oldPaths)) {
-                    pathsByEdge.put(Set.of(x, y), null);
-                    return;
-                }
-            }
-
-            pathsByEdge.put(Set.of(x, y), paths);
-        });
-
-        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-
-            // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-            // there in this graph.
-            pag.getEdges().forEach(edge -> {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                List<Node> common = pag.getAdjacentNodes(x);
-                common.retainAll(pag.getAdjacentNodes(y));
-
-                Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-                Set<Node> perhapsNotFollowed = new HashSet<>();
-
-                // Don't repeat the same independence test twice for this edge x *-* y.
-                Set<Set<Node>> S = new HashSet<>();
-
-                if (paths == null) {
-                    return;
-                }
-
-                for (DiscriminatingPath path : paths) {
-                    if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                        perhapsNotFollowed.add(path.getV());
-                    }
-                }
-
-                List<Node> E = new ArrayList<>(perhapsNotFollowed);
-
-                int _depth = depth == -1 ? E.size() : depth;
-                _depth = Math.min(_depth, E.size());
-
-                // Generate subsets and check blocking paths
-                SublistGenerator gen = new SublistGenerator(E.size(), _depth);
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    Set<Node> notFollowed = GraphUtils.asSet(choice, E);
-
-                    // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                    Future<Set<Node>> future = executor.submit(() ->
-                            SepsetFinder.blockPathsRecursively(
-                                    pag, x, y, Set.of(), notFollowed, maxBlockingPathLength
-                            ).getLeft()
-                    );
-
-                    // Try to get the result within the specified timeout (e.g., 5 seconds)
-                    Set<Node> b;
-
-                    try {
-                        if (testTimeout > 0) {
-                            b = future.get(testTimeout, TimeUnit.MILLISECONDS);
-                        } else {
-                            b = future.get();
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
-                    } catch (TimeoutException e) {
-                        TetradLogger.getInstance().log("Timeout while fetching paths from pag.");
-                        continue;
-                    }
-
-                    // b will be null if the search did not conclude with set that is known to either m-separate
-                    // or not m-separate x and y.
-                    if (b == null) {
-                        continue;
-                    }
-
-                    int _depth2 = depth == -1 ? common.size() : depth;
-                    _depth2 = Math.min(_depth2, common.size());
-
-                    SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
-                    int[] choice2;
-
-                    W:
-                    while ((choice2 = gen2.next()) != null) {
-                        if (!pag.isAdjacentTo(x, y)) {
-                            break;
-                        }
-
-                        Set<Node> c = GraphUtils.asSet(choice2, common);
-
-                        for (Node node : c) {
-                            if (pag.isDefCollider(x, node, y)) {
-                                continue W;
-                            }
-                        }
-
-                        b.removeAll(c);
-                        if (S.contains(b)) continue;
-                        S.add(new HashSet<>(b));
-
-                        try {
-                            if (ensureMarkovHelper.markovIndependence(x, y, b)) {
-                                if (verbose) {
-                                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                                }
-
-                                extraSepsets.put(pag.getEdge(x, y), b);
-                                pag.removeEdge(x, y);
-                            }
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            });
-        }
-
-        return discriminatingPaths;
-    }
-
-    // "Pure" version without threading
-    private Set<DiscriminatingPath> removeExtraEdgesDdp(Set<DiscriminatingPath> oldDiscriminatingPaths,
-                                                        int maxBlockingPathLength) {
-        if (verbose) {
-            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-        }
-
-        fciOrient.finalOrientation(pag);
-
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
-
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-
-        pag.getEdges().forEach(edge -> {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            Set<DiscriminatingPath> paths = new HashSet<>();
-
-            for (DiscriminatingPath path : discriminatingPaths) {
-                if (path.getX() == x && path.getY() == y) {
-                    paths.add(path);
-                } else if (path.getX() == y && path.getY() == x) {
-                    paths.add(path);
-                }
-            }
-
-            if (oldDiscriminatingPaths != null) {
-                Set<DiscriminatingPath> oldPaths = new HashSet<>();
-
-                for (DiscriminatingPath path : oldDiscriminatingPaths) {
-                    if (path.getX() == x && path.getY() == y) {
-                        oldPaths.add(path);
-                    } else if (path.getX() == y && path.getY() == x) {
-                        oldPaths.add(path);
-                    }
-                }
-
-//                if (paths.equals(oldPaths)) {
-//                    pathsByEdge.put(Set.of(x, y), null);
-//                    return;
-//                }
-            }
-
-            pathsByEdge.put(Set.of(x, y), paths);
-        });
-
-        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-        // there in this graph.
-        pag.getEdges().forEach(edge -> {
-            if (verbose) {
-                TetradLogger.getInstance().log("Considering removing edge " + edge);
-            }
-
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            List<Node> common = pag.getAdjacentNodes(x);
-            common.retainAll(pag.getAdjacentNodes(y));
-
-            Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-            Set<Node> perhapsNotFollowed = new HashSet<>();
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
-            }
-
-            // Don't repeat the same independence test twice for this edge x *-* y.
-            Set<Set<Node>> S = new HashSet<>();
-
-            if (paths == null) {
-                return;
-            }
-
-            for (DiscriminatingPath path : paths) {
-                if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                    perhapsNotFollowed.add(path.getV());
-                }
-            }
-
-            List<Node> E = new ArrayList<>(perhapsNotFollowed);
-
-            int _depth = depth == -1 ? E.size() : depth;
-            _depth = Math.min(_depth, E.size());
-
-            // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(E.size(), _depth);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                Set<Node> notFollowed = GraphUtils.asSet(choice, E);
-
-                // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Pair<Set<Node>, Boolean> B = null;
-                try {
-                    B = SepsetFinder.blockPathsRecursively(pag, x, y, Set.of(), notFollowed, maxBlockingPathLength);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + B.getLeft());
-                }
-
-                // b will be null if the search did not conclude with set that is known to either m-separate
-                // or not m-separate x and y.
-                if (B == null) {
-                    if (verbose) {
-                        System.out.println("B is null");
-                    }
-                    continue;
-                }
-
-                if (!B.getRight()) {
-                    if (verbose) {
-                        System.out.println("B.getRight() = " + B.getRight());
-                    }
-                    continue;
-                }
-
-                Set<Node> b = B.getLeft();
-
-                int _depth2 = depth == -1 ? common.size() : depth;
-                _depth2 = Math.min(_depth2, common.size());
-
-                SublistGenerator gen2 = new SublistGenerator(common.size(), _depth2);
-                int[] choice2;
-
-                W:
-                while ((choice2 = gen2.next()) != null) {
-                    if (!pag.isAdjacentTo(x, y)) {
-                        break;
-                    }
-
-                    Set<Node> c = GraphUtils.asSet(choice2, common);
-
-                    for (Node node : c) {
-                        if (pag.isDefCollider(x, node, y)) {
-                            continue W;
-                        }
-                    }
-
-                    b.removeAll(c);
-                    if (S.contains(b)) continue;
-                    S.add(new HashSet<>(b));
-
-                    try {
-                        if (ensureMarkovHelper.markovIndependence(x, y, b)) {
-                            if (verbose) {
-                                TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                            }
-
-                            extraSepsets.put(pag.getEdge(x, y), b);
-                            pag.removeEdge(x, y);
-                        }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        });
-
-        return discriminatingPaths;
+        return GraphUtils.replaceNodes(state.getPag(), nodes);
     }
 
     /**
-     * Try adding an unshielded collider by checking the BOSS/GRaSP DAG.
+     * Configures and returns a new instance of PermutationSearch using the BOSS algorithm. The method initializes the
+     * BOSS algorithm with parameters such as the score function, verbosity, number of starts, number of threads, and
+     * whether to use the BES algorithm. The constructed PermutationSearch is further configured with the existing
+     * knowledge.
      *
-     * @param x      Node - The first node.
-     * @param b      Node - The second node.
-     * @param y      Node - The third node.
-     * @param scorer The scorer to use for scoring the colliders.
+     * @return A fully configured PermutationSearch instance using the BOSS algorithm.
      */
-    private void copyUnshieldedCollider(Node x, Node b, Node y, Graph cpdag, TeyssierScorer scorer) {
-        tryAddingCollider(x, b, y, cpdag, scorer, knowledge, verbose);
+    private @NotNull PermutationSearch getBossSearch() {
+        Boss subAlg = new Boss(this.score);
+        subAlg.setUseBes(this.useBes);
+        subAlg.setNumStarts(this.numStarts);
+        subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
+        subAlg.setVerbose(verbose);
+        PermutationSearch alg = new PermutationSearch(subAlg);
+        alg.setKnowledge(this.knowledge);
+        return alg;
     }
 
     /**
@@ -850,7 +367,7 @@ public final class Fcit implements IGraphSearch {
         Grasp grasp = new Grasp(test, score);
 
         grasp.setSeed(-1);
-        grasp.setDepth(recursionDepth);
+        grasp.setDepth(3);
         grasp.setUncoveredDepth(1);
         grasp.setNonSingularDepth(1);
         grasp.setOrdered(true);
@@ -865,32 +382,341 @@ public final class Fcit implements IGraphSearch {
         return grasp;
     }
 
+
     /**
-     * Sets the maximum length of any discriminating path.
+     * Identifies and notes known unshielded colliders from the provided CPDAG (Completed Partially Directed Acyclic
+     * Graph) by looking at its implied structure and transferring relevant colliders to the current PAG (Partial
+     * Ancestral Graph). This process is justified in the GFCI (Generalized Fast Causal Inference) algorithm, as
+     * described in the referenced research.
      *
-     * @param maxBlockingPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param best A list of nodes representing the best-known nodes to be evaluated during the collider identification
+     *             process.
+     * @param pag  The CPDAG from which known colliders are identified and extracted.
+     * @return A set of triples representing the known colliders identified in the provided CPDAG.
      */
-    public void setMaxBlockingPathLength(int maxBlockingPathLength) {
-        if (maxBlockingPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxBlockingPathLength);
+    private Set<Triple> noteInitialColliders(List<Node> best, Graph pag) {
+        Set<Triple> initialColliders = new HashSet<>();
+
+        // We're looking for unshielded colliders in these next steps that we can detect from the CPDAG.
+        // We do this by looking at the structure of the CPDAG implied by the BOSS graph and noting all
+        // colliders from the BOSS graph into the estimated PAG. This step is justified in the
+        // GFCI algorithm; see Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
+        // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
+        // PMLR.
+        for (Node b : best) {
+            var adj = state.getPag().getAdjacentNodes(b);
+
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node x = adj.get(i);
+                    Node y = adj.get(j);
+
+                    if (GraphUtils.distinct(x, b, y)) {
+                        if (GraphUtils.colliderAllowed(state.getPag(), x, b, y, knowledge)) {
+                            if (pag.isDefCollider(x, b, y)) {// && !pag.isAdjacentTo(x, y)) {
+                                initialColliders.add(new Triple(x, b, y));
+
+                                if (verbose) {
+                                    TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from initial PAG to PAG.");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        this.maxBlockingPathLength = maxBlockingPathLength;
+        return initialColliders;
     }
 
     /**
-     * Sets the depth of the GRaSP if it is used.
-     *
-     * @param recursionDepth The depth of the GRaSP.
+     * Updates and refines the structure of the Partial Ancestral Graph (PAG) based on current configurations and
+     * knowledge, while maintaining the validity of the PAG. This method is fundamental to the iterative refinement
+     * process in the FCIT algorithm.
+     * <p>
+     * The method performs the following steps:
+     * <p>
+     * (a) Reorients the current PAG using circular structures if applicable. (b) Transfers known colliders identified
+     * from the provided CPDAG into the PAG based on given knowledge constraints. (c) Adjusts separation sets to account
+     * for extra independence information. (d) Applies background knowledge and performs structure orientation using the
+     * implemented orientation strategies, including R4-strategy.
+     * <p>
+     * If the updated PAG violates the legality constraints, restores the state to the last valid configuration;
+     * otherwise, checkpoints the current state for future reference.
      */
-    public void setRecursionDepth(int recursionDepth) {
-        this.recursionDepth = recursionDepth;
+    private void refreshGraph() {
+        GraphUtils.reorientWithCircles(state.getPag(), verbose);
+        GraphUtils.recallInitialColliders(state.getPag(), initialColliders, knowledge);
+        adjustForExtraSepsets();
+        fciOrient.fciOrientbk(knowledge, state.getPag(), state.getPag().getNodes());
+        fciOrient.setUseR4(true);
+        fciOrient.finalOrientation(state.getPag());
+
+        if (!state.getPag().paths().isLegalPag()) {
+            state.restoreState();
+        } else {
+            state.storeState();
+        }
     }
 
     /**
-     * Sets the algorithm to use to obtain the initial CPDAG.
+     * Refines the structure of the Partial Ancestral Graph (PAG) by adjusting separation sets based on additional
+     * independence evidence and ensuring consistency with known independence and causality constraints. This method
+     * identifies and orients specific edges in the PAG to maintain its validity.
+     * <p>
+     * The method performs the following steps: (a) Iterates over all edges in the separation set map's key set. (b) For
+     * each edge, identifies adjacent nodes in the PAG and finds their common neighbors. (c) Removes adjacency between
+     * the nodes if applicable and logs the operation if verbose mode is enabled. (d) Examines each common neighbor,
+     * checking whether it is part of the separation set for the given nodes. If it is not part of the separation set
+     * and does not create a forbidden collider, the endpoints of the edge between the common neighbor and the adjacent
+     * nodes are adjusted to a directed orientation. (e) Logs oriented relationships in verbose mode.
+     * <p>
+     * This adjustment ensures proper handling of induced dependencies and maintains the correctness of the causal
+     * structure represented by the PAG. The orientation of edges follows the rules
+     */
+    private void adjustForExtraSepsets() {
+        state.getSepsetMap().keySet().forEach(edge -> {
+            List<Node> arr = new ArrayList<>(edge);
+
+            Node x = arr.get(0);
+            Node y = arr.get(1);
+
+            List<Node> common = state.getPag().getAdjacentNodes(x);
+            common.retainAll(state.getPag().getAdjacentNodes(y));
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " from PAG.");
+            }
+
+            for (Node node : common) {
+                if (!state.getSepsetMap().get(x, y).contains(node)) {
+                    if (!state.getPag().isDefCollider(x, node, y)) {
+                        state.getPag().setEndpoint(x, node, Endpoint.ARROW);
+                        state.getPag().setEndpoint(y, node, Endpoint.ARROW);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Examines all edges in the PAG for unconditional independence based on the current separation set map and Markov
+     * independence checks. If two variables are found to be unconditionally independent, the edge connecting them is
+     * removed, and the separation set map is updated accordingly.
+     * <p>
+     * The method operates by iterating over all edges in the PAG and performing the following: (a) Identifies the two
+     * nodes connected by the edge. (b) Checks if there exists a separation set for the nodes in the current separation
+     * set map. If a separation set exists, it skips further processing for that edge. (c) Identifies common neighbors
+     * of the two nodes connected by the edge and determines if they form a non-collider structure. If all common
+     * neighbors create colliders, the edge is skipped. (d) Checks unconditional independence between the two nodes
+     * using the ensureMarkovHelper's Markov independence method. If independence is confirmed: (d.1) Logs the operation
+     * if verbose mode is enabled. (d.2) Updates the separation set map for the nodes to an empty set. (d.3) Removes the
+     * edge from the PAG. (e) Handles any `InterruptedException` thrown during the Markov independence check.
+     * <p>
+     * If verbose mode is enabled, relevant logging information is captured using the `TetradLogger` to provide detailed
+     * insights into the operations performed.
+     * <p>
+     * This method helps refine the PAG by ensuring its representation aligns with the detected unconditional
+     * independencies and the causal structure implied by the data.
+     */
+    private void checkUnconditionalIndependence() {
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
+        }
+
+        state.getPag().getEdges().forEach(edge -> {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (state.getSepsetMap().get(x, y) != null) {
+                return;
+            }
+
+            List<Node> common = state.getPag().getAdjacentNodes(x);
+            common.retainAll(state.getPag().getAdjacentNodes(y));
+
+            boolean found = false;
+
+            for (Node node : common) {
+                if (!state.getPag().isDefCollider(x, node, y)) {
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                return;
+            }
+
+            try {
+                if (state.getEnsureMarkovHelper().markovIndependence(x, y, Set.of())) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
+                    }
+
+                    state.getSepsetMap().set(x, y, Set.of());
+                    state.getPag().removeEdge(x, y);
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    /**
+     * Removes extra edges from a Partial Ancestral Graph (PAG) by analyzing discriminating paths that could not be
+     * oriented using final orientation rules and applying specific conditions to validate the existence of those edges.
+     * This method is part of the causal discovery process.
+     * <p>
+     * The method performs several key steps:
+     * <p>
+     * 1. Identifies discriminating paths in the PAG that are candidates for edge removals. 2. Creates a map of
+     * discriminating paths organized by their corresponding edge pairs for efficient lookup during subsequent
+     * processing. 3. Iterates over all edges in the PAG to evaluate whether they can be removed based on conditions
+     * derived from discriminating paths and the causal implications of their removal. 4. Considers subsets of nodes for
+     * which paths may not be followed to evaluate blocking conditions recursively and determine m-separation. 5.
+     * Applies independence tests to finalize edge removals when conditions are met.
+     * <p>
+     * The method logs the intermediate steps and decisions if verbose logging is enabled. This includes information on
+     * the discriminating paths, potential collider pairs, blocking sets, and the specific edges being considered for
+     * removal.
+     * <p>
+     * The logic ensures that edges are removed only if doing so maintains the Markov property and aligns with the
+     * causal structure represented by the PAG.
+     * <p>
+     * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
+     * execution for asynchronous tasks.
+     */
+    private void removeExtraEdges() {
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
+        }
+
+        // The final orientation rules were applied just before this step, so this should list only
+        // discriminating paths that could not be oriented by them...
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(state.getPag(),
+                -1, false);
+        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
+        for (DiscriminatingPath path : discriminatingPaths) {
+            Node x = path.getX();
+            Node y = path.getY();
+
+            pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
+            pathsByEdge.get(Set.of(x, y)).add(path);
+        }
+
+        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
+        // there in this graph.
+        for (Edge edge : state.getPag().getEdges()) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Considering removing edge " + edge);
+            }
+
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (state.getSepsetMap().get(x, y) != null) {
+                if (verbose) {
+                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
+                }
+
+                state.getPag().removeEdge(x, y);
+                return;
+            }
+
+            List<Node> common = state.getPag().getAdjacentNodes(x);
+            common.retainAll(state.getPag().getAdjacentNodes(y));
+
+            Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
+            paths = paths == null ? Set.of() : paths;
+            Set<Node> perhapsNotFollowed = new HashSet<>();
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
+            }
+
+            // Don't repeat the same independence test twice for this edge x *-* y.
+            Set<Set<Node>> S = new HashSet<>();
+
+            for (DiscriminatingPath path : paths) {
+                if (state.getPag().getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                    perhapsNotFollowed.add(path.getV());
+                }
+            }
+
+            List<Node> E = new ArrayList<>(perhapsNotFollowed);
+
+            // Generate subsets and check blocking paths
+            SublistGenerator gen = new SublistGenerator(E.size(), E.size());
+            int[] choice;
+
+            while ((choice = gen.next()) != null) {
+                Set<Node> notFollowed = GraphUtils.asSet(choice, E);
+
+                // Instead of newSingleThreadExecutor(), we use the shared 'executor'
+                Pair<Set<Node>, Boolean> B;
+                try {
+                    B = SepsetFinder.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + B.getLeft());
+                }
+
+                // b will be null if the search did not conclude with a set known to either m-separate
+                // or not m-separate x and y.
+                if (B == null) {
+                    continue;
+                }
+
+                if (!B.getRight()) {
+                    continue;
+                }
+
+                Set<Node> b = B.getLeft();
+
+                SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
+                int[] choice2;
+
+                while ((choice2 = gen2.next()) != null) {
+                    if (!state.getPag().isAdjacentTo(x, y)) {
+                        break;
+                    }
+
+                    Set<Node> c = GraphUtils.asSet(choice2, common);
+
+                    b.removeAll(c);
+                    if (S.contains(b)) continue;
+                    S.add(new HashSet<>(b));
+
+                    try {
+                        if (state.getPag().isAdjacentTo(x, y)) {
+                            if (state.getEnsureMarkovHelper().markovIndependence(x, y, b)) {
+                                if (verbose) {
+                                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
+                                }
+
+                                state.getSepsetMap().set(x, y, b);
+                                state.getPag().removeEdge(x, y);
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the algorithm to use to get the initial CPDAG.
      *
-     * @param startWith the algorithm to use to obtain the initial CPDAG.
+     * @param startWith the algorithm to use to get the initial CPDAG.
      */
     public void setStartWith(START_WITH startWith) {
         this.startWith = startWith;
@@ -903,16 +729,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether the complete rule set should be used during the search algorithm. By default, the complete rule set
-     * is not used.
-     *
-     * @param completeRuleSetUsed true if the complete rule set should be used, false otherwise
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
@@ -952,119 +768,12 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Orients an unshielded collider in a graph based on a sepset from a test and adds the unshielded collider to the
-     * set of unshielded colliders. Assumes that all relevant edges have been removed from the graph.
-     *
-     * @param edge The edge to remove the adjacency for.
-     */
-    private void orientCommonAdjacents(Edge edge) {
-        Node x = edge.getNode1();
-        Node y = edge.getNode2();
-
-        List<Node> common = pag.getAdjacentNodes(x);
-        common.retainAll(pag.getAdjacentNodes(y));
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Removing adjacency " + x + " *-* " + y + " from PAG.");
-        }
-
-        for (Node node : common) {
-            if (!extraSepsets.get(edge).contains(node)) {
-                if (!pag.isDefCollider(x, node, y)) {
-                    pag.setEndpoint(x, node, Endpoint.ARROW);
-                    pag.setEndpoint(y, node, Endpoint.ARROW);
-
-                    if (verbose) {
-                        TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
-                    }
-
-                    knownColliders.add(new Triple(x, node, y));
-                }
-            }
-        }
-    }
-
-    /**
-     * Adds a collider if it's a collider in the current scorer and knowledge permits it in the current PAG.
-     *
-     * @param x         The first node of the unshielded collider.
-     * @param b         The second node of the unshielded collider.
-     * @param y         The third node of the unshielded collider.
-     * @param scorer    The scorer to use for scoring the unshielded collider.
-     * @param knowledge The knowledge object.
-     * @param verbose   A boolean flag indicating whether verbose output should be printed.
-     */
-    private void tryAddingCollider(Node x, Node b, Node y, Graph cpdag, TeyssierScorer scorer, Knowledge knowledge, boolean verbose) {
-//        if (cpdag != null) {
-        if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
-            if (cpdag.isDefCollider(x, b, y) && !cpdag.isAdjacentTo(x, y)) {
-                knownColliders.add(new Triple(x, b, y));
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-                }
-            }
-        }
-//        } else if (score != null) {
-//            if (GraphUtils.colliderAllowed(pag, x, b, y, knowledge)) {
-//                if (scorer.unshieldedCollider(x, b, y)) {
-//                    knownColliders.add(new Triple(x, b, y));
-//                    checked.add(new Triple(x, b, y));
-//
-//                    if (verbose) {
-//                        TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from CPDAG to PAG.");
-//                    }
-//                }
-//            }
-//        } else {
-//            throw new IllegalArgumentException("No CPDAG or scorer available.");
-//        }
-    }
-
-    /**
-     * Sets the maximum size of the separating set used in the graph search algorithm.
-     *
-     * @param depth the maximum size of the separating set
-     */
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    /**
-     * Sets the maximum DDP path length.
-     *
-     * @param maxDdpPathLength the maximum DDP path length to set
-     */
-    public void setMaxDdpPathLength(int maxDdpPathLength) {
-        this.maxDdpPathLength = maxDdpPathLength;
-    }
-
-    /**
-     * Sets the timeout for the testing steps, for the extra edge removal steps and the discriminating path steps.
-     *
-     * @param testTimeout the timeout for the testing steps, for the extra edge removal steps and the discriminating
-     *                    path steps.
-     */
-    public void setTestTimeout(long testTimeout) {
-        this.testTimeout = testTimeout;
-    }
-
-    /**
      * Sets the value indicating whether the process should ensure Markov property.
      *
      * @param ensureMarkov a boolean value, true to ensure Markov property, false otherwise.
      */
     public void setEnsureMarkov(boolean ensureMarkov) {
         this.ensureMarkov = ensureMarkov;
-    }
-
-    /**
-     * Sets the value of the guaranteePag property.
-     *
-     * @param guaranteePag a boolean value indicating whether the guaranteePag is enabled or not
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
     }
 
     /**
@@ -1087,5 +796,182 @@ public final class Fcit implements IGraphSearch {
          * Starts with an initial CPDAG over the variables of the independence test that is given in the constructor.
          */
         INITIAL_GRAPH
+    }
+
+    /**
+     * Represents the state of the algorithm during its execution.
+     * <p>
+     * This class is used to store and manage various components of the search process, including graphs, separation
+     * sets, and helper objects that enforce Markov properties. It provides methods for saving, restoring, and accessing
+     * these elements, enabling the algorithm to checkpoint and rollback its progress as needed.
+     */
+    private static class State {
+        /**
+         * Represents the R0R4 test-based strategy used in the search algorithm.
+         * <p>
+         * This variable stores an instance of the {@code R0R4StrategyTestBased} class, which is employed to perform
+         * specific operations and decision-making during the execution of the causal discovery algorithm. The strategy
+         * defines how the algorithm conducts certain tests and transitions, contributing to the overall search
+         * process.
+         * <p>
+         * It is initially set to {@code null} and is expected to be explicitly initialized or configured before being
+         * utilized in the algorithm. The strategy can be updated or replaced as necessary to
+         */
+        private R0R4StrategyTestBased strategy = null;
+        /**
+         * Represents the Partial Ancestral Graph (PAG) currently being learned or maintained by the algorithm.
+         * <p>
+         * The PAG is a graph structure used in causal discovery to capture causal relationships between variables while
+         * accounting for potential latent variables. Initially set to null, this variable is updated during the
+         * execution of the algorithm as the relationships are inferred. It serves as the central representation of the
+         * model's learned causal structure.
+         */
+        private Graph pag = null;
+        /**
+         * Represents the most recently stored Partial Ancestral Graph (PAG) within the state of the algorithm. This
+         * graph captures causal structures identified during the most recent execution or checkpoint.
+         * <p>
+         * The `lastPag` variable is utilized during state restoration to revert to the previously inferred PAG. It is
+         * initialized to null and updated whenever a new checkpoint is created by the algorithm.
+         * <p>
+         * This variable plays a critical role in enabling rollback functionality and maintaining the integrity
+         */
+        private Graph lastPag = null;
+        /**
+         * A map that stores separator sets (sepsets) for pairs of nodes within a graph. The sepsetMap is used to record
+         * and retrieve separator sets, which represent conditional independence relationships identified during the
+         * causal structure learning process. It plays a critical role in determining the graph's structure by encoding
+         * these constraints into the algorithm's state.
+         */
+        private SepsetMap sepsetMap = new SepsetMap();
+        /**
+         * Stores the most recently computed set of separation sets (sepsets) in the graph. This variable is used to
+         * encode and maintain the separating sets identified during causal discovery, which are essential for refining
+         * and validating the graph's structure.
+         * <p>
+         * The separation sets represented by this map are linked to pairs of nodes in the graph, indicating the
+         * conditional independence relationships that were last computed or updated. Preserving this information is
+         * critical for checkpointing and restoring the algorithm's state during its execution.
+         * <p>
+         * Initialized to null, the value of this variable is updated dynamically as the search process progresses.
+         */
+        private SepsetMap lastSepsetMap = null;
+        /**
+         * An instance of the EnsureMarkov class used to assist in maintaining the Markov property during the execution
+         * of the algorithm. This variable is primarily leveraged to enforce the necessary constraints that ensure the
+         * resulting graph adheres to the Markov condition.
+         * <p>
+         * During the algorithm's execution, this helper may be initialized, updated, or restored to preserve the
+         * required state for maintaining causal consistency. It is also utilized for facilitating operations that
+         * demand adherence to the Markov property across different steps of the algorithm.
+         */
+        private EnsureMarkov ensureMarkovHelper = null;
+        /**
+         * A reference to the last instance of the EnsureMarkov helper used during the algorithm's execution. This
+         * variable facilitates the management and reuse of the EnsureMarkov helper object, which is designed to
+         * preserve and enforce the Markov property during the search process. It is updated to reflect the most recent
+         * state of the EnsureMarkov helper, ensuring consistency throughout the algorithm's iterations or steps.
+         */
+        private EnsureMarkov lastEnsureMarkovHelper = null;
+
+        /**
+         * Default constructor for the State class.
+         * <p>
+         * This constructor initializes a new instance of the State class without setting any specific field values. It
+         * is primarily used to create a State object that can later be configured using its various methods.
+         */
+        public State() {
+        }
+
+        /**
+         * Captures and stores the current state of several key fields in the algorithm for later restoration. This
+         * method creates copies of the current state of `pag`, known colliders, separation set map, and the
+         * `ensureMarkovHelper` instance. These copies are saved into respective fields to preserve the state at that
+         * moment in time.
+         * <p>
+         * This operation is useful for checkpointing the algorithm's progress and facilitates rollback or review of
+         * previous states during the algorithm’s execution.
+         */
+        private void storeState() {
+            this.lastPag = new EdgeListGraph(this.pag);
+            this.lastSepsetMap = new SepsetMap(sepsetMap);
+            this.lastEnsureMarkovHelper = new EnsureMarkov(ensureMarkovHelper);
+        }
+
+        /**
+         * Restores the previously saved state of various fields in the algorithm.
+         * <p>
+         * This method reinitializes the following components using their last saved states: (a) The PAG graph is
+         * restored to its previous state using the last known PAG. (b) The set of known CPDAG colliders is updated
+         * using the last recorded colliders. (c) The separation set map is restored from its last saved version. (d)
+         * The `ensureMarkovHelper` object is reset to its previous state.
+         * <p>
+         * It also updates the search strategy with the restored separation set map, ensuring consistency with the
+         * previous checkpoint. This operation enables the algorithm to roll back or resume from a prior state if
+         * needed.
+         */
+        private void restoreState() {
+            this.pag = new EdgeListGraph(this.lastPag);
+            this.sepsetMap = new SepsetMap(lastSepsetMap);
+            this.ensureMarkovHelper = new EnsureMarkov(lastEnsureMarkovHelper);
+            this.strategy.setSepsetMap(sepsetMap);
+        }
+
+        /**
+         * Sets the instance of the EnsureMarkov helper to be used for managing and enforcing the Markov property during
+         * the algorithm's execution.
+         *
+         * @param ensureMarkov the EnsureMarkov instance to be associated with the current state.
+         */
+        public void setEnsureMarkovHelper(EnsureMarkov ensureMarkov) {
+            this.ensureMarkovHelper = ensureMarkov;
+        }
+
+        /**
+         * Sets the Partial Ancestral Graph (PAG) to be used for representing causal relationships among variables in
+         * the algorithm.
+         *
+         * @param pag the PAG graph to be assigned to the current state. This graph encodes causal structures consistent
+         *            with the observed data, considering latent variables while excluding selection bias.
+         */
+        public void setPag(Graph pag) {
+            this.pag = pag;
+        }
+
+        /**
+         * Sets the R0R4 strategy test-based instance that is used for the search algorithm.
+         *
+         * @param strategy the R0R4 strategy test-based instance to be used in the algorithm.
+         */
+        public void setStrategy(R0R4StrategyTestBased strategy) {
+            this.strategy = strategy;
+        }
+
+        /**
+         * Represents the learned Partial Ancestral Graph (PAG) in the FCIT search algorithm. The PAG is a graphical
+         * representation that encodes causal relationships among variables that are consistent with the observed data
+         * and assumes the presence of latent confounders but no selection bias. It is initialized to null and is
+         * populated as the search algorithm progresses.
+         */
+        public Graph getPag() {
+            return pag;
+        }
+
+        /**
+         * A map that maintains separator sets (sepsets) for pairs of nodes in a graph. The separator sets are used to
+         * represent conditional independence relationships identified during the graph search process. This variable is
+         * crucial in storing and retrieving separating sets for specific node pairs and contributes to determining the
+         * structure of the graph by encoding constraints.
+         */
+        public SepsetMap getSepsetMap() {
+            return sepsetMap;
+        }
+
+        /**
+         * A helper class to help preserve Markov.
+         */
+        public EnsureMarkov getEnsureMarkovHelper() {
+            return ensureMarkovHelper;
+        }
     }
 }

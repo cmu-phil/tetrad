@@ -339,15 +339,8 @@ public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, Us
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
 
-        // FCI-ORIENT
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
         // FCIT
-        search.setRecursionDepth(parameters.getInt(Params.GRASP_DEPTH));
-        search.setMaxBlockingPathLength(parameters.getInt(Params.MAX_BLOCKING_PATH_LENGTH));
-        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxDdpPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
-        search.setTestTimeout(parameters.getLong(Params.TEST_TIMEOUT));
+//        search.setDepth(parameters.getInt(Params.DEPTH));
         search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
@@ -421,11 +414,7 @@ public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, Us
         // FCIT
         params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
-        params.add(Params.MAX_BLOCKING_PATH_LENGTH);
-        params.add(Params.DEPTH);
-        params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.GUARANTEE_PAG);
-//        params.add(Params.DO_DDP_EDGE_REMOVAL_STEP);
         params.add(Params.ENSURE_MARKOV);
 
         // General

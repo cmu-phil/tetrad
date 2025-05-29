@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.score.PoissonPriorScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -21,12 +22,12 @@ import java.util.List;
  * BIC algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
  */
 @TestOfIndependence(
-        name = "SEM BIC Test",
-        command = "sem-bic-test",
+        name = "Poisson Prior Test",
+        command = "poisson-prior-test",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 @LinearGaussian
-public class SemBicTest implements IndependenceWrapper {
+public class PoissonBicTest implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -34,7 +35,7 @@ public class SemBicTest implements IndependenceWrapper {
     /**
      * Constructs a new instance of the SEM BIC test.
      */
-    public SemBicTest() {
+    public PoissonBicTest() {
     }
 
     /**
@@ -48,16 +49,18 @@ public class SemBicTest implements IndependenceWrapper {
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
-        SemBicScore score;
+        PoissonPriorScore score;
 
-        if (dataSet instanceof ICovarianceMatrix) {
-            score = new SemBicScore((ICovarianceMatrix) dataSet);
+        if (dataSet instanceof DataSet) {
+            score = new edu.cmu.tetrad.search.score.PoissonPriorScore((DataSet) dataSet, parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
+        } else if (dataSet instanceof ICovarianceMatrix) {
+            score = new edu.cmu.tetrad.search.score.PoissonPriorScore((ICovarianceMatrix) dataSet);
         } else {
-            score = new SemBicScore((DataSet) dataSet, precomputeCovariances);
+            throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
-        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-        score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
+
+        score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
+        score.setSingularityLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -69,7 +72,7 @@ public class SemBicTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "SEM BIC Test";
+        return "Poisson Prior Test";
     }
 
     /**
@@ -90,9 +93,8 @@ public class SemBicTest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add(Params.PENALTY_DISCOUNT);
-        params.add(Params.STRUCTURE_PRIOR);
         params.add(Params.PRECOMPUTE_COVARIANCES);
+        params.add(Params.POISSON_LAMBDA);
         params.add(Params.SINGULARITY_LAMBDA);
         return params;
     }

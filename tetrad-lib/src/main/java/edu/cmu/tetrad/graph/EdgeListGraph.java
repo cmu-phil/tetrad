@@ -991,10 +991,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public void reorientAllWith(Endpoint endpoint) {
         for (Edge edge : getEdges()) {
-            removeEdge(edge);
-            Edge edge2 = new Edge(edge);
-            edge2.setEndpoint1(endpoint);
-            edge2.setEndpoint2(endpoint);
+            Edge edge2 = new Edge(edge.getNode1(), edge.getNode2(), endpoint, endpoint);
+            removeEdges(edge.getNode1(), edge.getNode2());
             addEdge(edge2);
         }
     }

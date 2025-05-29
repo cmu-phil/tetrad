@@ -34,56 +34,56 @@ public class RecursiveDiscriminatingPathRule {
 
     }
 
-    /**
-     * Checks for conditional independence between two nodes {@code x} and {@code y} in the context of a given blocking
-     * set, recursively analyzing potential discriminating paths. This method evaluates combinations of nodes in the
-     * blocking set that satisfy independence conditions.
-     *
-     * @param test               The independence test object used to evaluate conditional independence.
-     * @param x                  The first node for which independence is being checked.
-     * @param y                  The second node for which independence is being checked.
-     * @param blocking           The initial set of nodes considered as the blocking set for independence tests.
-     * @param vNodes             The subset of nodes identifying possible colliders in the analysis.
-     * @param discriminatingPath The discriminating path data structure containing relevant path information.
-     * @param ensureMarkovHelper A helper object for ensuring adherence to the Markov property during the checks.
-     * @return {@code true} if the nodes {@code x} and {@code y} are conditionally independent given the blocking set;
-     * otherwise, {@code false}.
-     * @throws InterruptedException If the process is interrupted during execution.
-     */
-    public static Set<Node> checkIndependenceRecursive(IndependenceTest test, Node x, Node y, Set<Node> blocking, Set<Node> vNodes, DiscriminatingPath discriminatingPath, EnsureMarkov ensureMarkovHelper) throws InterruptedException {
-
-        List<Node> vs = new ArrayList<>();
-        List<Node> nonVs = new ArrayList<>();
-
-        for (Node v : blocking) {
-            if (vNodes.contains(v)) {
-                vs.add(v);
-            } else {
-                nonVs.add(v);
-            }
-        }
-
-        Node v = discriminatingPath.getV();
-        vs.remove(v);
-
-        SublistGenerator generator = new SublistGenerator(vs.size(), vs.size());
-        int[] choice;
-
-        while ((choice = generator.next()) != null) {
-            Set<Node> newBlocking = GraphUtils.asSet(choice, vs);
-            newBlocking.add(v);
-            newBlocking.addAll(nonVs);
-
-            // You didn't condition on any colliders. V is in the set. So V is a noncollider.
-            boolean independent = ensureMarkovHelper != null ? ensureMarkovHelper.markovIndependence(x, y, newBlocking) : test.checkIndependence(x, y, newBlocking).isIndependent();
-
-            if (independent) {
-                return newBlocking;
-            }
-        }
-
-        return blocking;
-    }
+//    /**
+//     * Checks for conditional independence between two nodes {@code x} and {@code y} in the context of a given blocking
+//     * set, recursively analyzing potential discriminating paths. This method evaluates combinations of nodes in the
+//     * blocking set that satisfy independence conditions.
+//     *
+//     * @param test               The independence test object used to evaluate conditional independence.
+//     * @param x                  The first node for which independence is being checked.
+//     * @param y                  The second node for which independence is being checked.
+//     * @param blocking           The initial set of nodes considered as the blocking set for independence tests.
+//     * @param vNodes             The subset of nodes identifying possible colliders in the analysis.
+//     * @param discriminatingPath The discriminating path data structure containing relevant path information.
+//     * @param ensureMarkovHelper A helper object for ensuring adherence to the Markov property during the checks.
+//     * @return {@code true} if the nodes {@code x} and {@code y} are conditionally independent given the blocking set;
+//     * otherwise, {@code false}.
+//     * @throws InterruptedException If the process is interrupted during execution.
+//     */
+//    public static Set<Node> checkIndependenceRecursive(IndependenceTest test, Node x, Node y, Set<Node> blocking, Set<Node> vNodes, DiscriminatingPath discriminatingPath, EnsureMarkov ensureMarkovHelper) throws InterruptedException {
+//
+//        List<Node> vs = new ArrayList<>();
+//        List<Node> nonVs = new ArrayList<>();
+//
+//        for (Node v : blocking) {
+//            if (vNodes.contains(v)) {
+//                vs.add(v);
+//            } else {
+//                nonVs.add(v);
+//            }
+//        }
+//
+//        Node v = discriminatingPath.getV();
+//        vs.remove(v);
+//
+//        SublistGenerator generator = new SublistGenerator(vs.size(), vs.size());
+//        int[] choice;
+//
+//        while ((choice = generator.next()) != null) {
+//            Set<Node> newBlocking = GraphUtils.asSet(choice, vs);
+//            newBlocking.add(v);
+//            newBlocking.addAll(nonVs);
+//
+//            // You didn't condition on any colliders. V is in the set. So V is a noncollider.
+//            boolean independent = ensureMarkovHelper != null ? ensureMarkovHelper.markovIndependence(x, y, newBlocking) : test.checkIndependence(x, y, newBlocking).isIndependent();
+//
+//            if (independent) {
+//                return newBlocking;
+//            }
+//        }
+//
+//        return blocking;
+//    }
 
 
     /**
@@ -110,12 +110,6 @@ public class RecursiveDiscriminatingPathRule {
                                                    int maxBlockingPathLength, int maxDdpPathLength, EnsureMarkov ensureMarkovHelper, int depth)
             throws InterruptedException {
 
-        // Preliminary orientation (do we need this? Maybe not; this is already in the context of a final orienation procedure))
-//        fciOrient.setUseR4(false);
-//        fciOrient.setCompleteRuleSetUsed(false);
-//        fciOrient.finalOrientation(pag);
-//        fciOrient.setUseR4(false);
-
         // Get the V nodes--these need to be blocked in every combination, as we don't know which of these are colliders
         // on their respective discriminating paths.
         List<Node> vNodes = getVNodes(pag, x, y, maxDdpPathLength);
@@ -128,7 +122,6 @@ public class RecursiveDiscriminatingPathRule {
         SublistGenerator gen1 = new SublistGenerator(common.size(), common.size());
         int[] choice2;
 
-        outerLoop:
         while ((choice2 = gen1.next()) != null) {
             Set<Node> c = GraphUtils.asSet(choice2, common);
             Set<Node> perhapsNotFollowed = new HashSet<>(vNodes);
@@ -149,20 +142,20 @@ public class RecursiveDiscriminatingPathRule {
             for (int[] indices : allChoices) {
 
                 // Convert indices -> actual nodes
-                Set<Node> notFollowedSet = GraphUtils.asSet(indices, _perhapsNotFollowed);
+                Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
 
                 // (A) blockPathsRecursively
-                Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), notFollowedSet, maxBlockingPathLength);
+                Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
 
                 Set<Node> blocking = b.getLeft();
 
                 for (Node f : vNodes) {
-                    if (!notFollowedSet.contains(f)) {
+                    if (!vNodesNotFollowed.contains(f)) {
                         blocking.add(f);
                     }
                 }
 
-//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + notFollowedSet + " = " + blocking);
+//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + vNodesNotFollowed + " = " + blocking);
 
                 // b minus c
                 Set<Node> testSet = new HashSet<>(blocking);

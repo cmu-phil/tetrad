@@ -226,7 +226,9 @@ public final class SepsetMap implements TetradSerializable {
         this.sepsets.putAll(newSepsets.sepsets);
     }
 
-
+    public Set<Set<Node>> keySet() {
+        return this.sepsets.keySet();
+    }
 }
 
 
