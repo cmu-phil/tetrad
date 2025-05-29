@@ -155,6 +155,30 @@ public class Paths implements TetradSerializable {
         return newOrder;
     }
 
+    public List<Node> getValidOrderMag(List<Node> initialOrder, boolean forward) {
+        List<Node> _initialOrder = new ArrayList<>(initialOrder);
+        Graph _graph = new EdgeListGraph(this.graph);
+
+        if (forward) Collections.reverse(_initialOrder);
+        List<Node> newOrder = new ArrayList<>();
+
+        while (!_initialOrder.isEmpty()) {
+            Iterator<Node> itr = _initialOrder.iterator();
+            Node x;
+            do {
+                if (itr.hasNext()) x = itr.next();
+                else throw new IllegalArgumentException("This graph has a cycle.");
+            } while (invalidSinkMag(x, _graph));
+            newOrder.add(x);
+            _graph.removeNode(x);
+            itr.remove();
+        }
+
+        Collections.reverse(newOrder);
+
+        return newOrder;
+    }
+
     /**
      * Reorders the given order into a valid causal order for either a DAG or a CPDAG. (bryanandrews)
      *
@@ -187,6 +211,8 @@ public class Paths implements TetradSerializable {
     /**
      * The variable x is a valid sink if it has no children and its neighbors x--z form a clique; otherwise it is an
      * invalid sink.
+     * <p>
+     * Assume a DAG or CPDAG.
      *
      * @param x     The node to test.
      * @param graph The graph to test.
@@ -204,6 +230,25 @@ public class Paths implements TetradSerializable {
             Node y = neighbors.pop();
             for (Node z : neighbors) if (!graph.isAdjacentTo(y, z)) return true;
         }
+
+        return false;
+    }
+
+    private boolean invalidSinkMag(Node x, Graph graph) {
+//        LinkedList<Node> neighbors = new LinkedList<>();
+
+        for (Edge edge : graph.getEdges(x)) {
+//            if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
+            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) {
+                return true;
+//                neighbors.add(edge.getDistalNode(x));
+            }
+        }
+
+//        while (!neighbors.isEmpty()) {
+//            Node y = neighbors.pop();
+//            for (Node z : neighbors) if (!graph.isAdjacentTo(y, z)) return true;
+//        }
 
         return false;
     }
@@ -1503,14 +1548,14 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Identifies and returns a list of possible d-separating nodes relative to a specified node in the graph.
-     * The search is constrained by the specified maximum path length.
+     * Identifies and returns a list of possible d-separating nodes relative to a specified node in the graph. The
+     * search is constrained by the specified maximum path length.
      *
-     * @param x the target node for which possible d-separating nodes are to be identified
-     * @param maxPossibleDsepPathLength the maximum allowable path length for determining d-separating nodes;
-     *                                   a value of -1 indicates no explicit limit
-     * @return a sorted list of nodes that are potential d-separators for the specified node,
-     *         ordered in descending order
+     * @param x                         the target node for which possible d-separating nodes are to be identified
+     * @param maxPossibleDsepPathLength the maximum allowable path length for determining d-separating nodes; a value of
+     *                                  -1 indicates no explicit limit
+     * @return a sorted list of nodes that are potential d-separators for the specified node, ordered in descending
+     * order
      */
     public List<Node> possibleDsep(Node x, int maxPossibleDsepPathLength) {
 
@@ -2740,8 +2785,8 @@ public class Paths implements TetradSerializable {
      *                                target, 3 = near either.
      * @param maxPathLength           The maximum length of the path to consider for backdoor paths. If a value of -1 is
      *                                given, all paths will be considered.
-     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;. Return an smpty
-     * list if source == target or there is no amenable path from source to target.
+     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;. Return an smpty list if source ==
+     * target or there is no amenable path from source to target.
      */
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
                                           int nearWhichEndpoint, int maxPathLength) {
@@ -2945,13 +2990,31 @@ public class Paths implements TetradSerializable {
         return !existsDirectedCycle();
     }
 
+    public boolean isMaximal() {
+        List<Node> selection = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        List<Node> _nodes = graph.getNodes();
+
+        for (int i = 0; i < _nodes.size(); i++) {
+            for (int j = i + 1; j < _nodes.size(); j++) {
+                Node x = _nodes.get(i);
+                Node y = _nodes.get(j);
+
+                if (!graph.isAdjacentTo(x, y) && graph.paths().existsInducingPath(x, y, new HashSet<>(selection))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     /**
-     * Represents an element in a navigation path consisting of a current node
-     * and the previous node.
-     *
-     * This class is primarily used to track the traversal history in a pathfinding
-     * context or similar scenarios where the relationship between nodes in a path
-     * needs to be maintained.
+     * Represents an element in a navigation path consisting of a current node and the previous node.
+     * <p>
+     * This class is primarily used to track the traversal history in a pathfinding context or similar scenarios where
+     * the relationship between nodes in a path needs to be maintained.
      */
     static class PathElement {
         Node current;  // The current node
@@ -3046,26 +3109,6 @@ public class Paths implements TetradSerializable {
             result.add(element);
             return result;
         }
-    }
-
-    public boolean isMaximal() {
-        List<Node> selection = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
-        List<Node> _nodes = graph.getNodes();
-
-        for (int i = 0; i < _nodes.size(); i++) {
-            for (int j = i + 1; j < _nodes.size(); j++) {
-                Node x = _nodes.get(i);
-                Node y = _nodes.get(j);
-
-                if (!graph.isAdjacentTo(x, y) && graph.paths().existsInducingPath(x, y,  new HashSet<>(selection))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 }
 

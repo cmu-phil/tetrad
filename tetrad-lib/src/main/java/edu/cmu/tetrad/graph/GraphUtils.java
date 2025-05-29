@@ -2641,7 +2641,7 @@ public final class GraphUtils {
     }
 
 
-    private static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
+    public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
         boolean changed = false;
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {

@@ -899,26 +899,25 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testZhangPagToMag() {
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1; i++) {
 //            System.out.println("================= RUN " + (i + 1) + " TEST ====================");
 
-            long seed = RandomUtil.getInstance().nextLong();
-//            long seed = 3483347644872987035L;
+//            long seed = RandomUtil.getInstance().nextLong();
+            long seed = -6064115539269406491L;
             RandomUtil.getInstance().setSeed(seed);
 
             Graph dag = RandomGraph.randomGraph(20, 6, 40, 100, 100, 100, false);
-            Graph pag = new DagToPag(dag).convert();
-
-            if (pag.paths().existsDirectedCycle()) {
-                System.out.println("cyclic PAG");
-            }
+            DagToPag dagToPag = new DagToPag(dag);
+            dagToPag.setVerbose(true);
+            Graph pag = dagToPag.convert();
 
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
+//            mag = GraphTransforms.dagToMag(dag);
 
             Set<Triple> magUnshieldedTriples = getUnshieldedColliders(mag);
             Set<Triple> pagUnshieldedTriples = getUnshieldedColliders(pag);
@@ -946,7 +945,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitSimpleR4() {
         Graph graph = GraphUtils.convert("X-->W,V-->W,V-->Y,W-->Y");
         Graph pag = GraphUtils.convert("Xo->W,Vo->W,V-->Y,W-->Y");
