@@ -148,10 +148,10 @@ public final class Fcit implements IGraphSearch {
     public Graph search() throws InterruptedException {
         List<Node> nodes;
 
-        if (this.score != null) {
-            nodes = new ArrayList<>(this.score.getVariables());
+        if (score != null) {
+            nodes = new ArrayList<>(score.getVariables());
         } else {
-            nodes = new ArrayList<>(this.test.getVariables());
+            nodes = new ArrayList<>(test.getVariables());
         }
 
         TetradLogger.getInstance().log("===Starting FCIT===");
@@ -255,7 +255,7 @@ public final class Fcit implements IGraphSearch {
                 TetradLogger.getInstance().log("Initializing scorer with SP best order.");
             }
         } else {
-            throw new IllegalArgumentException("Unknown startWith option: " + startWith);
+            throw new IllegalArgumentException("That startWith option has not been configured: " + startWith);
         }
 
         if (verbose) {
@@ -268,12 +268,12 @@ public final class Fcit implements IGraphSearch {
 
         TeyssierScorer scorer = null;
 
-        if (this.score != null) {
+        if (score != null) {
             scorer = new TeyssierScorer(test, score);
             scorer.score(best);
             scorer.setKnowledge(knowledge);
-            scorer.setUseScore(!(this.score instanceof GraphScore));
-            scorer.setUseRaskuttiUhler(this.score instanceof GraphScore);
+            scorer.setUseScore(!(score instanceof GraphScore));
+            scorer.setUseRaskuttiUhler(score instanceof GraphScore);
             scorer.bookmark();
         }
 
@@ -292,7 +292,7 @@ public final class Fcit implements IGraphSearch {
 
         // The main procedure.
         state.setPag(GraphTransforms.dagToPag(dag));
-        this.initialColliders = noteInitialColliders(best, state.getPag());
+        initialColliders = noteInitialColliders(best, state.getPag());
         state.setEnsureMarkovHelper(new EnsureMarkov(state.getPag(), test));
         state.getEnsureMarkovHelper().setEnsureMarkov(ensureMarkov);
 
@@ -338,13 +338,13 @@ public final class Fcit implements IGraphSearch {
      * @return A fully configured PermutationSearch instance using the BOSS algorithm.
      */
     private @NotNull PermutationSearch getBossSearch() {
-        Boss subAlg = new Boss(this.score);
-        subAlg.setUseBes(this.useBes);
-        subAlg.setNumStarts(this.numStarts);
+        Boss subAlg = new Boss(score);
+        subAlg.setUseBes(useBes);
+        subAlg.setNumStarts(numStarts);
         subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
         subAlg.setVerbose(verbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
-        alg.setKnowledge(this.knowledge);
+        alg.setKnowledge(knowledge);
         return alg;
     }
 
@@ -445,10 +445,14 @@ public final class Fcit implements IGraphSearch {
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
         if (!state.getPag().paths().isMaximal() || edgeMarkingDiscrepancy()) {
-            System.out.println("Restored: " + message);
+            if (verbose) {
+                TetradLogger.getInstance().log("Restored: " + message);
+            }
             state.restoreState();
         } else {
-            System.out.println("Good: " + message);
+            if (verbose) {
+                TetradLogger.getInstance().log("Good: " + message);
+            }
             state.storeState();
         }
     }
@@ -698,7 +702,6 @@ public final class Fcit implements IGraphSearch {
                         }
                     }
 
-//                    b.removeAll(c);
                     if (S.contains(b)) continue;
                     S.add(new HashSet<>(b));
 
