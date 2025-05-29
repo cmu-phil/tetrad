@@ -20,12 +20,15 @@
 /// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -108,6 +111,18 @@ public final class Fcit implements IGraphSearch {
      * node.
      */
     private Set<Triple> initialColliders;
+    /**
+     * Whether to track scores.
+     */
+    private boolean trackScores = false;
+    /**
+     * If scores are tracked, this MAG SEM score will be used.
+     */
+    private MagSemBicScore magSemBicScore;
+    /**
+     * The running score. This should not go down.
+     */
+    private double modelScore = Double.NEGATIVE_INFINITY;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -131,6 +146,10 @@ public final class Fcit implements IGraphSearch {
 
         this.test = test;
         this.score = score;
+
+        if (trackScores) {
+            this.magSemBicScore = new MagSemBicScore(new CovarianceMatrix((DataSet) test.getData()));
+        }
 
         test.setVerbose(false);
 
@@ -292,6 +311,10 @@ public final class Fcit implements IGraphSearch {
 
         // The main procedure.
         state.setPag(GraphTransforms.dagToPag(dag));
+
+        if (trackScores) {
+            this.modelScore = scoreMag(state.getPag());
+        }
         initialColliders = noteInitialColliders(best, state.getPag());
         state.setEnsureMarkovHelper(new EnsureMarkov(state.getPag(), test));
         state.getEnsureMarkovHelper().setEnsureMarkov(ensureMarkov);
@@ -328,6 +351,29 @@ public final class Fcit implements IGraphSearch {
 
         return GraphUtils.replaceNodes(state.getPag(), nodes);
     }
+
+    private double scoreMag(Graph pag) {
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        magSemBicScore.setMag(mag);
+
+        double score = 0.0;
+        List<Node> nodes = mag.getNodes();
+
+        for (Node node : mag.getNodes()) {
+            int i = nodes.indexOf(node);
+
+            List<Node> parents = mag.getParents(node);
+            int[] p = new int[nodes.size()];
+            for (Node parent : parents) {
+                p[i] = nodes.indexOf(parent);
+            }
+
+            score += magSemBicScore.localScore(i, p);
+        }
+
+        return score;
+    }
+
 
     /**
      * Configures and returns a new instance of PermutationSearch using the BOSS algorithm. The method initializes the
@@ -564,6 +610,17 @@ public final class Fcit implements IGraphSearch {
                     state.getSepsetMap().set(x, y, Set.of());
                     state.getPag().removeEdge(x, y);
                     refreshGraph("Unconditional independence");
+
+                    if (trackScores) {
+                        double _modelScore = scoreMag(state.getPag());
+
+                        if (_modelScore < this.modelScore) {
+                            TetradLogger.getInstance().log("Score lowered; restoring.");
+                            state.restoreState();
+                        } else {
+                            this.modelScore = _modelScore;
+                        }
+                    }
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -630,6 +687,18 @@ public final class Fcit implements IGraphSearch {
 
                 state.getPag().removeEdge(x, y);
                 refreshGraph("Potential DDP (recall sepset)");
+
+                if (trackScores) {
+                    double _modelScore = scoreMag(state.getPag());
+
+                    if (_modelScore < this.modelScore) {
+                        TetradLogger.getInstance().log("Score lowered; restoring.");
+                        state.restoreState();
+                    } else {
+                        this.modelScore = _modelScore;
+                    }
+                }
+
                 return;
             }
 
