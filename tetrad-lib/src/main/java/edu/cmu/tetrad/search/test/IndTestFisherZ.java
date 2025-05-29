@@ -217,10 +217,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
 
-        if (x.getName().equals("i") && y.getName().equals("ps")) {
-            System.out.println();
-        }
-
 //        IndependenceResult _result = facts.get(new IndependenceFact(x, y, z));
 //
 //        if (_result != null) {
