@@ -255,7 +255,7 @@ public final class Fcit implements IGraphSearch {
                 TetradLogger.getInstance().log("Initializing scorer with SP best order.");
             }
         } else {
-            throw new IllegalArgumentException("Unknown startWith algorithm: " + startWith);
+            throw new IllegalArgumentException("Unknown startWith option: " + startWith);
         }
 
         if (verbose) {
@@ -265,8 +265,6 @@ public final class Fcit implements IGraphSearch {
         long stop1 = System.currentTimeMillis();
 
         long start2 = System.currentTimeMillis();
-
-        Graph cpdag = GraphTransforms.dagToCpdag(dag);
 
         TeyssierScorer scorer = null;
 
@@ -284,11 +282,6 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        if (verbose) {
-            TetradLogger.getInstance().log("Collider orientation and edge removal.");
-        }
-
-        // The main procedure.
         if (scorer != null) {
             scorer.score(best);
         }
@@ -297,9 +290,9 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
+        // The main procedure.
         state.setPag(GraphTransforms.dagToPag(dag));
         this.initialColliders = noteInitialColliders(best, state.getPag());
-
         state.setEnsureMarkovHelper(new EnsureMarkov(state.getPag(), test));
         state.getEnsureMarkovHelper().setEnsureMarkov(ensureMarkov);
 
@@ -313,9 +306,13 @@ public final class Fcit implements IGraphSearch {
         // New definite discriminating paths may be created, so additional checking needs to be done until the
         // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
         // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
-        // convergence.
+        // convergence. Note that for checking discriminating paths, the recursive algorithm may not be 100%
+        // effective, so we need to supplement this with FCI-style discriminating path checking in case a sepset
+        // is not found. This is to accommodate "Puzzle #2."
         removeExtraEdges();
 
+        // Also, to handle "Puzzle #2," we remove incorrect shields for discriminating path colliders on collider
+        // paths and then reorient.
         checkUnconditionalIndependence();
 
         if (verbose) {
