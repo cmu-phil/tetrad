@@ -149,6 +149,7 @@ public final class Fcit implements IGraphSearch {
 
         if (trackScores) {
             this.magSemBicScore = new MagSemBicScore(new CovarianceMatrix((DataSet) test.getData()));
+            this.magSemBicScore.setPenaltyDiscount(1);
         }
 
         test.setVerbose(false);
@@ -354,7 +355,9 @@ public final class Fcit implements IGraphSearch {
 
     private double scoreMag(Graph pag) {
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        mag = GraphUtils.replaceNodes(mag, score.getVariables());
         magSemBicScore.setMag(mag);
+        magSemBicScore.setOrder(mag.paths().getValidOrderMag(mag.getNodes(), false));
 
         double score = 0.0;
         List<Node> nodes = mag.getNodes();
@@ -363,9 +366,9 @@ public final class Fcit implements IGraphSearch {
             int i = nodes.indexOf(node);
 
             List<Node> parents = mag.getParents(node);
-            int[] p = new int[nodes.size()];
-            for (Node parent : parents) {
-                p[i] = nodes.indexOf(parent);
+            int[] p = new int[parents.size()];
+            for (int j = 0; j < parents.size(); j++) {
+                p[j] = nodes.indexOf(parents.get(j));
             }
 
             score += magSemBicScore.localScore(i, p);
@@ -602,6 +605,8 @@ public final class Fcit implements IGraphSearch {
             }
 
             try {
+                System.out.println("Checking edge " + x + " *-> " + y + " from PAG.");
+
                 if (state.getEnsureMarkovHelper().markovIndependence(x, y, Set.of())) {
                     if (verbose) {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
@@ -783,6 +788,17 @@ public final class Fcit implements IGraphSearch {
                             state.getSepsetMap().set(x, y, b);
                             state.getPag().removeEdge(x, y);
                             refreshGraph("x _||_ y | b \\ c (new sepset)");
+                        }
+
+                        if (trackScores) {
+                            double _modelScore = scoreMag(state.getPag());
+
+                            if (_modelScore < this.modelScore) {
+                                TetradLogger.getInstance().log("Score lowered; restoring.");
+                                state.restoreState();
+                            } else {
+                                this.modelScore = _modelScore;
+                            }
                         }
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
