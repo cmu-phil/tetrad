@@ -112,6 +112,10 @@ public final class Fcit implements IGraphSearch {
      */
     private Set<Triple> initialColliders;
     /**
+     * Whether the Zhang complete rule set should be used.
+     */
+    private boolean completeRuleSetUsed = true;
+    /**
      * Whether to track scores.
      */
     private boolean trackScores = false;
@@ -189,6 +193,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(verbose);
         fciOrient.setParallel(false);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -869,6 +874,16 @@ public final class Fcit implements IGraphSearch {
      */
     public void setEnsureMarkov(boolean ensureMarkov) {
         this.ensureMarkov = ensureMarkov;
+    }
+
+    /**
+     * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
+     *
+     * @param completeRuleSetUsed True for the complete Zhang rule set.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
