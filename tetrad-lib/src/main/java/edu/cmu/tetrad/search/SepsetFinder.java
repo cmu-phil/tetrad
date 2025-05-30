@@ -4,7 +4,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -281,27 +280,6 @@ public class SepsetFinder {
      */
     public static Set<Node> blockPathsLocalMarkov(Graph graph, Node x) {
         return new HashSet<>(graph.getParents(x));
-    }
-
-    /**
-     * Retrieves set that blocks all blockable paths between x and y in the given graph, where this set contains the
-     * given nodes, assuming ~adj(x, y). If there is an x--y edge in the graph, it is removed before looking for
-     * a blocking set and then re-added. This is to ensure a minimal blocking set is found that m-separates all paths
-     * from x to y.
-     *
-     * @param graph         the graph to analyze
-     * @param x             the first node
-     * @param y             the second node
-     * @param containing    the set of nodes that must be in the sepset
-     * @param notFollowed   the set of nodes that should not be followed along paths
-     * @param maxPathLength the maximum length of a path to consider
-     * @return the sepset of the endpoints for the given edge in the DAG graph based on the specified conditions, or
-     * {@code null} if no sepset can be found.
-     * @throws InterruptedException if any.
-     */
-    public static Pair<Set<Node>, Boolean> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
-                                                                 int maxPathLength) throws InterruptedException {
-        return RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, notFollowed, maxPathLength);
     }
 
     private static @NotNull List<List<Integer>> getChoices(List<Node> adjx, int depth) {

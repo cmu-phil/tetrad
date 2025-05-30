@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.cmu.tetrad.search.SepsetFinder.blockPathsLocalMarkov;
-import static edu.cmu.tetrad.search.SepsetFinder.blockPathsRecursively;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -139,7 +139,7 @@ public class TestSepsetMethods {
                     }
                     case BLOCK_PATHS_RECURSIVELY -> {
                         try {
-                            blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), -1).getLeft();
+                            blockingSet = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), -1).getLeft();
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }
@@ -211,8 +211,9 @@ public class TestSepsetMethods {
 
         Set<Node> blocking = null;
         try {
-            blocking = SepsetFinder.blockPathsRecursively(graph, graph.getNode("X"), graph.getNode("Z"),
-                    new HashSet<>(), Set.of(), -1).getLeft();
+            Node x = graph.getNode("X");
+            Node y = graph.getNode("Z");
+            blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), -1).getLeft();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -260,7 +261,7 @@ public class TestSepsetMethods {
 
                 Set<Node> blocking = null;
                 try {
-                    blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1).getLeft();
+                    blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, parents, Set.of(), -1).getLeft();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

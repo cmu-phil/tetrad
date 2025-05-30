@@ -2,6 +2,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.*;
@@ -1900,7 +1901,7 @@ public class Paths implements TetradSerializable {
      * @throws InterruptedException if any.
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) throws InterruptedException {
-        Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength).getLeft();
+        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength).getLeft();
 
         // TODO - should allow the user to determine whether this is a PAG.
         if (isMSeparatedFrom(x, y, blocking, false)) {

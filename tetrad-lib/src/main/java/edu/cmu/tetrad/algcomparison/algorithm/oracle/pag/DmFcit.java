@@ -19,7 +19,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SepsetFinder;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -295,9 +295,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents)
             throws InterruptedException {
-        return SepsetFinder.blockPathsRecursively(
-                graph, childA, childB, new HashSet<>(),  new HashSet<>(), -1
-        ).getLeft();
+        return RecursiveBlocking.blockPathsRecursively(graph, childA, childB, new HashSet<Node>(), new HashSet<Node>(), -1).getLeft();
     }
 
     /**
