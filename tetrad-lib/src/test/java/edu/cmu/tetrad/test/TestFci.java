@@ -603,7 +603,7 @@ public class TestFci {
 
         Set<Node> B = null;
         try {
-            B = SepsetFinder.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1).getLeft();
+            B = RecursiveBlocking.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1).getLeft();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

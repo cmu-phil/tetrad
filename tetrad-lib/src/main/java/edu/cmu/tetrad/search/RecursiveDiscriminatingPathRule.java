@@ -147,6 +147,14 @@ public class RecursiveDiscriminatingPathRule {
                 // (A) blockPathsRecursively
                 Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
 
+                if (b == null) {
+                    continue;
+                }
+
+                if (!b.getRight()) {
+                    continue;
+                }
+
                 Set<Node> blocking = b.getLeft();
 
                 for (Node f : vNodes) {

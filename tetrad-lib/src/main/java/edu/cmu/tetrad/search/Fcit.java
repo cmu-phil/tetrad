@@ -186,7 +186,6 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("===Starting FCIT===");
 
         this.state = new State();
-
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(state.getSepsetMap());
         strategy.setVerbose(verbose);
@@ -759,7 +758,7 @@ public final class Fcit implements IGraphSearch {
                 // Instead of newSingleThreadExecutor(), we use the shared 'executor'
                 Pair<Set<Node>, Boolean> B;
                 try {
-                    B = SepsetFinder.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
+                    B = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
