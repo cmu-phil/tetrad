@@ -799,6 +799,10 @@ public final class Fcit implements IGraphSearch {
                     if (S.contains(b)) continue;
                     S.add(new HashSet<>(b));
 
+                    if (b.size() > depth) {
+                        continue;
+                    }
+
                     try {
                         if (state.getEnsureMarkovHelper().markovIndependence(x, y, b)) {
                             if (verbose) {
