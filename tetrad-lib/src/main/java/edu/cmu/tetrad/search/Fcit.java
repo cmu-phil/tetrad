@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
+import edu.cmu.tetrad.sem.Ricf;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -116,6 +117,10 @@ public final class Fcit implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
+     * The depth of search.
+     */
+    private int depth = -1;
+    /**
      * Whether to track scores.
      */
     private boolean trackScores = false;
@@ -187,6 +192,7 @@ public final class Fcit implements IGraphSearch {
         strategy.setVerbose(verbose);
         strategy.setEnsureMarkovHelper(state.ensureMarkovHelper);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
+        strategy.setDepth(depth);
 
         state.setStrategy(strategy);
 
@@ -360,7 +366,6 @@ public final class Fcit implements IGraphSearch {
 
     private double scoreMag(Graph pag) {
         Graph mag = GraphTransforms.zhangMagFromPag(pag);
-        mag = GraphUtils.replaceNodes(mag, score.getVariables());
         magSemBicScore.setMag(mag);
         magSemBicScore.setOrder(mag.paths().getValidOrderMag(mag.getNodes(), false));
 
@@ -381,7 +386,6 @@ public final class Fcit implements IGraphSearch {
 
         return score;
     }
-
 
     /**
      * Configures and returns a new instance of PermutationSearch using the BOSS algorithm. The method initializes the
@@ -493,20 +497,19 @@ public final class Fcit implements IGraphSearch {
         GraphUtils.recallInitialColliders(state.getPag(), initialColliders, knowledge);
         adjustForExtraSepsets();
         fciOrient.fciOrientbk(knowledge, state.getPag(), state.getPag().getNodes());
-        fciOrient.setUseR4(true);
         fciOrient.finalOrientation(state.getPag());
 
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
         if (!state.getPag().paths().isMaximal() || edgeMarkingDiscrepancy()) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Restored: " + message);
-            }
+//            if (verbose) {
+            TetradLogger.getInstance().log("Restored: " + message);
+//            }
             state.restoreState();
         } else {
-            if (verbose) {
-                TetradLogger.getInstance().log("Good: " + message);
-            }
+//            if (verbose) {
+            TetradLogger.getInstance().log("Good: " + message);
+//            }
             state.storeState();
         }
     }
@@ -619,7 +622,7 @@ public final class Fcit implements IGraphSearch {
 
                     state.getSepsetMap().set(x, y, Set.of());
                     state.getPag().removeEdge(x, y);
-                    refreshGraph("Unconditional independence");
+                    refreshGraph(x + " _||_ " + y + " (Unconditional independence)");
 
                     if (trackScores) {
                         double _modelScore = scoreMag(state.getPag());
@@ -628,6 +631,12 @@ public final class Fcit implements IGraphSearch {
                             TetradLogger.getInstance().log("Score lowered; restoring.");
                             state.restoreState();
                         } else {
+                            if (_modelScore > this.modelScore) {
+                                TetradLogger.getInstance().log("Score increased: Unconditional independence.");
+                            } else {
+                                TetradLogger.getInstance().log("Score unchanged: Unconditional independence.");
+                            }
+
                             this.modelScore = _modelScore;
                         }
                     }
@@ -696,7 +705,7 @@ public final class Fcit implements IGraphSearch {
                 }
 
                 state.getPag().removeEdge(x, y);
-                refreshGraph("Potential DDP (recall sepset)");
+                refreshGraph(x + " _||_ " + y + " | " + state.getSepsetMap().get(x, y) + " (recall sepset)");
 
                 if (trackScores) {
                     double _modelScore = scoreMag(state.getPag());
@@ -705,6 +714,12 @@ public final class Fcit implements IGraphSearch {
                         TetradLogger.getInstance().log("Score lowered; restoring.");
                         state.restoreState();
                     } else {
+                        if (_modelScore > this.modelScore) {
+                            TetradLogger.getInstance().log("Score increased: \"x _||_ y | b \\ c (recall sepset).");
+                        } else {
+                            TetradLogger.getInstance().log("Score unchanged: \"x _||_ y | b \\ c (recall sepset).");
+                        }
+
                         this.modelScore = _modelScore;
                     }
                 }
@@ -716,7 +731,7 @@ public final class Fcit implements IGraphSearch {
             common.retainAll(state.getPag().getAdjacentNodes(y));
 
             Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-            paths = paths == null ? Set.of() : paths;
+            paths = (paths == null) ? Set.of() : paths;
             Set<Node> perhapsNotFollowed = new HashSet<>();
 
             if (verbose) {
@@ -792,19 +807,26 @@ public final class Fcit implements IGraphSearch {
 
                             state.getSepsetMap().set(x, y, b);
                             state.getPag().removeEdge(x, y);
-                            refreshGraph("x _||_ y | b \\ c (new sepset)");
-                        }
+                            refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)");
 
-                        if (trackScores) {
-                            double _modelScore = scoreMag(state.getPag());
+                            if (trackScores) {
+                                double _modelScore = scoreMag(state.getPag());
 
-                            if (_modelScore < this.modelScore) {
-                                TetradLogger.getInstance().log("Score lowered; restoring.");
-                                state.restoreState();
-                            } else {
-                                this.modelScore = _modelScore;
+                                if (_modelScore < this.modelScore) {
+                                    TetradLogger.getInstance().log("Score lowered; restoring.");
+                                    state.restoreState();
+                                } else {
+                                    if (_modelScore > this.modelScore) {
+                                        TetradLogger.getInstance().log("Score increased: \"x _||_ y | b \\ c (new sepset).");
+                                    } else {
+                                        TetradLogger.getInstance().log("Score unchanged: \"x _||_ y | b \\ c (new sepset).");
+                                    }
+
+                                    this.modelScore = _modelScore;
+                                }
                             }
                         }
+
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -884,6 +906,20 @@ public final class Fcit implements IGraphSearch {
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    /**
+     * Sets the depth of search, which is the maximum number of variables conditioned on in any test.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
     }
 
     /**
