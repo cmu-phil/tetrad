@@ -47,7 +47,7 @@ public class RecursiveBlocking {
                                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
             throws InterruptedException {
         if (x == y) {
-            return null;
+            throw new NullPointerException("x and y are equal");
         }
 
         Set<Node> z = new HashSet<>(containing);
