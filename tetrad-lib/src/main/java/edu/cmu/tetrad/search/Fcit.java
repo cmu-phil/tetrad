@@ -135,7 +135,7 @@ public final class Fcit implements IGraphSearch {
      * if it doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise,
      * a "good" message is printed.
      */
-    private boolean printRestored;
+    private boolean printRestored = true;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -504,15 +504,18 @@ public final class Fcit implements IGraphSearch {
 
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
+        printRestored = true;
+
         if (!state.getPag().paths().isMaximal() || edgeMarkingDiscrepancy()) {
-            if (verbose || printRestored) {
+
+//            if (verbose || printRestored) {
                 TetradLogger.getInstance().log("Restored: " + message);
-            }
+//            }
             state.restoreState();
         } else {
-            if (verbose || printRestored) {
+//            if (verbose || printRestored) {
                 TetradLogger.getInstance().log("Good: " + message);
-            }
+//            }
             state.storeState();
         }
     }

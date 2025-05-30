@@ -758,7 +758,7 @@ public class TestFci {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
-            Graph graph = RandomGraph.randomGraph(30, 6, 60, 100, 100, 100, false);
+            Graph graph = RandomGraph.randomGraph(50, 6, 100, 100, 100, 100, false);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             DataSet dataSet = im.simulateData(1000, false);
@@ -771,7 +771,9 @@ public class TestFci {
             try {
                 Fcit fcit = new Fcit(test, score);
                 fcit.setPrintRestored(true);
-                fcit.setDepth(7);
+//                fcit.setVerbose(true);
+//                fcit.setDepth(7);
+                fcit.setCompleteRuleSetUsed(true);
                 Graph pag = fcit.search();
 
                 if (!pag.paths().isMaximal()) {
@@ -874,6 +876,7 @@ public class TestFci {
                 Fcit fci = new Fcit(independence, score);
                 fci.setStartWith(Fcit.START_WITH.GRASP);
                 fci.setEnsureMarkov(false);
+                fci.setCompleteRuleSetUsed(true);
                 fci.setVerbose(false);
 
                 Graph pag = fci.search();
@@ -910,16 +913,16 @@ public class TestFci {
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 1000; i++) {
 //            System.out.println("================= RUN " + (i + 1) + " TEST ====================");
 
-//            long seed = RandomUtil.getInstance().nextLong();
-            long seed = -6064115539269406491L;
+            long seed = RandomUtil.getInstance().nextLong();
+//            long seed = -6064115539269406491L;
             RandomUtil.getInstance().setSeed(seed);
 
             Graph dag = RandomGraph.randomGraph(20, 6, 40, 100, 100, 100, false);
             DagToPag dagToPag = new DagToPag(dag);
-            dagToPag.setVerbose(true);
+            dagToPag.setVerbose(false);
             Graph pag = dagToPag.convert();
 
             Graph mag = GraphTransforms.zhangMagFromPag(pag);

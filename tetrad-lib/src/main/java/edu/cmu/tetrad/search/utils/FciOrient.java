@@ -551,7 +551,6 @@ public class FciOrient {
                 this.changeFlag = false;
                 rulesR8R9R10(graph);
             }
-
         }
     }
 
@@ -861,7 +860,8 @@ public class FciOrient {
                 // Returns a map from each node to its predecessor in the shortest path. This is needed to reconstruct
                 // the path, since the Dijkstra algorithm proper does not pay attention to the path, only to the
                 // shortest distances. So we need to record this information.
-                Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, graph, x, y).getRight();
+                boolean uncovered = true;
+                Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, graph, uncovered, x, y).getRight();
 
                 // This reconstructs the path given the predecessor map.
                 List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
@@ -1117,7 +1117,8 @@ public class FciOrient {
         // This returns a map from each node to its predecessor on the path, so that we can reconstruct the path.
         // (Dijkstra's algorithm proper doesn't specify that the paths be recorded, only that the shortest distances
         // be recorded, but we can keep track of the paths as well.
-        Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, graph, x, y).getRight();
+        boolean uncovered = true;
+        Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, graph, uncovered, x, y).getRight();
 
         // This gets the path from the predecessor map.
         List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
@@ -1132,6 +1133,16 @@ public class FciOrient {
 
         if (verbose) {
             this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)) + " path = " + GraphUtils.pathString(graph, path, false));
+
+            for (int i = 2; i < path.size(); i++) {
+                if (graph.isAdjacentTo(path.get(i), path.get(i - 2))) {
+                    System.out.println("adjacent " + path.get(i) + " to " + path.get(i - 2));
+                }
+
+                if (graph.isAdjacentTo(path.getLast(), path.get(1))) {
+                    System.out.println("adjacent gamma = " + path.getLast() + " to beta = " + path.get(1));
+                }
+            }
         }
 
         this.changeFlag = true;
