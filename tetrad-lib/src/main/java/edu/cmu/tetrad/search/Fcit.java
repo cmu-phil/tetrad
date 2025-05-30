@@ -799,7 +799,7 @@ public final class Fcit implements IGraphSearch {
                     if (S.contains(b)) continue;
                     S.add(new HashSet<>(b));
 
-                    if (b.size() > depth) {
+                    if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
                         continue;
                     }
 
