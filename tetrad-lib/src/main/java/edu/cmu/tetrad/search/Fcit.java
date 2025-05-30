@@ -29,11 +29,9 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
-import edu.cmu.tetrad.sem.Ricf;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -132,6 +130,12 @@ public final class Fcit implements IGraphSearch {
      * The running score. This should not go down.
      */
     private double modelScore = Double.NEGATIVE_INFINITY;
+    /**
+     * True just in case good and restored changes are printed. The algorithm always moves to a legal PAG;
+     * if it doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise,
+     * a "good" message is printed.
+     */
+    private boolean printRestored;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -501,14 +505,14 @@ public final class Fcit implements IGraphSearch {
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
         if (!state.getPag().paths().isMaximal() || edgeMarkingDiscrepancy()) {
-//            if (verbose) {
-            TetradLogger.getInstance().log("Restored: " + message);
-//            }
+            if (verbose || printRestored) {
+                TetradLogger.getInstance().log("Restored: " + message);
+            }
             state.restoreState();
         } else {
-//            if (verbose) {
-            TetradLogger.getInstance().log("Good: " + message);
-//            }
+            if (verbose || printRestored) {
+                TetradLogger.getInstance().log("Good: " + message);
+            }
             state.storeState();
         }
     }
@@ -612,7 +616,9 @@ public final class Fcit implements IGraphSearch {
             }
 
             try {
-                System.out.println("Checking edge " + x + " *-> " + y + " from PAG.");
+                if (verbose) {
+                    TetradLogger.getInstance().log("Checking edge " + x + " *-> " + y + " from PAG.");
+                }
 
                 if (state.getEnsureMarkovHelper().markovIndependence(x, y, Set.of())) {
                     if (verbose) {
@@ -756,24 +762,22 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
                 // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Set<Node> B;
+                Set<Node> b;
                 try {
-                    B = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
+                    b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
 
                 if (verbose && !notFollowed.isEmpty()) {
-                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + B);
+                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + b);
                 }
 
                 // b will be null if the search did not conclude with a set known to either m-separate
                 // or not m-separate x and y.
-                if (B == null) {
+                if (b == null) {
                     continue;
                 }
-
-                Set<Node> b = B;
 
                 SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
                 int[] choice2;
@@ -859,6 +863,15 @@ public final class Fcit implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * True, just in case good and restored changes are printed. The algorithm always moves to a legal PAG;
+     * if it doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise,
+     * a "good" message is printed.
+     */
+    public void setPrintRestored(boolean printRestored) {
+        this.printRestored = printRestored;
     }
 
     /**

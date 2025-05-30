@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.independence.PoissonBicTest;
+import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
@@ -28,6 +30,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.score.PoissonPriorScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -37,6 +40,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
@@ -749,23 +753,25 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
-            Graph graph = RandomGraph.randomGraph(50, 6, 150, 100, 100, 100, false);
+            Graph graph = RandomGraph.randomGraph(30, 6, 60, 100, 100, 100, false);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             DataSet dataSet = im.simulateData(1000, false);
 
-            IndTestFisherZ test = new IndTestFisherZ(dataSet, 0.001);
-            SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
-            score.setPenaltyDiscount(4.0);
+//            IndependenceTest test = new IndTestFisherZ(dataSet, 0.00001);
+            IndependenceTest test = new PoissonBicTest().getTest(dataSet, new Parameters());
+            Score score = new PoissonPriorScore(new CovarianceMatrix(dataSet));
+//            score.setPenaltyDiscount(2.0);
 
             try {
                 Fcit fcit = new Fcit(test, score);
-                fcit.setVerbose(false);
+                fcit.setPrintRestored(true);
+                fcit.setDepth(7);
                 Graph pag = fcit.search();
 
                 if (!pag.paths().isMaximal()) {
