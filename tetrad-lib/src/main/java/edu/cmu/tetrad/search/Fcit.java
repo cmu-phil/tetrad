@@ -637,9 +637,9 @@ public final class Fcit implements IGraphSearch {
                             state.restoreState();
                         } else {
                             if (_modelScore > this.modelScore) {
-                                TetradLogger.getInstance().log("Score increased: Unconditional independence.");
+                                TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " (Unconditional independence)");
                             } else {
-                                TetradLogger.getInstance().log("Score unchanged: Unconditional independence.");
+                                TetradLogger.getInstance().log("Score unchanged: + " + x + " _||_ " + y + " (Unconditional independence)");
                             }
 
                             this.modelScore = _modelScore;
@@ -720,9 +720,9 @@ public final class Fcit implements IGraphSearch {
                         state.restoreState();
                     } else {
                         if (_modelScore > this.modelScore) {
-                            TetradLogger.getInstance().log("Score increased: \"x _||_ y | b \\ c (recall sepset).");
+                            TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " | " + state.getSepsetMap().get(x, y) + " (recall sepset)");
                         } else {
-                            TetradLogger.getInstance().log("Score unchanged: \"x _||_ y | b \\ c (recall sepset).");
+                            TetradLogger.getInstance().log("Score unchanged: " + x + " _||_ " + y + " | " + state.getSepsetMap().get(x, y) + " (recall sepset)");
                         }
 
                         this.modelScore = _modelScore;
@@ -820,9 +820,10 @@ public final class Fcit implements IGraphSearch {
                                     state.restoreState();
                                 } else {
                                     if (_modelScore > this.modelScore) {
-                                        TetradLogger.getInstance().log("Score increased: \"x _||_ y | b \\ c (new sepset).");
+                                        TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " | " + b + " (new sepset)");
                                     } else {
-                                        TetradLogger.getInstance().log("Score unchanged: \"x _||_ y | b \\ c (new sepset).");
+                                        TetradLogger.getInstance().log("Score unchanged: " + x + " _||_ " + y + " | " + b + " (new sepset)");
+
                                     }
 
                                     this.modelScore = _modelScore;
