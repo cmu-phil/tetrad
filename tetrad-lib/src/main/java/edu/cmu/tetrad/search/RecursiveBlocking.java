@@ -70,7 +70,11 @@ public class RecursiveBlocking {
             }
         }
 
-        return Pair.of(z, allBlocked);
+        if (!allBlocked) {
+            return null;
+        }
+
+        return Pair.of(z, true);
 //
 //        return allBlocked ? z : null;
     }

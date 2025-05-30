@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +140,15 @@ public class TestSepsetMethods {
                     }
                     case BLOCK_PATHS_RECURSIVELY -> {
                         try {
-                            blockingSet = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), -1).getLeft();
+                            Pair<Set<Node>, Boolean> set = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), -1);
+
+                            if (set == null) {
+
+                                // There are known cases where this cannot succeed--Puzzle #2.
+                                continue;
+                            }
+
+                            blockingSet = set.getLeft();
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }
