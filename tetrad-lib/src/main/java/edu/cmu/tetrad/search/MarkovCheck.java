@@ -903,7 +903,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                                 Map<Node, Set<Node>> ancestorMap = graph.paths().getAncestorsMap();
 
                                 try {
-                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), maxLength).getLeft();
+                                    z = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), maxLength);
                                 } catch (InterruptedException e) {
                                     throw new RuntimeException(e);
                                 }

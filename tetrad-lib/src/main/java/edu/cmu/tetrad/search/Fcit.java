@@ -756,7 +756,7 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
                 // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Pair<Set<Node>, Boolean> B;
+                Set<Node> B;
                 try {
                     B = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
                 } catch (InterruptedException e) {
@@ -764,7 +764,7 @@ public final class Fcit implements IGraphSearch {
                 }
 
                 if (verbose && !notFollowed.isEmpty()) {
-                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + B.getLeft());
+                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + B);
                 }
 
                 // b will be null if the search did not conclude with a set known to either m-separate
@@ -773,11 +773,7 @@ public final class Fcit implements IGraphSearch {
                     continue;
                 }
 
-                if (!B.getRight()) {
-                    continue;
-                }
-
-                Set<Node> b = B.getLeft();
+                Set<Node> b = B;
 
                 SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
                 int[] choice2;

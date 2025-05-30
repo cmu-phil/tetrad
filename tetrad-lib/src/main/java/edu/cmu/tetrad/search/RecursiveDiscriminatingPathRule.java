@@ -145,17 +145,11 @@ public class RecursiveDiscriminatingPathRule {
                 Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
 
                 // (A) blockPathsRecursively
-                Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
+                Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
 
-                if (b == null) {
+                if (blocking == null) {
                     continue;
                 }
-
-                if (!b.getRight()) {
-                    continue;
-                }
-
-                Set<Node> blocking = b.getLeft();
 
                 for (Node f : vNodes) {
                     if (!vNodesNotFollowed.contains(f)) {

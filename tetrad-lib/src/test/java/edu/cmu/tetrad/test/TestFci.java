@@ -603,7 +603,7 @@ public class TestFci {
 
         Set<Node> B = null;
         try {
-            B = RecursiveBlocking.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1).getLeft();
+            B = RecursiveBlocking.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -640,7 +640,7 @@ public class TestFci {
         MsepTest msepTest = new MsepTest(g);
 
         Set<Node> Z = RecursiveBlocking.blockPathsRecursively(g, x, y, new HashSet<Node>(),
-                new HashSet<Node>(), -1).getLeft();
+                new HashSet<Node>(), -1);
         assertTrue(msepTest.checkIndependence(x, y, Z).isIndependent());
     }
 
