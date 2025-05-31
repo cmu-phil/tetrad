@@ -205,8 +205,6 @@ public final class Fcit implements IGraphSearch {
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
-        state.setStrategy(strategy);
-
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(verbose);
         fciOrient.setParallel(false);
@@ -983,18 +981,6 @@ public final class Fcit implements IGraphSearch {
      */
     private static class State {
         /**
-         * Represents the R0R4 test-based strategy used in the search algorithm.
-         * <p>
-         * This variable stores an instance of the {@code R0R4StrategyTestBased} class, which is employed to perform
-         * specific operations and decision-making during the execution of the causal discovery algorithm. The strategy
-         * defines how the algorithm conducts certain tests and transitions, contributing to the overall search
-         * process.
-         * <p>
-         * It is initially set to {@code null} and is expected to be explicitly initialized or configured before being
-         * utilized in the algorithm. The strategy can be updated or replaced as necessary to
-         */
-        private R0R4StrategyTestBased strategy = null;
-        /**
          * Represents the Partial Ancestral Graph (PAG) currently being learned or maintained by the algorithm.
          * <p>
          * The PAG is a graph structure used in causal discovery to capture causal relationships between variables while
@@ -1069,15 +1055,6 @@ public final class Fcit implements IGraphSearch {
         private void restoreState() {
             this.pag = new EdgeListGraph(this.lastPag);
             this.ensureMarkovHelper = new EnsureMarkov(lastEnsureMarkovHelper);
-        }
-
-        /**
-         * Sets the R0R4 strategy test-based instance that is used for the search algorithm.
-         *
-         * @param strategy the R0R4 strategy test-based instance to be used in the algorithm.
-         */
-        public void setStrategy(R0R4StrategyTestBased strategy) {
-            this.strategy = strategy;
         }
 
         /**
