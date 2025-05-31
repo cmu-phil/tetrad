@@ -33,6 +33,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * class FciOrientDataExaminationStrategyTestBased.
      */
     private final IndependenceTest test;
+    private Graph mag;
     /**
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
@@ -91,14 +92,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     private int maxLength = -1;
     /**
-     * Helper variable of type EnsureMarkov used for ensuring Markov properties in the R0R4StrategyTestBased class.
+     * Helper variable of type PreserveMarkov used for preserving Markov properties in the R0R4StrategyTestBased class.
      * Initialized to null by default.
      */
-    private EnsureMarkov ensureMarkovHelper = null;
+    private PreserveMarkov preserveMarkovHelper = null;
     /**
      * A private instance of the SepsetMap used to manage and store separating sets within the
      * FciOrientDataExaminationStrategy. The separating sets are used to capture conditional independencies in a graph.
-     * This map ensures that proper independence relationships are maintained during the execution of the strategy.
+     * This map preserves that proper independence relationships are maintained during the execution of the strategy.
      */
     private SepsetMap sepsetMap = new SepsetMap();
 
@@ -140,6 +141,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             strategy.setVerbose(verbose);
             return strategy;
         }
+
     }
 
     /**
@@ -219,7 +221,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             blocking = sepsetMap.get(x, y);
         } else if (blockingType == BlockingType.RECURSIVE) {
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
-                    maxLength, maxLength, ensureMarkovHelper, depth);
+                    maxLength, maxLength, preserveMarkovHelper, depth);
 
             if (blocking == null) {
                 blocking = findAdjSetSepset(graph, x, y, path, v);
@@ -447,12 +449,12 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     }
 
     /**
-     * Sets the EnsureMarkov object used by the R0R4StrategyTestBased.
+     * Sets the PreserveMarkov object used by the R0R4StrategyTestBased.
      *
-     * @param ensureMarkovHelper the EnsureMarkov object to be set
+     * @param preserveMarkovHelper the PreserveMarkov object to be set
      */
-    public void setEnsureMarkovHelper(EnsureMarkov ensureMarkovHelper) {
-        this.ensureMarkovHelper = ensureMarkovHelper;
+    public void setPreserveMarkovHelper(PreserveMarkov preserveMarkovHelper) {
+        this.preserveMarkovHelper = preserveMarkovHelper;
     }
 
     /**

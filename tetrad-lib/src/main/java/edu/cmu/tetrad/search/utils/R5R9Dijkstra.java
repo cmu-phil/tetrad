@@ -48,11 +48,13 @@ public class R5R9Dijkstra {
      * @param dijkstraGraph The dijkstraGraph to search; should include only the relevant edge in the dijkstraGraph.
      * @param x     The starting node.
      * @param y     The ending node. The algorithm will stop when this node is reached.
+     * @param r9    True if R9, false if R5. This adds check for nonadjacency of gamma and beta for R9. For R5 it adds
+     *              checks for non-adjacency for bamma and beta and for alpha and theta.
      * @return A map of distances from the start node to each node in the dijkstraGraph, and a map of predecessors for each
      * node.
      */
     public static Pair<Map<Node, Integer>, Map<Node, Node>> distances(Graph dijkstraGraph, edu.cmu.tetrad.graph.Graph graph,
-                                                                      boolean uncovered, Node x, Node y) {
+                                                                      boolean uncovered, Node x, Node y, boolean r9) {
         if (dijkstraGraph == null) {
             throw new IllegalArgumentException("Graph cannot be null.");
         }
@@ -86,6 +88,21 @@ public class R5R9Dijkstra {
 
             for (DijkstraEdge dijkstraEdge : dijkstraGraph.getNeighbors(currentVertex)) {
                 Node predecessor = predecessors.get(currentVertex);
+
+                // For both R5 and R9 we need to check ~adj(beta, gamma) where gamma = y and beta is the second
+                // node on the path.
+                if (currentVertex == x  && x != y) {
+                    Node beta = dijkstraEdge.getToNode();
+                    if (adjacent(dijkstraGraph, beta, y)) continue;
+                }
+
+                // For R5 we need to additionally check ~adj(alpha, theta), where theta = second to last node and
+                // alpha = x.
+                if (!r9) {
+                    if (dijkstraEdge.getToNode() == y && x != y) {{
+                        if (adjacent(dijkstraGraph, currentVertex, x)) continue;
+                    }}
+                }
 
                 // Skip length-1 paths.
                 if (dijkstraEdge.getToNode() == y && currentVertex == x) {
@@ -186,7 +203,7 @@ public class R5R9Dijkstra {
 
         Graph _graph = new Graph(graph, R5R9Dijkstra.Rule.R5);
 
-        Map<Node, Integer> distances = R5R9Dijkstra.distances(_graph, graph, uncovered, index.get("1"), index.get("3")).getLeft();
+        Map<Node, Integer> distances = R5R9Dijkstra.distances(_graph, graph, uncovered, index.get("1"), index.get("3"), false).getLeft();
 
         for (Map.Entry<Node, Integer> entry : distances.entrySet()) {
             System.out.println("Distance from 1 to " + entry.getKey() + " is " + entry.getValue());

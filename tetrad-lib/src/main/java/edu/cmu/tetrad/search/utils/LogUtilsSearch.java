@@ -84,6 +84,10 @@ public class LogUtilsSearch {
      * @return a {@link java.lang.String} object
      */
     public static String colliderOrientedMsg(Node x, Node y, Node z) {
+        if (y.getName().equals("X14")) {
+            System.out.println();
+        }
+
         return "Orienting collider: " + x.getName() + " *-> " +
                y.getName() + " <-* " + z.getName();
     }

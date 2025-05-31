@@ -3185,18 +3185,18 @@ public final class GraphUtils {
      * Initializes and evaluates p-values for local Markov properties in a given graph.
      *
      * @param dag          The input graph, a DAG (Directed Acyclic Graph).
-     * @param ensureMarkov Flag indicating that the method should proceed only if set to true.
+     * @param preserveMarkov Flag indicating that the method should proceed only if set to true.
      * @param test         The statistical test instance used to check for conditional independence.
      * @param pValues      A map to store the p-values, indexed by pairs of nodes.
      * @return The percentage of p-values that are less than the significance level (alpha) used in the test. Returns
-     * 0.0 if the number of p-values is less than 5 or if ensureMarkov is false or test instance is invalid.
-     * @throws IllegalArgumentException if ensureMarkov is false.
+     * 0.0 if the number of p-values is less than 5 or if preserveMarkov is false or test instance is invalid.
+     * @throws IllegalArgumentException if preserveMarkov is false.
      * @throws InterruptedException     if any
      */
-    public static double localMarkovInitializePValues(Graph dag, boolean ensureMarkov, IndependenceTest test,
+    public static double localMarkovInitializePValues(Graph dag, boolean preserveMarkov, IndependenceTest test,
                                                       Map<Pair<Node, Node>, Set<Double>> pValues) throws InterruptedException {
-        if (!ensureMarkov) {
-            throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
+        if (!preserveMarkov) {
+            throw new IllegalArgumentException("This method should only be called when preserveMarkov is true.");
         }
 
         if (test == null || test instanceof MsepTest) {

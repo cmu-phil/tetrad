@@ -97,7 +97,7 @@ public final class Fcit implements IGraphSearch {
     /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
-    private boolean ensureMarkov = false;
+    private boolean PreserveMarkov = false;
 
     /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
@@ -173,7 +173,7 @@ public final class Fcit implements IGraphSearch {
             this.magSemBicScore.setPenaltyDiscount(1);
         }
 
-        test.setVerbose(false);
+        test.setVerbose(verbose);
 
         if (test instanceof MsepTest) {
             this.startWith = START_WITH.GRASP;
@@ -201,7 +201,7 @@ public final class Fcit implements IGraphSearch {
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsets);
         strategy.setVerbose(verbose);
-        strategy.setEnsureMarkovHelper(state.ensureMarkovHelper);
+        strategy.setPreserveMarkovHelper(state.PreserveMarkovHelper);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
@@ -337,8 +337,8 @@ public final class Fcit implements IGraphSearch {
             this.modelScore = scoreMag(state.getPag());
         }
         initialColliders = noteInitialColliders(best, state.getPag());
-        state.setEnsureMarkovHelper(new EnsureMarkov(state.getPag(), test));
-        state.getEnsureMarkovHelper().setEnsureMarkov(ensureMarkov);
+        state.setPreserveMarkovHelper(new PreserveMarkov(state.getPag(), test));
+        state.getPreserveMarkovHelper().setPreserveMarkov(PreserveMarkov);
 
         state.storeState();
 
@@ -353,11 +353,13 @@ public final class Fcit implements IGraphSearch {
         // convergence. Note that for checking discriminating paths, the recursive algorithm may not be 100%
         // effective, so we need to supplement this with FCI-style discriminating path checking in case a sepset
         // is not found. This is to accommodate "Puzzle #2."
+
         removeExtraEdges();
+        checkUnconditionalIndependence();
 
         // Also, to handle "Puzzle #2," we remove incorrect shields for discriminating path colliders on collider
         // paths and then reorient.
-        checkUnconditionalIndependence();
+//        checkUnconditionalIndependence();
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -432,7 +434,7 @@ public final class Fcit implements IGraphSearch {
         grasp.setUseRaskuttiUhler(false);
         grasp.setUseDataOrder(useDataOrder);
         grasp.setAllowInternalRandomness(true);
-        grasp.setVerbose(false);
+        grasp.setVerbose(verbose);
 
         grasp.setNumStarts(numStarts);
         grasp.setKnowledge(this.knowledge);
@@ -587,7 +589,7 @@ public final class Fcit implements IGraphSearch {
      * set map. If a separation set exists, it skips further processing for that edge. (c) Identifies common neighbors
      * of the two nodes connected by the edge and determines if they form a non-collider structure. If all common
      * neighbors create colliders, the edge is skipped. (d) Checks unconditional independence between the two nodes
-     * using the ensureMarkovHelper's Markov independence method. If independence is confirmed: (d.1) Logs the operation
+     * using the PreserveMarkovHelper's Markov independence method. If independence is confirmed: (d.1) Logs the operation
      * if verbose mode is enabled. (d.2) Updates the separation set map for the nodes to an empty set. (d.3) Removes the
      * edge from the PAG. (e) Handles any `InterruptedException` thrown during the Markov independence check.
      * <p>
@@ -627,10 +629,10 @@ public final class Fcit implements IGraphSearch {
 
             try {
                 if (verbose) {
-                    TetradLogger.getInstance().log("Checking edge " + x + " *-> " + y + " from PAG.");
+                    TetradLogger.getInstance().log("Checking edge " + state.getPag().getEdge(x, y) + " from PAG for unconditional independence.");
                 }
 
-                if (state.getEnsureMarkovHelper().markovIndependence(x, y, Set.of())) {
+                if (state.getPreserveMarkovHelper().markovIndependence(x, y, Set.of())) {
                     if (verbose) {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
                     }
@@ -814,7 +816,7 @@ public final class Fcit implements IGraphSearch {
                     }
 
                     try {
-                        if (state.getEnsureMarkovHelper().markovIndependence(x, y, b)) {
+                        if (state.getPreserveMarkovHelper().markovIndependence(x, y, b)) {
                             if (verbose) {
                                 TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                             }
@@ -920,10 +922,10 @@ public final class Fcit implements IGraphSearch {
     /**
      * Sets the value indicating whether the process should ensure Markov property.
      *
-     * @param ensureMarkov a boolean value, true to ensure Markov property, false otherwise.
+     * @param PreserveMarkov a boolean value, true to ensure Markov property, false otherwise.
      */
-    public void setEnsureMarkov(boolean ensureMarkov) {
-        this.ensureMarkov = ensureMarkov;
+    public void setPreserveMarkov(boolean PreserveMarkov) {
+        this.PreserveMarkov = PreserveMarkov;
     }
 
     /**
@@ -1000,7 +1002,7 @@ public final class Fcit implements IGraphSearch {
          */
         private Graph lastPag = null;
         /**
-         * An instance of the EnsureMarkov class used to assist in maintaining the Markov property during the execution
+         * An instance of the PreserveMarkov class used to assist in maintaining the Markov property during the execution
          * of the algorithm. This variable is primarily leveraged to enforce the necessary constraints that ensure the
          * resulting graph adheres to the Markov condition.
          * <p>
@@ -1008,14 +1010,14 @@ public final class Fcit implements IGraphSearch {
          * required state for maintaining causal consistency. It is also utilized for facilitating operations that
          * demand adherence to the Markov property across different steps of the algorithm.
          */
-        private EnsureMarkov ensureMarkovHelper = null;
+        private PreserveMarkov PreserveMarkovHelper = null;
         /**
-         * A reference to the last instance of the EnsureMarkov helper used during the algorithm's execution. This
-         * variable facilitates the management and reuse of the EnsureMarkov helper object, which is designed to
+         * A reference to the last instance of the PreserveMarkov helper used during the algorithm's execution. This
+         * variable facilitates the management and reuse of the PreserveMarkov helper object, which is designed to
          * preserve and enforce the Markov property during the search process. It is updated to reflect the most recent
-         * state of the EnsureMarkov helper, ensuring consistency throughout the algorithm's iterations or steps.
+         * state of the PreserveMarkov helper, ensuring consistency throughout the algorithm's iterations or steps.
          */
-        private EnsureMarkov lastEnsureMarkovHelper = null;
+        private PreserveMarkov lastPreserveMarkovHelper = null;
 
         /**
          * Default constructor for the State class.
@@ -1029,7 +1031,7 @@ public final class Fcit implements IGraphSearch {
         /**
          * Captures and stores the current state of several key fields in the algorithm for later restoration. This
          * method creates copies of the current state of `pag`, known colliders, separation set map, and the
-         * `ensureMarkovHelper` instance. These copies are saved into respective fields to preserve the state at that
+         * `PreserveMarkovHelper` instance. These copies are saved into respective fields to preserve the state at that
          * moment in time.
          * <p>
          * This operation is useful for checkpointing the algorithm's progress and facilitates rollback or review of
@@ -1037,7 +1039,7 @@ public final class Fcit implements IGraphSearch {
          */
         private void storeState() {
             this.lastPag = new EdgeListGraph(this.pag);
-            this.lastEnsureMarkovHelper = new EnsureMarkov(ensureMarkovHelper);
+            this.lastPreserveMarkovHelper = new PreserveMarkov(PreserveMarkovHelper);
         }
 
         /**
@@ -1046,7 +1048,7 @@ public final class Fcit implements IGraphSearch {
          * This method reinitializes the following components using their last saved states: (a) The PAG graph is
          * restored to its previous state using the last known PAG. (b) The set of known CPDAG colliders is updated
          * using the last recorded colliders. (c) The separation set map is restored from its last saved version. (d)
-         * The `ensureMarkovHelper` object is reset to its previous state.
+         * The `PreserveMarkovHelper` object is reset to its previous state.
          * <p>
          * It also updates the search strategy with the restored separation set map, ensuring consistency with the
          * previous checkpoint. This operation enables the algorithm to roll back or resume from a prior state if
@@ -1054,7 +1056,7 @@ public final class Fcit implements IGraphSearch {
          */
         private void restoreState() {
             this.pag = new EdgeListGraph(this.lastPag);
-            this.ensureMarkovHelper = new EnsureMarkov(lastEnsureMarkovHelper);
+            this.PreserveMarkovHelper = new PreserveMarkov(lastPreserveMarkovHelper);
         }
 
         /**
@@ -1081,18 +1083,18 @@ public final class Fcit implements IGraphSearch {
         /**
          * A helper class to help preserve Markov.
          */
-        public EnsureMarkov getEnsureMarkovHelper() {
-            return ensureMarkovHelper;
+        public PreserveMarkov getPreserveMarkovHelper() {
+            return PreserveMarkovHelper;
         }
 
         /**
-         * Sets the instance of the EnsureMarkov helper to be used for managing and enforcing the Markov property during
+         * Sets the instance of the PreserveMarkov helper to be used for managing and enforcing the Markov property during
          * the algorithm's execution.
          *
-         * @param ensureMarkov the EnsureMarkov instance to be associated with the current state.
+         * @param PreserveMarkov the PreserveMarkov instance to be associated with the current state.
          */
-        public void setEnsureMarkovHelper(EnsureMarkov ensureMarkov) {
-            this.ensureMarkovHelper = ensureMarkov;
+        public void setPreserveMarkovHelper(PreserveMarkov PreserveMarkov) {
+            this.PreserveMarkovHelper = PreserveMarkov;
         }
 
     }

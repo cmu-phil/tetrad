@@ -388,7 +388,7 @@ public class TestFci {
             fci.setStartWith(Fcit.START_WITH.GRASP);
 //            fci.setDepth(-1);
             fci.setKnowledge(knowledge);
-            fci.setEnsureMarkov(false);
+            fci.setPreserveMarkov(false);
             fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
@@ -570,7 +570,7 @@ public class TestFci {
 
             Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
             fcit.setStartWith(Fcit.START_WITH.GRASP);
-            fcit.setEnsureMarkov(false);
+            fcit.setPreserveMarkov(false);
             Graph estPag3 = fcit.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
@@ -870,7 +870,7 @@ public class TestFci {
 
                 Fcit fci = new Fcit(independence, score);
                 fci.setStartWith(Fcit.START_WITH.GRASP);
-                fci.setEnsureMarkov(false);
+                fci.setPreserveMarkov(false);
                 fci.setCompleteRuleSetUsed(true);
                 fci.setVerbose(false);
 
@@ -960,7 +960,7 @@ public class TestFci {
         Fcit fci = new Fcit(independence, score);
         fci.setStartWith(Fcit.START_WITH.GRASP);
 //        fci.setDepth(-1);
-        fci.setEnsureMarkov(false);
+        fci.setPreserveMarkov(false);
         fci.setVerbose(true);
 
         try {
