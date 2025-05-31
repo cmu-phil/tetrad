@@ -208,7 +208,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-        Set<Node> blocking = null;
+        Set<Node> blocking;
 
         if (sepsetMap.get(x, y) != null) {
             blocking = sepsetMap.get(x, y);
@@ -225,7 +225,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
                     }
                 }
 
-                System.out.println("Blocking found for " + x + ", " + y + ", " + blocking);
+//                TetradLogger.getInstance().log("R4 Blocking found for " + x + ", " + y + ", " + blocking);
             }
 
             sepsetMap.set(x, y, blocking);
