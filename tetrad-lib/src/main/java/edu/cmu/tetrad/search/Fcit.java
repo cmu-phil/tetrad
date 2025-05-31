@@ -58,6 +58,7 @@ public final class Fcit implements IGraphSearch {
      * Represents the current status or condition of the search.
      */
     private State state;
+    private SepsetMap globalSepsets = new SepsetMap();
     /**
      * The background knowledge.
      */
@@ -191,7 +192,7 @@ public final class Fcit implements IGraphSearch {
 
         this.state = new State();
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
-        strategy.setSepsetMap(state.getSepsetMap());
+        strategy.setSepsetMap(globalSepsets);
         strategy.setVerbose(verbose);
         strategy.setEnsureMarkovHelper(state.ensureMarkovHelper);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
@@ -506,15 +507,16 @@ public final class Fcit implements IGraphSearch {
         // cannot cause new cycles or almost-cycles to be formed.
         printRestored = true;
 
-        if (!state.getPag().paths().isMaximal() || edgeMarkingDiscrepancy()) {
+        if (!state.getPag().paths().isLegalPag()) {
+//        if (!state.getPag().paths().isMaximal() || edgeMarkingDiscrepancy()) {
 
 //            if (verbose || printRestored) {
-                TetradLogger.getInstance().log("Restored: " + message);
+            TetradLogger.getInstance().log("Restored: " + message);
 //            }
             state.restoreState();
         } else {
 //            if (verbose || printRestored) {
-                TetradLogger.getInstance().log("Good: " + message);
+            TetradLogger.getInstance().log("Good: " + message);
 //            }
             state.storeState();
         }
@@ -542,7 +544,7 @@ public final class Fcit implements IGraphSearch {
      * structure represented by the PAG. The orientation of edges follows the rules
      */
     private void adjustForExtraSepsets() {
-        state.getSepsetMap().keySet().forEach(edge -> {
+        state.getAdjacencySepsets().keySet().forEach(edge -> {
             List<Node> arr = new ArrayList<>(edge);
 
             Node x = arr.get(0);
@@ -556,7 +558,7 @@ public final class Fcit implements IGraphSearch {
             }
 
             for (Node node : common) {
-                if (!state.getSepsetMap().get(x, y).contains(node)) {
+                if (!state.getAdjacencySepsets().get(x, y).contains(node)) {
                     if (!state.getPag().isDefCollider(x, node, y)) {
                         state.getPag().setEndpoint(x, node, Endpoint.ARROW);
                         state.getPag().setEndpoint(y, node, Endpoint.ARROW);
@@ -599,7 +601,7 @@ public final class Fcit implements IGraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            if (state.getSepsetMap().get(x, y) != null) {
+            if (getGlobalSepsets().get(x, y) != null) {
                 return;
             }
 
@@ -628,7 +630,8 @@ public final class Fcit implements IGraphSearch {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
                     }
 
-                    state.getSepsetMap().set(x, y, Set.of());
+                    state.getAdjacencySepsets().set(x, y, Set.of());
+                    getGlobalSepsets().set(x, y, Set.of());
                     state.getPag().removeEdge(x, y);
                     refreshGraph(x + " _||_ " + y + " (Unconditional independence)");
 
@@ -707,13 +710,13 @@ public final class Fcit implements IGraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            if (state.getSepsetMap().get(x, y) != null) {
+            if (getGlobalSepsets().get(x, y) != null) {
                 if (verbose) {
                     TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                 }
 
                 state.getPag().removeEdge(x, y);
-                refreshGraph(x + " _||_ " + y + " | " + state.getSepsetMap().get(x, y) + " (recall sepset)");
+                refreshGraph(x + " _||_ " + y + " | " + state.getAdjacencySepsets().get(x, y) + " (recall sepset)");
 
                 if (trackScores) {
                     double _modelScore = scoreMag(state.getPag());
@@ -723,9 +726,9 @@ public final class Fcit implements IGraphSearch {
                         state.restoreState();
                     } else {
                         if (_modelScore > this.modelScore) {
-                            TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " | " + state.getSepsetMap().get(x, y) + " (recall sepset)");
+                            TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " | " + state.getAdjacencySepsets().get(x, y) + " (recall sepset)");
                         } else {
-                            TetradLogger.getInstance().log("Score unchanged: " + x + " _||_ " + y + " | " + state.getSepsetMap().get(x, y) + " (recall sepset)");
+                            TetradLogger.getInstance().log("Score unchanged: " + x + " _||_ " + y + " | " + state.getAdjacencySepsets().get(x, y) + " (recall sepset)");
                         }
 
                         this.modelScore = _modelScore;
@@ -811,7 +814,8 @@ public final class Fcit implements IGraphSearch {
                                 TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
                             }
 
-                            state.getSepsetMap().set(x, y, b);
+                            state.getAdjacencySepsets().set(x, y, b);
+                            globalSepsets.set(x, y, b);
                             state.getPag().removeEdge(x, y);
                             refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)");
 
@@ -840,6 +844,10 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         }
+    }
+
+    private SepsetMap getGlobalSepsets() {
+        return globalSepsets;
     }
 
     /**
@@ -1005,7 +1013,8 @@ public final class Fcit implements IGraphSearch {
          * causal structure learning process. It plays a critical role in determining the graph's structure by encoding
          * these constraints into the algorithm's state.
          */
-        private SepsetMap sepsetMap = new SepsetMap();
+        private SepsetMap adjacencySepsets = new SepsetMap();
+
         /**
          * Stores the most recently computed set of separation sets (sepsets) in the graph. This variable is used to
          * encode and maintain the separating sets identified during causal discovery, which are essential for refining
@@ -1056,7 +1065,7 @@ public final class Fcit implements IGraphSearch {
          */
         private void storeState() {
             this.lastPag = new EdgeListGraph(this.pag);
-            this.lastSepsetMap = new SepsetMap(sepsetMap);
+            this.lastSepsetMap = new SepsetMap(adjacencySepsets);
             this.lastEnsureMarkovHelper = new EnsureMarkov(ensureMarkovHelper);
         }
 
@@ -1074,9 +1083,9 @@ public final class Fcit implements IGraphSearch {
          */
         private void restoreState() {
             this.pag = new EdgeListGraph(this.lastPag);
-            this.sepsetMap = new SepsetMap(lastSepsetMap);
+            this.adjacencySepsets = new SepsetMap(lastSepsetMap);
             this.ensureMarkovHelper = new EnsureMarkov(lastEnsureMarkovHelper);
-            this.strategy.setSepsetMap(sepsetMap);
+//            this.strategy.setSepsetMap(this.getGlobalSepsets());
         }
 
         /**
@@ -1115,8 +1124,8 @@ public final class Fcit implements IGraphSearch {
          * crucial in storing and retrieving separating sets for specific node pairs and contributes to determining the
          * structure of the graph by encoding constraints.
          */
-        public SepsetMap getSepsetMap() {
-            return sepsetMap;
+        public SepsetMap getAdjacencySepsets() {
+            return adjacencySepsets;
         }
 
         /**
@@ -1135,5 +1144,6 @@ public final class Fcit implements IGraphSearch {
         public void setEnsureMarkovHelper(EnsureMarkov ensureMarkov) {
             this.ensureMarkovHelper = ensureMarkov;
         }
+
     }
 }

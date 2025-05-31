@@ -37,6 +37,7 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.sem.Scorer;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -753,7 +754,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -763,16 +764,15 @@ public class TestFci {
             SemIm im = new SemIm(pm);
             DataSet dataSet = im.simulateData(1000, false);
 
-//            IndependenceTest test = new IndTestFisherZ(dataSet, 0.00001);
-            IndependenceTest test = new PoissonBicTest().getTest(dataSet, new Parameters());
-            Score score = new PoissonPriorScore(new CovarianceMatrix(dataSet));
-//            score.setPenaltyDiscount(2.0);
+            IndependenceTest test = new IndTestFisherZ(dataSet, 0.00001);
+            SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+            score.setPenaltyDiscount(2.0);
 
             try {
                 Fcit fcit = new Fcit(test, score);
                 fcit.setPrintRestored(true);
 //                fcit.setVerbose(true);
-//                fcit.setDepth(7);
+                fcit.setDepth(7);
                 fcit.setCompleteRuleSetUsed(true);
                 Graph pag = fcit.search();
 

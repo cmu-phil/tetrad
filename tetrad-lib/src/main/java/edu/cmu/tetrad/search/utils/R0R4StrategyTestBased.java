@@ -224,6 +224,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
                         TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
                     }
                 }
+
+                System.out.println("Blocking found for " + x + ", " + y + ", " + blocking);
             }
 
             sepsetMap.set(x, y, blocking);
