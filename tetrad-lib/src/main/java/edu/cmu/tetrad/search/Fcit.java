@@ -58,7 +58,14 @@ public final class Fcit implements IGraphSearch {
      * Represents the current status or condition of the search.
      */
     private State state;
-    private SepsetMap sepsets = new SepsetMap();
+    /**
+     * Represents a map for storing and managing separation sets (sepsets) used in the context of algorithms involving
+     * conditional independence or causal discovery.
+     * <p>
+     * This variable is an instance of {@link SepsetMap}, which provides methods to access and manipulate separation
+     * sets - specifically to check conditional independencies between pairs of variables given a separating set.
+     */
+    private final SepsetMap sepsets = new SepsetMap();
     /**
      * The background knowledge.
      */
@@ -1006,19 +1013,6 @@ public final class Fcit implements IGraphSearch {
          * This variable plays a critical role in enabling rollback functionality and maintaining the integrity
          */
         private Graph lastPag = null;
-
-        /**
-         * Stores the most recently computed set of separation sets (sepsets) in the graph. This variable is used to
-         * encode and maintain the separating sets identified during causal discovery, which are essential for refining
-         * and validating the graph's structure.
-         * <p>
-         * The separation sets represented by this map are linked to pairs of nodes in the graph, indicating the
-         * conditional independence relationships that were last computed or updated. Preserving this information is
-         * critical for checkpointing and restoring the algorithm's state during its execution.
-         * <p>
-         * Initialized to null, the value of this variable is updated dynamically as the search process progresses.
-         */
-        private SepsetMap lastSepsetMap = null;
         /**
          * An instance of the EnsureMarkov class used to assist in maintaining the Markov property during the execution
          * of the algorithm. This variable is primarily leveraged to enforce the necessary constraints that ensure the

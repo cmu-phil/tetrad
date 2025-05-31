@@ -95,6 +95,11 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Initialized to null by default.
      */
     private EnsureMarkov ensureMarkovHelper = null;
+    /**
+     * A private instance of the SepsetMap used to manage and store separating sets within the
+     * FciOrientDataExaminationStrategy. The separating sets are used to capture conditional independencies in a graph.
+     * This map ensures that proper independence relationships are maintained during the execution of the strategy.
+     */
     private SepsetMap sepsetMap = new SepsetMap();
 
     /**
