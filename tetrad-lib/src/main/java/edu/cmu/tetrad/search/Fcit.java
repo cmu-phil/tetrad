@@ -607,7 +607,6 @@ public final class Fcit implements IGraphSearch {
                     }
 
                     sepsets.set(x, y, Set.of());
-                    getSepsets().set(x, y, Set.of());
                     state.getPag().removeEdge(x, y);
                     refreshGraph(x + " _||_ " + y + " (Unconditional independence)");
 
@@ -655,6 +654,7 @@ public final class Fcit implements IGraphSearch {
                 b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), Set.of(), -1);
                 if (test.checkIndependence(x, y, b).isIndependent()) {
                     state.getPag().removeEdge(x, y);
+                    sepsets.set(x, y, b);
                     refreshGraph("removing edge: " + edge);
                 }
             } catch(InterruptedException e){

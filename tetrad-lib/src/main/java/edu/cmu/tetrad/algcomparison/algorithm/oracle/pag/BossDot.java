@@ -34,13 +34,13 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Dumb",
-        command = "lv-dumb",
+        name = "BOSS-DOT",
+        command = "boss-dot",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
+public class BossDot extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -68,7 +68,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvDumb() {
+    public BossDot() {
         // Used for reflection; do not delete it.
     }
 
@@ -85,7 +85,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Use
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public LvDumb(ScoreWrapper score) {
+    public BossDot(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -114,7 +114,7 @@ public class LvDumb extends AbstractBootstrapAlgorithm implements Algorithm, Use
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.LvDumb search = new edu.cmu.tetrad.search.LvDumb(score);
+        edu.cmu.tetrad.search.BossDot search = new edu.cmu.tetrad.search.BossDot(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
