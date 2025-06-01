@@ -97,7 +97,7 @@ public final class Fcit implements IGraphSearch {
     /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
-    private boolean PreserveMarkov = false;
+    private boolean preserveMarkov = false;
 
     /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
@@ -336,9 +336,10 @@ public final class Fcit implements IGraphSearch {
         if (trackScores) {
             this.modelScore = scoreMag(state.getPag());
         }
+
         initialColliders = noteInitialColliders(best, state.getPag());
         state.setPreserveMarkovHelper(new PreserveMarkov(state.getPag(), test));
-        state.getPreserveMarkovHelper().setPreserveMarkov(PreserveMarkov);
+        state.getPreserveMarkovHelper().setPreserveMarkov(preserveMarkov);
 
         state.storeState();
 
@@ -353,13 +354,11 @@ public final class Fcit implements IGraphSearch {
         // convergence. Note that for checking discriminating paths, the recursive algorithm may not be 100%
         // effective, so we need to supplement this with FCI-style discriminating path checking in case a sepset
         // is not found. This is to accommodate "Puzzle #2."
-
         removeExtraEdges();
-        checkUnconditionalIndependence();
 
         // Also, to handle "Puzzle #2," we remove incorrect shields for discriminating path colliders on collider
         // paths and then reorient.
-//        checkUnconditionalIndependence();
+        checkUnconditionalIndependence();
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -608,10 +607,6 @@ public final class Fcit implements IGraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            if (getSepsets().get(x, y) != null) {
-                return;
-            }
-
             List<Node> common = state.getPag().getAdjacentNodes(x);
             common.retainAll(state.getPag().getAdjacentNodes(y));
 
@@ -716,34 +711,6 @@ public final class Fcit implements IGraphSearch {
 
             Node x = edge.getNode1();
             Node y = edge.getNode2();
-
-            if (getSepsets().get(x, y) != null) {
-                if (verbose) {
-                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                }
-
-                state.getPag().removeEdge(x, y);
-                refreshGraph(x + " _||_ " + y + " | " + sepsets.get(x, y) + " (recall sepset)");
-
-                if (trackScores) {
-                    double _modelScore = scoreMag(state.getPag());
-
-                    if (_modelScore < this.modelScore) {
-                        TetradLogger.getInstance().log("Score lowered; restoring.");
-                        state.restoreState();
-                    } else {
-                        if (_modelScore > this.modelScore) {
-                            TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " | " + sepsets.get(x, y) + " (recall sepset)");
-                        } else {
-                            TetradLogger.getInstance().log("Score unchanged: " + x + " _||_ " + y + " | " + sepsets.get(x, y) + " (recall sepset)");
-                        }
-
-                        this.modelScore = _modelScore;
-                    }
-                }
-
-                return;
-            }
 
             List<Node> common = state.getPag().getAdjacentNodes(x);
             common.retainAll(state.getPag().getAdjacentNodes(y));
@@ -925,7 +892,7 @@ public final class Fcit implements IGraphSearch {
      * @param PreserveMarkov a boolean value, true to ensure Markov property, false otherwise.
      */
     public void setPreserveMarkov(boolean PreserveMarkov) {
-        this.PreserveMarkov = PreserveMarkov;
+        this.preserveMarkov = PreserveMarkov;
     }
 
     /**

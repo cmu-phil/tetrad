@@ -107,7 +107,7 @@ public final class DagToPag {
      *
      * @param mag       the MAG (Maximum Ancestral Graph) representation of the graph
      * @param knowledge the background knowledge used for the orientation
-     * @param verbose   a boolean indicating whether verbose output should be printed
+     * @param verbose   a boolean indicating whether verabose output should be printed
      * @return the final strategy for finding a PAG using D-SEP
      */
     public static R0R4StrategyTestBased getFinalStrategyUsingDsep(Graph mag, Knowledge knowledge, boolean verbose) {

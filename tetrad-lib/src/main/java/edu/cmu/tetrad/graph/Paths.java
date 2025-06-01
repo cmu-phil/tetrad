@@ -1511,13 +1511,96 @@ public class Paths implements TetradSerializable {
                 }
 
                 // Enqueue the neighbor node for further exploration
-                queue.add(new PathElement(c, b));
+                queue.offer(new PathElement(c, b));
             }
         }
 
         // If the queue is exhausted, no inducing path exists
         return false;
     }
+
+    /**  Convenience record for queue elements. */
+    private static final class PathElem {
+        final Node cur;      // current vertex
+        final Node prev;     // vertex we arrived from (null at start)
+
+        PathElem(Node cur, Node prev) {
+            this.cur = cur;
+            this.prev = prev;
+        }
+    }
+
+    /**  (prev,cur) pair so we can mark *edges* as visited. */
+    private static final class NodePair {
+        final Node prev, cur;
+
+        NodePair(Node prev, Node cur) { this.prev = prev; this.cur = cur; }
+
+        @Override public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof NodePair p)) return false;
+            return Objects.equals(prev, p.prev) && Objects.equals(cur, p.cur);
+        }
+        @Override public int hashCode() { return Objects.hash(prev, cur); }
+    }
+
+    /**
+     * Returns {@code true} iff there is an inducing path between {@code x} and {@code y}
+     * relative to the selection-variable set {@code S}.
+     *
+     * A non-endpoint interior vertex must be<br>
+     * &nbsp;&nbsp;(i) a collider on the path, *and*<br>
+     * &nbsp;&nbsp;(ii) an ancestor of {@code x}, {@code y}, or some {@code s∈S}.
+     */
+    public boolean existsInducingPath2(Node x,
+                                      Node y,
+                                      Set<Node> selectionVars) {
+
+        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
+            throw new IllegalArgumentException("Endpoints must be measured variables");
+        }
+
+        /* ----------  pre-compute ancestry sets  ---------- */
+        var paths = graph.paths();                   // Tetrad’s reachability helper
+        Set<Node> goodAncestors = new HashSet<>();
+        goodAncestors.addAll(paths.getAncestors(x));
+        goodAncestors.addAll(paths.getAncestors(y));
+        for (Node s : selectionVars) goodAncestors.addAll(paths.getAncestors(s));
+
+        /* ----------  BFS ---------- */
+        Deque<PathElem> q = new ArrayDeque<>();
+        Set<NodePair> visited = new HashSet<>();     // (prev,cur) pairs
+        q.add(new PathElem(x, null));
+
+        while (!q.isEmpty()) {
+            PathElem elem = q.poll();
+            Node cur  = elem.cur;
+            Node prev = elem.prev;
+
+            if (cur.equals(y)) return true;
+            if (!visited.add(new NodePair(prev, cur))) continue;  // already explored via this edge
+
+            for (Node nbr : graph.getAdjacentNodes(cur)) {
+
+                if (nbr.equals(prev)) continue;   // don’t back-track
+
+                /* ----  collider / non-collider checks  ---- */
+                if (prev != null) {
+                    boolean collider = graph.isDefCollider(prev, cur, nbr);
+
+                    if (!collider) {             // interior non-collider ⇒ path invalid
+                        continue;
+                    }
+                    if (!goodAncestors.contains(cur)) {   // collider must be ancestor of {x,y}∪S
+                        continue;
+                    }
+                }
+                q.add(new PathElem(nbr, cur));
+            }
+        }
+        return false;   // queue exhausted: no inducing path found
+    }
+
 
     /**
      * This method calculates the inducing path between two measured nodes in a graph.

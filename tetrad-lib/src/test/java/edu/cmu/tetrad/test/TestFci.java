@@ -849,7 +849,7 @@ public class TestFci {
         }
     }
 
-    //    @Test
+//    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -908,6 +908,8 @@ public class TestFci {
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.
 
+        int index = 0;
+
         for (int i = 0; i < 1000; i++) {
 //            System.out.println("================= RUN " + (i + 1) + " TEST ====================");
 
@@ -945,6 +947,19 @@ public class TestFci {
                 }
 
                 System.out.println("mag is not legal mag seed = " + seed);
+
+//                DagToPag dagToPag2 = new DagToPag(dag);
+//                dagToPag2.setVerbose(true);
+//                Graph pag2 = dagToPag2.convert();
+//
+//                System.out.println("pag2 legal = " + pag2.paths().isLegalPag());
+//
+//                index++;
+//
+//                System.out.println("index = " + index);
+//                GraphSaveLoadUtils.saveGraph(dag, new File("/Users/josephramsey/Downloads/check_graphs/dag." + index + ".txt"), false);
+//                GraphSaveLoadUtils.saveGraph(pag, new File("/Users/josephramsey/Downloads/check_graphs/pag." + index + ".txt"), false);
+//                GraphSaveLoadUtils.saveGraph(mag, new File("/Users/josephramsey/Downloads/check_graphs/mag." + index + ".txt"), false);
             }
         }
     }
