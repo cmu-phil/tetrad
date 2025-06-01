@@ -59,6 +59,7 @@ public final class DagToPag {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    private int depth = -1;
 
 
     /**

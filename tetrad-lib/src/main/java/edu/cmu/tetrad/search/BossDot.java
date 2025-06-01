@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -64,6 +65,9 @@ public final class BossDot implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    private int depth = -1;
+    private boolean completeRuleSetUsed = true;
+
     /**
      * LV-Dumb constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
      * Score object.
@@ -120,7 +124,11 @@ public final class BossDot implements IGraphSearch {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-        Graph pag = PagCache.getInstance().getPag(GraphTransforms.dagFromCpdag(cpdag), knowledge, verbose);
+        DagToPag dagToPag = new DagToPag(cpdag);
+        dagToPag.setVerbose(verbose);
+        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+        dagToPag.setKnowledge(knowledge);
+        Graph pag = dagToPag.convert();
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");
@@ -176,5 +184,9 @@ public final class BossDot implements IGraphSearch {
      */
     public void setUseBes(boolean useBes) {
         this.useBes = useBes;
+    }
+
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 }
