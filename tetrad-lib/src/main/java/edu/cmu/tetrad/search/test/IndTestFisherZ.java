@@ -63,10 +63,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * The standard normal distribution.
      */
     private final NormalDistribution normal = new NormalDistribution(0, 1);
-//    /**
-//     * A cache of results for independence facts.
-//     */
-//    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     /**
      * The sample size to use; if not set, the sample size of the data set is used.
      */
@@ -217,17 +213,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
 
-        if (x.getName().equals("i") && y.getName().equals("ps")) {
-            System.out.println();
-        }
-
-//        IndependenceResult _result = facts.get(new IndependenceFact(x, y, z));
-//
-//        if (_result != null) {
-//            return _result;
-//        }
-
-
         double p;
 
         try {
@@ -242,7 +227,6 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
         } else {
             IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
-//            facts.put(new IndependenceFact(x, y, z), result);
 
             if (this.verbose) {
                 if (independent) {

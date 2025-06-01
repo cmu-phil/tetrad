@@ -38,16 +38,16 @@ public class RecursiveBlocking {
      * {@code null} if no sepset can be found.
      * @throws InterruptedException if any.
      */
-    public static Pair<Set<Node>, Boolean> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
+    public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength) throws InterruptedException {
         return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength);
     }
 
-    private static Pair<Set<Node>, Boolean> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
+    private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
                                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
             throws InterruptedException {
         if (x == y) {
-            return null;
+            throw new NullPointerException("x and y are equal");
         }
 
         Set<Node> z = new HashSet<>(containing);
@@ -70,9 +70,7 @@ public class RecursiveBlocking {
             }
         }
 
-        return Pair.of(z, allBlocked);
-//
-//        return allBlocked ? z : null;
+        return allBlocked ? z : null;
     }
 
     /**

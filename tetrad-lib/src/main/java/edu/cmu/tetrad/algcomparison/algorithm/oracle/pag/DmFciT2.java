@@ -341,7 +341,7 @@ public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, Us
 
         // FCIT
 //        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
+        search.setPreserveMarkov(parameters.getBoolean(Params.PRESERVE_MARKOV));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(Fcit.START_WITH.BOSS);
@@ -415,7 +415,7 @@ public class DmFciT2 extends AbstractBootstrapAlgorithm implements Algorithm, Us
         params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.GUARANTEE_PAG);
-        params.add(Params.ENSURE_MARKOV);
+        params.add(Params.PRESERVE_MARKOV);
 
         // General
         params.add(Params.TIME_LAG);

@@ -2640,7 +2640,16 @@ public final class GraphUtils {
         return changedOverall;        // tell the caller whether anything changed *at all*
     }
 
-
+    /**
+     * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that
+     * any inducing path between two nodes not currently adjacent in the graph
+     * results in an added non-directed edge. The method modifies the graph in-place.
+     *
+     * @param pag the Partial Ancestral Graph to be repaired for maximality
+     * @param verbose if true, logs the actions performed during the repair process
+     * @param selection a set of nodes to be considered during the inducing path check
+     * @return true if the graph was modified during the repair process; false otherwise
+     */
     public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
         boolean changed = false;
         for (Node x : pag.getNodes()) {
@@ -3185,18 +3194,18 @@ public final class GraphUtils {
      * Initializes and evaluates p-values for local Markov properties in a given graph.
      *
      * @param dag          The input graph, a DAG (Directed Acyclic Graph).
-     * @param ensureMarkov Flag indicating that the method should proceed only if set to true.
+     * @param preserveMarkov Flag indicating that the method should proceed only if set to true.
      * @param test         The statistical test instance used to check for conditional independence.
      * @param pValues      A map to store the p-values, indexed by pairs of nodes.
      * @return The percentage of p-values that are less than the significance level (alpha) used in the test. Returns
-     * 0.0 if the number of p-values is less than 5 or if ensureMarkov is false or test instance is invalid.
-     * @throws IllegalArgumentException if ensureMarkov is false.
+     * 0.0 if the number of p-values is less than 5 or if preserveMarkov is false or test instance is invalid.
+     * @throws IllegalArgumentException if preserveMarkov is false.
      * @throws InterruptedException     if any
      */
-    public static double localMarkovInitializePValues(Graph dag, boolean ensureMarkov, IndependenceTest test,
+    public static double localMarkovInitializePValues(Graph dag, boolean preserveMarkov, IndependenceTest test,
                                                       Map<Pair<Node, Node>, Set<Double>> pValues) throws InterruptedException {
-        if (!ensureMarkov) {
-            throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
+        if (!preserveMarkov) {
+            throw new IllegalArgumentException("This method should only be called when preserveMarkov is true.");
         }
 
         if (test == null || test instanceof MsepTest) {

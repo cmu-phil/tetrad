@@ -15,14 +15,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A helper class to encapsulate logic for ensuring a Markov property for subsequent testing after an initial local
+ * A helper class to encapsulate logic for preserving a Markov property for subsequent testing after an initial local
  * Markov graph has been found.
  *
  * @author josephramsey
  * @version $Id: $Id
  * @see GraphUtils
  */
-public class EnsureMarkov {
+public class PreserveMarkov {
     /**
      * The initial Markov graph
      */
@@ -40,29 +40,32 @@ public class EnsureMarkov {
      */
     private Map<Pair<Node, Node>, Set<Double>> pValues = new HashMap<>();
     /**
-     * A boolean that determines whether to ensure Markov property.
+     * A boolean that determines whether to preserve the Markov property.
      */
-    private boolean ensureMarkov = false;
+    private boolean preserveMarkov = false;
 
     /**
-     * Constructs an EnsureMarkov class for a given Markov graph.
+     * Constructs an PreserveMarkov class for a given Markov graph.
      *
      * @param graph  The initial Markov graph. This graph should pass a local Markov check.
      * @param test The independence test to use.
      */
-    public EnsureMarkov(Graph graph, IndependenceTest test) {
+    public PreserveMarkov(Graph graph, IndependenceTest test) {
         this.graph = new EdgeListGraph(graph);
         this.test = test;
     }
 
     /**
-     * Copy constructor.
+     * Creates a new instance of the PreserveMarkov class by copying the fields
+     * from another PreserveMarkov object.
+     *
+     * @param preserveMarkov The PreserveMarkov object to be copied. Must not be null.
      */
-    public EnsureMarkov(EnsureMarkov ensureMarkov) {
-        this.graph = new EdgeListGraph(ensureMarkov.graph);
-        this.test = ensureMarkov.test;
-        this.pValues = new HashMap<>(ensureMarkov.pValues);
-        this.ensureMarkov = ensureMarkov.ensureMarkov;
+    public PreserveMarkov(PreserveMarkov preserveMarkov) {
+        this.graph = new EdgeListGraph(preserveMarkov.graph);
+        this.test = preserveMarkov.test;
+        this.pValues = new HashMap<>(preserveMarkov.pValues);
+        this.preserveMarkov = preserveMarkov.preserveMarkov;
     }
 
     /**
@@ -70,19 +73,19 @@ public class EnsureMarkov {
      * (CPDAG).
      *
      * @param graph        the constraint-based partially directed acyclic graph (CPDAG) to adjust p-values for
-     * @param ensureMarkov a boolean flag indicating if the Markov condition should be ensured; should be true
+     * @param preserveMarkov a boolean flag indicating if the Markov condition should be preserved; should be true
      * @param test         the independence test to be used; must not be null and not an instance of MsepTest
      * @param pValues      a map of node pairs to sets of p-values used for adjustment
      * @param withoutPair  a pair of nodes for which adjustments are calculated without considering the edge between
      *                     them
      * @return a map of node pairs to sets of adjusted p-values
-     * @throws IllegalArgumentException if ensureMarkov is false or if the test is null or an instance of MsepTest
+     * @throws IllegalArgumentException if preserveMarkov is false or if the test is null or an instance of MsepTest
      * @throws InterruptedException     if any
      */
-    public static Map<Pair<Node, Node>, Set<Double>> markovAdjustPValues(Graph graph, boolean ensureMarkov, IndependenceTest test,
+    public static Map<Pair<Node, Node>, Set<Double>> markovAdjustPValues(Graph graph, boolean preserveMarkov, IndependenceTest test,
                                                                          Map<Pair<Node, Node>, Set<Double>> pValues, Pair<Node, Node> withoutPair) throws InterruptedException {
-        if (!ensureMarkov) {
-            throw new IllegalArgumentException("This method should only be called when ensureMarkov is true.");
+        if (!preserveMarkov) {
+            throw new IllegalArgumentException("This method should only be called when preserveMarkov is true.");
         }
 
         if (test == null || test instanceof MsepTest) {
@@ -143,17 +146,17 @@ public class EnsureMarkov {
     }
 
     /**
-     * Sets whether to ensure Markov property. By default, false; this must be turned on.
+     * Sets whether to preserve the Markov property. By default, false; this must be turned on.
      *
-     * @param ensureMarkov True if the Markov property should be ensured.
+     * @param preserveMarkov True if the Markov property should be preserved.
      * @throws InterruptedException if any.
      */
-    public void setEnsureMarkov(boolean ensureMarkov) throws InterruptedException {
-        this.ensureMarkov = ensureMarkov;
+    public void setPreserveMarkov(boolean preserveMarkov) throws InterruptedException {
+        this.preserveMarkov = preserveMarkov;
 
-        if (ensureMarkov) {
+        if (preserveMarkov) {
             double initialFraction = GraphUtils.localMarkovInitializePValues(
-                    graph, ensureMarkov, test, pValues);
+                    graph, preserveMarkov, test, pValues);
             System.out.println("Initial percent dependent = " + initialFraction);
         } else {
             pValues.clear();
@@ -176,20 +179,20 @@ public class EnsureMarkov {
         IndependenceResult result = test.checkIndependence(x, y, z);
 
         if (result.isIndependent()) {
-            if (ensureMarkov) {
-                Map<Pair<Node, Node>, Set<Double>> _pValues = markovAdjustPValues(graph, ensureMarkov,
-                        test, pValues, Pair.of(x, y));
-
-//                double baseline = GraphUtils.calculatePercentDependent(test, pValues);
-
-                if (GraphUtils.pValuesAdP(_pValues) > test.getAlpha()) {
-//                    if (GraphUtils.calculatePercentDependent(test, _pValues) <= test.getAlpha()) {
-                    pValues = _pValues;
-                    return true;
-                }
-            } else {
+//            if (preserveMarkov) {
+//                Map<Pair<Node, Node>, Set<Double>> _pValues = markovAdjustPValues(graph, preserveMarkov,
+//                        test, pValues, Pair.of(x, y));
+//
+////                double baseline = GraphUtils.calculatePercentDependent(test, pValues);
+//
+//                if (_pValues.size() > 10 && GraphUtils.pValuesAdP(_pValues) > test.getAlpha()) {
+////                    if (GraphUtils.calculatePercentDependent(test, _pValues) <= test.getAlpha()) {
+//                    pValues = _pValues;
+//                    return true;
+//                }
+//            } else {
                 return true;
-            }
+//            }
         }
 
         return false;

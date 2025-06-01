@@ -388,7 +388,7 @@ public class TestFci {
             fci.setStartWith(Fcit.START_WITH.GRASP);
 //            fci.setDepth(-1);
             fci.setKnowledge(knowledge);
-            fci.setEnsureMarkov(false);
+            fci.setPreserveMarkov(false);
             fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
@@ -570,7 +570,7 @@ public class TestFci {
 
             Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
             fcit.setStartWith(Fcit.START_WITH.GRASP);
-            fcit.setEnsureMarkov(false);
+            fcit.setPreserveMarkov(false);
             Graph estPag3 = fcit.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
@@ -603,7 +603,7 @@ public class TestFci {
 
         Set<Node> B = null;
         try {
-            B = SepsetFinder.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1).getLeft();
+            B = RecursiveBlocking.blockPathsRecursively(mag, x, y, new HashSet<>(), new HashSet<>(), -1);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -640,7 +640,7 @@ public class TestFci {
         MsepTest msepTest = new MsepTest(g);
 
         Set<Node> Z = RecursiveBlocking.blockPathsRecursively(g, x, y, new HashSet<Node>(),
-                new HashSet<Node>(), -1).getLeft();
+                new HashSet<Node>(), -1);
         assertTrue(msepTest.checkIndependence(x, y, Z).isIndependent());
     }
 
@@ -749,23 +749,26 @@ public class TestFci {
         }
     }
 
-//    @Test
+    //    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
-            Graph graph = RandomGraph.randomGraph(50, 6, 150, 100, 100, 100, false);
+            Graph graph = RandomGraph.randomGraph(50, 6, 100, 100, 100, 100, false);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);
             DataSet dataSet = im.simulateData(1000, false);
 
-            IndTestFisherZ test = new IndTestFisherZ(dataSet, 0.001);
+            IndependenceTest test = new IndTestFisherZ(dataSet, 0.00001);
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
-            score.setPenaltyDiscount(4.0);
+            score.setPenaltyDiscount(2.0);
 
             try {
                 Fcit fcit = new Fcit(test, score);
-                fcit.setVerbose(false);
+                fcit.setPrintRestored(true);
+//                fcit.setVerbose(true);
+                fcit.setDepth(7);
+                fcit.setCompleteRuleSetUsed(true);
                 Graph pag = fcit.search();
 
                 if (!pag.paths().isMaximal()) {
@@ -867,7 +870,8 @@ public class TestFci {
 
                 Fcit fci = new Fcit(independence, score);
                 fci.setStartWith(Fcit.START_WITH.GRASP);
-                fci.setEnsureMarkov(false);
+                fci.setPreserveMarkov(false);
+                fci.setCompleteRuleSetUsed(true);
                 fci.setVerbose(false);
 
                 Graph pag = fci.search();
@@ -904,16 +908,18 @@ public class TestFci {
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.
 
-        for (int i = 0; i < 1; i++) {
+        int index = 0;
+
+        for (int i = 0; i < 1000; i++) {
 //            System.out.println("================= RUN " + (i + 1) + " TEST ====================");
 
-//            long seed = RandomUtil.getInstance().nextLong();
-            long seed = -6064115539269406491L;
+            long seed = RandomUtil.getInstance().nextLong();
+//            long seed = -6064115539269406491L;
             RandomUtil.getInstance().setSeed(seed);
 
             Graph dag = RandomGraph.randomGraph(20, 6, 40, 100, 100, 100, false);
             DagToPag dagToPag = new DagToPag(dag);
-            dagToPag.setVerbose(true);
+            dagToPag.setVerbose(false);
             Graph pag = dagToPag.convert();
 
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
@@ -941,6 +947,19 @@ public class TestFci {
                 }
 
                 System.out.println("mag is not legal mag seed = " + seed);
+
+//                DagToPag dagToPag2 = new DagToPag(dag);
+//                dagToPag2.setVerbose(true);
+//                Graph pag2 = dagToPag2.convert();
+//
+//                System.out.println("pag2 legal = " + pag2.paths().isLegalPag());
+//
+//                index++;
+//
+//                System.out.println("index = " + index);
+//                GraphSaveLoadUtils.saveGraph(dag, new File("/Users/josephramsey/Downloads/check_graphs/dag." + index + ".txt"), false);
+//                GraphSaveLoadUtils.saveGraph(pag, new File("/Users/josephramsey/Downloads/check_graphs/pag." + index + ".txt"), false);
+//                GraphSaveLoadUtils.saveGraph(mag, new File("/Users/josephramsey/Downloads/check_graphs/mag." + index + ".txt"), false);
             }
         }
     }
@@ -956,7 +975,7 @@ public class TestFci {
         Fcit fci = new Fcit(independence, score);
         fci.setStartWith(Fcit.START_WITH.GRASP);
 //        fci.setDepth(-1);
-        fci.setEnsureMarkov(false);
+        fci.setPreserveMarkov(false);
         fci.setVerbose(true);
 
         try {

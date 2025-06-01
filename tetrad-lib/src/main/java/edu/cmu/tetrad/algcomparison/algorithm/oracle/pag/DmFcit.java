@@ -19,7 +19,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SepsetFinder;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -295,9 +295,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
      */
     private static Set<Node> getMinimalConditioningSet(Graph graph, Node childA, Node childB, Set<Node> parents)
             throws InterruptedException {
-        return SepsetFinder.blockPathsRecursively(
-                graph, childA, childB, new HashSet<>(),  new HashSet<>(), -1
-        ).getLeft();
+        return RecursiveBlocking.blockPathsRecursively(graph, childA, childB, new HashSet<>(), new HashSet<>(), -1);
     }
 
     /**
@@ -342,7 +340,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // FCIT
 //        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setEnsureMarkov(parameters.getBoolean(Params.ENSURE_MARKOV));
+        search.setPreserveMarkov(parameters.getBoolean(Params.PRESERVE_MARKOV));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(Fcit.START_WITH.BOSS);
@@ -416,7 +414,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
         params.add(Params.FCIT_STARTS_WITH);
         params.add(Params.GRASP_DEPTH);
         params.add(Params.GUARANTEE_PAG);
-        params.add(Params.ENSURE_MARKOV);
+        params.add(Params.PRESERVE_MARKOV);
 
         // General
         params.add(Params.TIME_LAG);

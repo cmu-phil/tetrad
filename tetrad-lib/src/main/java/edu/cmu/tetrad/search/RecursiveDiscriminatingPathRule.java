@@ -5,10 +5,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.DiscriminatingPath;
-import edu.cmu.tetrad.search.utils.EnsureMarkov;
+import edu.cmu.tetrad.search.utils.PreserveMarkov;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.util.SublistGenerator;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -34,58 +33,6 @@ public class RecursiveDiscriminatingPathRule {
 
     }
 
-//    /**
-//     * Checks for conditional independence between two nodes {@code x} and {@code y} in the context of a given blocking
-//     * set, recursively analyzing potential discriminating paths. This method evaluates combinations of nodes in the
-//     * blocking set that satisfy independence conditions.
-//     *
-//     * @param test               The independence test object used to evaluate conditional independence.
-//     * @param x                  The first node for which independence is being checked.
-//     * @param y                  The second node for which independence is being checked.
-//     * @param blocking           The initial set of nodes considered as the blocking set for independence tests.
-//     * @param vNodes             The subset of nodes identifying possible colliders in the analysis.
-//     * @param discriminatingPath The discriminating path data structure containing relevant path information.
-//     * @param ensureMarkovHelper A helper object for ensuring adherence to the Markov property during the checks.
-//     * @return {@code true} if the nodes {@code x} and {@code y} are conditionally independent given the blocking set;
-//     * otherwise, {@code false}.
-//     * @throws InterruptedException If the process is interrupted during execution.
-//     */
-//    public static Set<Node> checkIndependenceRecursive(IndependenceTest test, Node x, Node y, Set<Node> blocking, Set<Node> vNodes, DiscriminatingPath discriminatingPath, EnsureMarkov ensureMarkovHelper) throws InterruptedException {
-//
-//        List<Node> vs = new ArrayList<>();
-//        List<Node> nonVs = new ArrayList<>();
-//
-//        for (Node v : blocking) {
-//            if (vNodes.contains(v)) {
-//                vs.add(v);
-//            } else {
-//                nonVs.add(v);
-//            }
-//        }
-//
-//        Node v = discriminatingPath.getV();
-//        vs.remove(v);
-//
-//        SublistGenerator generator = new SublistGenerator(vs.size(), vs.size());
-//        int[] choice;
-//
-//        while ((choice = generator.next()) != null) {
-//            Set<Node> newBlocking = GraphUtils.asSet(choice, vs);
-//            newBlocking.add(v);
-//            newBlocking.addAll(nonVs);
-//
-//            // You didn't condition on any colliders. V is in the set. So V is a noncollider.
-//            boolean independent = ensureMarkovHelper != null ? ensureMarkovHelper.markovIndependence(x, y, newBlocking) : test.checkIndependence(x, y, newBlocking).isIndependent();
-//
-//            if (independent) {
-//                return newBlocking;
-//            }
-//        }
-//
-//        return blocking;
-//    }
-
-
     /**
      * Finds the set of nodes (separator set) for the Recursive Discriminating Path rule in a graph. This method uses a
      * recursive approach to evaluate possible discriminating paths between two nodes {@code x} and {@code y} in the
@@ -99,15 +46,16 @@ public class RecursiveDiscriminatingPathRule {
      * @param fciOrient             An orientation helper object used to apply FCI rules to edges in the graph.
      * @param maxBlockingPathLength The maximum allowable length of a blocking path for the analysis.
      * @param maxDdpPathLength      The maximum allowable discriminating path length considered for the analysis.
-     * @param ensureMarkovHelper    A helper object for additional Markov property checks during the independence
+     * @param preserveMarkovHelper    A helper object for additional Markov property checks during the independence
      *                              tests.
      * @param depth                 The maximum subset depth allowed during subset evaluations; a value of -1 allows all
      *                              subsets.
      * @return A set of nodes that constitutes the separating set (sepset) between {@code x} and {@code y}, or
      * {@code null} if no such set exists.
+     * @throws InterruptedException If any.
      */
     public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y, FciOrient fciOrient,
-                                                   int maxBlockingPathLength, int maxDdpPathLength, EnsureMarkov ensureMarkovHelper, int depth)
+                                                   int maxBlockingPathLength, int maxDdpPathLength, PreserveMarkov preserveMarkovHelper, int depth)
             throws InterruptedException {
 
         // Get the V nodes--these need to be blocked in every combination, as we don't know which of these are colliders
@@ -145,9 +93,11 @@ public class RecursiveDiscriminatingPathRule {
                 Set<Node> vNodesNotFollowed = GraphUtils.asSet(indices, _perhapsNotFollowed);
 
                 // (A) blockPathsRecursively
-                Pair<Set<Node>, Boolean> b = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
+                Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), vNodesNotFollowed, maxBlockingPathLength);
 
-                Set<Node> blocking = b.getLeft();
+                if (blocking == null) {
+                    continue;
+                }
 
                 for (Node f : vNodes) {
                     if (!vNodesNotFollowed.contains(f)) {
@@ -163,8 +113,8 @@ public class RecursiveDiscriminatingPathRule {
 
                 // Check independence
                 boolean independent;
-                if (ensureMarkovHelper != null) {
-                    independent = ensureMarkovHelper.markovIndependence(x, y, testSet);
+                if (preserveMarkovHelper != null) {
+                    independent = preserveMarkovHelper.markovIndependence(x, y, testSet);
                 } else {
                     independent = test.checkIndependence(x, y, testSet).isIndependent();
                 }

@@ -920,9 +920,9 @@ public final class Params {
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
     /**
-     * Constant <code>ENSURE_MARKOV="ensureMarkov"</code>
+     * Constant <code>PRESERVE_MARKOV="preserveMarkov"</code>
      */
-    public static final String ENSURE_MARKOV = "ensureMarkov";
+    public static final String PRESERVE_MARKOV = "preserveMarkov";
     /**
      * Constant <code>AM_TAYLOR_SERIES_DEGREE="amTaylorSeriesDegree"</code>
      */
