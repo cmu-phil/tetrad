@@ -48,8 +48,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
@@ -864,11 +863,16 @@ public class TestFci {
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
 
+            Graph _pag = new DagToPag(dag).convert();
+            if (!_pag.paths().isLegalPag()) {
+                throw new IllegalArgumentException("_Pag not a legal PAG.");
+            }
+
             try {
 //                Fci fci = new Fci(independence);
 //                Gfci fci = new Gfci(independence, score);
 //                GraspFci fci = new GraspFci(independence, score);
-//
+
                 Fcit fci = new Fcit(independence, score);
                 fci.setStartWith(Fcit.START_WITH.GRASP);
 
@@ -877,7 +881,11 @@ public class TestFci {
 //
                 Graph pag = fci.search();
 
-                if (!isLegalPag(pag)) {
+                boolean illegal = !isLegalPag(pag);
+
+                if (illegal) {
+                    System.out.println("Not a legal PAG");
+
                     Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
                     if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
@@ -898,14 +906,14 @@ public class TestFci {
                     System.out.println("pag is not legal pag seed = " + seed);
                 }
 
-                Graph correctPag = new DagToPag(dag).convert();
+                assertFalse(illegal);
 
-                if (!pag.equals(correctPag)) {
+                if (!pag.equals(_pag)) {
                     fci.setVerbose(true);
                     fci.search();
                 }
 
-                assertEquals(correctPag, pag);
+                assertEquals(_pag, pag);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
