@@ -52,6 +52,7 @@ public class RecursiveDiscriminatingPathRule {
      *                              subsets.
      * @return A set of nodes that constitutes the separating set (sepset) between {@code x} and {@code y}, or
      * {@code null} if no such set exists.
+     * @throws InterruptedException If any.
      */
     public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y, FciOrient fciOrient,
                                                    int maxBlockingPathLength, int maxDdpPathLength, PreserveMarkov preserveMarkovHelper, int depth)

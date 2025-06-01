@@ -16,13 +16,22 @@ public final class RecursiveBlockingChokePointB {
 
     private RecursiveBlockingChokePointB() {}
 
-    /* ------------------------------------------------------------------ */
-    /*  Public entry point                                                 */
-    /* ------------------------------------------------------------------ */
-
-    /** @return { B } if a separator is found, ∅ if none is needed,
-     *           or {@code null} if no separator exists (w.r.t. the
-     *           ignored edge). */
+    /**
+     * Identifies and blocks paths in the given graph by iteratively finding and
+     * addressing chokepoints and eligible non-collider nodes. This method
+     * recursively handles graph traversal and blocking based on specific
+     * conditions until all paths between the given nodes are blocked or no further
+     * potential adjustments can be made.
+     *
+     * @param G            the graph in which paths are to be blocked
+     * @param x            the starting node for path exploration
+     * @param y            the target node for path blocking
+     * @param forbidden    a set of nodes that are forbidden from being part of any path
+     * @param maxPathLength the maximum permissible length of paths to explore
+     * @return a set of nodes that block paths between x and y, or null if no
+     *         valid blocking set can be determined
+     * @throws InterruptedException if the operation is interrupted during execution
+     */
     public static Set<Node> blockPathsRecursively(Graph G,
                                                   Node x,
                                                   Node y,
@@ -64,10 +73,25 @@ public final class RecursiveBlockingChokePointB {
         return B;
     }
 
-    /* ------------------------------------------------------------------ */
-    /*  firstOpenPath – DFS until y is reached on an open path            */
-    /* ------------------------------------------------------------------ */
-
+    /**
+     * Finds the first open path between two specified nodes in a graph, adhering
+     * to certain constraints and conditions. This method uses a depth-first
+     * traversal approach, keeping track of paths explored and respecting the
+     * constraints such as forbidden nodes, maximum path length, and conditions for
+     * path feasibility based on given blocking sets and node descriptors.
+     *
+     * @param G         the graph in which to search for paths
+     * @param x         the starting node for the path search
+     * @param y         the target node for the path search
+     * @param B         a set of blocking nodes that constrain path exploration
+     * @param maxLen    the maximum permissible path length (-1 for no limit)
+     * @param desc      a mapping of nodes to sets of descendant nodes, used for
+     *                  additional constraints in defining valid paths
+     * @param forbidden a set of nodes that cannot be part of any path
+     * @return the first valid path from x to y that meets the constraints, or null
+     *         if no such path exists
+     * @throws InterruptedException if the operation is interrupted during execution
+     */
     private static Path firstOpenPath(Graph G, Node x, Node y, Set<Node> B,
                                       int maxLen, Map<Node, Set<Node>> desc,
                                       Set<Node> forbidden)
@@ -102,10 +126,24 @@ public final class RecursiveBlockingChokePointB {
         return null;
     }
 
-    /* ------------------------------------------------------------------ */
-    /*  intersectionSkipFirst – takes same ‘ignore-edge’ shortcut         */
-    /* ------------------------------------------------------------------ */
-
+    /**
+     * Identifies the intersection of eligible non-collider nodes for paths in a graph,
+     * while skipping the first occurrence of the target node. This method traverses
+     * the graph starting from a given path prefix, adhering to constraints such as
+     * forbidden nodes, maximum path length, and segment validity.
+     *
+     * @param G         the graph to explore for paths
+     * @param prefix    the initial path prefix used for traversal
+     * @param y         the target node for the path intersection
+     * @param B         a set of blocking nodes that constrain path exploration
+     * @param maxLen    the maximum permissible path length (-1 for no limit)
+     * @param desc      a mapping of nodes to sets of descendant nodes, used for
+     *                  additional constraints in determining valid paths
+     * @param forbidden a set of nodes that cannot be part of any path
+     * @return the set of intersecting eligible non-collider nodes for valid paths, or an
+     *         empty set if no intersection is found
+     * @throws InterruptedException if the execution is interrupted during traversal
+     */
     private static Set<Node> intersectionSkipFirst(Graph G, Path prefix, Node y,
                                                    Set<Node> B, int maxLen,
                                                    Map<Node, Set<Node>> desc,
@@ -149,12 +187,37 @@ public final class RecursiveBlockingChokePointB {
     /*  Helpers                                                           */
     /* ------------------------------------------------------------------ */
 
-    /** Skip the one undirected edge we want to pretend does not exist. */
+    /**
+     * Determines if the edge formed by the nodes a and b is equivalent to the edge formed
+     * by the nodes x and y. This check considers the undirected nature of the edge, meaning
+     * the order of nodes does not matter.
+     *
+     * @param a the first node of the first edge
+     * @param b the second node of the first edge
+     * @param x the first node of the second edge
+     * @param y the second node of the second edge
+     * @return true if the edge formed by a and b is equivalent to the edge formed by x and y,
+     *         false otherwise
+     */
     private static boolean isXYEdge(Node a, Node b, Node x, Node y) {
         return (a.equals(x) && b.equals(y)) ||
                (a.equals(y) && b.equals(x));
     }
 
+    /**
+     * Determines whether the segment between nodes `a` and `b` in the graph satisfies
+     * specific conditions based on colliders, blocking sets, and descendant nodes.
+     * The method evaluates the validity of the segment based on whether `b` is
+     * a collider and whether any node in the blocking set `B` exists in the
+     * descendants of `b`.
+     *
+     * @param G     the graph being analyzed
+     * @param a     the starting node of the segment
+     * @param b     the ending node of the segment
+     * @param B     the set of blocking nodes used to constrain path exploration
+     * @param desc  a mapping of nodes to their respective sets of descendant nodes
+     * @return true if the segment passes the validation conditions, false otherwise
+     */
     private static boolean segmentPasses(Graph G, Node a, Node b,
                                          Set<Node> B, Map<Node, Set<Node>> desc) {
         boolean collider = G.isDefCollider(a, b, null);
@@ -165,6 +228,19 @@ public final class RecursiveBlockingChokePointB {
         return false;
     }
 
+    /**
+     * Determines whether a given node is an eligible non-collider in a graph
+     * based on specific conditions involving the graph structure, path prefix,
+     * blocking set, and forbidden set.
+     *
+     * @param G         the graph to analyze
+     * @param prefix    the path prefix leading to the current node
+     * @param v         the node to check for eligibility as a non-collider
+     * @param B         a set of blocking nodes that restrict valid paths
+     * @param forbidden a set of nodes that are not allowed to participate
+     *                  in the path
+     * @return true if the node is eligible to be a non-collider, false otherwise
+     */
     private static boolean isEligibleNonCollider(Graph G, List<Node> prefix,
                                                  Node v, Set<Node> B,
                                                  Set<Node> forbidden) {
@@ -177,8 +253,11 @@ public final class RecursiveBlockingChokePointB {
         return !G.isDefCollider(a, b, v);
     }
 
-    /* ---------------  immutable Path helper  ------------------------- */
-
+    /**
+     * Represents a path in a graph consisting of a sequence of nodes, with the ability
+     * to enforce restrictions based on forbidden nodes and perform various path-related
+     * operations.
+     */
     private static final class Path {
         private final List<Node> nodes;
         private final Set<Node> forbidden;

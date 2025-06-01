@@ -156,6 +156,16 @@ public class Paths implements TetradSerializable {
         return newOrder;
     }
 
+    /**
+     * Generates a valid topological ordering of nodes in a directed graph without cycles. If the provided graph is
+     * cyclic, an IllegalArgumentException is thrown.
+     *
+     * @param initialOrder the initial list of nodes representing a possible order to process
+     * @param forward      a boolean indicating the direction of the list processing; if true, the initial order is
+     *                     reversed
+     * @return a valid list of nodes representing the order in which the directed graph can be traversed without
+     * breaking dependency constraints
+     */
     public List<Node> getValidOrderMag(List<Node> initialOrder, boolean forward) {
         List<Node> _initialOrder = new ArrayList<>(initialOrder);
         Graph _graph = new EdgeListGraph(this.graph);
@@ -1519,42 +1529,22 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    /**  Convenience record for queue elements. */
-    private static final class PathElem {
-        final Node cur;      // current vertex
-        final Node prev;     // vertex we arrived from (null at start)
-
-        PathElem(Node cur, Node prev) {
-            this.cur = cur;
-            this.prev = prev;
-        }
-    }
-
-    /**  (prev,cur) pair so we can mark *edges* as visited. */
-    private static final class NodePair {
-        final Node prev, cur;
-
-        NodePair(Node prev, Node cur) { this.prev = prev; this.cur = cur; }
-
-        @Override public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof NodePair p)) return false;
-            return Objects.equals(prev, p.prev) && Objects.equals(cur, p.cur);
-        }
-        @Override public int hashCode() { return Objects.hash(prev, cur); }
-    }
-
     /**
-     * Returns {@code true} iff there is an inducing path between {@code x} and {@code y}
-     * relative to the selection-variable set {@code S}.
+     * Determines if there exists an inducing path between given nodes x and y, considering the provided selection
+     * variables. An inducing path is a valid path in a graph that satisfies specific criteria based on node ancestry
+     * and collider relationships.
+     * <p>
+     * Experimental.
      *
-     * A non-endpoint interior vertex must be<br>
-     * &nbsp;&nbsp;(i) a collider on the path, *and*<br>
-     * &nbsp;&nbsp;(ii) an ancestor of {@code x}, {@code y}, or some {@code s∈S}.
+     * @param x             the starting node, must be of type MEASURED
+     * @param y             the target node, must be of type MEASURED
+     * @param selectionVars the set of selection variables to consider when validating collider and ancestry conditions
+     * @return true if an inducing path exists between x and y; false otherwise
+     * @throws IllegalArgumentException if either x or y is not of type MEASURED
      */
     public boolean existsInducingPath2(Node x,
-                                      Node y,
-                                      Set<Node> selectionVars) {
+                                       Node y,
+                                       Set<Node> selectionVars) {
 
         if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException("Endpoints must be measured variables");
@@ -1574,7 +1564,7 @@ public class Paths implements TetradSerializable {
 
         while (!q.isEmpty()) {
             PathElem elem = q.poll();
-            Node cur  = elem.cur;
+            Node cur = elem.cur;
             Node prev = elem.prev;
 
             if (cur.equals(y)) return true;
@@ -1600,7 +1590,6 @@ public class Paths implements TetradSerializable {
         }
         return false;   // queue exhausted: no inducing path found
     }
-
 
     /**
      * This method calculates the inducing path between two measured nodes in a graph.
@@ -1725,6 +1714,96 @@ public class Paths implements TetradSerializable {
 
     }
 
+    /**
+     * Remove edges by the possible m-separation rule.
+     *
+     * @param test    The independence test to use to remove edges.
+     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
+     *                recorded.
+     * @throws InterruptedException if any
+     */
+    public void removeByPossibleDsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            {
+                List<Node> possibleDsep = possibleDsep(a, -1);
+                possibleDsep.remove(a);
+                possibleDsep.remove(b);
+
+                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    if (choice.length < 2) continue;
+                    Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
+                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                    if (test.checkIndependence(a, b, sepset).isIndependent()) {
+                        graph.removeEdge(edge);
+
+                        if (sepsets != null) {
+                            sepsets.set(a, b, sepset);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            if (graph.containsEdge(edge)) {
+                {
+                    List<Node> possibleDsep = possibleDsep(a, -1);
+                    possibleDsep.remove(a);
+                    possibleDsep.remove(b);
+
+                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        if (choice.length < 2) continue;
+                        Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
+                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                        if (test.checkIndependence(a, b, sepset).isIndependent()) {
+                            graph.removeEdge(edge);
+
+                            if (sepsets != null) {
+                                sepsets.set(a, b, sepset);
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b) {
+        if (w == x) {
+            return true;
+        }
+
+        Set<Node> p = previous.get(w);
+        if (p == null) {
+            return false;
+        }
+
+        for (Node r : p) {
+            if (r == b || r == x) {
+                continue;
+            }
+
+            if ((existsSemiDirectedPath(r, x)) || existsSemiDirectedPath(r, b)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 //    /**
 //     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
 //     * constraint.
@@ -1821,96 +1900,6 @@ public class Paths implements TetradSerializable {
 //
 //        return _msep;
 //    }
-
-    /**
-     * Remove edges by the possible m-separation rule.
-     *
-     * @param test    The independence test to use to remove edges.
-     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
-     *                recorded.
-     * @throws InterruptedException if any
-     */
-    public void removeByPossibleDsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-
-            {
-                List<Node> possibleDsep = possibleDsep(a, -1);
-                possibleDsep.remove(a);
-                possibleDsep.remove(b);
-
-                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    if (choice.length < 2) continue;
-                    Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
-                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                    if (test.checkIndependence(a, b, sepset).isIndependent()) {
-                        graph.removeEdge(edge);
-
-                        if (sepsets != null) {
-                            sepsets.set(a, b, sepset);
-                        }
-
-                        break;
-                    }
-                }
-            }
-
-            if (graph.containsEdge(edge)) {
-                {
-                    List<Node> possibleDsep = possibleDsep(a, -1);
-                    possibleDsep.remove(a);
-                    possibleDsep.remove(b);
-
-                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        if (choice.length < 2) continue;
-                        Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
-                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                        if (test.checkIndependence(a, b, sepset).isIndependent()) {
-                            graph.removeEdge(edge);
-
-                            if (sepsets != null) {
-                                sepsets.set(a, b, sepset);
-                            }
-
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b) {
-        if (w == x) {
-            return true;
-        }
-
-        Set<Node> p = previous.get(w);
-        if (p == null) {
-            return false;
-        }
-
-        for (Node r : p) {
-            if (r == b || r == x) {
-                continue;
-            }
-
-            if ((existsSemiDirectedPath(r, x)) || existsSemiDirectedPath(r, b)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     /**
      * Returns D-SEP(x, y) for a maximal ancestral graph G (or inducing path graph G, as in Causation, Prediction and
@@ -2815,11 +2804,6 @@ public class Paths implements TetradSerializable {
         return edge != null && edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
     }
 
-    public boolean isNondirected(Node node1, Node node2) {
-        Edge edge = graph.getEdge(node1, node2);
-        return edge != null && edge.getEndpoint1() == Endpoint.CIRCLE && edge.getEndpoint2() == Endpoint.CIRCLE;
-    }
-
     /**
      * <p>possibleAncestor.</p>
      *
@@ -3074,6 +3058,13 @@ public class Paths implements TetradSerializable {
         return !existsDirectedCycle();
     }
 
+    /**
+     * Determines if the current graph configuration is maximal. A graph configuration is considered maximal if for
+     * every pair of non-adjacent nodes, there does not exist an inducing path between them considering the selected
+     * nodes.
+     *
+     * @return true if the graph configuration is maximal, otherwise false.
+     */
     public boolean isMaximal() {
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
@@ -3092,6 +3083,43 @@ public class Paths implements TetradSerializable {
         }
 
         return true;
+    }
+
+    /**
+     * Convenience record for queue elements.
+     */
+    private static final class PathElem {
+        final Node cur;      // current vertex
+        final Node prev;     // vertex we arrived from (null at start)
+
+        PathElem(Node cur, Node prev) {
+            this.cur = cur;
+            this.prev = prev;
+        }
+    }
+
+    /**
+     * (prev,cur) pair so we can mark *edges* as visited.
+     */
+    private static final class NodePair {
+        final Node prev, cur;
+
+        NodePair(Node prev, Node cur) {
+            this.prev = prev;
+            this.cur = cur;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof NodePair p)) return false;
+            return Objects.equals(prev, p.prev) && Objects.equals(cur, p.cur);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(prev, cur);
+        }
     }
 
     /**

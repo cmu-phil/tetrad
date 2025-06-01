@@ -56,7 +56,10 @@ public class PreserveMarkov {
     }
 
     /**
-     * Copy constructor.
+     * Creates a new instance of the PreserveMarkov class by copying the fields
+     * from another PreserveMarkov object.
+     *
+     * @param preserveMarkov The PreserveMarkov object to be copied. Must not be null.
      */
     public PreserveMarkov(PreserveMarkov preserveMarkov) {
         this.graph = new EdgeListGraph(preserveMarkov.graph);

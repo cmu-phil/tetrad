@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.*;
@@ -35,10 +34,11 @@ public class FciOrientDijkstra {
      * @param graph        The graph to search; should include only the relevant edge in the graph.
      * @param start        The starting node.
      * @param predecessors A map to store the predecessors of each node in the shortest path.
+     * @param uncovered    Whether the path should be uncovered.
      * @return A map of nodes to their shortest distances from the start node.
      */
-    public static Map<Node, Integer> distances(Graph graph, Graph origGraph, Node start, boolean uncovered, Map<Node, Node> predecessors) {
-        return distances(graph, origGraph, start, null, predecessors, uncovered, false);
+    public static Map<Node, Integer> distances(Graph graph, Node start, boolean uncovered, Map<Node, Node> predecessors) {
+        return distances(graph, start, null, predecessors, uncovered);
     }
 
     /**
@@ -46,18 +46,17 @@ public class FciOrientDijkstra {
      * a distance of Integer.MAX_VALUE. The graph is assumed to be undirected. An y node may be specified, in which
      * case, once the y node is reached, all further nodes are reported as being at a distance of Integer.MAX_VALUE.
      *
-     * @param graph               The graph to search; should include only the relevant edge in the graph.
-     * @param x                   The starting node.
-     * @param y                   The ending node. Maybe be null. If not null, the algorithm will stop when this node is
-     *                            reached.
-     * @param predecessors        A map to store the predecessors of each node in the shortest path.
-     * @param uncovered           If true, the algorithm will not traverse edges y--z where an adjacency exists between
-     *                            predecessor(y)  and z.
-     * @param potentiallyDirected If true, the algorithm will traverse edges that are potentially directed.
+     * @param graph        The graph to search; should include only the relevant edge in the graph.
+     * @param x            The starting node.
+     * @param y            The ending node. Maybe be null. If not null, the algorithm will stop when this node is
+     *                     reached.
+     * @param predecessors A map to store the predecessors of each node in the shortest path.
+     * @param uncovered    If true, the algorithm will not traverse edges y--z where an adjacency exists between
+     *                     predecessor(y)  and z.
      * @return A map of nodes to their shortest distances from the start node.
      */
-    public static Map<Node, Integer> distances(Graph graph, Graph origGraph, Node x, Node y,
-                                               Map<Node, Node> predecessors, boolean uncovered, boolean potentiallyDirected) {
+    public static Map<Node, Integer> distances(Graph graph, Node x, Node y,
+                                               Map<Node, Node> predecessors, boolean uncovered) {
         Map<Node, Integer> distances = new HashMap<>();
         PriorityQueue<DijkstraNode> priorityQueue = new PriorityQueue<>(Comparator.comparingInt(dijkstraNode -> dijkstraNode.distance));
         Set<Node> visited = new HashSet<>();
@@ -133,6 +132,14 @@ public class FciOrientDijkstra {
         return predecessors.get(currentVertex);
     }
 
+    /**
+     * Checks whether a node is adjacent to another node in the graph.
+     *
+     * @param graph         The graph to search.
+     * @param currentVertex The node whose neighbors are being checked.
+     * @param predecessor   The node to check adjacency against.
+     * @return true if the nodes are adjacent, otherwise false.
+     */
     public static boolean adjacent(Graph graph, Node currentVertex, Node predecessor) {
         List<DijkstraEdge> dijkstraEdges = graph.getNeighbors(currentVertex);
 

@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FciOrientDijkstra;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -862,7 +861,7 @@ public class FciOrient {
                 // the path, since the Dijkstra algorithm proper does not pay attention to the path, only to the
                 // shortest distances. So we need to record this information.
                 boolean uncovered = true;
-                Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, graph, uncovered, x, y, false).getRight();
+                Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, uncovered, x, y, false).getRight();
 
                 // This reconstructs the path given the predecessor map.
                 List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
@@ -1119,7 +1118,7 @@ public class FciOrient {
         // (Dijkstra's algorithm proper doesn't specify that the paths be recorded, only that the shortest distances
         // be recorded, but we can keep track of the paths as well.
         boolean uncovered = true;
-        Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, graph, uncovered, x, y, true).getRight();
+        Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, uncovered, x, y, true).getRight();
 
         // This gets the path from the predecessor map.
         List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);

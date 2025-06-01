@@ -2640,7 +2640,16 @@ public final class GraphUtils {
         return changedOverall;        // tell the caller whether anything changed *at all*
     }
 
-
+    /**
+     * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that
+     * any inducing path between two nodes not currently adjacent in the graph
+     * results in an added non-directed edge. The method modifies the graph in-place.
+     *
+     * @param pag the Partial Ancestral Graph to be repaired for maximality
+     * @param verbose if true, logs the actions performed during the repair process
+     * @param selection a set of nodes to be considered during the inducing path check
+     * @return true if the graph was modified during the repair process; false otherwise
+     */
     public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
         boolean changed = false;
         for (Node x : pag.getNodes()) {

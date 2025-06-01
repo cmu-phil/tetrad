@@ -466,6 +466,11 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         this.blockingType = blockingType;
     }
 
+    /**
+     * Sets the SepsetMap used by the R0R4StrategyTestBased.
+     *
+     * @param sepsetMap the SepsetMap object to be set
+     */
     public void setSepsetMap(SepsetMap sepsetMap) {
         this.sepsetMap = sepsetMap;
     }

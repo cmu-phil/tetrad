@@ -854,6 +854,8 @@ public final class Fcit implements IGraphSearch {
      * True, just in case good and restored changes are printed. The algorithm always moves to a legal PAG; if it
      * doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise, a "good" message is
      * printed.
+     *
+     * @param printRestored True if so.
      */
     public void setPrintRestored(boolean printRestored) {
         this.printRestored = printRestored;
