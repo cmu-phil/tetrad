@@ -387,7 +387,7 @@ public class FciOrient {
      * @param completeRuleSetUsed boolean value indicating if the complete rule set is being used
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
+//        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**

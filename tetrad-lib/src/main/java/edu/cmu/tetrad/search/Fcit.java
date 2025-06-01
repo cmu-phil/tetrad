@@ -354,11 +354,26 @@ public final class Fcit implements IGraphSearch {
         // convergence. Note that for checking discriminating paths, the recursive algorithm may not be 100%
         // effective, so we need to supplement this with FCI-style discriminating path checking in case a sepset
         // is not found. This is to accommodate "Puzzle #2."
-        removeExtraEdges();
+
+        Graph _pag;
+
+        checkUnconditionalIndependence();
+
+        do {
+            _pag = new EdgeListGraph(state.getPag());
+            removeExtraEdges();
+        } while (!_pag.equals(state.getPag()));
+
+//        checkUnconditionalIndependence();
+//        removeExtraEdges();
+//        removeExtraEdges();
+//        removeExtraEdges();
+//        removeExtraEdges();
+//        removeExtraEdges();
 
         // Also, to handle "Puzzle #2," we remove incorrect shields for discriminating path colliders on collider
         // paths and then reorient.
-        checkUnconditionalIndependence();
+
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -603,24 +618,28 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
-        state.getPag().getEdges().forEach(edge -> {
+        for (Edge edge : state.getPag().getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            List<Node> common = state.getPag().getAdjacentNodes(x);
-            common.retainAll(state.getPag().getAdjacentNodes(y));
+//            List<Node> common = state.getPag().getAdjacentNodes(x);
+//            common.retainAll(state.getPag().getAdjacentNodes(y));
+//
+//            if (common.isEmpty()) {
+//                return;
+//            }
 
-            boolean found = false;
-
-            for (Node node : common) {
-                if (!state.getPag().isDefCollider(x, node, y)) {
-                    found = true;
-                }
-            }
-
-            if (!found) {
-                return;
-            }
+//            boolean found = false;
+//
+//            for (Node node : common) {
+//                if (!state.getPag().isDefCollider(x, node, y)) {
+//                    found = true;
+//                }
+//            }
+//
+//            if (!found) {
+//                return;
+//            }
 
             try {
                 if (verbose) {
@@ -657,7 +676,7 @@ public final class Fcit implements IGraphSearch {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        });
+        }
     }
 
     /**
@@ -749,9 +768,9 @@ public final class Fcit implements IGraphSearch {
                     throw new RuntimeException(e);
                 }
 
-                if (verbose && !notFollowed.isEmpty()) {
-                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + b);
-                }
+//                if (verbose && !notFollowed.isEmpty()) {
+//                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + b);
+//                }
 
                 // b will be null if the search did not conclude with a set known to either m-separate
                 // or not m-separate x and y.

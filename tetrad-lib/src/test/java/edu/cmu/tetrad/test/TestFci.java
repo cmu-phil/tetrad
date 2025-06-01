@@ -849,7 +849,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -859,21 +859,22 @@ public class TestFci {
 
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph graph = RandomGraph.randomGraph(15, 8, 30, 100, 100, 100, false);
-            MsepTest independence = new MsepTest(graph);
-            graph = GraphUtils.replaceNodes(graph, independence.getVariables());
-            GraphScore score = new GraphScore(graph);
+            Graph dag = RandomGraph.randomGraph(15, 8, 25, 100, 100, 100, false);
+            MsepTest independence = new MsepTest(dag);
+            dag = GraphUtils.replaceNodes(dag, independence.getVariables());
+            GraphScore score = new GraphScore(dag);
 
             try {
 //                Fci fci = new Fci(independence);
-//                fci.setVerbose(false);
-
+//                Gfci fci = new Gfci(independence, score);
+//                GraspFci fci = new GraspFci(independence, score);
+//
                 Fcit fci = new Fcit(independence, score);
                 fci.setStartWith(Fcit.START_WITH.GRASP);
-                fci.setPreserveMarkov(false);
+
                 fci.setCompleteRuleSetUsed(true);
                 fci.setVerbose(false);
-
+//
                 Graph pag = fci.search();
 
                 if (!isLegalPag(pag)) {
@@ -897,6 +898,14 @@ public class TestFci {
                     System.out.println("pag is not legal pag seed = " + seed);
                 }
 
+                Graph correctPag = new DagToPag(dag).convert();
+
+                if (!pag.equals(correctPag)) {
+                    fci.setVerbose(true);
+                    fci.search();
+                }
+
+                assertEquals(correctPag, pag);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -921,6 +930,10 @@ public class TestFci {
             DagToPag dagToPag = new DagToPag(dag);
             dagToPag.setVerbose(false);
             Graph pag = dagToPag.convert();
+
+//            if (!isLegalPag(pag)) {
+//                System.out.println("Not a legal pag seed = " + seed);
+//            }
 
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
 //            mag = GraphTransforms.dagToMag(dag);
