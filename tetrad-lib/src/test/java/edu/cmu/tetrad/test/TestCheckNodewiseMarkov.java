@@ -237,6 +237,14 @@ public class TestCheckNodewiseMarkov {
         SemBicScore score = new SemBicScore(data, false);
         score.setPenaltyDiscount(2);
         IndependenceTest fisherZTest = new IndTestFisherZ(data, 0.05);
+        Graph truePAG = GraphTransforms.dagToPag(trueGraph);
+        // record truePAG
+        File truePAGFile = new File(simulationDir, "truePAG.txt");
+        try (Writer out = new FileWriter(truePAGFile)) {
+            out.write(truePAG.toString());
+        } catch (IOException e) {
+            TetradLogger.getInstance().log("IO Exception while saving graph for truePAG " + e.getMessage());
+        }
 
         // Simulate different FCI methods
         List<String> methodNames = Arrays.asList("BossFCI", "GaspFCI", "FCI", "FCIMax", "RFCI");
@@ -297,7 +305,6 @@ public class TestCheckNodewiseMarkov {
                 }
 
                 estimatedPAG = GraphUtils.replaceNodes(estimatedPAG, trueGraph.getNodes());
-                Graph truePAG = GraphTransforms.dagToPag(trueGraph);
 
                 double whole_ap = new AdjacencyPrecision().getValue(truePAG, estimatedPAG, null, new Parameters());
                 double whole_ar = new AdjacencyRecall().getValue(truePAG, estimatedPAG, null, new Parameters());
