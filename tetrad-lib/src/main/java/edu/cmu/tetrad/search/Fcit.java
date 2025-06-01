@@ -30,7 +30,6 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,10 +54,6 @@ public final class Fcit implements IGraphSearch {
      */
     private final Score score;
     /**
-     * Represents the current status or condition of the search.
-     */
-    private State state;
-    /**
      * Represents a map for storing and managing separation sets (sepsets) used in the context of algorithms involving
      * conditional independence or causal discovery.
      * <p>
@@ -66,6 +61,10 @@ public final class Fcit implements IGraphSearch {
      * sets - specifically to check conditional independencies between pairs of variables given a separating set.
      */
     private final SepsetMap sepsets = new SepsetMap();
+    /**
+     * Represents the current status or condition of the search.
+     */
+    private State state;
     /**
      * The background knowledge.
      */
@@ -343,37 +342,11 @@ public final class Fcit implements IGraphSearch {
 
         state.storeState();
 
-        // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
-        // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
-        // each side. So in a dense graph, this can take a very long time to complete. Here, we look for a sepset
-        // for each edge by examining the structure of the current graph and finding a sepset that blocks all
-        // paths between x and y. This is a simpler problem and scales better to dense graphs (though not perfectly).
-        // New definite discriminating paths may be created, so additional checking needs to be done until the
-        // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
-        // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
-        // convergence. Note that for checking discriminating paths, the recursive algorithm may not be 100%
-        // effective, so we need to supplement this with FCI-style discriminating path checking in case a sepset
-        // is not found. This is to accommodate "Puzzle #2."
+        if (startWith == START_WITH.GRASP) {
+            checkUnconditionalIndependence();
+        }
 
-        Graph _pag;
-
-        checkUnconditionalIndependence();
-
-        do {
-            _pag = new EdgeListGraph(state.getPag());
-            removeExtraEdges();
-        } while (!_pag.equals(state.getPag()));
-
-//        checkUnconditionalIndependence();
-//        removeExtraEdges();
-//        removeExtraEdges();
-//        removeExtraEdges();
-//        removeExtraEdges();
-//        removeExtraEdges();
-
-        // Also, to handle "Puzzle #2," we remove incorrect shields for discriminating path colliders on collider
-        // paths and then reorient.
-
+        removeExtraEdges();
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -603,9 +576,10 @@ public final class Fcit implements IGraphSearch {
      * set map. If a separation set exists, it skips further processing for that edge. (c) Identifies common neighbors
      * of the two nodes connected by the edge and determines if they form a non-collider structure. If all common
      * neighbors create colliders, the edge is skipped. (d) Checks unconditional independence between the two nodes
-     * using the PreserveMarkovHelper's Markov independence method. If independence is confirmed: (d.1) Logs the operation
-     * if verbose mode is enabled. (d.2) Updates the separation set map for the nodes to an empty set. (d.3) Removes the
-     * edge from the PAG. (e) Handles any `InterruptedException` thrown during the Markov independence check.
+     * using the PreserveMarkovHelper's Markov independence method. If independence is confirmed: (d.1) Logs the
+     * operation if verbose mode is enabled. (d.2) Updates the separation set map for the nodes to an empty set. (d.3)
+     * Removes the edge from the PAG. (e) Handles any `InterruptedException` thrown during the Markov independence
+     * check.
      * <p>
      * If verbose mode is enabled, relevant logging information is captured using the `TetradLogger` to provide detailed
      * insights into the operations performed.
@@ -621,25 +595,6 @@ public final class Fcit implements IGraphSearch {
         for (Edge edge : state.getPag().getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
-
-//            List<Node> common = state.getPag().getAdjacentNodes(x);
-//            common.retainAll(state.getPag().getAdjacentNodes(y));
-//
-//            if (common.isEmpty()) {
-//                return;
-//            }
-
-//            boolean found = false;
-//
-//            for (Node node : common) {
-//                if (!state.getPag().isDefCollider(x, node, y)) {
-//                    found = true;
-//                }
-//            }
-//
-//            if (!found) {
-//                return;
-//            }
 
             try {
                 if (verbose) {
@@ -679,46 +634,9 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
-    /**
-     * Removes extra edges from a Partial Ancestral Graph (PAG) by analyzing discriminating paths that could not be
-     * oriented using final orientation rules and applying specific conditions to validate the existence of those edges.
-     * This method is part of the causal discovery process.
-     * <p>
-     * The method performs several key steps:
-     * <p>
-     * 1. Identifies discriminating paths in the PAG that are candidates for edge removals. 2. Creates a map of
-     * discriminating paths organized by their corresponding edge pairs for efficient lookup during subsequent
-     * processing. 3. Iterates over all edges in the PAG to evaluate whether they can be removed based on conditions
-     * derived from discriminating paths and the causal implications of their removal. 4. Considers subsets of nodes for
-     * which paths may not be followed to evaluate blocking conditions recursively and determine m-separation. 5.
-     * Applies independence tests to finalize edge removals when conditions are met.
-     * <p>
-     * The method logs the intermediate steps and decisions if verbose logging is enabled. This includes information on
-     * the discriminating paths, potential collider pairs, blocking sets, and the specific edges being considered for
-     * removal.
-     * <p>
-     * The logic ensures that edges are removed only if doing so maintains the Markov property and aligns with the
-     * causal structure represented by the PAG.
-     * <p>
-     * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
-     * execution for asynchronous tasks.
-     */
     private void removeExtraEdges() {
         if (verbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-        }
-
-        // The final orientation rules were applied just before this step, so this should list only
-        // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(state.getPag(),
-                -1, false);
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-        for (DiscriminatingPath path : discriminatingPaths) {
-            Node x = path.getX();
-            Node y = path.getY();
-
-            pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
-            pathsByEdge.get(Set.of(x, y)).add(path);
         }
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
@@ -731,109 +649,16 @@ public final class Fcit implements IGraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            List<Node> common = state.getPag().getAdjacentNodes(x);
-            common.retainAll(state.getPag().getAdjacentNodes(y));
-
-            Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-            paths = (paths == null) ? Set.of() : paths;
-            Set<Node> perhapsNotFollowed = new HashSet<>();
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
-            }
-
-            // Don't repeat the same independence test twice for this edge x *-* y.
-            Set<Set<Node>> S = new HashSet<>();
-
-            for (DiscriminatingPath path : paths) {
-                if (state.getPag().getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                    perhapsNotFollowed.add(path.getV());
+            // Instead of newSingleThreadExecutor(), we use the shared 'executor'
+            Set<Node> b = null;
+            try {
+                b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), Set.of(), -1);
+                if (test.checkIndependence(x, y, b).isIndependent()) {
+                    state.getPag().removeEdge(x, y);
+                    refreshGraph("removing edge: " + edge);
                 }
-            }
-
-            List<Node> E = new ArrayList<>(perhapsNotFollowed);
-
-            // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(E.size(), E.size());
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                Set<Node> notFollowed = GraphUtils.asSet(choice, E);
-
-                // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Set<Node> b;
-                try {
-                    b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-//                if (verbose && !notFollowed.isEmpty()) {
-//                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + b);
-//                }
-
-                // b will be null if the search did not conclude with a set known to either m-separate
-                // or not m-separate x and y.
-                if (b == null) {
-                    continue;
-                }
-
-                SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
-                int[] choice2;
-
-                while ((choice2 = gen2.next()) != null) {
-                    if (!state.getPag().isAdjacentTo(x, y)) {
-                        break;
-                    }
-
-                    Set<Node> c = GraphUtils.asSet(choice2, common);
-
-                    for (Node n : c) {
-                        if (!state.getPag().isDefCollider(x, n, y)) {
-                            b.remove(n);
-                        }
-                    }
-
-                    if (S.contains(b)) continue;
-                    S.add(new HashSet<>(b));
-
-                    if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
-                        continue;
-                    }
-
-                    try {
-                        if (state.getPreserveMarkovHelper().markovIndependence(x, y, b)) {
-                            if (verbose) {
-                                TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                            }
-
-                            state.getPag().removeEdge(x, y);
-                            sepsets.set(x, y, b);
-                            refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)");
-
-                            if (trackScores) {
-                                double _modelScore = scoreMag(state.getPag());
-
-                                if (_modelScore < this.modelScore) {
-                                    TetradLogger.getInstance().log("Score lowered; restoring.");
-                                    state.restoreState();
-                                } else {
-                                    if (_modelScore > this.modelScore) {
-                                        TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " | " + b + " (new sepset)");
-                                    } else {
-                                        TetradLogger.getInstance().log("Score unchanged: " + x + " _||_ " + y + " | " + b + " (new sepset)");
-
-                                    }
-
-                                    this.modelScore = _modelScore;
-                                }
-                            }
-                        }
-
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+            } catch(InterruptedException e){
+                throw new RuntimeException(e);
             }
         }
     }
@@ -990,9 +815,9 @@ public final class Fcit implements IGraphSearch {
          */
         private Graph lastPag = null;
         /**
-         * An instance of the PreserveMarkov class used to assist in maintaining the Markov property during the execution
-         * of the algorithm. This variable is primarily leveraged to enforce the necessary constraints that ensure the
-         * resulting graph adheres to the Markov condition.
+         * An instance of the PreserveMarkov class used to assist in maintaining the Markov property during the
+         * execution of the algorithm. This variable is primarily leveraged to enforce the necessary constraints that
+         * ensure the resulting graph adheres to the Markov condition.
          * <p>
          * During the algorithm's execution, this helper may be initialized, updated, or restored to preserve the
          * required state for maintaining causal consistency. It is also utilized for facilitating operations that
@@ -1076,8 +901,8 @@ public final class Fcit implements IGraphSearch {
         }
 
         /**
-         * Sets the instance of the PreserveMarkov helper to be used for managing and enforcing the Markov property during
-         * the algorithm's execution.
+         * Sets the instance of the PreserveMarkov helper to be used for managing and enforcing the Markov property
+         * during the algorithm's execution.
          *
          * @param PreserveMarkov the PreserveMarkov instance to be associated with the current state.
          */

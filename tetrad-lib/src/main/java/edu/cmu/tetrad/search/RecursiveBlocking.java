@@ -70,7 +70,9 @@ public class RecursiveBlocking {
             }
         }
 
-        return allBlocked ? z : null;
+        return z;
+//
+//        return allBlocked ? z : null;
     }
 
     /**

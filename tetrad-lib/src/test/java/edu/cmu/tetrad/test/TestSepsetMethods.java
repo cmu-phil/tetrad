@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
@@ -245,9 +246,9 @@ public class TestSepsetMethods {
     @Test
     public void test3() {
 
-        System.out.println("Checking to make sure blockPathsRecursively works for local Markov.");
+        System.out.println("Checking to make sure blockPathsRecursively works for local Markov for a DAG.");
 
-        Graph graph = RandomGraph.randomDag(10, 0, 20, 100,
+        Graph graph = RandomGraph.randomDag(20, 0, 40, 100,
                 100, 100, false);
 
         for (Node x : graph.getNodes()) {
@@ -273,13 +274,86 @@ public class TestSepsetMethods {
                     throw new RuntimeException(e);
                 }
 
-                boolean independent = new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent();
+                boolean msep = new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent();
 
-                if (!independent) {
+                if (!msep) {
                     System.out.println(LogUtilsSearch.independenceFact(x, y, blocking));
                 }
 
-                assertTrue(independent);
+                assertTrue(msep);
+            }
+        }
+    }
+
+    @Test
+    public void test4() {
+        System.out.println("Checking to make sure blockPathsRecursively works for dsep(x, y | mb(x)) for a PAG for y not in mb(x).");
+
+        Graph dag = RandomGraph.randomDag(20, 10, 40, 100,
+                100, 100, false);
+
+        Graph pag = new DagToPag(dag).convert();
+
+        for (Node x : pag.getNodes()) {
+            for (Node y : pag.getNodes()) {
+                if (x.equals(y)) {
+                    continue;
+                }
+
+                if (pag.paths().markovBlanket(x).contains(y)) {
+                    continue;
+                }
+
+                try {
+                    Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(dag, x, y, Set.of(),
+                            Set.of(), -1);
+                    boolean msep = new MsepTest(pag, false).checkIndependence(x, y, blocking).isIndependent();
+
+                    if (!msep) {
+                        System.out.println(LogUtilsSearch.independenceFact(x, y, blocking));
+                    }
+
+                    assertTrue(msep);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void test5() {
+        System.out.println("Checking to make sure blockPathsRecursively distinguishes adj vs non-adj for dsep(x, y | \n" +
+                           "path_blocking(x)) for a PAG for y not in mb(x).");
+
+        Graph dag = RandomGraph.randomDag(10, 5, 20, 100,
+                100, 100, false);
+
+        Graph pag = new DagToPag(dag).convert();
+
+        for (Node x : pag.getNodes()) {
+            for (Node y : pag.getNodes()) {
+                if (x.equals(y)) {
+                    continue;
+                }
+
+                try {
+                    Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(dag, x, y, Set.of(),
+                            Set.of(), -1);
+
+                    if (blocking != null) {
+                        if (new MsepTest(pag, false).checkIndependence(x, y, blocking).isIndependent()) {
+                            System.out.println("INDEPENDENT; adj = " + pag.isAdjacentTo(x, y));
+                        } else {
+                            System.out.println("dependent; adj = " + pag.isAdjacentTo(x, y));
+                        }
+                    } else {
+                        System.out.println("Null");
+                    }
+                } catch (InterruptedException e) {
+                    System.out.println("Exception");
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
