@@ -342,15 +342,15 @@ public class TestSepsetMethods {
                     Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(dag, x, y, Set.of(),
                             Set.of(), -1);
 
-                    if (blocking != null) {
+//                    if (blocking != null) {
                         if (new MsepTest(pag, false).checkIndependence(x, y, blocking).isIndependent()) {
                             System.out.println("INDEPENDENT; adj = " + pag.isAdjacentTo(x, y));
                         } else {
                             System.out.println("dependent; adj = " + pag.isAdjacentTo(x, y));
                         }
-                    } else {
-                        System.out.println("Null");
-                    }
+//                    } else {
+//                        System.out.println("Null");
+//                    }
                 } catch (InterruptedException e) {
                     System.out.println("Exception");
                     throw new RuntimeException(e);
