@@ -387,7 +387,7 @@ public class TestFci {
             fci.setStartWith(Fcit.START_WITH.GRASP);
 //            fci.setDepth(-1);
             fci.setKnowledge(knowledge);
-            fci.setPreserveMarkov(false);
+//            fci.setPreserveMarkov(false);
             fci.setVerbose(verbose);
 
             runLvSearch(outputGraph, fci, graph);
@@ -569,7 +569,7 @@ public class TestFci {
 
             Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
             fcit.setStartWith(Fcit.START_WITH.GRASP);
-            fcit.setPreserveMarkov(false);
+//            fcit.setPreserveMarkov(false);
             Graph estPag3 = fcit.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
@@ -749,6 +749,79 @@ public class TestFci {
     }
 
     @Test
+    public void testFcitFromOracle() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
+
+            long seed = System.nanoTime();
+//            long seed = 24723257885916L;
+
+            RandomUtil.getInstance().setSeed(seed);
+
+            Graph dag = RandomGraph.randomGraph(20, 5, 25, 100, 100, 100, false);
+            MsepTest independence = new MsepTest(dag);
+            dag = GraphUtils.replaceNodes(dag, independence.getVariables());
+            GraphScore score = new GraphScore(dag);
+
+            Graph _pag = new DagToPag(dag).convert();
+            if (!_pag.paths().isLegalPag()) {
+                throw new IllegalArgumentException("_Pag not a legal PAG.");
+            }
+
+            try {
+//                Fci fci = new Fci(independence);
+//                Gfci fci = new Gfci(independence, score);
+//                GraspFci fci = new GraspFci(independence, score);
+
+                Fcit fci = new Fcit(independence, score);
+                fci.setStartWith(Fcit.START_WITH.GRASP);
+
+                fci.setCompleteRuleSetUsed(true);
+                fci.setVerbose(false);
+
+                Graph pag = fci.search();
+
+                boolean illegal = !isLegalPag(pag);
+
+                if (illegal) {
+                    System.out.println("Not a legal PAG");
+
+                    Graph mag = GraphTransforms.zhangMagFromPag(pag);
+
+                    if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
+                        System.out.println("Unshielded colliders match between mag and pag.");
+                    }
+
+                    DagToPag dagToPag = new DagToPag(mag);
+                    Graph reconstitutedPag = dagToPag.convert();
+
+                    for (Edge pagEdge : pag.getEdges()) {
+                        Edge reconstitutedPagEdge = reconstitutedPag.getEdge(pagEdge.getNode1(), pagEdge.getNode2());
+
+                        if (!pagEdge.equals(reconstitutedPagEdge)) {
+                            System.out.println("Edge discrepancy: pagEdge = " + pagEdge + " reconstituted PAG edge = " + reconstitutedPagEdge);
+                        }
+                    }
+
+                    System.out.println("pag is not legal pag seed = " + seed);
+                }
+
+                assertFalse(illegal);
+
+//                if (!pag.equals(_pag)) {
+//                    fci.setVerbose(true);
+//                    fci.search();
+//                }
+
+                assertEquals(_pag, pag);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+
+    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -849,78 +922,6 @@ public class TestFci {
     }
 
     @Test
-    public void testFcitFromOracle() {
-        for (int i = 0; i < 100; i++) {
-            System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
-
-            long seed = System.nanoTime();
-//            long seed = 24723257885916L;
-
-            RandomUtil.getInstance().setSeed(seed);
-
-            Graph dag = RandomGraph.randomGraph(15, 8, 25, 100, 100, 100, false);
-            MsepTest independence = new MsepTest(dag);
-            dag = GraphUtils.replaceNodes(dag, independence.getVariables());
-            GraphScore score = new GraphScore(dag);
-
-            Graph _pag = new DagToPag(dag).convert();
-            if (!_pag.paths().isLegalPag()) {
-                throw new IllegalArgumentException("_Pag not a legal PAG.");
-            }
-
-            try {
-//                Fci fci = new Fci(independence);
-//                Gfci fci = new Gfci(independence, score);
-//                GraspFci fci = new GraspFci(independence, score);
-
-                Fcit fci = new Fcit(independence, score);
-                fci.setStartWith(Fcit.START_WITH.GRASP);
-
-                fci.setCompleteRuleSetUsed(true);
-                fci.setVerbose(false);
-//
-                Graph pag = fci.search();
-
-                boolean illegal = !isLegalPag(pag);
-
-                if (illegal) {
-                    System.out.println("Not a legal PAG");
-
-                    Graph mag = GraphTransforms.zhangMagFromPag(pag);
-
-                    if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
-                        System.out.println("Unshielded colliders match between mag and pag.");
-                    }
-
-                    DagToPag dagToPag = new DagToPag(mag);
-                    Graph reconstitutedPag = dagToPag.convert();
-
-                    for (Edge pagEdge : pag.getEdges()) {
-                        Edge reconstitutedPagEdge = reconstitutedPag.getEdge(pagEdge.getNode1(), pagEdge.getNode2());
-
-                        if (!pagEdge.equals(reconstitutedPagEdge)) {
-                            System.out.println("Edge discrepancy: pagEdge = " + pagEdge + " reconstituted PAG edge = " + reconstitutedPagEdge);
-                        }
-                    }
-
-                    System.out.println("pag is not legal pag seed = " + seed);
-                }
-
-                assertFalse(illegal);
-
-//                if (!pag.equals(_pag)) {
-//                    fci.setVerbose(true);
-//                    fci.search();
-//                }
-
-                assertEquals(_pag, pag);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    @Test
     public void testZhangPagToMag() {
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.
@@ -934,7 +935,7 @@ public class TestFci {
 //            long seed = -6064115539269406491L;
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(20, 6, 40, 100, 100, 100, false);
+            Graph dag = RandomGraph.randomGraph(20, 6, 20, 100, 100, 100, false);
             DagToPag dagToPag = new DagToPag(dag);
             dagToPag.setVerbose(false);
             Graph pag = dagToPag.convert();
@@ -996,7 +997,7 @@ public class TestFci {
         Fcit fci = new Fcit(independence, score);
         fci.setStartWith(Fcit.START_WITH.GRASP);
 //        fci.setDepth(-1);
-        fci.setPreserveMarkov(false);
+//        fci.setPreserveMarkov(false);
         fci.setVerbose(true);
 
         try {

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -93,10 +94,10 @@ public final class Fcit implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose = false;
-    /**
-     * True if the local Markov property should be ensured from an initial local Markov graph.
-     */
-    private boolean preserveMarkov = false;
+//    /**
+//     * True if the local Markov property should be ensured from an initial local Markov graph.
+//     */
+//    private boolean preserveMarkov = false;
 
     /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
@@ -338,15 +339,29 @@ public final class Fcit implements IGraphSearch {
 
         initialColliders = noteInitialColliders(best, state.getPag());
         state.setPreserveMarkovHelper(new PreserveMarkov(state.getPag(), test));
-        state.getPreserveMarkovHelper().setPreserveMarkov(preserveMarkov);
+//        state.getPreserveMarkovHelper().setPreserveMarkov(preserveMarkov);
 
         state.storeState();
 
-        if (startWith == START_WITH.GRASP) {
-            checkUnconditionalIndependence();
-        }
+//        if (startWith == START_WITH.GRASP) {
+//            checkUnconditionalIndependence();
+//        }
 
-        removeExtraEdges();
+//        checkUnconditionalIndependence();
+
+        Graph _pag;
+
+        do {
+            _pag = new EdgeListGraph(state.getPag());
+            removeExtraEdges();
+        } while (!_pag.equals(state.getPag()));
+
+        checkUnconditionalIndependence();
+
+        do {
+            _pag = new EdgeListGraph(state.getPag());
+            removeExtraEdges();
+        } while (!_pag.equals(state.getPag()));
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -596,37 +611,26 @@ public final class Fcit implements IGraphSearch {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
+            List<Node> common = state.getPag().getAdjacentNodes(x);
+            common.retainAll(state.getPag().getAdjacentNodes(y));
+
+            if (common.isEmpty()) {
+                continue;
+            }
+
             try {
                 if (verbose) {
                     TetradLogger.getInstance().log("Checking edge " + state.getPag().getEdge(x, y) + " from PAG for unconditional independence.");
                 }
 
-                if (state.getPreserveMarkovHelper().markovIndependence(x, y, Set.of())) {
+                if (test.checkIndependence(x, y).isIndependent()) {
                     if (verbose) {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
                     }
 
                     sepsets.set(x, y, Set.of());
-                    getSepsets().set(x, y, Set.of());
                     state.getPag().removeEdge(x, y);
                     refreshGraph(x + " _||_ " + y + " (Unconditional independence)");
-
-                    if (trackScores) {
-                        double _modelScore = scoreMag(state.getPag());
-
-                        if (_modelScore < this.modelScore) {
-                            TetradLogger.getInstance().log("Score lowered; restoring.");
-                            state.restoreState();
-                        } else {
-                            if (_modelScore > this.modelScore) {
-                                TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " (Unconditional independence)");
-                            } else {
-                                TetradLogger.getInstance().log("Score unchanged: + " + x + " _||_ " + y + " (Unconditional independence)");
-                            }
-
-                            this.modelScore = _modelScore;
-                        }
-                    }
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -634,37 +638,160 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
+    /**
+     * Removes extra edges from a Partial Ancestral Graph (PAG) by analyzing discriminating paths that could not be
+     * oriented using final orientation rules and applying specific conditions to validate the existence of those edges.
+     * This method is part of the causal discovery process.
+     * <p>
+     * The method performs several key steps:
+     * <p>
+     * 1. Identifies discriminating paths in the PAG that are candidates for edge removals. 2. Creates a map of
+     * discriminating paths organized by their corresponding edge pairs for efficient lookup during subsequent
+     * processing. 3. Iterates over all edges in the PAG to evaluate whether they can be removed based on conditions
+     * derived from discriminating paths and the causal implications of their removal. 4. Considers subsets of nodes for
+     * which paths may not be followed to evaluate blocking conditions recursively and determine m-separation. 5.
+     * Applies independence tests to finalize edge removals when conditions are met.
+     * <p>
+     * The method logs the intermediate steps and decisions if verbose logging is enabled. This includes information on
+     * the discriminating paths, potential collider pairs, blocking sets, and the specific edges being considered for
+     * removal.
+     * <p>
+     * The logic ensures that edges are removed only if doing so maintains the Markov property and aligns with the
+     * causal structure represented by the PAG.
+     * <p>
+     * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
+     * execution for asynchronous tasks.
+     */
     private void removeExtraEdges() {
         if (verbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
-        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-        // there in this graph.
+        // The final orientation rules were applied just before this step, so this should list only
+        // discriminating paths that could not be oriented by them...
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(state.getPag(),
+                -1, false);
+        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
+        for (DiscriminatingPath path : discriminatingPaths) {
+            Node x = path.getX();
+            Node y = path.getY();
+
+            pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
+            pathsByEdge.get(Set.of(x, y)).add(path);
+        }
+
         for (Edge edge : state.getPag().getEdges()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Considering removing edge " + edge);
             }
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-            Set<Node> b = null;
-            try {
-                b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), Set.of(), -1);
-                if (test.checkIndependence(x, y, b).isIndependent()) {
-                    state.getPag().removeEdge(x, y);
-                    refreshGraph("removing edge: " + edge);
-                }
-            } catch(InterruptedException e){
-                throw new RuntimeException(e);
+            if (!removeIfIndependentCondOnBlocking(edge)) {
+                removeIfDependentCondOnBlocking(edge, pathsByEdge);
             }
         }
     }
 
-    private SepsetMap getSepsets() {
-        return sepsets;
+    private boolean removeIfIndependentCondOnBlocking(Edge edge) {
+        try {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            Set<Node> b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), Set.of(), -1);
+            if (test.checkIndependence(x, y, b).isIndependent()) {
+                state.getPag().removeEdge(x, y);
+                sepsets.set(x, y, b);
+                refreshGraph("Removing edge INDEPENDENT conditional on recursive blocking: " + edge);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void removeIfDependentCondOnBlocking(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge) {
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        List<Node> common = state.getPag().getAdjacentNodes(x);
+        common.retainAll(state.getPag().getAdjacentNodes(y));
+
+        Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
+        paths = (paths == null) ? Set.of() : paths;
+        Set<Node> perhapsNotFollowed = new HashSet<>();
+
+        for (DiscriminatingPath path : new HashSet<>(paths)) {
+            if (!path.existsIn(state.getPag())) {
+                paths.remove(path);
+            }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
+        }
+
+        // Don't repeat the same independence test twice for this edge x *-* y.
+        Set<Set<Node>> S = new HashSet<>();
+
+        for (DiscriminatingPath path : paths) {
+            if (state.getPag().getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                perhapsNotFollowed.add(path.getV());
+            }
+        }
+
+        List<Node> E = new ArrayList<>(perhapsNotFollowed);
+
+        // Generate subsets and check blocking paths
+        SublistGenerator gen = new SublistGenerator(E.size(), E.size());
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            Set<Node> notFollowed = GraphUtils.asSet(choice, E);
+
+            SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
+            int[] choice2;
+
+            while ((choice2 = gen2.next()) != null) {
+                if (!state.getPag().isAdjacentTo(x, y)) {
+                    break;
+                }
+
+                Set<Node> c = GraphUtils.asSet(choice2, common);
+
+                // Instead of newSingleThreadExecutor(), we use the shared 'executor'
+                Set<Node> b;
+                try {
+                    b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                for (Node n : c) {
+                    if (!state.getPag().isDefCollider(x, n, y)) {
+                        b.remove(n);
+                    }
+                }
+
+                if (S.contains(b)) continue;
+                S.add(new HashSet<>(b));
+
+                if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
+                    continue;
+                }
+
+                try {
+                    if (test.checkIndependence(x, y, b).isIndependent()) {
+                        state.getPag().removeEdge(x, y);
+                        sepsets.set(x, y, b);
+                        refreshGraph("Removing edge dependent conditional on simple recursive blocking: " + edge);
+                    }
+
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     /**
@@ -732,14 +859,14 @@ public final class Fcit implements IGraphSearch {
         this.useDataOrder = useDataOrder;
     }
 
-    /**
-     * Sets the value indicating whether the process should ensure Markov property.
-     *
-     * @param PreserveMarkov a boolean value, true to ensure Markov property, false otherwise.
-     */
-    public void setPreserveMarkov(boolean PreserveMarkov) {
-        this.preserveMarkov = PreserveMarkov;
-    }
+//    /**
+//     * Sets the value indicating whether the process should ensure Markov property.
+//     *
+//     * @param PreserveMarkov a boolean value, true to ensure Markov property, false otherwise.
+//     */
+//    public void setPreserveMarkov(boolean PreserveMarkov) {
+//        this.preserveMarkov = PreserveMarkov;
+//    }
 
     /**
      * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original FCI)
