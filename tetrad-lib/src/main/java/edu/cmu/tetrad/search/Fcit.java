@@ -20,8 +20,6 @@
 /// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
@@ -126,18 +124,18 @@ public final class Fcit implements IGraphSearch {
      * The depth of search.
      */
     private int depth = -1;
-    /**
-     * Whether to track scores.
-     */
-    private boolean trackScores = false;
+//    /**
+//     * Whether to track scores.
+//     */
+//    private boolean trackScores = false;
     /**
      * If scores are tracked, this MAG SEM score will be used.
      */
     private MagSemBicScore magSemBicScore;
-    /**
-     * The running score. This should not go down.
-     */
-    private double modelScore = Double.NEGATIVE_INFINITY;
+//    /**
+//     * The running score. This should not go down.
+//     */
+//    private double modelScore = Double.NEGATIVE_INFINITY;
     /**
      * True just in case good and restored changes are printed. The algorithm always moves to a legal PAG; if it
      * doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise, a "good" message is
@@ -168,10 +166,10 @@ public final class Fcit implements IGraphSearch {
         this.test = test;
         this.score = score;
 
-        if (trackScores) {
-            this.magSemBicScore = new MagSemBicScore(new CovarianceMatrix((DataSet) test.getData()));
-            this.magSemBicScore.setPenaltyDiscount(1);
-        }
+//        if (trackScores) {
+//            this.magSemBicScore = new MagSemBicScore(new CovarianceMatrix((DataSet) test.getData()));
+//            this.magSemBicScore.setPenaltyDiscount(1);
+//        }
 
         test.setVerbose(verbose);
 
@@ -333,9 +331,9 @@ public final class Fcit implements IGraphSearch {
         // The main procedure.
         state.setPag(GraphTransforms.dagToPag(dag));
 
-        if (trackScores) {
-            this.modelScore = scoreMag(state.getPag());
-        }
+//        if (trackScores) {
+//            this.modelScore = scoreMag(state.getPag());
+//        }
 
         initialColliders = noteInitialColliders(best, state.getPag());
         state.setPreserveMarkovHelper(new PreserveMarkov(state.getPag(), test));
@@ -347,21 +345,22 @@ public final class Fcit implements IGraphSearch {
 //            checkUnconditionalIndependence();
 //        }
 
-//        checkUnconditionalIndependence();
+        checkUnconditionalIndependence();
 
         Graph _pag;
 
         do {
             _pag = new EdgeListGraph(state.getPag());
             removeExtraEdges();
+            break;
         } while (!_pag.equals(state.getPag()));
 
-        checkUnconditionalIndependence();
+//        checkUnconditionalIndependence();
 
-        do {
-            _pag = new EdgeListGraph(state.getPag());
-            removeExtraEdges();
-        } while (!_pag.equals(state.getPag()));
+//        do {
+//            _pag = new EdgeListGraph(state.getPag());
+//            removeExtraEdges();
+//        } while (!_pag.equals(state.getPag()));
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -517,7 +516,14 @@ public final class Fcit implements IGraphSearch {
         printRestored = true;
 
         if (!state.getPag().paths().isLegalPag()) {
-//        if (!state.getPag().paths().isMaximal() || edgeMarkingDiscrepancy()) {
+            Set<DiscriminatingPath> paths = FciOrient.listDiscriminatingPaths(state.getPag(),
+                    -1, true);
+
+            for (DiscriminatingPath path : paths) {
+                if (state.getPag().getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                    throw new IllegalArgumentException("Expecting all discriminating paths to be oriented.");
+                }
+            }
 
             if (verbose || printRestored) {
                 TetradLogger.getInstance().log("Restored: " + message);
@@ -667,27 +673,12 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
-        // The final orientation rules were applied just before this step, so this should list only
-        // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(state.getPag(),
-                -1, false);
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-        for (DiscriminatingPath path : discriminatingPaths) {
-            Node x = path.getX();
-            Node y = path.getY();
-
-            pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
-            pathsByEdge.get(Set.of(x, y)).add(path);
-        }
-
         for (Edge edge : state.getPag().getEdges()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Considering removing edge " + edge);
             }
 
-            if (!removeIfIndependentCondOnBlocking(edge)) {
-                removeIfDependentCondOnBlocking(edge, pathsByEdge);
-            }
+            removeEdge(edge);
         }
     }
 
@@ -710,44 +701,48 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
-    private void removeIfDependentCondOnBlocking(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge) {
+    private void removeEdge(Edge edge) {
         Node x = edge.getNode1();
         Node y = edge.getNode2();
-
-        List<Node> common = state.getPag().getAdjacentNodes(x);
-        common.retainAll(state.getPag().getAdjacentNodes(y));
-
-        Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-        paths = (paths == null) ? Set.of() : paths;
-        Set<Node> perhapsNotFollowed = new HashSet<>();
-
-        for (DiscriminatingPath path : new HashSet<>(paths)) {
-            if (!path.existsIn(state.getPag())) {
-                paths.remove(path);
-            }
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
-        }
 
         // Don't repeat the same independence test twice for this edge x *-* y.
         Set<Set<Node>> S = new HashSet<>();
 
+        Map<Set<Node>, Set<DiscriminatingPath>> sortedPaths = sortDiscriminatingPaths();
+
+        Set<DiscriminatingPath> paths = sortedPaths.get(Set.of(x, y));
+        if (paths == null) {
+            paths = new HashSet<>();
+        }
+        Set<Node> perhapsNotFollowed = new HashSet<>();
+
         for (DiscriminatingPath path : paths) {
-            if (state.getPag().getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                perhapsNotFollowed.add(path.getV());
-            }
+            perhapsNotFollowed.add(path.getV());
         }
 
         List<Node> E = new ArrayList<>(perhapsNotFollowed);
 
-        // Generate subsets and check blocking paths
+        // Generate subsets and check blocking sortedPaths
         SublistGenerator gen = new SublistGenerator(E.size(), E.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
             Set<Node> notFollowed = GraphUtils.asSet(choice, E);
+
+            if (!notFollowed.isEmpty()) {
+                System.out.println("not followed = " + notFollowed);
+            }
+
+            Set<Node> _b;
+
+            try {
+                _b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            List<Node> common = state.getPag().getAdjacentNodes(x);
+            common.retainAll(state.getPag().getAdjacentNodes(y));
 
             SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
             int[] choice2;
@@ -759,17 +754,19 @@ public final class Fcit implements IGraphSearch {
 
                 Set<Node> c = GraphUtils.asSet(choice2, common);
 
-                // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Set<Node> b;
-                try {
-                    b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                notFollowed = new HashSet<>(notFollowed);
 
-                for (Node n : c) {
-                    if (!state.getPag().isDefCollider(x, n, y)) {
-                        b.remove(n);
+                Set<Node> b = new HashSet<>(_b);
+
+                for (Node _c : c) {
+                    if (c.contains(_c)) {
+                        b.remove(_c);
+                    } else {
+                        b.add(_c);
+                    }
+
+                    if (state.getPag().isDefCollider(x, _c, y)) {
+                        b.remove(_c);
                     }
                 }
 
@@ -792,6 +789,34 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         }
+    }
+
+    private @NotNull Map<Set<Node>, Set<DiscriminatingPath>> sortDiscriminatingPaths() {
+        // The final orientation rules were applied just before this step, so this should list only
+        // discriminating sortedPaths that could not be oriented by them...
+        if (!state.getPag().paths().isLegalPag()) {
+            throw new IllegalStateException("Excpecing a legal PAG in sortDiscriminatingPaths");
+        }
+
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(state.getPag(),
+                -1, true);
+        Map<Set<Node>, Set<DiscriminatingPath>> sortedPaths = new HashMap<>();
+        for (DiscriminatingPath path : discriminatingPaths) {
+            Node _x = path.getX();
+            Node _y = path.getY();
+
+            if (!path.existsIn(state.getPag())) {
+                continue;
+            }
+
+            if (state.getPag().getEndpoint(path.getY(), path.getV()) != Endpoint.CIRCLE) {
+                continue;
+            }
+
+            sortedPaths.computeIfAbsent(Set.of(_x, _y), k -> new HashSet<>());
+            sortedPaths.get(Set.of(_x, _y)).add(path);
+        }
+        return sortedPaths;
     }
 
     /**

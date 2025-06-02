@@ -354,7 +354,7 @@ public class TestSepsetMethods {
                             }
                         } else {
                             System.out.print(pag.isAdjacentTo(x, y) ? " Adjacent" : " Not adjacent");
-                            System.out.print(pag.paths().markovBlanket(x).contains(y) ? " In MB" : " Not in MB");
+                            System.out.print(pag.paths().markovBlanket(x).contains(y) ? ", In MB" : ", Not in MB");
 
                             // If dependent, then y in MB(x).
                             if (!pag.paths().markovBlanket(x).contains(y)) {
@@ -362,11 +362,11 @@ public class TestSepsetMethods {
                             }
 
                             if (removeIfInMb(pag, x, y)) {
-                                System.out.print( " OK to remove... ");
-
                                 if (pag.isAdjacentTo(x, y)) {
                                     allOK = false;
                                 }
+                            } else {
+                                System.out.print( ", OK to remove... ");
                             }
 
                             System.out.println();
