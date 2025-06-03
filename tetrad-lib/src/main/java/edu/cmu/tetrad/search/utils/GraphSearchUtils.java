@@ -1092,24 +1092,36 @@ public final class GraphSearchUtils {
         return shd;
     }
 
+    // Anne Helby pointed out this number was wrong, so replacing it with a different count
+    // per edge, which is either 0 or 1 always per edge.
     private static int structuralHammingDistanceOneEdge(Edge e1, Edge e2) {
-        int error = 0;
+        // Skeleton difference
+        if (e1 == null && e2 == null) return 0;
+        if (e1 == null || e2 == null) return 1;
 
-        if (!(e1 == null && e2 == null)) {
-            if (e1 != null && e2 != null) {
-                if (!e1.equals(e2)) {
-                    error++;
-                }
-            } else if (Edges.isUndirectedEdge(Objects.requireNonNullElse(e2, e1))) {
-                error++;
-            } else {
-                error++;
-                error++;
-            }
-        }
-
-        return error;
+        // Both edges present – only orientation can differ now
+        return e1.equals(e2) ? 0 : 1;
     }
+
+
+//    private static int structuralHammingDistanceOneEdge(Edge e1, Edge e2) {
+//        int error = 0;
+//
+//        if (!(e1 == null && e2 == null)) {
+//            if (e1 != null && e2 != null) {
+//                if (!e1.equals(e2)) {
+//                    error++;
+//                }
+//            } else if (Edges.isUndirectedEdge(Objects.requireNonNullElse(e2, e1))) {
+//                error++;
+//            } else {
+//                error++;
+//                error++;
+//            }
+//        }
+//
+//        return error;
+//    }
 
     /**
      * Just counts arrowhead errors--for cyclic edges counts an arrowhead at each node.
