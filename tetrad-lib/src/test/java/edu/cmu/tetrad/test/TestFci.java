@@ -558,7 +558,7 @@ public class TestFci {
             Fci fci = new Fci(new MsepTest(trueMag_));
             fci.setVerbose(verbose);
             Graph estPag1 = fci.search();
-//            assertEquals(truePag_, estPag1); // TODO Why does this fail? If I set R0R4 strategy blockign type
+            assertEquals(truePag_, estPag1); // TODO Why does this fail? If I set R0R4 strategy blockign type
                                                // to GREEDY it passes, but it's found a valud sepset here (I
                                                // checked) and it's still failing, so there's a bug in FCI or
                                                // dsep. jdramsey 2025-6-3

@@ -223,7 +223,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
                     maxLength, maxLength, preserveMarkovHelper, depth);
 
-            if (!test.checkIndependence(x, y, blocking).isIndependent()) {
+            if (blocking == null || !test.checkIndependence(x, y, blocking).isIndependent()) {
                 blocking = findAdjSetSepset(graph, x, y, path, v);
 
                 if (blocking != null) {

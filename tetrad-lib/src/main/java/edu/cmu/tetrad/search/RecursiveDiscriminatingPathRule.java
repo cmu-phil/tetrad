@@ -105,8 +105,6 @@ public class RecursiveDiscriminatingPathRule {
                     }
                 }
 
-//                System.out.println("Blocking set for x = " + x + " y = " + y + " not followed = " + vNodesNotFollowed + " = " + blocking);
-
                 // b minus c
                 Set<Node> testSet = new HashSet<>(blocking);
                 testSet.removeAll(c);
@@ -136,7 +134,7 @@ public class RecursiveDiscriminatingPathRule {
 
     private static @NotNull List<Node> getVNodes(Graph pag, Node x, Node y, int maxDdpPathLength) {
         // 2) List possible DiscriminatingPaths
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, false);
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, true);
 
         // 3) Figure out which nodes might be "notFollowed"
         Set<DiscriminatingPath> relevantPaths = new HashSet<>();
