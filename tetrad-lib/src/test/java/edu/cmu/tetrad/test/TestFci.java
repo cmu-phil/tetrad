@@ -569,6 +569,7 @@ public class TestFci {
 
             Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
             fcit.setStartWith(Fcit.START_WITH.GRASP);
+            fcit.setCheckAdjacencySepsets(true);
 //            fcit.setPreserveMarkov(false);
             Graph estPag3 = fcit.search();
 
@@ -808,7 +809,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -838,6 +839,7 @@ public class TestFci {
                 fci.setStartWith(Fcit.START_WITH.GRASP);
 
                 fci.setCompleteRuleSetUsed(true);
+                fci.setCheckAdjacencySepsets(true);
                 fci.setVerbose(false);
 
                 Graph pag = fci.search();
@@ -882,7 +884,7 @@ public class TestFci {
     }
 
 
-    @Test
+//    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");

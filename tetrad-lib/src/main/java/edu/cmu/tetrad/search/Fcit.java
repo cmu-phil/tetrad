@@ -91,10 +91,6 @@ public final class Fcit implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose = false;
-    /**
-     * True if the local Markov property should be ensured from an initial local Markov graph.
-     */
-    private boolean preserveMarkov = false;
 
     /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
@@ -130,9 +126,9 @@ public final class Fcit implements IGraphSearch {
      */
     private boolean printChanges = true;
     /**
-     * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This
-     * is only done after all recursive sepset removals have been done. True by default. This is needed in order
-     * to pass an Oracle test but can reduce accuracy from data.
+     * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This is only
+     * done after all recursive sepset removals have been done. True by default. This is needed in order to pass an
+     * Oracle test but can reduce accuracy from data.
      */
     private boolean checkAdjacencySepsets = true;
 
@@ -188,7 +184,6 @@ public final class Fcit implements IGraphSearch {
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsets);
         strategy.setVerbose(verbose);
-        strategy.setPreserveMarkovHelper(state.PreserveMarkovHelper);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
@@ -321,26 +316,12 @@ public final class Fcit implements IGraphSearch {
         state.setPag(GraphTransforms.dagToPag(dag));
 
         initialColliders = noteInitialColliders(best, state.getPag());
-        state.setPreserveMarkovHelper(new PreserveMarkov(state.getPag(), test, preserveMarkov));
-
         state.storeState();
-
-        // Next, we remove the "extra" adjacencies from the graph. We do this differently than in GFCI. There, we
-        // look for a sepset for an edge x *-* y from among adj(x) or adj(y), so the problem is exponential one
-        // each side. So in a dense graph, this can take a very long time to complete. Here, we look for a sepset
-        // for each edge by examining the structure of the current graph and finding a sepset that blocks all
-        // paths between x and y. This is a simpler problem and scales better to dense graphs (though not perfectly).
-        // New definite discriminating paths may be created, so additional checking needs to be done until the
-        // evolving maximally oriented PAG stabilizes. This could be optimized, since only the new definite
-        // discriminating paths need to be checked, but for now, we simply analyze the entire graph again until
-        // convergence. Note that for checking discriminating paths, the recursive algorithm may not be 100%
-        // effective, so we need to supplement this with FCI-style discriminating path checking in case a sepset
-        // is not found. This is to accommodate "Puzzle #2."
 
         removeEdgesRecursively();
 
         if (checkAdjacencySepsets) {
-        removeEdgesSubsetsOfAdjacents();
+            removeEdgesSubsetsOfAdjacents();
         }
 
         if (verbose) {
@@ -374,7 +355,7 @@ public final class Fcit implements IGraphSearch {
             while ((choice1 = gen1.next()) != null) {
                 Set<Node> cond = GraphUtils.asSet(choice1, adjx);
 
-                if (state.getPreserveMarkovHelper().markovIndependence(x, y, cond)) {
+                if (test.checkIndependence(x, y, cond).isIndependent()) {
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
@@ -389,7 +370,7 @@ public final class Fcit implements IGraphSearch {
             while ((choice2 = gen2.next()) != null) {
                 Set<Node> cond = GraphUtils.asSet(choice2, adjy);
 
-                if (state.getPreserveMarkovHelper().markovIndependence(x, y, cond)) {
+                if (test.checkIndependence(x, y, cond).isIndependent()) {
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
@@ -700,7 +681,7 @@ public final class Fcit implements IGraphSearch {
                     }
 
                     try {
-                        if (state.getPreserveMarkovHelper().markovIndependence(x, y, b)) {
+                        if (test.checkIndependence(x, y, b).isIndependent()) {
                             TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
 
                             state.getPag().removeEdge(x, y);
@@ -783,15 +764,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets the value indicating whether the process should ensure Markov property.
-     *
-     * @param preserveMarkov a boolean value, true to ensure Markov property, false otherwise.
-     */
-    public void setPreserveMarkov(boolean preserveMarkov) {
-        this.preserveMarkov = preserveMarkov;
-    }
-
-    /**
      * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original FCI)
      * should be used. False by default.
      *
@@ -816,9 +788,9 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This
-     * is only done after all recursive sepset removals have been done. True by default. This is needed in order
-     * to pass an Oracle test but can reduce accuracy from data.
+     * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This is only
+     * done after all recursive sepset removals have been done. True by default. This is needed in order to pass an
+     * Oracle test but can reduce accuracy from data.
      */
     public void setCheckAdjacencySepsets(boolean checkAdjacencySepsets) {
         this.checkAdjacencySepsets = checkAdjacencySepsets;
@@ -873,23 +845,6 @@ public final class Fcit implements IGraphSearch {
          * This variable plays a critical role in enabling rollback functionality and maintaining the integrity
          */
         private Graph lastPag = null;
-        /**
-         * An instance of the PreserveMarkov class used to assist in maintaining the Markov property during the
-         * execution of the algorithm. This variable is primarily leveraged to enforce the necessary constraints that
-         * ensure the resulting graph adheres to the Markov condition.
-         * <p>
-         * During the algorithm's execution, this helper may be initialized, updated, or restored to preserve the
-         * required state for maintaining causal consistency. It is also utilized for facilitating operations that
-         * demand adherence to the Markov property across different steps of the algorithm.
-         */
-        private PreserveMarkov PreserveMarkovHelper = null;
-        /**
-         * A reference to the last instance of the PreserveMarkov helper used during the algorithm's execution. This
-         * variable facilitates the management and reuse of the PreserveMarkov helper object, which is designed to
-         * preserve and enforce the Markov property during the search process. It is updated to reflect the most recent
-         * state of the PreserveMarkov helper, ensuring consistency throughout the algorithm's iterations or steps.
-         */
-        private PreserveMarkov lastPreserveMarkovHelper = null;
 
         /**
          * Default constructor for the State class.
@@ -911,7 +866,6 @@ public final class Fcit implements IGraphSearch {
          */
         private void storeState() {
             this.lastPag = new EdgeListGraph(this.pag);
-            this.lastPreserveMarkovHelper = new PreserveMarkov(PreserveMarkovHelper);
         }
 
         /**
@@ -928,7 +882,6 @@ public final class Fcit implements IGraphSearch {
          */
         private void restoreState() {
             this.pag = new EdgeListGraph(this.lastPag);
-            this.PreserveMarkovHelper = new PreserveMarkov(lastPreserveMarkovHelper);
         }
 
         /**
@@ -951,23 +904,5 @@ public final class Fcit implements IGraphSearch {
         public void setPag(Graph pag) {
             this.pag = pag;
         }
-
-        /**
-         * A helper class to help preserve Markov.
-         */
-        public PreserveMarkov getPreserveMarkovHelper() {
-            return PreserveMarkovHelper;
-        }
-
-        /**
-         * Sets the instance of the PreserveMarkov helper to be used for managing and enforcing the Markov property
-         * during the algorithm's execution.
-         *
-         * @param PreserveMarkov the PreserveMarkov instance to be associated with the current state.
-         */
-        public void setPreserveMarkovHelper(PreserveMarkov PreserveMarkov) {
-            this.PreserveMarkovHelper = PreserveMarkov;
-        }
-
     }
 }
