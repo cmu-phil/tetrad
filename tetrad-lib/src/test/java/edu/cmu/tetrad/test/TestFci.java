@@ -643,6 +643,66 @@ public class TestFci {
         assertTrue(msepTest.checkIndependence(x, y, Z).isIndependent());
     }
 
+    @Test
+    public void testSearch21() {
+        boolean verbose = false;
+
+        final String trueDag = "Graph Nodes:\n" +
+                               "X1;X2;X4;X5;X6\n" +
+                               "\n" +
+                               "Graph Edges:\n" +
+                               "1. X1 o-o X4\n" +
+                               "2. X2 o-> X6\n" +
+                               "3. X4 o-> X5\n" +
+                               "4. X5 <-> X6";
+
+        final String correctPag = "Graph Nodes:\n" +
+                                  "X1;X2;X4;X5;X6\n" +
+                                  "\n" +
+                                  "Graph Edges:\n" +
+                                  "1. X1 o-o X4\n" +
+                                  "2. X2 o-> X6\n" +
+                                  "3. X4 o-> X5\n" +
+                                  "4. X5 <-> X6";
+
+        try {
+            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueDag);
+            Graph truePag_ = GraphSaveLoadUtils.readerToGraphTxt(correctPag);
+
+            System.out.println("True DAG");
+            System.out.println(trueMag_);
+
+            System.out.println("Correct PAG");
+            System.out.println(truePag_);
+
+            Fci fci = new Fci(new MsepTest(trueMag_));
+            fci.setVerbose(verbose);
+            Graph estPag1 = fci.search();
+            assertEquals(truePag_, estPag1);
+
+            GraspFci graspFci = new GraspFci(new MsepTest(trueMag_), new GraphScore(trueMag_));
+            graspFci.setUseRaskuttiUhler(true);
+            graspFci.setUseScore(false);
+            graspFci.setVerbose(verbose);
+            Graph estPag2 = graspFci.search();
+            assertEquals(truePag_, estPag2);
+
+            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
+            fcit.setStartWith(Fcit.START_WITH.GRASP);
+            fcit.setVerbose(true);
+//            fcit.setPreserveMarkov(false);
+            Graph estPag3 = fcit.search();
+
+            System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
+            System.out.println(unshieldedCollidersIdenticalPagMag(estPag3)
+                    ? "Unshielded colliders the same " : "Unshielded colliders different.");
+
+            assertEquals(truePag_, estPag3);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private boolean ancestral(Node n, Node q, Graph pag) {
         if (n == q) return false;
 
@@ -748,7 +808,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -758,7 +818,8 @@ public class TestFci {
 
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(20, 5, 25, 100, 100, 100, false);
+            Graph dag = RandomGraph.randomGraph(15, 3, 15, 100,
+                    100, 100, false);
             MsepTest independence = new MsepTest(dag);
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
@@ -954,7 +1015,9 @@ public class TestFci {
                 System.out.println("MAG and PAG unshielded triples not the same.");
             }
 
-            if (!isLegalMag(mag)) {
+            boolean legalMag = isLegalMag(mag);
+
+            if (!legalMag) {
                 if (mag.paths().existsDirectedCycle()) {
 
                     for (Node b : mag.getNodes()) {
@@ -983,6 +1046,10 @@ public class TestFci {
 //                GraphSaveLoadUtils.saveGraph(pag, new File("/Users/josephramsey/Downloads/check_graphs/pag." + index + ".txt"), false);
 //                GraphSaveLoadUtils.saveGraph(mag, new File("/Users/josephramsey/Downloads/check_graphs/mag." + index + ".txt"), false);
             }
+
+            // If this fails, it could be because someone was mucking with the inducing path method. Try reverting that
+            // to what it was.
+            assertTrue(legalMag);
         }
     }
 
