@@ -48,6 +48,7 @@ public final class MaxP {
     private int maxPMaxHeuristicPathLength = -1;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
     private boolean verbose = false;
+    private boolean acyclic = false;
 
     /**
      * Constructor.
@@ -275,7 +276,7 @@ public final class MaxP {
 
     private void orientCollider(Graph graph, Node a, Node b, Node c, PcCommon.ConflictRule conflictRule) {
         if (PcCommon.colliderAllowed(a, b, c, knowledge)) {
-            PcCommon.orientCollider(a, b, c, conflictRule, graph, this.verbose);
+            PcCommon.orientCollider(a, b, c, conflictRule, graph, this.verbose, acyclic);
         }
     }
 
@@ -328,6 +329,10 @@ public final class MaxP {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public void setAcyclic(boolean acyclic) {
+        this.acyclic = acyclic;
     }
 }
 

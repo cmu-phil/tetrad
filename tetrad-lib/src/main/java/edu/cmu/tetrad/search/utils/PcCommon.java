@@ -151,7 +151,11 @@ public final class PcCommon implements IGraphSearch {
      * @param verbose      If verbose output should be printed.
      * @see PcCommon.ConflictRule
      */
-    public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph, boolean verbose) {
+    public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph, boolean verbose, boolean acyclic) {
+        if (graph.isAncestorOf(y, x) || graph.isAncestorOf(y, z)) {
+            return;
+        }
+
         if (conflictRule == ConflictRule.PRIORITIZE_EXISTING) {
             if (!(graph.getEndpoint(x, y) == Endpoint.ARROW && graph.getEndpoint(z, y) == Endpoint.ARROW)) {
                 graph.removeEdge(x, y);
@@ -322,6 +326,7 @@ public final class PcCommon implements IGraphSearch {
             orientCollidersMaxP.setDepth(this.depth);
             orientCollidersMaxP.setKnowledge(this.knowledge);
             orientCollidersMaxP.setVerbose(verbose);
+            orientCollidersMaxP.setAcyclic(guaranteeCpdag);
             orientCollidersMaxP.orient(this.graph);
         } else if (this.colliderDiscovery == ColliderDiscovery.CONSERVATIVE) {
             if (this.verbose) {
@@ -560,7 +565,7 @@ public final class PcCommon implements IGraphSearch {
 
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
-                        PcCommon.orientCollider(x, y, z, this.conflictRule, this.graph, verbose);
+                        PcCommon.orientCollider(x, y, z, this.conflictRule, this.graph, verbose, guaranteeCpdag);
                         this.colliderTriples.add(new Triple(x, y, z));
                     }
                 } else if (isNoncolliderSepset(y, sepsetsxz)) {
@@ -704,7 +709,7 @@ public final class PcCommon implements IGraphSearch {
                         }
                         if (result) {
                             if (colliderAllowed(a, b, c, knowledge)) {
-                                PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose);
+                                PcCommon.orientCollider(a, b, c, conflictRule, graph, verbose, guaranteeCpdag);
 
 //                                if (verbose) {
 //                                    System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
