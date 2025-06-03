@@ -20,15 +20,12 @@
 /// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -127,18 +124,6 @@ public final class Fcit implements IGraphSearch {
      */
     private int depth = -1;
     /**
-     * Whether to track scores.
-     */
-    private boolean trackScores = false;
-    /**
-     * If scores are tracked, this MAG SEM score will be used.
-     */
-    private MagSemBicScore magSemBicScore;
-    /**
-     * The running score. This should not go down.
-     */
-    private double modelScore = Double.NEGATIVE_INFINITY;
-    /**
      * True just in case good and restored changes are printed. The algorithm always moves to a legal PAG; if it
      * doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise, a "good" message is
      * printed.
@@ -167,11 +152,6 @@ public final class Fcit implements IGraphSearch {
 
         this.test = test;
         this.score = score;
-
-        if (trackScores) {
-            this.magSemBicScore = new MagSemBicScore(new CovarianceMatrix((DataSet) test.getData()));
-            this.magSemBicScore.setPenaltyDiscount(1);
-        }
 
         test.setVerbose(verbose);
 
@@ -333,9 +313,6 @@ public final class Fcit implements IGraphSearch {
         // The main procedure.
         state.setPag(GraphTransforms.dagToPag(dag));
 
-        if (trackScores) {
-            this.modelScore = scoreMag(state.getPag());
-        }
         initialColliders = noteInitialColliders(best, state.getPag());
         state.setPreserveMarkovHelper(new PreserveMarkov(state.getPag(), test));
         state.getPreserveMarkovHelper().setPreserveMarkov(PreserveMarkov);
@@ -431,47 +408,6 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         }
-    }
-
-    private void checkNoUnorientedDiscriminatingPaths() {
-        // The final orientation rules were
-        // applied just before this step, so this should list only
-        // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(state.getPag(),
-                -1, true);
-
-        for (DiscriminatingPath disc : discriminatingPaths) {
-            if (!disc.existsIn(state.getPag())) {
-                throw new RuntimeException("DiscriminatingPath " + disc + " does not exist in " + state.getPag());
-            }
-
-            if (state.getPag().getEndpoint(disc.getY(), disc.getV()) == Endpoint.CIRCLE) {
-                throw new RuntimeException("DiscriminatingPath " + disc + " is unoriented in " + state.getPag());
-            }
-        }
-    }
-
-    private double scoreMag(Graph pag) {
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-        magSemBicScore.setMag(mag);
-        magSemBicScore.setOrder(mag.paths().getValidOrderMag(mag.getNodes(), false));
-
-        double score = 0.0;
-        List<Node> nodes = mag.getNodes();
-
-        for (Node node : mag.getNodes()) {
-            int i = nodes.indexOf(node);
-
-            List<Node> parents = mag.getParents(node);
-            int[] p = new int[parents.size()];
-            for (int j = 0; j < parents.size(); j++) {
-                p[j] = nodes.indexOf(parents.get(j));
-            }
-
-            score += magSemBicScore.localScore(i, p);
-        }
-
-        return score;
     }
 
     /**
@@ -609,12 +545,6 @@ public final class Fcit implements IGraphSearch {
         }
     }
 
-    private boolean edgeMarkingDiscrepancy() {
-        Graph mag = GraphTransforms.zhangMagFromPag(state.getPag());
-        Graph pag2 = GraphTransforms.dagToPag(mag);
-        return !state.getPag().equals(pag2);
-    }
-
     /**
      * Refines the structure of the Partial Ancestral Graph (PAG) by adjusting separation sets based on additional
      * independence evidence and ensuring consistency with known independence and causality constraints. This method
@@ -655,94 +585,6 @@ public final class Fcit implements IGraphSearch {
                         }
                     }
                 }
-            }
-        });
-    }
-
-    /**
-     * Examines all edges in the PAG for unconditional independence based on the current separation set map and Markov
-     * independence checks. If two variables are found to be unconditionally independent, the edge connecting them is
-     * removed, and the separation set map is updated accordingly.
-     * <p>
-     * The method operates by iterating over all edges in the PAG and performing the following: (a) Identifies the two
-     * nodes connected by the edge. (b) Checks if there exists a separation set for the nodes in the current separation
-     * set map. If a separation set exists, it skips further processing for that edge. (c) Identifies common neighbors
-     * of the two nodes connected by the edge and determines if they form a non-collider structure. If all common
-     * neighbors create colliders, the edge is skipped. (d) Checks unconditional independence between the two nodes
-     * using the PreserveMarkovHelper's Markov independence method. If independence is confirmed: (d.1) Logs the
-     * operation if verbose mode is enabled. (d.2) Updates the separation set map for the nodes to an empty set. (d.3)
-     * Removes the edge from the PAG. (e) Handles any `InterruptedException` thrown during the Markov independence
-     * check.
-     * <p>
-     * If verbose mode is enabled, relevant logging information is captured using the `TetradLogger` to provide detailed
-     * insights into the operations performed.
-     * <p>
-     * This method helps refine the PAG by ensuring its representation aligns with the detected unconditional
-     * independencies and the causal structure implied by the data.
-     */
-    private void checkUnconditionalIndependence() {
-        if (verbose) {
-            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-        }
-
-        state.getPag().getEdges().forEach(edge -> {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            if (getSepsets().get(x, y) != null) {
-                return;
-            }
-
-            List<Node> common = state.getPag().getAdjacentNodes(x);
-            common.retainAll(state.getPag().getAdjacentNodes(y));
-
-            boolean found = false;
-
-            for (Node node : common) {
-                if (!state.getPag().isDefCollider(x, node, y)) {
-                    found = true;
-                }
-            }
-
-            if (!found) {
-                return;
-            }
-
-            try {
-                if (verbose) {
-                    TetradLogger.getInstance().log("Checking edge " + state.getPag().getEdge(x, y) + " from PAG for unconditional independence.");
-                }
-
-                if (state.getPreserveMarkovHelper().markovIndependence(x, y, Set.of())) {
-                    if (verbose) {
-                        TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
-                    }
-
-                    TetradLogger.getInstance().log("Tried removing edge " + edge + " from PAG for unconditional independence.");
-                    sepsets.set(x, y, Set.of());
-                    getSepsets().set(x, y, Set.of());
-                    state.getPag().removeEdge(x, y);
-                    refreshGraph(x + " _||_ " + y + " (Unconditional independence)");
-
-                    if (trackScores) {
-                        double _modelScore = scoreMag(state.getPag());
-
-                        if (_modelScore < this.modelScore) {
-                            TetradLogger.getInstance().log("Score lowered; restoring.");
-                            state.restoreState();
-                        } else {
-                            if (_modelScore > this.modelScore) {
-                                TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " (Unconditional independence)");
-                            } else {
-                                TetradLogger.getInstance().log("Score unchanged: + " + x + " _||_ " + y + " (Unconditional independence)");
-                            }
-
-                            this.modelScore = _modelScore;
-                        }
-                    }
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
             }
         });
     }
@@ -874,24 +716,6 @@ public final class Fcit implements IGraphSearch {
                             state.getPag().removeEdge(x, y);
                             sepsets.set(x, y, b);
 
-                            if (trackScores) {
-                                double _modelScore = scoreMag(state.getPag());
-
-                                if (_modelScore < this.modelScore) {
-                                    TetradLogger.getInstance().log("Score lowered; restoring.");
-                                    state.restoreState();
-                                } else {
-                                    if (_modelScore > this.modelScore) {
-                                        TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " | " + b + " (new sepset)");
-                                    } else {
-                                        TetradLogger.getInstance().log("Score unchanged: " + x + " _||_ " + y + " | " + b + " (new sepset)");
-
-                                    }
-
-                                    this.modelScore = _modelScore;
-                                }
-                            }
-
                             if (refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)")) {
                                 continue EDGE;
                             }
@@ -903,10 +727,6 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         }
-    }
-
-    private SepsetMap getSepsets() {
-        return sepsets;
     }
 
     /**
