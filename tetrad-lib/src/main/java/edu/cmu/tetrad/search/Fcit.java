@@ -94,7 +94,7 @@ public final class Fcit implements IGraphSearch {
     /**
      * True if the local Markov property should be ensured from an initial local Markov graph.
      */
-    private boolean PreserveMarkov = false;
+    private boolean preserveMarkov = false;
 
     /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
@@ -129,6 +129,12 @@ public final class Fcit implements IGraphSearch {
      * printed.
      */
     private boolean printChanges = true;
+    /**
+     * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This
+     * is only done after all recursive sepset removals have been done. True by default. This is needed in order
+     * to pass an Oracle test but can reduce accuracy from data.
+     */
+    private boolean checkAdjacencySepsets = true;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -178,6 +184,7 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("===Starting FCIT===");
 
         this.state = new State();
+
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsets);
         strategy.setVerbose(verbose);
@@ -314,8 +321,7 @@ public final class Fcit implements IGraphSearch {
         state.setPag(GraphTransforms.dagToPag(dag));
 
         initialColliders = noteInitialColliders(best, state.getPag());
-        state.setPreserveMarkovHelper(new PreserveMarkov(state.getPag(), test));
-        state.getPreserveMarkovHelper().setPreserveMarkov(PreserveMarkov);
+        state.setPreserveMarkovHelper(new PreserveMarkov(state.getPag(), test, preserveMarkov));
 
         state.storeState();
 
@@ -332,7 +338,10 @@ public final class Fcit implements IGraphSearch {
         // is not found. This is to accommodate "Puzzle #2."
 
         removeEdgesRecursively();
+
+        if (checkAdjacencySepsets) {
         removeEdgesSubsetsOfAdjacents();
+        }
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -365,7 +374,7 @@ public final class Fcit implements IGraphSearch {
             while ((choice1 = gen1.next()) != null) {
                 Set<Node> cond = GraphUtils.asSet(choice1, adjx);
 
-                if (test.checkIndependence(x, y, cond).isIndependent()) {
+                if (state.getPreserveMarkovHelper().markovIndependence(x, y, cond)) {
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
@@ -380,7 +389,7 @@ public final class Fcit implements IGraphSearch {
             while ((choice2 = gen2.next()) != null) {
                 Set<Node> cond = GraphUtils.asSet(choice2, adjy);
 
-                if (test.checkIndependence(x, y, cond).isIndependent()) {
+                if (state.getPreserveMarkovHelper().markovIndependence(x, y, cond)) {
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
@@ -776,10 +785,10 @@ public final class Fcit implements IGraphSearch {
     /**
      * Sets the value indicating whether the process should ensure Markov property.
      *
-     * @param PreserveMarkov a boolean value, true to ensure Markov property, false otherwise.
+     * @param preserveMarkov a boolean value, true to ensure Markov property, false otherwise.
      */
-    public void setPreserveMarkov(boolean PreserveMarkov) {
-        this.PreserveMarkov = PreserveMarkov;
+    public void setPreserveMarkov(boolean preserveMarkov) {
+        this.preserveMarkov = preserveMarkov;
     }
 
     /**
@@ -804,6 +813,15 @@ public final class Fcit implements IGraphSearch {
         }
 
         this.depth = depth;
+    }
+
+    /**
+     * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This
+     * is only done after all recursive sepset removals have been done. True by default. This is needed in order
+     * to pass an Oracle test but can reduce accuracy from data.
+     */
+    public void setCheckAdjacencySepsets(boolean checkAdjacencySepsets) {
+        this.checkAdjacencySepsets = checkAdjacencySepsets;
     }
 
     /**

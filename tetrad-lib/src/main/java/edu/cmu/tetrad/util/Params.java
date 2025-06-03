@@ -93,6 +93,10 @@ public final class Params {
      */
     public static final String COMPLETE_RULE_SET_USED = "completeRuleSetUsed";
     /**
+     * Constant <code>CHECK_ADJACENCY_SEPSETS="checkAdjacencySepsets"</code>
+     */
+    public static final String CHECK_ADJACENCY_SEPSETS = "checkAdjacencySepsets";
+    /**
      * Constant <code>SEPSET_FINDER_METHOD="sepsetFinderMethod"</code>
      */
     public static final String SEPSET_FINDER_METHOD = "sepsetFinderMethod";
