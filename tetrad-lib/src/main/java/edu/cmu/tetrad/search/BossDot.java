@@ -30,13 +30,13 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * LV-Dumb is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
+ * BOSS-DOT is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
  * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
  * doing any further latent variable reasoning.
  *
  * @author josephramsey
  */
-public final class LvDumb implements IGraphSearch {
+public final class BossDot implements IGraphSearch {
     /**
      * The score.
      */
@@ -65,6 +65,9 @@ public final class LvDumb implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    private int depth = -1;
+    private boolean completeRuleSetUsed = true;
+
     /**
      * LV-Dumb constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
      * Score object.
@@ -72,7 +75,7 @@ public final class LvDumb implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public LvDumb(Score score) {
+    public BossDot(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -121,7 +124,11 @@ public final class LvDumb implements IGraphSearch {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-        Graph pag = PagCache.getInstance().getPag(GraphTransforms.dagFromCpdag(cpdag), knowledge, verbose);
+        DagToPag dagToPag = new DagToPag(cpdag);
+        dagToPag.setVerbose(verbose);
+        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+        dagToPag.setKnowledge(knowledge);
+        Graph pag = dagToPag.convert();
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished calculating PAG from CPDAG.");
@@ -177,5 +184,9 @@ public final class LvDumb implements IGraphSearch {
      */
     public void setUseBes(boolean useBes) {
         this.useBes = useBes;
+    }
+
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 }

@@ -1466,6 +1466,82 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Breadth-first version of the “inducing-path exists?” test.
+     *
+     * @param x                  first measured node
+     * @param y                  second measured node
+     * @param selectionVariables set of selection variables (Z)
+     * @return true iff there is an inducing path from x to y
+     */
+    public boolean existsInducingPathBFS(Node x,
+                                         Node y,
+                                         Set<Node> selectionVariables) {
+
+        if (x.getNodeType() != NodeType.MEASURED ||
+            y.getNodeType() != NodeType.MEASURED) {
+            throw new IllegalArgumentException("x and y must be measured nodes");
+        }
+
+        // State = (prev, curr, path-so-far).
+        record State(Node prev, Node curr, LinkedList<Node> path) {}
+
+        Queue<State> queue = new LinkedList<>();
+
+        // Seed the queue with every neighbour of x
+        for (Node b : graph.getAdjacentNodes(x)) {
+            LinkedList<Node> seedPath = new LinkedList<>();
+            seedPath.add(x);
+            seedPath.add(b);
+
+            if (b == y) {                         // x—b where b==y  ⇒  path of length-1
+                return true;
+            }
+            queue.add(new State(x, b, seedPath));
+        }
+
+        // Standard BFS loop
+        while (!queue.isEmpty()) {
+            State s       = queue.remove();
+            Node  a       = s.prev();
+            Node  b       = s.curr();
+            LinkedList<Node> path = s.path();     // already contains a and b
+
+            for (Node c : graph.getAdjacentNodes(b)) {
+
+                if (c == a) continue;             // don’t back-track
+                if (path.contains(c)) continue;   // avoid cycles
+
+                // --- Same admissibility checks as the DFS version -----------------
+                if (b.getNodeType() == NodeType.MEASURED &&
+                    !graph.isDefCollider(a, b, c)) {
+                    continue;
+                }
+
+                if (graph.isDefCollider(a, b, c) &&
+                    !(graph.paths().isAncestorOf(b, x) ||
+                      graph.paths().isAncestorOf(b, y) ||
+                      graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
+                    continue;
+                }
+                // ------------------------------------------------------------------
+
+                // Extend the path to c
+                LinkedList<Node> newPath = new LinkedList<>(path);
+                newPath.add(c);
+
+                if (c == y) {                     // reached the target – success!
+                    return true;
+                }
+
+                queue.add(new State(b, c, newPath));
+            }
+        }
+
+        return false;                             // Exhausted queue – no inducing path
+    }
+
+
+    /**
      * Determines whether an inducing path exists between two nodes in a graph. This is a breadth-first implementation.
      *
      * @param x                  the first node in the graph
@@ -1474,121 +1550,15 @@ public class Paths implements TetradSerializable {
      * @return true if an inducing path exists, false if not
      */
     public boolean existsInducingPath(Node x, Node y, Set<Node> selectionVariables) {
-        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
-            throw new IllegalArgumentException();
+
+        // Note that whatever method is chosen for checking inducing paths, the method testZhangPagToMag in
+        // TestFci must complete without errors for 1000 runs. (Methods that weren't doing that have been
+        // deleted from the code.) jdramsey, 2025-6-1
+        if (true) {
+            return existsInducingPathBFS(x, y, selectionVariables);
+        } else {
+            return existsInducingPathDFS(x, y, selectionVariables);
         }
-
-        // Initialize the BFS queue
-        Queue<PathElement> queue = new LinkedList<>();
-        Set<Node> visited = new HashSet<>();
-        queue.add(new PathElement(x, null)); // Start with node x and no previous node
-
-        while (!queue.isEmpty()) {
-            PathElement current = queue.poll();
-            Node a = current.previous; // Previous node
-            Node b = current.current;  // Current node
-
-            // If the target node is reached, an inducing path exists
-            if (b == y) {
-                return true;
-            }
-
-            if (visited.contains(b)) {
-                continue;
-            }
-
-            visited.add(b);
-
-            // Explore neighbors of the current node
-            for (Node c : graph.getAdjacentNodes(b)) {
-                // Skip the node we just came from
-                if (c == a) {
-                    continue;
-                }
-
-                // Check conditions for the inducing path
-                if (b.getNodeType() == NodeType.MEASURED) {
-                    if (a != null && !graph.isDefCollider(a, b, c)) {
-                        continue;
-                    }
-                }
-
-                if (a != null && graph.isDefCollider(a, b, c)) {
-                    if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
-                          || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
-                        continue;
-                    }
-                }
-
-                // Enqueue the neighbor node for further exploration
-                queue.offer(new PathElement(c, b));
-            }
-        }
-
-        // If the queue is exhausted, no inducing path exists
-        return false;
-    }
-
-    /**
-     * Determines if there exists an inducing path between given nodes x and y, considering the provided selection
-     * variables. An inducing path is a valid path in a graph that satisfies specific criteria based on node ancestry
-     * and collider relationships.
-     * <p>
-     * Experimental.
-     *
-     * @param x             the starting node, must be of type MEASURED
-     * @param y             the target node, must be of type MEASURED
-     * @param selectionVars the set of selection variables to consider when validating collider and ancestry conditions
-     * @return true if an inducing path exists between x and y; false otherwise
-     * @throws IllegalArgumentException if either x or y is not of type MEASURED
-     */
-    public boolean existsInducingPath2(Node x,
-                                       Node y,
-                                       Set<Node> selectionVars) {
-
-        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
-            throw new IllegalArgumentException("Endpoints must be measured variables");
-        }
-
-        /* ----------  pre-compute ancestry sets  ---------- */
-        var paths = graph.paths();                   // Tetrad’s reachability helper
-        Set<Node> goodAncestors = new HashSet<>();
-        goodAncestors.addAll(paths.getAncestors(x));
-        goodAncestors.addAll(paths.getAncestors(y));
-        for (Node s : selectionVars) goodAncestors.addAll(paths.getAncestors(s));
-
-        /* ----------  BFS ---------- */
-        Deque<PathElem> q = new ArrayDeque<>();
-        Set<NodePair> visited = new HashSet<>();     // (prev,cur) pairs
-        q.add(new PathElem(x, null));
-
-        while (!q.isEmpty()) {
-            PathElem elem = q.poll();
-            Node cur = elem.cur;
-            Node prev = elem.prev;
-
-            if (cur.equals(y)) return true;
-            if (!visited.add(new NodePair(prev, cur))) continue;  // already explored via this edge
-
-            for (Node nbr : graph.getAdjacentNodes(cur)) {
-
-                if (nbr.equals(prev)) continue;   // don’t back-track
-
-                /* ----  collider / non-collider checks  ---- */
-                if (prev != null) {
-                    boolean collider = graph.isDefCollider(prev, cur, nbr);
-
-                    if (!collider) {             // interior non-collider ⇒ path invalid
-                        continue;
-                    }
-                    if (!goodAncestors.contains(cur)) {   // collider must be ancestor of {x,y}∪S
-                        continue;
-                    }
-                }
-                q.add(new PathElem(nbr, cur));
-            }
-        }
-        return false;   // queue exhausted: no inducing path found
     }
 
     /**

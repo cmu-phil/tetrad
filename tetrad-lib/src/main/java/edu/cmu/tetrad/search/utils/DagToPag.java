@@ -59,6 +59,7 @@ public final class DagToPag {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    private int depth = -1;
 
 
     /**
@@ -230,9 +231,9 @@ public final class DagToPag {
         pag.reorientAllWith(Endpoint.CIRCLE);
 
         FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
-//        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(new MsepTest(mag)));
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
 
 //        for (Node y : pag.getNodes()) {
 //            List<Node> adjy = pag.getAdjacentNodes(y);

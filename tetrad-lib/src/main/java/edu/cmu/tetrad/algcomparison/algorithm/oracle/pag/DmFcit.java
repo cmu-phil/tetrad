@@ -340,7 +340,7 @@ public class DmFcit extends AbstractBootstrapAlgorithm implements Algorithm, Use
 
         // FCIT
 //        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setPreserveMarkov(parameters.getBoolean(Params.PRESERVE_MARKOV));
+//        search.setPreserveMarkov(parameters.getBoolean(Params.PRESERVE_MARKOV));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(Fcit.START_WITH.BOSS);

@@ -39,20 +39,23 @@ public class PreserveMarkov {
      * need to be tracked between pairs of nodes.
      */
     private Map<Pair<Node, Node>, Set<Double>> pValues = new HashMap<>();
-    /**
-     * A boolean that determines whether to preserve the Markov property.
-     */
     private boolean preserveMarkov = false;
 
     /**
      * Constructs an PreserveMarkov class for a given Markov graph.
      *
-     * @param graph  The initial Markov graph. This graph should pass a local Markov check.
-     * @param test The independence test to use.
+     * @param graph          The initial Markov graph. This graph should pass a local Markov check.
+     * @param test           The independence test to use.
+     * @param preserveMarkov
      */
-    public PreserveMarkov(Graph graph, IndependenceTest test) {
+    public PreserveMarkov(Graph graph, IndependenceTest test, boolean preserveMarkov) {
         this.graph = new EdgeListGraph(graph);
         this.test = test;
+        try {
+            setPreserveMarkov(preserveMarkov);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -65,7 +68,6 @@ public class PreserveMarkov {
         this.graph = new EdgeListGraph(preserveMarkov.graph);
         this.test = preserveMarkov.test;
         this.pValues = new HashMap<>(preserveMarkov.pValues);
-        this.preserveMarkov = preserveMarkov.preserveMarkov;
     }
 
     /**
@@ -151,10 +153,10 @@ public class PreserveMarkov {
      * @param preserveMarkov True if the Markov property should be preserved.
      * @throws InterruptedException if any.
      */
-    public void setPreserveMarkov(boolean preserveMarkov) throws InterruptedException {
+    private void setPreserveMarkov(boolean preserveMarkov) throws InterruptedException {
         this.preserveMarkov = preserveMarkov;
 
-        if (preserveMarkov) {
+        if (this.preserveMarkov) {
             double initialFraction = GraphUtils.localMarkovInitializePValues(
                     graph, preserveMarkov, test, pValues);
             System.out.println("Initial percent dependent = " + initialFraction);
@@ -179,20 +181,20 @@ public class PreserveMarkov {
         IndependenceResult result = test.checkIndependence(x, y, z);
 
         if (result.isIndependent()) {
-//            if (preserveMarkov) {
-//                Map<Pair<Node, Node>, Set<Double>> _pValues = markovAdjustPValues(graph, preserveMarkov,
-//                        test, pValues, Pair.of(x, y));
-//
-////                double baseline = GraphUtils.calculatePercentDependent(test, pValues);
-//
-//                if (_pValues.size() > 10 && GraphUtils.pValuesAdP(_pValues) > test.getAlpha()) {
-////                    if (GraphUtils.calculatePercentDependent(test, _pValues) <= test.getAlpha()) {
-//                    pValues = _pValues;
-//                    return true;
-//                }
-//            } else {
+            if (preserveMarkov) {
+                Map<Pair<Node, Node>, Set<Double>> _pValues = markovAdjustPValues(graph, preserveMarkov,
+                        test, pValues, Pair.of(x, y));
+
+//                double baseline = GraphUtils.calculatePercentDependent(test, pValues);
+
+                if (_pValues.size() > 10 && GraphUtils.pValuesAdP(_pValues) > test.getAlpha()) {
+//                    if (GraphUtils.calculatePercentDependent(test, _pValues) <= test.getAlpha()) {
+                    pValues = _pValues;
+                    return true;
+                }
+            } else {
                 return true;
-//            }
+            }
         }
 
         return false;
