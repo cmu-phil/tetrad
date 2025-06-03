@@ -143,7 +143,7 @@ public final class Fcit implements IGraphSearch {
      * doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise, a "good" message is
      * printed.
      */
-    private boolean printRestored = true;
+    private boolean printChanges = true;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -354,24 +354,24 @@ public final class Fcit implements IGraphSearch {
         // effective, so we need to supplement this with FCI-style discriminating path checking in case a sepset
         // is not found. This is to accommodate "Puzzle #2."
 
-        checkNoUnorientedDiscriminatingPaths();
+//        checkNoUnorientedDiscriminatingPaths();
 
-        checkUnconditionalIndependence();
-        removeExtraEdges();
+//        checkUnconditionalIndependence();
+        Graph _pag;
 
-        for (Edge edge : dag.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        do {
+            _pag = new EdgeListGraph(state.getPag());
+            removeEdgesRecursively();
+//            break;
+        } while (!_pag.equals(state.getPag()));
 
-            Set<Node> b = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(state.getPag(), x, y, Set.of(), test, depth);
+        refreshGraph("After recursive");
 
-            if (b != null) {
-                state.getPag().removeEdge(x, y);
-                sepsets.set(x, y, b);
-                refreshGraph(x + " _||_ " + y + " | " + b + " (FCI sepset)");
-            }
-        }
+        List<Edge> removed = new ArrayList<>();
 
+        removeEdgesSubsetsOfAdjacents(removed);
+
+//        refreshGraph(false, "After Subset of Adjacencts: " + removed);
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -385,6 +385,52 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
         return GraphUtils.replaceNodes(state.getPag(), nodes);
+    }
+
+    private void removeEdgesSubsetsOfAdjacents(List<Edge> removed) throws InterruptedException {
+        EDGE:
+        for (Edge edge : state.getPag().getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            List<Node> adjx = state.getPag().getAdjacentNodes(x);
+            List<Node> adjy = state.getPag().getAdjacentNodes(y);
+            adjx.remove(y);
+            adjy.remove(x);
+
+            SublistGenerator gen1 = new SublistGenerator(adjx.size(), adjy.size());
+            int[] choice1;
+
+            while ((choice1 = gen1.next()) != null) {
+                Set<Node> cond = GraphUtils.asSet(choice1, adjx);
+
+                if (test.checkIndependence(x, y, cond).isIndependent()) {
+                    removed.add(edge);
+                    TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
+                    state.getPag().removeEdge(x, y);
+                    sepsets.set(x, y, cond);
+                    refreshGraph(x + " _||_ " + y + " | " + cond);
+                    continue EDGE;
+                }
+            }
+
+            SublistGenerator gen2 = new SublistGenerator(adjy.size(), adjy.size());
+            int[] choice2;
+
+            while ((choice2 = gen2.next()) != null) {
+                Set<Node> cond = GraphUtils.asSet(choice2, adjy);
+
+                if (test.checkIndependence(x, y, cond).isIndependent()) {
+                    removed.add(edge);
+                    TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
+                    state.getPag().removeEdge(x, y);
+                    sepsets.set(x, y, cond);
+                    TetradLogger.getInstance().log("Removed edge " + edge);
+                    refreshGraph(x + " _||_ " + y + " | " + cond);
+                    continue EDGE;
+                }
+            }
+        }
     }
 
     private void checkNoUnorientedDiscriminatingPaths() {
@@ -533,7 +579,7 @@ public final class Fcit implements IGraphSearch {
      * If the updated PAG violates the legality constraints, restores the state to the last valid configuration;
      * otherwise, checkpoints the current state for future reference.
      */
-    private void refreshGraph(String message) {
+    private boolean refreshGraph(String message) {
         GraphUtils.reorientWithCircles(state.getPag(), verbose);
         GraphUtils.recallInitialColliders(state.getPag(), initialColliders, knowledge);
         adjustForExtraSepsets();
@@ -542,23 +588,25 @@ public final class Fcit implements IGraphSearch {
 
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
-        printRestored = true;
+        printChanges = true;
 
+        return restoreStateIfNotLegal(message);
+    }
+
+    private boolean restoreStateIfNotLegal(String message) {
         if (!state.getPag().paths().isLegalPag()) {
-//        if (!state.getPag().paths().isMaximal() || edgeMarkingDiscrepancy()) {
-
-            if (verbose || printRestored) {
-                TetradLogger.getInstance().log("Restored: " + message);
+            if (verbose || printChanges) {
+                TetradLogger.getInstance().log("Rejected: " + message);
             }
             state.restoreState();
+            return false;
         } else {
-            if (verbose || printRestored) {
-                TetradLogger.getInstance().log("Good: " + message);
+            if (verbose || printChanges) {
+                TetradLogger.getInstance().log("ACCEPTED: " + message);
             }
             state.storeState();
+            return true;
         }
-
-        checkNoUnorientedDiscriminatingPaths();
     }
 
     private boolean edgeMarkingDiscrepancy() {
@@ -670,6 +718,7 @@ public final class Fcit implements IGraphSearch {
                         TetradLogger.getInstance().log("Marking " + edge + " for removal because of unconditional independence.");
                     }
 
+                    TetradLogger.getInstance().log("Tried removing edge " + edge + " from PAG for unconditional independence.");
                     sepsets.set(x, y, Set.of());
                     getSepsets().set(x, y, Set.of());
                     state.getPag().removeEdge(x, y);
@@ -722,7 +771,7 @@ public final class Fcit implements IGraphSearch {
      * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
      * execution for asynchronous tasks.
      */
-    private void removeExtraEdges() {
+    private void removeEdgesRecursively() {
         if (verbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -742,6 +791,7 @@ public final class Fcit implements IGraphSearch {
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
+        EDGE:
         for (Edge edge : state.getPag().getEdges()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Considering removing edge " + edge);
@@ -749,34 +799,6 @@ public final class Fcit implements IGraphSearch {
 
             Node x = edge.getNode1();
             Node y = edge.getNode2();
-
-//            if (getSepsets().get(x, y) != null) {
-//                if (verbose) {
-//                    TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-//                }
-//
-//                state.getPag().removeEdge(x, y);
-//                refreshGraph(x + " _||_ " + y + " | " + sepsets.get(x, y) + " (recall sepset)");
-//
-//                if (trackScores) {
-//                    double _modelScore = scoreMag(state.getPag());
-//
-//                    if (_modelScore < this.modelScore) {
-//                        TetradLogger.getInstance().log("Score lowered; restoring.");
-//                        state.restoreState();
-//                    } else {
-//                        if (_modelScore > this.modelScore) {
-//                            TetradLogger.getInstance().log("Score increased: " + x + " _||_ " + y + " | " + sepsets.get(x, y) + " (recall sepset)");
-//                        } else {
-//                            TetradLogger.getInstance().log("Score unchanged: " + x + " _||_ " + y + " | " + sepsets.get(x, y) + " (recall sepset)");
-//                        }
-//
-//                        this.modelScore = _modelScore;
-//                    }
-//                }
-//
-//                return;
-//            }
 
             Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
             paths = (paths == null) ? Set.of() : paths;
@@ -825,8 +847,6 @@ public final class Fcit implements IGraphSearch {
                 List<Node> common = state.getPag().getAdjacentNodes(x);
                 common.retainAll(state.getPag().getAdjacentNodes(y));
 
-                System.out.println("for {" + x + ", " + y + "} common = " + common);
-
                 SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
                 int[] choice2;
 
@@ -849,13 +869,10 @@ public final class Fcit implements IGraphSearch {
 
                     try {
                         if (state.getPreserveMarkovHelper().markovIndependence(x, y, b)) {
-                            if (verbose) {
-                                TetradLogger.getInstance().log("Marking " + edge + " for removal because of potential DDP collider orientations.");
-                            }
+                            TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
 
                             state.getPag().removeEdge(x, y);
                             sepsets.set(x, y, b);
-                            refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)");
 
                             if (trackScores) {
                                 double _modelScore = scoreMag(state.getPag());
@@ -873,6 +890,10 @@ public final class Fcit implements IGraphSearch {
 
                                     this.modelScore = _modelScore;
                                 }
+                            }
+
+                            if (refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)")) {
+                                continue EDGE;
                             }
                         }
 
@@ -920,8 +941,8 @@ public final class Fcit implements IGraphSearch {
      * doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise, a "good" message is
      * printed.
      */
-    public void setPrintRestored(boolean printRestored) {
-        this.printRestored = printRestored;
+    public void setPrintChanges(boolean printChanges) {
+        this.printChanges = printChanges;
     }
 
     /**

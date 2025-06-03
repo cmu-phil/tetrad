@@ -808,7 +808,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -818,7 +818,7 @@ public class TestFci {
 
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(15, 3, 15, 100,
+            Graph dag = RandomGraph.randomGraph(20, 5, 30, 100,
                     100, 100, false);
             MsepTest independence = new MsepTest(dag);
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
@@ -882,7 +882,7 @@ public class TestFci {
     }
 
 
-//    @Test
+    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -898,7 +898,7 @@ public class TestFci {
 
             try {
                 Fcit fcit = new Fcit(test, score);
-                fcit.setPrintRestored(true);
+                fcit.setPrintChanges(true);
 //                fcit.setVerbose(true);
                 fcit.setDepth(7);
                 fcit.setCompleteRuleSetUsed(true);
