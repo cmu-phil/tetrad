@@ -331,24 +331,8 @@ public final class Fcit implements IGraphSearch {
         // effective, so we need to supplement this with FCI-style discriminating path checking in case a sepset
         // is not found. This is to accommodate "Puzzle #2."
 
-//        checkNoUnorientedDiscriminatingPaths();
-
-//        checkUnconditionalIndependence();
-        Graph _pag;
-
-        do {
-            _pag = new EdgeListGraph(state.getPag());
-            removeEdgesRecursively();
-//            break;
-        } while (!_pag.equals(state.getPag()));
-
-        refreshGraph("After recursive");
-
-        List<Edge> removed = new ArrayList<>();
-
-        removeEdgesSubsetsOfAdjacents(removed);
-
-//        refreshGraph(false, "After Subset of Adjacencts: " + removed);
+        removeEdgesRecursively();
+        removeEdgesSubsetsOfAdjacents();
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -364,7 +348,7 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(state.getPag(), nodes);
     }
 
-    private void removeEdgesSubsetsOfAdjacents(List<Edge> removed) throws InterruptedException {
+    private void removeEdgesSubsetsOfAdjacents() throws InterruptedException {
         EDGE:
         for (Edge edge : state.getPag().getEdges()) {
             Node x = edge.getNode1();
@@ -382,7 +366,6 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> cond = GraphUtils.asSet(choice1, adjx);
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
-                    removed.add(edge);
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
@@ -398,11 +381,9 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> cond = GraphUtils.asSet(choice2, adjy);
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
-                    removed.add(edge);
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
-                    TetradLogger.getInstance().log("Removed edge " + edge);
                     refreshGraph(x + " _||_ " + y + " | " + cond);
                     continue EDGE;
                 }
