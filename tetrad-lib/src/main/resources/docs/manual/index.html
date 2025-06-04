@@ -2454,9 +2454,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h3 id="sim-causal-perceptron">Causal-Perceptron Network (DJI)</h3>
     <p>
         Experimental simulator for deep causal generative networks
-        (Dji internal research).  <em>Currently marked “beta”.</em>
+        (Dji internal research). <em>Currently marked “beta”.</em>
     </p>
-
 
 
     <h3>The Simulation Box with a Graph Input</h3>
@@ -2511,8 +2510,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </li>
         <li>A knowledge box</li>
     </ul>
-
-
 
 
     <h2>Possible Child Boxes of the Simulation Box</h2>
@@ -2745,7 +2742,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Description</h4>
 
-    <div id="pcmax">
+    <div id="pc-max">
 
         <p>Similar in spirit to CPC but orients all unshielded triples
             using maximum likelihood conditioning sets. The idea is as follows.
@@ -3057,16 +3054,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
 
-    <h3>The FGES-FCI Algorithm</h3>
+    <h3>The GFCI Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="fges.fci">
+    <div id="gfci">
 
-        <p>FGES-FCI is a combination of the FGES [FGES, 2016] algorithm
+        <p>GFCI is a combination of the FGES [FGES, 2016] algorithm
             and the FCI algorithm [Spirtes, 1993] that improves upon the accuracy
             and efficiency of FCI. In order to understand the basic methodology
-            of FGES-FCI, it is necessary to understand some basic facts about the
+            of FCI, it is necessary to understand some basic facts about the
             FGES and FCI algorithms. The FGES algorithm is used to improve the
             accuracy of both the adjacency phase and the orientation phase of FCI
             by providing a more accurate initial graph that contains a subset of
@@ -3100,6 +3097,85 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
         FGES (see FGES, 2016).</p>
+
+
+    <h3>The BOSS-DOT Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="boss-dot">
+
+        <p>BOSS-DOT is a heuristic latent variable algorithm the calculates a DAG (directed
+            acyclic graph) using the BOSS algorithm (see) and the simply reports the PAG
+            (partial ancestral graph) that this DAG belongs to. It is a quite accurate
+            algorithm, but it is not correct. BOSS-DOT serves as the initial PAG estimate
+            for the FCIT (FCI-Targeted-testing) algorithm (see), which does the extra work
+            to turn the BOSS-DOT PAG estimate into a correct PAG. Note that the BOSS-DOT
+            algorithm, since it does not do extra work to turn the graph into a correct PAG,
+            cannot orient bidirected edges.</p>
+
+        <p>Note: If one wants to analyze time series data using this algorithm,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+    </div>
+
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
+        GRaSP.</p>
+
+
+    <h3>The FCIT Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="FCIT">
+        <p> FCIT with the BOSS-DOT (see) output (i.e., runs BOSS, estimates a DAG, then reports the PAG that this
+            DAG belongs to), then does extra work to turn this PAG into a correct PAG for the latent variable
+            case. This work consists in using a recursive path blocking algorithm to find certain sepsets
+            consistent with the full orientations of interim PAGs. The recursive blocking algorithm is not completely
+            effective at finding all necessary sepsets, so the algorithm is optionally finished with the
+            adjacency sepset finding method from FCI, which renders the algorithm correct under the Markov and
+            Faithfulness assumption (i.e., using an Oracle method to calculate m-separation facts). This final
+            use of the adjacency sepset method, while allowing the algorithm to be correct in Oracle mode, can
+            reduce accuracy of the algorithm, which is optimized using the recursive blocking edge removal step, so
+            a parameter is included to allower the to turn the final adjacency sepset section of the algorithm off.</p>
+
+        <p> After each edge removal after the initial BOSS-DOT PAG estimate, the edge-reduced PAG is re-oriented
+            so that it is a legal PAG. The implication is that the final graph returned by the algorithm is always
+            a legal PAG, so a final legal PAG pipeline need not be applied and is not made available for this
+            algorithm.</p>
+
+        </p>
+
+        <p>Note: If one wants to analyze time series data using this algorithm, one may set the time lag parameter to a
+            value greater than 0, which will automatically apply the time lag transform. The same goes for any algorithm
+            that has this parameter available in the interface.</p>
+    </div>
+
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
+        GRaSP.</p>
 
 
     <h3>The GRaSP-FCI Algorithm</h3>
@@ -3509,35 +3585,36 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h3 id="legacy">Legacy Components</h3>
     <ul>
         <li><b>MGM (mixed graphical model)</b> – moved to <code>legacy/</code>;
-            still invocable via <code>-search mgm</code> but no longer maintained.</li>
+            still invocable via <code>-search mgm</code> but no longer maintained.
+        </li>
     </ul>
 
-<!--    <h3>The MGM Algorithm</h3>-->
+    <!--    <h3>The MGM Algorithm</h3>-->
 
-<!--    <h4>Description</h4>-->
+    <!--    <h4>Description</h4>-->
 
-<!--    <div id="mgm">-->
+    <!--    <div id="mgm">-->
 
-<!--        <p>Need reference. Finds a Markov random field (with parents-->
-<!--            married) for a dataset in which continuous and discrete variables are-->
-<!--            mixed together. For example, if X->Y<-Z, the output will be X—Y—Z-->
-<!--            with X—Z. The parents of Y will be joined by an undirected edge,-->
-<!--            morally, even though this edge does not occur in the true model.</p>-->
+    <!--        <p>Need reference. Finds a Markov random field (with parents-->
+    <!--            married) for a dataset in which continuous and discrete variables are-->
+    <!--            mixed together. For example, if X->Y<-Z, the output will be X—Y—Z-->
+    <!--            with X—Z. The parents of Y will be joined by an undirected edge,-->
+    <!--            morally, even though this edge does not occur in the true model.</p>-->
 
-<!--    </div>-->
+    <!--    </div>-->
 
-<!--    <h4>Input Assumptions</h4>-->
+    <!--    <h4>Input Assumptions</h4>-->
 
-<!--    <p>Data are mixed.</p>-->
+    <!--    <p>Data are mixed.</p>-->
 
-<!--    <h4>Output Format</h4>-->
+    <!--    <h4>Output Format</h4>-->
 
-<!--    <p>A Markov random field for the data.</p>-->
+    <!--    <p>A Markov random field for the data.</p>-->
 
-<!--    <h4>Parameters</h4>-->
+    <!--    <h4>Parameters</h4>-->
 
-<!--    <p><a href="#mgmParam1">mgmParam1</a>, <a-->
-<!--            href="#mgmParam2">mgmParam2</a>, <a href="#mgmParam3">mgmParam3</a></p>-->
+    <!--    <p><a href="#mgmParam1">mgmParam1</a>, <a-->
+    <!--            href="#mgmParam2">mgmParam2</a>, <a href="#mgmParam3">mgmParam3</a></p>-->
 
     <h3>The SP Algorithm</h3>
 
@@ -4151,6 +4228,87 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     </div>
 
 
+    <h3>The DM-PC Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="dm-pc">
+        <p>Implements the DM-PC (Detect MIMIC PC) algorithm, which searches for intermediate
+            latents using principles similar to PC.</p>
+    </div>
+
+
+    <h3>The DM-FCIT Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="dm-fcit">
+        <p>Implements the DM-FCIT (Detect MIMIC FCIT) algorithm, which searches for intermediate
+            latents using the FCIT algorithm (which uses both scoring and testing) in place of
+            the PC-style principles of DM-PC.</p>
+    </div>
+
+
+    <h3>The FASK-Vote Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="fask-vote"><p>FASK-Vote is a metascript that learns a
+        model from a list of datasets in a method similar to IMaGES (see). For
+        adjacencies, it uses FAS-Stable with the voting-based score from IMaGES
+        used as a test (using all the datasets, standardized), producing a
+        single undirected graph G. It then orients each edge X--Y in G for each
+        dataset using the FASK (see) left-right rule and orient X->Y if that rule
+        orients X--Y as such in at least half of the datasets. The final graph is
+        returned. </p>
+
+        <p>For FASK, See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour
+            MR, Huang B, Glymour C. Causal discovery of feedback networks with
+            functional magnetic resonance imaging. Network Neuroscience 2018.</p>
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as FASK.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as FASK.</p>
+
+    <h3>Orientation Algorithms (R3, RSkew, Skew)</h3>
+
+    <h4>Description</h4>
+
+    <div id="r3">
+
+        <p>This is an algorithm that orients an edge X--Y for continuous
+            variables based on non-Gaussian information. This rule in particular
+            uses an entropy calculation to make the orientation. Note that if the
+            variables X and Y are both Gaussian, and the model is linear, it is
+            not possible to orient the edge X--Y pairwise; any attempt to do so
+            would result in random orientation. But if X and Y are non-Gaussian,
+            the orientation is fairly easy. This rule is similar to Hyvarinen and
+            Smith's (2013) EB rule, but using Anderson Darling for the measure of
+            non-Gaussianity, to somewhat better effect. See Ramsey et al. (2012).
+        </p></div>
+
+
+    <div id="skew">
+
+        <p>This is an algorithm that orients an edge X--Y for continuous
+            variables based on non-Gaussian information. This rule in particular
+            uses a skewness to make the orientation. Note that if the variables X
+            and Y are both Gaussian, and the model is linear, it is not possible
+            to orient the edge X--Y pairwise; any attempt to do so would result
+            in random orientation. But if X and Y are non-Gaussian, in particular
+            in this case, if X and Y are skewed, the orientation is relatively
+            straightforward. See Hyvarinen and Smith (2013) for details. </p>
+
+        <p>The Skew rule is differently motivated from the RSkew rule
+            (see), though they both appeal to the skewness of the variables.</p>
+
+    </div>
+
     <h4>Input Assumptions</h4>
 
     <p>Continuous data in which the variables are non-Gaussian.
@@ -4264,19 +4422,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Input Assumptions</h4>
 
-    <p>Same as for PC.</p>
-
-    <h3 id="search-dm-fcit">Dm / DmFcit Latent-Discovery</h3>
-    <p>
-        <b>Dm</b> (Deterministic-Maximisation) and
-        <b>DmFcit</b> extend FGES to identify intermediate latent
-        variables that act as deterministic “multipliers” of observed parents.
-    <ul>
-        <li><b>CLI:</b> <code>-search dm</code> or <code>-search dmfcit</code></li>
-        <li>Outputs a PAG with latent nodes <em>L<sub>∗</sub></em> in grey.</li>
-    </ul>
-    </p>
-
 
     <h2>Statistical Tests</h2>
 
@@ -4328,6 +4473,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         distributed as Gaussian, this reduces to BIC = -n log sigma - ck ln N,
         where sigma is the standard deviation of the linear residual obtained by
         regressing a child variable onto all of its parents in the model. </p>
+    </div>
+
+    <h3>Poisson Prior Test</h3>
+
+    <div id="poisson-prior-test"><p> This uses the Poisson Prior Score to create a test
+        for the linear, Gaussian case. See Poisson Prior Score for parameters.</p>
     </div>
 
     <h3>Mixed Variable Polynomial Likelihood Ratio Test</h3>

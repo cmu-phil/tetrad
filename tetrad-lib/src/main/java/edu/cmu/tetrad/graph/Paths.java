@@ -2398,52 +2398,96 @@ public class Paths implements TetradSerializable {
     /**
      * A helper method for the defVisible method, using BFS.
      *
-     * @param from the starting node of the path
-     * @param to   the target node of the path
-     * @param into the nodes that colliders along the path must all be parents of
-     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
+     * @param C the starting node of the path
+     * @param A   the target node of the path
+     * @param B the nodes that colliders along the path must all be parents of
+     * @return true if a collider path exists C 'C' A 'A' that is B 'B'
      */
-    private boolean existsColliderPathInto(Node from, Node to, Node into) {
-        Set<Node> visited = new HashSet<>();
-        Queue<List<Node>> queue = new LinkedList<>(); // Queue to store paths as lists
+    /**
+     * True iff there exists a path C = v0 … vk = A such that
+     *   (i)  for every i∈{1,…,k−1}, vi is a definite collider on (vi−1,vi,vi+1);
+     *   (ii) for every i∈{0,…,k},   vi → B   (i.e., vi is a parent of B);
+     *   (iii) vk−1 *-> A (arrowhead at A).
+     */
+    public boolean existsColliderPathInto(Node C, Node A, Node B) {
+        // C itself must already be a parent of B, otherwise no path can qualify.
+        if (!graph.isParentOf(C, B)) return false;
 
-        // Initialize the queue with the starting node
-        List<Node> initialPath = new ArrayList<>();
-        initialPath.add(from);
-        queue.add(initialPath);
+        return dfsColliderPath(/*prev*/ null, /*cur*/ C, A, B, new HashSet<>());
+    }
 
-        while (!queue.isEmpty()) {
-            List<Node> currentPath = queue.poll();
-            Node current = currentPath.get(currentPath.size() - 1);
+    private boolean dfsColliderPath(Node prev,
+                                    Node cur,
+                                    Node targetA,
+                                    Node B,
+                                    Set<Node> path) {
 
-            if (current.equals(to)) {
-                // Check if the path ends in an arrow pointing to 'to'
-                if (currentPath.size() > 1 &&
-                    graph.getEndpoint(currentPath.get(currentPath.size() - 2), to) == Endpoint.ARROW) {
-                    return true;
-                }
-            }
+        // every node on the path must be a parent of B
+        if (!graph.isParentOf(cur, B)) return false;
 
-            if (!visited.contains(current)) {
-                visited.add(current);
+        // reached A: last edge must have an arrowhead at A
+        if (cur.equals(targetA)) {
+            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
+        }
 
-                for (Node next : graph.getAdjacentNodes(current)) {
-                    Node previous = currentPath.size() > 1 ? currentPath.get(currentPath.size() - 2) : null;
+        path.add(cur);               // mark cur for this branch
 
-                    if (!visited.contains(next) &&
-                        (previous == null || (graph.isDefCollider(previous, current, next)
-                                              && graph.isParentOf(current, into)))) {
-                        // Create a new path extending the current path
-                        List<Node> newPath = new ArrayList<>(currentPath);
-                        newPath.add(next);
-                        queue.add(newPath);
-                    }
-                }
+        for (Node nxt : graph.getAdjacentNodes(cur)) {
+            if (path.contains(nxt)) continue;          // avoid cycles
+
+            // first step out of C has no collider constraint (prev == null)
+            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
+                if (dfsColliderPath(cur, nxt, targetA, B, path)) return true;
             }
         }
 
+        path.remove(cur);            // back-track for other branches
         return false;
     }
+
+
+
+//    private boolean existsColliderPathInto(Node C, Node A, Node B) {
+//        Set<Node> visited = new HashSet<>();
+//        Queue<List<Node>> queue = new LinkedList<>(); // Queue A store paths as lists
+//
+//        // Initialize the queue with the starting node
+//        List<Node> initialPath = new ArrayList<>();
+//        initialPath.add(C);
+//        queue.add(initialPath);
+//
+//        while (!queue.isEmpty()) {
+//            List<Node> currentPath = queue.poll();
+//            Node current = currentPath.get(currentPath.size() - 1);
+//
+//            if (current.equals(A)) {
+//                // Check if the path ends in an arrow pointing A 'A'
+//                if (currentPath.size() > 1 &&
+//                    graph.getEndpoint(currentPath.get(currentPath.size() - 2), A) == Endpoint.ARROW) {
+//                    return true;
+//                }
+//            }
+//
+//            if (!visited.contains(current)) {
+//                visited.add(current);
+//
+//                for (Node next : graph.getAdjacentNodes(current)) {
+//                    Node previous = currentPath.size() > 1 ? currentPath.get(currentPath.size() - 2) : null;
+//
+//                    if (!visited.contains(next) &&
+//                        (previous == null || (graph.isDefCollider(previous, current, next)
+//                                              && graph.isParentOf(current, B)))) {
+//                        // Create a new path extending the current path
+//                        List<Node> newPath = new ArrayList<>(currentPath);
+//                        newPath.add(next);
+//                        queue.add(newPath);
+//                    }
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
 
     /**
      * <p>existsDirectedCycle.</p>

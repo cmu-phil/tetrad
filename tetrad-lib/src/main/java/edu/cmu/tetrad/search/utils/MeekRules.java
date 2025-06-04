@@ -366,15 +366,15 @@ public class MeekRules {
                 });
             }
 
-            graph.addEdge(before);
-            return false;
+//            graph.addEdge(before);
+//            return false;
 
-//            graph.addEdge(Edges.directedEdge(c, a));
-//
-//            visited.add(a);
-//            visited.add(c);
-//
-//            return true;
+            graph.addEdge(Edges.directedEdge(c, a));
+
+            visited.add(a);
+            visited.add(c);
+
+            return true;
         }
 
         Edge after = Edges.directedEdge(a, c);

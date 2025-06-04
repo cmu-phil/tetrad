@@ -32,13 +32,13 @@ import static edu.cmu.tetrad.util.Params.*;
  * This is the code before cleaning it up on 2024-5-16.
  */
 @Bootstrapping
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FASK-Orig",
-        command = "fask-orig",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
-)
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FASK-Orig",
+//        command = "fask-orig",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.Continuous
+//)
+//@Experimental
 public class FaskOrig extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
     @Serial
     private static final long serialVersionUID = 23L;

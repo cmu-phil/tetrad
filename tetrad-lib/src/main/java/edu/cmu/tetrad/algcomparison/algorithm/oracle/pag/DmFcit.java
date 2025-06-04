@@ -45,7 +45,7 @@ import java.util.*;
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "DM-FCIT",
-        command = "dm-FCIT",
+        command = "dm-fcit",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
