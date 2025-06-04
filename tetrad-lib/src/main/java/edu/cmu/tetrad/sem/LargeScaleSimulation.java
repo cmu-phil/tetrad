@@ -566,8 +566,8 @@ public final class LargeScaleSimulation {
                         }
                     }
 
-                    for (int j = 0; j < similar.get(0).size(); j++) {
-                        int _xx = this.variableNodes.indexOf(similar.get(0).get(j));
+                    for (int j = 0; j < similar.getFirst().size(); j++) {
+                        int _xx = this.variableNodes.indexOf(similar.getFirst().get(j));
                         int _yy = this.variableNodes.indexOf(similar.get(1).get(j));
 
                         for (int i = 0; i < this.parents[_yy].length; i++) {
@@ -910,7 +910,7 @@ public final class LargeScaleSimulation {
                     v = 1 - v;
                 }
 
-                shocks[i][j] = v + RandomUtil.getInstance().nextNormal(0, 0.1);
+                shocks[i][j] = v + RandomUtil.getInstance().nextGaussian(0, 0.1);
             }
         }
 

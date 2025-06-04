@@ -50,9 +50,8 @@ public class CciTest implements IndependenceWrapper {
                 parameters.getDouble(Params.ALPHA),
                 parameters.getDouble(Params.SCALING_FACTOR),
                 parameters.getInt(Params.BASIS_TYPE),
-                parameters.getInt(Params.NUM_BASIS_FUNCTIONS),
-                parameters.getDouble(Params.BASIS_SCALE)
-        );
+                parameters.getDouble(Params.BASIS_SCALE),
+                parameters.getInt(Params.TRUNCATION_LIMIT));
     }
 
     /**
@@ -80,7 +79,7 @@ public class CciTest implements IndependenceWrapper {
         params.add(Params.ALPHA);
         params.add(Params.SCALING_FACTOR);
         params.add(Params.BASIS_TYPE);
-        params.add(Params.NUM_BASIS_FUNCTIONS);
+        params.add(Params.TRUNCATION_LIMIT);
         params.add(Params.BASIS_SCALE);
         return params;
     }

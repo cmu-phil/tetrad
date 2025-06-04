@@ -184,8 +184,8 @@ public class RegressionCovariance implements Regression {
                 }
             }
 
-            Matrix rX = allCorrelations.getSelection(xIndices, xIndices);
-            Matrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
+            Matrix rX = allCorrelations.view(xIndices, xIndices).mat();
+            Matrix rY = allCorrelations.view(xIndices, new int[]{yIndex}).mat();
 
             Matrix bStar = rX.inverse().times(rY);
 
@@ -216,7 +216,7 @@ public class RegressionCovariance implements Regression {
                 allIndices[i] = variables.indexOf(regressors.get(i - 1));
             }
 
-            Matrix r = allCorrelations.getSelection(allIndices, allIndices);
+            Matrix r = allCorrelations.view(allIndices, allIndices).mat();
             Matrix rInv = r.inverse();
 
             int n = this.correlations.getSampleSize();

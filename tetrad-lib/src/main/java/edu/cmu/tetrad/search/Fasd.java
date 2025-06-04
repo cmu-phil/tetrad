@@ -282,6 +282,16 @@ public class Fasd implements IFas {
         this.out = out;
     }
 
+    @Override
+    public void setStartTime(long startTime) {
+
+    }
+
+    @Override
+    public void setTimeout(long timeout) {
+
+    }
+
     /**
      * Searches for adjacencies at depth 0 in the given list of nodes using the provided independence test and
      * adjacencies map.

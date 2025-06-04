@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,12 +17,12 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.util;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
+import org.ejml.simple.SimpleMatrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -42,7 +42,7 @@ public class Vector implements TetradSerializable {
     /**
      * The data.
      */
-    private final RealVector data;
+    private final SimpleMatrix data;
 
     /**
      * Constructs a new Vector object from an array of double values.
@@ -50,7 +50,7 @@ public class Vector implements TetradSerializable {
      * @param data the array of double values used to initialize the Vector object
      */
     public Vector(double[] data) {
-        this.data = new ArrayRealVector(data);
+        this.data = new SimpleMatrix(data);
     }
 
     /**
@@ -59,6 +59,21 @@ public class Vector implements TetradSerializable {
      * @param v the RealVector object to be used for creating the Vector object
      */
     public Vector(RealVector v) {
+        this.data = new SimpleMatrix(v.toArray());
+    }
+
+    /**
+     * Constructs a new Vector object using a SimpleMatrix instance.
+     *
+     * @param v the SimpleMatrix instance used to initialize the Vector object;
+     *          it must contain exactly one column, otherwise an IllegalArgumentException is thrown
+     * @throws IllegalArgumentException if the number of columns in the provided SimpleMatrix is not equal to one
+     */
+    public Vector(SimpleMatrix v) {
+        if (v.getNumCols() != 1) {
+            throw new IllegalArgumentException("SimpleMatrix must have one column.");
+        }
+
         this.data = v;
     }
 
@@ -69,7 +84,7 @@ public class Vector implements TetradSerializable {
      * @throws IllegalArgumentException if the size is negative
      */
     public Vector(int size) {
-        this.data = new ArrayRealVector(size);
+        this.data = new SimpleMatrix(size, 1);
     }
 
     /**
@@ -82,13 +97,31 @@ public class Vector implements TetradSerializable {
     }
 
     /**
+     * Generates a diagonal matrix using the elements of the given vector. The vector's
+     * elements will populate the diagonal entries of the resulting square matrix, with
+     * all other entries set to zero.
+     *
+     * @param diag the {@code Vector} containing the diagonal elements of the matrix
+     * @return a square {@code Matrix} with the specified diagonal elements
+     */
+    public static Matrix diag(Vector diag) {
+        Matrix m = new Matrix(diag.size(), diag.size());
+
+        for (int i = 0; i < diag.size(); i++) {
+            m.set(i, i, diag.get(i));
+        }
+
+        return m;
+    }
+
+    /**
      * <p>assign.</p>
      *
      * @param value a double
      */
     public void assign(double value) {
-        for (int i = 0; i < this.data.getDimension(); i++) {
-            this.data.setEntry(i, value);
+        for (int i = 0; i < this.data.getNumRows(); i++) {
+            this.data.set(i, value);
         }
     }
 
@@ -98,8 +131,8 @@ public class Vector implements TetradSerializable {
      * @param vector a {@link edu.cmu.tetrad.util.Vector} object
      */
     public void assign(Vector vector) {
-        for (int i = 0; i < this.data.getDimension(); i++) {
-            this.data.setEntry(i, vector.get(i));
+        for (int i = 0; i < this.data.getNumRows(); i++) {
+            this.data.set(i, vector.get(i));
         }
     }
 
@@ -109,7 +142,7 @@ public class Vector implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public Vector copy() {
-        return new Vector(this.data.copy().toArray());
+        return new Vector(this.data.copy());
     }
 
     /**
@@ -118,10 +151,10 @@ public class Vector implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public Matrix diag() {
-        Matrix m = new Matrix(this.data.getDimension(), this.data.getDimension());
+        Matrix m = new Matrix(this.data.getNumRows(), this.data.getNumRows());
 
-        for (int i = 0; i < this.data.getDimension(); i++) {
-            m.set(i, i, this.data.getEntry(i));
+        for (int i = 0; i < this.data.getNumRows(); i++) {
+            m.set(i, i, this.data.get(i));
         }
 
         return m;
@@ -134,7 +167,7 @@ public class Vector implements TetradSerializable {
      * @return a double
      */
     public double dotProduct(Vector v2) {
-        return this.data.dotProduct(v2.data);
+        return this.data.dot(v2.data);
     }
 
     /**
@@ -144,7 +177,7 @@ public class Vector implements TetradSerializable {
      * @return a double
      */
     public double get(int i) {
-        return this.data.getEntry(i);
+        return this.data.get(i);
     }
 
     /**
@@ -163,7 +196,7 @@ public class Vector implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public Vector minus(Vector mb) {
-        return new Vector(this.data.subtract(mb.data).toArray());
+        return new Vector(this.data.minus(mb.data));
     }
 
     /**
@@ -173,7 +206,7 @@ public class Vector implements TetradSerializable {
      * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public Vector plus(Vector mb) {
-        return new Vector(this.data.add(mb.data).toArray());
+        return new Vector(this.data.plus(mb.data));
     }
 
     /**
@@ -198,7 +231,7 @@ public class Vector implements TetradSerializable {
      * @param v a double
      */
     public void set(int j, double v) {
-        this.data.setEntry(j, v);
+        this.data.set(j, v);
     }
 
     /**
@@ -207,7 +240,7 @@ public class Vector implements TetradSerializable {
      * @return a int
      */
     public int size() {
-        return this.data.getDimension();
+        return this.data.getNumRows();
     }
 
     /**
@@ -216,7 +249,7 @@ public class Vector implements TetradSerializable {
      * @return an array of  objects
      */
     public double[] toArray() {
-        return this.data.toArray();
+        return this.data.getColumn(0).getDDRM().data;
     }
 
     /**
@@ -225,7 +258,7 @@ public class Vector implements TetradSerializable {
      * @return a {@link java.lang.String} object
      */
     public String toString() {
-        return MatrixUtils.toString(this.data.toArray());
+        return this.data.toString();
     }
 
     /**
@@ -238,7 +271,7 @@ public class Vector implements TetradSerializable {
         double[] _selection = new double[selection.length];
 
         for (int i = 0; i < selection.length; i++) {
-            _selection[i] = this.data.getEntry(selection[i]);
+            _selection[i] = this.data.get(selection[i]);
         }
 
         return new Vector(_selection);
@@ -302,6 +335,81 @@ public class Vector implements TetradSerializable {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
                                            + ", " + e.getMessage());
             throw e;
+        }
+    }
+
+    /**
+     * Retrieves the SimpleMatrix instance associated with this Vector.
+     *
+     * @return the SimpleMatrix representing the data contained within this Vector
+     */
+    public SimpleMatrix getSimpleMatrix() {
+        return data;
+    }
+
+    /**
+     * Computes the sum of all elements in this vector.
+     *
+     * @return the sum of all elements as a double
+     */
+    public double sum() {
+        double sum = 0.0;
+
+        for (int i = 0; i < size(); i++) {
+            sum += get(i);
+        }
+
+        return sum;
+    }
+
+    /**
+     * Extracts a subvector from the current vector from specified indices.
+     *
+     * @param from the starting index (inclusive) of the range; must be non-negative and less than or equal to {@code to}
+     * @param to the ending index (exclusive) of the range; must be less than or equal to the size of the vector
+     * @return a new {@code Vector} object containing the elements from the specified range
+     * @throws IllegalArgumentException if {@code from} is negative, {@code to} exceeds the vector size, or {@code from} is greater than {@code to}
+     */
+    public Vector getPart(int from, int to) {
+        if (from < 0 || to > size() || from > to) {
+            throw new IllegalArgumentException("Invalid range: " + from + " to " + to);
+        }
+
+        double[] part = new double[to - from];
+
+        for (int i = from; i < to; i++) {
+            part[i - from] = get(i);
+        }
+
+        return new Vector(part);
+    }
+
+    /**
+     * Calculates the Euclidean norm (magnitude) of the vector. The Euclidean norm
+     * is computed as the square root of the sum of the squares of all elements in the vector.
+     *
+     * @return the Euclidean norm of the vector as a double
+     */
+    public double euclideanNorm() {
+        double sum = 0.0;
+
+        for (int i = 0; i < size(); i++) {
+            sum += get(i) * get(i);
+        }
+
+        return Math.sqrt(sum);
+    }
+
+
+    /**
+     * Updates the specified elements of a data structure with values from the given vector.
+     *
+     * @param range1 an array of indices specifying the positions in the data structure to be updated
+     * @param from a Vector containing the values to be added to the elements at the specified indices
+     */
+    public void assignPart(int[] range1, Vector from) {
+        for (int j = 0; j < range1.length; j++) {
+            data.set(range1[j], 0, from.get(j) + data.get(range1[j], 0));
         }
     }
 }

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -46,7 +47,7 @@ public class NumLatentCommonAncestorBidirected implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
         int fp = 0;
 

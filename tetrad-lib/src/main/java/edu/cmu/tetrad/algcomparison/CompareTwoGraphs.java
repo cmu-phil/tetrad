@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TextTable;
 import org.jetbrains.annotations.NotNull;
 
@@ -99,8 +100,8 @@ public class CompareTwoGraphs {
         }
 
         builder.append("""
-
-
+                
+                
                 Two-cycles in true correctly adjacent in estimated:""");
 
         sort(allSingleEdges);
@@ -158,8 +159,8 @@ public class CompareTwoGraphs {
 
         {
             builder.append("""
-
-
+                    
+                    
                     Edges incompatibly (incorrectly) oriented:""");
 
             if (incorrect.isEmpty()) {
@@ -179,8 +180,8 @@ public class CompareTwoGraphs {
 
         {
             builder.append("""
-
-
+                    
+                    
                     Edges compatibly oriented (but different):""");
 
             if (compatible.isEmpty()) {
@@ -200,8 +201,8 @@ public class CompareTwoGraphs {
 
         {
             builder.append("""
-
-
+                    
+                    
                     Edges correctly oriented:""");
 
             List<Edge> correct = new ArrayList<>();
@@ -252,6 +253,9 @@ public class CompareTwoGraphs {
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
 
+//        System.out.println("_target graph =  " + _targetGraph);
+//        System.out.println("target graph = " + targetGraph);
+
         List<Statistic> statistics = statistics();
 
         TextTable table = new TextTable(statistics.size() + 1, 3);
@@ -263,7 +267,7 @@ public class CompareTwoGraphs {
 
         for (Statistic statistic : statistics) {
             try {
-                values.add(statistic.getValue(trueGraph, _targetGraph, dataModel));
+                values.add(statistic.getValue(trueGraph, _targetGraph, dataModel, new Parameters()));
                 abbr.add(statistic.getAbbreviation());
                 desc.add(statistic.getDescription());
             } catch (Exception ignored) {

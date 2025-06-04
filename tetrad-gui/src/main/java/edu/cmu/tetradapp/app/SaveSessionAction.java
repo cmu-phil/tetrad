@@ -128,4 +128,21 @@ public final class SaveSessionAction extends AbstractAction {
 
         new MyWatchedProceess();
     }
+
+    /**
+     * Finds the next available filename in the format "untitled1.tet", "untitled2.tet", etc.
+     *
+     * @param directory the directory to search in
+     * @param baseName  the base filename (e.g., "untitled")
+     * @return the next available Path object
+     */
+    private Path getNextUntitledFileName(Path directory, String baseName) {
+        int counter = 1;
+        Path newFileName;
+        do {
+            newFileName = directory.resolve(baseName + counter + ".tet");
+            counter++;
+        } while (Files.exists(newFileName));
+        return newFileName;
+    }
 }

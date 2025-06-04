@@ -87,7 +87,7 @@ public class ApplyMeekRules extends AbstractAction implements ClipboardOwner {
 
         graph = new EdgeListGraph(graph);
         MeekRules meekRules = new MeekRules();
-        meekRules.setMeekPreventCycles(true);
+        meekRules.setMeekPreventCycles(false);
         meekRules.setRevertToUnshieldedColliders(false);
         meekRules.setVerbose(false);
         meekRules.orientImplied(graph);

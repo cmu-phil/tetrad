@@ -21,9 +21,11 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
-import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleEVD;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.Arrays;
 
@@ -50,10 +52,9 @@ public class EstimateRank {
      * @return an array of  objects
      */
     public static double[] CanCor(double[][] A, double[][] B) {
-        RealMatrix Ua = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(A)).getU();
-        RealMatrix UTa = Ua.transpose();
-        RealMatrix Ub = new SingularValueDecomposition(org.apache.commons.math3.linear.MatrixUtils.createRealMatrix(B)).getU();
-        return new SingularValueDecomposition(UTa.multiply(Ub)).getSingularValues();
+        SimpleMatrix Ua = new SimpleMatrix(A).svd().getU();
+        SimpleMatrix Ub = new SimpleMatrix(B).svd().getU();
+        return Arrays.stream(Ua.transpose().mult(Ub).svd().getSingularValues()).toArray();
     }
 
     /**
@@ -65,12 +66,22 @@ public class EstimateRank {
      * @return an array of  objects
      */
     public static double[] CanCor(int[] iA, int[] iB, double[][] cov) {
-        RealMatrix covA = MatrixUtils.createRealMatrix(cov).getSubMatrix(iA, iA);
-        RealMatrix covB = MatrixUtils.createRealMatrix(cov).getSubMatrix(iB, iB);
-        RealMatrix covAB = MatrixUtils.createRealMatrix(cov).getSubMatrix(iA, iB);
-        RealMatrix covBA = MatrixUtils.createRealMatrix(cov).getSubMatrix(iB, iA);
-        RealMatrix S = getInverse(covA).multiply(covAB).multiply(getInverse(covB)).multiply(covBA);
-        double[] rtCors = new EigenDecomposition(S).getRealEigenvalues();
+        Matrix _cov = new Matrix(cov);
+
+        Matrix covA = _cov.view(iA, iA).mat();
+        Matrix covB = _cov.view(iB, iB).mat();
+        Matrix covAB = _cov.view(iA, iB).mat();
+        Matrix covBA = _cov.view(iB, iA).mat();
+
+        // TODO check the parens at the end of this.
+        Matrix S = covA.inverse().times(covAB).times(covB.inverse().times(covBA));
+        SimpleEVD<SimpleMatrix> eig = S.getDataCopy().eig();
+
+        double[] rtCors = new double[eig.getNumberOfEigenvalues()];
+        for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
+            rtCors[i] = eig.getEigenvalue(i).getReal();
+        }
+
         Arrays.sort(rtCors);
         double[] Cors = new double[rtCors.length];
         for (int i = rtCors.length; i > 0; i--) {
@@ -140,9 +151,5 @@ public class EstimateRank {
         }
 
         return rank;
-    }
-
-    private static RealMatrix getInverse(RealMatrix covA) {
-        return new LUDecomposition(covA).getSolver().getInverse();
     }
 }

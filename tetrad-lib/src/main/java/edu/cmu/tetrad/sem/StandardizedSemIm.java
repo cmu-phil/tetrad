@@ -654,7 +654,7 @@ public class StandardizedSemIm implements Simulator {
             Vector e = new Vector(edgeCoef().getNumColumns());
 
             for (int i = 0; i < e.size(); i++) {
-                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar(errorVariances(), false).get(i, i))));
+                e.set(i, RandomUtil.getInstance().nextGaussian(0, sqrt(errCovar(errorVariances(), false).get(i, i))));
             }
 
             // Step 3. Calculate the new rows in the data.

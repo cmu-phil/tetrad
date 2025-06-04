@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
@@ -114,7 +115,7 @@ public class LogisticRegression implements TetradSerializable {
         double[][] _regressors = new double[regressors.size()][getRows().length];
 
         for (int j = 0; j < regressors.size(); j++) {
-            int col = this.dataSet.getColumn(regressors.get(j));
+            int col = this.dataSet.getColumnIndex(regressors.get(j));
             double[] dataCol = this.dataCols[col];
 
             for (int i = 0; i < getRows().length; i++) {
@@ -123,7 +124,7 @@ public class LogisticRegression implements TetradSerializable {
         }
 
         int[] target = new int[getRows().length];
-        int col = this.dataSet.getColumn(this.dataSet.getVariable(x.getName()));
+        int col = this.dataSet.getColumnIndex(this.dataSet.getVariable(x.getName()));
 
         for (int i = 0; i < getRows().length; i++) {
             target[i] = this.dataSet.getInt(getRows()[i], col);
@@ -356,7 +357,7 @@ public class LogisticRegression implements TetradSerializable {
             return (1.0 - 1.0 / q + 3.0 / (q * q)) * FastMath.exp(-q / 2.0) /
                    (FastMath.abs(z) * FastMath.sqrt(piOver2));
         } else {
-            return new ChiSquaredDistribution(1).cumulativeProbability(q);
+            return StatUtils.getChiSquareP(1, q);
         }
 
     }

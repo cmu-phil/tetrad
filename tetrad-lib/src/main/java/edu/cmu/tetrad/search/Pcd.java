@@ -215,6 +215,7 @@ public class Pcd implements IGraphSearch {
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      *
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         return search(this.independenceTest.getVariables());
@@ -231,6 +232,7 @@ public class Pcd implements IGraphSearch {
      *
      * @param nodes a {@link java.util.List} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws InterruptedException if any
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);
@@ -250,8 +252,9 @@ public class Pcd implements IGraphSearch {
      * @throws NullPointerException     If fas is null or if the independence test is null.
      * @throws IllegalArgumentException If any of the given nodes is not in the domain of the independence test
      *                                  provided.
+     * @throws InterruptedException if any
      */
-    public Graph search(IFas fas, List<Node> nodes) throws InterruptedException {
+    public Graph search(Fas fas, List<Node> nodes) throws InterruptedException {
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting PC algorithm");

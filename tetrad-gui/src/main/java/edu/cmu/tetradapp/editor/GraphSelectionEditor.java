@@ -392,7 +392,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                     List<Integer> center = layoutGraph.get(node.getName());
 
                     if (center != null) {
-                        node.setCenter(center.get(0), center.get(1));
+                        node.setCenter(center.getFirst(), center.get(1));
                     }
                 }
             }
@@ -526,7 +526,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             List<Integer> center = layoutGraph.get(node.getName());
 
             if (center != null) {
-                node.setCenter(center.get(0), center.get(1));
+                node.setCenter(center.getFirst(), center.get(1));
             }
         }
 
@@ -568,7 +568,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 List<Integer> center = layoutGraph.get(node.getName());
 
                 if (center != null) {
-                    node.setCenter(center.get(0), center.get(1));
+                    node.setCenter(center.getFirst(), center.get(1));
                 }
             }
         }

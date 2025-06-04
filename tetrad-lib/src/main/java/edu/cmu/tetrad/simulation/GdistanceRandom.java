@@ -61,9 +61,9 @@ public class GdistanceRandom {
         //make 2 random dags over the vars in locationMap
         int numVars = GdistanceRandom.locationMap.getNumColumns();
         if (this.verbose) System.out.println("generating pair of random dags");
-        Graph dag1 = RandomGraph.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges1, numVars, numVars, numVars, false, false);
+        Graph dag1 = RandomGraph.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges1, numVars, numVars, numVars, false, false, -1);
         if (this.verbose) System.out.println(dag1);
-        Graph dag2 = RandomGraph.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges2, numVars, numVars, numVars, false, false);
+        Graph dag2 = RandomGraph.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges2, numVars, numVars, numVars, false, false, -1);
 
         //convert those dags to CPDAGs
         if (this.verbose) System.out.println("converting dags to CPDAGs");

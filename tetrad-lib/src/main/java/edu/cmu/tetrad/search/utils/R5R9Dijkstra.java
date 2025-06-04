@@ -38,21 +38,25 @@ public class R5R9Dijkstra {
     }
 
     /**
-     * Finds shortest distances from a x node to all other nodes in a graph, subject to the following constraints. (1)
-     * Length 1 paths are not considered. (2) Length 2 paths are not considered. (3) Covered triples are not considered.
-     * (4) The y node is used to stop the algorithm once that node has been visited. (5) The graph is assumed to be
-     * undirected.
+     * Finds shortest distances from a x node to all other nodes in a dijkstraGraph, subject to the following
+     * constraints. (1) Length 1 paths are not considered. (2) Length 2 paths are not considered. (3) Covered triples
+     * are not considered. (4) The y node is used to stop the algorithm once that node has been visited. (5) The
+     * dijkstraGraph is assumed to be undirected.
      * <p>
      * Nodes that are not reached by the algorithm are reported as being at a distance of Integer.MAX_VALUE.
      *
-     * @param graph The graph to search; should include only the relevant edge in the graph.
-     * @param x     The starting node.
-     * @param y     The ending node. The algorithm will stop when this node is reached.
-     * @return A map of distances from the start node to each node in the graph, and a map of predecessors for each
-     * node.
+     * @param dijkstraGraph The dijkstraGraph to search; should include only the relevant edge in the dijkstraGraph.
+     * @param uncovered     Whether the path should be uncovered.
+     * @param x             The starting node.
+     * @param y             The ending node. The algorithm will stop when this node is reached.
+     * @param r9            True if R9, false if R5. This adds check for nonadjacency of gamma and beta for R9. For R5
+     *                      it adds checks for non-adjacency for bamma and beta and for alpha and theta.
+     * @return A map of distances from the start node to each node in the dijkstraGraph, and a map of predecessors for
+     * each node.
      */
-    public static Pair<Map<Node, Integer>, Map<Node, Node>> distances(Graph graph, Node x, Node y) {
-        if (graph == null) {
+    public static Pair<Map<Node, Integer>, Map<Node, Node>> distances(Graph dijkstraGraph,
+                                                                      boolean uncovered, Node x, Node y, boolean r9) {
+        if (dijkstraGraph == null) {
             throw new IllegalArgumentException("Graph cannot be null.");
         }
 
@@ -67,7 +71,7 @@ public class R5R9Dijkstra {
         Set<Node> visited = new HashSet<>();
 
         // Initialize distances
-        for (Node node : graph.getNodes()) {
+        for (Node node : dijkstraGraph.getNodes()) {
             distances.put(node, Integer.MAX_VALUE);
             predecessors.put(node, null);
         }
@@ -83,8 +87,23 @@ public class R5R9Dijkstra {
                 continue;
             }
 
-            for (DijkstraEdge dijkstraEdge : graph.getNeighbors(currentVertex)) {
+            for (DijkstraEdge dijkstraEdge : dijkstraGraph.getNeighbors(currentVertex)) {
                 Node predecessor = predecessors.get(currentVertex);
+
+                // For both R5 and R9 we need to check ~adj(beta, gamma) where gamma = y and beta is the second
+                // node on the path.
+                if (currentVertex == x  && x != y) {
+                    Node beta = dijkstraEdge.getToNode();
+                    if (adjacent(dijkstraGraph, beta, y)) continue;
+                }
+
+                // For R5 we need to additionally check ~adj(alpha, theta), where theta = second to last node and
+                // alpha = x.
+                if (!r9) {
+                    if (dijkstraEdge.getToNode() == y && x != y) {{
+                        if (adjacent(dijkstraGraph, currentVertex, x)) continue;
+                    }}
+                }
 
                 // Skip length-1 paths.
                 if (dijkstraEdge.getToNode() == y && currentVertex == x) {
@@ -105,7 +124,7 @@ public class R5R9Dijkstra {
                 }
 
                 // Skip covered triples.
-                if (adjacent(graph, dijkstraEdge.getToNode(), predecessor)) {
+                if (uncovered && adjacent(dijkstraGraph, dijkstraEdge.getToNode(), predecessor)) {
                     continue;
                 }
 
@@ -185,7 +204,7 @@ public class R5R9Dijkstra {
 
         Graph _graph = new Graph(graph, R5R9Dijkstra.Rule.R5);
 
-        Map<Node, Integer> distances = R5R9Dijkstra.distances(_graph, index.get("1"), index.get("3")).getLeft();
+        Map<Node, Integer> distances = R5R9Dijkstra.distances(_graph, uncovered, index.get("1"), index.get("3"), false).getLeft();
 
         for (Map.Entry<Node, Integer> entry : distances.entrySet()) {
             System.out.println("Distance from 1 to " + entry.getKey() + " is " + entry.getValue());

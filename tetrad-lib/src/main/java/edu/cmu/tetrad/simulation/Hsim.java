@@ -152,7 +152,7 @@ public class Hsim {
                     int nodeIndex = evidence.getNodeIndex(i.getName());
                     //how do i get the category index from a value in the data?
                     //int catIndex =
-                    int nodeColumn = this.data.getColumn(i);
+                    int nodeColumn = this.data.getColumnIndex(i);
                     //Pray to whoever you can think of that the CategoryIndex is just the int in the data
                     //According to this comment in the DataSet class, for the getInt method, we can do this:
                     //"For discrete variables, this returns the category index of the datum for the variable at that column."
@@ -212,7 +212,7 @@ public class Hsim {
                 }
                 //then set the value of nodeX to newXvalue for this row
                 //if (verbose) System.out.println(data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
-                this.data.setInt(row, this.data.getColumn(node), newValue);
+                this.data.setInt(row, this.data.getColumnIndex(node), newValue);
                 //if (verbose) System.out.println(" and again?: " + data.getInt(row,data.getColumn(nodeX)) + " old vs new " + newXvalue);
 
                 //at the end, at this node to the conditioning set

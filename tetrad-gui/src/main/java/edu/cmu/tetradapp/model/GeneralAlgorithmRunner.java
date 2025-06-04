@@ -26,7 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
-import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
+import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -396,8 +396,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             if (algo instanceof UsesScoreWrapper) {
                 // We inject the graph to the score to satisfy the tests like MSeparationScore - Zhou
                 ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
-                if (scoreWrapper instanceof MSeparationScore) {
-                    ((MSeparationScore) scoreWrapper).setGraph(getSourceGraph());
+                if (scoreWrapper instanceof MSepScore) {
+                    ((MSepScore) scoreWrapper).setGraph(getSourceGraph());
                 }
             }
 
@@ -436,7 +436,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
-                    Knowledge knowledge1 = getDataModelList().get(0).getKnowledge();
+                    Knowledge knowledge1 = getDataModelList().getFirst().getKnowledge();
                     List<DataModel> dataSets = new ArrayList<>(getDataModelList());
                     for (DataModel dataSet : dataSets) dataSet.setKnowledge(knowledge1);
                     int randomSelectionSize = this.parameters.getInt("randomSelectionSize");
@@ -605,11 +605,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         if (dataModelList.containsEmptyData()) {
             return false;
         } else {
-            if (dataModelList.get(0) instanceof CovarianceMatrix) {
+            if (dataModelList.getFirst() instanceof CovarianceMatrix) {
                 return false;
             }
 
-            DataSet dataSet = (DataSet) dataModelList.get(0);
+            DataSet dataSet = (DataSet) dataModelList.getFirst();
 
             return dataSet.existsMissingValue();
         }
@@ -682,7 +682,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             DataModelList dataModelList = this.dataWrapper.getDataModelList();
 
             if (dataModelList.size() == 1) {
-                return dataModelList.get(0);
+                return dataModelList.getFirst();
             } else {
                 return dataModelList;
             }
@@ -789,7 +789,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
 
         if (this.independenceTests.size() == 1) {
-            return this.independenceTests.get(0);
+            return this.independenceTests.getFirst();
         }
 
         Algorithm algo = getAlgorithm();

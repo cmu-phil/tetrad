@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.PointXy;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -104,6 +107,8 @@ public class LayoutUtil {
 
             phi += rad;
         }
+
+        repositionLatents(graph);
     }
 
     /**
@@ -162,6 +167,8 @@ public class LayoutUtil {
             node.setCenterX(bufferx);
             node.setCenterY(buffery + spacey * (side - i));
         }
+
+        repositionLatents(graph);
     }
 
     /**
@@ -287,6 +294,59 @@ public class LayoutUtil {
         }
 
         return arrangedAll;
+    }
+
+    /**
+     * Repositions latent nodes in the given graph based on their non-latent neighbors.
+     * <p>
+     * This method iterates through all nodes in the graph, identifies latent nodes, and repositions them using the
+     * non-latent neighbors only. The method works by filtering out latent neighbors of each latent node before
+     * repositioning.
+     *
+     * @param graph the graph containing the nodes to be repositioned.
+     */
+    public static void repositionLatents(Graph graph) {
+        for (Node latent : graph.getNodes()) {
+            if (latent.getNodeType() == NodeType.LATENT) {
+                Set<Node> neighbors = new HashSet<>(graph.getAdjacentNodes(latent));
+
+                for (Node neighbor : new HashSet<>(neighbors)) {
+                    if (neighbor.getNodeType() == NodeType.LATENT) {
+                        neighbors.remove(neighbor);
+                    }
+                }
+
+                positionLatentNode(latent, neighbors);
+            }
+        }
+    }
+
+    /**
+     * Positions a latent node based on the average position of its measured neighbors. The method calculates the
+     * average x and y coordinates of the measured neighbors and repositions the latent node to this calculated center.
+     *
+     * @param latent    the latent node to be positioned
+     * @param neighbors the set of neighboring nodes; only measured neighbors are used to calculate the position
+     */
+    public static void positionLatentNode(Node latent, Set<Node> neighbors) {
+        if (neighbors.isEmpty()) return; // safety check to prevent division by zero.
+
+        float avgX = 0f;
+        float avgY = 0f;
+        int count = 0;
+
+        for (Node neighbor : neighbors) {
+            if (neighbor.getNodeType() == NodeType.MEASURED) {
+                avgX += neighbor.getCenterX();
+                avgY += neighbor.getCenterY();
+                count++;
+            }
+        }
+
+        avgX /= count;
+        avgY /= count;
+
+        latent.setCenter((int) avgX, (int) avgY);
     }
 
     /**
@@ -641,7 +701,7 @@ public class LayoutUtil {
                     Matrix c;
 
                     try {
-                        c = TetradAlgebra.solve(a, b);
+                        c = new Matrix(a.getDataCopy().solve(b.getDataCopy()));
                     } catch (Exception e) {
                         this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
                                 2 * jump) - jump;

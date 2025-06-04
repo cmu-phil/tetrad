@@ -268,6 +268,6 @@ public class HsimUtils {
         for (int i = 0; i < numVars; i++) {
             varslist.add(new ContinuousVariable("X" + i));
         }
-        return RandomGraph.randomGraphRandomForwardEdges(varslist, 0, numEdges, 30, 15, 15, false, true);
+        return RandomGraph.randomGraphRandomForwardEdges(varslist, 0, numEdges, 30, 15, 15, false, true, -1);
     }
 }

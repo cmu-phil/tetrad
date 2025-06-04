@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,54 +17,38 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.ejml.simple.SimpleMatrix;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Double.NaN;
-import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Implements a degenerate Gaussian score as a LRT. The reference is here:
+ * Implements degenerate Gaussian test as a likelihood ratio test. The reference is here:
  * <p>
  * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2019, July). Learning high-dimensional directed acyclic graphs with
  * mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21). PMLR.
  *
  * @author Bryan Andrews
+ * @author Joseph Ramsey refactoring 2024-12-26
  * @version $Id: $Id
  */
-public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSettable {
-
-    /**
-     * A constant.
-     */
-    private static final double L2PE = log(2.0 * PI * E);
-    /**
-     * The data set.
-     */
-    private final BoxDataSet ddata;
-    private final Matrix dcov;
-    /**
-     * The data set.
-     */
-    private final double[][] _ddata;
+public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     /**
      * A hash of nodes to indices.
      */
@@ -82,13 +66,22 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      */
     private final Map<Integer, List<Integer>> embedding;
     /**
-     * A cache of results for independence facts.
+     * Covariance matrix over the embedde data.
      */
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    private final SimpleMatrix covarianceMatrix;
+    /**
+     * Represents the sample size of the dataset being analyzed. This variable is used in statistical computations, such
+     * as variance and covariance calculations, to determine the scale and reliability of the analysis.
+     */
+    private final int sampleSize;
+    /**
+     * Singularity lambda.
+     */
+    private double lambda = 0.0;
     /**
      * The alpha level.
      */
-    private double alpha = 0.001;
+    private double alpha = 0.01;
     /**
      * The p value.
      */
@@ -97,13 +90,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      * True if verbose output should be printed.
      */
     private boolean verbose;
-    /**
-     * The rows used in the test.
-     */
-    private List<Integer> rows = null;
 
     /**
-     * Constructs the score using a covariance matrix.
+     * Constructs the test using the given (mixed) data set.
      *
      * @param dataSet The data being analyzed.
      */
@@ -114,13 +103,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        // The number of instances.
-        int n = dataSet.getNumRows();
-        this.embedding = new HashMap<>();
-
-        List<Node> A = new ArrayList<>();
-        List<double[]> B = new ArrayList<>();
-
         Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int j = 0; j < this.variables.size(); j++) {
@@ -129,72 +111,15 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
 
         this.nodeHash = nodesHash;
 
-        int index = 0;
-
-        int i = 0;
-        int i_ = 0;
-        while (i_ < this.variables.size()) {
-
-            Node v = this.variables.get(i_);
-
-            if (v instanceof DiscreteVariable) {
-
-                Map<List<Integer>, Integer> keys = new HashMap<>();
-                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
-                for (int j = 0; j < n; j++) {
-                    List<Integer> key = new ArrayList<>();
-                    key.add(this.dataSet.getInt(j, i_));
-                    if (!keys.containsKey(key)) {
-                        keys.put(key, i);
-                        keysReverse.put(i, key);
-                        Node v_ = new ContinuousVariable("V__" + ++index);
-                        A.add(v_);
-                        B.add(new double[n]);
-                        i++;
-                    }
-                    B.get(keys.get(key))[j] = 1;
-                }
-
-                /*
-                 * Remove a degenerate dimension.
-                 */
-                i--;
-                keys.remove(keysReverse.get(i));
-                A.remove(i);
-                B.remove(i);
-
-                this.embedding.put(i_, new ArrayList<>(keys.values()));
-
-            } else {
-
-                A.add(v);
-                double[] b = new double[n];
-                for (int j = 0; j < n; j++) {
-                    b[j] = this.dataSet.getDouble(j, i_);
-                }
-
-                B.add(b);
-                List<Integer> index2 = new ArrayList<>();
-                index2.add(i);
-                this.embedding.put(i_, index2);
-                i++;
-
-            }
-            i_++;
-        }
-
-        double[][] B_ = new double[n][B.size()];
-        for (int j = 0; j < B.size(); j++) {
-            for (int k = 0; k < n; k++) {
-                B_[k][j] = B.get(j)[k];
-            }
-        }
-
-        // The continuous variables of the post-embedding dataset.
-        RealMatrix D = MatrixUtils.createRealMatrix(B_);
-        this.ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        this.dcov = new CovarianceMatrix(ddata).getMatrix();
-        this._ddata = ddata.getDoubleData().toArray();
+        // Expand the discrete columns to give indicators for each category. For the continuous variables, we
+        // wet the truncation limit to 1, on the contract that the first polynomial for any basis will be just
+        // x itself. These are asssumed to be Gaussian for this test. Basis scale -1 will do no scaling.
+        Embedding.EmbeddedData embeddedData = Embedding.getEmbeddedData(
+                dataSet, 1, 1, -1);
+        this.embedding = embeddedData.embedding();
+        this.sampleSize = dataSet.getNumRows();
+        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
+        this.setLambda(lambda);
     }
 
     /**
@@ -202,93 +127,112 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      *
      * @param vars The sublist of variables.
      * @return The IndependenceTest object with subset of variables.
+     * @throws UnsupportedOperationException if the method is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
-     * Returns an independence result specifying whether x _||_ y | Z and what its p-values are.
-     *
-     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
-     * @param _z a {@link java.util.Set} object
-     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
-     * @see IndependenceResult
+     * Tests for the conditional independence of two nodes given a set of conditioning nodes.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
-        if (facts.containsKey(new IndependenceFact(x, y, _z))) {
-            return facts.get(new IndependenceFact(x, y, _z));
-        }
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        double pValue = getPValue(x, y, z);
+        boolean independent = pValue > alpha;
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue, alpha - pValue);
+    }
 
-        List<Node> allNodes = new ArrayList<>();
-        allNodes.add(x);
-        allNodes.add(y);
-        allNodes.addAll(_z);
-
-        List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
-
-        List<Integer> rows = listRows();
-
-        if (rows.isEmpty()) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                true, NaN, NaN);
+    /**
+     * Computes the p-value for the null hypothesis that two variables, represented as nodes, are conditionally
+     * independent given a set of conditioning variables.
+     * <p>
+     * The method transforms the input nodes and conditioning set into their respective embedded representations and
+     * computes the likelihood ratio statistic based on residual variances. It then calculates the corresponding p-value
+     * using a Chi-squared distribution.
+     *
+     * @param x the first node representing one of the variables to be tested.
+     * @param y the second node representing the other variable to be tested.
+     * @param z the set of nodes representing the conditioning variables.
+     * @return the computed p-value for the hypothesis test of conditional independence.
+     */
+    private double getPValue(Node x, Node y, Set<Node> z) {
+        List<Node> zList = new ArrayList<>(z);
+        Collections.sort(zList);
 
         int _x = this.nodeHash.get(x);
         int _y = this.nodeHash.get(y);
-
-        int[] list0 = new int[z.size()];
-        int[] list1 = new int[z.size() + 1];
-
-        list1[0] = _x;
-
-        for (int i = 0; i < z.size(); i++) {
-            int __z = this.nodeHash.get(z.get(i));
-            list0[i] = __z;
-            list1[i + 1] = __z;
+        int[] _z = new int[zList.size()];
+        for (int i = 0; i < zList.size(); i++) {
+            _z[i] = this.nodeHash.get(zList.get(i));
         }
 
-        Ret ret0 = getlldof(rows, _y, list0);
-        Ret ret1 = getlldof(rows, _y, list1);
+        // Grab the embedded data for _x, _y, and _z.
+        List<Integer> embedded_x = embedding.get(_x);
+        List<Integer> embedded_y = embedding.get(_y);
+        List<Integer> embedded_z = new ArrayList<>();
 
-        double lik_diff = ret0.getLik() - ret1.getLik();
-        double dof_diff = ret1.getDof() - ret0.getDof();
-
-        if (dof_diff <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false, NaN, NaN);
-        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false, NaN, NaN);
-        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false, NaN, NaN);
-        if (lik_diff == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false, NaN, NaN);
-
-        double pValue;
-
-        if (Double.isNaN(lik_diff)) {
-            throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
-        } else {
-            try {
-                pValue = 1.0 - new ChiSquaredDistribution(dof_diff).cumulativeProbability(-2 * lik_diff);
-            } catch (Exception e) {
-                throw new RuntimeException("Exception when trying to determine " + LogUtilsSearch.independenceFact(x, y, _z), e);
+        for (int value : _z) {
+            List<Integer> embeddedValues = embedding.get(value);
+            if (embeddedValues != null) {
+                embedded_z.addAll(embeddedValues);
             }
         }
 
-        this.pValue = pValue;
+        // Convert to index arrays
+        int[] xIndices = embedded_x.stream().mapToInt(Integer::intValue).toArray();
+        int[] yIndices = embedded_y.stream().mapToInt(Integer::intValue).toArray();
+        int[] zIndices = embedded_z.stream().mapToInt(Integer::intValue).toArray();
 
-        boolean independent = this.pValue > this.alpha;
+        // Compute variance estimates
+        double eps = 1e-10;
+        double sigma0_sq = Math.max(eps, computeResidualVariance(xIndices, zIndices));
+        double sigma1_sq = Math.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
 
-        if (this.verbose) {
-            if (independent) {
-                TetradLogger.getInstance().log(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
-            }
+        // Log-likelihood ratio statistic
+        double LR_stat = sampleSize * Math.log(sigma0_sq / sigma1_sq);
+
+        // Degrees of freedom is the number of additional basis columns in Y
+        int df = yIndices.length;
+        if (df == 0) return 1.0;
+
+        // Compute p-value
+        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
+        double p_value = 1.0 - chi2.cumulativeProbability(LR_stat);
+        this.pValue = p_value;
+
+//        if (verbose) {
+//            System.out.printf("LR Stat: %.4f | df: %d | p: %.4f%n", LR_stat, df, p_value);
+//        }
+
+        return p_value;
+    }
+
+    /**
+     * Computes the variance of residuals given the indices of predictors.
+     */
+    private double computeResidualVariance(int[] xIndices, int[] predictorIndices) {
+        if (predictorIndices.length == 0) {
+            return StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices).trace() / xIndices.length;
         }
 
-        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, _z),
-                independent, pValue, alpha - pValue);
-        facts.put(new IndependenceFact(x, y, _z), result);
+        SimpleMatrix Sigma_XX = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices);
+        SimpleMatrix Sigma_XP = StatUtils.extractSubMatrix(covarianceMatrix, xIndices, predictorIndices);
+        SimpleMatrix Sigma_PP = StatUtils.extractSubMatrix(covarianceMatrix, predictorIndices, predictorIndices);
+//        Sigma_PP = StatUtils.chooseMatrix(Sigma_PP, lambda);
+
+        // Compute OLS estimate of X given predictors P
+        SimpleMatrix beta = (new Matrix(Sigma_PP).chooseInverse(lambda)).getData().mult(Sigma_XP.transpose());
+
+        // Compute residual variance
+        return Sigma_XX.minus(Sigma_XP.mult(beta)).trace() / xIndices.length;
+    }
+
+    /**
+     * Concatenates two integer arrays.
+     */
+    private int[] concatArrays(int[] first, int[] second) {
+        int[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
         return result;
     }
 
@@ -303,7 +247,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
     }
 
     /**
-     * Returns the list of searchVariables over which this independence checker is capable of determinining independence
+     * Returns the list of variables over which this independence checker is capable of determinining independence
      * relations.
      *
      * @return This list.
@@ -315,7 +259,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
     /**
      * Returns the significance level of the independence test.
      *
-     * @return this level.
+     * @return this level, default 0.01.
      */
     public double getAlpha() {
         return this.alpha;
@@ -325,16 +269,19 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
+        if (alpha <= 0 || alpha >= 1) {
+            throw new IllegalArgumentException("Alpha must be between 0 and 1.");
+        }
         this.alpha = alpha;
     }
 
     /**
-     * Returns the dataset being analyzed.
+     * Returns a copy of the dataset being analyzed.
      *
      * @return This data.
      */
     public DataSet getData() {
-        return this.dataSet;
+        return this.dataSet.copy();
     }
 
     /**
@@ -364,170 +311,11 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, RowsSetta
     }
 
     /**
-     * Calculates the sample log likelihood
-     */
-    private Ret getlldof(List<Integer> rows, int i, int... parents) {
-        int N = rows.size();
-
-        List<Integer> B = new ArrayList<>();
-        List<Integer> A = new ArrayList<>(this.embedding.get(i));
-        for (int i_ : parents) {
-            B.addAll(this.embedding.get(i_));
-        }
-
-        int[] A_ = new int[A.size() + B.size()];
-        int[] B_ = new int[B.size()];
-        for (int i_ = 0; i_ < A.size(); i_++) {
-            A_[i_] = A.get(i_);
-        }
-        for (int i_ = 0; i_ < B.size(); i_++) {
-            A_[A.size() + i_] = B.get(i_);
-            B_[i_] = B.get(i_);
-        }
-
-        double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
-        double ldetA = log(abs(SemBicScore.getCov(rows, A_, A_, ddata, dcov).det()));
-        double ldetB = log(abs(SemBicScore.getCov(rows, B_, B_, ddata, dcov).det()));
-
-        double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLrt.L2PE * (B_.length - A_.length);
-
-        return new Ret(lik, dof);
-    }
-
-    /**
-     * Returns a list of row indices that satisfy the given conditions.
+     * Sets the lambda value for the test.
      *
-     * @return A list of integers representing the row indices that satisfy the conditions.
+     * @param lambda The singularity lambda parameter to be used in the independence test.
      */
-    private List<Integer> listRows() {
-        if (this.rows != null) {
-            return this.rows;
-        }
-
-        List<Integer> rows = new ArrayList<>();
-
-        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
-            rows.add(k);
-        }
-
-        return rows;
-    }
-
-    /**
-     * Calculates the covariance matrix for the given rows and columns.
-     *
-     * @param rows The list of row indices to include in the covariance calculation.
-     * @param cols The array of column indices to include in the covariance calculation.
-     * @return The covariance matrix for the selected rows and columns.
-     */
-    private Matrix getCov(List<Integer> rows, int[] cols) {
-        Matrix cov = new Matrix(cols.length, cols.length);
-
-        for (int i = 0; i < cols.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                double mui = 0.0;
-                double muj = 0.0;
-
-                for (int k : rows) {
-                    mui += this._ddata[k][cols[i]];
-                    muj += this._ddata[k][cols[j]];
-                }
-
-                mui /= rows.size() - 1;
-                muj /= rows.size() - 1;
-
-                double _cov = 0.0;
-
-                for (int k : rows) {
-                    _cov += (this._ddata[k][cols[i]] - mui) * (this._ddata[k][cols[j]] - muj);
-//                    _cov += (ddata.getDouble(k, cols[i]) - mui) * (ddata.getDouble(k, cols[j]) - muj);
-                }
-
-                double mean = _cov / (rows.size());
-                cov.set(i, j, mean);
-            }
-        }
-
-        return cov;
-    }
-
-    /**
-     * Returns the rows used in the test.
-     *
-     * @return The rows used in the test.
-     */
-    public List<Integer> getRows() {
-        return rows;
-    }
-
-    /**
-     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
-     * values.
-     */
-    public void setRows(List<Integer> rows) {
-        if (rows == null) {
-            this.rows = null;
-        } else {
-            for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
-                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
-            }
-
-            this.rows = rows;
-        }
-    }
-
-    /**
-     * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom for it.
-     */
-    public static class Ret {
-
-        /**
-         * The likelihood.
-         */
-        private final double lik;
-
-        /**
-         * The degrees of freedom.
-         */
-        private final double dof;
-
-        /**
-         * Constructs a return value.
-         *
-         * @param lik The likelihood.
-         * @param dof The degrees of freedom.
-         */
-        private Ret(double lik, double dof) {
-            this.lik = lik;
-            this.dof = dof;
-        }
-
-        /**
-         * Returns the likelihood.
-         *
-         * @return This likelihood.
-         */
-        public double getLik() {
-            return this.lik;
-        }
-
-        /**
-         * Returns the degrees of freedom.
-         *
-         * @return These degrees of freedom.
-         */
-        public double getDof() {
-            return this.dof;
-        }
-
-        /**
-         * Returns a string representation of this object.
-         *
-         * @return This string.
-         */
-        public String toString() {
-            return "lik = " + this.lik + " dof = " + this.dof;
-        }
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 }

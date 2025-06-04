@@ -165,6 +165,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      *
      * @param targets The targets variable.
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws InterruptedException if any
      */
     public Graph search(List<Node> targets) throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
@@ -350,6 +351,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * Searches for the Markov blanket CPDAG for the given targets.
      *
      * @return The Markov blanket CPDAG as a Graph object.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         this.numIndependenceTests = 0;
@@ -482,6 +484,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * {@inheritDoc}
      * <p>
      * Returns the Markov blanket variables (not the Markov blanket DAG).
+     * @throws InterruptedException if any
      */
     public Set<Node> findMb(Node target) throws InterruptedException {
         Graph graph = search(Collections.singletonList(target));
@@ -532,6 +535,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      *
      * @param target The variable whose Markov blanket is sought.
      * @param graph  The getModel search graph.
+     * @throws InterruptedException if any
      */
     private void constructFan(Node target, Graph graph) throws InterruptedException {
         addAllowableAssociates(target, graph);
@@ -543,6 +547,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      *
      * @param v     The node to add associates to.
      * @param graph The graph object to which the associates are added.
+     * @throws InterruptedException if any
      */
     private void addAllowableAssociates(Node v, Graph graph) throws InterruptedException {
         getA().add(v);
@@ -567,6 +572,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      *
      * @param node  The node about which pruning will take place.
      * @param graph The graph to be modified by pruning.
+     * @throws InterruptedException if any
      */
     private void prune(Node node, Graph graph) throws InterruptedException {
         for (int depth = 1; depth <= getDepth(); depth++) {
@@ -586,6 +592,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param node  The node about which pruning it to take place.
      * @param graph The getModel search graph, to be modified by pruning.
      * @param depth The maximum number of conditioning variables.
+     * @throws InterruptedException if any
      */
     private void prune(Node node, Graph graph, int depth) throws InterruptedException {
         TetradLogger.getInstance().log("Trying to remove edges adjacent to node " + node +

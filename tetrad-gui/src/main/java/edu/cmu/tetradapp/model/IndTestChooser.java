@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
@@ -67,8 +67,7 @@ final class IndTestChooser {
      * @return an independence checker appropriate to the given data source. Also sets the Parameters on the params to
      * an appropriate type object (using the existing one if it's of the right type).
      */
-    public IndependenceTest getTest(Object dataSource, Parameters params,
-                                    IndTestType testType) {
+    public IndependenceTest getTest(Object dataSource, Parameters params, IndTestType testType) {
 
         if (dataSource == null) {
             throw new NullPointerException();
@@ -91,13 +90,11 @@ final class IndTestChooser {
         if (dataSource instanceof DataSet dataSet) {
 
             if (dataSet.isContinuous() || dataSet.getNumColumns() == 0) {
-                DataSet dataContinuous =
-                        (DataSet) dataSource;
+                DataSet dataContinuous = (DataSet) dataSource;
 
                 return getContinuousTest(dataContinuous, params, testType);
             } else if (dataSet.isDiscrete()) {
-                DataSet dataDiscrete =
-                        (DataSet) dataSource;
+                DataSet dataDiscrete = (DataSet) dataSource;
 
                 return getDiscreteTest(dataDiscrete, params, testType);
             }
@@ -109,8 +106,7 @@ final class IndTestChooser {
         }
 
         if (dataSource instanceof Graph) {
-            return getGraphTest((Graph) dataSource, params,
-                    IndTestType.M_SEPARATION);
+            return getGraphTest((Graph) dataSource, params, IndTestType.M_SEPARATION);
         }
         if (dataSource instanceof ICovarianceMatrix) {
             return getCovMatrixTest((ICovarianceMatrix) dataSource, params);
@@ -120,51 +116,37 @@ final class IndTestChooser {
             return new IndTestIndependenceFacts((IndependenceFacts) dataSource);
         }
 
-        throw new IllegalStateException(
-                "Unrecognized data source type: " + dataSource.getClass());
+        throw new IllegalStateException("Unrecognized data source type: " + dataSource.getClass());
     }
 
-    private IndependenceTest getMixedTest(DataSet dataSet,
-                                          Parameters params, IndTestType testType) {
+    private IndependenceTest getMixedTest(DataSet dataSet, Parameters params, IndTestType testType) {
 
         if (IndTestType.MIXED_MLR == testType) {
             return new IndTestMultinomialLogisticRegressionWald(dataSet, params.getDouble("alpha", 0.001), false);
         } else if (IndTestType.LINEAR_REGRESSION == testType) {
-            return new IndTestRegression(dataSet,
-                    params.getDouble("alpha", 0.001));
+            return new IndTestRegression(dataSet, params.getDouble("alpha", 0.001));
         } else {
             params.set("indTestType", IndTestType.MIXED_MLR);
             return new IndTestMultinomialLogisticRegression(dataSet, params.getDouble("alpha", 0.001));
         }
     }
 
-    private IndependenceTest getContinuousTest(DataSet dataSet,
-                                               Parameters params, IndTestType testType) {
+    private IndependenceTest getContinuousTest(DataSet dataSet, Parameters params, IndTestType testType) {
         if (IndTestType.CONDITIONAL_CORRELATION == testType) {
             return new IndTestConditionalCorrelation(dataSet, params.getDouble(Params.ALPHA),
                     params.getDouble(Params.SCALING_FACTOR), params.getInt(Params.BASIS_TYPE),
-                    params.getInt(Params.NUM_BASIS_FUNCTIONS), params.getDouble(Params.BASIS_SCALE));
-        }
-        if (IndTestType.FISHER_Z == testType) {
+                    params.getDouble(Params.BASIS_SCALE), params.getInt(Params.TRUNCATION_LIMIT));
+        } else if (IndTestType.FISHER_Z == testType) {
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
-        }
-//        if (IndTestType.FISHER_ZD == testType) {
-//            IndTestFisherZ test = new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
-////            test.setUsePseudoinverse(true);
-//            return test;
-//        }
-        if (IndTestType.SEM_BIC == testType) {
+        } else if (IndTestType.SEM_BIC == testType) {
             return new ScoreIndTest(new SemBicScore(new CovarianceMatrix(dataSet)));
-        }
-
-        {
+        } else {
             params.set("indTestType", IndTestType.FISHER_Z);
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
         }
     }
 
-    private IndependenceTest getMultiContinuousTest(List<DataSet> dataSets,
-                                                    Parameters params, IndTestType testType) {
+    private IndependenceTest getMultiContinuousTest(List<DataSet> dataSets, Parameters params, IndTestType testType) {
         if (IndTestType.POOL_RESIDUALS_FISHER_Z == testType) {
             return new IndTestFisherZPercentIndependent(dataSets, params.getDouble("alpha", 0.001));
         }
@@ -172,8 +154,7 @@ final class IndTestChooser {
         if (IndTestType.TIPPETT == testType) {
             List<IndependenceTest> independenceTests = new ArrayList<>();
             for (DataSet dataModel : dataSets) {
-                independenceTests.add(new IndTestFisherZ(dataModel, params.getDouble("alpha",
-                        0.001)));
+                independenceTests.add(new IndTestFisherZ(dataModel, params.getDouble("alpha", 0.001)));
             }
 
             return new IndTestMulti(independenceTests, ResolveSepsets.Method.tippett);
@@ -214,18 +195,15 @@ final class IndTestChooser {
         }
     }
 
-    private IndependenceTest getGraphTest(Graph graph, Parameters params,
-                                          IndTestType testType) {
+    private IndependenceTest getGraphTest(Graph graph, Parameters params, IndTestType testType) {
         if (IndTestType.M_SEPARATION != testType) {
             params.set("indTestType", IndTestType.M_SEPARATION);
         }
         return new MsepTest(graph);
     }
 
-    private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix,
-                                              Parameters params) {
-        return new IndTestFisherZ(covMatrix,
-                params.getDouble("alpha", 0.001));
+    private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix, Parameters params) {
+        return new IndTestFisherZ(covMatrix, params.getDouble("alpha", 0.001));
     }
 
     /**

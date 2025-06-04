@@ -115,7 +115,7 @@ public class TestPcStableMax {
 
         Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
         pc.setStable(true);
-        pc.setUseMaxPHeuristic(true);
+        pc.setUseMaxPOrientation(true);
         pc.setKnowledge(knowledge);
 
         Graph CPDAG = null;
@@ -171,7 +171,7 @@ public class TestPcStableMax {
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
-        assertEquals(resultGraph, trueGraph);
+        assertEquals(trueGraph, resultGraph);
     }
 
     /**
@@ -186,7 +186,7 @@ public class TestPcStableMax {
         IndependenceTest independence = new MsepTest(graph);
         Pc pc = new Pc(independence);
         pc.setStable(true);
-        pc.setUseMaxPHeuristic(true);
+        pc.setUseMaxPOrientation(true);
         pc.setGuaranteeCpdag(false);
 
         // Set up search.

@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -42,7 +43,7 @@ public class GraphExactlyRight implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
         return trueGraph.equals(estGraph) ? 1 : 0;
     }

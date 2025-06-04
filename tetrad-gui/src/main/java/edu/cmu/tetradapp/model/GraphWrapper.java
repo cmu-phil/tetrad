@@ -196,7 +196,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemImWrapper} object
      */
     public GraphWrapper(GeneralizedSemImWrapper wrapper) {
-        this(GraphWrapper.getStrongestInfluenceGraph(wrapper.getSemIms().get(0)));
+        this(GraphWrapper.getStrongestInfluenceGraph(wrapper.getSemIms().getFirst()));
         if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
@@ -222,7 +222,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             VariableExpression varExpr = (VariableExpression) expression1;
 
             if (varExpr.getVariable().equals(name)) {
-                Expression expression2 = expressions.get(0);
+                Expression expression2 = expressions.getFirst();
                 VariableExpression constExpr = (VariableExpression) expression2;
                 return constExpr.getVariable();
             }

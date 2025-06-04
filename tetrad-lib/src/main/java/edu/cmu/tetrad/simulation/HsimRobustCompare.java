@@ -43,6 +43,7 @@ public class HsimRobustCompare {
      * @param repeat          a int
      * @param verbose         a boolean
      * @return a {@link java.util.List} object
+     * @throws java.lang.InterruptedException if any.
      */
     public static List<double[]> run(int numVars, double edgesPerNode, int numCases, double penaltyDiscount,
                                      int resimSize, int repeat, boolean verbose) throws InterruptedException {
@@ -62,7 +63,7 @@ public class HsimRobustCompare {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph odag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+        Graph odag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true, -1);
 
         BayesPm bayesPm = new BayesPm(odag, 2, 2);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.InitializationMethod.RANDOM);

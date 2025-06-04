@@ -223,6 +223,7 @@ public class MixtureModel {
      * Perform an FGES search on each of the demixed data sets.
      *
      * @return the BIC scores of the graphs returned by searches.
+     * @throws java.lang.InterruptedException if any.
      */
     public double[] searchDemixedData() throws InterruptedException {
         DataSet[] dataSets = getDemixedData();

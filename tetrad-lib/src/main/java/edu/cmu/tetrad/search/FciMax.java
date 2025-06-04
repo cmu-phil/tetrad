@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -87,10 +86,6 @@ public final class FciMax implements IGraphSearch {
      */
     private long elapsedTime;
     /**
-     * The PC heuristic from PC used in search.
-     */
-    private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
-    /**
      * Whether the stable option will be used for search.
      */
     private boolean stable = false;
@@ -101,7 +96,7 @@ public final class FciMax implements IGraphSearch {
     /**
      * Whether the discriminating path rule will be used in search.
      */
-    private boolean possibleMsepSearchDone = true;
+    private boolean possibleDsepSearchDone = true;
     /**
      * The maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -136,6 +131,7 @@ public final class FciMax implements IGraphSearch {
      * Performs the search and returns the PAG.
      *
      * @return This PAG.
+     * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
         long start = MillisecondTimes.timeMillis();
@@ -148,10 +144,10 @@ public final class FciMax implements IGraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
-        fas.setPcHeuristicType(this.pcHeuristicType);
+//        fas.setPcHeuristicType(this.pcHeuristicType);
         fas.setVerbose(this.verbose);
         fas.setStable(this.stable);
-        fas.setPcHeuristicType(this.pcHeuristicType);
+//        fas.setPcHeuristicType(this.pcHeuristicType);
 
         //The PAG being constructed.
         Graph pag = fas.search();
@@ -160,10 +156,10 @@ public final class FciMax implements IGraphSearch {
         pag.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-        if (this.possibleMsepSearchDone) {
+        // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
+        if (this.possibleDsepSearchDone) {
             FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(independenceTest, new Knowledge()));
-            pag.paths().removeByPossibleMsep(independenceTest, sepsets);
+            pag.paths().removeByPossibleDsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             pag.reorientAllWith(Endpoint.CIRCLE);
@@ -200,7 +196,7 @@ public final class FciMax implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColldiders, unshieldedColldiders, verbose,
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColldiders, verbose,
                     new HashSet<>());
         }
 
@@ -280,12 +276,12 @@ public final class FciMax implements IGraphSearch {
     }
 
     /**
-     * Sets whether the (time-consuming) possible msep step should be done.
+     * Sets whether the (time-consuming) possible dsep step should be done.
      *
-     * @param possibleMsepSearchDone True, if so.
+     * @param possibleDsepSearchDone True, if so.
      */
-    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
-        this.possibleMsepSearchDone = possibleMsepSearchDone;
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
     /**
@@ -317,16 +313,6 @@ public final class FciMax implements IGraphSearch {
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
-    }
-
-    /**
-     * Sets the FAS heuristic from PC used in search.
-     *
-     * @param pcHeuristicType This heuristic.
-     * @see Pc
-     */
-    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
-        this.pcHeuristicType = pcHeuristicType;
     }
 
     /**
@@ -417,6 +403,7 @@ public final class FciMax implements IGraphSearch {
      * @param graph  The graph containing the nodes.
      * @param scores The map of node triples to scores.
      * @param b      The node on which to perform the DO operation.
+     * @throws InterruptedException if any
      */
     private void doNode(Graph graph, Map<Triple, Double> scores, Node b) throws InterruptedException {
         List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));

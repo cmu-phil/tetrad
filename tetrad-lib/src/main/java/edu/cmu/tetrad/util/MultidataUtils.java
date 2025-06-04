@@ -46,7 +46,7 @@ public final class MultidataUtils {
             return null;
         }
 
-        DataModel dataModel = dataModels.get(0);
+        DataModel dataModel = dataModels.getFirst();
         DataBox dataBox = ((BoxDataSet) dataModel).getDataBox();
 
         int[] rowCounts = MultidataUtils.getRowCounts(dataModels);
@@ -81,7 +81,7 @@ public final class MultidataUtils {
     }
 
     private static void combineSingleMixedDiscreteData(List<DataModel> dataModels, int[][] combinedData, int numOfColumns) {
-        DataModel dataModel = dataModels.get(0);
+        DataModel dataModel = dataModels.getFirst();
         MixedDataBox model = (MixedDataBox) ((BoxDataSet) dataModel).getDataBox();
         int[][] discreteData = model.getDiscreteData();
         for (int col = 0; col < numOfColumns; col++) {
@@ -146,7 +146,7 @@ public final class MultidataUtils {
     }
 
     private static void combineSingleMixedContinuousData(List<DataModel> dataModels, double[][] combinedData, int numOfColumns) {
-        DataModel dataModel = dataModels.get(0);
+        DataModel dataModel = dataModels.getFirst();
         MixedDataBox model = (MixedDataBox) ((BoxDataSet) dataModel).getDataBox();
         double[][] continuousData = model.getContinuousData();
         for (int col = 0; col < numOfColumns; col++) {
@@ -271,12 +271,12 @@ public final class MultidataUtils {
     }
 
     private static void combineMixedVariables(List<DataModel> dataModels, List<Node> variables) {
-        List<Node> dataVars = dataModels.get(0).getVariables();
+        List<Node> dataVars = dataModels.getFirst().getVariables();
         if (dataModels.size() == 1) {
             dataVars.stream()
                     .collect(Collectors.toCollection(() -> variables));
         } else {
-            List<Node> nodeList = dataModels.get(0).getVariables();
+            List<Node> nodeList = dataModels.getFirst().getVariables();
 
             int size = nodeList.size();
             Set<String>[] varCategories = new Set[size];
@@ -320,7 +320,7 @@ public final class MultidataUtils {
     }
 
     private static void combineDiscreteVariables(List<DataModel> dataModels, List<Node> variables) {
-        List<Node> dataVars = dataModels.get(0).getVariables();
+        List<Node> dataVars = dataModels.getFirst().getVariables();
         if (dataModels.size() == 1) {
             dataVars.stream()
                     .collect(Collectors.toCollection(() -> variables));
@@ -352,7 +352,7 @@ public final class MultidataUtils {
     }
 
     private static void combineContinuousVariables(List<DataModel> dataModels, List<Node> variables) {
-        dataModels.get(0).getVariables().stream()
+        dataModels.getFirst().getVariables().stream()
                 .collect(Collectors.toCollection(() -> variables));
     }
 
@@ -367,7 +367,7 @@ public final class MultidataUtils {
             return;
         }
 
-        DataModel dataModel = dataModels.get(0);
+        DataModel dataModel = dataModels.getFirst();
         DataBox dataBox = ((BoxDataSet) dataModel).getDataBox();
 
         if (dataBox instanceof DoubleDataBox || dataBox instanceof VerticalDoubleDataBox) {

@@ -1,7 +1,11 @@
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -14,11 +18,16 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+
+import static java.lang.Math.log;
 
 public class TestCheckMarkov {
 
@@ -149,12 +158,12 @@ public class TestCheckMarkov {
         testGaussianDAGPrecisionRecallForLocalOnMarkovBlanketUsingLGConfusionMatrix(data, trueGraph, estimatedCpdag);
         System.out.println("~~~~~~~~~~~~~Full Graph~~~~~~~~~~~~~~~");
         estimatedCpdag = GraphUtils.replaceNodes(estimatedCpdag, trueGraph.getNodes());
-        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null);
-        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedCpdag, null);
-        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedCpdag, null);
-        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null);
-        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null);
-        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null);
+        double whole_ap = new AdjacencyPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_ar = new AdjacencyRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_ahp = new ArrowheadPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_ahr = new ArrowheadRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_lgp = new LocalGraphPrecision().getValue(trueGraph, estimatedCpdag, null, new Parameters());
+        double whole_lgr = new LocalGraphRecall().getValue(trueGraph, estimatedCpdag, null, new Parameters());
         System.out.println("whole_ap: " + whole_ap);
         System.out.println("whole_ar: " + whole_ar );
         System.out.println("whole_ahp: " + whole_ahp);

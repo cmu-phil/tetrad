@@ -75,6 +75,7 @@ public final class ResolveSepsetsDci {
      * @param resolvedIndependent a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
      * @param resolvedDependent   a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
      * @return a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
+     * @throws java.lang.InterruptedException if any.
      */
     public static SepsetMapDci resolveSepsets(List<SepsetMapDci> sepsets, List<IndependenceTest> independenceTests,
                                               Method method, SepsetMapDci resolvedIndependent, SepsetMapDci resolvedDependent) throws InterruptedException {
@@ -254,6 +255,7 @@ public final class ResolveSepsetsDci {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         if (method == Method.fisher) {
@@ -295,6 +297,7 @@ public final class ResolveSepsetsDci {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledFisher(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
@@ -350,6 +353,7 @@ public final class ResolveSepsetsDci {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledTippett(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
@@ -385,6 +389,7 @@ public final class ResolveSepsetsDci {
      * @param condSet           a {@link java.util.Set} object
      * @param r                 a int
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledWilkinson(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet, int r) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
@@ -409,6 +414,7 @@ public final class ResolveSepsetsDci {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
@@ -443,6 +449,7 @@ public final class ResolveSepsetsDci {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledStouffer(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
@@ -470,6 +477,7 @@ public final class ResolveSepsetsDci {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
@@ -519,6 +527,7 @@ public final class ResolveSepsetsDci {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledAverage(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
@@ -568,7 +577,7 @@ public final class ResolveSepsetsDci {
     private static boolean isMissing(Node node, DataSet dataSet) {
         Node _node = dataSet.getVariable(node.getName());
 
-        int col = dataSet.getColumn(_node);
+        int col = dataSet.getColumnIndex(_node);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             if (Double.isNaN(dataSet.getDouble(i, col))) {
@@ -588,6 +597,7 @@ public final class ResolveSepsetsDci {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws java.lang.InterruptedException if any.
      */
     public static boolean isIndependentPooledAverageTest(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();
@@ -618,6 +628,7 @@ public final class ResolveSepsetsDci {
      * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet           a {@link java.util.Set} object
      * @return a boolean
+     * @throws InterruptedException a {@link java.lang.InterruptedException} object
      */
     public static boolean isIndependentPooledRandom(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) throws InterruptedException {
         double alpha = independenceTests.get(0).getAlpha();

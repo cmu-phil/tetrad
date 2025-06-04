@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //i
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,36 +17,21 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * Uses GRaSP in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than
- * GFCI as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here: J.M.
- * Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016. Here,
- * BOSS has been substituted for FGES.
+ * Uses GRaSP in the *-FCI algorithm. the reference for GraSP is here:
  * <p>
- * For the first step, the GRaSP algorithm is used, with the same modifications as in the GFCI algorithm.
- * <p>
- * For the second step, the FCI final orientation algorithm is used, with the same modifications as in the GFCI
- * algorithm.
- * <p>
- * For GRaSP only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test
- * and a score need to be given.
+ * For GRaSP either a score or a test is needed. *-FCI requires a test. So both are needed.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
@@ -54,12 +39,10 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @author josephramsey
  * @author bryanandrews
  * @version $Id: $Id
+ * @see StarFci
  * @see Grasp
- * @see GFci
- * @see FciOrient
- * @see Knowledge
  */
-public final class GraspFci implements IGraphSearch {
+public final class GraspFci extends StarFci {
 
     /**
      * The conditional independence test.
@@ -69,18 +52,6 @@ public final class GraspFci implements IGraphSearch {
      * The score.
      */
     private final Score score;
-    /**
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
-    /**
-     * Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxDiscriminatingPathLength = -1;
     /**
      * The number of starts for GRaSP.
      */
@@ -120,26 +91,15 @@ public final class GraspFci implements IGraphSearch {
      * @see GraspFci#setSeed(long)
      */
     private long seed = -1;
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose = false;
-    /**
-     * The flag for whether to guarantee the output is a legal PAG.
-     */
-    private boolean guaranteePag = false;
-    /**
-     * The method to use for finding sepsets, 1 = greedy, 2 = min-p., 3 = max-p, default min-p.
-     */
-    private int sepsetFinderMethod = 2;
 
     /**
      * Constructs a new GraspFci object.
      *
      * @param test  The independence test.
-     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     * @param score a {@link Score} object
      */
     public GraspFci(IndependenceTest test, Score score) {
+        super(test);
         if (score == null) {
             throw new NullPointerException();
         }
@@ -148,27 +108,12 @@ public final class GraspFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    /**
-     * Run the search and return s a PAG.
-     *
-     * @return The PAG.
-     */
-    public Graph search() throws InterruptedException {
-        List<Node> nodes = this.independenceTest.getVariables();
-
-        if (nodes == null) {
-            throw new NullPointerException("Nodes from test were null.");
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("===Starting GRaSP-FCI===");
-        }
-
-        if (verbose) {
+    public @NotNull Graph getMarkovCpdag() throws InterruptedException {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Starting GRaSP.");
         }
 
-        // Run GRaSP to get a CPDAG (like GFCI with FGES)...
+        // Run GRaSP to get a CPDAG.
         Grasp alg = new Grasp(independenceTest, score);
         alg.setSeed(seed);
         alg.setOrdered(ordered);
@@ -179,114 +124,19 @@ public final class GraspFci implements IGraphSearch {
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
-        alg.setVerbose(false);
-        alg.setKnowledge(knowledge);
+        alg.setVerbose(isVerbose());
+        alg.setKnowledge(getKnowledge());
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
         alg.bestOrder(variables);
-        Graph pag = alg.getGraph(true);
+        Graph cpdag = alg.getGraph(true);
 
-        if (verbose) {
+        if (isVerbose()) {
             TetradLogger.getInstance().log("Finished GRaSP.");
         }
-
-        if (score instanceof MagSemBicScore) {
-            ((MagSemBicScore) score).setMag(pag);
-        }
-
-        Graph cpdag = new EdgeListGraph(pag);
-
-        SepsetProducer sepsets;
-
-        if (independenceTest instanceof MsepTest) {
-            sepsets = new DagSepsets(((MsepTest) independenceTest).getGraph());
-        } else if (sepsetFinderMethod == 1) {
-            sepsets = new SepsetsGreedy(pag, this.independenceTest, this.depth);
-        } else if (sepsetFinderMethod == 2) {
-            sepsets = new SepsetsMinP(pag, this.independenceTest, this.depth);
-        } else if (sepsetFinderMethod == 3) {
-            sepsets = new SepsetsMaxP(pag, this.independenceTest, this.depth);
-        } else {
-            throw new IllegalArgumentException("Invalid sepset finder method: " + sepsetFinderMethod);
-        }
-
-        Set<Triple> unshieldedColliders = new HashSet<>();
-
-        gfciExtraEdgeRemovalStep(pag, cpdag, nodes, sepsets, depth, verbose);
-        GraphUtils.gfciR0(pag, cpdag, sepsets, knowledge, verbose, unshieldedColliders);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Starting final FCI orientation.");
-        }
-
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
-                knowledge, verbose);
-        strategy.setDepth(-1);
-        strategy.setMaxLength(-1);
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setVerbose(verbose);
-
-        fciOrient.finalOrientation(pag);
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Finished implied orientation.");
-        }
-
-        if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, unshieldedColliders, verbose,
-                    new HashSet<>());
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("GRaSP-FCI finished.");
-        }
-
-        return pag;
-    }
-
-    /**
-     * Sets the knowledge used in search.
-     *
-     * @param knowledge This knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets whether Zhang's complete rules set is used.
-     *
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * Sets the maximum length of any discriminating path.
-     *
-     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        if (maxDiscriminatingPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
-        }
-
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
-    }
-
-    /**
-     * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+        return cpdag;
     }
 
     /**
@@ -370,23 +220,6 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setDepth(int depth) {
         this.depth = depth;
-    }
-
-    /**
-     * Sets the flag for whether to guarantee the output is a legal PAG.
-     *
-     * @param guaranteePag True, if so.
-     */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
-    }
-
-    /**
-     * Sets the method for finding sepsets in the GraspFci class.
-     *
-     * @param sepsetFinderMethod the method for finding sepsets
-     */
-    public void setSepsetFinderMethod(int sepsetFinderMethod) {
-        this.sepsetFinderMethod = sepsetFinderMethod;
+        super.setDepth(depth);
     }
 }

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -55,9 +55,16 @@ public class EmpiricalDistributionForExpression {
     }
 
     /**
-     * <p>getDist.</p>
+     * Generates an empirical cumulative distribution function (CDF) based on the evaluation
+     * of an expression over a repetitive sampling process.
      *
-     * @return a {@link org.apache.commons.math3.distribution.RealDistribution} object
+     * The method retrieves an expression associated with a specified error node, evaluates
+     * the expression in a specified context over 5000 iterations, and collects the results.
+     * These collected values are then used to construct and return an empirical CDF.
+     *
+     * @return a {@link RealDistribution} object representing
+     *         the empirical cumulative distribution function (CDF) generated based on the
+     *         evaluated sample values.
      */
     public RealDistribution getDist() {
         List<Double> drawFromDistribution = new ArrayList<>();

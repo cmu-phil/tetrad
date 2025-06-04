@@ -57,7 +57,7 @@
                 <tocitem text="FGES" target="fges"/>
                 <tocitem text="FGESMB" target="fgesmb"/>
                 <tocitem text="CCDMAX" target="ccdmax"/>
-                <tocitem text="GFCI" target="gfci"/>
+                <tocitem text="FGES-FCI" target="fges-fci"/>
                 <tocitem text="GLASSO" target="glasso"/>
                 <tocitem text="IMaGES" target="images"/>
                 <tocitem text="LiNGAM" target="lingam"/>

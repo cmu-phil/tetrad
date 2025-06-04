@@ -21,13 +21,12 @@
 
 package edu.cmu.tetradapp.editor;
 
-import cern.jet.random.Normal;
-import cern.jet.random.engine.MersenneTwister;
 import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
@@ -120,8 +119,8 @@ class NormalityTests {
      */
     public static double[] kolmogorovSmirnov(DataSet dataSet, ContinuousVariable variable) {
         int n = dataSet.getNumRows();
-        int columnIndex = dataSet.getColumn(variable);
-        Normal idealDistribution = NormalityTests.getNormal(dataSet, variable);
+        int columnIndex = dataSet.getColumnIndex(variable);
+        NormalDistribution idealDistribution = NormalityTests.getNormal(dataSet, variable);
 
         double[] ks = new double[6];
 
@@ -149,7 +148,7 @@ class NormalityTests {
         double d = 0.0;
         for (int i = 1; i <= n; i++) {
             double x = data[i - 1];
-            double idealValue = idealDistribution.cdf(x);
+            double idealValue = idealDistribution.cumulativeProbability(x);
             double difference = FastMath.abs(idealValue - ((double) i / n));
             if (difference > d) {
                 d = difference;
@@ -335,12 +334,11 @@ class NormalityTests {
      * @return Ideal Normal distribution for a variable.
      */
 
-    private static Normal getNormal(DataSet dataSet, Variable variable) {
+    private static NormalDistribution getNormal(DataSet dataSet, Variable variable) {
         double[] paramsForNormal = NormalityTests.normalParams(dataSet, variable);
         double mean = paramsForNormal[0];
         double sd = paramsForNormal[1];
-
-        return new Normal(mean, sd, new MersenneTwister());
+        return new NormalDistribution(mean, sd);
     }
 
     /**
@@ -350,7 +348,7 @@ class NormalityTests {
      */
 
     private static double[] normalParams(DataSet dataSet, Variable variable) {
-        int columnIndex = dataSet.getColumn(variable);
+        int columnIndex = dataSet.getColumnIndex(variable);
         double mean = 0.0;
         double sd = 0.0;
 

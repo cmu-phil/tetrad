@@ -105,16 +105,16 @@ public final class IndependenceTestModels {
             if (!list.isEmpty()) {
                 String property = getProperty(dataType);
                 if (property == null) {
-                    this.defaultModelMap.put(dataType, list.get(0));
+                    this.defaultModelMap.put(dataType, list.getFirst());
                 } else {
                     String value = TetradProperties.getInstance().getValue(property);
                     if (value == null) {
-                        this.defaultModelMap.put(dataType, list.get(0));
+                        this.defaultModelMap.put(dataType, list.getFirst());
                     } else {
                         Optional<IndependenceTestModel> result = list.stream()
                                 .filter(e -> e.getIndependenceTest().clazz().getName().equals(value))
                                 .findFirst();
-                        this.defaultModelMap.put(dataType, result.orElseGet(() -> list.get(0)));
+                        this.defaultModelMap.put(dataType, result.orElseGet(() -> list.getFirst()));
                     }
                 }
             }

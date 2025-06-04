@@ -86,7 +86,7 @@ public class SemOptimizerRegression implements SemOptimizer {
     }
 
     private static Matrix getCov(int[] _rows, int[] cols, Matrix covarianceMatrix) {
-        return covarianceMatrix.getSelection(_rows, cols);
+        return covarianceMatrix.view(_rows, cols).mat();
     }
 
     /**
@@ -128,8 +128,8 @@ public class SemOptimizerRegression implements SemOptimizer {
             int[] all = concat(i, _parents);
             Matrix cov = getCov(all, all, covar);
             int[] pp = indexedParents(_parents);
-            Matrix covxx = cov.getSelection(pp, pp);
-            Matrix covxy = cov.getSelection(pp, new int[]{0});
+            Matrix covxx = cov.view(pp, pp).mat();
+            Matrix covxy = cov.view(pp, new int[]{0}).mat();
             Matrix b = (covxx.inverse().times(covxy));
 
             for (int j = 0; j < b.getNumRows(); j++) {

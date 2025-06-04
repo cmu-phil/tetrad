@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -47,7 +48,7 @@ public class NumCompatibleEdges implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         GraphUtils.addEdgeSpecializationMarkup(estGraph);
 
         Graph pag = GraphTransforms.dagToPag(trueGraph);

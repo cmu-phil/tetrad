@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.MvpLikelihood;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
@@ -156,12 +156,12 @@ public class IndTestMvpLrt implements IndependenceTest {
         double p_0 = 0;
         double p_1 = 0;
         try {
-            p_0 = 1.0 - new ChiSquaredDistribution(dof_0).cumulativeProbability(2.0 * lik_0);
+            p_0 = StatUtils.getChiSquareP(dof_0, 2.0 * lik_0);
         } catch (Exception e) {
             TetradLogger.getInstance().log(e.getMessage());
         }
         try {
-            p_1 = 1.0 - new ChiSquaredDistribution(dof_1).cumulativeProbability(2.0 * lik_1);
+            p_1 = StatUtils.getChiSquareP(dof_1, 2.0 * lik_1);
         } catch (Exception e) {
             TetradLogger.getInstance().log(e.getMessage());
         }

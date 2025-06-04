@@ -75,7 +75,7 @@ public class ConditionalGaussianLikelihood {
     /**
      * Indices of mixedVariables.
      */
-    private final Map<Node, Integer> nodesHash;
+    private Map<Node, Integer> nodesHash;
     /**
      * Continuous data only.
      */
@@ -255,6 +255,13 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
+        this.nodesHash = new ConcurrentSkipListMap<>();
+
+        for (int j = 0; j < replaced.getNumColumns(); j++) {
+            Node v = replaced.getVariable(j);
+            this.nodesHash.put(v, j);
+        }
+
         return replaced;
     }
 
@@ -387,7 +394,7 @@ public class ConditionalGaussianLikelihood {
             List<Integer> key = new ArrayList<>();
 
             for (DiscreteVariable discrete_parent : discrete_parents) {
-                key.add((this.dataSet.getInt(i, this.dataSet.getColumn(discrete_parent))));
+                key.add((this.dataSet.getInt(i, this.dataSet.getColumnIndex(discrete_parent))));
             }
 
             if (!keys.containsKey(key)) {

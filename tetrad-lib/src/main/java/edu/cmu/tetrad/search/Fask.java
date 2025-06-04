@@ -329,6 +329,7 @@ public final class Fask {
      * some heuristics for orienting two-cycles.
      *
      * @return the graph. Some edges may be undirected; some adjacencies may be two-cycles.
+     * @throws InterruptedException if the search is interrupted.
      */
     public Graph search() throws InterruptedException {
         setCutoff(alpha);
@@ -526,13 +527,15 @@ public final class Fask {
 
             for (int f = 0; f < _adj.size(); f++) {
                 Node _z = _adj.get(f);
-                int column = dataSet.getColumn(_z);
+                int column = dataSet.getColumnIndex(_z);
                 _Z[f] = data[column];
             }
 
-            double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
-            double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
-            double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
+            double lambda = 0.0;
+
+            double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1, lambda);
+            double pc1 = partialCorrelation(x, y, _Z, x, 0, +1, lambda);
+            double pc2 = partialCorrelation(x, y, _Z, y, 0, +1, lambda);
 
             int nc = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
             int nc1 = StatUtils.getRows(x, x, 0, +1).size();
@@ -655,10 +658,10 @@ public final class Fask {
      *                                 linear dependence between the variables
      */
     private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold,
-                                      double direction) throws SingularMatrixException {
+                                      double direction, double lambda) throws SingularMatrixException {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
         Matrix m = new Matrix(cv).transpose();
-        return StatUtils.partialCorrelation(m);
+        return StatUtils.partialCorrelation(m, lambda);
     }
 
     /**

@@ -69,7 +69,7 @@ public class DataGraphUtils {
         do {
 //            dag = DataGraphUtils.randomGraphUniform(numStructuralNodes, numStructuralNodes, numStructuralEdges, 4, 3, 3, false);
             dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numStructuralEdges,
-                    30, 15, 15, false, true);
+                    30, 15, 15, false, true, -1);
         } while (dag.getNumEdges() != numStructuralEdges);
 
         Graph graph = new EdgeListGraph(dag);

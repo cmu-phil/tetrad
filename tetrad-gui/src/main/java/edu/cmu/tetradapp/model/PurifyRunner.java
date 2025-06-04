@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,7 +21,9 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.Clusters;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
@@ -82,13 +84,14 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 
         System.out.println("Clusters " + getParams().get("clusters", null));
 
-        if (source instanceof ICovarianceMatrix covMatrix) {
-            CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
-            double alpha = getParams().getDouble("alpha", 0.001);
-            BpcTestType sigTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
-            test = new TetradTestContinuous(covMatrix, sigTestType, alpha);
-//            sextadTest = new DeltaSextadTest(covMatrix);
-        } else if (source instanceof DataSet data) {
+//        if (source instanceof ICovarianceMatrix covMatrix) {
+//            CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
+//            double alpha = getParams().getDouble("alpha", 0.001);
+//            BpcTestType sigTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
+//            test = new TetradTestContinuous(covMatrix, sigTestType, alpha);
+////            sextadTest = new DeltaSextadTest(covMatrix);
+//        } else
+        if (source instanceof DataSet data) {
             double alpha = getParams().getDouble("alpha", 0.001);
             BpcTestType sigTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
             test = new TetradTestContinuous(data, sigTestType, alpha);

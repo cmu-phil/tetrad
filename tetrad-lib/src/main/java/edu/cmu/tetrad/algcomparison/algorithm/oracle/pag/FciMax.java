@@ -16,7 +16,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -90,22 +89,12 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
             knowledge = timeSeries.getKnowledge();
         }
 
-        PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 -> PcCommon.PcHeuristicType.NONE;
-            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
-
         edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(this.test.getTest(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setKnowledge(this.knowledge);
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
-        search.setPcHeuristicType(pcHeuristicType);
+        search.setPossibleDsepSearchDone(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -155,7 +144,7 @@ public class FciMax extends AbstractBootstrapAlgorithm implements Algorithm, Has
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
-        parameters.add(Params.POSSIBLE_MSEP_DONE);
+        parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.GUARANTEE_PAG);
 //        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.TIME_LAG);

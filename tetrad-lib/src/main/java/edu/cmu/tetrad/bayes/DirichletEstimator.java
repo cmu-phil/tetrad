@@ -79,13 +79,13 @@ public final class DirichletEstimator {
 
             Node node = prior.getNode(n);
             String name = node.getName();
-            varIndices[0] = dataSet.getColumn(dataSet.getVariable(name));
+            varIndices[0] = dataSet.getColumnIndex(dataSet.getVariable(name));
 
             for (int p = 0; p < prior.getNumParents(n); p++) {
                 Node parentNode = prior.getNode(prior.getParent(n, p));
                 name = parentNode.getName();
                 varIndices[p + 1] =
-                        dataSet.getColumn(dataSet.getVariable(name));
+                        dataSet.getColumnIndex(dataSet.getVariable(name));
             }
 
             // Loop over conditioning set.

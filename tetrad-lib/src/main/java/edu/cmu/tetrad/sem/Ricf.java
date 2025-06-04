@@ -37,8 +37,11 @@ import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.MatrixUtils;
 import org.apache.commons.math3.util.FastMath;
 
+import javax.swing.plaf.basic.BasicViewportUI;
+import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.List;
 
 /**
  * Implements ICF as specified in Drton and Richardson (2003), Iterative Conditional Fitting for Gaussian Ancestral
@@ -130,7 +133,14 @@ public class Ricf {
                 int[] parv = pars[_v];
                 int[] spov = spo[_v];
 
-                DoubleMatrix2D a6 = B.viewSelection(v, parv);
+                DoubleMatrix2D bview = B.viewSelection(v, parv);
+
+//                System.out.println("v = " + Arrays.toString(v));
+//                System.out.println("parv = " + Arrays.toString(parv));
+//                System.out.println("bview = " + bview);
+
+//                System.out.println("B = " + B);
+
                 if (spov.length == 0) {
                     if (parv.length != 0) {
                         if (i == 1) {
@@ -139,10 +149,10 @@ public class Ricf {
                             DoubleMatrix2D a3 = algebra.inverse(a1);
                             DoubleMatrix2D a4 = algebra.mult(a2, a3);
                             a4.assign(Mult.mult(-1));
-                            a6.assign(a4);
+                            bview.assign(a4);
 
                             DoubleMatrix2D a7 = S.viewSelection(parv, v);
-                            DoubleMatrix2D a9 = algebra.mult(a6, a7);
+                            DoubleMatrix2D a9 = algebra.mult(bview, a7);
                             DoubleMatrix2D a8 = S.viewSelection(v, v);
                             DoubleMatrix2D a8b = omega.viewSelection(v, v);
                             a8b.assign(a8);
@@ -194,7 +204,8 @@ public class Ricf {
 
                         DoubleMatrix1D a19 = YX.viewSelection(range2);
                         DoubleMatrix2D a20 = S.viewSelection(v, all);
-                        DoubleMatrix1D a21 = algebra.mult(a20, algebra.transpose(Z)).viewRow(0);
+                        DoubleMatrix2D mult = algebra.mult(a20, algebra.transpose(Z));
+                        DoubleMatrix1D a21 = mult.viewRow(0);
                         a19.assign(a21);
 
                         // Temp
@@ -202,8 +213,11 @@ public class Ricf {
                         DoubleMatrix1D temp = algebra.mult(algebra.transpose(a22), YX);
 
                         // Assign to b.
-                        DoubleMatrix1D a23 = a6.viewRow(0);
+                        DoubleMatrix1D a23 = bview.viewRow(0);
                         DoubleMatrix1D a24 = temp.viewSelection(range1);
+
+//                        System.out.println("B = " + B);
+
                         a23.assign(a24);
                         a23.assign(Mult.mult(-1));
 
@@ -220,6 +234,8 @@ public class Ricf {
                         DoubleMatrix2D a31 = algebra.mult(a30, a29);
                         omega.viewSelection(v, v).assign(tempVar);
                         omega.viewSelection(v, v).assign(a31, PlusMult.plusMult(1));
+
+
                     } else {
                         DoubleMatrix2D oInv = new DenseDoubleMatrix2D(p, p);
                         DoubleMatrix2D a2 = omega.viewSelection(vcomp, vcomp);
@@ -235,7 +251,8 @@ public class Ricf {
 
                         // Build XY
                         DoubleMatrix2D a20 = S.viewSelection(v, all);
-                        DoubleMatrix1D YX = algebra.mult(a20, Z.viewDice()).viewRow(0);
+                        DoubleMatrix2D doubleMatrix2D1 = Z.viewDice();
+                        DoubleMatrix1D YX = algebra.mult(a20, doubleMatrix2D1).viewRow(0);
 
                         // Temp
                         DoubleMatrix2D a22 = algebra.inverse(XX);
@@ -250,24 +267,20 @@ public class Ricf {
                         // Variance.
                         double tempVar = S.get(_v, _v) - algebra.mult(a24, YX);
 
-//                        System.out.println("tempVar = " + tempVar);
-
                         DoubleMatrix2D a27 = omega.viewSelection(v, spov);
                         DoubleMatrix2D a28 = oInv.viewSelection(spov, spov);
                         DoubleMatrix2D a29 = omega.viewSelection(spov, v).copy();
                         DoubleMatrix2D a30 = algebra.mult(a27, a28);
                         DoubleMatrix2D a31 = algebra.mult(a30, a29);
                         omega.set(_v, _v, tempVar + a31.get(0, 0));
-
-//                        System.out.println("Omega final " + omega);
                     }
                 }
             }
 
             DoubleMatrix2D a32 = omega.copy();
             a32.assign(omegaOld, PlusMult.plusMult(-1));
-            double diff1 = algebra.norm1(a32);
 
+            double diff1 = algebra.norm1(a32);
             DoubleMatrix2D a33 = B.copy();
             a33.assign(bOld, PlusMult.plusMult(-1));
             double diff2 = algebra.norm1(a32);
@@ -276,10 +289,12 @@ public class Ricf {
             _diff = diff;
 
             if (diff < tolerance) break;
+//            break;
         }
 
         DoubleMatrix2D a34 = algebra.inverse(B);
         DoubleMatrix2D a35 = algebra.inverse(B.viewDice());
+
         DoubleMatrix2D sigmahat = algebra.mult(algebra.mult(a34, omega), a35);
 
         DoubleMatrix2D lambdahat = omega.copy();
@@ -298,10 +313,10 @@ public class Ricf {
     /**
      * Same as above but takes a Graph instead of a SemGraph
      *
-     * @param mag       a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param mag       a {@link Graph} object
+     * @param covMatrix a {@link ICovarianceMatrix} object
      * @param tolerance a double
-     * @return a {@link edu.cmu.tetrad.sem.Ricf.RicfResult} object
+     * @return a {@link Ricf.RicfResult} object
      */
     public RicfResult ricf2(Graph mag, ICovarianceMatrix covMatrix, double tolerance) {
 //        mag.setShowErrorTerms(false);
@@ -463,8 +478,6 @@ public class Ricf {
                         DoubleMatrix2D a3 = algebra.inverse(a2);
                         oInv.viewSelection(vcomp, vcomp).assign(a3);
 
-//                        System.out.println("O.inv = " + oInv);
-
                         DoubleMatrix2D a4 = oInv.viewSelection(spov, vcomp);
                         DoubleMatrix2D a5 = B.viewSelection(vcomp, all);
                         DoubleMatrix2D Z = algebra.mult(a4, a5);
@@ -482,13 +495,13 @@ public class Ricf {
 
                         // Assign to omega.
                         DoubleMatrix1D a24 = omega.viewSelection(v, spov).viewRow(0);
+
                         a24.assign(a23);
                         DoubleMatrix1D a25 = omega.viewSelection(spov, v).viewColumn(0);
                         a25.assign(a23);
 
                         // Variance.
                         double tempVar = S.get(_v, _v) - algebra.mult(a24, YX);
-
                         DoubleMatrix2D a27 = omega.viewSelection(v, spov);
                         DoubleMatrix2D a28 = oInv.viewSelection(spov, spov);
                         DoubleMatrix2D a29 = omega.viewSelection(spov, v).copy();
@@ -533,7 +546,7 @@ public class Ricf {
     /**
      * <p>cliques.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph a {@link Graph} object
      * @return an enumeration of the cliques of the given graph considered as undirected.
      */
     public List<List<Node>> cliques(Graph graph) {
@@ -909,16 +922,16 @@ public class Ricf {
         public String toString() {
 
             return "\nSigma hat\n" +
-                   MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                   "\n\nLambda hat\n" +
-                   MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                   "\n\nBeta hat\n" +
-                   MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                   "\n\nOmega hat\n" +
-                   MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
-                   "\n\nIterations\n" +
-                   getIterations() +
-                   "\n\ndiff = " + this.diff;
+                    MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                    "\n\nLambda hat\n" +
+                    MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                    "\n\nBeta hat\n" +
+                    MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                    "\n\nOmega hat\n" +
+                    MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
+                    "\n\nIterations\n" +
+                    getIterations() +
+                    "\n\ndiff = " + this.diff;
         }
 
         /**
@@ -1017,13 +1030,13 @@ public class Ricf {
         public String toString() {
 
             return "\nSigma hat\n" +
-                   this.shat +
-                   "\nDeviance\n" +
-                   this.deviance +
-                   "\nDf\n" +
-                   this.df +
-                   "\nIterations\n" +
-                   this.iterations;
+                    this.shat +
+                    "\nDeviance\n" +
+                    this.deviance +
+                    "\nDf\n" +
+                    this.df +
+                    "\nIterations\n" +
+                    this.iterations;
         }
     }
 }

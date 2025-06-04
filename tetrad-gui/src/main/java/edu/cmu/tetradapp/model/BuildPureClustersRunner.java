@@ -154,10 +154,13 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                             getParams().getDouble("alpha", 0.001));
 
                 } else {
-                    bpc = new BpcTetradPurifyWashdown((ICovarianceMatrix) source,
-                            tetradTestType, getParams().getDouble("alpha", 0.001));
-
+                    throw new IllegalStateException("Expecting a DataSet.");
                 }
+//                else {
+//                    bpc = new BpcTetradPurifyWashdown((ICovarianceMatrix) source,
+//                            tetradTestType, getParams().getDouble("alpha", 0.001));
+//
+//                }
 
                 searchGraph = bpc.search();
             } else if (algorithm == BpcAlgorithmType.BUILD_PURE_CLUSTERS) {

@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.other;
 
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataModel;
@@ -23,6 +24,11 @@ import java.util.Vector;
  * @author josephramsey
  * @version $Id: $Id
  */
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "Factor Analysis",
+//        command = "factor-anal",
+//        algoType = AlgType.search_for_structure_over_latents
+//)
 @Bootstrapping
 public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algorithm {
     @Serial
@@ -156,7 +162,7 @@ public class FactorAnalysis extends AbstractBootstrapAlgorithm implements Algori
      * @return The description of the algorithm.
      */
     public String getDescription() {
-        return "GLASSO (Graphical LASSO)";
+        return "Factor Analysis";
     }
 
     /**

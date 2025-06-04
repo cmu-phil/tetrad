@@ -544,7 +544,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return The set of nodes that form the sepset between the two given nodes.
      */
     public Set<Node> getSepset(Node x, Node y, int maxLength) {
-        return new Paths(this).getSepsetContaining(x, y, new HashSet<>(), maxLength);
+        try {
+            return new Paths(this).getSepsetContaining(x, y, new HashSet<>(), maxLength);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -557,7 +561,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return The set of nodes that form the sepset between the two given nodes.
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxLength) {
-        return new Paths(this).getSepsetContaining(x, y, containing, maxLength);
+        try {
+            return new Paths(this).getSepsetContaining(x, y, containing, maxLength);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -722,13 +730,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     public synchronized boolean setEndpoint(Node from, Node to, Endpoint endPoint)
             throws IllegalArgumentException {
         if (!isAdjacentTo(from, to)) throw new IllegalArgumentException("Not adjacent");
-
         Edge edge = getEdge(from, to);
-
+        Edge newEdge = new Edge(from, to, edge.getProximalEndpoint(from), endPoint);
         removeEdge(edge);
-
-        Edge newEdge = new Edge(from, to,
-                edge.getProximalEndpoint(from), endPoint);
         addEdge(newEdge);
         return true;
     }
@@ -811,10 +815,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.parentsHash.remove(node1);
         this.parentsHash.remove(node2);
 
-
         ancestorCache.clear();
         semidirectedPathCache.clear();
-//        }
 
         if (Edges.isDirectedEdge(edge)) {
             Node node = Edges.getDirectedEdgeTail(edge);
@@ -989,10 +991,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public void reorientAllWith(Endpoint endpoint) {
         for (Edge edge : getEdges()) {
-            removeEdge(edge);
-            Edge edge2 = new Edge(edge);
-            edge2.setEndpoint1(endpoint);
-            edge2.setEndpoint2(endpoint);
+            Edge edge2 = new Edge(edge.getNode1(), edge.getNode2(), endpoint, endpoint);
+            removeEdges(edge.getNode1(), edge.getNode2());
             addEdge(edge2);
         }
     }

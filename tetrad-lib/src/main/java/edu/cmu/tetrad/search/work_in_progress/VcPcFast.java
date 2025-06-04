@@ -647,6 +647,7 @@ public final class VcPcFast implements IGraphSearch {
      * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
      * @param verbose a boolean
      * @return a {@link edu.cmu.tetrad.search.work_in_progress.VcPcFast.CpcTripleType} object
+     * @throws InterruptedException if any.
      */
     public CpcTripleType getPopulationTripleType(Node x, Node y, Node z,
                                                  IndependenceTest test, int depth,

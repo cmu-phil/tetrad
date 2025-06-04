@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.study.gene.tetrad.gene.simulation;
 
-import cern.colt.list.DoubleArrayList;
-import cern.jet.stat.Descriptive;
 import edu.cmu.tetrad.study.gene.tetrad.gene.history.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -188,233 +186,233 @@ public class TestMeasurementSimulator extends TestCase {
         }
     }
 
-    /**
-     * Save out the raw data using default parameters and make sure that Gene1:t2 has the specified standard deviation.
-     * Should be 0.05. (Gene1 has only itself as parent.)
-     */
-    public void testTranscriptionError() {
+//    /**
+//     * Save out the raw data using default parameters and make sure that Gene1:t2 has the specified standard deviation.
+//     * Should be 0.05. (Gene1 has only itself as parent.)
+//     */
+//    public void testTranscriptionError() {
+//
+//        // Raw data is saved for this simulation.
+//        setDefaultParameters();
+//        this.simulator.setRawDataSaved(true);
+//        this.simulator.setMeasuredDataSaved(false);
+//
+//        // Simulate the data.
+//        this.simulator.simulate(this.history);
+//
+//        double[][][] rawData = this.simulator.getRawData();
+//
+//        // (Test the dimensions.)
+//        TestCase.assertEquals(3, rawData.length);              // # variables.
+//        TestCase.assertEquals(4, rawData[0].length);           // # time steps.
+//        TestCase.assertEquals(10000, rawData[0][0].length);    // # cells / dish
+//
+//        // The test is to see whether Gene 1 at time step 2 has a
+//        // standard deviation of 0.05. Of course the gene and time
+//        // step numbers need to be 0-indexed.
+//        DoubleArrayList doubleArrayList = new DoubleArrayList(rawData[0][1]);
+//        double sum = Descriptive.sum(doubleArrayList);
+//        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+//        double stdev = Descriptive.standardDeviation(
+//                Descriptive.variance(rawData[0][1].length, sum, sumOfSquares));
+//
+//        TestCase.assertEquals(0.05, stdev, 0.01);
+//    }
 
-        // Raw data is saved for this simulation.
-        setDefaultParameters();
-        this.simulator.setRawDataSaved(true);
-        this.simulator.setMeasuredDataSaved(false);
+//    /**
+//     * Turn on dish-to-dish variability error, turn off all other sources of error, simulate 100 dishes of data with 1
+//     * sample per dish, and look to see whether in the aggregated data Gene2:t1 and Gene3:t1 have standard deviations
+//     * that are 10% of their respective means.
+//     */
+//    public void testDishToDishVariability() {
+//
+//        setDefaultParameters();
+//
+//        // The following parameters are set to non-default values for
+//        // this test.
+//        this.simulator.setNumDishes(100);
+//        this.simulator.setStepsGenerated(2);
+//        this.simulator.setNumSamplesPerDish(1);
+//        this.simulator.setSampleSampleVariability(0.0001);
+//        this.simulator.setChipChipVariability(0.0001);
+//        this.simulator.setPixelDigitalization(0.0001);
+//        this.simulator.setNumCellsPerDish(100);
+//
+//        // Simulate the data.
+//        this.simulator.simulate(this.history);
+//
+//        double[][][] measuredData = this.simulator.getMeasuredData();
+//
+//        // Do the test.
+//        DoubleArrayList doubleArrayList =
+//                new DoubleArrayList(measuredData[1][0]);
+//        double sum = Descriptive.sum(doubleArrayList);
+//        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+//        double gene2time1sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[1][0].length, sum,
+//                        sumOfSquares));
+//        DoubleArrayList doubleArrayList1 =
+//                new DoubleArrayList(measuredData[2][0]);
+//        double sum1 = Descriptive.sum(doubleArrayList1);
+//        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+//        double gene3time1sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[2][0].length, sum1,
+//                        sumOfSquares1));
+//        double gene2time1mean =
+//                Descriptive.mean(new DoubleArrayList(measuredData[1][0]));
+//        double gene3time1mean =
+//                Descriptive.mean(new DoubleArrayList(measuredData[2][0]));
+//
+//        TestCase.assertEquals(FastMath.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
+//        TestCase.assertEquals(FastMath.abs(0.1 * gene3time1mean), gene3time1sd, 0.03);
+//    }
 
-        // Simulate the data.
-        this.simulator.simulate(this.history);
+//    /**
+//     * Turn on sample-to-sample error, turn off all other sources of error, simulate 1 dish of data with 1000 samples
+//     * per dish, and look to see whether in the aggregated data the standard deviations of Gene2:t1 and Gene3:t1 are
+//     * 0.2.
+//     */
+//    public void testSampleToSampleError() {
+//
+//        setDefaultParameters();
+//
+//        // The following parameters are set to non-default values for
+//        // this test.
+//        this.simulator.setNumSamplesPerDish(1000);
+//        this.simulator.setSampleSampleVariability(0.2);
+//        this.simulator.setChipChipVariability(0.0001);
+//        this.simulator.setPixelDigitalization(0.0001);
+//        this.simulator.setStepsGenerated(2);
+//        this.simulator.setNumCellsPerDish(100);
+//
+//        // Simulate the data.
+//        this.simulator.simulate(this.history);
+//
+//        double[][][] measuredData = this.simulator.getMeasuredData();
+//
+//        // Do the test.
+//        DoubleArrayList doubleArrayList =
+//                new DoubleArrayList(measuredData[1][0]);
+//        double sum = Descriptive.sum(doubleArrayList);
+//        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+//        double gene2time1sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[1][0].length, sum,
+//                        sumOfSquares));
+//        DoubleArrayList doubleArrayList1 =
+//                new DoubleArrayList(measuredData[2][0]);
+//        double sum1 = Descriptive.sum(doubleArrayList1);
+//        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+//        double gene3time1sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[2][0].length, sum1,
+//                        sumOfSquares1));
+//
+//        TestCase.assertEquals(0.2, gene2time1sd, 0.02);
+//        TestCase.assertEquals(0.2, gene3time1sd, 0.02);
+//    }
 
-        double[][][] rawData = this.simulator.getRawData();
+//    /**
+//     * Turn on chip to chip error, turn off all other sources of error, simulate 1 dish of data with 1000 samples per
+//     * dish and look to see whether in the aggregated data the standard deviations for Gene2:t1, Gene3:t1, and Gene1:t2
+//     * are 0.3.
+//     */
+//    public void testChipToChipError() {
+//
+//        setDefaultParameters();
+//
+//        // The following parameters are set to non-default values for
+//        // this test.
+//        this.simulator.setDishDishVariability(0.0001);
+//        this.simulator.setNumSamplesPerDish(1000);
+//        this.simulator.setSampleSampleVariability(0.0001);
+//        this.simulator.setChipChipVariability(0.3);
+//        this.simulator.setPixelDigitalization(0.0001);
+//        this.simulator.setStepsGenerated(2);
+//        this.simulator.setNumCellsPerDish(100);
+//
+//        // Simulate the data.
+//        this.simulator.simulate(this.history);
+//
+//        double[][][] measuredData = this.simulator.getMeasuredData();
+//
+//        // Do the test.
+//        DoubleArrayList doubleArrayList =
+//                new DoubleArrayList(measuredData[1][0]);
+//        double sum = Descriptive.sum(doubleArrayList);
+//        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+//        double gene2time1sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[1][0].length, sum,
+//                        sumOfSquares));
+//        DoubleArrayList doubleArrayList1 =
+//                new DoubleArrayList(measuredData[2][0]);
+//        double sum1 = Descriptive.sum(doubleArrayList1);
+//        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+//        double gene3time1sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[2][0].length, sum1,
+//                        sumOfSquares1));
+//        DoubleArrayList doubleArrayList2 =
+//                new DoubleArrayList(measuredData[1][1]);
+//        double sum2 = Descriptive.sum(doubleArrayList2);
+//        double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
+//        double gene1time2sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[1][1].length, sum2,
+//                        sumOfSquares2));
+//
+//        TestCase.assertEquals(0.3, gene2time1sd, 0.02);
+//        TestCase.assertEquals(0.3, gene3time1sd, 0.02);
+//        TestCase.assertEquals(0.3, gene1time2sd, 0.02);
+//    }
 
-        // (Test the dimensions.)
-        TestCase.assertEquals(3, rawData.length);              // # variables.
-        TestCase.assertEquals(4, rawData[0].length);           // # time steps.
-        TestCase.assertEquals(10000, rawData[0][0].length);    // # cells / dish
-
-        // The test is to see whether Gene 1 at time step 2 has a
-        // standard deviation of 0.05. Of course the gene and time
-        // step numbers need to be 0-indexed.
-        DoubleArrayList doubleArrayList = new DoubleArrayList(rawData[0][1]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double stdev = Descriptive.standardDeviation(
-                Descriptive.variance(rawData[0][1].length, sum, sumOfSquares));
-
-        TestCase.assertEquals(0.05, stdev, 0.01);
-    }
-
-    /**
-     * Turn on dish-to-dish variability error, turn off all other sources of error, simulate 100 dishes of data with 1
-     * sample per dish, and look to see whether in the aggregated data Gene2:t1 and Gene3:t1 have standard deviations
-     * that are 10% of their respective means.
-     */
-    public void testDishToDishVariability() {
-
-        setDefaultParameters();
-
-        // The following parameters are set to non-default values for
-        // this test.
-        this.simulator.setNumDishes(100);
-        this.simulator.setStepsGenerated(2);
-        this.simulator.setNumSamplesPerDish(1);
-        this.simulator.setSampleSampleVariability(0.0001);
-        this.simulator.setChipChipVariability(0.0001);
-        this.simulator.setPixelDigitalization(0.0001);
-        this.simulator.setNumCellsPerDish(100);
-
-        // Simulate the data.
-        this.simulator.simulate(this.history);
-
-        double[][][] measuredData = this.simulator.getMeasuredData();
-
-        // Do the test.
-        DoubleArrayList doubleArrayList =
-                new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[1][0].length, sum,
-                        sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
-                new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[2][0].length, sum1,
-                        sumOfSquares1));
-        double gene2time1mean =
-                Descriptive.mean(new DoubleArrayList(measuredData[1][0]));
-        double gene3time1mean =
-                Descriptive.mean(new DoubleArrayList(measuredData[2][0]));
-
-        TestCase.assertEquals(FastMath.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
-        TestCase.assertEquals(FastMath.abs(0.1 * gene3time1mean), gene3time1sd, 0.03);
-    }
-
-    /**
-     * Turn on sample-to-sample error, turn off all other sources of error, simulate 1 dish of data with 1000 samples
-     * per dish, and look to see whether in the aggregated data the standard deviations of Gene2:t1 and Gene3:t1 are
-     * 0.2.
-     */
-    public void testSampleToSampleError() {
-
-        setDefaultParameters();
-
-        // The following parameters are set to non-default values for
-        // this test.
-        this.simulator.setNumSamplesPerDish(1000);
-        this.simulator.setSampleSampleVariability(0.2);
-        this.simulator.setChipChipVariability(0.0001);
-        this.simulator.setPixelDigitalization(0.0001);
-        this.simulator.setStepsGenerated(2);
-        this.simulator.setNumCellsPerDish(100);
-
-        // Simulate the data.
-        this.simulator.simulate(this.history);
-
-        double[][][] measuredData = this.simulator.getMeasuredData();
-
-        // Do the test.
-        DoubleArrayList doubleArrayList =
-                new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[1][0].length, sum,
-                        sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
-                new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[2][0].length, sum1,
-                        sumOfSquares1));
-
-        TestCase.assertEquals(0.2, gene2time1sd, 0.02);
-        TestCase.assertEquals(0.2, gene3time1sd, 0.02);
-    }
-
-    /**
-     * Turn on chip to chip error, turn off all other sources of error, simulate 1 dish of data with 1000 samples per
-     * dish and look to see whether in the aggregated data the standard deviations for Gene2:t1, Gene3:t1, and Gene1:t2
-     * are 0.3.
-     */
-    public void testChipToChipError() {
-
-        setDefaultParameters();
-
-        // The following parameters are set to non-default values for
-        // this test.
-        this.simulator.setDishDishVariability(0.0001);
-        this.simulator.setNumSamplesPerDish(1000);
-        this.simulator.setSampleSampleVariability(0.0001);
-        this.simulator.setChipChipVariability(0.3);
-        this.simulator.setPixelDigitalization(0.0001);
-        this.simulator.setStepsGenerated(2);
-        this.simulator.setNumCellsPerDish(100);
-
-        // Simulate the data.
-        this.simulator.simulate(this.history);
-
-        double[][][] measuredData = this.simulator.getMeasuredData();
-
-        // Do the test.
-        DoubleArrayList doubleArrayList =
-                new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[1][0].length, sum,
-                        sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
-                new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[2][0].length, sum1,
-                        sumOfSquares1));
-        DoubleArrayList doubleArrayList2 =
-                new DoubleArrayList(measuredData[1][1]);
-        double sum2 = Descriptive.sum(doubleArrayList2);
-        double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
-        double gene1time2sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[1][1].length, sum2,
-                        sumOfSquares2));
-
-        TestCase.assertEquals(0.3, gene2time1sd, 0.02);
-        TestCase.assertEquals(0.3, gene3time1sd, 0.02);
-        TestCase.assertEquals(0.3, gene1time2sd, 0.02);
-    }
-
-    /**
-     * Turn on pixel digitalization error, turn off all other sources of error, simulate 1 dish of data with 1000
-     * samples per dish and look to see whether in the aggregated data the standard deviations for Gene2:t1, Gene3:t1
-     * and Gene1:t2 are 0.3.
-     */
-    public void testPixelError() {
-
-        setDefaultParameters();
-
-        // The following parameters are set to non-default values for
-        // this test.
-        this.simulator.setDishDishVariability(0.0001);
-        this.simulator.setNumSamplesPerDish(1000);
-        this.simulator.setSampleSampleVariability(0.0001);
-        this.simulator.setChipChipVariability(0.0001);
-        this.simulator.setPixelDigitalization(0.3);
-        this.simulator.setStepsGenerated(2);
-        this.simulator.setNumCellsPerDish(100);
-
-        // Simulate the data.
-        this.simulator.simulate(this.history);
-
-        double[][][] measuredData = this.simulator.getMeasuredData();
-
-        // Do the test.
-        DoubleArrayList doubleArrayList =
-                new DoubleArrayList(measuredData[1][0]);
-        double sum = Descriptive.sum(doubleArrayList);
-        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
-        double gene2time1sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[1][0].length, sum,
-                        sumOfSquares));
-        DoubleArrayList doubleArrayList1 =
-                new DoubleArrayList(measuredData[2][0]);
-        double sum1 = Descriptive.sum(doubleArrayList1);
-        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
-        double gene3time1sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[2][0].length, sum1,
-                        sumOfSquares1));
-        DoubleArrayList doubleArrayList2 =
-                new DoubleArrayList(measuredData[1][1]);
-        double sum2 = Descriptive.sum(doubleArrayList2);
-        double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
-        double gene1time2sd = Descriptive.standardDeviation(
-                Descriptive.variance(measuredData[1][1].length, sum2,
-                        sumOfSquares2));
-
-        TestCase.assertEquals(0.3, gene2time1sd, 0.1);
-        TestCase.assertEquals(0.3, gene3time1sd, 0.1);
-        TestCase.assertEquals(0.3, gene1time2sd, 0.1);
-    }
+//    /**
+//     * Turn on pixel digitalization error, turn off all other sources of error, simulate 1 dish of data with 1000
+//     * samples per dish and look to see whether in the aggregated data the standard deviations for Gene2:t1, Gene3:t1
+//     * and Gene1:t2 are 0.3.
+//     */
+//    public void testPixelError() {
+//
+//        setDefaultParameters();
+//
+//        // The following parameters are set to non-default values for
+//        // this test.
+//        this.simulator.setDishDishVariability(0.0001);
+//        this.simulator.setNumSamplesPerDish(1000);
+//        this.simulator.setSampleSampleVariability(0.0001);
+//        this.simulator.setChipChipVariability(0.0001);
+//        this.simulator.setPixelDigitalization(0.3);
+//        this.simulator.setStepsGenerated(2);
+//        this.simulator.setNumCellsPerDish(100);
+//
+//        // Simulate the data.
+//        this.simulator.simulate(this.history);
+//
+//        double[][][] measuredData = this.simulator.getMeasuredData();
+//
+//        // Do the test.
+//        DoubleArrayList doubleArrayList =
+//                new DoubleArrayList(measuredData[1][0]);
+//        double sum = Descriptive.sum(doubleArrayList);
+//        double sumOfSquares = Descriptive.sumOfSquares(doubleArrayList);
+//        double gene2time1sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[1][0].length, sum,
+//                        sumOfSquares));
+//        DoubleArrayList doubleArrayList1 =
+//                new DoubleArrayList(measuredData[2][0]);
+//        double sum1 = Descriptive.sum(doubleArrayList1);
+//        double sumOfSquares1 = Descriptive.sumOfSquares(doubleArrayList1);
+//        double gene3time1sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[2][0].length, sum1,
+//                        sumOfSquares1));
+//        DoubleArrayList doubleArrayList2 =
+//                new DoubleArrayList(measuredData[1][1]);
+//        double sum2 = Descriptive.sum(doubleArrayList2);
+//        double sumOfSquares2 = Descriptive.sumOfSquares(doubleArrayList2);
+//        double gene1time2sd = Descriptive.standardDeviation(
+//                Descriptive.variance(measuredData[1][1].length, sum2,
+//                        sumOfSquares2));
+//
+//        TestCase.assertEquals(0.3, gene2time1sd, 0.1);
+//        TestCase.assertEquals(0.3, gene3time1sd, 0.1);
+//        TestCase.assertEquals(0.3, gene1time2sd, 0.1);
+//    }
 }
 
 

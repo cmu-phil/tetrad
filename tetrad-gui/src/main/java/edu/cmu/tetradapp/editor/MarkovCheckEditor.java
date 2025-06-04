@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
@@ -184,6 +183,14 @@ public class MarkovCheckEditor extends JPanel {
      */
     private JLabel andersonDarlingPLabelIndep;
     /**
+     * The label for the Fisher combined p.
+     */
+    private JLabel fisherCombinedPLabelDep;
+    /**
+     * The label for the Fisher combined p.
+     */
+    private JLabel fisherCombinedLabelIndep;
+    /**
      * Sort direction.
      */
     private int sortDir;
@@ -225,6 +232,7 @@ public class MarkovCheckEditor extends JPanel {
         setPreferredSize(new Dimension(1100, 600));
 
         conditioningSetTypeJComboBox.addItem("Ordered Local Markov");
+        conditioningSetTypeJComboBox.addItem("Ordered Local Markov MAG");
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("Parents(X) and Neighbors(X)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
@@ -236,24 +244,67 @@ public class MarkovCheckEditor extends JPanel {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
                 case "Parents(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.LOCAL_MARKOV);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Parents(X)");
+                    }
+
                     break;
                 case "Parents(X) and Neighbors(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.PARENTS_AND_NEIGHBORS);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Parents(X) and Neighbors(X)");
+                    }
+
                     break;
                 case "Ordered Local Markov":
                     model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov");
+                    }
+
+                    break;
+                case "Ordered Local Markov MAG":
+                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Ordered Local Markov MAG");
+                    }
+
                     break;
                 case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.MARKOV_BLANKET);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "MarkovBlanket(X)");
+                    }
+
                     break;
                 case "Recursive M-Sep Conditioning Set":
                     model.getMarkovCheck().setSetType(ConditioningSetType.RECURSIVE_MSEP);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Recursive M-Sep Conditioning Set");
+                    }
+
                     break;
                 case "Conditioning on Noncolliders Only":
                     model.getMarkovCheck().setSetType(ConditioningSetType.NONCOLLIDERS_ONLY);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "Conditioning on Noncolliders Only");
+                    }
+
                     break;
                 case "All Subsets (Global Markov)":
                     model.getMarkovCheck().setSetType(ConditioningSetType.GLOBAL_MARKOV);
+
+                    if (model.getMarkovCheck() != null) {
+                        Preferences.userRoot().put("markovCheckerConditioningSetType", "All Subsets (Global Markov)");
+                    }
+
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conditioning set type: "
@@ -296,6 +347,8 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         setTest();
+
+        conditioningSetTypeJComboBox.setSelectedItem(Preferences.userRoot().get("markovCheckerConditioningSetType", "Parents(X)"));
 
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));
@@ -606,33 +659,64 @@ public class MarkovCheckEditor extends JPanel {
     private void refreshResult(MarkovCheckIndTestModel model, JTable tableIndep, JTable tableDep,
                                AbstractTableModel tableModelIndep, AbstractTableModel tableModelDep,
                                DoubleTextField percent, boolean clear) {
-        SwingUtilities.invokeLater(() -> {
-            setTest();
+        new WatchedProcess() {
+            @Override
+            public void watch() {
+                setTest();
 
-            tableModelIndep.fireTableDataChanged();
-            tableModelDep.fireTableDataChanged();
+                tableModelIndep.fireTableDataChanged();
+                tableModelDep.fireTableDataChanged();
 
-            model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
+                model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
 
-            model.getMarkovCheck().setPercentResample(percent.getValue());
-            model.getMarkovCheck().generateResults(true, clear);
-
-            if (checkDependentDistribution.isSelected()) {
-                if (clear) {
-                    model.getMarkovCheck().generateResults(true, true);
-                    model.getMarkovCheck().generateResults(false, false);
-                } else {
-                    model.getMarkovCheck().generateResults(false, false);
-                    model.getMarkovCheck().generateResults(false, false);
-                }
-            } else {
+                model.getMarkovCheck().setPercentResample(percent.getValue());
                 model.getMarkovCheck().generateResults(true, clear);
-            }
 
-            tableModelIndep.fireTableDataChanged();
-            tableModelDep.fireTableDataChanged();
-            updateTables(model, tableIndep, tableDep);
-        });
+                if (checkDependentDistribution.isSelected()) {
+                    if (clear) {
+                        model.getMarkovCheck().generateResults(true, true);
+                        model.getMarkovCheck().generateResults(false, false);
+                    } else {
+                        model.getMarkovCheck().generateResults(true, false);
+                        model.getMarkovCheck().generateResults(false, false);
+                    }
+                } else {
+                    model.getMarkovCheck().generateResults(true, clear);
+                }
+
+                tableModelIndep.fireTableDataChanged();
+                tableModelDep.fireTableDataChanged();
+                updateTables(model, tableIndep, tableDep);
+            }
+        };
+
+//        SwingUtilities.invokeLater(() -> {
+//            setTest();
+//
+//            tableModelIndep.fireTableDataChanged();
+//            tableModelDep.fireTableDataChanged();
+//
+//            model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
+//
+//            model.getMarkovCheck().setPercentResample(percent.getValue());
+//            model.getMarkovCheck().generateResults(true, clear);
+//
+//            if (checkDependentDistribution.isSelected()) {
+//                if (clear) {
+//                    model.getMarkovCheck().generateResults(true, true);
+//                    model.getMarkovCheck().generateResults(false, false);
+//                } else {
+//                    model.getMarkovCheck().generateResults(false, false);
+//                    model.getMarkovCheck().generateResults(false, false);
+//                }
+//            } else {
+//                model.getMarkovCheck().generateResults(true, clear);
+//            }
+//
+//            tableModelIndep.fireTableDataChanged();
+//            tableModelDep.fireTableDataChanged();
+//            updateTables(model, tableIndep, tableDep);
+//        });
     }
 
     private void setTest() {
@@ -833,6 +917,11 @@ public class MarkovCheckEditor extends JPanel {
         a9.add(andersonDarlingPLabelIndep);
         a4.add(a9);
 
+        Box a10 = Box.createHorizontalBox();
+        a10.add(Box.createHorizontalGlue());
+        a10.add(fisherCombinedLabelIndep);
+        a4.add(a10);
+
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
@@ -963,6 +1052,10 @@ public class MarkovCheckEditor extends JPanel {
                         "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
                 );
 
+                fisherCombinedLabelIndep.setText(
+                        "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
+                );
+
                 histogramPanelIndep.removeAll();
                 histogramPanelIndep.add(createHistogramPanel(visiblePairs), BorderLayout.CENTER);
                 histogramPanelIndep.validate();
@@ -1003,6 +1096,10 @@ public class MarkovCheckEditor extends JPanel {
 
                 andersonDarlingPLabelDep.setText(
                         "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
+                );
+
+                fisherCombinedPLabelDep.setText(
+                        "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
                 );
 
                 histogramPanelDep.removeAll();
@@ -1189,6 +1286,11 @@ public class MarkovCheckEditor extends JPanel {
         a9.add(andersonDarlingPLabelDep);
         a4.add(a9);
 
+        Box a10 = Box.createHorizontalBox();
+        a10.add(Box.createHorizontalGlue());
+        a10.add(fisherCombinedPLabelDep);
+        a4.add(a9);
+
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
@@ -1254,6 +1356,14 @@ public class MarkovCheckEditor extends JPanel {
             andersonDarlingPLabelDep = new JLabel();
         }
 
+        if (fisherCombinedLabelIndep == null) {
+            fisherCombinedLabelIndep = new JLabel();
+        }
+
+        if (fisherCombinedPLabelDep == null) {
+            fisherCombinedPLabelDep = new JLabel();
+        }
+
         if (fractionDepLabelIndep == null) {
             fractionDepLabelIndep = new JLabel();
         }
@@ -1277,6 +1387,14 @@ public class MarkovCheckEditor extends JPanel {
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
         andersonDarlingPLabelDep.setText("P-value of the Anderson-Darling test = "
                                          + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
+        fisherCombinedLabelIndep.setText("Fisher combined p= "
+                                         + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
+        fisherCombinedPLabelDep.setText("Fisher combined p = "
+                                        + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "
@@ -1412,7 +1530,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param params              The parameters for the independence test.
      * @return The JPanel containing the parameters panel.
      */
-    private JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
+    private static JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
         Set<String> testParameters = new HashSet<>(independenceWrapper.getParameters());
         return createParamsPanel(testParameters, params);
     }
@@ -1424,7 +1542,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param parameters The Parameters object containing the parameter values.
      * @return The JPanel containing the parameters panel.
      */
-    private JPanel createParamsPanel(Set<String> params, Parameters parameters) {
+    public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
 
@@ -1450,7 +1568,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param parameters The Parameters object containing the parameter values.
      * @return A map of parameter names to Box components.
      */
-    private Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+    private static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
@@ -1471,7 +1589,7 @@ public class MarkovCheckEditor extends JPanel {
      * @return A Box component representing the parameter component.
      * @throws IllegalArgumentException If the default value type is unexpected.
      */
-    private Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
         if (defaultValue instanceof Double) {
@@ -1518,34 +1636,9 @@ public class MarkovCheckEditor extends JPanel {
      * @param upperBound   The upper bound for valid values.
      * @return A DoubleTextField with the specified parameters.
      */
-    private DoubleTextField getDoubleField(String parameter, Parameters parameters,
+    private static DoubleTextField getDoubleField(String parameter, Parameters parameters,
                                            double defaultValue, double lowerBound, double upperBound) {
-        DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
-                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
-
-        field.setFilter((value, oldValue) -> {
-            if (value == field.getValue()) {
-                return oldValue;
-            }
-
-            if (value < lowerBound) {
-                return oldValue;
-            }
-
-            if (value > upperBound) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
+        return ParameterComponents.getDoubleField(parameter, parameters, defaultValue, lowerBound, upperBound);
     }
 
     /**
@@ -1558,33 +1651,9 @@ public class MarkovCheckEditor extends JPanel {
      * @param upperBound   The upper bound for valid values.
      * @return An IntTextField with the specified parameters.
      */
-    private IntTextField getIntTextField(String parameter, Parameters parameters,
+    private static IntTextField getIntTextField(String parameter, Parameters parameters,
                                          int defaultValue, double lowerBound, double upperBound) {
-        IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
-
-        field.setFilter((value, oldValue) -> {
-            if (value == field.getValue()) {
-                return oldValue;
-            }
-
-            if (value < lowerBound) {
-                return oldValue;
-            }
-
-            if (value > upperBound) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
+        return ParameterComponents.getIntTextField(parameter, parameters, defaultValue, lowerBound, upperBound);
     }
 
     /**
@@ -1597,7 +1666,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param upperBound   The upper bound for valid values.
      * @return A LongTextField object with the specified parameters.
      */
-    private LongTextField getLongTextField(String parameter, Parameters parameters,
+    private static LongTextField getLongTextField(String parameter, Parameters parameters,
                                            long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
 
@@ -1633,7 +1702,7 @@ public class MarkovCheckEditor extends JPanel {
      * @param parameters   The Parameters object containing the parameter values.
      * @param defaultValue The default value for the boolean parameter
      */
-    private Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+    private static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
@@ -1684,24 +1753,8 @@ public class MarkovCheckEditor extends JPanel {
      * @param defaultValue The default value for the StringTextField.
      * @return A StringTextField object with the specified parameters.
      */
-    private StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
-        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
-
-        field.setFilter((value, oldValue) -> {
-            if (value.equals(field.getValue().trim())) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
+    private static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        return PathsAction.getStringField(parameter, parameters, defaultValue);
     }
 
     /**

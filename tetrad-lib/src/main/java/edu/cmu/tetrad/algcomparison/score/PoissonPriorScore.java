@@ -60,7 +60,7 @@ public class PoissonPriorScore implements ScoreWrapper {
         }
 
         score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
-        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
+        score.setSingularityLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
 
         return score;
     }
@@ -89,7 +89,7 @@ public class PoissonPriorScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.POISSON_LAMBDA);
-        parameters.add(Params.USE_PSEUDOINVERSE);
+        parameters.add(Params.SINGULARITY_LAMBDA);
         return parameters;
     }
 

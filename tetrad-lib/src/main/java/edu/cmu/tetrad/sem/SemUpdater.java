@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -20,8 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.sem;
 
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -160,8 +158,8 @@ public class SemUpdater implements TetradSerializable {
             yIndices[i] = manipulatedSemIm.getVariableNodes().indexOf(YVars.get(i));
         }
 
-        Matrix covyx = implcov.getSelection(yIndices, xIndices);
-        Matrix varx = implcov.getSelection(xIndices, xIndices);
+        Matrix covyx = implcov.view(yIndices, xIndices).mat();
+        Matrix varx = implcov.view(xIndices, xIndices).mat();
 
         Vector EX = means.getSelection(xIndices);
         Vector EY = means.getSelection(yIndices);
@@ -176,7 +174,7 @@ public class SemUpdater implements TetradSerializable {
         Vector xminusex = X.minus(EX);
 
         Vector mu = new Vector(manipulatedSemIm.getVariableNodes().size());
-        DoubleMatrix2D sigma2 = new DenseDoubleMatrix2D(manipulatedSemIm.getErrCovar().toArray());
+        Matrix sigma2 = new Matrix(manipulatedSemIm.getErrCovar().toArray());
 
         if (xminusex.size() == 0) {
             mu = new Vector(means.toArray());

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FgesFci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
@@ -34,7 +34,7 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.score.GicScores;
-import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
+import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -112,10 +112,10 @@ public final class TestGrasp {
     }
 
     private static boolean printFailed(Graph g, Graph dag, String alg) {
-        double ap = new AdjacencyPrecision().getValue(g, dag, null);
-        double ar = new AdjacencyRecall().getValue(g, dag, null);
-        double ahp = new ArrowheadPrecision().getValue(g, dag, null);
-        double ahr = new ArrowheadRecall().getValue(g, dag, null);
+        double ap = new AdjacencyPrecision().getValue(g, dag, null, new Parameters());
+        double ar = new AdjacencyRecall().getValue(g, dag, null, new Parameters());
+        double ahp = new ArrowheadPrecision().getValue(g, dag, null, new Parameters());
+        double ahr = new ArrowheadRecall().getValue(g, dag, null, new Parameters());
 
         NumberFormat nf = new DecimalFormat("0.00");
 
@@ -224,11 +224,10 @@ public final class TestGrasp {
         double structurePrior = 1.0;
         boolean discretize = true;
 
-        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data, precomputeCovariances);
+        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data, precomputeCovariances, 0.0);
 
         IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data);
         test.setAlpha(0.01);
-
 
         edu.cmu.tetrad.search.Fges alg = new edu.cmu.tetrad.search.Fges(score);
         Graph pat = null;
@@ -252,7 +251,7 @@ public final class TestGrasp {
 
         Parameters parameters = new Parameters();
 
-//        GRaSP grasp = new GRaSP(new ConditionalGaussianBicScore(), new ConditionalGaussianLRT());
+//        GRaSP grasp = new GRaSP(new ConditionalGaussianBicScore(), new ConditionalGaussianLrt());
 //        Graph pat3 = grasp.search(data, parameters);
 
         edu.cmu.tetrad.search.Grasp boss = new edu.cmu.tetrad.search.Grasp(test, score);
@@ -1582,7 +1581,7 @@ public final class TestGrasp {
 //        GraphScore score = new GraphScore(graph);
         Set<Node> order = set(x1, x2, x3, x4, x5);
 
-        Grasp boss = new Grasp(new MSeparationTest(graph), new MSeparationScore(graph));
+        Grasp boss = new Grasp(new MSeparationTest(graph), new MSepScore(graph));
 
         Parameters parameters = new Parameters();
         parameters.set(Params.GRASP_USE_RASKUTTI_UHLER, true);
@@ -2487,7 +2486,7 @@ public final class TestGrasp {
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_DISCRIMINATING_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
-        params.set(Params.POSSIBLE_MSEP_DONE, true);
+        params.set(Params.DO_POSSIBLE_DSEP, true);
 
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
@@ -2521,7 +2520,7 @@ public final class TestGrasp {
         algorithms.add(new Rfci(test));
 //
         for (ScoreWrapper score : scores) {
-            algorithms.add(new Gfci(test, score));
+            algorithms.add(new FgesFci(test, score));
         }
 //
         Algorithms _algorithms = new Algorithms();
@@ -2607,7 +2606,7 @@ public final class TestGrasp {
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_DISCRIMINATING_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
-        params.set(Params.POSSIBLE_MSEP_DONE, true);
+        params.set(Params.DO_POSSIBLE_DSEP, true);
 
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
@@ -2680,15 +2679,15 @@ public final class TestGrasp {
             Map<String, Map<Statistic, Double>> algNameMap = trueGraphMap.get(i);
 
             IndependenceWrapper test = new MSeparationTest(new EdgeListGraph(trueGraph));
-            ScoreWrapper score = new MSeparationScore(new EdgeListGraph(trueGraph));
+            ScoreWrapper score = new MSepScore(new EdgeListGraph(trueGraph));
 
             Algorithms algorithms = new Algorithms();
 
             algorithms.add(new Fci(test));
 //            algorithms.add(new FciMax(test));
 //            algorithms.add(new Rfci(test));
-//            algorithms.add(new GFCI(test, score));
-//            algorithms.add(new BFCI(test, score));
+//            algorithms.add(new FGES-FCI(test, score));
+//            algorithms.add(new BOSS-FCI(test, score));
 
             algNames = new ArrayList<>();
 
@@ -2709,12 +2708,12 @@ public final class TestGrasp {
                 }
 
                 for (Statistic statistic : dagStats.getStatistics()) {
-                    double stat = statistic.getValue(trueGraph, estGraph, null);
+                    double stat = statistic.getValue(trueGraph, estGraph, null, new Parameters());
                     algNameMap.get(algName).put(statistic, stat);
                 }
 
                 for (Statistic statistic : pagStats.getStatistics()) {
-                    double stat = statistic.getValue(truePag, estGraph, null);
+                    double stat = statistic.getValue(truePag, estGraph, null, new Parameters());
                     algNameMap.get(algName).put(statistic, stat);
                 }
             }

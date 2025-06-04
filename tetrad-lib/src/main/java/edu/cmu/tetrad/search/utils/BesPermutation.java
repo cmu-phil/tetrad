@@ -91,6 +91,7 @@ public class BesPermutation {
      * @param graph    The graph.
      * @param order    The order.
      * @param suborder The suborder.
+     * @throws InterruptedException If the search is interrupted.
      */
     public void bes(Graph graph, List<Node> order, List<Node> suborder) throws InterruptedException {
         Map<Node, Integer> hashIndices = new HashMap<>();

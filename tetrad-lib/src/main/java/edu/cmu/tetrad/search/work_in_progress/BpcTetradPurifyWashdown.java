@@ -41,19 +41,19 @@ public class BpcTetradPurifyWashdown {
     private final List<Node> variables;
     private final TetradTest test;
 
-    /**
-     * Construct the algorithm using a covariance matrix.
-     *
-     * @param cov      A covariance matrix.
-     * @param testType A Test type.
-     * @param alpha    An alpha cutoff
-     * @see edu.cmu.tetrad.data.CovarianceMatrix
-     * @see BpcTestType
-     */
-    public BpcTetradPurifyWashdown(ICovarianceMatrix cov, BpcTestType testType, double alpha) {
-        this.variables = cov.getVariables();
-        this.test = new TetradTestContinuous(cov, testType, alpha);
-    }
+//    /**
+//     * Construct the algorithm using a covariance matrix.
+//     *
+//     * @param cov      A covariance matrix.
+//     * @param testType A Test type.
+//     * @param alpha    An alpha cutoff
+//     * @see edu.cmu.tetrad.data.CovarianceMatrix
+//     * @see BpcTestType
+//     */
+//    public BpcTetradPurifyWashdown(ICovarianceMatrix cov, BpcTestType testType, double alpha) {
+//        this.variables = cov.getVariables();
+//        this.test = new TetradTestContinuous(cov, testType, alpha);
+//    }
 
     /**
      * Construct the algorithm using a data set.

@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.*;
@@ -35,10 +34,11 @@ public class FciOrientDijkstra {
      * @param graph        The graph to search; should include only the relevant edge in the graph.
      * @param start        The starting node.
      * @param predecessors A map to store the predecessors of each node in the shortest path.
+     * @param uncovered    Whether the path should be uncovered.
      * @return A map of nodes to their shortest distances from the start node.
      */
-    public static Map<Node, Integer> distances(Graph graph, Node start, Map<Node, Node> predecessors) {
-        return distances(graph, start, null, predecessors, false, false);
+    public static Map<Node, Integer> distances(Graph graph, Node start, boolean uncovered, Map<Node, Node> predecessors) {
+        return distances(graph, start, null, predecessors, uncovered);
     }
 
     /**
@@ -46,18 +46,17 @@ public class FciOrientDijkstra {
      * a distance of Integer.MAX_VALUE. The graph is assumed to be undirected. An y node may be specified, in which
      * case, once the y node is reached, all further nodes are reported as being at a distance of Integer.MAX_VALUE.
      *
-     * @param graph               The graph to search; should include only the relevant edge in the graph.
-     * @param x                   The starting node.
-     * @param y                   The ending node. Maybe be null. If not null, the algorithm will stop when this node is
-     *                            reached.
-     * @param predecessors        A map to store the predecessors of each node in the shortest path.
-     * @param uncovered           If true, the algorithm will not traverse edges y--z where an adjacency exists between
-     *                            predecessor(y)  and z.
-     * @param potentiallyDirected If true, the algorithm will traverse edges that are potentially directed.
+     * @param graph        The graph to search; should include only the relevant edge in the graph.
+     * @param x            The starting node.
+     * @param y            The ending node. Maybe be null. If not null, the algorithm will stop when this node is
+     *                     reached.
+     * @param predecessors A map to store the predecessors of each node in the shortest path.
+     * @param uncovered    If true, the algorithm will not traverse edges y--z where an adjacency exists between
+     *                     predecessor(y)  and z.
      * @return A map of nodes to their shortest distances from the start node.
      */
     public static Map<Node, Integer> distances(Graph graph, Node x, Node y,
-                                               Map<Node, Node> predecessors, boolean uncovered, boolean potentiallyDirected) {
+                                               Map<Node, Node> predecessors, boolean uncovered) {
         Map<Node, Integer> distances = new HashMap<>();
         PriorityQueue<DijkstraNode> priorityQueue = new PriorityQueue<>(Comparator.comparingInt(dijkstraNode -> dijkstraNode.distance));
         Set<Node> visited = new HashSet<>();
@@ -81,6 +80,7 @@ public class FciOrientDijkstra {
 
             for (DijkstraEdge dijkstraEdge : graph.getNeighbors(currentVertex)) {
                 Node predecessor = getPredecessor(predecessors, currentVertex);
+                Node prepredessor = getPredecessor(predecessors, predecessor);
 
                 // Skip x o-o y itself.
                 if (dijkstraEdge.gety() == y && currentVertex == x) {
@@ -102,12 +102,12 @@ public class FciOrientDijkstra {
                     }
                 }
 
-                // If uncovered, skip covered triples.
-                if (uncovered) {
-                    if (adjacent(graph, dijkstraEdge.gety(), predecessor)) {
-                        continue;
-                    }
-                }
+//                // If uncovered, skip covered triples.
+//                if (uncovered) {
+//                    if (adjacent(origGraph, dijkstraEdge.gety(), predecessor)) {
+//                        continue;
+//                    }
+//                }
 
                 Node neighbor = dijkstraEdge.gety();
                 int newDist = distances.get(currentVertex) + dijkstraEdge.getWeight();
@@ -132,7 +132,15 @@ public class FciOrientDijkstra {
         return predecessors.get(currentVertex);
     }
 
-    private static boolean adjacent(Graph graph, Node currentVertex, Node predecessor) {
+    /**
+     * Checks whether a node is adjacent to another node in the graph.
+     *
+     * @param graph         The graph to search.
+     * @param currentVertex The node whose neighbors are being checked.
+     * @param predecessor   The node to check adjacency against.
+     * @return true if the nodes are adjacent, otherwise false.
+     */
+    public static boolean adjacent(Graph graph, Node currentVertex, Node predecessor) {
         List<DijkstraEdge> dijkstraEdges = graph.getNeighbors(currentVertex);
 
         for (DijkstraEdge dijkstraEdge : dijkstraEdges) {
@@ -158,60 +166,60 @@ public class FciOrientDijkstra {
             path.add(at);
         }
         Collections.reverse(path);
-        if (path.get(0).equals(start)) {
+        if (path.getFirst().equals(start)) {
             return path;
         } else {
             return null; // No path found
         }
     }
 
-    /**
-     * A simple test of the Dijkstra algorithm. This could be moved to a unit test. TODO
-     *
-     * @param args Command line arguments.
-     */
-    public static void main(String[] args) {
-        edu.cmu.tetrad.graph.Graph graph = new edu.cmu.tetrad.graph.EdgeListGraph();
-
-        Map<String, Node> index = new HashMap<>();
-
-        for (int i = 1; i <= 10; i++) {
-            Node node = new GraphNode(i + "");
-            index.put(i + "", node);
-        }
-
-        graph.addNondirectedEdge(index.get("1"), index.get("3"));
-
-
-        graph.addNondirectedEdge(index.get("1"), index.get("2"));
-        graph.addNondirectedEdge(index.get("2"), index.get("3"));
-
-        graph.addNondirectedEdge(index.get("1"), index.get("4"));
-        graph.addNondirectedEdge(index.get("4"), index.get("5"));
-        graph.addNondirectedEdge(index.get("5"), index.get("3"));
-
-        // Let's cover some edges.
-//        graph.addEdge(index.get("1"), index.get("3"), 1);
-//        graph.addEdge(index.get("2"), index.get("4"), 1);
-//        graph.addEdge(index.get("2"), index.get("4"), 1);
-
-        Map<Node, Node> predecessors = new HashMap<>();
-
-        boolean uncovered = true;
-
-        Graph _graph = new Graph(graph, false);
-
-        Map<Node, Integer> distances = FciOrientDijkstra.distances(_graph, index.get("1"), index.get("3"),
-                predecessors, uncovered, false);
-
-        for (Map.Entry<Node, Integer> entry : distances.entrySet()) {
-            System.out.println("Distance from 1 to " + entry.getKey() + " is " + entry.getValue());
-        }
-
-        List<Node> path = getPath(predecessors, index.get("1"), index.get("3"));
-        System.out.println("Shortest path " + path);
-
-    }
+//    /**
+//     * A simple test of the Dijkstra algorithm. This could be moved to a unit test. TODO
+//     *
+//     * @param args Command line arguments.
+//     */
+//    public static void main(String[] args) {
+//        edu.cmu.tetrad.graph.Graph graph = new edu.cmu.tetrad.graph.EdgeListGraph();
+//
+//        Map<String, Node> index = new HashMap<>();
+//
+//        for (int i = 1; i <= 10; i++) {
+//            Node node = new GraphNode(i + "");
+//            index.put(i + "", node);
+//        }
+//
+//        graph.addNondirectedEdge(index.get("1"), index.get("3"));
+//
+//
+//        graph.addNondirectedEdge(index.get("1"), index.get("2"));
+//        graph.addNondirectedEdge(index.get("2"), index.get("3"));
+//
+//        graph.addNondirectedEdge(index.get("1"), index.get("4"));
+//        graph.addNondirectedEdge(index.get("4"), index.get("5"));
+//        graph.addNondirectedEdge(index.get("5"), index.get("3"));
+//
+//        // Let's cover some edges.
+////        graph.addEdge(index.get("1"), index.get("3"), 1);
+////        graph.addEdge(index.get("2"), index.get("4"), 1);
+////        graph.addEdge(index.get("2"), index.get("4"), 1);
+//
+//        Map<Node, Node> predecessors = new HashMap<>();
+//
+//        boolean uncovered = true;
+//
+//        Graph _graph = new Graph(graph, false);
+//
+//        Map<Node, Integer> distances = FciOrientDijkstra.distances(_graph, graph, index.get("1"), index.get("3"),
+//                predecessors, uncovered, false);
+//
+//        for (Map.Entry<Node, Integer> entry : distances.entrySet()) {
+//            System.out.println("Distance from 1 to " + entry.getKey() + " is " + entry.getValue());
+//        }
+//
+//        List<Node> path = getPath(predecessors, index.get("1"), index.get("3"));
+//        System.out.println("Shortest path " + path);
+//
+//    }
 
     /**
      * Represents a graph for Dijkstra's algorithm.

@@ -39,7 +39,9 @@ public class RandomForward implements RandomGraph {
                 parameters.getInt("maxDegree"),
                 parameters.getInt("maxIndegree"),
                 parameters.getInt("maxOutdegree"),
-                parameters.getBoolean("connected"));
+                parameters.getBoolean("connected"),
+                parameters.getLong("seed")
+        );
     }
 
     /**
@@ -67,6 +69,7 @@ public class RandomForward implements RandomGraph {
         parameters.add("maxIndegree");
         parameters.add("maxOutdegree");
         parameters.add("connected");
+        parameters.add("seed");
         return parameters;
     }
 }

@@ -104,6 +104,7 @@ public class MimbuildTrek {
      * @param latentNames The names of the latents, which cannot be known by the clustering algorithm.
      * @param measuresCov The covariance matrix over the measured variables, from the data.
      * @return A graph over the latents.
+     * @throws InterruptedException If the search is interrupted.
      */
     public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) throws InterruptedException {
         List<String> _latentNames = new ArrayList<>(latentNames);
@@ -341,8 +342,21 @@ public class MimbuildTrek {
 
         int df = (p) * (p + 1) / 2 - (numParams);
         double x = (N - 1) * this.minimum;
-        this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
+//        this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 
+        ChiSquaredDistribution chisq = new ChiSquaredDistribution(df);
+
+        double _p;
+
+        if (Double.isInfinite(x)) {
+            _p = 0.0;
+        } else if (x == 0.0) {
+            _p = 1.0;
+        } else {
+            _p = 1.0 - chisq.cumulativeProbability(x);
+        }
+
+        this.pValue = _p;
         return latentscov;
     }
 

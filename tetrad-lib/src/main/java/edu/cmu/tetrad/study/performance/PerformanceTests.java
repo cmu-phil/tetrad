@@ -128,6 +128,7 @@ public class PerformanceTests {
      * <p>main.</p>
      *
      * @param args a {@link java.lang.String} object
+     * @throws InterruptedException if any
      */
     public static void main(String... args) throws InterruptedException {
         System.out.println("Start ");
@@ -136,11 +137,11 @@ public class PerformanceTests {
 
 
         if (args.length == 3) {
-            if ("GFCI".equals(args[0])) {
+            if ("FGES-FCI".equals(args[0])) {
                 int numVars = Integer.parseInt(args[1]);
                 double edgeFactor = Double.parseDouble(args[2]);
 //                    final int numCases = Integer.parseInt(args[3]);
-                performanceTests.testGfci(numVars, edgeFactor);
+                performanceTests.testFgesFci(numVars, edgeFactor);
             } else {
                 throw new IllegalArgumentException("Not a configuration!");
             }
@@ -239,6 +240,7 @@ public class PerformanceTests {
      * @param edgeFactor a double
      * @param numCases   a int
      * @param alpha      a double
+     * @throws InterruptedException if any
      */
     public void testPc(int numVars, double edgeFactor, int numCases, double alpha) throws InterruptedException {
         final int depth = -1;
@@ -260,7 +262,7 @@ public class PerformanceTests {
         System.out.println("Making graph");
 
         Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
-                30, 15, 15, false, true);
+                30, 15, 15, false, true, -1);
 
         System.out.println("Graph done");
 
@@ -347,7 +349,7 @@ public class PerformanceTests {
             final int numCases = 1000;
 
             Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
-                    30, 15, 15, false, true);
+                    30, 15, 15, false, true, -1);
 
             out2.println(graph);
 
@@ -379,6 +381,7 @@ public class PerformanceTests {
      * @param edgeFactor a double
      * @param numCases   a int
      * @param alpha      a double
+     * @throws InterruptedException if any
      */
     public void testPcStable(int numVars, double edgeFactor, int numCases, double alpha) throws InterruptedException {
         final int depth = -1;
@@ -531,6 +534,7 @@ public class PerformanceTests {
      * @param numVars    a int
      * @param edgeFactor a double
      * @param numCases   a int
+     * @throws InterruptedException if any
      */
     public void testCpc(int numVars, double edgeFactor, int numCases) throws InterruptedException {
         final double alpha = 0.0001;
@@ -553,7 +557,7 @@ public class PerformanceTests {
         System.out.println("Making graph");
 
         Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
-                30, 15, 15, false, true);
+                30, 15, 15, false, true, -1);
 
         System.out.println("Graph done");
 
@@ -622,6 +626,7 @@ public class PerformanceTests {
      * @param edgeFactor a double
      * @param numCases   a int
      * @param alpha      a double
+     * @throws InterruptedException if any
      */
     public void testCpcStable(int numVars, double edgeFactor, int numCases, double alpha) throws InterruptedException {
         final int depth = 3;
@@ -704,6 +709,7 @@ public class PerformanceTests {
      * @param numVars    a int
      * @param edgeFactor a double
      * @param numCases   a int
+     * @throws InterruptedException if any
      */
     public void testFci(int numVars, double edgeFactor, int numCases) throws InterruptedException {
         final double alpha = 0.001;
@@ -726,7 +732,7 @@ public class PerformanceTests {
         System.out.println("Making graph");
 
         Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
-                30, 15, 15, false, true);
+                30, 15, 15, false, true, -1);
 
         System.out.println("Graph done");
 
@@ -788,7 +794,7 @@ public class PerformanceTests {
      * @param numVars    a int
      * @param edgeFactor a double
      */
-    public void testGfci(int numVars, double edgeFactor) {
+    public void testFgesFci(int numVars, double edgeFactor) {
         final double alpha = .1;
         final int depth = -1;
         final double penaltyDiscount = 4.0;
@@ -798,7 +804,7 @@ public class PerformanceTests {
         final int numLatentConfounders = 50;
         final int numCases = 1000;
 
-        init(new File("long.gfci." + numVars + ".txt"), "Tests performance of the FCI-GES algorithm");
+        init(new File("long.fges.fci." + numVars + ".txt"), "Tests performance of the FGES-FCI algorithm");
 
         long time1 = MillisecondTimes.timeMillis();
 
@@ -817,7 +823,7 @@ public class PerformanceTests {
         System.out.println("Finishing list of vars");
 
         Graph dag = RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, (int) (numVars * edgeFactor),
-                10, 10, 10, false, false);
+                10, 10, 10, false, false, -1);
 
         System.out.println("Graph done");
 
@@ -851,11 +857,10 @@ public class PerformanceTests {
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
         IndependenceTest independenceTest = new IndTestFisherZ(cov, alpha);
-//        GFci fci = new GFci(independenceTest);
 
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
-        GFci fci = new GFci(independenceTest, score);
+        FgesFci fci = new FgesFci(independenceTest, score);
 
         fci.setVerbose(false);
         fci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
@@ -1438,7 +1443,7 @@ public class PerformanceTests {
         final double penaltyDiscount = 3.0;
         final int depth = 3;
         final int maxPathLength = -1;
-        final boolean possibleMsepDone = true;
+        final boolean doPossibleDsep = true;
         final boolean completeRuleSetUsed = false;
         final boolean faithfulnessAssumed = true;
 
@@ -1452,7 +1457,7 @@ public class PerformanceTests {
         this.out.println("Depth = " + depth);
         this.out.println("Maximum reachable path length for msep search and discriminating undirectedPaths = " + maxPathLength);
         this.out.println("Num additional latent common causes = " + numLatents);
-        this.out.println("Possible Msep Done = " + possibleMsepDone);
+        this.out.println("Possible Dsep Done = " + doPossibleDsep);
         this.out.println("Complete Rule Set Used = " + completeRuleSetUsed);
         this.out.println();
 
@@ -1520,10 +1525,10 @@ public class PerformanceTests {
             long ta1 = MillisecondTimes.timeMillis();
 
 //            FCI fci = new FCI(independenceTest);
-            GFci fci = new GFci(independenceTest, score);
+            FgesFci fci = new FgesFci(independenceTest, score);
             fci.setMaxDegree(depth);
             fci.setMaxDiscriminatingPathLength(maxPathLength);
-//            fci.setPossibleNsepSearchDone(possibleMsepDone);
+//            fci.setPossibleNsepSearchDone(doPossibleDsep);
             fci.setCompleteRuleSetUsed(completeRuleSetUsed);
             fci.setFaithfulnessAssumed(faithfulnessAssumed);
             try {
@@ -1585,6 +1590,7 @@ public class PerformanceTests {
      * <p>testCompareDagToCPDAG.</p>
      *
      * @param numLatents a int
+     * @throws java.lang.InterruptedException if any.
      */
     public void testCompareDagToCPDAG(int numLatents) throws InterruptedException {
         System.out.println("Making list of vars");
@@ -1607,7 +1613,7 @@ public class PerformanceTests {
 
         Graph dag;
         if (false) {
-            dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+            dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true, -1);
         } else {
 //            dag = DataGraphUtils.randomDagRandomFowardEdges(vars, 0, numEdges);
             dag = RandomGraph.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
@@ -1657,6 +1663,7 @@ public class PerformanceTests {
      * @param numVars    a int
      * @param edgeFactor a double
      * @param numLatents a int
+     * @throws java.lang.InterruptedException if any.
      */
     public void testComparePcVersions(int numVars, double edgeFactor, int numLatents) throws InterruptedException {
         System.out.println("Making list of vars");
@@ -1674,7 +1681,7 @@ public class PerformanceTests {
         System.out.println("Finishing list of vars");
 
         Graph dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgeFactor),
-                30, 15, 15, false, true);
+                30, 15, 15, false, true, -1);
 
         System.out.println("DAG = " + dag);
 
@@ -1741,7 +1748,7 @@ public class PerformanceTests {
 
         //        printDegreeDistribution(dag, out);
         return RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
-                30, 12, 15, false, true);
+                30, 12, 15, false, true, -1);
     }
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {
@@ -2161,7 +2168,7 @@ public class PerformanceTests {
         final int numEdges = 60000;
 
         Graph graph = RandomGraph.randomGraphRandomForwardEdges(numVars, 0, numEdges,
-                30, 30, 30, false);
+                30, 30, 30, false, -1);
 
         TreeMap<Integer, Integer> degreeCounts = new TreeMap<>();
         List<Node> nodes = graph.getNodes();

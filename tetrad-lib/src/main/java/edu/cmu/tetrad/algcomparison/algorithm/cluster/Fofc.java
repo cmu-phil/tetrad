@@ -12,12 +12,11 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Mimbuild;
-import edu.cmu.tetrad.search.utils.BpcTestType;
-import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.ejml.data.SingularMatrixException;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -62,43 +61,22 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-
-        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
-        double alpha = parameters.getDouble(Params.ALPHA);
-
-        boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
-        BpcTestType testType;
-
-        if (wishart) {
-            testType = BpcTestType.TETRAD_WISHART;
-        } else {
-            testType = BpcTestType.TETRAD_DELTA;
+        if (parameters.getBoolean(Params.VERBOSE)) {
+            System.out.println("alpha = " + parameters.getDouble(Params.FOFC_ALPHA));
+            System.out.println("penaltyDiscount = " + parameters.getDouble(Params.PENALTY_DISCOUNT));
+            System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
+            System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
         }
 
-        boolean gap = parameters.getBoolean(Params.USE_GAP, true);
-        edu.cmu.tetrad.search.Fofc.Algorithm algorithm;
+        DataSet dataSet = (DataSet) dataModel;
+        double alpha = parameters.getDouble(Params.FOFC_ALPHA);
 
-        if (gap) {
-            algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.GAP;
-        } else {
-            algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.SAG;
-        }
+        int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
 
         edu.cmu.tetrad.search.Fofc search
-                = new edu.cmu.tetrad.search.Fofc(cov, testType, algorithm, alpha);
-        search.setSignificanceChecked(parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
+                = new edu.cmu.tetrad.search.Fofc(dataSet, testType, alpha);
+        search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        if (parameters.getInt(Params.CHECK_TYPE) == 1) {
-            search.setCheckType(ClusterSignificance.CheckType.Significance);
-        } else if (parameters.getInt(Params.CHECK_TYPE) == 2) {
-            search.setCheckType(ClusterSignificance.CheckType.Clique);
-        } else if (parameters.getInt(Params.CHECK_TYPE) == 3) {
-            search.setCheckType(ClusterSignificance.CheckType.None);
-        } else {
-            throw new IllegalArgumentException("Unexpected check type");
-        }
 
         Graph graph = search.search();
 
@@ -110,13 +88,6 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
             Mimbuild mimbuild = new Mimbuild();
             mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            mimbuild.setKnowledge((Knowledge) parameters.get("knowledge", new Knowledge()));
-
-            if (parameters.getBoolean("includeThreeClusters", true)) {
-                mimbuild.setMinClusterSize(3);
-            } else {
-                mimbuild.setMinClusterSize(4);
-            }
 
             List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
 
@@ -128,10 +99,13 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
             Graph structureGraph = null;
             try {
-                structureGraph = mimbuild.search(partition, latentNames, cov);
+                structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch (SingularMatrixException e) {
+                throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
             }
+
             LayoutUtil.defaultLayout(structureGraph);
             LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
@@ -139,7 +113,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
             TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-            Graph fullGraph = mimbuild.getFullGraph();
+            Graph fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
             LayoutUtil.defaultLayout(fullGraph);
             LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
@@ -186,14 +160,11 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.ALPHA);
+        parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.USE_WISHART);
-        parameters.add(Params.SIGNIFICANCE_CHECKED);
-        parameters.add(Params.USE_GAP);
+        parameters.add(Params.TETRAD_TEST_FOFC);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
-        parameters.add(Params.CHECK_TYPE);
-        parameters.add(Params.PRECOMPUTE_COVARIANCES);
+        parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -212,7 +183,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     /**
      * Sets the knowledge associated with this object.
      *
-     * @param knowledge a knowledge object
+     * @param knowledge Background knowledge.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {

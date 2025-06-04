@@ -2,6 +2,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.*;
@@ -156,6 +157,40 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Generates a valid topological ordering of nodes in a directed graph without cycles. If the provided graph is
+     * cyclic, an IllegalArgumentException is thrown.
+     *
+     * @param initialOrder the initial list of nodes representing a possible order to process
+     * @param forward      a boolean indicating the direction of the list processing; if true, the initial order is
+     *                     reversed
+     * @return a valid list of nodes representing the order in which the directed graph can be traversed without
+     * breaking dependency constraints
+     */
+    public List<Node> getValidOrderMag(List<Node> initialOrder, boolean forward) {
+        List<Node> _initialOrder = new ArrayList<>(initialOrder);
+        Graph _graph = new EdgeListGraph(this.graph);
+
+        if (forward) Collections.reverse(_initialOrder);
+        List<Node> newOrder = new ArrayList<>();
+
+        while (!_initialOrder.isEmpty()) {
+            Iterator<Node> itr = _initialOrder.iterator();
+            Node x;
+            do {
+                if (itr.hasNext()) x = itr.next();
+                else throw new IllegalArgumentException("This graph has a cycle.");
+            } while (invalidSinkMag(x, _graph));
+            newOrder.add(x);
+            _graph.removeNode(x);
+            itr.remove();
+        }
+
+        Collections.reverse(newOrder);
+
+        return newOrder;
+    }
+
+    /**
      * Reorders the given order into a valid causal order for either a DAG or a CPDAG. (bryanandrews)
      *
      * @param order Variables in the order will be kept as close to this initial order as possible, either the forward
@@ -187,6 +222,8 @@ public class Paths implements TetradSerializable {
     /**
      * The variable x is a valid sink if it has no children and its neighbors x--z form a clique; otherwise it is an
      * invalid sink.
+     * <p>
+     * Assume a DAG or CPDAG.
      *
      * @param x     The node to test.
      * @param graph The graph to test.
@@ -204,6 +241,25 @@ public class Paths implements TetradSerializable {
             Node y = neighbors.pop();
             for (Node z : neighbors) if (!graph.isAdjacentTo(y, z)) return true;
         }
+
+        return false;
+    }
+
+    private boolean invalidSinkMag(Node x, Graph graph) {
+//        LinkedList<Node> neighbors = new LinkedList<>();
+
+        for (Edge edge : graph.getEdges(x)) {
+//            if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
+            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) {
+                return true;
+//                neighbors.add(edge.getDistalNode(x));
+            }
+        }
+
+//        while (!neighbors.isEmpty()) {
+//            Node y = neighbors.pop();
+//            for (Node z : neighbors) if (!graph.isAdjacentTo(y, z)) return true;
+//        }
 
         return false;
     }
@@ -335,12 +391,6 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a legal mag, false otherwise
      */
     public boolean isLegalMag() {
-        List<Node> latent = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
-
-        List<Node> measured = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
-
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
@@ -353,15 +403,8 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a Legal PAG, false otherwise
      */
     public boolean isLegalPag() {
-        List<Node> latent = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
-
-        List<Node> measured = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
-
         List<Node> selection = graph.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
         return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
@@ -512,7 +555,7 @@ public class Paths implements TetradSerializable {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
-            Node a = path.get(0);
+            Node a = path.getFirst();
             Node b = path.get(1);
 
             if (!graph.getEdge(a, b).pointsTowards(b)) {
@@ -538,7 +581,7 @@ public class Paths implements TetradSerializable {
         List<List<Node>> amenablePaths = semidirectedPaths(node1, node2, maxLength);
 
         for (List<Node> path : new ArrayList<>(amenablePaths)) {
-            Node a = path.get(0);
+            Node a = path.getFirst();
             Node b = path.get(1);
 
             boolean visible = graph.paths().defVisible(graph.getEdge(a, b));
@@ -1232,7 +1275,7 @@ public class Paths implements TetradSerializable {
             return true;
         }
 
-        boolean ancestor = isAncestor(b, z);
+        boolean ancestor = isAncestorOfAnyZ(b, z);
         return collider && ancestor;
     }
 
@@ -1273,7 +1316,7 @@ public class Paths implements TetradSerializable {
 
         for (Node n1 : graph.getNodes()) {
             for (Node n2 : graph.getNodes()) {
-                if (isAncestor(n1, Collections.singleton(n2))) {
+                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
                     decendantsMap.get(n1).add(n2);
                 }
             }
@@ -1296,7 +1339,7 @@ public class Paths implements TetradSerializable {
 
         for (Node n1 : graph.getNodes()) {
             for (Node n2 : graph.getNodes()) {
-                if (isAncestor(n1, Collections.singleton(n2))) {
+                if (isAncestorOfAnyZ(n1, Collections.singleton(n2))) {
                     ancestorsMap.get(n2).add(n1);
                 }
             }
@@ -1312,7 +1355,7 @@ public class Paths implements TetradSerializable {
      * @param z a {@link java.util.Set} object
      * @return true if b is an ancestor of any node in z
      */
-    public boolean isAncestor(Node b, Set<Node> z) {
+    public boolean isAncestorOfAnyZ(Node b, Set<Node> z) {
         if (z.contains(b)) {
             return true;
         }
@@ -1408,7 +1451,7 @@ public class Paths implements TetradSerializable {
 
             if (graph.isDefCollider(a, b, c)) {
                 if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
-                      || graph.paths().isAncestor(b, selectionVariables))) {
+                      || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
                     continue;
                 }
             }
@@ -1423,6 +1466,82 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Breadth-first version of the “inducing-path exists?” test.
+     *
+     * @param x                  first measured node
+     * @param y                  second measured node
+     * @param selectionVariables set of selection variables (Z)
+     * @return true iff there is an inducing path from x to y
+     */
+    public boolean existsInducingPathBFS(Node x,
+                                         Node y,
+                                         Set<Node> selectionVariables) {
+
+        if (x.getNodeType() != NodeType.MEASURED ||
+            y.getNodeType() != NodeType.MEASURED) {
+            throw new IllegalArgumentException("x and y must be measured nodes");
+        }
+
+        // State = (prev, curr, path-so-far).
+        record State(Node prev, Node curr, LinkedList<Node> path) {}
+
+        Queue<State> queue = new LinkedList<>();
+
+        // Seed the queue with every neighbour of x
+        for (Node b : graph.getAdjacentNodes(x)) {
+            LinkedList<Node> seedPath = new LinkedList<>();
+            seedPath.add(x);
+            seedPath.add(b);
+
+            if (b == y) {                         // x—b where b==y  ⇒  path of length-1
+                return true;
+            }
+            queue.add(new State(x, b, seedPath));
+        }
+
+        // Standard BFS loop
+        while (!queue.isEmpty()) {
+            State s       = queue.remove();
+            Node  a       = s.prev();
+            Node  b       = s.curr();
+            LinkedList<Node> path = s.path();     // already contains a and b
+
+            for (Node c : graph.getAdjacentNodes(b)) {
+
+                if (c == a) continue;             // don’t back-track
+                if (path.contains(c)) continue;   // avoid cycles
+
+                // --- Same admissibility checks as the DFS version -----------------
+                if (b.getNodeType() == NodeType.MEASURED &&
+                    !graph.isDefCollider(a, b, c)) {
+                    continue;
+                }
+
+                if (graph.isDefCollider(a, b, c) &&
+                    !(graph.paths().isAncestorOf(b, x) ||
+                      graph.paths().isAncestorOf(b, y) ||
+                      graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
+                    continue;
+                }
+                // ------------------------------------------------------------------
+
+                // Extend the path to c
+                LinkedList<Node> newPath = new LinkedList<>(path);
+                newPath.add(c);
+
+                if (c == y) {                     // reached the target – success!
+                    return true;
+                }
+
+                queue.add(new State(b, c, newPath));
+            }
+        }
+
+        return false;                             // Exhausted queue – no inducing path
+    }
+
+
+    /**
      * Determines whether an inducing path exists between two nodes in a graph. This is a breadth-first implementation.
      *
      * @param x                  the first node in the graph
@@ -1431,59 +1550,15 @@ public class Paths implements TetradSerializable {
      * @return true if an inducing path exists, false if not
      */
     public boolean existsInducingPath(Node x, Node y, Set<Node> selectionVariables) {
-        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
-            throw new IllegalArgumentException();
+
+        // Note that whatever method is chosen for checking inducing paths, the method testZhangPagToMag in
+        // TestFci must complete without errors for 1000 runs. (Methods that weren't doing that have been
+        // deleted from the code.) jdramsey, 2025-6-1
+        if (true) {
+            return existsInducingPathBFS(x, y, selectionVariables);
+        } else {
+            return existsInducingPathDFS(x, y, selectionVariables);
         }
-
-        // Initialize the BFS queue
-        Queue<PathElement> queue = new LinkedList<>();
-        Set<Node> visited = new HashSet<>();
-        queue.add(new PathElement(x, null)); // Start with node x and no previous node
-
-        while (!queue.isEmpty()) {
-            PathElement current = queue.poll();
-            Node a = current.previous; // Previous node
-            Node b = current.current;  // Current node
-
-            if (visited.contains(b)) {
-                continue;
-            }
-
-            visited.add(b);
-
-            // If the target node is reached, an inducing path exists
-            if (b == y) {
-                return true;
-            }
-
-            // Explore neighbors of the current node
-            for (Node c : graph.getAdjacentNodes(b)) {
-                // Skip the node we just came from
-                if (c == a) {
-                    continue;
-                }
-
-                // Check conditions for the inducing path
-                if (b.getNodeType() == NodeType.MEASURED) {
-                    if (a != null && !graph.isDefCollider(a, b, c)) {
-                        continue;
-                    }
-                }
-
-                if (a != null && graph.isDefCollider(a, b, c)) {
-                    if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
-                          || graph.paths().isAncestor(b, selectionVariables))) {
-                        continue;
-                    }
-                }
-
-                // Enqueue the neighbor node for further exploration
-                queue.add(new PathElement(c, b));
-            }
-        }
-
-        // If the queue is exhausted, no inducing path exists
-        return false;
     }
 
     /**
@@ -1516,15 +1591,18 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
-     * constraint.
+     * Identifies and returns a list of possible d-separating nodes relative to a specified node in the graph. The
+     * search is constrained by the specified maximum path length.
      *
-     * @param x                         the starting Node for the path
-     * @param y                         the ending Node for the path
-     * @param maxPossibleDsepPathLength the maximum length of the path, -1 for unlimited
-     * @return a List of Nodes representing the possible d-separation nodes
+     * @param x                         the target node for which possible d-separating nodes are to be identified
+     * @param maxPossibleDsepPathLength the maximum allowable path length for determining d-separating nodes; a value of
+     *                                  -1 indicates no explicit limit
+     * @return a sorted list of nodes that are potential d-separators for the specified node, ordered in descending
+     * order
      */
-    public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
+    public List<Node> possibleDsep(Node x, int maxPossibleDsepPathLength) {
+
+        // Removing the second argument y to bring this in line with CPS 2001 p. 188.
         Set<Node> msep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -1539,9 +1617,6 @@ public class Paths implements TetradSerializable {
         Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
 
         for (Node b : adjacentNodes) {
-            if (b == y) {
-                continue;
-            }
             OrderedPair<Node> edge = new OrderedPair<>(x, b);
             if (e == null) {
                 e = edge;
@@ -1577,14 +1652,13 @@ public class Paths implements TetradSerializable {
                 if (c == x) {
                     continue;
                 }
-                if (c == y) {
-                    continue;
-                }
 
                 addToSet(previous, b, c);
 
                 if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
-                    OrderedPair<Node> u = new OrderedPair<>(a, c);
+
+                    // Bug : This was <a, c> should have been <b, c> to continue the path.
+                    OrderedPair<Node> u = new OrderedPair<>(b, c);
                     if (V.contains(u)) {
                         continue;
                     }
@@ -1600,7 +1674,6 @@ public class Paths implements TetradSerializable {
         }
 
         msep.remove(x);
-        msep.remove(y);
 
         List<Node> _msep = new ArrayList<>(msep);
 
@@ -1608,6 +1681,7 @@ public class Paths implements TetradSerializable {
         Collections.reverse(_msep);
 
         return _msep;
+
     }
 
     /**
@@ -1616,21 +1690,24 @@ public class Paths implements TetradSerializable {
      * @param test    The independence test to use to remove edges.
      * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
      *                recorded.
+     * @throws InterruptedException if any
      */
-    public void removeByPossibleMsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
+    public void removeByPossibleDsep(IndependenceTest test, SepsetMap sepsets) throws InterruptedException {
         for (Edge edge : graph.getEdges()) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
 
             {
-                List<Node> possibleMsep = possibleDsep(a, b, -1);
+                List<Node> possibleDsep = possibleDsep(a, -1);
+                possibleDsep.remove(a);
+                possibleDsep.remove(b);
 
-                SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
+                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
                     if (choice.length < 2) continue;
-                    Set<Node> sepset = GraphUtils.asSet(choice, possibleMsep);
+                    Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
                     if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                     if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                     if (test.checkIndependence(a, b, sepset).isIndependent()) {
@@ -1647,14 +1724,16 @@ public class Paths implements TetradSerializable {
 
             if (graph.containsEdge(edge)) {
                 {
-                    List<Node> possibleMsep = possibleDsep(b, a, -1);
+                    List<Node> possibleDsep = possibleDsep(a, -1);
+                    possibleDsep.remove(a);
+                    possibleDsep.remove(b);
 
-                    SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
+                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
                         if (choice.length < 2) continue;
-                        Set<Node> sepset = GraphUtils.asSet(choice, possibleMsep);
+                        Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
                         if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                         if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                         if (test.checkIndependence(a, b, sepset).isIndependent()) {
@@ -1694,6 +1773,103 @@ public class Paths implements TetradSerializable {
 
         return false;
     }
+
+//    /**
+//     * Calculates the possible d-separation nodes between two given Nodes within a graph, using a maximum path length
+//     * constraint.
+//     *
+//     * @param x                         the starting Node for the path
+//     * @param y                         the ending Node for the path
+//     * @param maxPossibleDsepPathLength the maximum length of the path, -1 for unlimited
+//     * @return a List of Nodes representing the possible d-separation nodes
+//     */
+//    public List<Node> possibleDsep(Node x, Node y, int maxPossibleDsepPathLength) {
+//        Set<Node> msep = new HashSet<>();
+//
+//        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
+//        Set<OrderedPair<Node>> V = new HashSet<>();
+//
+//        Map<Node, Set<Node>> previous = new HashMap<>();
+//        previous.put(x, new HashSet<>());
+//
+//        OrderedPair<Node> e = null;
+//        int distance = 0;
+//
+//        Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
+//
+//        for (Node b : adjacentNodes) {
+//            if (y != null && b == y) {
+//                continue;
+//            }
+//            OrderedPair<Node> edge = new OrderedPair<>(x, b);
+//            if (e == null) {
+//                e = edge;
+//            }
+//            Q.offer(edge);
+//            V.add(edge);
+//            addToSet(previous, b, x);
+//            msep.add(b);
+//        }
+//
+//        while (!Q.isEmpty()) {
+//            OrderedPair<Node> t = Q.poll();
+//
+//            if (e == t) {
+//                e = null;
+//                distance++;
+//                if (distance > 0 && distance > (maxPossibleDsepPathLength == -1 ? 1000 : maxPossibleDsepPathLength)) {
+//                    break;
+//                }
+//            }
+//
+//            Node a = t.getFirst();
+//            Node b = t.getSecond();
+//
+//            if (existOnePathWithPossibleParents(previous, b, x, b)) {
+//                msep.add(b);
+//            }
+//
+//            for (Node c : graph.getAdjacentNodes(b)) {
+//                if (c == a) {
+//                    continue;
+//                }
+//                if (c == x) {
+//                    continue;
+//                }
+//                if (y !=null && c == y) {
+//                    continue;
+//                }
+//
+//                addToSet(previous, b, c);
+//
+//                if (graph.isDefCollider(a, b, c) || graph.isAdjacentTo(a, c)) {
+//                    OrderedPair<Node> u = new OrderedPair<>(b, c);
+//                    if (V.contains(u)) {
+//                        continue;
+//                    }
+//
+//                    V.add(u);
+//                    Q.offer(u);
+//
+//                    System.out.println("Updated " + u + " = " + "Q = " + Q + " V = " + V +  " msep: " + msep);
+//
+//                    if (e == null) {
+//                        e = u;
+//                    }
+//                }
+//            }
+//        }
+//
+//        msep.remove(x);
+//        msep.remove(y);
+//
+//        List<Node> _msep = new ArrayList<>(msep);
+//
+//        Collections.sort(_msep);
+//        Collections.reverse(_msep);
+//
+//        return _msep;
+//    }
 
     /**
      * Returns D-SEP(x, y) for a maximal ancestral graph G (or inducing path graph G, as in Causation, Prediction and
@@ -1753,7 +1929,7 @@ public class Paths implements TetradSerializable {
      * @return A sepset for x and y, if there is one; otherwise, null.
      */
     public Set<Node> getSepset(Node x, Node y, boolean allowSelectionBias, IndependenceTest test, int depth) {
-        return SepsetFinder.getSepsetContainingGreedy(graph, x, y, Collections.emptySet(), test, depth);
+        return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, Collections.emptySet(), test, depth);
     }
 
     /**
@@ -1764,9 +1940,10 @@ public class Paths implements TetradSerializable {
      * @param containing    the set of nodes that the sepset must contain
      * @param maxPathLength the maximum length of the path to search for the blocking set
      * @return the sepset between the two nodes
+     * @throws InterruptedException if any.
      */
-    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) {
-        Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength);
+    public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength) throws InterruptedException {
+        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength);
 
         // TODO - should allow the user to determine whether this is a PAG.
         if (isMSeparatedFrom(x, y, blocking, false)) {
@@ -1897,7 +2074,7 @@ public class Paths implements TetradSerializable {
 
         if (path.size() - 1 <= 1) return true;
 
-        edge2 = graph.getEdge(path.get(0), path.get(1));
+        edge2 = graph.getEdge(path.getFirst(), path.get(1));
 
         for (int i = 0; i < path.size() - 2; i++) {
             edge1 = edge2;
@@ -1932,7 +2109,7 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Checks if the given path is an m-connecting path.
+     * Checks if the given path is an m-connecting path and doens't contain duplicate nodes.
      *
      * @param path               The path to check.
      * @param conditioningSet    The set of nodes to check reachability against.
@@ -1943,7 +2120,19 @@ public class Paths implements TetradSerializable {
     public boolean isMConnectingPath(List<Node> path, Set<Node> conditioningSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         Edge edge1, edge2;
 
-        edge2 = graph.getEdge(path.get(0), path.get(1));
+        Set<Node> pathSet = new HashSet<>();
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            Node node = path.get(i);
+
+            if (pathSet.contains(node)) {
+                return false;
+            } else {
+                pathSet.add(node);
+            }
+        }
+
+        edge2 = graph.getEdge(path.getFirst(), path.get(1));
 
         for (int i = 0; i < path.size() - 2; i++) {
             edge1 = edge2;
@@ -2209,52 +2398,101 @@ public class Paths implements TetradSerializable {
     /**
      * A helper method for the defVisible method, using BFS.
      *
-     * @param from the starting node of the path
-     * @param to   the target node of the path
-     * @param into the nodes that colliders along the path must all be parents of
-     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
+     * @param C the starting node of the path
+     * @param A   the target node of the path
+     * @param B the nodes that colliders along the path must all be parents of
+     * @return true if a collider path exists C 'C' A 'A' that is B 'B'
      */
-    private boolean existsColliderPathInto(Node from, Node to, Node into) {
-        Set<Node> visited = new HashSet<>();
-        Queue<List<Node>> queue = new LinkedList<>(); // Queue to store paths as lists
 
-        // Initialize the queue with the starting node
-        List<Node> initialPath = new ArrayList<>();
-        initialPath.add(from);
-        queue.add(initialPath);
+    /**
+     * True iff there exists a path C = v0 … vk = A such that
+     *   (i)  for every i∈{1,…,k−1}, vi is a definite collider on (vi−1,vi,vi+1);
+     *   (ii) for every i∈{0,…,k},   vi → B   (i.e., vi is a parent of B);
+     *   (iii) vk−1 *-> A (arrowhead at A).
+     *
+     * @param C The C node from Zhang's (2008) definition of visible edge.
+     * @param A The A node from Zhang's (2008) definition of visible edge.
+     * @param B The B node from Zhang's (2008) definition of visible edge.
+     */
+    private boolean existsColliderPathInto(Node C, Node A, Node B) {
+        // C itself must already be a parent of B, otherwise no path can qualify.
+        if (!graph.isParentOf(C, B)) return false;
 
-        while (!queue.isEmpty()) {
-            List<Node> currentPath = queue.poll();
-            Node current = currentPath.get(currentPath.size() - 1);
+        return dfsColliderPath(/*prev*/ null, /*cur*/ C, A, B, new HashSet<>());
+    }
 
-            if (current.equals(to)) {
-                // Check if the path ends in an arrow pointing to 'to'
-                if (currentPath.size() > 1 &&
-                    graph.getEndpoint(currentPath.get(currentPath.size() - 2), to) == Endpoint.ARROW) {
-                    return true;
-                }
-            }
+    private boolean dfsColliderPath(Node prev,
+                                    Node cur,
+                                    Node targetA,
+                                    Node B,
+                                    Set<Node> path) {
 
-            if (!visited.contains(current)) {
-                visited.add(current);
+        // every node on the path must be a parent of B
+        if (!graph.isParentOf(cur, B)) return false;
 
-                for (Node next : graph.getAdjacentNodes(current)) {
-                    Node previous = currentPath.size() > 1 ? currentPath.get(currentPath.size() - 2) : null;
+        // reached A: last edge must have an arrowhead at A
+        if (cur.equals(targetA)) {
+            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
+        }
 
-                    if (!visited.contains(next) &&
-                        (previous == null || (graph.isDefCollider(previous, current, next)
-                                              && graph.isParentOf(current, into)))) {
-                        // Create a new path extending the current path
-                        List<Node> newPath = new ArrayList<>(currentPath);
-                        newPath.add(next);
-                        queue.add(newPath);
-                    }
-                }
+        path.add(cur);               // mark cur for this branch
+
+        for (Node nxt : graph.getAdjacentNodes(cur)) {
+            if (path.contains(nxt)) continue;          // avoid cycles
+
+            // first step out of C has no collider constraint (prev == null)
+            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
+                if (dfsColliderPath(cur, nxt, targetA, B, path)) return true;
             }
         }
 
+        path.remove(cur);            // back-track for other branches
         return false;
     }
+
+
+
+//    private boolean existsColliderPathInto(Node C, Node A, Node B) {
+//        Set<Node> visited = new HashSet<>();
+//        Queue<List<Node>> queue = new LinkedList<>(); // Queue A store paths as lists
+//
+//        // Initialize the queue with the starting node
+//        List<Node> initialPath = new ArrayList<>();
+//        initialPath.add(C);
+//        queue.add(initialPath);
+//
+//        while (!queue.isEmpty()) {
+//            List<Node> currentPath = queue.poll();
+//            Node current = currentPath.get(currentPath.size() - 1);
+//
+//            if (current.equals(A)) {
+//                // Check if the path ends in an arrow pointing A 'A'
+//                if (currentPath.size() > 1 &&
+//                    graph.getEndpoint(currentPath.get(currentPath.size() - 2), A) == Endpoint.ARROW) {
+//                    return true;
+//                }
+//            }
+//
+//            if (!visited.contains(current)) {
+//                visited.add(current);
+//
+//                for (Node next : graph.getAdjacentNodes(current)) {
+//                    Node previous = currentPath.size() > 1 ? currentPath.get(currentPath.size() - 2) : null;
+//
+//                    if (!visited.contains(next) &&
+//                        (previous == null || (graph.isDefCollider(previous, current, next)
+//                                              && graph.isParentOf(current, B)))) {
+//                        // Create a new path extending the current path
+//                        List<Node> newPath = new ArrayList<>(currentPath);
+//                        newPath.add(next);
+//                        queue.add(newPath);
+//                    }
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
 
     /**
      * <p>existsDirectedCycle.</p>
@@ -2634,12 +2872,14 @@ public class Paths implements TetradSerializable {
      *                                target, 3 = near either.
      * @param maxPathLength           The maximum length of the path to consider for backdoor paths. If a value of -1 is
      *                                given, all paths will be considered.
-     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;.
+     * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;. Return an smpty list if source ==
+     * target or there is no amenable path from source to target.
      */
     public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
                                           int nearWhichEndpoint, int maxPathLength) {
         if (source == target) {
-            throw new IllegalArgumentException("Source and target nodes must be different.");
+            return new ArrayList<>();
+//            throw new IllegalArgumentException("Source and target nodes must be different.");
         }
 
         boolean mpdag = false;
@@ -2663,7 +2903,7 @@ public class Paths implements TetradSerializable {
                 amenable.remove(path);
             }
 
-            Node a = path.get(0);
+            Node a = path.getFirst();
             Node b = path.get(1);
             Edge e = graph.getEdge(a, b);
 
@@ -2673,20 +2913,21 @@ public class Paths implements TetradSerializable {
         }
 
         if (amenable.isEmpty()) {
-            throw new IllegalArgumentException("No amenable paths found.");
+            return new ArrayList<>();
+//            throw new IllegalArgumentException("No amenable paths found.");
         }
 
         Set<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
 
         if (mpdag || mag) {
             backdoorPaths.removeIf(path -> path.size() < 2 ||
-                                           !(graph.getEdge(path.get(0), path.get(1)).pointsTowards(path.get(0))));
+                                           !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
         } else {
             backdoorPaths.removeIf(path -> {
                 if (path.size() < 2) {
                     return false;
                 }
-                Node x = path.get(0);
+                Node x = path.getFirst();
                 Node w = path.get(1);
                 Node y = target;
                 return !(graph.getEdge(x, w).pointsTowards(x)
@@ -2827,7 +3068,85 @@ public class Paths implements TetradSerializable {
         }
     }
 
-    // Helper class to represent an element in the BFS queue
+    /**
+     * Determines whether the graph is acyclic, meaning it does not contain any directed cycles.
+     *
+     * @return true if the graph is acyclic; false otherwise
+     */
+    public boolean isAcyclic() {
+        return !existsDirectedCycle();
+    }
+
+    /**
+     * Determines if the current graph configuration is maximal. A graph configuration is considered maximal if for
+     * every pair of non-adjacent nodes, there does not exist an inducing path between them considering the selected
+     * nodes.
+     *
+     * @return true if the graph configuration is maximal, otherwise false.
+     */
+    public boolean isMaximal() {
+        List<Node> selection = graph.getNodes().stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        List<Node> _nodes = graph.getNodes();
+
+        for (int i = 0; i < _nodes.size(); i++) {
+            for (int j = i + 1; j < _nodes.size(); j++) {
+                Node x = _nodes.get(i);
+                Node y = _nodes.get(j);
+
+                if (!graph.isAdjacentTo(x, y) && graph.paths().existsInducingPath(x, y, new HashSet<>(selection))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Convenience record for queue elements.
+     */
+    private static final class PathElem {
+        final Node cur;      // current vertex
+        final Node prev;     // vertex we arrived from (null at start)
+
+        PathElem(Node cur, Node prev) {
+            this.cur = cur;
+            this.prev = prev;
+        }
+    }
+
+    /**
+     * (prev,cur) pair so we can mark *edges* as visited.
+     */
+    private static final class NodePair {
+        final Node prev, cur;
+
+        NodePair(Node prev, Node cur) {
+            this.prev = prev;
+            this.cur = cur;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof NodePair p)) return false;
+            return Objects.equals(prev, p.prev) && Objects.equals(cur, p.cur);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(prev, cur);
+        }
+    }
+
+    /**
+     * Represents an element in a navigation path consisting of a current node and the previous node.
+     * <p>
+     * This class is primarily used to track the traversal history in a pathfinding context or similar scenarios where
+     * the relationship between nodes in a path needs to be maintained.
+     */
     static class PathElement {
         Node current;  // The current node
         Node previous; // The previous node on the path

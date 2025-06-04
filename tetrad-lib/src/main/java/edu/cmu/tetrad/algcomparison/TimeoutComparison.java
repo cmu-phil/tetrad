@@ -1285,7 +1285,7 @@ public class TimeoutComparison {
                     if (_stat instanceof ElapsedCpuTime) {
                         stat = elapsed / 1000.0;
                     } else {
-                        stat = _stat.getValue(truth[u], est[u], null);
+                        stat = _stat.getValue(truth[u], est[u], null, new Parameters());
                     }
 
                     allStats[u][run.getAlgSimIndex()][statIndex][run.getRunIndex()] = stat;

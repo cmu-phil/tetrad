@@ -111,7 +111,7 @@ public class MultiGeneralAndersonDarlingTest {
     //============================PRIVATE METHODS========================//
 
     private void runTest() {
-        int n = this.data.get(0).size();
+        int n = this.data.getFirst().size();
         double h = 0.0;
 
         int numSummed = 0;

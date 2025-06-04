@@ -29,12 +29,7 @@ import java.util.List;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial steps of finding adjacencies and
- * unshielded colliders.
- * <p>
- * GFCI reference is this:
- * <p>
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
+ * GRaSP-FCI, an implentatation of *-FCI using GRaSP.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -124,13 +119,13 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
 
         // FCI
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setSepsetFinderMethod(parameters.getInt(Params.SEPSET_FINDER_METHOD));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setKnowledge(this.knowledge);
 
         return search.search();
@@ -188,16 +183,15 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, U
         params.add(Params.NUM_STARTS);
 
         // FCI
-        params.add(Params.SEPSET_FINDER_METHOD);
         params.add(Params.DEPTH);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.POSSIBLE_MSEP_DONE);
+        params.add(Params.USE_MAX_P_HEURISTIC);
 
         // General
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
-        params.add(Params.REMOVE_ALMOST_CYCLES);
+        params.add(Params.GUARANTEE_PAG);
         params.add(Params.VERBOSE);
 
         return params;

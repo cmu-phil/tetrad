@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -26,6 +26,8 @@ import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters for simulating data from Bayes nets.
@@ -81,14 +83,53 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
      */
     private void buildGui() {
         setLayout(new BorderLayout());
+        JLabel label;
 
-        IntTextField sampleSizeField = new IntTextField(this.params.getInt("sampleSize", 1000), 6);
+        if (Preferences.userRoot().getBoolean("withReplacement", true)) {
+            label = new JLabel("<html>" +
+                               "The input dataset will be sampled with replacement to create a" +
+                               "<br>new dataset with the number of samples entered below." +
+                               "</html>");
+        } else {
+            label = new JLabel("<html>" +
+                               "The input dataset will be sampled without replacement to create a " +
+                               "<br>new>dataset with the number of samples entered below." +
+                               "</html>");
+        }
+
+        IntTextField sampleSizeField = new IntTextField(Preferences.userRoot().getInt("bootstrapSampleSize",
+                1000), 6);
+        BootstrapSamplerParamsEditor.this.params.set("sampleSize",
+                Preferences.userRoot().getInt("bootstrapSampleSize", 1000));
+
         sampleSizeField.setFilter((value, oldValue) -> {
             try {
                 BootstrapSamplerParamsEditor.this.params.set("sampleSize", value);
+                Preferences.userRoot().putInt("bootstrapSampleSize", value);
                 return value;
             } catch (IllegalArgumentException e) {
                 return oldValue;
+            }
+        });
+
+        Checkbox withReplacementCheckbox = new Checkbox("With replacement",
+                Preferences.userRoot().getBoolean("withReplacement", true));
+
+        withReplacementCheckbox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                BootstrapSamplerParamsEditor.this.params.set("withReplacement", true);
+                Preferences.userRoot().putBoolean("withReplacement", true);
+                label.setText("<html>" +
+                              "The input dataset will be sampled with replacement to create a " +
+                              "<br>new>dataset with the number of samples entered below." +
+                              "</html>");
+            } else {
+                BootstrapSamplerParamsEditor.this.params.set("withReplacement", false);
+                Preferences.userRoot().putBoolean("withReplacement", false);
+                label.setText("<html>" +
+                              "The input dataset will be sampled without replacement to create a" +
+                              "<br>new dataset with the number of samples entered below." +
+                              "</html>");
             }
         });
 
@@ -96,14 +137,15 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("<html>" +
-                          "The input dataset will be sampled with replacement to create a new" +
-                          "<br>dataset with the number of samples entered below."));
+        b2.add(label);
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(new JLabel("<html>" + "<i>Sample size:  </i>" + "</html>"));
         b7.add(sampleSizeField);
+
+        b7.add(Box.createHorizontalStrut(10));
+        b7.add(withReplacementCheckbox);
 
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));

@@ -128,7 +128,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
                               DataWrapper dataWrapper,
                               Parameters params) {
         super(mmWrapper, mmWrapper.getClusters(), params);
-        this.dataSet = (DataSet) dataWrapper.getDataModelList().get(0);
+        this.dataSet = (DataSet) dataWrapper.getDataModelList().getFirst();
         setClusters(mmWrapper.getClusters());
         params.set("clusters", mmWrapper.getClusters());
     }

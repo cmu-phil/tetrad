@@ -16,16 +16,16 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on SEM
-// * BIC algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
-// */
-//@TestOfIndependence(
-//        name = "SEM BIC Test",
-//        command = "sem-bic-test",
-//        dataType = {DataType.Continuous, DataType.Covariance}
-//)
-//@LinearGaussian
+/**
+ * The SemBicTest class implements the IndependenceWrapper interface and represents a test for independence based on SEM
+ * BIC algorithm. It is annotated with the TestOfIndependence and LinearGaussian annotations.
+ */
+@TestOfIndependence(
+        name = "SEM BIC Test",
+        command = "sem-bic-test",
+        dataType = {DataType.Continuous, DataType.Covariance}
+)
+@LinearGaussian
 public class SemBicTest implements IndependenceWrapper {
 
     @Serial
@@ -57,7 +57,7 @@ public class SemBicTest implements IndependenceWrapper {
         }
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
+        score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -93,7 +93,7 @@ public class SemBicTest implements IndependenceWrapper {
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
         params.add(Params.PRECOMPUTE_COVARIANCES);
-        params.add(Params.USE_PSEUDOINVERSE);
+        params.add(Params.SINGULARITY_LAMBDA);
         return params;
     }
 }

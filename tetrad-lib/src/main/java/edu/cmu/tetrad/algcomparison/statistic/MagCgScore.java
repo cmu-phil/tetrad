@@ -4,10 +4,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.work_in_progress.MagCgBicScore;
-import edu.cmu.tetrad.search.work_in_progress.MagDgBicScore;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.tanh;
@@ -46,7 +45,7 @@ public class MagCgScore implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         if (!(dataModel instanceof DataSet)) throw new IllegalArgumentException("Expecting a dataset for MAG DG Score.");
 
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);

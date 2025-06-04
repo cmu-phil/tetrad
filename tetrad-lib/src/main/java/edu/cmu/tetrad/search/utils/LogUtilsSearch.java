@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
@@ -279,8 +280,6 @@ public class LogUtilsSearch {
 
                 double score1 = score.localScore(hashIndices.get(node), parentIndices);
 
-                System.out.println("Node: " + node + " Score: " + score1);
-
                 if (!Double.isNaN(score1)) _score += score1;
 //                _score += score1;
             }
@@ -299,7 +298,7 @@ public class LogUtilsSearch {
         if (dataModel != null && (dataModel.isContinuous() || dataModel.isDiscrete())
             && !graph.getAllAttributes().containsKey("BIC")) {
             try {
-                graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
+                graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel, new Parameters()));
             } catch (Exception e) {
                 TetradLogger.getInstance().log("Error computing BIC: " + e.getMessage());
             }

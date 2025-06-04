@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -59,6 +59,7 @@ public final class DagToPag {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
+    private int depth = -1;
 
 
     /**
@@ -87,7 +88,7 @@ public final class DagToPag {
 
         Graph graph = new EdgeListGraph(measured);
 
-        IntStream.range(0, measured.size()).parallel().forEach(i -> {
+        IntStream.range(0, measured.size()).forEach(i -> {
             Node n1 = measured.get(i);
             IntStream.range(i + 1, measured.size()).forEach(j -> {
                 Node n2 = measured.get(j);
@@ -107,7 +108,7 @@ public final class DagToPag {
      *
      * @param mag       the MAG (Maximum Ancestral Graph) representation of the graph
      * @param knowledge the background knowledge used for the orientation
-     * @param verbose   a boolean indicating whether verbose output should be printed
+     * @param verbose   a boolean indicating whether verabose output should be printed
      * @return the final strategy for finding a PAG using D-SEP
      */
     public static R0R4StrategyTestBased getFinalStrategyUsingDsep(Graph mag, Knowledge knowledge, boolean verbose) {
@@ -231,6 +232,24 @@ public final class DagToPag {
 
         FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose));
         fciOrient.setVerbose(verbose);
+        fciOrient.setKnowledge(knowledge);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+
+//        for (Node y : pag.getNodes()) {
+//            List<Node> adjy = pag.getAdjacentNodes(y);
+//
+//            for (int i = 0; i < adjy.size(); i++) {
+//                for (int j = i + 1; j < adjy.size(); j++) {
+//                    Node x = adjy.get(i);
+//                    Node z = adjy.get(j);
+//
+//                    if (mag.isDefCollider(x, y, z) && !mag.isAdjacentTo(x, z)) {
+//                        pag.setEndpoint(x, y, Endpoint.ARROW);
+//                        pag.setEndpoint(z, y, Endpoint.ARROW);
+//                    }
+//                }
+//            }
+//        }
 
         fciOrient.ruleR0(pag, new HashSet<>());
         fciOrient.finalOrientation(pag);

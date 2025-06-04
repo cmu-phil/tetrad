@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Instance-specific GFci given in Fattaneh Jabbari's dissertation (Pages 144-147)
+ * Instance-specific FGES-FCI given in Fattaneh Jabbari's dissertation (Pages 144-147)
  *
  * @author Fattaneh
  */
@@ -154,7 +154,7 @@ public final class IGFci implements IGraphSearch {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    if (sepsets.getSepset(a, c, -1) != null) {
+                    if (sepsets.getSepset(a, c, -1, null) != null) {
                         graph.removeEdge(a, c);
                     }
                 }
@@ -212,6 +212,7 @@ public final class IGFci implements IGraphSearch {
      * potentially identifying and orienting definite colliders.
      *
      * @param fgesGraph the FGES Graph to be processed; must not be null.
+     * @throws InterruptedException if the search is interrupted.
      */
     public void modifiedR0(Graph fgesGraph) throws InterruptedException {
         graph.reorientAllWith(Endpoint.CIRCLE);
@@ -237,7 +238,7 @@ public final class IGFci implements IGraphSearch {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
-                    Set<Node> sepset = sepsets.getSepset(a, c, -1);
+                    Set<Node> sepset = sepsets.getSepset(a, c, -1, null);
 
                     if (sepset != null && !sepset.contains(b)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);

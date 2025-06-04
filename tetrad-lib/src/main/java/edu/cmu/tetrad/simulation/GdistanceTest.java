@@ -44,8 +44,8 @@ public class GdistanceTest {
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
         }
-        Graph testdag1 = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
-        Graph testdag2 = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+        Graph testdag1 = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true, -1);
+        Graph testdag2 = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true, -1);
 
         //System.out.println(testdag1);
         //load the location map

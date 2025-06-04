@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,10 +21,9 @@
 
 package edu.cmu.tetradapp.editor.datamanip;
 
-import cern.colt.list.DoubleArrayList;
-import cern.jet.stat.Descriptive;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetradapp.util.IntSpinner;
 
 import javax.swing.*;
@@ -98,14 +97,14 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
         this.method = Method.NONE;
         this.data = new double[dataSet.getNumRows()];
-        int col = dataSet.getColumn(variable);
+        int col = dataSet.getColumnIndex(variable);
 
         for (int i = 0; i < dataSet.getNumRows(); i++) {
             this.data[i] = dataSet.getDouble(i, col);
         }
 
-        this.min = Descriptive.min(new DoubleArrayList(this.data));
-        this.max = Descriptive.max(new DoubleArrayList(this.data));
+        this.min = StatUtils.min(this.data);
+        this.max = StatUtils.max(this.data);
         this.numberOfCategories = 2;
 
         this.categorySpinner = new IntSpinner(2, 1, 2);

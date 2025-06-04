@@ -97,7 +97,7 @@ public class StARS implements Algorithm {
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }
-                        e = GraphUtils.replaceNodes(e, samples.get(0).getVariables());
+                        e = GraphUtils.replaceNodes(e, samples.getFirst().getVariables());
                         graphs.add(e);
                     }
                 } else {
@@ -126,8 +126,8 @@ public class StARS implements Algorithm {
             throw new IllegalStateException("Pool timed out");
         }
 
-        int p = samples.get(0).getNumColumns();
-        List<Node> nodes = graphs.get(0).getNodes();
+        int p = samples.getFirst().getNumColumns();
+        List<Node> nodes = graphs.getFirst().getNodes();
 
         double D = 0.0;
         int count = 0;
@@ -168,6 +168,8 @@ public class StARS implements Algorithm {
 
     /**
      * {@inheritDoc}
+     *
+     * @throws InterruptedException if any
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
@@ -185,7 +187,7 @@ public class StARS implements Algorithm {
 
         for (int i = 0; i < numSubsamples; i++) {
             BootstrapSampler sampler = new BootstrapSampler();
-            sampler.setWithoutReplacements(true);
+            sampler.setWithReplacement(true);
             samples.add(sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows())));
         }
 

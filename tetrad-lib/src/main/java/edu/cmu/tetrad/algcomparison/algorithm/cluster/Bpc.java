@@ -57,16 +57,19 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
         ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
         double alpha = parameters.getDouble(Params.ALPHA);
 
-        boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
+        int tetradTest = parameters.getInt(Params.TETRAD_TEST_BPC);
         BpcTestType testType;
 
-        if (wishart) {
+        if (tetradTest == 1) {
             testType = BpcTestType.TETRAD_WISHART;
-        } else {
+        } else if (tetradTest == 2) {
             testType = BpcTestType.TETRAD_DELTA;
+        } else {
+            throw new IllegalArgumentException("Unexpected test type: " + tetradTest);
         }
 
         edu.cmu.tetrad.search.Bpc bpc = new edu.cmu.tetrad.search.Bpc(cov, alpha, testType);
+        bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         if (parameters.getInt(Params.CHECK_TYPE) == 1) {
             bpc.setCheckType(ClusterSignificance.CheckType.Significance);
@@ -93,14 +96,6 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
 
             Mimbuild mimbuild = new Mimbuild();
             mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            mimbuild.setKnowledge((Knowledge) parameters.get("knowledge", new Knowledge()));
-
-            if (parameters.getBoolean("includeThreeClusters", true)) {
-                mimbuild.setMinClusterSize(3);
-            } else {
-                mimbuild.setMinClusterSize(4);
-            }
-
             List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
             List<String> latentNames = new ArrayList<>();
 
@@ -114,9 +109,11 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
 
             ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
-            TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+            if (parameters.getBoolean(Params.VERBOSE)) {
+                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+            }
 
-            Graph fullGraph = mimbuild.getFullGraph();
+            Graph fullGraph = mimbuild.getFullGraph(dataModel.getVariables());
             LayoutUtil.defaultLayout(fullGraph);
             LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
@@ -166,7 +163,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.USE_WISHART);
+        parameters.add(Params.TETRAD_TEST_BPC);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.CHECK_TYPE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);

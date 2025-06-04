@@ -281,6 +281,7 @@ public final class FgesMb implements DagScorer {
      *
      * @param targets a {@link java.util.List} object
      * @return the resulting Pattern.
+     * @throws InterruptedException if any
      */
     public Graph search(List<Node> targets) throws InterruptedException {
         if (targets == null || targets.isEmpty()) {
@@ -351,6 +352,7 @@ public final class FgesMb implements DagScorer {
      * heuristicSpeedup. 4. Performs forward equivalence search (fes). 5. Performs backward equivalence search (bes). 6.
      * Sets the mode to coverNoncolliders. 7. Performs fes again. 8. Performs bes again. 9. If faithfulnessAssumed is
      * false, sets the mode to allowUnfaithfulness and performs fes and bes again.
+     * @throws InterruptedException if any
      */
     private void doLoop() throws InterruptedException {
         addRequiredEdges(graph);
@@ -617,6 +619,7 @@ public final class FgesMb implements DagScorer {
      * <p>
      * This method does not return any values. It updates the graph by inserting new arrows and updating the set of
      * arrows to be processed.
+     * @throws InterruptedException if any
      */
     private void fes() throws InterruptedException {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
@@ -681,6 +684,7 @@ public final class FgesMb implements DagScorer {
      * invokes the bes() method of the Bes instance to calculate the optimal score.
      *
      * @see Bes
+     * @throws InterruptedException if any
      */
     private void bes() throws InterruptedException {
         Bes bes = new Bes(score);
@@ -703,6 +707,7 @@ public final class FgesMb implements DagScorer {
      * Reevaluates the forward arrows for a set of nodes.
      *
      * @param nodes the set of nodes for which to reevaluate the forward arrows
+     * @throws InterruptedException if any
      */
     private void reevaluateForward(final Set<Node> nodes) throws InterruptedException {
         class AdjTask implements Callable<Boolean> {
@@ -716,6 +721,7 @@ public final class FgesMb implements DagScorer {
                 this.from = from;
                 this.to = to;
             }
+
 
             @Override
             public Boolean call() throws InterruptedException {
@@ -985,6 +991,7 @@ public final class FgesMb implements DagScorer {
      * @param parents     The set of parent nodes of x and y.
      * @param hashIndices The map of node and its index.
      * @return The evaluation score after inserting nodes into the graph.
+     * @throws InterruptedException if any
      */
     private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents,
                               Map<Node, Integer> hashIndices) throws InterruptedException {

@@ -44,3 +44,9 @@ tetrad-gui.log
 ._.DS_Store
 **/.DS_Store
 **/._.DS_Store
+
+tetrad-lib/accepts_*
+tetrad-lib/low*
+tetrad-lib/rejects_*
+tetrad-lib/testPermutedData.txt
+.DS_Store

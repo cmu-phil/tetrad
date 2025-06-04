@@ -21,11 +21,11 @@
 
 package edu.cmu.tetrad.bayes;
 
-import cern.jet.stat.Gamma;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.special.Gamma;
 
 /**
  * <p>Provides a static method for computing the score of a model, called the

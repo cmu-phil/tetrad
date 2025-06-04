@@ -4,10 +4,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
-import java.util.List;
 
 /**
  * Represents a statistic that calculates the number of correct visible ancestors in the true graph
@@ -44,7 +43,7 @@ public class NumVisibleEdges implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         GraphUtils.addEdgeSpecializationMarkup(estGraph);
         int tp = 0;
 

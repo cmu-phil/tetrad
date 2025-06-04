@@ -79,8 +79,8 @@ public class ZsbScore implements Score {
     private List<Double> lambdas;
     // The data, if it is set.
     private Matrix data;
-    // True if the pseudo-inverse should be used.
-    private boolean usePseudoInverse;
+    // Singularity lambda
+    private double lambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -162,7 +162,7 @@ public class ZsbScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
+            varRy = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, lambda);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -294,15 +294,6 @@ public class ZsbScore implements Score {
         this.riskBound = riskBound;
     }
 
-    /**
-     * Sets whether to use the pseudo-inverse in place of the inverse in the score.
-     *
-     * @param usePseudoInverse True if the pseudo-inverse should be used.
-     */
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
-    }
-
     private double getLambda(int m0, int pn) {
         if (lambdas == null) {
             lambdas = new ArrayList<>();
@@ -322,6 +313,15 @@ public class ZsbScore implements Score {
         int[] indices = new int[__adj.size()];
         for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
         return indices;
+    }
+
+    /**
+     * Sets the Singularity lambda.
+     *
+     * @param lambda The new value for the lambda parameter.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 }
 

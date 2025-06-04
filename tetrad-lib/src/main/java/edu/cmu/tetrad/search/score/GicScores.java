@@ -67,8 +67,8 @@ public class GicScores implements Score {
     private boolean calculateRowSubsets = false;
     //    private boolean calculateSquareEuclideanNorms = false;
     private double penaltyDiscount = 1;
-    // True if the pseudo-inverse should be used.
-    private boolean usePseudoInverse = false;
+    // Singularity lambda.
+    private double singularityLambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -145,7 +145,7 @@ public class GicScores implements Score {
         double varry;
 
         try {
-            varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, this.usePseudoInverse);
+            varry = SemBicScore.getResidualVariance(i, parents, data, covariances, calculateRowSubsets, this.singularityLambda);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -355,12 +355,12 @@ public class GicScores implements Score {
     }
 
     /**
-     * Sets whether to use the pseudo-inverse when calculating the score.
+     * Sets the Singularity lambda for the model.
      *
-     * @param usePseudoInverse True if so.
+     * @param singularityLambda The Singularity lambda to be set.
      */
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
+    public void setSingularityLambda(double singularityLambda) {
+        this.singularityLambda = singularityLambda;
     }
 
     /**

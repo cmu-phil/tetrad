@@ -162,7 +162,7 @@ public class DirectLingam {
      * @return the next node in the list U that minimizes the objective function
      */
     private Node getNext(List<Node> U, Map<Node, double[]> R) {
-        Node m = U.get(0);
+        Node m = U.getFirst();
         double best = Double.POSITIVE_INFINITY;
 
         for (Node x : U) {

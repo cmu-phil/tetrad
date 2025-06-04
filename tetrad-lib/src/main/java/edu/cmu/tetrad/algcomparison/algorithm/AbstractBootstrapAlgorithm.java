@@ -37,7 +37,7 @@ import java.util.concurrent.Callable;
 /**
  * This is a base class for bootstrap algorithms.
  * <p>
- * Mar 4, 2024 5:05:28 PM
+ * Mar 4, 2024 5:05:28 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */

@@ -50,7 +50,7 @@ public final class TestHistogram {
 
     @Test
     public void testHistogram() {
-        RandomUtil.getInstance().setSeed(4829384L);
+//        RandomUtil.getInstance().setSeed(4829384L);
 
         List<Node> nodes = new ArrayList<>();
 
@@ -58,7 +58,8 @@ public final class TestHistogram {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 0, 5, 30, 15, 15, false));
+        Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 0, 5, 30,
+                15, 15, false, 4829384L));
         final int sampleSize = 1000;
 
         // Continuous

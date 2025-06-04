@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 /**
- * Picks a DAG from the given graph.
+ * Picks the Zhang MAG in a PAG.
  *
  * @author Tyler Gibson
  * @version $Id: $Id

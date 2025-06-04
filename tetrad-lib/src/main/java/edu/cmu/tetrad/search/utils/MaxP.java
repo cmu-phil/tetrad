@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -44,10 +44,11 @@ public final class MaxP {
     private final IndependenceTest independenceTest;
     private int depth = -1;
     private Knowledge knowledge = new Knowledge();
-    private boolean useHeuristic;
-    private int maxDiscriminatingPathLength = -1;
+    private boolean useHeuristic = false;
+    private int maxPMaxHeuristicPathLength = -1;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
     private boolean verbose = false;
+    private boolean acyclic = false;
 
     /**
      * Constructor.
@@ -64,6 +65,7 @@ public final class MaxP {
      * Adds colliders to the given graph using the max P rule.
      *
      * @param graph The graph to orient.
+     * @throws InterruptedException if the operation is interrupted
      */
     public synchronized void orient(Graph graph) throws InterruptedException {
         addColliders(graph);
@@ -90,14 +92,14 @@ public final class MaxP {
     /**
      * Sets the maximum length of any discriminating path.
      *
-     * @param maxDiscriminatingPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * @param maxPMaxHeuristicPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
-    public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
-        if (maxDiscriminatingPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxDiscriminatingPathLength);
+    public void setMaxPMaxHeuristicPathLength(int maxPMaxHeuristicPathLength) {
+        if (maxPMaxHeuristicPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPMaxHeuristicPathLength);
         }
 
-        this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+        this.maxPMaxHeuristicPathLength = maxPMaxHeuristicPathLength;
     }
 
     /**
@@ -134,7 +136,9 @@ public final class MaxP {
         tripleList.sort((o1, o2) -> Double.compare(scores.get(o2), scores.get(o1)));
 
         for (Triple triple : tripleList) {
-            System.out.println(triple + " score = " + scores.get(triple));
+            if (scores.get(triple) > independenceTest.getAlpha()) {
+                System.out.println("Picking max p unshielded triple to orient: " + triple + " score = " + scores.get(triple));
+            }
         }
 
         for (Triple triple : tripleList) {
@@ -142,7 +146,9 @@ public final class MaxP {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            orientCollider(graph, a, b, c, this.conflictRule);
+            if (scores.get(triple) > independenceTest.getAlpha()) {
+                orientCollider(graph, a, b, c, this.conflictRule);
+            }
         }
     }
 
@@ -170,7 +176,7 @@ public final class MaxP {
             }
 
             if (this.useHeuristic) {
-                if (existsShortPath(a, c, this.maxDiscriminatingPathLength, graph)) {
+                if (existsShortPath(a, c, this.maxPMaxHeuristicPathLength, graph)) {
                     testColliderMaxP(graph, scores, a, b, c);
                 } else {
                     testColliderHeuristic(graph, scores, a, b, c);
@@ -187,8 +193,7 @@ public final class MaxP {
         adja.remove(c);
         adjc.remove(a);
 
-        if (!(GraphSearchUtils.isArrowheadAllowed(a, b, knowledge)
-              && (GraphSearchUtils.isArrowheadAllowed(c, b, knowledge)))) {
+        if (!(GraphSearchUtils.isArrowheadAllowed(a, b, knowledge) && (GraphSearchUtils.isArrowheadAllowed(c, b, knowledge)))) {
             return;
         }
 
@@ -269,8 +274,8 @@ public final class MaxP {
     }
 
     private void orientCollider(Graph graph, Node a, Node b, Node c, PcCommon.ConflictRule conflictRule) {
-        if (PcCommon.colliderAllowed(graph, a, b, c, knowledge)) {
-            PcCommon.orientCollider(a, b, c, conflictRule, graph, this.verbose);
+        if (PcCommon.colliderAllowed(a, b, c, knowledge)) {
+            PcCommon.orientCollider(a, b, c, conflictRule, graph, this.verbose, acyclic);
         }
     }
 
@@ -323,6 +328,15 @@ public final class MaxP {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * Set to true if the output is supposed to be acyclic.
+     *
+     * @param acyclic True if so.
+     */
+    public void setAcyclic(boolean acyclic) {
+        this.acyclic = acyclic;
     }
 }
 

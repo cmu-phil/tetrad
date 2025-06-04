@@ -114,7 +114,7 @@ public class SemXmlRenderer {
         semGraph.setShowErrorTerms(true);
 
         for (Node node : SemXmlRenderer.getExogenousNodes(semGraph)) {
-//            Node graphNode = semGraph.getChildren(node).get(0);
+//            Node graphNode = semGraph.getChildren(node).getFirst();
             normal = new Element(SemXmlConstants.NORMAL);
             normal.addAttribute(new Attribute(SemXmlConstants.VARIABLE, node.getName()));
 //            normal.addAttribute(new Attribute(SemXmlConstants.INTERCEPT, Double.toString(semIm.getIntercept(graphNode))));

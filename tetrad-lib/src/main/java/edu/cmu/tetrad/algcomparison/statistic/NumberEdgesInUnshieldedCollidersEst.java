@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.Serial;
@@ -45,7 +46,7 @@ public class NumberEdgesInUnshieldedCollidersEst implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         List<Node> nodes = estGraph.getNodes();
         Set<Edge> edges = new HashSet<>();
 

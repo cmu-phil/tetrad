@@ -29,7 +29,6 @@ import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
@@ -1245,7 +1244,8 @@ public final class SemIm implements Im, ISemIm {
         } else if (chiSquare < 0) {
             return Double.NaN;
         } else {
-            return 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chiSquare);
+//            return 1.0 - new ChiSquaredDistribution(dof).cumulativeProbability(chiSquare);
+            return StatUtils.getChiSquareP(dof, chiSquare);
         }
     }
 
@@ -1344,7 +1344,7 @@ public final class SemIm implements Im, ISemIm {
 
     private double getNextNormal(double mean, double stdDev) {
         numRandomCalls++;
-        return RandomUtil.getInstance().nextNormal(mean, stdDev);
+        return RandomUtil.getInstance().nextGaussian(mean, stdDev);
     }
 
 //    /**
@@ -1401,7 +1401,7 @@ public final class SemIm implements Im, ISemIm {
             double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
-                exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
+                exoData[i] = RandomUtil.getInstance().nextGaussian(0, 1);
                 //            exoData[i] = randomUtil.nextUniform(-1, 1);
             }
 
@@ -1559,12 +1559,12 @@ public final class SemIm implements Im, ISemIm {
 
                 if (initialValues != null) {
                     initNode = initialValues.getVariable(node1.getName());
-                    initCol = initialValues.getColumn(initNode);
+                    initCol = initialValues.getColumnIndex(initNode);
                 }
 
                 if (_parents[col].length == 0 && initialValues != null
                     && initCol != -1) {
-                    int column = initialValues.getColumn(initNode);
+                    int column = initialValues.getColumnIndex(initNode);
                     value = initialValues.getDouble(row, column);
                 } else {
                     if (distribution == null) {
@@ -1677,7 +1677,7 @@ public final class SemIm implements Im, ISemIm {
                     if (errCovar == 0.0) {
                         e.set(i, 0.0);
                     } else {
-                        e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar)));
+                        e.set(i, RandomUtil.getInstance().nextGaussian(0, sqrt(errCovar)));
                     }
                 } else if (errorType == 2) {
                     e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));

@@ -298,7 +298,7 @@ public class Simulation extends DataWrapper implements
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
 
-        this.simulation = new GeneralSemSimulation(wrapper.getSemIms().get(0));
+        this.simulation = new GeneralSemSimulation(wrapper.getSemIms().getFirst());
         this.parameters = parameters;
         createSimulation();
     }

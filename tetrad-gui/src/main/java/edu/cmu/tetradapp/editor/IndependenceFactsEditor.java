@@ -533,12 +533,12 @@ public class IndependenceFactsEditor extends JPanel {
     private void resetText() {
         StringBuilder buf = new StringBuilder();
 
-        if (this.getVars().size() == 0) {
-            buf.append("Choose variables and wildcards from dropdown--&gt;");
+        if (this.getVars().isEmpty()) {
+            buf.append("Choose variables and wildcards from dropdown");
         }
 
-        if (this.getVars().size() > 0) {
-            buf.append(" ").append(this.getVars().get(0));
+        if (!this.getVars().isEmpty()) {
+            buf.append(" ").append(this.getVars().getFirst());
             buf.append(" _||_ ");
         }
 
@@ -556,7 +556,7 @@ public class IndependenceFactsEditor extends JPanel {
         }
 
         if (this.getVars().size() > 2) {
-            buf.append(this.getVars().get(this.getVars().size() - 1));
+            buf.append(this.getVars().getLast());
         }
 
         model.setVars(this.getVars());

@@ -71,22 +71,11 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
      */
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
-            case 0 -> PcCommon.PcHeuristicType.NONE;
-            case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
-            case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
-            case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
-            default ->
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-        };
-
         edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(this.test.getTest(dataModel, parameters));
         search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-        search.setPcHeuristicType(pcHeuristicType);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setOut(System.out);
 
         return search.search();
     }
@@ -123,7 +112,6 @@ public class Fas extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
-        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.VERBOSE);
         return parameters;

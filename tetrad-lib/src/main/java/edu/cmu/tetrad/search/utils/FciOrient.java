@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,17 +17,15 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.FciOrientDijkstra;
-import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +48,7 @@ import java.util.concurrent.TimeUnit;
  * and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.
  * <p>
  * These final rules are used in all algorithms in Tetrad that follow and refine the FCI algorithm--for example, the
- * GFCI and RFCI algorihtms.
+ * FGES-FCI and RFCI algorihtms.
  * <p>
  * We've made the methods for each of the separate rules publicly accessible in case someone wants to use the individual
  * rules in the context of their own algorithms.
@@ -67,9 +65,6 @@ import java.util.concurrent.TimeUnit;
  * @author josephramsey 2024-8-21
  * @author Choh-Man Teng
  * @version $Id: $Id
- * @see Fci
- * @see GFci
- * @see Rfci
  */
 public class FciOrient {
 
@@ -118,7 +113,7 @@ public class FciOrient {
     /**
      * Indicates whether the discriminating path step should be run in parallel.
      */
-    private boolean parallel = true;
+    private boolean parallel = false;
     /**
      * The endpoint strategy to use for setting endpoints.
      */
@@ -126,7 +121,7 @@ public class FciOrient {
     /**
      * Indicates whether to run R4 or not.
      */
-    private boolean doR4 = true;
+    private boolean useR4 = true;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified R4Strategy.
@@ -184,26 +179,26 @@ public class FciOrient {
      *
      * @param graph                       the graph to analyze
      * @param maxDiscriminatingPathLength the maximum length of a discriminating path
-     * @param checkEcNonadjacency         whether to check for EC nonadjacency
+     * @param checkXyNonadjacency         whether to check for EC nonadjacency
      * @return a set of discriminating paths found in the graph
      */
-    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean checkEcNonadjacency) {
+    public static Set<DiscriminatingPath> listDiscriminatingPaths(Graph graph, int maxDiscriminatingPathLength, boolean checkXyNonadjacency) {
         Set<DiscriminatingPath> discriminatingPaths = new HashSet<>();
 
         List<Node> nodes = graph.getNodes();
 
-        //  *         B
-        // *         *o           * is either an arrowhead or a circle; note B *-> A is not a condition in Zhang's rule
+        //  *         V
+        // *         *o           * is either an arrowhead or a circle; note V *-> W is not a condition in Zhang's rule
         // *        /  \
         // *       v    *
-        // * E....A --> C
-        for (Node a : nodes) {
+        // * X....W --> Y
+        for (Node w : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            for (Node c : graph.getAdjacentNodes(a)) {
-                discriminatingPaths.addAll(listDiscriminatingPaths(graph, a, c, maxDiscriminatingPathLength, checkEcNonadjacency));
+            for (Node y : graph.getAdjacentNodes(w)) {
+                discriminatingPaths.addAll(listDiscriminatingPaths(graph, w, y, maxDiscriminatingPathLength, checkXyNonadjacency));
             }
         }
 
@@ -556,7 +551,6 @@ public class FciOrient {
                 this.changeFlag = false;
                 rulesR8R9R10(graph);
             }
-
         }
     }
 
@@ -672,28 +666,47 @@ public class FciOrient {
             ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 3);
             int[] choice;
 
+            WH:
             while ((choice = gen.next()) != null) {
-                List<Node> B = GraphUtils.asList(choice, adj);
+                List<Node> adjb = GraphUtils.asList(choice, adj);
 
-                Node a = B.get(0);
-                Node c = B.get(1);
-                Node d = B.get(2);
+                PermutationGenerator pg = new PermutationGenerator(adjb.size());
+                int[] perm;
 
-                if (!graph.isAdjacentTo(a, c) && graph.isAdjacentTo(a, d) && graph.isAdjacentTo(c, d)) {
-                    if (graph.isDefCollider(a, b, c) && graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE
-                        && graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
-                        if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
-                            continue;
-                        }
+                while ((perm = pg.next()) != null) {
+                    Node a = adjb.get(perm[0]);
+                    Node d = adjb.get(perm[1]);
+                    Node c = adjb.get(perm[2]);
 
-                        setEndpoint(graph, d, b, Endpoint.ARROW);
-
-                        if (this.verbose) {
-                            this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
-                        }
-
-                        this.changeFlag = true;
+                    if (!graph.isDefCollider(a, b, c)) {
+                        continue;
                     }
+
+                    if (!(graph.isAdjacentTo(a, b) && graph.isAdjacentTo(d, b) && graph.isAdjacentTo(c, b))) {
+                        continue;
+                    }
+
+                    if (!(graph.isAdjacentTo(a, d) && graph.isAdjacentTo(c, d))) {
+                        continue;
+                    }
+
+                    if (!(graph.getEndpoint(d, b) == Endpoint.CIRCLE && graph.getEndpoint(a, d) == Endpoint.CIRCLE
+                          && graph.getEndpoint(c, d) == Endpoint.CIRCLE)) {
+                        continue;
+                    }
+
+                    if (!FciOrient.isArrowheadAllowed(d, b, graph, knowledge)) {
+                        continue;
+                    }
+
+                    setEndpoint(graph, d, b, Endpoint.ARROW);
+
+                    if (this.verbose) {
+                        this.logger.log(LogUtilsSearch.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
+                    }
+
+                    this.changeFlag = true;
+                    break WH;
                 }
             }
         }
@@ -707,7 +720,7 @@ public class FciOrient {
      */
     public void ruleR4(Graph graph) {
 
-        if (!doR4) {
+        if (!useR4) {
             return;
         }
 
@@ -719,12 +732,12 @@ public class FciOrient {
 
         int testTimeout = this.testTimeout == -1 ? Integer.MAX_VALUE : (int) this.testTimeout;
 
-        // Parallel is the default.
+        // Not parallel is the default.
         if (parallel) {
             while (true) {
                 List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
 
-                List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream()
+                List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream()
                         .map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
                         .toList();
 
@@ -751,7 +764,8 @@ public class FciOrient {
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
                     try {
-                        return GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS);
+                        return task.call();
+//                        return GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
                         return null;
                     }
@@ -846,7 +860,8 @@ public class FciOrient {
                 // Returns a map from each node to its predecessor in the shortest path. This is needed to reconstruct
                 // the path, since the Dijkstra algorithm proper does not pay attention to the path, only to the
                 // shortest distances. So we need to record this information.
-                Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+                boolean uncovered = true;
+                Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, uncovered, x, y, false).getRight();
 
                 // This reconstructs the path given the predecessor map.
                 List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
@@ -1102,7 +1117,8 @@ public class FciOrient {
         // This returns a map from each node to its predecessor on the path, so that we can reconstruct the path.
         // (Dijkstra's algorithm proper doesn't specify that the paths be recorded, only that the shortest distances
         // be recorded, but we can keep track of the paths as well.
-        Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, x, y).getRight();
+        boolean uncovered = true;
+        Map<Node, Node> predecessors = R5R9Dijkstra.distances(fullDijkstraGraph, uncovered, x, y, true).getRight();
 
         // This gets the path from the predecessor map.
         List<Node> path = FciOrientDijkstra.getPath(predecessors, x, y);
@@ -1117,6 +1133,16 @@ public class FciOrient {
 
         if (verbose) {
             this.logger.log(LogUtilsSearch.edgeOrientedMsg("R9: ", graph.getEdge(c, a)) + " path = " + GraphUtils.pathString(graph, path, false));
+
+            for (int i = 2; i < path.size(); i++) {
+                if (graph.isAdjacentTo(path.get(i), path.get(i - 2))) {
+                    System.out.println("adjacent " + path.get(i) + " to " + path.get(i - 2));
+                }
+
+                if (graph.isAdjacentTo(path.getLast(), path.get(1))) {
+                    System.out.println("adjacent gamma = " + path.getLast() + " to beta = " + path.get(1));
+                }
+            }
         }
 
         this.changeFlag = true;
@@ -1126,7 +1152,8 @@ public class FciOrient {
     /**
      * R10 Suppose α o→ γ, β → γ ← θ, p1 is an uncovered potentially directed (semidirected) path from α to β, and p2 is
      * an uncovered p.d. path from α to θ. Let μ be the vertex adjacent to α on p1 (μ could be β), and ω be the vertex
-     * adjacent to α on p2 (ω could be θ). If μ and ω are distinct, and are not adjacent, then orient α o→ γ as α → γ.
+     * adjacent to α on p2 (ω could be θ). If μ and ω ar    e distinct, and are not adjacent, then orient α o→ γ as α →
+     * γ.
      *
      * @param alpha α
      * @param gamma γ
@@ -1384,9 +1411,9 @@ public class FciOrient {
     /**
      * Sets whether R4 should be run.
      *
-     * @param doR4 True, if so.
+     * @param useR4 True, if so.
      */
-    public void setDoR4(boolean doR4) {
-        this.doR4 = doR4;
+    public void setUseR4(boolean useR4) {
+        this.useR4 = useR4;
     }
 }

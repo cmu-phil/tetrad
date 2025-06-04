@@ -32,10 +32,9 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.linear.EigenDecomposition;
-import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleEVD;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -161,6 +160,7 @@ public class TsUtils {
      * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
      * @param numLags    a int
      * @return a {@link edu.cmu.tetrad.search.utils.TsUtils.VarResult} object
+     * @throws InterruptedException if any
      */
     public static VarResult structuralVar(DataSet timeSeries, int numLags) throws InterruptedException {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
@@ -465,7 +465,7 @@ public class TsUtils {
         data = data.copy();
         ContinuousVariable timeVar = new ContinuousVariable("Time");
         data.addVariable(timeVar);
-        int c = data.getColumn(timeVar);
+        int c = data.getColumnIndex(timeVar);
 
         for (int r = 0; r < data.getNumRows(); r++) {
             data.setDouble(r, c, (r + 1));
@@ -672,27 +672,18 @@ public class TsUtils {
      * @return a boolean
      */
     public static boolean allEigenvaluesAreSmallerThanOneInModulus(Matrix mat) {
+        SimpleEVD<SimpleMatrix> eig = mat.getDataCopy().eig();
 
-        double[] realEigenvalues = new double[0];
-        double[] imagEigenvalues = new double[0];
-        try {
-            EigenDecomposition dec = new EigenDecomposition(MatrixUtils.createRealMatrix(mat.toArray()));
-            realEigenvalues = dec.getRealEigenvalues();
-            imagEigenvalues = dec.getImagEigenvalues();
-        } catch (MaxCountExceededException e) {
-            e.printStackTrace();
-        }
-
-        for (int i = 0; i < realEigenvalues.length; i++) {
-            double realEigenvalue = realEigenvalues[i];
-            double imagEigenvalue = imagEigenvalues[i];
-            System.out.println("Real eigenvalues are : " + realEigenvalue + " and imag part : " + imagEigenvalue);
+        for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
+            double realEigenvalue = eig.getEigenvalue(i).getReal();
+            double imagEigenvalue = eig.getEigenvalue(i).getImaginary();
             double modulus = FastMath.sqrt(FastMath.pow(realEigenvalue, 2) + FastMath.pow(imagEigenvalue, 2));
 
             if (modulus >= 1.0) {
                 return false;
             }
         }
+
         return true;
     }
 

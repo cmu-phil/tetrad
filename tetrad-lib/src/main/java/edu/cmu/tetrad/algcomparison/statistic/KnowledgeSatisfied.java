@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -55,7 +56,7 @@ public class KnowledgeSatisfied implements Statistic, HasKnowledge {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         return knowledge.isViolatedBy(estGraph) ? 0 : 1;
     }
 

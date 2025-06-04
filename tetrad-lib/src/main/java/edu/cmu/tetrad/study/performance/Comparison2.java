@@ -57,6 +57,7 @@ public class Comparison2 {
      *
      * @param params a {@link edu.cmu.tetrad.study.performance.ComparisonParameters} object
      * @return a {@link edu.cmu.tetrad.study.performance.ComparisonResult} object
+     * @throws InterruptedException if any
      */
     public static ComparisonResult compare(ComparisonParameters params) throws InterruptedException {
         DataSet dataSet = null;
@@ -130,11 +131,11 @@ public class Comparison2 {
             }
 
             trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                    nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                    nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
                 trueDag = TsUtils.graphToLagGraph(trueDag, 2);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
@@ -168,8 +169,8 @@ public class Comparison2 {
                 Fci search = new Fci(test);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
-            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
-                GFci search = new GFci(test, score);
+            } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES_FCI) {
+                FgesFci search = new FgesFci(test, score);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
@@ -221,11 +222,11 @@ public class Comparison2 {
                 }
 
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                     trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                            nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                            nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
                     trueDag = TsUtils.graphToLagGraph(trueDag, 2);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
                 }
@@ -259,8 +260,8 @@ public class Comparison2 {
                         dataSet = sim.simulateDataFisher(params.getSampleSize());
 
                         Matrix coefMat = new Matrix(sim.getCoefficientMatrix());
-                        Matrix B = coefMat.getSelection(sub, sub);
-                        Matrix Gamma1 = coefMat.getSelection(sub2, sub);
+                        Matrix B = coefMat.view(sub, sub).mat();
+                        Matrix Gamma1 = coefMat.view(sub2, sub).mat();
                         Matrix Gamma0 = Matrix.identity(tierSize).minus(B);
                         Matrix A1 = Gamma0.inverse().times(Gamma1);
 
@@ -286,7 +287,7 @@ public class Comparison2 {
                 }
 
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");
@@ -415,11 +416,11 @@ public class Comparison2 {
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES_FCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            GFci search = new GFci(test, score);
+            FgesFci search = new FgesFci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {

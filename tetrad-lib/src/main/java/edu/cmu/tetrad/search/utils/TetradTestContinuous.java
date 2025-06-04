@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.abs;
@@ -56,7 +57,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  */
 public final class TetradTestContinuous implements TetradTest {
     private final DataSet dataSet;
-    DeltaTetradTest deltaTest;
+    DeltaTetradTest2 deltaTest;
     private double sig;
     private double[] prob;
     private ICovarianceMatrix covMatrix;
@@ -69,6 +70,7 @@ public final class TetradTestContinuous implements TetradTest {
     private Matrix bufferMatrix;
     //    private Map<Tetrad, Double> tetradDifference;
     private List<Node> variables;
+    private boolean verbose = false;
 
     /**
      * <p>Constructor for TetradTestContinuous.</p>
@@ -93,10 +95,11 @@ public final class TetradTestContinuous implements TetradTest {
             throw new NullPointerException("Data set must not be null.");
         }
 
+        this.dataSet = dataSet;
+
 //        deltaTest = new DeltaTetradTest(dataSet);
 
         this.covMatrix = new CovarianceMatrix(dataSet);
-        this.dataSet = dataSet;
         this.sigTestType = sigTestType;
         setSignificance(sig);
         this.sampleSize = dataSet.getNumRows();
@@ -105,33 +108,33 @@ public final class TetradTestContinuous implements TetradTest {
         initialization();
     }
 
-    /**
-     * <p>Constructor for TetradTestContinuous.</p>
-     *
-     * @param covMatrix   a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
-     * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
-     * @param sig         a double
-     */
-    public TetradTestContinuous(ICovarianceMatrix covMatrix,
-                                BpcTestType sigTestType, double sig) {
-        if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
-              sigTestType == BpcTestType.TETRAD_DELTA ||
-              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
-            throw new IllegalArgumentException("Unexpected type: " + sigTestType);
-        }
-        this.dataSet = null;
-
-        this.deltaTest = new DeltaTetradTest(covMatrix);
-
-//        this.corrMatrix = new CorrelationMatrix(covMatrix);
-        this.setCovMatrix(covMatrix);
-        this.sigTestType = sigTestType;
-        setSignificance(sig);
-        this.sampleSize = covMatrix.getSize();
-        initialization();
-
-        this.variables = covMatrix.getVariables();
-    }
+//    /**
+//     * <p>Constructor for TetradTestContinuous.</p>
+//     *
+//     * @param covMatrix   a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+//     * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+//     * @param sig         a double
+//     */
+//    public TetradTestContinuous(ICovarianceMatrix covMatrix,
+//                                BpcTestType sigTestType, double sig) {
+//        if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
+//              sigTestType == BpcTestType.TETRAD_DELTA ||
+//              sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
+//            throw new IllegalArgumentException("Unexpected type: " + sigTestType);
+//        }
+//        this.dataSet = null;
+//
+//        this.deltaTest = new DeltaTetradTest2(covMatrix);
+//
+////        this.corrMatrix = new CorrelationMatrix(covMatrix);
+//        this.setCovMatrix(covMatrix);
+//        this.sigTestType = sigTestType;
+//        setSignificance(sig);
+//        this.sampleSize = covMatrix.getSize();
+//        initialization();
+//
+//        this.variables = covMatrix.getVariables();
+//    }
 
     /**
      * <p>Constructor for TetradTestContinuous.</p>
@@ -534,9 +537,9 @@ public final class TetradTestContinuous implements TetradTest {
 
         if (this.deltaTest == null) {
             if (this.dataSet != null) {
-                this.deltaTest = new DeltaTetradTest(this.dataSet);
+                this.deltaTest = new DeltaTetradTest2(this.dataSet);
             } else {
-                this.deltaTest = new DeltaTetradTest(this.covMatrix);
+                this.deltaTest = new DeltaTetradTest2(this.covMatrix);
             }
         }
 
@@ -545,13 +548,13 @@ public final class TetradTestContinuous implements TetradTest {
         Node ck = getVariables().get(k);
         Node cl = getVariables().get(l);
 
-        this.deltaTest.calcChiSquare(new Tetrad(ci, cj, ck, cl));
+        this.deltaTest.calcChiSquare(Collections.singleton(new TetradInt(i, j, k, l)));
         this.prob[0] = this.deltaTest.getPValue();
 
-        this.deltaTest.calcChiSquare(new Tetrad(ci, cj, cl, ck));
+        this.deltaTest.calcChiSquare(Collections.singleton(new TetradInt(i, j, k, l)));
         this.prob[1] = this.deltaTest.getPValue();
 
-        this.deltaTest.calcChiSquare(new Tetrad(ci, ck, cl, cj));
+        this.deltaTest.calcChiSquare(Collections.singleton(new TetradInt(i, j, k, l)));
         this.prob[2] = this.deltaTest.getPValue();
     }
 
@@ -564,18 +567,20 @@ public final class TetradTestContinuous implements TetradTest {
 
         if (this.deltaTest == null) {
             if (this.dataSet != null) {
-                this.deltaTest = new DeltaTetradTest(this.dataSet);
+                this.deltaTest = new DeltaTetradTest2(this.dataSet);
             } else {
-                this.deltaTest = new DeltaTetradTest(this.covMatrix);
+                this.deltaTest = new DeltaTetradTest2(this.covMatrix);
             }
         }
 
-        this.deltaTest.calcChiSquare(new Tetrad(ci, cj, ck, cl));
+        this.deltaTest.calcChiSquare(Collections.singleton(new TetradInt(i, j, k, l)));
         this.prob[0] = this.deltaTest.getPValue();
 
-        TetradLogger.getInstance().log(new Tetrad(this.variables.get(i),
-                this.variables.get(j), this.variables.get(k), this.variables.get(l))
-                                       + " = 0, p = " + this.prob[0]);
+        if (verbose) {
+            TetradLogger.getInstance().log(new TetradNode(this.variables.get(i),
+                    this.variables.get(j), this.variables.get(k), this.variables.get(l))
+                                           + " = 0, p = " + this.prob[0]);
+        }
 
 
     }
@@ -585,7 +590,7 @@ public final class TetradTestContinuous implements TetradTest {
      *
      * @param deltaTest a {@link edu.cmu.tetrad.search.utils.DeltaTetradTest} object
      */
-    public void setBollenTest(DeltaTetradTest deltaTest) {
+    public void setBollenTest(DeltaTetradTest2 deltaTest) {
         this.deltaTest = deltaTest;
     }
 
@@ -638,6 +643,19 @@ public final class TetradTestContinuous implements TetradTest {
         int[] indices = {v1, v2, v3, v4, v5, v6};
         this.twoFactorsEst6.init(indices, 3);
         return this.twoFactorsEst6.isSignificant();
+    }
+
+    /**
+     * Sets the verbosity level for this instance.
+     * Determines whether detailed operations or messages
+     * should be output during execution.
+     *
+     * @param verbose a boolean value indicating verbosity.
+     *                If true, verbose output is enabled;
+     *                otherwise, it is disabled.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     abstract static class SimpleFactorEstimator {

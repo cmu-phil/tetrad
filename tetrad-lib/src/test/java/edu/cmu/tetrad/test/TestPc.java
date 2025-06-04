@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -225,7 +226,7 @@ public class TestPc {
     //    @Test
     public void testPcFci() {
 
-        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI"};
+        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "CFCI"};
         String[] statLabels = {"AP", "TP", "BP", "NA", "NT", "NB", "E"/*, "AP/E"*/};
 
         final int numMeasures = 10;
@@ -314,7 +315,7 @@ public class TestPc {
             }
 
             Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
-                    10, 10, 10, false);
+                    10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(1000, false);
@@ -339,7 +340,7 @@ public class TestPc {
                     search = new Fci(test);
                     break;
                 case 4:
-                    search = new GFci(test, score);
+                    search = new FgesFci(test, score);
                     break;
                 case 5:
                     search = new Rfci(test);
@@ -568,7 +569,7 @@ public class TestPc {
     @Test
     public void testPcRegression() {
 
-        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI", "Regression"};
+        String[] algorithms = {"PC", "CPC", "FGES", "FCI", "FGES-FCI", "RFCI", "CFCI", "Regression"};
         String[] statLabels = {"AP", "AR"};
 
         final int numMeasures = 10;
@@ -647,7 +648,7 @@ public class TestPc {
             }
 
             Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
-                    10, 10, 10, false);
+                    10, 10, 10, false, -1);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(10000, false);
@@ -706,7 +707,7 @@ public class TestPc {
                     }
                     break;
                 case 4:
-                    search = new GFci(test, score);
+                    search = new FgesFci(test, score);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {

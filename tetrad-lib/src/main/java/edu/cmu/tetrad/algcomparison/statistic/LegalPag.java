@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.util.PagCache;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 import java.util.HashSet;
@@ -47,19 +47,8 @@ public class LegalPag implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        List<Node> latent = trueGraph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
-
-        List<Node> measured = trueGraph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
-
-        List<Node> selection = trueGraph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
-        GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(estGraph, new HashSet<>(selection));
-
-        if (legalPag.isLegalPag()) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        if (estGraph.paths().isLegalPag()) {
             return 1.0;
         } else {
             return 0.0;

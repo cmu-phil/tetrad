@@ -149,6 +149,7 @@ public final class Rfci implements IGraphSearch {
      *
      * @param nodes The sublist.
      * @return The RFCI PAG
+     * @throws InterruptedException If the search is interrupted.
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
         nodes = new ArrayList<>(nodes);
@@ -162,8 +163,9 @@ public final class Rfci implements IGraphSearch {
      * @param fas   The type of FAS to use for the initial step.
      * @param nodes The nodes to search over.
      * @return The RFCI PAG.
+     * @throws InterruptedException If the search is interrupted.
      */
-    public Graph search(IFas fas, List<Node> nodes) throws InterruptedException {
+    public Graph search(Fas fas, List<Node> nodes) throws InterruptedException {
         long beginTime = MillisecondTimes.timeMillis();
         independenceTest.setVerbose(verbose);
 

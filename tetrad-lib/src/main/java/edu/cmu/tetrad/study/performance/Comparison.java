@@ -41,6 +41,7 @@ public class Comparison {
      *
      * @param params a {@link edu.cmu.tetrad.study.performance.ComparisonParameters} object
      * @return a {@link edu.cmu.tetrad.study.performance.ComparisonResult} object
+     * @throws InterruptedException if any
      */
     public static ComparisonResult compare(ComparisonParameters params) throws InterruptedException {
         DataSet dataSet;
@@ -75,7 +76,7 @@ public class Comparison {
                 }
 
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");
@@ -95,7 +96,7 @@ public class Comparison {
                 }
 
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
-                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
+                        nodes, 0, params.getNumEdges(), 10, 10, 10, false, true, -1);
 
                 if (params.getDataType() == null) {
                     throw new IllegalArgumentException("Data type not set or inferred.");
@@ -217,9 +218,9 @@ public class Comparison {
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
+        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES_FCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
-            GFci search = new GFci(test, score);
+            FgesFci search = new FgesFci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
         } else {

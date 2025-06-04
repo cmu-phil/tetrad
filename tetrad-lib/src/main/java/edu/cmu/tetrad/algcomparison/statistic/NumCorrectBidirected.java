@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -47,13 +48,14 @@ public class NumCorrectBidirected implements Statistic {
     /**
      * Returns the number of bidirected edges for which a latent confounder exists.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters The parameters
      * @return The number of bidirected edges with a latent confounder.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int tp = 0;
 
         estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());

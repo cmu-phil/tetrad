@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -56,7 +57,7 @@ public class PvalueDistanceToAlpha implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.LOCAL_MARKOV);
         markovCheck.generateResults(true, true);
         return abs(alpha - markovCheck.getKsPValue(true));

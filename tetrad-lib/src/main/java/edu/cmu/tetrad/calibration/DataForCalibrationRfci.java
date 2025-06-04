@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.BFci;
+import edu.cmu.tetrad.search.BossFci;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -66,7 +66,8 @@ public class DataForCalibrationRfci {
      * <p>main.</p>
      *
      * @param args an array of {@link java.lang.String} objects
-     * @throws java.io.IOException if any.
+     * @throws java.io.IOException            if any.
+     * @throws java.lang.InterruptedException if any.
      */
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -176,7 +177,7 @@ public class DataForCalibrationRfci {
 
         System.out.println("Starting search with all data");
 
-        BFci fci = new BFci(test, score);
+        BossFci fci = new BossFci(test, score);
         fci.setVerbose(false);
         fci.setCompleteRuleSetUsed(true);
         fci.setDepth(DFC.depth);
@@ -390,7 +391,8 @@ public class DataForCalibrationRfci {
         }
 
         System.out.println("Making dag");
-        return RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, numEdges, 30, 15, 15, false, true);//randomGraphRandomForwardEdges(vars, 0,numEdges);
+        return RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, numEdges,
+                30, 15, 15, false, true, -1);//randomGraphRandomForwardEdges(vars, 0,numEdges);
     }
 
     /**
@@ -411,6 +413,7 @@ public class DataForCalibrationRfci {
      * @param depth           a int
      * @param truePag         a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.lang.InterruptedException if any.
      */
     public Graph learnBNRFCI(DataSet bootstrapSample, int depth, Graph truePag) throws InterruptedException {
         final IndTestFisherZ test = new IndTestFisherZ(bootstrapSample, 0.001);

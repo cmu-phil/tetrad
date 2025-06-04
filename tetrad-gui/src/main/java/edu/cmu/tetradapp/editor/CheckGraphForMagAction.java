@@ -23,6 +23,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -31,6 +33,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * CheckGraphForMpdagAction is an action class that checks if a given graph is a legal MPDAG (Mixed Ancestral Graph) and
@@ -80,8 +83,11 @@ public class CheckGraphForMagAction extends AbstractAction {
         class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
+                List<Node> selection = graph.getNodes().stream()
+                        .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
                 Graph _graph = new EdgeListGraph(workbench.getGraph());
-                legalMag = GraphSearchUtils.isLegalMag(_graph, new HashSet<>());
+                legalMag = GraphSearchUtils.isLegalMag(_graph, new HashSet<>(selection));
             }
         }
 

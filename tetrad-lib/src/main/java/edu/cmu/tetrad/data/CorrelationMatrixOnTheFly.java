@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.data;
 
-import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -63,17 +62,6 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * The variables (in order) for this covariance matrix.
      */
     private List<Node> variables;
-
-    /**
-     * The matrix data. Should be square. This may be set by derived classes, but it must always be set to a legitimate
-     * covariance matrix.
-     */
-    private DoubleMatrix2D matrixC;
-
-    /**
-     * The list of selected variables.
-     */
-    private Set<Node> selectedVariables = new HashSet<>();
 
     /**
      * Constructs a new covariance matrix from the given data set. If dataSet is a BoxDataSet with a

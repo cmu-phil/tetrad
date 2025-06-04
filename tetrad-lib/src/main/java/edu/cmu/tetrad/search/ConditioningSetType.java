@@ -55,6 +55,14 @@ public enum ConditioningSetType {
      * Testing independence facts implied by the graph, conditioning on the parents of each variable in the graph, in a
      * causal order of the graph. Some independence facts obtained in this way may be for implied dependencies.
      */
-    ORDERED_LOCAL_MARKOV
+    ORDERED_LOCAL_MARKOV,
+
+    /**
+     * Generates a set of independence facts that implies Global Markov for MAG.
+     * Taking a MAG in the given PAG in the calling method.
+     *
+     * @see OrderedLocalMarkovProperty
+     */
+    ORDERED_LOCAL_MARKOV_MAG
 
 }

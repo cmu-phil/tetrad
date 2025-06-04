@@ -102,7 +102,7 @@ public interface DataSet extends DataModel {
      * @param variable The variable to check.
      * @return the column index of the given variable.
      */
-    int getColumn(Node variable);
+    int getColumnIndex(Node variable);
 
     /**
      * If this is a continuous data set, returns the correlation matrix.

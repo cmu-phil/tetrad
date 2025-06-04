@@ -133,7 +133,7 @@ public class IdaModel implements SessionModel {
             }
 
             List<SemIm> ims = ((SemSimulation) (simulation.getSimulation())).getIms();
-            this.trueSemIm = ims.get(0);
+            this.trueSemIm = ims.getFirst();
         } else {
             this.trueSemIm = null;
         }

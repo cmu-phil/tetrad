@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.DiscreteBicScore;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
@@ -156,8 +157,7 @@ public final class BayesProperties {
         System.out.println("chisq = " + chisq);
         System.out.println("dof = " + (double) nDiff);
 
-        double p = 1.0 - new ChiSquaredDistribution(nDiff).cumulativeProbability(chisq);
-
+        double p = StatUtils.getChiSquareP(nDiff, chisq);
         System.out.println("p = " + p);
 
         LikelihoodRet _ret = new LikelihoodRet();

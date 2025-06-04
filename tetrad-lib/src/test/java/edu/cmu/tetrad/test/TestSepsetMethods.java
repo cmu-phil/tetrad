@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,15 +17,21 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.SublistGenerator;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,13 +39,14 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.cmu.tetrad.search.SepsetFinder.blockPathsLocalMarkov;
-import static edu.cmu.tetrad.search.SepsetFinder.blockPathsRecursively;
 import static org.junit.Assert.assertTrue;
 
 /**
  * The TestSepsetMethods class  is responsible for testing various methods for finding a sepset of two nodes in a DAG.
  */
 public class TestSepsetMethods {
+
+    private static final Logger log = LoggerFactory.getLogger(TestSepsetMethods.class);
 
     /**
      * This method is used to test various methods for finding a sepset of two nodes in a directed acyclic graph (DAG).
@@ -65,14 +72,12 @@ public class TestSepsetMethods {
             BLOCK_PATHS_MAX_P,
             BLOCK_PATHS_MIN_P,
             BLOCK_PATHS_RECURSIVELY,
-            BLOCK_PATHS_NONCOLLIDERS_ONLY
         }
 
         List<Method> methods = List.of(
 //                Method.BLOCK_PATHS_WITH_MARKOV_BLANKET,
 //                Method.BLOCK_PATHS_LOCAL_MARKOV,
                 Method.BLOCK_PATHS_RECURSIVELY
-//                Method.BLOCK_PATHS_NONCOLLIDERS_ONLY,
 //                Method.BLOCK_PATHS_GREEDY,
 //                Method.BLOCK_PATHS_MAX_P,
 //                Method.BLOCK_PATHS_MIN_P
@@ -135,16 +140,23 @@ public class TestSepsetMethods {
                         blockingSet = SepsetFinder.blockPathsWithMarkovBlanket(x, graph);
                     }
                     case BLOCK_PATHS_RECURSIVELY -> {
-                        blockingSet = blockPathsRecursively(graph, x, y, new HashSet<>(), Set.of(), -1);
+                        try {
+                            blockingSet = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), -1);
+
+                            if (blockingSet == null) {
+
+                                // There are known cases where this cannot succeed--Puzzle #2.
+                                continue;
+                            }
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                     case BLOCK_PATHS_LOCAL_MARKOV -> {
                         blockingSet = blockPathsLocalMarkov(graph, x);
                     }
-                    case BLOCK_PATHS_NONCOLLIDERS_ONLY -> {
-                        blockingSet = SepsetFinder.blockPathsNoncollidersOnly(graph, x, y, -1, graphType == GraphType.PAG);
-                    }
                     case BLOCK_PATHS_GREEDY -> {
-                        blockingSet = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(), msepTest, -1);
+                        blockingSet = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(), msepTest, -1);
                     }
                     case BLOCK_PATHS_MAX_P -> {
                         try {
@@ -155,7 +167,7 @@ public class TestSepsetMethods {
                     }
                     case BLOCK_PATHS_MIN_P -> {
                         try {
-                            blockingSet = SepsetFinder.getSepsetContainingMinPHybrid(graph, x, y, new HashSet<>(), msepTest, -1);
+                            blockingSet = SepsetFinder.getSepsetContainingMinPHybrid(graph, x, y, msepTest, -1);
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }
@@ -205,8 +217,14 @@ public class TestSepsetMethods {
 
         System.out.println(graph);
 
-        Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, graph.getNode("X"), graph.getNode("Z"),
-                new HashSet<>(), Set.of(), -1);
+        Set<Node> blocking = null;
+        try {
+            Node x = graph.getNode("X");
+            Node y = graph.getNode("Z");
+            blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, new HashSet<Node>(), Set.of(), -1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println(blocking);
 
@@ -222,15 +240,15 @@ public class TestSepsetMethods {
      * This method is used to test the blockPathsRecursively method for finding a set of nodes that blocks all blockable
      * paths between two nodes in a graph, for local Markov.
      * <p>
-     * The blocking set returned by blockPathsRecursively should always be a sepset or x and y given parents(x) for
+     * The blocking set returned by blockPathsRecursively should always be a sepset of x and y given parents(x) for
      * non-descendants x.
      */
     @Test
     public void test3() {
 
-        System.out.println("Checking to make sure blockPathsRecursively works for local Markov.");
+        System.out.println("Checking to make sure blockPathsRecursively works for local Markov for a DAG.");
 
-        Graph graph = RandomGraph.randomDag(10, 0, 20, 100,
+        Graph graph = RandomGraph.randomDag(20, 0, 40, 100,
                 100, 100, false);
 
         for (Node x : graph.getNodes()) {
@@ -249,9 +267,144 @@ public class TestSepsetMethods {
                     continue;
                 }
 
-                Set<Node> blocking = SepsetFinder.blockPathsRecursively(graph, x, y, parents, Set.of(), -1);
-                assertTrue(new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent());
+                Set<Node> blocking = null;
+                try {
+                    blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, parents, Set.of(), -1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                boolean msep = new MsepTest(graph, false).checkIndependence(x, y, blocking).isIndependent();
+
+                if (!msep) {
+                    System.out.println(LogUtilsSearch.independenceFact(x, y, blocking));
+                }
+
+                assertTrue(msep);
             }
         }
+    }
+
+    // This doesn't work if we return z in instead possibly null from the recursive method.
+//    @Test
+    public void test4() {
+        System.out.println("Checking to make sure blockPathsRecursively works for dsep(x, y | mb(x)) for a PAG for y not in mb(x).");
+
+        Graph dag = RandomGraph.randomDag(20, 10, 40, 100,
+                100, 100, false);
+
+        Graph pag = new DagToPag(dag).convert();
+
+        for (Node x : pag.getNodes()) {
+            for (Node y : pag.getNodes()) {
+                if (x.equals(y)) {
+                    continue;
+                }
+
+                if (pag.paths().markovBlanket(x).contains(y)) {
+                    continue;
+                }
+
+                try {
+                    Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(dag, x, y, Set.of(),
+                            Set.of(), -1);
+                    boolean msep = new MsepTest(pag, false).checkIndependence(x, y, blocking).isIndependent();
+
+                    if (!msep) {
+                        System.out.println(LogUtilsSearch.independenceFact(x, y, blocking));
+                    }
+
+                    assertTrue(msep);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void test5() {
+        System.out.println("Checking to make sure blockPathsRecursively distinguishes adj vs non-adj for dsep(x, y | \n" +
+                           "path_blocking(x)) for a PAG for y not in mb(x).");
+
+        boolean allOK = true;
+
+        for (int i = 0; i < 1; i++) {
+            Graph dag = RandomGraph.randomDag(15, 5, 40, 100,
+                    100, 100, false);
+
+            Graph pag = new DagToPag(dag).convert();
+
+
+            for (Node x : pag.getNodes()) {
+                for (Node y : pag.getNodes()) {
+                    if (x.equals(y)) {
+                        continue;
+                    }
+
+                    try {
+                        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(),
+                                Set.of(), -1);
+
+                        if (new MsepTest(pag, false).checkIndependence(x, y, blocking).isIndependent()) {
+
+                            // If independent, then ~adj(x, y).
+                            if (pag.isAdjacentTo(x, y)) {
+                                allOK = false;
+                            }
+                        } else {
+                            System.out.print(pag.isAdjacentTo(x, y) ? " Adjacent" : " Not adjacent");
+                            System.out.print(pag.paths().markovBlanket(x).contains(y) ? ", In MB" : ", Not in MB");
+
+                            // If dependent, then y in MB(x).
+                            if (!pag.paths().markovBlanket(x).contains(y)) {
+                                allOK = false;
+                            }
+
+                            if (removeIfInMb(pag, x, y)) {
+                                if (pag.isAdjacentTo(x, y)) {
+                                    allOK = false;
+                                }
+                            } else {
+                                System.out.print( ", OK to remove... ");
+                            }
+
+                            System.out.println();
+                        }
+                    } catch (InterruptedException e) {
+                        System.out.println("Exception");
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+
+        assertTrue(allOK);
+    }
+
+    private boolean removeIfInMb(Graph pag, Node x, Node y) {
+        List<Node> common = pag.getAdjacentNodes(x);
+        common.retainAll(pag.getAdjacentNodes(y));
+
+        SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
+        int[] choice2;
+
+        while ((choice2 = gen2.next()) != null) {
+            Set<Node> c = GraphUtils.asSet(choice2, common);
+
+            try {
+                Set<Node> b = RecursiveBlocking.blockPathsRecursively(pag, x, y, Set.of(), Set.of(), -1);
+
+                b.removeAll(c);
+
+                if (new MsepTest(pag, false).checkIndependence(x, y, b).isIndependent()) {
+                    return true;
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return false;
     }
 }

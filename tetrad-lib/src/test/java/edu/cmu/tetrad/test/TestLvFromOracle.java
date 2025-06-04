@@ -26,9 +26,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.LvLite;
+import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.File;
 import java.util.Date;
@@ -76,32 +77,14 @@ public class TestLvFromOracle {
         GraphScore score = new GraphScore(dag);
         Graph truePag = GraphTransforms.dagToPag(dag);
 
-//        for (LV_ALGORITHMS algorithm : LV_ALGORITHMS.values()) {
-//            Graph estimated;
-////            switch (algorithm) {
-//////                case FCI -> estimated = new Fci(msepTest).search();
-//////                case CFCI -> estimated = new Cfci(msepTest).search();
-//////                case FCI_MAX -> estimated = new FciMax(msepTest).search();
-//////                case GFCI -> estimated = new GFci(msepTest, score).search();
-////                case GRASP_FCI -> estimated = new GraspFci(msepTest, score).search();
-//////                case LV_LITE -> {
-//////                    LvLite lvLite = new LvLite(msepTest, score);
-//////                    lvLite.setTuckingAllowed(false);
-//////                    estimated = lvLite.search();
-//////                }
-////                default -> throw new IllegalArgumentException();
-////            }}
-
         LV_ALGORITHMS algorithm = LV_ALGORITHMS.LV_LITE;
 
         Graph estimated = null;
         try {
-            estimated = new LvLite(msepTest, score).search();
+            estimated = new Fcit(msepTest, score).search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-//
-//           Graph estimated = new GFci(msepTest, score).search();
 
         boolean equals = estimated.equals(truePag);
 
@@ -116,25 +99,21 @@ public class TestLvFromOracle {
             File file2 = new File(dir2, "rep_" + rep + "_" + algorithm + ".txt");
             GraphSaveLoadUtils.saveGraph(estimated, file2, false);
 
-            double ap = new AdjacencyPrecision().getValue(truePag, estimated, null);
-            double ar = new AdjacencyRecall().getValue(truePag, estimated, null);
-            double ahp = new ArrowheadPrecision().getValue(truePag, estimated, null);
-            double ahr = new ArrowheadRecall().getValue(truePag, estimated, null);
-            double ahpc = new ArrowheadPrecisionCommonEdges().getValue(truePag, estimated, null);
-            double ahprc = new ArrowheadRecallCommonEdges().getValue(truePag, estimated, null);
+            double ap = new AdjacencyPrecision().getValue(truePag, estimated, null, new Parameters());
+            double ar = new AdjacencyRecall().getValue(truePag, estimated, null, new Parameters());
+            double ahp = new ArrowheadPrecision().getValue(truePag, estimated, null, new Parameters());
+            double ahr = new ArrowheadRecall().getValue(truePag, estimated, null, new Parameters());
+            double ahpc = new ArrowheadPrecisionCommonEdges().getValue(truePag, estimated, null, new Parameters());
+            double ahprc = new ArrowheadRecallCommonEdges().getValue(truePag, estimated, null, new Parameters());
 
             System.out.printf("AP = %5.2f, AR = %5.2f, AHP = %5.2f, AHR = %5.2f, AHPC = %5.2f, AHRC = %5.2f\n",
                     ap, ar, ahp, ahr, ahpc, ahprc);
-
-            boolean _equals = estimated.equals(truePag);
-//            }
         }
     }
 
-    // BFCI currently cannot be run from Oracle.
+    // BOSS-FCI currently cannot be run from Oracle.
     private enum LV_ALGORITHMS {
-        FCI, CFCI, FCI_MAX, GFCI, GRASP_FCI, LV_LITE
-//        GRASP_FCI
+        FCI, CFCI, FCI_MAX, FGES_FCI, GRASP_FCI, LV_LITE
     }
 }
 

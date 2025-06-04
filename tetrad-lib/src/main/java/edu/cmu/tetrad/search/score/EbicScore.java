@@ -65,7 +65,7 @@ public class EbicScore implements Score {
     // The gamma parameter.
     private double gamma = 1;
     // True if the pseudo-inverse should be used.
-    private boolean usePseudoInverse = false;
+    private double lambda = 0.0;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -133,8 +133,8 @@ public class EbicScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
-                    this.usePseudoInverse);
+            varRy = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets,
+                    this.lambda);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                                        LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -221,14 +221,7 @@ public class EbicScore implements Score {
         this.gamma = gamma;
     }
 
-    /**
-     * Returns the gamma parameter for EBIC.
-     *
-     * @param usePseudoInverse True if the pseudo-inverse should be used.
-     */
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
-    }
+
 
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
@@ -239,6 +232,15 @@ public class EbicScore implements Score {
         int[] indices = new int[__adj.size()];
         for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
         return indices;
+    }
+
+    /**
+     * Sets the Singularity lambda.
+     *
+     * @param lambda The Singularity lambda.
+     */
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
     }
 }
 

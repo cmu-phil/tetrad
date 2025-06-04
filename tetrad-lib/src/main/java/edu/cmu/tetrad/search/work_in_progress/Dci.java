@@ -337,6 +337,7 @@ public class Dci {
      * Begins the DCI search procedure, described at each step
      *
      * @return a {@link java.util.List} object
+     * @throws java.lang.InterruptedException if any.
      */
     public List<Graph> search() throws InterruptedException {
         this.elapsedTime = MillisecondTimes.timeMillis();

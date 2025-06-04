@@ -3,13 +3,13 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,9 +33,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * class FciOrientDataExaminationStrategyTestBased.
      */
     private final IndependenceTest test;
+    private Graph mag;
     /**
-     * The type of blocking strategy used in the R0R4StrategyTestBased class.
-     * This variable determines whether the strategy will be recursive or greedy.
+     * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
+     * strategy will be recursive or greedy.
      */
     private BlockingType blockingType = BlockingType.RECURSIVE;
     /**
@@ -57,6 +58,11 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Determines whether verbose mode is enabled or not.
      */
     private boolean verbose = false;
+    /**
+     * A Set of Triples representing the allowed colliders for the strategy. This variable is initially set to null and
+     * can be configured or modified through the corresponding setter methods. Allowed colliders are used within the
+     * FciOrientDataExaminationStrategy to impose constraints on the orientation of certain patterns in the graph.
+     */
     private Set<Triple> allowedColliders = null;
     /**
      * This variable represents the initial set of allowed colliders for the FciOrientDataExaminationStrategy. It is a
@@ -86,14 +92,16 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     private int maxLength = -1;
     /**
-     * The PAG (partial ancestral graph) for the strategy.
-     */
-    private Graph pag = null;
-    /**
-     * Helper variable of type EnsureMarkov used for ensuring Markov properties in the R0R4StrategyTestBased class.
+     * Helper variable of type PreserveMarkov used for preserving Markov properties in the R0R4StrategyTestBased class.
      * Initialized to null by default.
      */
-    private EnsureMarkov ensureMarkovHelper = null;
+    private PreserveMarkov preserveMarkovHelper = null;
+    /**
+     * A private instance of the SepsetMap used to manage and store separating sets within the
+     * FciOrientDataExaminationStrategy. The separating sets are used to capture conditional independencies in a graph.
+     * This map preserves that proper independence relationships are maintained during the execution of the strategy.
+     */
+    private SepsetMap sepsetMap = new SepsetMap();
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -123,7 +131,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         if (test instanceof MsepTest) {
-            R0R4Strategy r0R4Strategy = R0R4StrategyTestBased.defaultConfiguration(((MsepTest) test).getGraph(), knowledge);
+            R0R4Strategy r0R4Strategy = defaultConfiguration(((MsepTest) test).getGraph(), knowledge);
             R0R4StrategyTestBased _r0R4Strategy = (R0R4StrategyTestBased) r0R4Strategy;
             _r0R4Strategy.setVerbose(verbose);
             return _r0R4Strategy;
@@ -133,6 +141,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             strategy.setVerbose(verbose);
             return strategy;
         }
+
     }
 
     /**
@@ -171,7 +180,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     @Override
     public boolean isUnshieldedCollider(Graph graph, Node i, Node j, Node k) {
-        Set<Node> sepset = SepsetFinder.getSepsetContainingGreedy(graph, i, k, new HashSet<>(), test, depth);
+        Set<Node> sepset = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, i, k, new HashSet<>(), test, depth);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -208,10 +217,29 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         Set<Node> blocking;
 
-        if (blockingType == BlockingType.RECURSIVE) {
-            blocking = SepsetFinder.getPathBlockingSetRecursive(graph, x, y, new HashSet<>(path), maxLength, Set.of());
+        if (sepsetMap.get(x, y) != null) {
+            blocking = sepsetMap.get(x, y);
+        } else if (blockingType == BlockingType.RECURSIVE) {
+            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
+                    maxLength, maxLength, preserveMarkovHelper, depth);
+
+            if (blocking == null || !test.checkIndependence(x, y, blocking).isIndependent()) {
+                blocking = findAdjSetSepset(graph, x, y, path, v);
+
+                if (blocking != null) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
+                    }
+                }
+
+//                TetradLogger.getInstance().log("R4 Blocking found for " + x + ", " + y + ", " + blocking);
+            }
+
+            sepsetMap.set(x, y, blocking);
         } else if (blockingType == BlockingType.GREEDY) {
-            blocking = SepsetFinder.getSepsetContainingGreedy(graph, x, y, new HashSet<>(path), test, depth);
+            blocking = findAdjSetSepset(graph, x, y, path, v);
+
+            sepsetMap.set(x, y, blocking);
         } else {
             throw new IllegalArgumentException("Unknown blocking type.");
         }
@@ -222,15 +250,17 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // *       v    *
         // * X....W --> Y
 
-
         // This is needed for greedy and anteriority methods, which return sepsets, not recursive, which always
         // returns a blocking set.
-        if (blockingType == BlockingType.GREEDY && blocking == null) {
-            throw new IllegalArgumentException("Sepset is null.");
+        if (blocking == null) {
+            TetradLogger.getInstance().log("Blocking set is null in R4.");
+            throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 
-        if (blockingType == BlockingType.RECURSIVE && !(blocking.containsAll(path) && blocking.contains(w))) {
-            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
+        if (blockingType == BlockingType.RECURSIVE) {
+            if (!(blocking.containsAll(path) && blocking.contains(w))) {
+                throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
+            }
         }
 
         if (blockingType == BlockingType.GREEDY && !blocking.containsAll(path)) {
@@ -241,7 +271,9 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // can orient W<-*V*->Y as a non-collider, otherwise as a collider. For the greedy case, we need to know whether
         // blocking contains v. These are two ways to express the same idea, since for the recursive case blocking
         // must contain V by construction.
-        if ((blockingType == BlockingType.RECURSIVE && checkIndependenceRecursive(x, y, blocking, vNodes, discriminatingPath, test)) || (blockingType == BlockingType.GREEDY && blocking.contains(v))) {
+        boolean noncollider = blocking.contains(v);
+
+        if (noncollider) {
             if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
                 return Pair.of(discriminatingPath, false);
             }
@@ -271,8 +303,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             if (initialAllowedColliders != null) {
                 initialAllowedColliders.add(new Triple(w, v, y));
+                allowedColliders.add(new Triple(w, v, y));
             } else {
                 if (allowedColliders != null && !allowedColliders.contains(new Triple(w, v, y))) {
+                    allowedColliders.add(new Triple(w, v, y));
                     return Pair.of(discriminatingPath, false);
                 }
             }
@@ -291,39 +325,28 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
     }
 
-    private boolean checkIndependenceRecursive(Node x, Node y, Set<Node> blocking, Set<Node> vNodes, DiscriminatingPath discriminatingPath, IndependenceTest test) throws InterruptedException {
+    private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
+        Set<Node> blocking;
+        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
 
-        List<Node> vs = new ArrayList<>();
-        List<Node> nonVs = new ArrayList<>();
+        Set<Node> b1 = new HashSet<>(blocking);
+        b1.remove(v);
 
-        for (Node v : blocking) {
-            if (vNodes.contains(v)) {
-                vs.add(v);
-            } else {
-                nonVs.add(v);
-            }
+        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
+
+        Set<Node> b2 = new HashSet<>(b1);
+        b2.add(v);
+
+        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
+
+        if (b1Indep) {
+            blocking = b1;
+        } else if (b2Indep) {
+            blocking = b2;
+        } else {
+            blocking = null;
         }
-
-        Node v = discriminatingPath.getV();
-        vs.remove(v);
-
-        SublistGenerator generator = new SublistGenerator(vs.size(), vs.size());
-        int[] choice;
-
-        while ((choice = generator.next()) != null) {
-            Set<Node> newBlocking = GraphUtils.asSet(choice, vs);
-            newBlocking.add(v);
-            newBlocking.addAll(nonVs);
-
-            // You didn't condition on any colliders. V is in the set. So V is a noncollider.
-            boolean independent = ensureMarkovHelper != null ? ensureMarkovHelper.markovIndependence(x, y, newBlocking) : test.checkIndependence(x, y, newBlocking).isIndependent();
-
-            if (independent) {
-                return true;
-            }
-        }
-
-        return false;
+        return blocking;
     }
 
     /**
@@ -426,21 +449,12 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     }
 
     /**
-     * Sets the PAG (partial ancestral graph) for the strategy.
+     * Sets the PreserveMarkov object used by the R0R4StrategyTestBased.
      *
-     * @param pag the PAG to be set
+     * @param preserveMarkovHelper the PreserveMarkov object to be set
      */
-    public void setPag(Graph pag) {
-        this.pag = pag;
-    }
-
-    /**
-     * Sets the EnsureMarkov object used by the R0R4StrategyTestBased.
-     *
-     * @param ensureMarkovHelper the EnsureMarkov object to be set
-     */
-    public void setEnsureMarkovHelper(EnsureMarkov ensureMarkovHelper) {
-        this.ensureMarkovHelper = ensureMarkovHelper;
+    public void setPreserveMarkovHelper(PreserveMarkov preserveMarkovHelper) {
+        this.preserveMarkovHelper = preserveMarkovHelper;
     }
 
     /**
@@ -450,6 +464,15 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public void setBlockingType(BlockingType blockingType) {
         this.blockingType = blockingType;
+    }
+
+    /**
+     * Sets the SepsetMap used by the R0R4StrategyTestBased.
+     *
+     * @param sepsetMap the SepsetMap object to be set
+     */
+    public void setSepsetMap(SepsetMap sepsetMap) {
+        this.sepsetMap = sepsetMap;
     }
 
     /**

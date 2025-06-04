@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
@@ -26,11 +26,13 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.simulation.SingleDatasetSimulation;
+import edu.cmu.tetrad.algcomparison.statistic.MarkovCheckerStatistic;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
@@ -43,6 +45,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.ui.model.*;
@@ -132,12 +135,12 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     private Graph selectedGraph = null;
     /**
-     * The selectedSimulation variable represents the index of the currently selected simulation.
-     * This variable is used to keep track of the selected simulation in a collection of simulations.
-     * The index is zero-based, where 0 represents the first simulation.
-     *
+     * The selectedSimulation variable represents the index of the currently selected simulation. This variable is used
+     * to keep track of the selected simulation in a collection of simulations. The index is zero-based, where 0
+     * represents the first simulation.
+     * <p>
      * By default, the value of selectedSimulation is 0, indicating that the first simulation is selected.
-     *
+     * <p>
      * The value of selectedSimulation can be modified externally to change the selected simulation.
      *
      * @see Simulation
@@ -145,15 +148,14 @@ public class GridSearchModel implements SessionModel, GraphSource {
     private int selectedSimulation = 0;
     /**
      * The selectedAlgorithm variable holds the index of the currently selected algorithm.
-     *
-     * The value of selectedAlgorithm represents the index of the algorithm in a collection
-     * or an array of algorithms.
-     *
-     * The default value of selectedAlgorithm is 0, indicating that the first algorithm in
-     * the collection or array is selected by default.
-     *
-     * The value of selectedAlgorithm can be changed to select a different algorithm by
-     * assigning a different index to it.
+     * <p>
+     * The value of selectedAlgorithm represents the index of the algorithm in a collection or an array of algorithms.
+     * <p>
+     * The default value of selectedAlgorithm is 0, indicating that the first algorithm in the collection or array is
+     * selected by default.
+     * <p>
+     * The value of selectedAlgorithm can be changed to select a different algorithm by assigning a different index to
+     * it.
      *
      * @since 1.0
      */
@@ -166,6 +168,25 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * Verbose output is sent here.
      */
     private transient PrintStream verboseOut;
+    /**
+     * A variable that holds an instance of the IndependenceWrapper implementation used for independence testing.
+     * <p>
+     * In this case, the implementation is `FisherZ`, which is typically employed for assessing statistical independence
+     * based on Fisher's Z-transformation. It serves as the primary tool for conditional independence checks in related
+     * algorithms or workflows.
+     */
+    private IndependenceWrapper markovCheckerIndependenceWrapper = new FisherZ();
+    /**
+     * Represents the type of conditioning set used in the Markov checker. The variable defines how the conditioning set
+     * is categorized or scoped, influencing the analysis process in probabilistic or causal models. It is initialized
+     * to `ConditioningSetType.LOCAL_MARKOV`, indicating that the default scope pertains to local Markovity.
+     */
+    private ConditioningSetType markovCheckerConditioningSetType = ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG;
+    /**
+     * Stores the selected independendence test model for the GridSearchEditor. It needs to be stored here in case
+     * the user closes the editor and re-opens it.
+     */
+    private IndependenceTestModel selectedIndependenceTestModel = null;
 
     /**
      * Constructs a new GridSearchModel with the specified parameters.
@@ -317,8 +338,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     @NotNull
     private static List<Class<? extends Algorithm>> findAlgorithmClasses() {
-        Set<Class<? extends Algorithm>> _algorithms = findImplementations("edu.cmu.tetrad.algcomparison.algorithm",
-                Algorithm.class);
+        Set<Class<? extends Algorithm>> _algorithms = findImplementations("edu.cmu.tetrad.algcomparison.algorithm", Algorithm.class);
         final List<Class<? extends Algorithm>> algorithmClasses = new ArrayList<>(_algorithms);
         algorithmClasses.sort(Comparator.comparing(Class::getName));
         return algorithmClasses;
@@ -340,11 +360,9 @@ public class GridSearchModel implements SessionModel, GraphSource {
         selectedTableColumns.sort((o1, o2) -> {
             if (o1.equals(o2)) {
                 return 0;
-            } else if (o1.getType() == MyTableColumn.ColumnType.PARAMETER
-                       && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
+            } else if (o1.getType() == MyTableColumn.ColumnType.PARAMETER && o2.getType() == MyTableColumn.ColumnType.STATISTIC) {
                 return -1;
-            } else if (o1.getType() == MyTableColumn.ColumnType.STATISTIC
-                       && o2.getType() == MyTableColumn.ColumnType.PARAMETER) {
+            } else if (o1.getType() == MyTableColumn.ColumnType.STATISTIC && o2.getType() == MyTableColumn.ColumnType.PARAMETER) {
                 return 1;
             } else {
                 return String.CASE_INSENSITIVE_ORDER.compare(o1.getColumnName(), o2.getColumnName());
@@ -485,8 +503,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         // Making a copy of the parameters to send to Comparison since Comparison iterates
         // over the parameters and modifies them.
         String outputFileName = "Comparison.txt";
-        comparison.compareFromSimulations(resultsPath, simulations, outputFileName, ps1, ps2,
-                algorithms, getSelectedStatistics(), new Parameters(parameters));
+        comparison.compareFromSimulations(resultsPath, simulations, outputFileName, ps1, ps2, algorithms, getSelectedStatistics(), new Parameters(parameters));
 
         this.resultsPath = resultsPath;
 
@@ -745,8 +762,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      */
     @NotNull
     private List<Class<? extends Simulation>> findSimulationClasses() {
-        Set<Class<? extends Simulation>> _simulations = findImplementations("edu.cmu.tetrad.algcomparison.simulation",
-                Simulation.class);
+        Set<Class<? extends Simulation>> _simulations = findImplementations("edu.cmu.tetrad.algcomparison.simulation", Simulation.class);
         final List<Class<? extends Simulation>> simulationClasses = new ArrayList<>(_simulations);
         simulationClasses.sort(Comparator.comparing(Class::getName));
         return simulationClasses;
@@ -758,8 +774,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
      * @return A list of Statistic classes.
      */
     private List<Class<? extends Statistic>> findStatisticsClasses() {
-        Set<Class<? extends Statistic>> _statistics = findImplementations("edu.cmu.tetrad.algcomparison.statistic",
-                Statistic.class);
+        Set<Class<? extends Statistic>> _statistics = findImplementations("edu.cmu.tetrad.algcomparison.statistic", Statistic.class);
         final List<Class<? extends Statistic>> statisticsClasses = new ArrayList<>(_statistics);
         statisticsClasses.sort(Comparator.comparing(Class::getName));
         return statisticsClasses;
@@ -810,6 +825,11 @@ public class GridSearchModel implements SessionModel, GraphSource {
                     Statistic _statistic = statistic.getConstructor().newInstance();
                     String abbreviation = _statistic.getAbbreviation();
                     statisticsNames.add(abbreviation);
+                } else if (MarkovCheckerStatistic.class.isAssignableFrom(statistic)) {
+                    Statistic _statistic = statistic.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                    String abbreviation = _statistic.getAbbreviation();
+                    statisticsNames.add(abbreviation);
                 }
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
@@ -854,25 +874,39 @@ public class GridSearchModel implements SessionModel, GraphSource {
 
         for (MyTableColumn column : selectedTableColumns) {
             if (column.getType() == MyTableColumn.ColumnType.STATISTIC) {
-                try {
-                    Constructor<?>[] constructors = column.getStatistic().getDeclaredConstructors();
 
-                    boolean hasNoArgConstructor = false;
-                    for (Constructor<?> constructor : constructors) {
-                        if (constructor.getParameterCount() == 0) {
-                            hasNoArgConstructor = true;
-                            break;
-                        }
-                    }
-
-                    if (hasNoArgConstructor) {
-                        Statistic statistic = column.getStatistic().getConstructor().newInstance();
+                if (MarkovCheckerStatistic.class.isAssignableFrom(column.getStatistic())) {
+                    try {
+                        Constructor<? extends Statistic> constructor = column.getStatistic().getConstructor(IndependenceWrapper.class, ConditioningSetType.class);
+                        Statistic statistic = constructor.newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
                         selectedStatistics.add(statistic);
                         lastStatisticsUsed.add(statistic);
+                    } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                             InvocationTargetException e) {
+                        throw new RuntimeException(e);
                     }
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                         NoSuchMethodException ex) {
-                    System.out.println("Error creating statistic: " + ex.getMessage());
+                } else {
+
+                    try {
+                        Constructor<?>[] constructors = column.getStatistic().getDeclaredConstructors();
+
+                        boolean hasNoArgConstructor = false;
+                        for (Constructor<?> constructor : constructors) {
+                            if (constructor.getParameterCount() == 0) {
+                                hasNoArgConstructor = true;
+                                break;
+                            }
+                        }
+
+                        if (hasNoArgConstructor) {
+                            Statistic statistic = column.getStatistic().getConstructor().newInstance();
+                            selectedStatistics.add(statistic);
+                            lastStatisticsUsed.add(statistic);
+                        }
+                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                             NoSuchMethodException ex) {
+                        System.out.println("Error creating statistic: " + ex.getMessage());
+                    }
                 }
             } else if (column.getType() == MyTableColumn.ColumnType.PARAMETER) {
                 String parameter = column.getParameter();
@@ -963,6 +997,11 @@ public class GridSearchModel implements SessionModel, GraphSource {
                 if (hasNoArgConstructor) {
                     Statistic statistic = statisticClass.getConstructor().newInstance();
                     MyTableColumn column = new MyTableColumn(statistic.getAbbreviation(), statistic.getDescription(), statisticClass);
+                    allTableColumns.add(column);
+                } else if (MarkovCheckerStatistic.class.isAssignableFrom(statisticClass)) {
+                    Statistic _statistic = statisticClass.getConstructor(IndependenceWrapper.class, ConditioningSetType.class)
+                            .newInstance(getMarkovCheckerIndependenceWrapper(), getMarkovCheckerConditioningSetType());
+                    MyTableColumn column = new MyTableColumn(_statistic.getAbbreviation(), _statistic.getDescription(), statisticClass);
                     allTableColumns.add(column);
                 }
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
@@ -1100,8 +1139,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }
@@ -1119,8 +1157,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }
@@ -1189,8 +1226,59 @@ public class GridSearchModel implements SessionModel, GraphSource {
         this.selectedGraphIndex = selectedGraphIndex;
     }
 
-    public void getVerboseOut(PrintStream printStream) {
-        this.verboseOut = printStream;
+    /**
+     * A wrapper for a statistical independence test used by the Markov checker.
+     * <p>
+     * This instance by default utilizes the Fisher-Z test for determining statistical independence.
+     */
+    public IndependenceWrapper getMarkovCheckerIndependenceWrapper() {
+        return markovCheckerIndependenceWrapper;
+    }
+
+    /**
+     * Sets the Markov Checker Independence Wrapper.
+     *
+     * @param markovCheckerIndependenceWrapper an instance of IndependenceWrapper to be associated with the Markov
+     *                                         Checker.
+     */
+    public void setMarkovCheckerIndependenceWrapper(IndependenceWrapper markovCheckerIndependenceWrapper) {
+        if (markovCheckerIndependenceWrapper == null) {
+            throw new IllegalArgumentException("markovCheckerIndependenceWrapper cannot be null");
+        }
+        this.markovCheckerIndependenceWrapper = markovCheckerIndependenceWrapper;
+
+        System.out.println("Setting independence wrapper to " + markovCheckerIndependenceWrapper);
+    }
+
+    /**
+     * Represents the type of conditioning set used in a Markov property verification process. This variable identifies
+     * the specific conditioning set type in the context of the Markov checker.
+     * <p>
+     * The value is set to {@code ConditioningSetType.LOCAL_MARKOV} by default, indicating that the local Markov
+     * property is being utilized.
+     */
+    public ConditioningSetType getMarkovCheckerConditioningSetType() {
+        return markovCheckerConditioningSetType;
+    }
+
+    /**
+     * Sets the conditioning set type for the Markov checker.
+     *
+     * @param markovCheckerConditioningSetType the conditioning set type to be set for the Markov checker
+     */
+    public void setMarkovCheckerConditioningSetType(ConditioningSetType markovCheckerConditioningSetType) {
+        if (markovCheckerConditioningSetType == null) {
+            throw new IllegalArgumentException("markovCheckerConditioningSetType cannot be null");
+        }
+        this.markovCheckerConditioningSetType = markovCheckerConditioningSetType;
+    }
+
+    public IndependenceTestModel getSelectedIndependenceTestModel() {
+        return selectedIndependenceTestModel;
+    }
+
+    public void setSelectedIndependenceTestModel(IndependenceTestModel selectedIndependenceTestModel) {
+        this.selectedIndependenceTestModel = selectedIndependenceTestModel;
     }
 
     /**
@@ -1306,8 +1394,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
         }
 
         public enum ColumnType {
-            STATISTIC,
-            PARAMETER
+            STATISTIC, PARAMETER
         }
     }
 
@@ -1339,8 +1426,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
          * @param test      The test of independence.
          * @param score     The score.
          */
-        public AlgorithmSpec(String name, AlgorithmModel algorithm,
-                             AnnotatedClass<TestOfIndependence> test, AnnotatedClass<Score> score) {
+        public AlgorithmSpec(String name, AlgorithmModel algorithm, AnnotatedClass<TestOfIndependence> test, AnnotatedClass<Score> score) {
             this.name = name;
             this.algorithm = algorithm;
             this.test = test;
@@ -1423,8 +1509,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
          */
         private final Class<? extends Simulation> simulationClass;
 
-        public SimulationSpec(String name, Class<? extends RandomGraph> graph,
-                              Class<? extends Simulation> simulation) {
+        public SimulationSpec(String name, Class<? extends RandomGraph> graph, Class<? extends Simulation> simulation) {
             this.name = name;
             this.graphClass = graph;
             this.simulationClass = simulation;

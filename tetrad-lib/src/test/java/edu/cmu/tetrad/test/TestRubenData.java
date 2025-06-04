@@ -67,11 +67,11 @@ public class TestRubenData {
 
                 g = GraphUtils.replaceNodes(g, graph.getNodes());
 
-                double ap = new AdjacencyPrecision().getValue(graph, g, data);
-                double ar = new AdjacencyRecall().getValue(graph, g, data);
-                double op = new OrientationPrecision().getValue(graph, g, data);
-                double or = new OrientationRecall().getValue(graph, g, data);
-                double bd = new BicDiff().getValue(graph, g, data);
+                double ap = new AdjacencyPrecision().getValue(graph, g, data, new Parameters());
+                double ar = new AdjacencyRecall().getValue(graph, g, data, new Parameters());
+                double op = new OrientationPrecision().getValue(graph, g, data, new Parameters());
+                double or = new OrientationRecall().getValue(graph, g, data, new Parameters());
+                double bd = new BicDiff().getValue(graph, g, data, new Parameters());
 
                 aps += ap;
                 ars += ar;

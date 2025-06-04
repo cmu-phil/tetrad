@@ -89,9 +89,9 @@ public final class Fci implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
-     * Whether the possible msep step should be done.
+     * Whether the possible dsep step should be done.
      */
-    private boolean possibleMsepSearchDone = true;
+    private boolean doPossibleDsep = true;
     /**
      * The maximum length of any discriminating path.
      */
@@ -108,10 +108,6 @@ public final class Fci implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose;
-    /**
-     * The PC heuristic type to use.
-     */
-    private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
     /**
      * Whether the stable options should be used.
      */
@@ -186,7 +182,7 @@ public final class Fci implements IGraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
-        fas.setPcHeuristicType(this.heuristic);
+//        fas.setPcHeuristicType(this.heuristic);
         fas.setVerbose(this.verbose);
         fas.setStable(this.stable);
 
@@ -196,7 +192,7 @@ public final class Fci implements IGraphSearch {
             TetradLogger.getInstance().log("Starting FAS search.");
         }
 
-        Graph graph = fas.search();
+        Graph pag = fas.search();
         this.sepsets = fas.getSepsets();
         Set<Triple> unshieldedTriples = new HashSet<>();
 
@@ -204,10 +200,10 @@ public final class Fci implements IGraphSearch {
             TetradLogger.getInstance().log("Reorienting with o-o.");
         }
 
-        graph.reorientAllWith(Endpoint.CIRCLE);
+        pag.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
+        // Optional step: possible dsep. (Needed for correctness but very time-consuming.)
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest,
                 knowledge, verbose);
         strategy.setDepth(-1);
@@ -217,30 +213,38 @@ public final class Fci implements IGraphSearch {
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
-        if (this.possibleMsepSearchDone) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Starting possible msep search.");
+        fciOrient.ruleR0(pag, unshieldedTriples);
+
+        if (this.doPossibleDsep) {
+            for (Edge edge : pag.getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, 3));
+                d.remove(x);
+                d.remove(y);
+
+                if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
+                    TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                    pag.removeEdge(x, y);
+                }
+
+                if (pag.isAdjacentTo(x, y)) {
+                    d = new HashSet<>(pag.paths().possibleDsep(y, 3));
+                    d.remove(x);
+                    d.remove(y);
+
+                    if (independenceTest.checkIndependence(x, y, d).isIndependent()) {
+                        TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
+                        pag.removeEdge(x, y);
+                    }
+                }
             }
 
-            if (verbose) {
-                TetradLogger.getInstance().log("Doing R0.");
-            }
-
-            fciOrient.ruleR0(graph, unshieldedTriples);
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Removing by possible d-sep.");
-            }
-
-            graph.paths().removeByPossibleMsep(independenceTest, sepsets);
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Reorienting all edges as o-o.");
-            }
-
-            // Reorient all edges as o-o.
-            graph.reorientAllWith(Endpoint.CIRCLE);
+            pag.reorientAllWith(Endpoint.CIRCLE);
+            fciOrient.ruleR0(pag, unshieldedTriples);
         }
+
 
         // Step CI C (Zhang's step F3.)
 
@@ -248,26 +252,26 @@ public final class Fci implements IGraphSearch {
             TetradLogger.getInstance().log("Doing R0.");
         }
 
-        fciOrient.ruleR0(graph, unshieldedTriples);
+        fciOrient.ruleR0(pag, unshieldedTriples);
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting final FCI orientation.");
         }
 
-        fciOrient.finalOrientation(graph);
+        fciOrient.finalOrientation(pag);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished final FCI orientation.");
         }
 
         if (guaranteePag) {
-            graph = GraphUtils.guaranteePag(graph, fciOrient, knowledge, unshieldedTriples, unshieldedTriples, verbose,
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedTriples, verbose,
                     new HashSet<>());
         }
 
         long stop = MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
-        return graph;
+        return pag;
     }
 
     /**
@@ -336,12 +340,12 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the (time-consuming) possible msep step should be done.
+     * Sets whether the (time-consuming) possible dsep step should be done.
      *
-     * @param possibleMsepSearchDone True, if so.
+     * @param doPossibleDsep True, if so.
      */
-    public void setPossibleDsepSearchDone(boolean possibleMsepSearchDone) {
-        this.possibleMsepSearchDone = possibleMsepSearchDone;
+    public void setDoPossibleDsep(boolean doPossibleDsep) {
+        this.doPossibleDsep = doPossibleDsep;
     }
 
     /**
@@ -373,16 +377,6 @@ public final class Fci implements IGraphSearch {
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
-    }
-
-    /**
-     * Sets which PC heuristic type should be used in the initial adjacency search.
-     *
-     * @param heuristic The heuristic type.
-     * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
-     */
-    public void setPcHeuristicType(PcCommon.PcHeuristicType heuristic) {
-        this.heuristic = heuristic;
     }
 
     /**

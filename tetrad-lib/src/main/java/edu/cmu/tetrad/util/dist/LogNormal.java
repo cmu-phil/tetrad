@@ -112,7 +112,7 @@ public class LogNormal implements Distribution {
      * @return a double
      */
     public double nextRandom() {
-        double random = RandomUtil.getInstance().nextNormal(0, this.sd);
+        double random = RandomUtil.getInstance().nextGaussian(0, this.sd);
         return FastMath.exp(random);
     }
 

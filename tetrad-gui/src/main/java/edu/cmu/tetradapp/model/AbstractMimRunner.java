@@ -214,7 +214,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
             DataModelList dataModelList = this.dataWrapper.getDataModelList();
 
             if (dataModelList.size() == 1) {
-                return dataModelList.get(0);
+                return dataModelList.getFirst();
             } else {
                 return dataModelList;
             }

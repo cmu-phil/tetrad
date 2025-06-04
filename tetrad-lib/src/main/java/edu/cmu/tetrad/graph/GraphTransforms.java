@@ -1,10 +1,11 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
+import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.PagCache;
-import edu.cmu.tetrad.util.RandomUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -32,7 +33,7 @@ public class GraphTransforms {
      * null.
      */
     public static Graph dagFromCpdag(Graph graph) {
-        return dagFromCpdag(graph, null, true, false);
+        return dagFromCpdag(graph, null, false);
     }
 
     /**
@@ -45,7 +46,7 @@ public class GraphTransforms {
      * null.
      */
     public static Graph dagFromCpdag(Graph graph, boolean verbose) {
-        return dagFromCpdag(graph, null, true, verbose);
+        return dagFromCpdag(graph, null, verbose);
     }
 
     /**
@@ -60,7 +61,7 @@ public class GraphTransforms {
      * null.
      */
     public static Graph dagFromCpdag(Graph graph, boolean meekPreventCycles, boolean verbose) {
-        return dagFromCpdag(graph, null, meekPreventCycles, verbose);
+        return dagFromCpdag(graph, null, verbose);
     }
 
     /**
@@ -71,36 +72,34 @@ public class GraphTransforms {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph dagFromCpdag(Graph graph, Knowledge knowledge) {
-        return dagFromCpdag(graph, knowledge, true, false);
+        return dagFromCpdag(graph, knowledge, false);
     }
 
     /**
      * Returns a random DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      *
-     * @param cpdag             the CPDAG
-     * @param knowledge         the knowledge
-     * @param meekPreventCycles whether to prevent cycles using the Meek rules by orienting additional arbitrary
-     *                          unshielded colliders in the graph.
-     * @param verbose           whether to print verbose output.
+     * @param cpdag     the CPDAG
+     * @param knowledge the knowledge
+     * @param verbose   whether to print verbose output.
      * @return a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      */
-    public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
+    public static Graph dagFromCpdag(Graph cpdag, Knowledge knowledge, boolean verbose) {
         Graph dag = new EdgeListGraph(cpdag);
-        transformCpdagIntoRandomDag(dag, knowledge, meekPreventCycles, verbose);
+        transformCpdagIntoDag(dag, knowledge, verbose);
         return dag;
     }
 
     /**
-     * Transforms a completed partially directed acyclic graph (CPDAG) into a random directed acyclic graph (DAG) by
-     * randomly orienting the undirected edges in the CPDAG in shuffled order.
+     * Transforms a completed partially directed acyclic graph (CPDAG) into a directed acyclic graph (DAG) by orienting
+     * the undirected edges in the CPDAG.
      *
-     * @param graph             The original graph from which the CPDAG was derived.
-     * @param knowledge         The knowledge available to check if a potential DAG violates any constraints.
-     * @param meekPreventCycles Whether to prevent cycles using the Meek rules by orienting additional arbitrary
-     *                          unshielded colliders in the graph.
-     * @param verbose           Whether to print verbose output.
+     * @param graph     The original graph from which the CPDAG was derived.
+     * @param knowledge The knowledge available to check if a potential DAG violates any constraints.
+     * @param verbose   Whether to print verbose output.
      */
-    public static void transformCpdagIntoRandomDag(Graph graph, Knowledge knowledge, boolean meekPreventCycles, boolean verbose) {
+    public static void transformCpdagIntoDag(Graph graph, Knowledge knowledge, boolean verbose) {
+        Graph _graph = new EdgeListGraph(graph);
+
         List<Edge> undirectedEdges = new ArrayList<>();
 
         for (Edge edge : graph.getEdges()) {
@@ -109,10 +108,19 @@ public class GraphTransforms {
             }
         }
 
-        Collections.shuffle(undirectedEdges);
+        List<Node> order = graph.getNodes();
+        order.sort((node1, node2) -> {
+            if (graph.paths().isAncestorOf(node1, node2)) {
+                return -1;
+            } else if (graph.paths().isAncestorOf(node2, node1)) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
 
         MeekRules rules = new MeekRules();
-        rules.setMeekPreventCycles(meekPreventCycles);
+        rules.setMeekPreventCycles(true);
         rules.setVerbose(verbose);
 
         if (knowledge != null) {
@@ -127,21 +135,16 @@ public class GraphTransforms {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                if (!Edges.isUndirectedEdge(graph.getEdge(x, y))) {
-                    continue;
-                }
-
-                if (Edges.isUndirectedEdge(edge) && !graph.paths().isAncestorOf(y, x)) {
-                    double d = RandomUtil.getInstance().nextDouble();
-
-                    if (d < 0.5) {
+                if (Edges.isUndirectedEdge(graph.getEdge(x, y))) {
+                    if (order.indexOf(x) < order.indexOf(y)) {
                         direct(x, y, graph);
+                        rules.orientImplied(graph);
+                        continue NEXT;
                     } else {
                         direct(y, x, graph);
+                        rules.orientImplied(graph);
+                        continue NEXT;
                     }
-
-                    rules.orientImplied(graph);
-                    continue NEXT;
                 }
             }
 
@@ -150,105 +153,52 @@ public class GraphTransforms {
     }
 
     /**
-     * Picks a random Maximal Ancestral Graph (MAG) from the given Partial Ancestral Graph (PAG) by randomly orienting
-     * the circle endpoints as either tail or arrow and then applying the final FCI orient algorithm after each change.
-     * The PAG graph type is not checked.
-     *
-     * @param pag The partially ancestral pag to transform.
-     * @return The maximally ancestral pag obtained from the PAG.
-     */
-    public static Graph magFromPag(Graph pag) {
-        Graph mag = new EdgeListGraph(pag);
-        transormPagIntoRandomMag(mag);
-        return mag;
-    }
-
-    /**
-     * Transforms a partially ancestral graph (PAG) into a maximally ancestral graph (MAG) by randomly orienting the
-     * circle endpoints as either tail or arrow and then applying the final FCI orient algorithm after each change.
-     *
-     * @param pag The partially ancestral graph to transform.
-     */
-    public static void transormPagIntoRandomMag(Graph pag) {
-        for (Edge e : pag.getEdges()) pag.addEdge(new Edge(e));
-
-        List<NodePair> nodePairs = new ArrayList<>();
-
-        for (Edge edge : pag.getEdges()) {
-            if (!pag.isAdjacentTo(edge.getNode1(), edge.getNode2())) continue;
-            nodePairs.add(new NodePair(edge.getNode1(), edge.getNode2()));
-            nodePairs.add(new NodePair(edge.getNode2(), edge.getNode1()));
-        }
-
-        Collections.shuffle(nodePairs);
-
-        for (NodePair edge : new ArrayList<>(nodePairs)) {
-            if (pag.getEndpoint(edge.getFirst(), edge.getSecond()).equals(Endpoint.CIRCLE)) {
-                double d = RandomUtil.getInstance().nextDouble();
-
-                if (d < 0.5) {
-                    pag.setEndpoint(edge.getFirst(), edge.getSecond(), Endpoint.TAIL);
-                } else {
-                    pag.setEndpoint(edge.getFirst(), edge.getSecond(), Endpoint.ARROW);
-                }
-
-                FciOrient fciOrient = new FciOrient(R0R4StrategyTestBased.defaultConfiguration(pag, new Knowledge()));
-                fciOrient.finalOrientation(pag);
-            }
-        }
-    }
-
-    /**
-     * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem
-     * 2.
+     * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem 2.
      *
      * @param pag The partially ancestral graph to transform.
      * @return The maximally ancestral graph obtained from the PAG.
      */
     public static Graph zhangMagFromPag(Graph pag) {
-        List<Node> nodes = pag.getNodes();
+        Graph pafci = new EdgeListGraph(pag);
 
-        Graph pcafci = new EdgeListGraph(pag);
+        for (Edge e : pafci.getEdges()) {
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+            Endpoint endx = e.getEndpoint1();
+            Endpoint endy = e.getEndpoint2();
 
-        // pcafcic is the graph with only the circle-circle edges
-        Graph pcafcic = new EdgeListGraph(pag.getNodes());
+            if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW) {
+                pafci.removeEdge(e);
+                pafci.addDirectedEdge(x, y);
+            } else if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE) {
+                pafci.removeEdge(e);
+                pafci.addDirectedEdge(y, x);
+            } else if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE) {
+                pafci.removeEdge(e);
+                pafci.addDirectedEdge(x, y);
+            } else if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL) {
+                pafci.removeEdge(e);
+                pafci.addDirectedEdge(y, x);
+            }
+        }
+
+        // pcafci is the graph with only the circle-circle edges
+        Graph pcafci = new EdgeListGraph(pafci.getNodes());
+
+        for (Edge e : pafci.getEdges()) {
+            if (Edges.isNondirectedEdge(e)) {
+                pcafci.addUndirectedEdge(e.getNode1(), e.getNode2());
+            }
+        }
+
+        pcafci = GraphTransforms.dagFromCpdag(pcafci, new Knowledge(), false);
 
         for (Edge e : pcafci.getEdges()) {
-            if (Edges.isNondirectedEdge(e)) {
-                pcafcic.addUndirectedEdge(e.getNode1(), e.getNode2());
-            }
+            pafci.removeEdges(e.getNode1(), e.getNode2());
+            pafci.addEdge(e);
         }
 
-        pcafcic = GraphTransforms.dagFromCpdag(pcafcic, new Knowledge(), false, false);
-
-        for (Edge e : pcafcic.getEdges()) {
-            pcafci.removeEdge(e.getNode1(), e.getNode2());
-            pcafci.addEdge(e);
-        }
-
-        Graph H = new EdgeListGraph(pcafci);
-
-        for (Node x : nodes) {
-            for (Node y : nodes) {
-                if (x.equals(y)) {
-                    continue;
-                }
-
-                if (!H.isAdjacentTo(x, y)) {
-                    continue;
-                }
-
-                if (H.getEndpoint(y, x) == Endpoint.CIRCLE && H.getEndpoint(x, y) == Endpoint.ARROW) {
-                    H.setEndpoint(y, x, Endpoint.TAIL);
-                }
-
-                if (H.getEndpoint(y, x) == Endpoint.TAIL && H.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                    H.setEndpoint(x, y, Endpoint.ARROW);
-                }
-            }
-        }
-
-        return H;
+        return pafci;
     }
 
     /**
@@ -367,13 +317,13 @@ public class GraphTransforms {
     /**
      * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the DagToPag algorithm.
      *
-     * @param trueGraph The input DAG to be converted.
+     * @param graph The input DAG to be converted.
      * @return The resulting PAG obtained from the input DAG.
      */
     @NotNull
-    public static Graph dagToPag(Graph trueGraph) {
-        return PagCache.getInstance().getPag(trueGraph);
-//        return new DagToPag(trueGraph).convert();
+    public static Graph dagToPag(Graph graph) {
+//        return PagCache.getInstance().getPag(graph);
+        return new DagToPag(graph).convert();
     }
 
     /**
@@ -407,16 +357,20 @@ public class GraphTransforms {
 
         graph.reorientAllWith(Endpoint.TAIL);
 
-        for (Edge edge : graph.getEdges()) {
+        Set<Edge> edges = graph.getEdges();
+        List<Edge> _edges = new ArrayList<>(edges);
+        Collections.sort(_edges);
+
+        for (Edge edge : _edges) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            // If not x ~~> y put an arrow at y. If not y ~~> x put an arrow at x.
-            if (!ancestorMap.get(y).contains(x) && !dag.paths().isAncestor(x, selection)) {
+            // If not y ~~> x put an arrow at y. If not x ~~> y put an arrow at x.
+            if (!ancestorMap.get(y).contains(x) && !dag.paths().isAncestorOfAnyZ(y, selection)) {
                 graph.setEndpoint(x, y, Endpoint.ARROW);
             }
 
-            if (!ancestorMap.get(x).contains(y) && !dag.paths().isAncestor(y, selection)) {
+            if (!ancestorMap.get(x).contains(y) && !dag.paths().isAncestorOfAnyZ(x, selection)) {
                 graph.setEndpoint(y, x, Endpoint.ARROW);
             }
         }

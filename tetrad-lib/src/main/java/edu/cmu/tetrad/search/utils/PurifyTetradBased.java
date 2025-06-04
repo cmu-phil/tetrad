@@ -94,11 +94,11 @@ public class PurifyTetradBased implements IPurify {
     private List<List<Node>> combinedSearch(List<List<Node>> clustering) {
         Set<Node> eliminated = new HashSet<>();
 
-        Set<Tetrad> allImpurities = null;
+        Set<TetradNode> allImpurities = null;
         double cutoff = this.tetradTest.getSignificance();
 
         for (List<Node> cluster : clustering) {
-            Set<Tetrad> impurities = listTetrads(cluster, eliminated, cutoff);
+            Set<TetradNode> impurities = listTetrads(cluster, eliminated, cutoff);
 
             if (impurities != null) {
                 if (allImpurities == null) {
@@ -108,7 +108,7 @@ public class PurifyTetradBased implements IPurify {
             }
         }
 
-        Set<Tetrad> impurities = listCrossConstructTetrads(clustering, eliminated, cutoff);
+        Set<TetradNode> impurities = listCrossConstructTetrads(clustering, eliminated, cutoff);
 
         if (impurities != null) {
             if (allImpurities == null) {
@@ -124,7 +124,7 @@ public class PurifyTetradBased implements IPurify {
         while (true) {
             int max = 0;
             Node maxNode = null;
-            Map<Node, Set<Tetrad>> impuritiesPerNode = getImpuritiesPerNode(allImpurities, eliminated);
+            Map<Node, Set<TetradNode>> impuritiesPerNode = getImpuritiesPerNode(allImpurities, eliminated);
 
             for (Node node : this.nodes) {
                 if (impuritiesPerNode.get(node).size() > max) {
@@ -138,7 +138,7 @@ public class PurifyTetradBased implements IPurify {
             double minP = Double.POSITIVE_INFINITY;
             double maxP = Double.NEGATIVE_INFINITY;
 
-            for (Tetrad tetrad : impuritiesPerNode.get(maxNode)) {
+            for (TetradNode tetrad : impuritiesPerNode.get(maxNode)) {
                 if (tetrad.getPValue() < minP) {
                     minP = tetrad.getPValue();
                 }
@@ -155,14 +155,14 @@ public class PurifyTetradBased implements IPurify {
         return buildSolution(clustering, eliminated);
     }
 
-    private Map<Node, Set<Tetrad>> getImpuritiesPerNode(Set<Tetrad> allImpurities, Set<Node> _eliminated) {
-        Map<Node, Set<Tetrad>> impuritiesPerNode = new HashMap<>();
+    private Map<Node, Set<TetradNode>> getImpuritiesPerNode(Set<TetradNode> allImpurities, Set<Node> _eliminated) {
+        Map<Node, Set<TetradNode>> impuritiesPerNode = new HashMap<>();
 
         for (Node node : this.nodes) {
             impuritiesPerNode.put(node, new HashSet<>());
         }
 
-        for (Tetrad tetrad : allImpurities) {
+        for (TetradNode tetrad : allImpurities) {
             if (_eliminated.contains(tetrad.getI())) {
                 continue;
             }
@@ -187,8 +187,8 @@ public class PurifyTetradBased implements IPurify {
         return impuritiesPerNode;
     }
 
-    private Set<Tetrad> listCrossConstructTetrads(List<List<Node>> clustering, Set<Node> eliminated, double cutoff) {
-        Set<Tetrad> allTetrads = new HashSet<>();
+    private Set<TetradNode> listCrossConstructTetrads(List<List<Node>> clustering, Set<Node> eliminated, double cutoff) {
+        Set<TetradNode> allTetrads = new HashSet<>();
         boolean countable = false;
 
         for (int p1 = 0; p1 < clustering.size(); p1++) {
@@ -208,7 +208,7 @@ public class PurifyTetradBased implements IPurify {
                             List<Node> crossCluster = new ArrayList<>();
                             for (int i : choice1) crossCluster.add(cluster1.get(i));
                             for (int i : choice2) crossCluster.add(cluster2.get(i));
-                            Set<Tetrad> tetrads = listTetrads(crossCluster, eliminated, cutoff);
+                            Set<TetradNode> tetrads = listTetrads(crossCluster, eliminated, cutoff);
 
                             if (tetrads != null) {
                                 countable = true;
@@ -231,7 +231,7 @@ public class PurifyTetradBased implements IPurify {
                             for (int i : choice1) crossCluster.add(cluster2.get(i));
                             for (int i : choice2) crossCluster.add(cluster1.get(i));
 
-                            Set<Tetrad> tetrads = listTetrads(crossCluster, eliminated, cutoff);
+                            Set<TetradNode> tetrads = listTetrads(crossCluster, eliminated, cutoff);
 
                             if (tetrads != null) {
                                 countable = true;
@@ -254,7 +254,7 @@ public class PurifyTetradBased implements IPurify {
                             for (int i : choice1) crossCluster.add(cluster1.get(i));
                             for (int i : choice2) crossCluster.add(cluster2.get(i));
 
-                            Set<Tetrad> tetrads = listTetrads2By2(crossCluster, eliminated, cutoff);
+                            Set<TetradNode> tetrads = listTetrads2By2(crossCluster, eliminated, cutoff);
 
                             if (tetrads != null) {
                                 countable = true;
@@ -270,12 +270,12 @@ public class PurifyTetradBased implements IPurify {
     }
 
 
-    private Set<Tetrad> listTetrads(List<Node> cluster, Set<Node> eliminated, double cutoff) {
+    private Set<TetradNode> listTetrads(List<Node> cluster, Set<Node> eliminated, double cutoff) {
         if (cluster.size() < 4) return null;
         cluster = new ArrayList<>(cluster);
         boolean countable = false;
 
-        Set<Tetrad> tetrads = new HashSet<>();
+        Set<TetradNode> tetrads = new HashSet<>();
         ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 4);
         int[] choice;
 
@@ -304,25 +304,25 @@ public class PurifyTetradBased implements IPurify {
             p3 = this.tetradTest.tetradPValue(this.nodes.indexOf(ci), this.nodes.indexOf(ck), this.nodes.indexOf(cl), this.nodes.indexOf(cj));
 
             if (p1 < cutoff) {
-                tetrads.add(new Tetrad(ci, cj, ck, cl, p1));
+                tetrads.add(new TetradNode(ci, cj, ck, cl, p1));
             }
 
             if (p2 < cutoff) {
-                tetrads.add(new Tetrad(ci, cj, cl, ck, p2));
+                tetrads.add(new TetradNode(ci, cj, cl, ck, p2));
             }
 
             if (p3 < cutoff) {
-                tetrads.add(new Tetrad(ci, ck, cl, cj, p3));
+                tetrads.add(new TetradNode(ci, ck, cl, cj, p3));
             }
         }
 
         return countable ? tetrads : null;
     }
 
-    private Set<Tetrad> listTetrads2By2(List<Node> cluster, Set<Node> eliminated, double cutoff) {
+    private Set<TetradNode> listTetrads2By2(List<Node> cluster, Set<Node> eliminated, double cutoff) {
         if (cluster.size() < 4) return null;
         cluster = new ArrayList<>(cluster);
-        Set<Tetrad> tetrads = new HashSet<>();
+        Set<TetradNode> tetrads = new HashSet<>();
 
         Node ci = cluster.get(0);
         Node cj = cluster.get(1);
@@ -337,7 +337,7 @@ public class PurifyTetradBased implements IPurify {
 //        double p3 = tetradTest.tetradPValue(nodes.indexOf(ci), nodes.indexOf(cj), nodes.indexOf(cl), nodes.indexOf(ck));
 
         if (p3 < cutoff) {
-            tetrads.add(new Tetrad(ci, ck, cl, cj, p3));
+            tetrads.add(new TetradNode(ci, ck, cl, cj, p3));
 //            tetrads.add(new Tetrad(ci, cj, cl, ck, p3));
         }
 

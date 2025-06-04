@@ -4,10 +4,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
-import java.util.List;
 
 /**
  * Represents a statistic that calculates the false positives for arrows compared to the true directed acyclic graph
@@ -46,13 +45,14 @@ public class TrueDagFalsePositiveArrow implements Statistic {
     /**
      * Calculates the false positives for arrows compared to the true DAG.
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
+     * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph   The estimated graph (same type).
+     * @param dataModel  The data model.
+     * @param parameters The parameters.
      * @return The number of false positive arrows in the estimated graph compared to the true graph.
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
         int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {

@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 
@@ -41,8 +42,8 @@ public class DensityTrue implements Statistic {
      * {@inheritDoc}
      */
     @Override
-    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        return new AverageDegreeTrue().getValue(trueGraph, estGraph, dataModel)
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        return new AverageDegreeTrue().getValue(trueGraph, estGraph, dataModel, new Parameters())
                / (double) (trueGraph.getNumNodes() - 1);
     }
 
