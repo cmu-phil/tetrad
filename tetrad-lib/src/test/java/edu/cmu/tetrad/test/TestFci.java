@@ -812,6 +812,8 @@ public class TestFci {
 //    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
+
+
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
             long seed = System.nanoTime();
