@@ -731,6 +731,8 @@ public final class Fcit implements IGraphSearch {
      * True, just in case good and restored changes are printed. The algorithm always moves to a legal PAG; if it
      * doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise, a "good" message is
      * printed.
+     *
+     * @param printChanges True if changes to the graph should be printed.
      */
     public void setPrintChanges(boolean printChanges) {
         this.printChanges = printChanges;
@@ -791,6 +793,8 @@ public final class Fcit implements IGraphSearch {
      * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This is only
      * done after all recursive sepset removals have been done. True by default. This is needed in order to pass an
      * Oracle test but can reduce accuracy from data.
+     *
+     * @param checkAdjacencySepsets True if the final FCI-style rule of checking adjacency sepsets should be performed.
      */
     public void setCheckAdjacencySepsets(boolean checkAdjacencySepsets) {
         this.checkAdjacencySepsets = checkAdjacencySepsets;
@@ -857,9 +861,8 @@ public final class Fcit implements IGraphSearch {
 
         /**
          * Captures and stores the current state of several key fields in the algorithm for later restoration. This
-         * method creates copies of the current state of `pag`, known colliders, separation set map, and the
-         * `PreserveMarkovHelper` instance. These copies are saved into respective fields to preserve the state at that
-         * moment in time.
+         * method creates copies of the current state of `pag.'. This copies is saved into respective field to preserve
+         * the state at that moment in time.
          * <p>
          * This operation is useful for checkpointing the algorithm's progress and facilitates rollback or review of
          * previous states during the algorithm’s execution.

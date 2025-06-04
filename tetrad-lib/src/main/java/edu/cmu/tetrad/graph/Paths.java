@@ -2403,13 +2403,18 @@ public class Paths implements TetradSerializable {
      * @param B the nodes that colliders along the path must all be parents of
      * @return true if a collider path exists C 'C' A 'A' that is B 'B'
      */
+
     /**
      * True iff there exists a path C = v0 … vk = A such that
      *   (i)  for every i∈{1,…,k−1}, vi is a definite collider on (vi−1,vi,vi+1);
      *   (ii) for every i∈{0,…,k},   vi → B   (i.e., vi is a parent of B);
      *   (iii) vk−1 *-> A (arrowhead at A).
+     *
+     * @param C The C node from Zhang's (2008) definition of visible edge.
+     * @param A The A node from Zhang's (2008) definition of visible edge.
+     * @param B The B node from Zhang's (2008) definition of visible edge.
      */
-    public boolean existsColliderPathInto(Node C, Node A, Node B) {
+    private boolean existsColliderPathInto(Node C, Node A, Node B) {
         // C itself must already be a parent of B, otherwise no path can qualify.
         if (!graph.isParentOf(C, B)) return false;
 

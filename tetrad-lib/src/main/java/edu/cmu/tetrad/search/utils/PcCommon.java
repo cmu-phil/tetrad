@@ -149,6 +149,7 @@ public final class PcCommon implements IGraphSearch {
      * @param conflictRule The conflict rule to use.
      * @param graph        The graph to orient.
      * @param verbose      If verbose output should be printed.
+     * @param acyclic      True if the output is supposed to be acyclic.
      * @see PcCommon.ConflictRule
      */
     public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph, boolean verbose, boolean acyclic) {

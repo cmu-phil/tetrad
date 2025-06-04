@@ -46,7 +46,7 @@ public class PreserveMarkov {
      *
      * @param graph          The initial Markov graph. This graph should pass a local Markov check.
      * @param test           The independence test to use.
-     * @param preserveMarkov
+     * @param preserveMarkov True if Markov should be preserved.
      */
     public PreserveMarkov(Graph graph, IndependenceTest test, boolean preserveMarkov) {
         this.graph = new EdgeListGraph(graph);

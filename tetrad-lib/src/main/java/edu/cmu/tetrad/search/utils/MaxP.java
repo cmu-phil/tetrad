@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.search.utils;
 
@@ -193,8 +193,7 @@ public final class MaxP {
         adja.remove(c);
         adjc.remove(a);
 
-        if (!(GraphSearchUtils.isArrowheadAllowed(a, b, knowledge)
-              && (GraphSearchUtils.isArrowheadAllowed(c, b, knowledge)))) {
+        if (!(GraphSearchUtils.isArrowheadAllowed(a, b, knowledge) && (GraphSearchUtils.isArrowheadAllowed(c, b, knowledge)))) {
             return;
         }
 
@@ -331,6 +330,11 @@ public final class MaxP {
         this.verbose = verbose;
     }
 
+    /**
+     * Set to true if the output is supposed to be acyclic.
+     *
+     * @param acyclic True if so.
+     */
     public void setAcyclic(boolean acyclic) {
         this.acyclic = acyclic;
     }
