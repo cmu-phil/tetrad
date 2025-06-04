@@ -28,12 +28,12 @@ import java.util.List;
 /**
  * The Fges-FCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FGES-FCI",
-        command = "fges-fci",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FGES-FCI",
+//        command = "fges-fci",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
 public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, UsesScoreWrapper,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
