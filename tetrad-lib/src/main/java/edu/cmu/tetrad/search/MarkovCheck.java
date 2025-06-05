@@ -1279,7 +1279,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double fracDepDep = getFractionDependent(false);
         int numTestsInd = getNumTests(true);
         int numTestsDep = getNumTests(false);
-        return new MarkovCheckRecord(adInd, adDep, binIndep, ksInd, ksDep, fishInd, fishDep, binDep, fracDepInd, fracDepDep, numTestsInd, numTestsDep);
+        return new MarkovCheckRecord(adInd, adDep, ksInd, ksDep, fishInd, fishDep, binIndep, binDep, fracDepInd, fracDepDep, numTestsInd, numTestsDep);
     }
 
     /**
