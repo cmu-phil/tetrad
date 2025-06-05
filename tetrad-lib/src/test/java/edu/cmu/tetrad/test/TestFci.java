@@ -706,46 +706,6 @@ public class TestFci {
         }
     }
 
-    /**
-     * Wondering why the lc->Mb edge is not being oriented by r4 here in puzzle #2...
-     */
-    @Test
-    public void testSearch22() {
-        boolean verbose = false;
-
-        final String pagString = "Graph Nodes:\n" +
-                               "cd;hd;lc;s;i;ps;mb\n" +
-                               "\n" +
-                               "Graph Edges:\n" +
-                               "1. cd --> mb dd nl\n" +
-                               "2. cd --> lc pd nl\n" +
-                               "3. hd --> mb pd nl\n" +
-                               "4. s --> cd pd nl\n" +
-                               "5. cd <-> hd\n" +
-                               "6. i o-> s\n" +
-                               "7. lc <-> hd\n" +
-                               "8. lc o-> mb\n" +
-                               "9. ps o-> s\n" +
-                               "\n";
-
-        try {
-            Graph pag = GraphSaveLoadUtils.readerToGraphTxt(pagString);
-
-            FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(new MsepTest(pag)));
-
-            // Need to rig it so it does r4.
-            fciOrient.finalOrientation(pag);
-            
-            System.out.println(pag);  // Should have lc --> mb.
-            
-            
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
     private boolean ancestral(Node n, Node q, Graph pag) {
         if (n == q) return false;
 
