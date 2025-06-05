@@ -650,7 +650,7 @@ public class TestFci {
     public void testSearch21() {
         boolean verbose = false;
 
-        final String trueDag = "Graph Nodes:\n" +
+        final String trueGraph = "Graph Nodes:\n" +
                                "X1;X2;X4;X5;X6\n" +
                                "\n" +
                                "Graph Edges:\n" +
@@ -669,7 +669,7 @@ public class TestFci {
                                   "4. X5 <-> X6";
 
         try {
-            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueDag);
+            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueGraph);
             Graph truePag_ = GraphSaveLoadUtils.readerToGraphTxt(correctPag);
 
             System.out.println("True DAG");
