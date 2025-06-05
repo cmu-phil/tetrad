@@ -584,7 +584,7 @@ public class Paths implements TetradSerializable {
             Node a = path.getFirst();
             Node b = path.get(1);
 
-            boolean visible = graph.paths().defVisible(graph.getEdge(a, b));
+            boolean visible = graph.paths().defVisiblePag(a, b);
 
             if (!(visible && graph.getEdge(a, b).pointsTowards(b))) {
                 amenablePaths.remove(path);
@@ -2291,109 +2291,186 @@ public class Paths implements TetradSerializable {
         }
     }
 
-    /**
-     * Returns true just in case the given edge is definitely visible. The reference for this is Zhang, J. (2008).
-     * Causal Reasoning with Ancestral Graphs. Journal of Machine Learning Research, 9(7).
-     * <p>
-     * This definition will work for MAGs and PAGs. "Definite" here means for PAGs that the edge is visible in all MAGs
-     * in the equivalence class.
-     *
-     * @param edge the edge to check.
-     * @return true if the given edge is definitely visible.
-     * @throws java.lang.IllegalArgumentException if the given edge is not a directed edge in the graph
-     */
-    public boolean defVisible(Edge edge) {
+    /*======================================================================
+     * 1.  PUBLIC ENTRY POINT
+     *====================================================================*/
 
-        // Zhang, J. (2008). Causal Reasoning with Ancestral Graphs. Journal of Machine Learning
-        // Research, 9(7)
-        //
-        // Definition 8 (Visibility) Given a MAG M, a directed edge A → B in M is visible
-        // if there is a vertex C not adjacent to B, such that either there is an edge between
-        // C and A that is into A, or there is a collider path between C and A that is into A
-        // and every vertex on the path is a parent of B. Otherwise A → B is said to be invisible.
-        // ...
-        // The definition of visibility still makes sense in PAGs, except that we will call a
-        // directed edge in a PAG definitely visible if it satisfies the condition for visibility
-        // in Definition 8, in order to emphasize that this edge is visible in all MAGs in the
-        // equivalence class. (p. 1452)
+    public boolean defVisiblePag(Node A, Node B) {
 
-        if (!edge.isDirected()) return false;
+        // Sanity: we only care about directed A → B edges that exist
+        if (!graph.isParentOf(A, B)) return false;
 
-        if (graph.containsEdge(edge)) {
-            Node A = Edges.getDirectedEdgeTail(edge);
-            Node B = Edges.getDirectedEdgeHead(edge);
+        for (Node C : graph.getNodes()) {
 
-            for (Node C : graph.getAdjacentNodes(A)) {
-                if (C != B && !graph.isAdjacentTo(C, B)) {
-                    Edge e = graph.getEdge(C, A);
+            if (C == A || C == B) continue;           // trivial exclusions
+            if (graph.isAdjacentTo(C, B)) continue;   // C must NOT touch B
 
-                    if (e.getProximalEndpoint(A) == Endpoint.ARROW) {
-                        return true;
-                    } else if (existsColliderPathInto(C, A, B)) {
-                        return true;
-                    }
-                }
+            /* ---------- Clause 1: an edge into A from C ---------------- */
+            if (graph.getEndpoint(C, A) == Endpoint.ARROW) {
+                // Covers both  C → A  and  C ↔ A  (arrowhead at A).
+                return true;
             }
 
-            return false;
-        } else {
-            throw new IllegalArgumentException("Given edge is not in the graph.");
+            /* ---------- Clause 2: collider path C … A ------------------ */
+            if (existsColliderPathInto(C, A, B)) {
+                return true;
+            }
         }
+        return false;   // no qualifying C found ⇒ edge is invisible
     }
 
-    /**
-     * A helper method for the defVisible method. This implementation uses depth-first search and can be slow for large
-     * graphs.
-     *
-     * @param from the starting node of the path
-     * @param to   the target node of the path
-     * @param into the nodes that colliders along the path must all be parents of
-     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
-     */
-    private boolean existsColliderPathIntoDfs(Node from, Node to, Node into) {
-        Set<Node> visited = new HashSet<>();
-        List<Node> currentPath = new ArrayList<>();
+    /*======================================================================
+     * 2.  COLLIDER-PATH SEARCH  (Zhang 2008, Def. 8, second bullet)
+     *====================================================================*/
 
-        if (existsColliderPathIntoDfs(null, from, to, into, visited, currentPath)) {
-            return graph.getEndpoint(currentPath.get(currentPath.size() - 2), to) == Endpoint.ARROW;
+    /**
+     * True iff there exists a collider path   C = v0 … vk = A (k ≥ 1)
+     * that is arrow-headed into A and whose **interior** vertices are all
+     * parents of B.  Endpoints C and A themselves are *not* required to
+     * point to B.
+     */
+    private boolean existsColliderPathInto(Node C, Node A, Node B) {
+        return dfsColliderPath(null, C, A, B, new HashSet<>());
+    }
+
+    /* ------------------------------------------------------------------ */
+
+    private boolean dfsColliderPath(Node prev,           // vertex before ‘cur’
+                                    Node cur,            // current vertex
+                                    Node targetA,        // destination
+                                    Node B,              // must receive arrows
+                                    Set<Node> onBranch)  // cycle guard
+    {
+        /* (i) Interior-vertex parent-of-B condition */
+        if (prev != null && !cur.equals(targetA)          // interior only
+            && !graph.isParentOf(cur, B)) {
+            return false;                                 // violates clause
         }
 
+        /* (ii) Endpoint reached: arrowhead into A required */
+        if (cur.equals(targetA)) {
+            return prev != null
+                   && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
+        }
+
+        /* (iii) DFS expansion with collider check */
+        onBranch.add(cur);
+        for (Node nxt : graph.getAdjacentNodes(cur)) {
+            if (onBranch.contains(nxt)) continue;         // avoid cycles
+
+            // collider requirement applies once we *have* a predecessor
+            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
+                if (dfsColliderPath(cur, nxt, targetA, B, onBranch))
+                    return true;
+            }
+        }
+        onBranch.remove(cur);
         return false;
     }
 
-    /**
-     * A helper method for the existsColliderPathInto method.
-     *
-     * @param previous    the previous node in the path
-     * @param current     the current node in the path
-     * @param end         the target node of the path
-     * @param into        the nodes that colliders along the path must all be parents of
-     * @param visited     the set of visited nodes
-     * @param currentPath the current path
-     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
-     */
-    private boolean existsColliderPathIntoDfs(Node previous, Node current, Node end, Node into, Set<Node> visited, List<Node> currentPath) {
-        visited.add(current);
-        currentPath.add(current);
+//    /**
+//     * Returns true just in case the given edge is definitely visible. The reference for this is Zhang, J. (2008).
+//     * Causal Reasoning with Ancestral Graphs. Journal of Machine Learning Research, 9(7).
+//     * <p>
+//     * This definition will work for MAGs and PAGs. "Definite" here means for PAGs that the edge is visible in all MAGs
+//     * in the equivalence class.
+//     *
+//     * @param edge the edge to check.
+//     * @return true if the given edge is definitely visible.
+//     * @throws java.lang.IllegalArgumentException if the given edge is not a directed edge in the graph
+//     */
+//    public boolean defVisible(Edge edge) {
+//
+//        // Zhang, J. (2008). Causal Reasoning with Ancestral Graphs. Journal of Machine Learning
+//        // Research, 9(7)
+//        //
+//        // Definition 8 (Visibility) Given a MAG M, a directed edge A → B in M is visible
+//        // if there is a vertex C not adjacent to B, such that either there is an edge between
+//        // C and A that is into A, or there is a collider path between C and A that is into A
+//        // and every vertex on the path is a parent of B. Otherwise A → B is said to be invisible.
+//        // ...
+//        // The definition of visibility still makes sense in PAGs, except that we will call a
+//        // directed edge in a PAG definitely visible if it satisfies the condition for visibility
+//        // in Definition 8, in order to emphasize that this edge is visible in all MAGs in the
+//        // equivalence class. (p. 1452)
+//
+//        if (!edge.isDirected()) return false;
+//
+//        if (graph.containsEdge(edge)) {
+//            Node A = Edges.getDirectedEdgeTail(edge);
+//            Node B = Edges.getDirectedEdgeHead(edge);
+//
+//            for (Node C : graph.getAdjacentNodes(A)) {
+//                if (C != B && !graph.isAdjacentTo(C, B)) {
+//                    Edge e = graph.getEdge(C, A);
+//
+//                    if (e.getProximalEndpoint(A) == Endpoint.ARROW) {
+//                        return true;
+//                    } else if (existsColliderPathInto(C, A, B)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//
+//            return false;
+//        } else {
+//            throw new IllegalArgumentException("Given edge is not in the graph.");
+//        }
+//    }
 
-        if (current == end) {
-            return true;
-        } else {
-            for (Node next : graph.getAdjacentNodes(current)) {
-                if (!visited.contains(next) && (previous == null || (graph.isDefCollider(previous, current, next)
-                                                                     && graph.isParentOf(current, into)))) {
-                    if (existsColliderPathIntoDfs(current, next, end, into, visited, currentPath)) {
-                        return true;
-                    }
-                }
-            }
-        }
+//    /**
+//     * A helper method for the defVisible method. This implementation uses depth-first search and can be slow for large
+//     * graphs.
+//     *
+//     * @param from the starting node of the path
+//     * @param to   the target node of the path
+//     * @param into the nodes that colliders along the path must all be parents of
+//     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
+//     */
+//    private boolean existsColliderPathIntoDfs(Node from, Node to, Node into) {
+//        Set<Node> visited = new HashSet<>();
+//        List<Node> currentPath = new ArrayList<>();
+//
+//        if (existsColliderPathIntoDfs(null, from, to, into, visited, currentPath)) {
+//            return graph.getEndpoint(currentPath.get(currentPath.size() - 2), to) == Endpoint.ARROW;
+//        }
+//
+//        return false;
+//    }
 
-        currentPath.remove(currentPath.size() - 1);
-        visited.remove(current);
-
-        return false;
-    }
+//    /**
+//     * A helper method for the existsColliderPathInto method.
+//     *
+//     * @param previous    the previous node in the path
+//     * @param current     the current node in the path
+//     * @param end         the target node of the path
+//     * @param into        the nodes that colliders along the path must all be parents of
+//     * @param visited     the set of visited nodes
+//     * @param currentPath the current path
+//     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
+//     */
+//    private boolean existsColliderPathIntoDfs(Node previous, Node current, Node end, Node into, Set<Node> visited, List<Node> currentPath) {
+//        visited.add(current);
+//        currentPath.add(current);
+//
+//        if (current == end) {
+//            return true;
+//        } else {
+//            for (Node next : graph.getAdjacentNodes(current)) {
+//                if (!visited.contains(next) && (previous == null || (graph.isDefCollider(previous, current, next)
+//                                                                     && graph.isParentOf(current, into)))) {
+//                    if (existsColliderPathIntoDfs(current, next, end, into, visited, currentPath)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        currentPath.remove(currentPath.size() - 1);
+//        visited.remove(current);
+//
+//        return false;
+//    }
 
     /**
      * A helper method for the defVisible method, using BFS.
@@ -2404,51 +2481,50 @@ public class Paths implements TetradSerializable {
      * @return true if a collider path exists C 'C' A 'A' that is B 'B'
      */
 
-    /**
-     * True iff there exists a path C = v0 … vk = A such that
-     *   (i)  for every i∈{1,…,k−1}, vi is a definite collider on (vi−1,vi,vi+1);
-     *   (ii) for every i∈{0,…,k},   vi → B   (i.e., vi is a parent of B);
-     *   (iii) vk−1 *-> A (arrowhead at A).
-     *
-     * @param C The C node from Zhang's (2008) definition of visible edge.
-     * @param A The A node from Zhang's (2008) definition of visible edge.
-     * @param B The B node from Zhang's (2008) definition of visible edge.
-     */
-    private boolean existsColliderPathInto(Node C, Node A, Node B) {
-        // C itself must already be a parent of B, otherwise no path can qualify.
-        if (!graph.isParentOf(C, B)) return false;
-
-        return dfsColliderPath(/*prev*/ null, /*cur*/ C, A, B, new HashSet<>());
-    }
-
-    private boolean dfsColliderPath(Node prev,
-                                    Node cur,
-                                    Node targetA,
-                                    Node B,
-                                    Set<Node> path) {
-
-        // every node on the path must be a parent of B
-        if (!graph.isParentOf(cur, B)) return false;
-
-        // reached A: last edge must have an arrowhead at A
-        if (cur.equals(targetA)) {
-            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
-        }
-
-        path.add(cur);               // mark cur for this branch
-
-        for (Node nxt : graph.getAdjacentNodes(cur)) {
-            if (path.contains(nxt)) continue;          // avoid cycles
-
-            // first step out of C has no collider constraint (prev == null)
-            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
-                if (dfsColliderPath(cur, nxt, targetA, B, path)) return true;
-            }
-        }
-
-        path.remove(cur);            // back-track for other branches
-        return false;
-    }
+//    /**
+//     * True iff there exists a path C = v0 … vk = A such that
+//     *   (i)  for every i∈{1,…,k−1}, vi is a definite collider on (vi−1,vi,vi+1);
+//     *   (ii) for every i∈{0,…,k},   vi → B   (i.e., vi is a parent of B);
+//     *   (iii) vk−1 *-> A (arrowhead at A).
+//     *
+//     * @param C The C node from Zhang's (2008) definition of visible edge.
+//     * @param A The A node from Zhang's (2008) definition of visible edge.
+//     * @param B The B node from Zhang's (2008) definition of visible edge.
+//     */
+//    private boolean existsColliderPathInto(Node C, Node A, Node B) {
+//        // C itself must already be a parent of B, otherwise no path can qualify.
+//        if (!graph.isParentOf(C, B)) return false;
+//
+//        return dfsColliderPath(/*prev*/ null, /*cur*/ C, A, B, new HashSet<>());
+//    }
+//    private boolean dfsColliderPath(Node prev,
+//                                    Node cur,
+//                                    Node targetA,
+//                                    Node B,
+//                                    Set<Node> path) {
+//
+//        // every node on the path must be a parent of B
+//        if (!graph.isParentOf(cur, B)) return false;
+//
+//        // reached A: last edge must have an arrowhead at A
+//        if (cur.equals(targetA)) {
+//            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
+//        }
+//
+//        path.add(cur);               // mark cur for this branch
+//
+//        for (Node nxt : graph.getAdjacentNodes(cur)) {
+//            if (path.contains(nxt)) continue;          // avoid cycles
+//
+//            // first step out of C has no collider constraint (prev == null)
+//            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
+//                if (dfsColliderPath(cur, nxt, targetA, B, path)) return true;
+//            }
+//        }
+//
+//        path.remove(cur);            // back-track for other branches
+//        return false;
+//    }
 
 
 

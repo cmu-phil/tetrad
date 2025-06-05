@@ -1175,7 +1175,8 @@ public final class GraphUtils {
 
             graph.addEdge(xyEdge);
 
-            if (graph.paths().defVisible(edge)) {
+            Paths paths = graph.paths();
+            if (paths.defVisiblePag(edge.getNode1(), edge.getNode2())) {
                 edge.addProperty(Property.nl); // solid.
             } else {
                 edge.addProperty(Property.pl); // dashed
@@ -1966,9 +1967,15 @@ public final class GraphUtils {
         if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
             System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
             return new HashSet<>();
-        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
-            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
-            return new HashSet<>();
+        } else {
+            if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y)) {
+                Paths paths = G.paths();
+                Edge edge = G.getEdge(x, y);
+                if (!paths.defVisiblePag(edge.getNode1(), edge.getNode2())) {
+                    System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
+                    return new HashSet<>();
+                }
+            }
         }
 
         // Get the Markov blanket for x in G2.
@@ -2010,9 +2017,15 @@ public final class GraphUtils {
         if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
             System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
             return new HashSet<>();
-        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
-            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
-            return new HashSet<>();
+        } else {
+            if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y)) {
+                Paths paths = G.paths();
+                Edge edge = G.getEdge(x, y);
+                if (!paths.defVisiblePag(edge.getNode1(), edge.getNode2())) {
+                    System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
+                    return new HashSet<>();
+                }
+            }
         }
 
         Set<Node> anteriority = G.paths().anteriority(x, y);
@@ -2092,8 +2105,11 @@ public final class GraphUtils {
             throw new IllegalArgumentException("Edge from x to y must be directed.");
         } else if (edge.pointsTowards(x)) {
             throw new IllegalArgumentException("Edge from x to y must point towards y.");
-        } else if (!G.paths().defVisible(edge)) {
-            throw new IllegalArgumentException("Edge from x to y must be visible.");
+        } else {
+            Paths paths = G.paths();
+            if (!paths.defVisiblePag(edge.getNode1(), edge.getNode2())) {
+                throw new IllegalArgumentException("Edge from x to y must be visible.");
+            }
         }
 
         Graph G2 = new EdgeListGraph(G);
