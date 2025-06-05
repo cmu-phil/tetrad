@@ -33,9 +33,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.DagToPag;
-import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -844,8 +842,7 @@ public class TestFci {
 
                 fci.setCompleteRuleSetUsed(true);
                 fci.setCheckAdjacencySepsets(true);
-                fci.setPrintChanges(true);
-                fci.setVerbose(false);
+                fci.setVerbose(true);
 
                 Graph pag = fci.search();
 
@@ -905,7 +902,7 @@ public class TestFci {
 
             try {
                 Fcit fcit = new Fcit(test, score);
-                fcit.setPrintChanges(true);
+                fcit.setVerbose(true);
 //                fcit.setVerbose(true);
                 fcit.setDepth(7);
                 fcit.setCompleteRuleSetUsed(true);

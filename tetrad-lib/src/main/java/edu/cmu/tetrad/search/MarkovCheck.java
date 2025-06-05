@@ -940,9 +940,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-
-            this.numTestsIndep = msep.size();
-            this.numTestsDep = mconn.size();
         }
 
         calcStats(indep);
@@ -1192,7 +1189,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @param percentResample The percentage of all samples to use when resampling for each conditional independence
      *                        test.
      */
-    public void setPercentResample(double percentResample) {
+    public void setFractionResample(double percentResample) {
         this.percentResample = percentResample;
     }
 
@@ -1269,8 +1266,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @see MarkovCheckRecord
      */
     public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
-        setPercentResample(percentResample);
-        generateAllResults();
+        setFractionResample(percentResample);
         double adInd = getAndersonDarlingP(true);
         double adDep = getAndersonDarlingP(false);
         double ksInd = getKsPValue(true);
@@ -1584,6 +1580,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double fishP = getFisherCombinedPValue(results);
         double binP = getBinomialPValue(pValues, independenceTest.getAlpha());
         double fracDep = dependent / (double) results.size();
+        int numTests = results.size();
 
         if (indep) {
             aSquaredIndep = _aSquared;
@@ -1593,6 +1590,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             fisherCombinedPIndep = fishP;
             binomialPIndep = binP;
             fractionDependentIndep = fracDep;
+            numTestsIndep = numTests;
         } else {
             aSquaredDep = _aSquared;
             aSquaredStarDep = _aSquaredStar;
@@ -1601,6 +1599,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             fisherCombinedPDep = fishP;
             binomialPDep = binP;
             fractionDependentDep = fracDep;
+            numTestsDep = numTests;
         }
     }
 

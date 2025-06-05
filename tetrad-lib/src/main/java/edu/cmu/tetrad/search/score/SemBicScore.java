@@ -231,6 +231,7 @@ public class SemBicScore implements Score {
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
             this.logN = log(sampleSize);
+            this.penaltyDiscount = penaltyDiscount;
             return;
         }
 

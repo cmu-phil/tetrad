@@ -90,7 +90,7 @@ public final class Fcit implements IGraphSearch {
     /**
      * True iff verbose output should be printed.
      */
-    private boolean verbose = false;
+    private boolean superVerbose = false;
 
     /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
@@ -124,7 +124,7 @@ public final class Fcit implements IGraphSearch {
      * doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise, a "good" message is
      * printed.
      */
-    private boolean printChanges = false;
+    private boolean verbose = false;
     /**
      * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This is only
      * done after all recursive sepset removals have been done. True by default. This is needed in order to pass an
@@ -155,7 +155,7 @@ public final class Fcit implements IGraphSearch {
         this.test = test;
         this.score = score;
 
-        test.setVerbose(verbose);
+        test.setVerbose(superVerbose);
 
         if (test instanceof MsepTest) {
             this.startWith = START_WITH.GRASP;
@@ -183,12 +183,12 @@ public final class Fcit implements IGraphSearch {
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsets);
-        strategy.setVerbose(verbose);
+        strategy.setVerbose(superVerbose);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
         fciOrient = new FciOrient(strategy);
-        fciOrient.setVerbose(verbose);
+        fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(false);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setKnowledge(knowledge);
@@ -199,7 +199,7 @@ public final class Fcit implements IGraphSearch {
 
         if (startWith == START_WITH.BOSS) {
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("Running BOSS...");
             }
 
@@ -216,18 +216,18 @@ public final class Fcit implements IGraphSearch {
 
             long stop = MillisecondTimes.wallTimeMillis();
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("BOSS took " + (stop - start) + " ms.");
             }
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("Initializing PAG to BOSS CPDAG.");
                 TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
             }
         } else if (startWith == START_WITH.GRASP) {
             // We need to include the GRaSP option here so that we can run FCIT from Oracle.
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("Running GRaSP...");
             }
 
@@ -239,17 +239,17 @@ public final class Fcit implements IGraphSearch {
 
             long stop = MillisecondTimes.wallTimeMillis();
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("GRaSP took " + (stop - start) + " ms.");
             }
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("Initializing PAG to GRaSP CPDAG.");
                 TetradLogger.getInstance().log("Initializing scorer with GRaSP best order.");
             }
         } else if (startWith == START_WITH.SP) {
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("Running SP...");
             }
 
@@ -268,11 +268,11 @@ public final class Fcit implements IGraphSearch {
 
             long stop = MillisecondTimes.wallTimeMillis();
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("SP took " + (stop - start) + " ms.");
             }
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("Initializing PAG to SP CPDAG.");
                 TetradLogger.getInstance().log("Initializing scorer with SP best order.");
             }
@@ -280,7 +280,7 @@ public final class Fcit implements IGraphSearch {
             throw new IllegalArgumentException("That startWith option has not been configured: " + startWith);
         }
 
-        if (verbose) {
+        if (superVerbose) {
             TetradLogger.getInstance().log("Best order: " + best);
         }
 
@@ -299,7 +299,7 @@ public final class Fcit implements IGraphSearch {
             scorer.bookmark();
         }
 
-        if (verbose) {
+        if (superVerbose) {
             TetradLogger.getInstance().log("Initializing PAG to PAG of BOSS DAG.");
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
@@ -308,7 +308,7 @@ public final class Fcit implements IGraphSearch {
             scorer.score(best);
         }
 
-        if (verbose) {
+        if (superVerbose) {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
@@ -324,7 +324,7 @@ public final class Fcit implements IGraphSearch {
             removeEdgesSubsetsOfAdjacents();
         }
 
-        if (verbose) {
+        if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
         }
 
@@ -356,7 +356,7 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> cond = GraphUtils.asSet(choice1, adjx);
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
-                    if (verbose || printChanges) {
+                    if (verbose) {
                         TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     }
                     state.getPag().removeEdge(x, y);
@@ -404,7 +404,7 @@ public final class Fcit implements IGraphSearch {
         subAlg.setUseBes(useBes);
         subAlg.setNumStarts(numStarts);
         subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
-        subAlg.setVerbose(verbose);
+        subAlg.setVerbose(superVerbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(knowledge);
         return alg;
@@ -427,7 +427,7 @@ public final class Fcit implements IGraphSearch {
         grasp.setUseRaskuttiUhler(false);
         grasp.setUseDataOrder(useDataOrder);
         grasp.setAllowInternalRandomness(true);
-        grasp.setVerbose(verbose);
+        grasp.setVerbose(superVerbose);
 
         grasp.setNumStarts(numStarts);
         grasp.setKnowledge(this.knowledge);
@@ -468,7 +468,7 @@ public final class Fcit implements IGraphSearch {
                             if (pag.isDefCollider(x, b, y)) {// && !pag.isAdjacentTo(x, y)) {
                                 initialColliders.add(new Triple(x, b, y));
 
-                                if (verbose) {
+                                if (superVerbose) {
                                     TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from initial PAG to PAG.");
                                 }
                             }
@@ -497,7 +497,7 @@ public final class Fcit implements IGraphSearch {
      * otherwise, checkpoints the current state for future reference.
      */
     private boolean refreshGraph(String message) {
-        GraphUtils.reorientWithCircles(state.getPag(), verbose);
+        GraphUtils.reorientWithCircles(state.getPag(), superVerbose);
         GraphUtils.recallInitialColliders(state.getPag(), initialColliders, knowledge);
         adjustForExtraSepsets();
         fciOrient.fciOrientbk(knowledge, state.getPag(), state.getPag().getNodes());
@@ -510,13 +510,13 @@ public final class Fcit implements IGraphSearch {
 
     private boolean restoreStateIfNotLegal(String message) {
         if (!state.getPag().paths().isLegalPag()) {
-            if (verbose || printChanges) {
+            if (verbose) {
                 TetradLogger.getInstance().log("Rejected: " + message);
             }
             state.restoreState();
             return false;
         } else {
-            if (verbose || printChanges) {
+            if (verbose) {
                 TetradLogger.getInstance().log("ACCEPTED: " + message);
             }
             state.storeState();
@@ -549,7 +549,7 @@ public final class Fcit implements IGraphSearch {
             List<Node> common = state.getPag().getAdjacentNodes(x);
             common.retainAll(state.getPag().getAdjacentNodes(y));
 
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " from PAG.");
             }
 
@@ -559,7 +559,7 @@ public final class Fcit implements IGraphSearch {
                         state.getPag().setEndpoint(x, node, Endpoint.ARROW);
                         state.getPag().setEndpoint(y, node, Endpoint.ARROW);
 
-                        if (verbose) {
+                        if (superVerbose) {
                             TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
                         }
                     }
@@ -593,7 +593,7 @@ public final class Fcit implements IGraphSearch {
      * execution for asynchronous tasks.
      */
     private void removeEdgesRecursively() {
-        if (verbose) {
+        if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
 
@@ -614,7 +614,7 @@ public final class Fcit implements IGraphSearch {
         // there in this graph.
         EDGE:
         for (Edge edge : state.getPag().getEdges()) {
-            if (verbose) {
+            if (superVerbose) {
                 TetradLogger.getInstance().log("Considering removing edge " + edge);
             }
 
@@ -624,10 +624,6 @@ public final class Fcit implements IGraphSearch {
             Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
             paths = (paths == null) ? Set.of() : paths;
             Set<Node> perhapsNotFollowed = new HashSet<>();
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Discriminating paths for " + x + " and " + y + " are " + paths);
-            }
 
             // Don't repeat the same independence test twice for this edge x *-* y.
             Set<Set<Node>> S = new HashSet<>();
@@ -655,7 +651,7 @@ public final class Fcit implements IGraphSearch {
                     throw new RuntimeException(e);
                 }
 
-                if (verbose && !notFollowed.isEmpty()) {
+                if (superVerbose && !notFollowed.isEmpty()) {
                     TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + _b);
                 }
 
@@ -690,7 +686,7 @@ public final class Fcit implements IGraphSearch {
 
                     try {
                         if (test.checkIndependence(x, y, b).isIndependent()) {
-                            if (verbose || printChanges) {
+                            if (verbose) {
                                 TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
                             }
 
@@ -733,10 +729,10 @@ public final class Fcit implements IGraphSearch {
     /**
      * Sets the verbosity level of the search algorithm.
      *
-     * @param verbose true to enable verbose mode, false to disable it
+     * @param superVerbose true to enable superVerbose mode, false to disable it
      */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+    public void setSuperVerbose(boolean superVerbose) {
+        this.superVerbose = superVerbose;
     }
 
     /**
@@ -744,10 +740,10 @@ public final class Fcit implements IGraphSearch {
      * doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise, a "good" message is
      * printed.
      *
-     * @param printChanges True if changes to the graph should be printed.
+     * @param verbose True if changes to the graph should be printed.
      */
-    public void setPrintChanges(boolean printChanges) {
-        this.printChanges = printChanges;
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     /**

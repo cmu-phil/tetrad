@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
@@ -15,16 +14,11 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
-import static java.lang.Math.log;
 
 public class TestCheckMarkov {
 
@@ -120,7 +114,7 @@ public class TestCheckMarkov {
         IndependenceTest test = new IndTestFisherZ(data, 0.05);
 
         MarkovCheck markovCheck = new MarkovCheck(cpdag, test, ConditioningSetType.LOCAL_MARKOV);
-        markovCheck.setPercentResample(0.7);
+        markovCheck.setFractionResample(0.7);
 
         try {
             System.out.println(markovCheck.getMarkovCheckRecordString());
@@ -135,16 +129,16 @@ public class TestCheckMarkov {
                 100, false);
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(1000, false);
+        DataSet data = im.simulateData(10000, false);
 
         IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(data), 0.01);
         SemBicScore score  = new SemBicScore(data, 1, true);
 
         Fcit fcit = new Fcit(test, score);
+        fcit.setVerbose(true);
         fcit.setCheckAdjacencySepsets(false);
-        fcit.setPrintChanges(true);
         fcit.setDepth(7);
-        fcit.setCompleteRuleSetUsed(true);
+        fcit.setCompleteRuleSetUsed(false);
         Graph pag;
 
         try {
@@ -153,9 +147,9 @@ public class TestCheckMarkov {
             throw new RuntimeException(e);
         }
 
-        MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.LOCAL_MARKOV);
-        markovCheck.setPercentResample(0.9);
-        markovCheck.generateAllResults();
+        MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+        markovCheck.setFractionResample(1.0);
+        markovCheck.generateResults(true, true); // Note the ordered local Markov property only returns indep case.
 
         try {
             System.out.println(markovCheck.getMarkovCheckRecordString());
