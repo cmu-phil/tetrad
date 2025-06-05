@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.List;
 
 /**
- * BOSS-DOT is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
+ * BOSS-POD is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
  * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
  * doing any further latent variable reasoning.
  *

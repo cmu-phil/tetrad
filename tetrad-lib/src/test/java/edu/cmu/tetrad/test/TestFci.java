@@ -844,6 +844,7 @@ public class TestFci {
 
                 fci.setCompleteRuleSetUsed(true);
                 fci.setCheckAdjacencySepsets(true);
+                fci.setPrintChanges(true);
                 fci.setVerbose(false);
 
                 Graph pag = fci.search();

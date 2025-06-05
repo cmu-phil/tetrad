@@ -34,8 +34,8 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-DOT",
-        command = "boss-dot",
+        name = "BOSS-POD",
+        command = "BOSS-POD",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping

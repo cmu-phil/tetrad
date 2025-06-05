@@ -124,7 +124,7 @@ public final class Fcit implements IGraphSearch {
      * doesn't, it is restored to the previous PAG, and a "restored" message is printed. Otherwise, a "good" message is
      * printed.
      */
-    private boolean printChanges = true;
+    private boolean printChanges = false;
     /**
      * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This is only
      * done after all recursive sepset removals have been done. True by default. This is needed in order to pass an
@@ -356,11 +356,17 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> cond = GraphUtils.asSet(choice1, adjx);
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
-                    TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
+                    if (verbose || printChanges) {
+                        TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
+                    }
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
-                    refreshGraph(x + " _||_ " + y + " | " + cond);
-                    continue EDGE;
+
+                    if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
+                        continue EDGE; // Because we removed the edge and it's a legal PAG
+                    } else {
+                        continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
+                    }
                 }
             }
 
@@ -374,8 +380,12 @@ public final class Fcit implements IGraphSearch {
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
-                    refreshGraph(x + " _||_ " + y + " | " + cond);
-                    continue EDGE;
+
+                    if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
+                        continue EDGE; // Because we removed the edge and it's a legal PAG
+                    } else {
+                        continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
+                    }
                 }
             }
         }
@@ -495,8 +505,6 @@ public final class Fcit implements IGraphSearch {
 
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
-        printChanges = true;
-
         return restoreStateIfNotLegal(message);
     }
 
@@ -682,13 +690,17 @@ public final class Fcit implements IGraphSearch {
 
                     try {
                         if (test.checkIndependence(x, y, b).isIndependent()) {
-                            TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
+                            if (verbose || printChanges) {
+                                TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
+                            }
 
                             state.getPag().removeEdge(x, y);
                             sepsets.set(x, y, b);
 
                             if (refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)")) {
-                                continue EDGE;
+                                continue EDGE; // Because we removed the edge and it's a legal PAG.
+                            } else {
+                                continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
                             }
                         }
 
