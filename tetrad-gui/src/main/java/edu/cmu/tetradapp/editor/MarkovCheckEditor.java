@@ -669,7 +669,7 @@ public class MarkovCheckEditor extends JPanel {
 
                 model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
 
-                model.getMarkovCheck().setPercentResample(percent.getValue());
+                model.getMarkovCheck().setFractionResample(percent.getValue());
                 model.getMarkovCheck().generateResults(true, clear);
 
                 if (checkDependentDistribution.isSelected()) {

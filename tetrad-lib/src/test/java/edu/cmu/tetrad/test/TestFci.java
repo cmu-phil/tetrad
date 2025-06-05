@@ -33,9 +33,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.DagToPag;
-import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -650,7 +648,7 @@ public class TestFci {
     public void testSearch21() {
         boolean verbose = false;
 
-        final String trueDag = "Graph Nodes:\n" +
+        final String trueGraph = "Graph Nodes:\n" +
                                "X1;X2;X4;X5;X6\n" +
                                "\n" +
                                "Graph Edges:\n" +
@@ -669,7 +667,7 @@ public class TestFci {
                                   "4. X5 <-> X6";
 
         try {
-            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueDag);
+            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueGraph);
             Graph truePag_ = GraphSaveLoadUtils.readerToGraphTxt(correctPag);
 
             System.out.println("True DAG");
@@ -705,46 +703,6 @@ public class TestFci {
             e.printStackTrace();
         }
     }
-
-    /**
-     * Wondering why the lc->Mb edge is not being oriented by r4 here in puzzle #2...
-     */
-    @Test
-    public void testSearch22() {
-        boolean verbose = false;
-
-        final String pagString = "Graph Nodes:\n" +
-                               "cd;hd;lc;s;i;ps;mb\n" +
-                               "\n" +
-                               "Graph Edges:\n" +
-                               "1. cd --> mb dd nl\n" +
-                               "2. cd --> lc pd nl\n" +
-                               "3. hd --> mb pd nl\n" +
-                               "4. s --> cd pd nl\n" +
-                               "5. cd <-> hd\n" +
-                               "6. i o-> s\n" +
-                               "7. lc <-> hd\n" +
-                               "8. lc o-> mb\n" +
-                               "9. ps o-> s\n" +
-                               "\n";
-
-        try {
-            Graph pag = GraphSaveLoadUtils.readerToGraphTxt(pagString);
-
-            FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(new MsepTest(pag)));
-
-            // Need to rig it so it does r4.
-            fciOrient.finalOrientation(pag);
-            
-            System.out.println(pag);  // Should have lc --> mb.
-            
-            
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     private boolean ancestral(Node n, Node q, Graph pag) {
         if (n == q) return false;
@@ -884,7 +842,7 @@ public class TestFci {
 
                 fci.setCompleteRuleSetUsed(true);
                 fci.setCheckAdjacencySepsets(true);
-                fci.setVerbose(false);
+                fci.setVerbose(true);
 
                 Graph pag = fci.search();
 
@@ -944,7 +902,7 @@ public class TestFci {
 
             try {
                 Fcit fcit = new Fcit(test, score);
-                fcit.setPrintChanges(true);
+                fcit.setVerbose(true);
 //                fcit.setVerbose(true);
                 fcit.setDepth(7);
                 fcit.setCompleteRuleSetUsed(true);
