@@ -132,7 +132,7 @@ public class DiscriminatingPath {
         }
 
         // Then we need to make sure E and B are on the path, E first, B last:
-        LinkedList<Node> p = new LinkedList<>(colliderPath);
+        LinkedList<Node> p = new LinkedList<>(colliderPath.reversed());
         p.addFirst(x);
         p.addLast(v);
 
