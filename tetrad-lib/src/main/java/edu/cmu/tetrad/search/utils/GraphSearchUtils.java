@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
@@ -185,8 +185,7 @@ public final class GraphSearchUtils {
                     continue;
                 }
 
-                if (!GraphSearchUtils.isArrowheadAllowed(x, y, knowledge)
-                    || !GraphSearchUtils.isArrowheadAllowed(z, y, knowledge)) {
+                if (!GraphSearchUtils.isArrowheadAllowed(x, y, knowledge) || !GraphSearchUtils.isArrowheadAllowed(z, y, knowledge)) {
                     continue;
                 }
 
@@ -242,8 +241,7 @@ public final class GraphSearchUtils {
      * @param verbose      a boolean
      * @param enforceCpdag a boolean
      */
-    public static void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
-                                                   boolean enforceCpdag) {
+    public static void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose, boolean enforceCpdag) {
         TetradLogger.getInstance().log("Starting Collider Orientation:");
         List<Node> nodes = graph.getNodes();
 
@@ -269,12 +267,10 @@ public final class GraphSearchUtils {
                 Set<Node> sepset = set.get(a, c);
 
                 //I think the null check needs to be here --AJ
-                if (sepset != null && !sepset.contains(b)
-                    && GraphSearchUtils.isArrowheadAllowed(a, b, knowledge)) {
+                if (sepset != null && !sepset.contains(b) && GraphSearchUtils.isArrowheadAllowed(a, b, knowledge)) {
                     boolean result = true;
                     if (knowledge != null) {
-                        result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString())
-                                 && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
+                        result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString()) && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
                     }
                     if (result) {
 //                        if (verbose) {
@@ -312,13 +308,11 @@ public final class GraphSearchUtils {
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @return a boolean
      */
-    public static boolean isArrowheadAllowed(Object from, Object to,
-                                             Knowledge knowledge) {
+    public static boolean isArrowheadAllowed(Object from, Object to, Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }
-        return !knowledge.isRequired(to.toString(), from.toString())
-               && !knowledge.isForbidden(from.toString(), to.toString());
+        return !knowledge.isRequired(to.toString(), from.toString()) && !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -406,8 +400,7 @@ public final class GraphSearchUtils {
     public static LegalPagRet isLegalPag(Graph pag, Set<Node> selection) {
         for (Node n : pag.getNodes()) {
             if (n.getNodeType() != NodeType.MEASURED) {
-                return new LegalPagRet(false,
-                        "Node " + n + " is not measured");
+                return new LegalPagRet(false, "Node " + n + " is not measured");
             }
         }
 
@@ -426,16 +419,12 @@ public final class GraphSearchUtils {
             for (Edge e : pag.getEdges()) {
                 Edge e2 = pag2.getEdge(e.getNode1(), e.getNode2());
                 if (!e.equals(e2)) {
-                    edgeMismatch = "For example, the original PAG has edge " + e +
-                                   " whereas the reconstituted graph has edge " + e2;
+                    edgeMismatch = "For example, the original PAG has edge " + e + " whereas the reconstituted graph has edge " + e2;
                     break;
                 }
             }
 
-            String reason = legalMag.isLegalMag()
-                    ? "The MAG implied by this graph was a legal MAG, but one cannot recover the original graph " +
-                      "by finding the PAG of an implied MAG — this graph may lie between a MAG and a PAG"
-                    : "The MAG implied by this graph was not legal, and one cannot recover the original graph from its implied PAG";
+            String reason = legalMag.isLegalMag() ? "The MAG implied by this graph was a legal MAG, but one cannot recover the original graph " + "by finding the PAG of an implied MAG — this graph may lie between a MAG and a PAG" : "The MAG implied by this graph was not legal, and one cannot recover the original graph from its implied PAG";
 
             if (!edgeMismatch.isEmpty()) {
                 reason += ". " + edgeMismatch;
@@ -482,8 +471,7 @@ public final class GraphSearchUtils {
 
         for (Node n : mag.getNodes()) {
             if (mag.paths().existsDirectedPath(n, n)) {
-                return new LegalMagRet(false,
-                        "Acyclicity violated: There is a directed cyclic path from " + n + " to itself");
+                return new LegalMagRet(false, "Acyclicity violated: There is a directed cyclic path from " + n + " to itself");
             }
         }
 
@@ -494,16 +482,12 @@ public final class GraphSearchUtils {
             if (Edges.isBidirectedEdge(e)) {
                 List<List<Node>> forwardPaths = mag.paths().directedPaths(x, y, 1);
                 if (!forwardPaths.isEmpty()) {
-                    return new LegalMagRet(false,
-                            "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y +
-                            ". An example path is " + GraphUtils.pathString(mag, forwardPaths.getFirst(), false));
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + GraphUtils.pathString(mag, forwardPaths.getFirst(), false));
                 }
 
                 List<List<Node>> backwardPaths = mag.paths().directedPaths(y, x, 1);
                 if (!backwardPaths.isEmpty()) {
-                    return new LegalMagRet(false,
-                            "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x +
-                            ". An example path is " + GraphUtils.pathString(mag, backwardPaths.getFirst(), false));
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + GraphUtils.pathString(mag, backwardPaths.getFirst(), false));
                 }
             }
         }
@@ -517,8 +501,7 @@ public final class GraphSearchUtils {
 
                 if (!mag.isAdjacentTo(x, y)) {
                     if (mag.paths().existsInducingPath(x, y, sel)) {
-                        return new LegalMagRet(false,
-                                "Not maximal: Inducing path exists between non-adjacent " + x + " and " + y);
+                        return new LegalMagRet(false, "Not maximal: Inducing path exists between non-adjacent " + x + " and " + y);
                     }
                 }
             }
@@ -532,16 +515,14 @@ public final class GraphSearchUtils {
                 for (Node z : mag.getAdjacentNodes(x)) {
                     Edge zx = mag.getEdge(z, x);
                     if (mag.isParentOf(z, x) || Edges.isBidirectedEdge(zx)) {
-                        return new LegalMagRet(false,
-                                "Undirected edge constraint violated: " + z + " is a parent or spouse of " + x);
+                        return new LegalMagRet(false, "Undirected edge constraint violated: " + z + " is a parent or spouse of " + x);
                     }
                 }
 
                 for (Node z : mag.getAdjacentNodes(y)) {
                     Edge zy = mag.getEdge(z, y);
                     if (mag.isParentOf(z, y) || Edges.isBidirectedEdge(zy)) {
-                        return new LegalMagRet(false,
-                                "Undirected edge constraint violated: " + z + " is a parent or spouse of " + y);
+                        return new LegalMagRet(false, "Undirected edge constraint violated: " + z + " is a parent or spouse of " + y);
                     }
                 }
             }
@@ -725,8 +706,7 @@ public final class GraphSearchUtils {
      * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
-    public static void arrangeByKnowledgeTiers(Graph graph,
-                                               Knowledge knowledge) {
+    public static void arrangeByKnowledgeTiers(Graph graph, Knowledge knowledge) {
         if (knowledge.getNumTiers() == 0) {
             throw new IllegalArgumentException("There are no Tiers to arrange.");
         }
@@ -856,8 +836,7 @@ public final class GraphSearchUtils {
      * <p>
      * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, and Pearl (1990).
      */
-    public static Set<Node> getReachableNodes(List<Node> initialNodes, LegalPairs legalPairs, List<Node> c,
-                                              List<Node> d, Graph graph, int maxPathLength) {
+    public static Set<Node> getReachableNodes(List<Node> initialNodes, LegalPairs legalPairs, List<Node> c, List<Node> d, Graph graph, int maxPathLength) {
         HashSet<Node> reachable = new HashSet<>();
         MultiKeyMap<Node, Boolean> visited = new MultiKeyMap<>();
         List<ReachabilityEdge> nextEdges = new LinkedList<>();
@@ -961,9 +940,7 @@ public final class GraphSearchUtils {
      * @return a {@link edu.cmu.tetrad.search.utils.GraphSearchUtils.CpcTripleType} object
      * @throws java.lang.InterruptedException if any.
      */
-    public static CpcTripleType getCpcTripleType(Node x, Node y, Node z,
-                                                 IndependenceTest test, int depth,
-                                                 Graph graph) throws InterruptedException {
+    public static CpcTripleType getCpcTripleType(Node x, Node y, Node z, IndependenceTest test, int depth, Graph graph) throws InterruptedException {
         int numSepsetsContainingY = 0;
         int numSepsetsNotContainingY = 0;
 
@@ -1033,40 +1010,52 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * Tsamardinos, I., Brown, L. E., and Aliferis, C. F. (2006). The max-min hill-climbing Bayesian network structure
-     * learning algorithm. Machine learning, 65(1), 31-78.
+     * Originally, Tsamardinos, I., Brown, L. E., and Aliferis, C. F. (2006). The max-min hill-climbing Bayesian network
+     * structure learning algorithm. Machine learning, 65(1), 31-78.
+     * <p>
+     * But using the formulation in Peters, J., & Bühlmann, P. (2015). Structural intervention distance for evaluating
+     * causal graphs. Neural computation, 27(3), 771-799.
      * <p>
      * Converts each graph (DAG or CPDAG) into its CPDAG before scoring.
      *
-     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param estGraph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param trueGraph    a {@link Graph} object
+     * @param estGraph     a {@link Graph} object
+     * @param useTrueCpdag Use the CPDAG of the true graph.
      * @return a int
      */
-    public static int structuralHammingDistance(Graph trueGraph, Graph estGraph) {
+    public static int structuralhammingdistance(Graph trueGraph, Graph estGraph, boolean useTrueCpdag) {
         int shd = 0;
 
-        if (trueGraph.paths().isLegalCpdag()) {
+        if (useTrueCpdag) {
+            trueGraph = GraphTransforms.dagToCpdag(trueGraph);
+        }
+
+        for (Edge e : trueGraph.getEdges()) {
+            if (!(Edges.isUndirectedEdge(e) || Edges.isDirectedEdge(e))) {
+                TetradLogger.getInstance().log("True graph is not a legal PDAG.");
+                return -99;
+            }
+        }
+
+        for (Edge e : estGraph.getEdges()) {
+            if (!(Edges.isUndirectedEdge(e) || Edges.isDirectedEdge(e))) {
+                TetradLogger.getInstance().log("Est graph is not a legal PDAG.");
+                return -99;
+            }
+        }
+
+        if (trueGraph.paths().existsDirectedCycle()) {
+            TetradLogger.getInstance().log("True graph is not a legal PDAG.");
             return -99;
         }
 
-        if (!estGraph.paths().isLegalCpdag()) {
+        if (estGraph.paths().existsDirectedCycle()) {
+            TetradLogger.getInstance().log("Est graph is not a legal PDAG.");
             return -99;
         }
 
         try {
             estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
-            trueGraph = GraphTransforms.dagToCpdag(trueGraph);
-            estGraph = GraphTransforms.dagToCpdag(estGraph);
-
-            // Will check mixedness later.
-            if (trueGraph.paths().existsDirectedCycle()) {
-                TetradLogger.getInstance().log("SHD failed: True graph couldn't be converted to a CPDAG");
-            }
-
-            if (estGraph.paths().existsDirectedCycle()) {
-                TetradLogger.getInstance().log("SHD failed: Estimated graph couldn't be converted to a CPDAG");
-                return -99;
-            }
 
             List<Node> _allNodes = estGraph.getNodes();
 
@@ -1078,58 +1067,28 @@ public final class GraphSearchUtils {
                     Edge e1 = trueGraph.getEdge(n1, n2);
                     Edge e2 = estGraph.getEdge(n1, n2);
 
-                    if (e1 != null && !(Edges.isDirectedEdge(e1) || Edges.isUndirectedEdge(e1))) {
-                        TetradLogger.getInstance().log("SHD failed: True graph couldn't be converted to a CPDAG");
-                        return -99;
-                    }
-
-                    if (e2 != null && !(Edges.isDirectedEdge(e2) || Edges.isUndirectedEdge(e2))) {
-                        TetradLogger.getInstance().log("SHD failed: Estimated graph couldn't be converted to a CPDAG");
-                        return -99;
-                    }
-
                     int error = GraphSearchUtils.structuralHammingDistanceOneEdge(e1, e2);
                     shd += error;
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
             return -99;
         }
 
         return shd;
     }
 
-    // Anne Helby pointed out this number was wrong, so replacing it with a different count
-    // per edge, which is either 0 or 1 always per edge.
     private static int structuralHammingDistanceOneEdge(Edge e1, Edge e2) {
-        // Skeleton difference
-        if (e1 == null && e2 == null) return 0;
-        if (e1 == null || e2 == null) return 1;
-
-        // Both edges present – only orientation can differ now
-        return e1.equals(e2) ? 0 : 1;
+        if (e1 == null && e2 == null) {
+            return 0;
+        } else if (e1 == null & e2 != null) {
+            return 1;
+        } else if (e1 != null && e2 == null) {
+            return 1;
+        } else {
+            return e1.equals(e2) ? 0 : 1;
+        }
     }
-
-
-//    private static int structuralHammingDistanceOneEdge(Edge e1, Edge e2) {
-//        int error = 0;
-//
-//        if (!(e1 == null && e2 == null)) {
-//            if (e1 != null && e2 != null) {
-//                if (!e1.equals(e2)) {
-//                    error++;
-//                }
-//            } else if (Edges.isUndirectedEdge(Objects.requireNonNullElse(e2, e1))) {
-//                error++;
-//            } else {
-//                error++;
-//                error++;
-//            }
-//        }
-//
-//        return error;
-//    }
 
     /**
      * Just counts arrowhead errors--for cyclic edges counts an arrowhead at each node.
@@ -1251,8 +1210,7 @@ public final class GraphSearchUtils {
                 Endpoint e2a = _edge.getProximalEndpoint(node1);
                 Endpoint e2b = _edge.getProximalEndpoint(node2);
 
-                if (!((e1a != Endpoint.CIRCLE && e2a != Endpoint.CIRCLE && e1a != e2a)
-                      || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
+                if (!((e1a != Endpoint.CIRCLE && e2a != Endpoint.CIRCLE && e1a != e2a) || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
                     continue;
                 }
             }
@@ -1263,15 +1221,14 @@ public final class GraphSearchUtils {
         double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
         double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
 
-        int shd = structuralHammingDistance(trueGraph, targetGraph);
+        int shdGraphGraph = structuralhammingdistance(trueGraph, targetGraph, false);
+
 
         targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
 
         int[][] counts = GraphUtils.edgeMisclassificationCounts(trueGraph, targetGraph, false);
 
-        return new GraphUtils.GraphComparison(
-                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
-                adjPrec, adjRec, arrowptPrec, arrowptRec, shd, edgesAdded, edgesRemoved, counts);
+        return new GraphUtils.GraphComparison(adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect, adjPrec, adjRec, arrowptPrec, arrowptRec, shdGraphGraph, edgesAdded, edgesRemoved, counts);
     }
 
     /**
@@ -1283,8 +1240,7 @@ public final class GraphSearchUtils {
      * @param targetGraph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link java.lang.String} object
      */
-    public static String getEdgewiseComparisonString(String trueGraphName, Graph trueGraph,
-                                                     String targetGraphName, Graph targetGraph) {
+    public static String getEdgewiseComparisonString(String trueGraphName, Graph trueGraph, String targetGraphName, Graph targetGraph) {
         targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
         trueGraph = new EdgeListGraph(trueGraph);
         targetGraph = new EdgeListGraph(targetGraph);
@@ -1350,8 +1306,7 @@ public final class GraphSearchUtils {
         if (out != null) {
             out.println();
             out.println("APRE\tAREC\tOPRE\tOREC");
-            out.println(nf.format(adjPrecision * 100) + "%\t" + nf.format(adjRecall * 100)
-                        + "%\t" + nf.format(arrowPrecision * 100) + "%\t" + nf.format(arrowRecall * 100) + "%");
+            out.println(nf.format(adjPrecision * 100) + "%\t" + nf.format(adjRecall * 100) + "%\t" + nf.format(arrowPrecision * 100) + "%\t" + nf.format(arrowRecall * 100) + "%");
             out.println();
         }
 

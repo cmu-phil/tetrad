@@ -3179,8 +3179,8 @@ public final class TestGrasp {
                         g2 = GraphUtils.replaceNodes(g2, g1.getNodes());
 
                         if (g1.equals(g2)) gsCount++;
-                        gsShd += GraphSearchUtils.structuralHammingDistance(
-                                GraphTransforms.dagToCpdag(g1), GraphTransforms.dagToCpdag(g2));
+                        gsShd += GraphSearchUtils.structuralhammingdistance(
+                                GraphTransforms.dagToCpdag(g1), GraphTransforms.dagToCpdag(g2), true);
 
                         for (int i = 0; i < alpha.length; i++) {
 //                            test.setAlpha(alpha[i]);
@@ -3198,8 +3198,8 @@ public final class TestGrasp {
                             g3 = GraphUtils.replaceNodes(g3, g1.getNodes());
 
                             if (g1.equals(g3)) pearlCounts[i]++;
-                            pearlShd[i] += GraphSearchUtils.structuralHammingDistance(
-                                    GraphTransforms.dagToCpdag(g1), GraphTransforms.dagToCpdag(g3));
+                            pearlShd[i] += GraphSearchUtils.structuralhammingdistance(
+                                    GraphTransforms.dagToCpdag(g1), GraphTransforms.dagToCpdag(g3), true);
                         }
                     }
 
