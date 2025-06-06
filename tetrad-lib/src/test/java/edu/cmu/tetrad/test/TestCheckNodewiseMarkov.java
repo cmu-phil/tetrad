@@ -247,7 +247,7 @@ public class TestCheckNodewiseMarkov {
         }
 
         // Simulate different FCI methods
-        List<String> methodNames = Arrays.asList("BossFCI", "GaspFCI", "FCI", "FCIMax", "RFCI");
+        List<String> methodNames = Arrays.asList("BossFCI", "GraspFCI", "FCI", "FCIMax", "RFCI");
         for (String methodName : methodNames) {
             try {
                 Graph estimatedPAG = null;
@@ -264,10 +264,10 @@ public class TestCheckNodewiseMarkov {
                         bossFCI.setGuaranteePag(true);
                         estimatedPAG = bossFCI.search();
                         break;
-                    case "GaspFCI":
-                        GraspFci gaspFCI = new GraspFci(fisherZTest, score);
-                        gaspFCI.setGuaranteePag(true);
-                        estimatedPAG = gaspFCI.search();
+                    case "GraspFCI":
+                        GraspFci graspFCI = new GraspFci(fisherZTest, score);
+                        graspFCI.setGuaranteePag(true);
+                        estimatedPAG = graspFCI.search();
                         break;
                     case "FCI":
                         Fci fci = new Fci(fisherZTest); // seems fci does not need score input?
