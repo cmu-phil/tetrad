@@ -1045,6 +1045,14 @@ public final class GraphSearchUtils {
     public static int structuralHammingDistance(Graph trueGraph, Graph estGraph) {
         int shd = 0;
 
+        if (trueGraph.paths().isLegalCpdag()) {
+            return -99;
+        }
+
+        if (!estGraph.paths().isLegalCpdag()) {
+            return -99;
+        }
+
         try {
             estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
             trueGraph = GraphTransforms.dagToCpdag(trueGraph);

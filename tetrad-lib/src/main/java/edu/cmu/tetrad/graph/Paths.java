@@ -1990,7 +1990,7 @@ public class Paths implements TetradSerializable {
                 if (!(o instanceof EdgeNode _o)) {
                     throw new IllegalArgumentException();
                 }
-                return _o.edge == this.edge && _o.node == this.node;
+                return _o.edge.equals(this.edge) && _o.node.equals(this.node);
             }
         }
 
