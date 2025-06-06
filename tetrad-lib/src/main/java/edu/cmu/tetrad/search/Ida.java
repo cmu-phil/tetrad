@@ -75,8 +75,8 @@ public class Ida {
         }
 
         // Check tha the graph is either a DAG or a CPDAG.
-        if (!(graph.paths().isLegalDag() || graph.paths().isLegalCpdag())) {
-            throw new IllegalArgumentException("Expecting a DAG or a CPDAG.");
+        if (!(graph.paths().isLegalMpdag())) {
+            throw new IllegalArgumentException("Expecting an MPDAG.");
         }
 
         // Check that the dataset is continuous.

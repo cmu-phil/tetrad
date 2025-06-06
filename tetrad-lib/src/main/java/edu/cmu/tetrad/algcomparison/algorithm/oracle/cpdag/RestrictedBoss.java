@@ -77,7 +77,13 @@ public class RestrictedBoss extends AbstractBootstrapAlgorithm implements Algori
         List<Node> targets = new ArrayList<>();
 
         for (String _target : _targets) {
-            targets.add(dataSet.getVariable(_target));
+            Node variable = dataSet.getVariable(_target);
+
+            if (variable == null) {
+                continue;
+            }
+
+            targets.add(variable);
         }
 
         for (Node node : targets) {
