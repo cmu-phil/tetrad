@@ -127,7 +127,19 @@ public final class Fcit implements IGraphSearch {
      * Oracle test but can reduce accuracy from data.
      */
     private boolean checkAdjacencySepsets = true;
-    private @NotNull Graph pag;
+    /**
+     * A field representing the Partial Ancestral Graph (PAG) used during the causal discovery process. The PAG is
+     * initialized as an empty {@link EdgeListGraph} and is updated throughout the search algorithm to incorporate
+     * causal structure information.
+     * <p>
+     * This graph serves as the central data structure reflecting the results of independence tests, edge orientations,
+     * and adjustments based on causal constraints. It is used to store and refine the causal relationships inferred by
+     * the algorithm.
+     * <p>
+     * The {@code @NotNull} annotation indicates the field cannot hold a null value. In its default state, the PAG is
+     * instantiated to an empty graph structure.
+     */
+    private @NotNull Graph pag = new EdgeListGraph();
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -310,19 +322,19 @@ public final class Fcit implements IGraphSearch {
         // The main procedure.
         this.pag = GraphTransforms.dagToPag(dag);
 
-        initialColliders = noteInitialColliders(best, this.pag);
+        // This will be needed later to refresh the PAG state.
+        this.initialColliders = noteInitialColliders(best, this.pag);
 
+        // This removes edges based on recursive path blocking. After every edge removal, the evolving PAG is
+        // rebuilt based on initial unshielded colliders and learned sepsets.
         removeEdgesRecursively();
 
+        // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
+        // for correctness but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
+        // is rebuilt.
         if (checkAdjacencySepsets) {
             removeEdgesSubsetsOfAdjacents();
         }
-
-        GraphUtils.reorientWithCircles(this.pag, superVerbose);
-        GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
-        adjustForExtraSepsets();
-        fciOrient.fciOrientbk(knowledge, this.pag, this.pag.getNodes());
-        fciOrient.finalOrientation(this.pag);
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -655,7 +667,7 @@ public final class Fcit implements IGraphSearch {
                     Set<Node> c = GraphUtils.asSet(choice2, common);
 
                     for (Node n : c) {
-                        if (c.add(n))                                                                                                                                {
+                        if (c.add(n)) {
                             b.add(n);
                         } else {
                             b.remove(n);
