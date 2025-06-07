@@ -316,10 +316,8 @@ public final class Fcit implements IGraphSearch {
         state.setPag(GraphTransforms.dagToPag(dag));
 
         initialColliders = noteInitialColliders(best, state.getPag());
-        state.storeState();
 
         removeEdgesRecursively();
-        refreshGraph("after recursion");
 
         if (checkAdjacencySepsets) {
             removeEdgesSubsetsOfAdjacents();
@@ -368,13 +366,7 @@ public final class Fcit implements IGraphSearch {
                     }
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
-
-                    if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
-//                        continue EDGE; // Because we removed the edge and it's a legal PAG
-                    } else {
-//                        continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
-                    }
-
+                    refreshGraph(x + " _||_ " + y + " | " + cond);
                     continue EDGE;
                 }
             }
@@ -389,13 +381,7 @@ public final class Fcit implements IGraphSearch {
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     state.getPag().removeEdge(x, y);
                     sepsets.set(x, y, cond);
-
-                    if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
-//                        continue EDGE; // Because we removed the edge and it's a legal PAG
-                    } else {
-//                        continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
-                    }
-
+                    refreshGraph(x + " _||_ " + y + " | " + cond);
                     continue EDGE;
                 }
             }
@@ -493,21 +479,12 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Updates and refines the structure of the Partial Ancestral Graph (PAG) based on current configurations and
-     * knowledge, while maintaining the validity of the PAG. This method is fundamental to the iterative refinement
-     * process in the FCIT algorithm.
-     * <p>
-     * The method performs the following steps:
-     * <p>
-     * (a) Reorients the current PAG using circular structures if applicable. (b) Transfers known colliders identified
-     * from the provided CPDAG into the PAG based on given knowledge constraints. (c) Adjusts separation sets to account
-     * for extra independence information. (d) Applies background knowledge and performs structure orientation using the
-     * implemented orientation strategies, including R4-strategy.
-     * <p>
-     * If the updated PAG violates the legality constraints, restores the state to the last valid configuration;
-     * otherwise, checkpoints the current state for future reference.
+     * Refreshes the current Partial Ancestral Graph (PAG) by reorienting edges, adjusting for separation sets, and
+     * applying final orientations. This method ensures the PAG remains valid after performing necessary modifications.
+     *
+     * @param message A descriptive message indicating the context or purpose of the graph refresh operation.
      */
-    private boolean refreshGraph(String message) {
+    private void refreshGraph(String message) {
         GraphUtils.reorientWithCircles(state.getPag(), superVerbose);
         GraphUtils.recallInitialColliders(state.getPag(), initialColliders, knowledge);
         adjustForExtraSepsets();
@@ -516,26 +493,19 @@ public final class Fcit implements IGraphSearch {
 
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
-        return restoreStateIfNotLegal(message);
+        noteRejects(message);
     }
 
-    private boolean restoreStateIfNotLegal(String message) {
+    private void noteRejects(String message) {
         if (!state.getPag().paths().isLegalPag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Rejected: " + message);
             }
-//            state.restoreState();
-            return false;
         } else {
             if (verbose) {
                 TetradLogger.getInstance().log("ACCEPTED: " + message);
             }
-//            state.storeState();
-//            return true;
         }
-
-//        state.restoreState();
-        return true;
     }
 
     /**
@@ -687,9 +657,7 @@ public final class Fcit implements IGraphSearch {
                     }
 
                     Set<Node> b = new HashSet<>(_b);
-
                     Set<Node> c = GraphUtils.asSet(choice2, common);
-//                    b.removeAll(c);
 
                     for (Node n : c) {
                         if (c.add(n))                                                                                                                                {
@@ -699,8 +667,8 @@ public final class Fcit implements IGraphSearch {
                         }
                     }
 
-//                    if (S.contains(b)) continue;
-//                    S.add(new HashSet<>(b));
+                    if (S.contains(b)) continue;
+                    S.add(new HashSet<>(b));
 
                     if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
                         continue;
@@ -714,13 +682,7 @@ public final class Fcit implements IGraphSearch {
 
                             state.getPag().removeEdge(x, y);
                             sepsets.set(x, y, b);
-
-                            if (refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)")) {
-//                                continue EDGE; // Because we removed the edge and it's a legal PAG.
-                            } else {
-//                                continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
-                            }
-
+                            refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)");
                             continue EDGE;
                         }
 
