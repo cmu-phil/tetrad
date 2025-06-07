@@ -665,14 +665,7 @@ public final class Fcit implements IGraphSearch {
 
                     Set<Node> b = new HashSet<>(_b);
                     Set<Node> c = GraphUtils.asSet(choice2, common);
-
-                    for (Node n : c) {
-                        if (c.add(n)) {
-                            b.add(n);
-                        } else {
-                            b.remove(n);
-                        }
-                    }
+                    b.removeAll(c);
 
                     if (S.contains(b)) continue;
                     S.add(new HashSet<>(b));
