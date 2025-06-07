@@ -291,8 +291,10 @@ public class Paths implements TetradSerializable {
 
         try {
             g.paths().makeValidOrder(pi);
-            Graph dag = getDag(pi, g/*GraphTransforms.dagFromCpdag(g)*/, false);
-            Graph cpdag = GraphTransforms.dagToCpdag(dag);
+            Graph cpdag = GraphTransforms.dagToCpdag(GraphTransforms.dagToCpdag(g));
+
+//            Graph dag = getDag(pi, GraphTransforms.dagFromCpdag(g), false);
+//            Graph cpdag = GraphTransforms.dagToCpdag(dag);
             return g.equals(cpdag);
         } catch (Exception e) {
             // There was no valid sink.
@@ -1990,7 +1992,7 @@ public class Paths implements TetradSerializable {
                 if (!(o instanceof EdgeNode _o)) {
                     throw new IllegalArgumentException();
                 }
-                return _o.edge == this.edge && _o.node == this.node;
+                return _o.edge.equals(this.edge) && _o.node.equals(this.node);
             }
         }
 

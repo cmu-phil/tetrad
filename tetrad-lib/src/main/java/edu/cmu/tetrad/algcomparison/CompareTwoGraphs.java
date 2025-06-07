@@ -332,7 +332,8 @@ public class CompareTwoGraphs {
         statistics.add(new AverageDegreeTrue());
         statistics.add(new DensityEst());
         statistics.add(new DensityTrue());
-        statistics.add(new StructuralHammingDistance());
+        statistics.add(new StructuralHammingDistance(false));
+        statistics.add(new StructuralHammingDistance(true));
 
         // Stats for PAGs.
         statistics.add(new NumDirectedEdges());

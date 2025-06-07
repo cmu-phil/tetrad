@@ -8,7 +8,6 @@ import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +32,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * class FciOrientDataExaminationStrategyTestBased.
      */
     private final IndependenceTest test;
-    private Graph mag;
     /**
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
@@ -217,32 +215,35 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         Set<Node> blocking;
 
+        // If you already have a sepset, use it.
         if (sepsetMap.get(x, y) != null) {
             blocking = sepsetMap.get(x, y);
-        } else if (blockingType == BlockingType.RECURSIVE) {
-            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
-                    maxLength, maxLength, preserveMarkovHelper, depth);
 
-            if (blocking == null || !test.checkIndependence(x, y, blocking).isIndependent()) {
-                blocking = findAdjSetSepset(graph, x, y, path, v);
+        } else
 
-                if (blocking != null) {
-                    if (verbose) {
+            // Else for the recursive option see if you can find a recursive sepset; this fails for Puzzle #2.
+            if (blockingType == BlockingType.RECURSIVE) {
+                blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
+                        maxLength, maxLength, preserveMarkovHelper, depth);
+
+                if (blocking == null) { // If it does fail, use FCI style reasoning.
+                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+
+                    if (verbose && blocking != null) {
                         TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
                     }
                 }
 
-//                TetradLogger.getInstance().log("R4 Blocking found for " + x + ", " + y + ", " + blocking);
-            }
+                sepsetMap.set(x, y, blocking);
+            } else
 
-            sepsetMap.set(x, y, blocking);
-        } else if (blockingType == BlockingType.GREEDY) {
-            blocking = findAdjSetSepset(graph, x, y, path, v);
-
-            sepsetMap.set(x, y, blocking);
-        } else {
-            throw new IllegalArgumentException("Unknown blocking type.");
-        }
+                // Else for the greedy option, do FCI-style reasoning.
+                if (blockingType == BlockingType.GREEDY) {
+                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+                    sepsetMap.set(x, y, blocking);
+                } else {
+                    throw new IllegalArgumentException("Unknown blocking type.");
+                }
 
         //  *         V
         // *         **            * is either an arrowhead, a tail, or a circle
@@ -257,14 +258,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 
-        if (blockingType == BlockingType.RECURSIVE) {
-            if (!(blocking.containsAll(path) && blocking.contains(w))) {
-                throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
-            }
-        }
-
-        if (blockingType == BlockingType.GREEDY && !blocking.containsAll(path)) {
-            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path.");
+        if (!(blocking.containsAll(path) && blocking.contains(w))) {
+            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
         }
 
         // Now at this point, for the recursive case, we simply need to know whether X _||_ Y | blocking. If so, we
@@ -323,30 +318,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             return Pair.of(discriminatingPath, true);
         }
-    }
-
-    private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
-        Set<Node> blocking;
-        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-
-        Set<Node> b1 = new HashSet<>(blocking);
-        b1.remove(v);
-
-        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
-
-        Set<Node> b2 = new HashSet<>(b1);
-        b2.add(v);
-
-        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
-
-        if (b1Indep) {
-            blocking = b1;
-        } else if (b2Indep) {
-            blocking = b2;
-        } else {
-            blocking = null;
-        }
-        return blocking;
     }
 
     /**

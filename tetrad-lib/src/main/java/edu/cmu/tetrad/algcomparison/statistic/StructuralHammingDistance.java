@@ -19,10 +19,16 @@ public class StructuralHammingDistance implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    private boolean compareToCpdag = false;
+
     /**
      * Constructs the statistic.
      */
     public StructuralHammingDistance() {
+    }
+
+    public StructuralHammingDistance(boolean compareToCpdag) {
+        this.compareToCpdag = compareToCpdag;
     }
 
     /**
@@ -30,7 +36,7 @@ public class StructuralHammingDistance implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "SHD";
+        return "SHD " + (compareToCpdag ? "(CPDAG)" : "(PDAG)");
     }
 
     /**
@@ -38,7 +44,7 @@ public class StructuralHammingDistance implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Structural Hamming Distance";
+        return "Structural Hamming Distance" +(compareToCpdag ? " compared to CDAG of true PDAG" : " compared to true PDAG");
     }
 
     /**
@@ -46,8 +52,7 @@ public class StructuralHammingDistance implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(trueGraph, estGraph);
-        return comparison.getShd();
+        return GraphSearchUtils.structuralhammingdistance(trueGraph, estGraph, compareToCpdag);
     }
 
     /**

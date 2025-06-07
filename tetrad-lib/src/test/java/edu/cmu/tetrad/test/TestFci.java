@@ -555,7 +555,7 @@ public class TestFci {
             System.out.println("Correct PAG");
             System.out.println(truePag_);
 
-            Fci fci = new Fci(new MsepTest(trueMag_));
+            Fci fci = new Fci(new MsepTest(trueMag_)); //TODO FCI is failing again on this problem, need to go back and see how I fixed it before.
             fci.setVerbose(verbose);
             Graph estPag1 = fci.search();
             assertEquals(truePag_, estPag1);
@@ -571,6 +571,7 @@ public class TestFci {
             fcit.setStartWith(Fcit.START_WITH.GRASP);
             fcit.setCheckAdjacencySepsets(true);
 //            fcit.setPreserveMarkov(false);
+            fcit.setVerbose(true);
             Graph estPag3 = fcit.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
@@ -649,13 +650,13 @@ public class TestFci {
         boolean verbose = false;
 
         final String trueGraph = "Graph Nodes:\n" +
-                               "X1;X2;X4;X5;X6\n" +
-                               "\n" +
-                               "Graph Edges:\n" +
-                               "1. X1 o-o X4\n" +
-                               "2. X2 o-> X6\n" +
-                               "3. X4 o-> X5\n" +
-                               "4. X5 <-> X6";
+                                 "X1;X2;X4;X5;X6\n" +
+                                 "\n" +
+                                 "Graph Edges:\n" +
+                                 "1. X1 o-o X4\n" +
+                                 "2. X2 o-> X6\n" +
+                                 "3. X4 o-> X5\n" +
+                                 "4. X5 <-> X6";
 
         final String correctPag = "Graph Nodes:\n" +
                                   "X1;X2;X4;X5;X6\n" +
@@ -812,8 +813,6 @@ public class TestFci {
 //    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
-
-
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
             long seed = System.nanoTime();
@@ -821,7 +820,7 @@ public class TestFci {
 
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(20, 5, 30, 100,
+            Graph dag = RandomGraph.randomGraph(15, 4, 30, 100,
                     100, 100, false);
             MsepTest independence = new MsepTest(dag);
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
@@ -906,6 +905,7 @@ public class TestFci {
 //                fcit.setVerbose(true);
                 fcit.setDepth(7);
                 fcit.setCompleteRuleSetUsed(true);
+                fcit.setCheckAdjacencySepsets(false);
                 Graph pag = fcit.search();
 
                 if (!pag.paths().isMaximal()) {

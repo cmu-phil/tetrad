@@ -54,20 +54,20 @@ public class RecursiveBlocking {
 
         Set<Node> path = new HashSet<>();
         path.add(x);
-        boolean allBlocked = true;
+//        boolean allBlocked = true;
 
         for (Node b : graph.getAdjacentNodes(x)) {
             if (Thread.currentThread().isInterrupted()) {
                 return null;
             }
 
-            if (b == y) continue;
+//            if (b == y) continue;
 
-            Blockable blockable = findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
+            findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
 
-            if (blockable != Blockable.BLOCKED) {
-                allBlocked = false;
-            }
+//            if (blockable == Blockable.UNBLOCKABLE) {
+//                allBlocked = false;
+//            }
         }
 
         return z;
