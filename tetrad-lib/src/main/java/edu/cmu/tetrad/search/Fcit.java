@@ -371,10 +371,14 @@ public final class Fcit implements IGraphSearch {
                     if (verbose) {
                         TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     }
+
+                    Graph _pag = new EdgeListGraph(this.pag);
+
                     this.pag.removeEdge(x, y);
                     sepsets.set(x, y, cond);
-                    refreshGraph(x + " _||_ " + y + " | " + cond);
-                    continue EDGE;
+                    if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
+                        continue EDGE;
+                    }
                 }
             }
 
@@ -386,10 +390,14 @@ public final class Fcit implements IGraphSearch {
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
+
+                    Graph _pag = new EdgeListGraph(this.pag);
+
                     this.pag.removeEdge(x, y);
                     sepsets.set(x, y, cond);
-                    refreshGraph(x + " _||_ " + y + " | " + cond);
-                    continue EDGE;
+                    if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
+                        continue EDGE;
+                    }
                 }
             }
         }
@@ -491,7 +499,9 @@ public final class Fcit implements IGraphSearch {
      *
      * @param message A descriptive message indicating the context or purpose of the graph refresh operation.
      */
-    private void refreshGraph(String message) {
+    private boolean refreshGraph(String message) {
+        Graph _pag = new EdgeListGraph(this.pag);
+
         GraphUtils.reorientWithCircles(this.pag, superVerbose);
         GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
         adjustForExtraSepsets();
@@ -500,18 +510,27 @@ public final class Fcit implements IGraphSearch {
 
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
-        noteRejects(message);
+        if (!noteRejects(message)) {
+            this.pag = new EdgeListGraph(_pag);
+            return false;
+        } else {
+            return true;
+        }
     }
 
-    private void noteRejects(String message) {
+    private boolean noteRejects(String message) {
         if (!this.pag.paths().isLegalPag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Rejected: " + message);
             }
+
+            return false;
         } else {
             if (verbose) {
                 TetradLogger.getInstance().log("ACCEPTED: " + message);
             }
+
+            return true;
         }
     }
 
@@ -679,6 +698,8 @@ public final class Fcit implements IGraphSearch {
                             if (verbose) {
                                 TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
                             }
+
+                            Graph _pag = new EdgeListGraph(this.pag);
 
                             this.pag.removeEdge(x, y);
                             sepsets.set(x, y, b);
