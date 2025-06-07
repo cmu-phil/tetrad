@@ -215,13 +215,18 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         Set<Node> blocking;
 
+        // If you already have a sepset, use it.
         if (sepsetMap.get(x, y) != null) {
             blocking = sepsetMap.get(x, y);
-        } else if (blockingType == BlockingType.RECURSIVE) {
+
+        } else
+
+            // Else for the recursive option see if you can find a recursive sepset; this fails for Puzzle #2.
+            if (blockingType == BlockingType.RECURSIVE) {
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
                     maxLength, maxLength, preserveMarkovHelper, depth);
 
-            if (blocking == null) {
+            if (blocking == null) { // If it does fail, use FCI style reasoning.
                 blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
 
                 if (verbose && blocking != null) {
@@ -230,7 +235,10 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
 
             sepsetMap.set(x, y, blocking);
-        } else if (blockingType == BlockingType.GREEDY) {
+        } else
+
+            // Else for the greedy option, do FCI-style reasoning.
+            if (blockingType == BlockingType.GREEDY) {
             blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
             sepsetMap.set(x, y, blocking);
         } else {
