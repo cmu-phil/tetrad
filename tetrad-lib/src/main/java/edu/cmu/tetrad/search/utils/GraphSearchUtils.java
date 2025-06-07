@@ -1013,7 +1013,7 @@ public final class GraphSearchUtils {
      * Originally, Tsamardinos, I., Brown, L. E., and Aliferis, C. F. (2006). The max-min hill-climbing Bayesian network
      * structure learning algorithm. Machine learning, 65(1), 31-78.
      * <p>
-     * But using the formulation in Peters, J., & Bühlmann, P. (2015). Structural intervention distance for evaluating
+     * But using the formulation in Peters, J., &amp; Bühlmann, P. (2015). Structural intervention distance for evaluating
      * causal graphs. Neural computation, 27(3), 771-799.
      * <p>
      * Converts each graph (DAG or CPDAG) into its CPDAG before scoring.
