@@ -60,10 +60,6 @@ public final class Fcit implements IGraphSearch {
      */
     private final SepsetMap sepsets = new SepsetMap();
     /**
-     * Represents the current status or condition of the search.
-     */
-    private State state;
-    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -131,6 +127,7 @@ public final class Fcit implements IGraphSearch {
      * Oracle test but can reduce accuracy from data.
      */
     private boolean checkAdjacencySepsets = true;
+    private @NotNull Graph pag;
 
     /**
      * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
@@ -178,8 +175,6 @@ public final class Fcit implements IGraphSearch {
         }
 
         TetradLogger.getInstance().log("===Starting FCIT===");
-
-        this.state = new State();
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
         strategy.setSepsetMap(sepsets);
@@ -313,9 +308,9 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        state.setPag(GraphTransforms.dagToPag(dag));
+        this.pag = GraphTransforms.dagToPag(dag);
 
-        initialColliders = noteInitialColliders(best, state.getPag());
+        initialColliders = noteInitialColliders(best, this.pag);
 
         removeEdgesRecursively();
 
@@ -323,11 +318,11 @@ public final class Fcit implements IGraphSearch {
             removeEdgesSubsetsOfAdjacents();
         }
 
-        GraphUtils.reorientWithCircles(state.getPag(), superVerbose);
-        GraphUtils.recallInitialColliders(state.getPag(), initialColliders, knowledge);
+        GraphUtils.reorientWithCircles(this.pag, superVerbose);
+        GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
         adjustForExtraSepsets();
-        fciOrient.fciOrientbk(knowledge, state.getPag(), state.getPag().getNodes());
-        fciOrient.finalOrientation(state.getPag());
+        fciOrient.fciOrientbk(knowledge, this.pag, this.pag.getNodes());
+        fciOrient.finalOrientation(this.pag);
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -340,17 +335,17 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
-        return GraphUtils.replaceNodes(state.getPag(), nodes);
+        return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
     private void removeEdgesSubsetsOfAdjacents() throws InterruptedException {
         EDGE:
-        for (Edge edge : state.getPag().getEdges()) {
+        for (Edge edge : this.pag.getEdges()) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            List<Node> adjx = state.getPag().getAdjacentNodes(x);
-            List<Node> adjy = state.getPag().getAdjacentNodes(y);
+            List<Node> adjx = this.pag.getAdjacentNodes(x);
+            List<Node> adjy = this.pag.getAdjacentNodes(y);
             adjx.remove(y);
             adjy.remove(x);
 
@@ -364,7 +359,7 @@ public final class Fcit implements IGraphSearch {
                     if (verbose) {
                         TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     }
-                    state.getPag().removeEdge(x, y);
+                    this.pag.removeEdge(x, y);
                     sepsets.set(x, y, cond);
                     refreshGraph(x + " _||_ " + y + " | " + cond);
                     continue EDGE;
@@ -379,7 +374,7 @@ public final class Fcit implements IGraphSearch {
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
-                    state.getPag().removeEdge(x, y);
+                    this.pag.removeEdge(x, y);
                     sepsets.set(x, y, cond);
                     refreshGraph(x + " _||_ " + y + " | " + cond);
                     continue EDGE;
@@ -453,7 +448,7 @@ public final class Fcit implements IGraphSearch {
         // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
         // PMLR.
         for (Node b : best) {
-            var adj = state.getPag().getAdjacentNodes(b);
+            var adj = this.pag.getAdjacentNodes(b);
 
             for (int i = 0; i < adj.size(); i++) {
                 for (int j = i + 1; j < adj.size(); j++) {
@@ -461,7 +456,7 @@ public final class Fcit implements IGraphSearch {
                     Node y = adj.get(j);
 
                     if (GraphUtils.distinct(x, b, y)) {
-                        if (GraphUtils.colliderAllowed(state.getPag(), x, b, y, knowledge)) {
+                        if (GraphUtils.colliderAllowed(this.pag, x, b, y, knowledge)) {
                             if (pag.isDefCollider(x, b, y)) {// && !pag.isAdjacentTo(x, y)) {
                                 initialColliders.add(new Triple(x, b, y));
 
@@ -485,11 +480,11 @@ public final class Fcit implements IGraphSearch {
      * @param message A descriptive message indicating the context or purpose of the graph refresh operation.
      */
     private void refreshGraph(String message) {
-        GraphUtils.reorientWithCircles(state.getPag(), superVerbose);
-        GraphUtils.recallInitialColliders(state.getPag(), initialColliders, knowledge);
+        GraphUtils.reorientWithCircles(this.pag, superVerbose);
+        GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
         adjustForExtraSepsets();
-        fciOrient.fciOrientbk(knowledge, state.getPag(), state.getPag().getNodes());
-        fciOrient.finalOrientation(state.getPag());
+        fciOrient.fciOrientbk(knowledge, this.pag, this.pag.getNodes());
+        fciOrient.finalOrientation(this.pag);
 
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
@@ -497,7 +492,7 @@ public final class Fcit implements IGraphSearch {
     }
 
     private void noteRejects(String message) {
-        if (!state.getPag().paths().isLegalPag()) {
+        if (!this.pag.paths().isLegalPag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Rejected: " + message);
             }
@@ -530,8 +525,8 @@ public final class Fcit implements IGraphSearch {
             Node x = arr.get(0);
             Node y = arr.get(1);
 
-            List<Node> common = state.getPag().getAdjacentNodes(x);
-            common.retainAll(state.getPag().getAdjacentNodes(y));
+            List<Node> common = this.pag.getAdjacentNodes(x);
+            common.retainAll(this.pag.getAdjacentNodes(y));
 
             if (superVerbose) {
                 TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " from PAG.");
@@ -539,9 +534,9 @@ public final class Fcit implements IGraphSearch {
 
             for (Node node : common) {
                 if (!sepsets.get(x, y).contains(node)) {
-                    if (!state.getPag().isDefCollider(x, node, y)) {
-                        state.getPag().setEndpoint(x, node, Endpoint.ARROW);
-                        state.getPag().setEndpoint(y, node, Endpoint.ARROW);
+                    if (!this.pag.isDefCollider(x, node, y)) {
+                        this.pag.setEndpoint(x, node, Endpoint.ARROW);
+                        this.pag.setEndpoint(y, node, Endpoint.ARROW);
 
                         if (superVerbose) {
                             TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
@@ -583,7 +578,7 @@ public final class Fcit implements IGraphSearch {
 
         // The final orientation rules were applied just before this step, so this should list only
         // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(state.getPag(),
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag,
                 -1, false);
         Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
         for (DiscriminatingPath path : discriminatingPaths) {
@@ -597,7 +592,7 @@ public final class Fcit implements IGraphSearch {
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         EDGE:
-        for (Edge edge : state.getPag().getEdges()) {
+        for (Edge edge : this.pag.getEdges()) {
             if (superVerbose) {
                 TetradLogger.getInstance().log("Considering removing edge " + edge);
             }
@@ -613,7 +608,7 @@ public final class Fcit implements IGraphSearch {
             Set<Set<Node>> S = new HashSet<>();
 
             for (DiscriminatingPath path : paths) {
-                if (state.getPag().getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                if (this.pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
                     perhapsNotFollowed.add(path.getV());
                 }
             }
@@ -630,7 +625,7 @@ public final class Fcit implements IGraphSearch {
                 // Instead of newSingleThreadExecutor(), we use the shared 'executor'
                 Set<Node> _b;
                 try {
-                    _b = RecursiveBlocking.blockPathsRecursively(state.getPag(), x, y, Set.of(), notFollowed, -1);
+                    _b = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -645,14 +640,14 @@ public final class Fcit implements IGraphSearch {
                     continue;
                 }
 
-                List<Node> common = state.getPag().getAdjacentNodes(x);
-                common.retainAll(state.getPag().getAdjacentNodes(y));
+                List<Node> common = this.pag.getAdjacentNodes(x);
+                common.retainAll(this.pag.getAdjacentNodes(y));
 
                 SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
                 int[] choice2;
 
                 while ((choice2 = gen2.next()) != null) {
-                    if (!state.getPag().isAdjacentTo(x, y)) {
+                    if (!this.pag.isAdjacentTo(x, y)) {
                         break;
                     }
 
@@ -680,7 +675,7 @@ public final class Fcit implements IGraphSearch {
                                 TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
                             }
 
-                            state.getPag().removeEdge(x, y);
+                            this.pag.removeEdge(x, y);
                             sepsets.set(x, y, b);
                             refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)");
                             continue EDGE;
@@ -816,90 +811,4 @@ public final class Fcit implements IGraphSearch {
         INITIAL_GRAPH
     }
 
-    /**
-     * Represents the state of the algorithm during its execution.
-     * <p>
-     * This class is used to store and manage various components of the search process, including graphs, separation
-     * sets, and helper objects that enforce Markov properties. It provides methods for saving, restoring, and accessing
-     * these elements, enabling the algorithm to checkpoint and rollback its progress as needed.
-     */
-    private static class State {
-        /**
-         * Represents the Partial Ancestral Graph (PAG) currently being learned or maintained by the algorithm.
-         * <p>
-         * The PAG is a graph structure used in causal discovery to capture causal relationships between variables while
-         * accounting for potential latent variables. Initially set to null, this variable is updated during the
-         * execution of the algorithm as the relationships are inferred. It serves as the central representation of the
-         * model's learned causal structure.
-         */
-        private Graph pag = null;
-        /**
-         * Represents the most recently stored Partial Ancestral Graph (PAG) within the state of the algorithm. This
-         * graph captures causal structures identified during the most recent execution or checkpoint.
-         * <p>
-         * The `lastPag` variable is utilized during state restoration to revert to the previously inferred PAG. It is
-         * initialized to null and updated whenever a new checkpoint is created by the algorithm.
-         * <p>
-         * This variable plays a critical role in enabling rollback functionality and maintaining the integrity
-         */
-        private Graph lastPag = null;
-
-        /**
-         * Default constructor for the State class.
-         * <p>
-         * This constructor initializes a new instance of the State class without setting any specific field values. It
-         * is primarily used to create a State object that can later be configured using its various methods.
-         */
-        public State() {
-        }
-
-        /**
-         * Captures and stores the current state of several key fields in the algorithm for later restoration. This
-         * method creates copies of the current state of `pag.'. This copies is saved into respective field to preserve
-         * the state at that moment in time.
-         * <p>
-         * This operation is useful for checkpointing the algorithm's progress and facilitates rollback or review of
-         * previous states during the algorithm’s execution.
-         */
-        private void storeState() {
-            this.lastPag = new EdgeListGraph(this.pag);
-        }
-
-        /**
-         * Restores the previously saved state of various fields in the algorithm.
-         * <p>
-         * This method reinitializes the following components using their last saved states: (a) The PAG graph is
-         * restored to its previous state using the last known PAG. (b) The set of known CPDAG colliders is updated
-         * using the last recorded colliders. (c) The separation set map is restored from its last saved version. (d)
-         * The `PreserveMarkovHelper` object is reset to its previous state.
-         * <p>
-         * It also updates the search strategy with the restored separation set map, ensuring consistency with the
-         * previous checkpoint. This operation enables the algorithm to roll back or resume from a prior state if
-         * needed.
-         */
-        private void restoreState() {
-            this.pag = new EdgeListGraph(this.lastPag);
-        }
-
-        /**
-         * Represents the learned Partial Ancestral Graph (PAG) in the FCIT search algorithm. The PAG is a graphical
-         * representation that encodes causal relationships among variables that are consistent with the observed data
-         * and assumes the presence of latent confounders but no selection bias. It is initialized to null and is
-         * populated as the search algorithm progresses.
-         */
-        public Graph getPag() {
-            return pag;
-        }
-
-        /**
-         * Sets the Partial Ancestral Graph (PAG) to be used for representing causal relationships among variables in
-         * the algorithm.
-         *
-         * @param pag the PAG graph to be assigned to the current state. This graph encodes causal structures consistent
-         *            with the observed data, considering latent variables while excluding selection bias.
-         */
-        public void setPag(Graph pag) {
-            this.pag = pag;
-        }
-    }
 }
