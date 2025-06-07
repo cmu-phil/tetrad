@@ -223,27 +223,27 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             // Else for the recursive option see if you can find a recursive sepset; this fails for Puzzle #2.
             if (blockingType == BlockingType.RECURSIVE) {
-            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
-                    maxLength, maxLength, preserveMarkovHelper, depth);
+                blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
+                        maxLength, maxLength, preserveMarkovHelper, depth);
 
-            if (blocking == null) { // If it does fail, use FCI style reasoning.
-                blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+                if (blocking == null) { // If it does fail, use FCI style reasoning.
+                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
 
-                if (verbose && blocking != null) {
-                    TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
+                    if (verbose && blocking != null) {
+                        TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
+                    }
                 }
-            }
 
-            sepsetMap.set(x, y, blocking);
-        } else
+                sepsetMap.set(x, y, blocking);
+            } else
 
-            // Else for the greedy option, do FCI-style reasoning.
-            if (blockingType == BlockingType.GREEDY) {
-            blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-            sepsetMap.set(x, y, blocking);
-        } else {
-            throw new IllegalArgumentException("Unknown blocking type.");
-        }
+                // Else for the greedy option, do FCI-style reasoning.
+                if (blockingType == BlockingType.GREEDY) {
+                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+                    sepsetMap.set(x, y, blocking);
+                } else {
+                    throw new IllegalArgumentException("Unknown blocking type.");
+                }
 
         //  *         V
         // *         **            * is either an arrowhead, a tail, or a circle
@@ -258,14 +258,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 
-        if (blockingType == BlockingType.RECURSIVE) {
-            if (!(blocking.containsAll(path) && blocking.contains(w))) {
-                throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
-            }
-        }
-
-        if (blockingType == BlockingType.GREEDY && !blocking.containsAll(path)) {
-            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path.");
+        if (!(blocking.containsAll(path) && blocking.contains(w))) {
+            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
         }
 
         // Now at this point, for the recursive case, we simply need to know whether X _||_ Y | blocking. If so, we

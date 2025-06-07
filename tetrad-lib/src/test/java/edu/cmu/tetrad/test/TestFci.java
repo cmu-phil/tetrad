@@ -810,7 +810,7 @@ public class TestFci {
         }
     }
 
-    //    @Test
+//    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
 
