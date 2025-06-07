@@ -223,7 +223,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
                     maxLength, maxLength, preserveMarkovHelper, depth);
 
-            if (blocking == null || !test.checkIndependence(x, y, blocking).isIndependent()) {
+            if (!test.checkIndependence(x, y, blocking).isIndependent()) {
                 blocking = findAdjSetSepset(graph, x, y, path, v);
 
                 if (blocking != null) {
@@ -326,27 +326,27 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     }
 
     private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
-        Set<Node> blocking;
-        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+//        Set<Node> blocking;
+        return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
 
-        Set<Node> b1 = new HashSet<>(blocking);
-        b1.remove(v);
-
-        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
-
-        Set<Node> b2 = new HashSet<>(b1);
-        b2.add(v);
-
-        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
-
-        if (b1Indep) {
-            blocking = b1;
-        } else if (b2Indep) {
-            blocking = b2;
-        } else {
-            blocking = null;
-        }
-        return blocking;
+//        Set<Node> b1 = new HashSet<>(blocking);
+//        b1.remove(v);
+//
+//        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
+//
+//        Set<Node> b2 = new HashSet<>(b1);
+//        b2.add(v);
+//
+//        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
+//
+//        if (b1Indep) {
+//            blocking = b1;
+//        } else if (b2Indep) {
+//            blocking = b2;
+//        } else {
+//            blocking = null;
+//        }
+//        return blocking;
     }
 
     /**

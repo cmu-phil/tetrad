@@ -319,10 +319,17 @@ public final class Fcit implements IGraphSearch {
         state.storeState();
 
         removeEdgesRecursively();
+        refreshGraph("after recursion");
 
         if (checkAdjacencySepsets) {
             removeEdgesSubsetsOfAdjacents();
         }
+
+        GraphUtils.reorientWithCircles(state.getPag(), superVerbose);
+        GraphUtils.recallInitialColliders(state.getPag(), initialColliders, knowledge);
+        adjustForExtraSepsets();
+        fciOrient.fciOrientbk(knowledge, state.getPag(), state.getPag().getNodes());
+        fciOrient.finalOrientation(state.getPag());
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -363,10 +370,12 @@ public final class Fcit implements IGraphSearch {
                     sepsets.set(x, y, cond);
 
                     if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
-                        continue EDGE; // Because we removed the edge and it's a legal PAG
+//                        continue EDGE; // Because we removed the edge and it's a legal PAG
                     } else {
-                        continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
+//                        continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
                     }
+
+                    continue EDGE;
                 }
             }
 
@@ -382,10 +391,12 @@ public final class Fcit implements IGraphSearch {
                     sepsets.set(x, y, cond);
 
                     if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
-                        continue EDGE; // Because we removed the edge and it's a legal PAG
+//                        continue EDGE; // Because we removed the edge and it's a legal PAG
                     } else {
-                        continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
+//                        continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
                     }
+
+                    continue EDGE;
                 }
             }
         }
@@ -513,15 +524,18 @@ public final class Fcit implements IGraphSearch {
             if (verbose) {
                 TetradLogger.getInstance().log("Rejected: " + message);
             }
-            state.restoreState();
+//            state.restoreState();
             return false;
         } else {
             if (verbose) {
                 TetradLogger.getInstance().log("ACCEPTED: " + message);
             }
-            state.storeState();
-            return true;
+//            state.storeState();
+//            return true;
         }
+
+//        state.restoreState();
+        return true;
     }
 
     /**
@@ -655,11 +669,11 @@ public final class Fcit implements IGraphSearch {
                     TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + _b);
                 }
 
-//                // b will be null if the search did not conclude with a set known to either m-separate
-//                // or not m-separate x and y.
-//                if (b == null) {
-//                    continue;
-//                }
+                // b will be null if the search did not conclude with a set known to either m-separate
+                // or not m-separate x and y.
+                if (_b == null) {
+                    continue;
+                }
 
                 List<Node> common = state.getPag().getAdjacentNodes(x);
                 common.retainAll(state.getPag().getAdjacentNodes(y));
@@ -675,10 +689,18 @@ public final class Fcit implements IGraphSearch {
                     Set<Node> b = new HashSet<>(_b);
 
                     Set<Node> c = GraphUtils.asSet(choice2, common);
-                    b.removeAll(c);
+//                    b.removeAll(c);
 
-                    if (S.contains(b)) continue;
-                    S.add(new HashSet<>(b));
+                    for (Node n : c) {
+                        if (c.add(n))                                                                                                                                {
+                            b.add(n);
+                        } else {
+                            b.remove(n);
+                        }
+                    }
+
+//                    if (S.contains(b)) continue;
+//                    S.add(new HashSet<>(b));
 
                     if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
                         continue;
@@ -694,10 +716,12 @@ public final class Fcit implements IGraphSearch {
                             sepsets.set(x, y, b);
 
                             if (refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)")) {
-                                continue EDGE; // Because we removed the edge and it's a legal PAG.
+//                                continue EDGE; // Because we removed the edge and it's a legal PAG.
                             } else {
-                                continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
+//                                continue EDGE; // Because we found that removing the edge didn't move us to a legal PAG.
                             }
+
+                            continue EDGE;
                         }
 
                     } catch (InterruptedException e) {
