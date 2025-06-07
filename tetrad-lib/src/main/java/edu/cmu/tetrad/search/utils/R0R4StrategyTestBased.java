@@ -8,7 +8,6 @@ import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +32,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * class FciOrientDataExaminationStrategyTestBased.
      */
     private final IndependenceTest test;
-    private Graph mag;
     /**
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
@@ -223,22 +221,17 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
                     maxLength, maxLength, preserveMarkovHelper, depth);
 
-            if (!test.checkIndependence(x, y, blocking).isIndependent()) {
-                blocking = findAdjSetSepset(graph, x, y, path, v);
+            if (blocking == null) {
+                blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
 
-                if (blocking != null) {
-                    if (verbose) {
-                        TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
-                    }
+                if (verbose && blocking != null) {
+                    TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
                 }
-
-//                TetradLogger.getInstance().log("R4 Blocking found for " + x + ", " + y + ", " + blocking);
             }
 
             sepsetMap.set(x, y, blocking);
         } else if (blockingType == BlockingType.GREEDY) {
-            blocking = findAdjSetSepset(graph, x, y, path, v);
-
+            blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
             sepsetMap.set(x, y, blocking);
         } else {
             throw new IllegalArgumentException("Unknown blocking type.");
@@ -323,30 +316,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             return Pair.of(discriminatingPath, true);
         }
-    }
-
-    private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
-//        Set<Node> blocking;
-        return SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-
-//        Set<Node> b1 = new HashSet<>(blocking);
-//        b1.remove(v);
-//
-//        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
-//
-//        Set<Node> b2 = new HashSet<>(b1);
-//        b2.add(v);
-//
-//        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
-//
-//        if (b1Indep) {
-//            blocking = b1;
-//        } else if (b2Indep) {
-//            blocking = b2;
-//        } else {
-//            blocking = null;
-//        }
-//        return blocking;
     }
 
     /**

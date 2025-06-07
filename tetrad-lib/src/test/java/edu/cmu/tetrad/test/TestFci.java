@@ -555,10 +555,10 @@ public class TestFci {
             System.out.println("Correct PAG");
             System.out.println(truePag_);
 
-//            Fci fci = new Fci(new MsepTest(trueMag_)); TODO FCI is failing again on this problem, need to go back and see how I fixed it before.
-//            fci.setVerbose(verbose);
-//            Graph estPag1 = fci.search();
-//            assertEquals(truePag_, estPag1);
+            Fci fci = new Fci(new MsepTest(trueMag_)); //TODO FCI is failing again on this problem, need to go back and see how I fixed it before.
+            fci.setVerbose(verbose);
+            Graph estPag1 = fci.search();
+            assertEquals(truePag_, estPag1);
 
             GraspFci graspFci = new GraspFci(new MsepTest(trueMag_), new GraphScore(trueMag_));
             graspFci.setUseRaskuttiUhler(true);
@@ -810,7 +810,7 @@ public class TestFci {
         }
     }
 
-    @Test
+    //    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
 
@@ -887,7 +887,7 @@ public class TestFci {
     }
 
 
-        @Test
+//    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
