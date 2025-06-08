@@ -36,7 +36,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
      */
-    private BlockingType blockingType = BlockingType.RECURSIVE;
+    private BlockingType blockingType = BlockingType.GREEDY;
     /**
      * Private variable representing the knowledge.
      * <p>
@@ -254,7 +254,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // This is needed for greedy and anteriority methods, which return sepsets, not recursive, which always
         // returns a blocking set.
         if (blocking == null) {
-            TetradLogger.getInstance().log("Blocking set is null in R4.");
+//            TetradLogger.getInstance().log("Blocking set is null in R4.");
             throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 

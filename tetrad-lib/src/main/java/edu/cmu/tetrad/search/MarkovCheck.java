@@ -130,8 +130,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private double binomialPDep = Double.NaN;
     /**
      * The percentage of all samples to use when resampling for each conditional independence test.
+     * @deprecated 2025-6-8 Changed to fraction resample.
      */
-    private double percentResample = 1.0;
+    private double percentResample = Double.NaN;
+    /**
+     * The percentage of all samples to use when resampling for each conditional independence test.
+     */
+    private double fractionResample = 1.0;
     /**
      * The number of tests for the independent case.
      */
@@ -1186,11 +1191,12 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * Sets the percentage of all samples to use when resampling for each conditional independence test.
      *
-     * @param percentResample The percentage of all samples to use when resampling for each conditional independence
-     *                        test.
+     * @param fractionResample The fraction of all samples to use when resampling for each conditional independence
+     *                         test (0 to 1).
      */
-    public void setFractionResample(double percentResample) {
-        this.percentResample = percentResample;
+    public void setFractionResample(double fractionResample) {
+        this.fractionResample = fractionResample;
+        this.percentResample = fractionResample;
     }
 
     /**
@@ -1266,7 +1272,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @see MarkovCheckRecord
      */
     public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
-        setFractionResample(percentResample);
+        setFractionResample(fractionResample);
         double adInd = getAndersonDarlingP(true);
         double adDep = getAndersonDarlingP(false);
         double ksInd = getKsPValue(true);
@@ -1440,7 +1446,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 Set<Node> z = fact.getZ();
 
                 if (independenceTest instanceof RowsSettable) {
-                    List<Integer> rows = getSubsampleRows(percentResample);
+                    List<Integer> rows = getSubsampleRows(fractionResample);
 //                    List<Integer> rows = getBootstrapRows(1.0);
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
 
@@ -1864,7 +1870,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @param kdDep       The Kolmogorov-Smirnoff p-value for the dependent case.
      * @param fishInd     The Fisher combined p-value for the independent case.
      * @param fishDep     The Fisher combined p-value for the dependent case.
-     * @param binInd    The Binomial p-value for the independent case.
+     * @param binInd      The Binomial p-value for the independent case.
      * @param binDep      The Binomial p-value for the dependent case.
      * @param fracDepInd  The fraction of dependent judgments for the independent case.
      * @param fracDepDep  The fraction of dependent judgments for the dependent case.
