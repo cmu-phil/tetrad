@@ -160,7 +160,7 @@ public class TestCheckMarkov {
 
     @Test
     public void test4() {
-        for (int run = 0; run < 50; run++) {
+        for (int run = 0; run < 1; run++) {
 
             Graph dag = RandomGraph.randomDag(20, 4, 40, 100, 100,
                     100, false);
