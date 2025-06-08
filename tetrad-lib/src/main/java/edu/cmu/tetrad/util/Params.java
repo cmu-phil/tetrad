@@ -513,9 +513,9 @@ public final class Params {
      */
     public static final String PERCENT_DISCRETE = "percentDiscrete";
     /**
-     * Constant <code>PERCENT_RESAMPLE_SIZE="percentResampleSize"</code>
+     * Constant <code>FRACTION_RESAMPLE_SIZE="fractionResampleSize"</code>
      */
-    public static final String PERCENT_RESAMPLE_SIZE = "percentResampleSize";
+    public static final String FRACTION_RESAMPLE_SIZE = "fractionResampleSize";
     /**
      * Constant <code>POSSIBLE_DSEP_DONE="doPossibleDsep"</code>
      */
@@ -1062,7 +1062,7 @@ public final class Params {
             Params.NUM_LATENTS, Params.NUM_MEASURES, Params.NUM_RANDOMIZED_SEARCH_MODELS, Params.NUM_RUNS,
             Params.NUM_STRUCTURAL_EDGES, Params.NUM_STRUCTURAL_NODES, Params.NUMBER_RESAMPLING,
             Params.ORIENT_TOWARD_DCONNECTIONS, Params.ORIENT_VISIBLE_FEEDBACK_LOOPS, Params.OUTPUT_RBD,
-            Params.PENALTY_DISCOUNT, Params.PERCENT_DISCRETE, Params.PERCENT_RESAMPLE_SIZE, Params.DO_POSSIBLE_DSEP,
+            Params.PENALTY_DISCOUNT, Params.PERCENT_DISCRETE, Params.FRACTION_RESAMPLE_SIZE, Params.DO_POSSIBLE_DSEP,
             Params.PROB_CYCLE, Params.PROB_TWO_CYCLE, Params.RANDOM_SELECTION_SIZE, Params.RANDOMIZE_COLUMNS,
             Params.RCIT_NUM_FEATURES, Params.RESAMPLING_ENSEMBLE, Params.RESAMPLING_WITH_REPLACEMENT, Params.PRIOR_EQUIVALENT_SAMPLE_SIZE,
             Params.SAMPLE_SIZE, Params.SAVE_LATENT_VARS, Params.SCALE_FREE_ALPHA, Params.SCALE_FREE_BETA, Params.SCALE_FREE_DELTA_IN,
@@ -1076,7 +1076,7 @@ public final class Params {
     private static final Set<String> BOOTSTRAPPING_PARAMS = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET,
             Params.NUMBER_RESAMPLING,
-            Params.PERCENT_RESAMPLE_SIZE,
+            Params.FRACTION_RESAMPLE_SIZE,
 //            Params.RESAMPLING_ENSEMBLE,
             Params.RESAMPLING_WITH_REPLACEMENT,
             Params.BOOTSTRAPPING_NUM_THREADS,

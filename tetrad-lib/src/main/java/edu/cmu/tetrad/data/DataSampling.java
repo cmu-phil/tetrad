@@ -78,7 +78,7 @@ public final class DataSampling {
     public static List<DataSet> createDataSamples(DataSet dataSet, Parameters parameters, RandomGenerator randomGenerator) {
         List<DataSet> datasets = new LinkedList<>();
 
-        int sampleSize = (int) (dataSet.getNumRows() * (parameters.getInt(Params.PERCENT_RESAMPLE_SIZE) / 100.0));
+        int sampleSize = (int) (dataSet.getNumRows() * (parameters.getInt(Params.FRACTION_RESAMPLE_SIZE) / 100.0));
         boolean isResamplingWithReplacement = parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT);
         int[] selectedColumns = IntStream.range(0, dataSet.getNumColumns()).toArray();  // select all data columns
         for (int i = 0; i < parameters.getInt(Params.NUMBER_RESAMPLING) && !Thread.currentThread().isInterrupted(); i++) {

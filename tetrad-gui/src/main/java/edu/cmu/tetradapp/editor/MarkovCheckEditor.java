@@ -48,15 +48,15 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
-import java.awt.Point;
 import java.awt.*;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.prefs.Preferences;
 import java.util.regex.PatternSyntaxException;
@@ -112,7 +112,7 @@ public class MarkovCheckEditor extends JPanel {
     /**
      * The label for the fraction of p-values less than the alpha level.
      */
-    private final DoubleTextField percent;
+    private final DoubleTextField fraction;
     /**
      * A JCheckBox field in the MarkovCheckEditor class that allows the user to specify whether extraneous variables
      * should be removed in the analysis. This option helps in simplifying the dataset by excluding irrelevant or
@@ -394,36 +394,42 @@ public class MarkovCheckEditor extends JPanel {
         JButton sample = new JButton("Sample");
         JButton addSample = new JButton("Add Sample");
 
-        this.percent = new DoubleTextField(Preferences.userRoot().getDouble("PercentSample", 0.5), 4, new DecimalFormat("0.0###"));
-
-        JLabel percentSampleLabel;
-        if (model.getMarkovCheck().getIndependenceTest().getData() != null) {
-            percentSampleLabel = new JLabel("% Sample:");
-        } else if (!(model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable)) {
-            percentSampleLabel = new JLabel("(Test cannot be subsampled)");
+        if (model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable) {
+            this.fraction = new DoubleTextField(Preferences.userRoot().getDouble("FractionSample", 0.5), 4, new DecimalFormat("0.0###"));
+            this.fraction.setEditable(true);
         } else {
-            percentSampleLabel = new JLabel("(Not tabular data)");
+            this.fraction = new DoubleTextField(1.0, 4, new DecimalFormat("0.0###"));
+            this.fraction.setEditable(false);
+        }
+
+        JLabel fractionSampleLabel;
+        if (!(model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable)) {
+            fractionSampleLabel = new JLabel("(Test cannot be subsampled)");
+        } else if (model.getMarkovCheck().getIndependenceTest().getData() != null) {
+            fractionSampleLabel = new JLabel("% Sample:");
+        } else {
+            fractionSampleLabel = new JLabel("(Not tabular data)");
         }
 
         sample.addActionListener(e -> new WatchedProcess() {
             @Override
             public void watch() {
-                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, percent, true);
+                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, fraction, true);
             }
         });
 
         addSample.addActionListener(e -> new WatchedProcess() {
             @Override
             public void watch() {
-                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, percent, false);
+                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, fraction, false);
             }
         });
 
-        percent.setFilter((value, oldValue) -> {
+        fraction.setFilter((value, oldValue) -> {
             if (value < 0.0 || value > 1.0) {
                 return oldValue;
             } else {
-                Preferences.userRoot().put("PercentSample", value + "");
+                Preferences.userRoot().put("FractionSample", value + "");
                 return value;
             }
         });
@@ -459,11 +465,11 @@ public class MarkovCheckEditor extends JPanel {
         new WatchedProcess() {
             @Override
             public void watch() {
-                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, percent, false);
+                refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, fraction, false);
             }
         };
 
-        initComponents(params, sample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables, checkDependentDistribution, percentSampleLabel);
+        initComponents(params, sample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables, checkDependentDistribution, fractionSampleLabel);
     }
 
     /**
@@ -482,7 +488,7 @@ public class MarkovCheckEditor extends JPanel {
                 
                 If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking the dependent distribution, one hopes that this list is non-empty, in which case this first bar will be especially high since high p-values are examples where the graph is unfaithful to the distribution. These are possibly for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.
                 
-                To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less than this alpha level if the distribution of p-values is non-uniform.
+                To make it especially clear, we give two statistics in the interface. The first is the fraction of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less than this alpha level if the distribution of p-values is non-uniform.
                 `
                 If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.
                 
@@ -594,10 +600,244 @@ public class MarkovCheckEditor extends JPanel {
         return flipEscapes;
     }
 
+    /**
+     * Creates a parameters panel for the given independence wrapper and parameters.
+     *
+     * @param independenceWrapper The independence wrapper implementation.
+     * @param params              The parameters for the independence test.
+     * @return The JPanel containing the parameters panel.
+     */
+    private static JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
+        Set<String> testParameters = new HashSet<>(independenceWrapper.getParameters());
+        return createParamsPanel(testParameters, params);
+    }
+
+    /**
+     * Creates a parameters panel for the given set of parameters and Parameters object.
+     *
+     * @param params     The set of parameter names.
+     * @param parameters The Parameters object containing the parameter values.
+     * @return The JPanel containing the parameters panel.
+     */
+    public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
+
+        Box paramsBox = Box.createVerticalBox();
+
+        Box[] boxes = toArray(createParameterComponents(params, parameters));
+        int lastIndex = boxes.length - 1;
+        for (int i = 0; i < lastIndex; i++) {
+            paramsBox.add(boxes[i]);
+            paramsBox.add(Box.createVerticalStrut(10));
+        }
+        paramsBox.add(boxes[lastIndex]);
+
+        panel.add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    /**
+     * Creates a map of parameter components for the given set of parameters and Parameters object.
+     *
+     * @param params     The set of parameter names.
+     * @param parameters The Parameters object containing the parameter values.
+     * @return A map of parameter names to Box components.
+     */
+    private static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
+        return params.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e)),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
+                        },
+                        TreeMap::new));
+    }
+
+    /**
+     * Creates a parameter component based on the given parameter, Parameters, and ParamDescription.
+     *
+     * @param parameter  The name of the parameter.
+     * @param parameters The Parameters object containing the parameter values.
+     * @param paramDesc  The ParamDescription object with information about the parameter.
+     * @return A Box component representing the parameter component.
+     * @throws IllegalArgumentException If the default value type is unexpected.
+     */
+    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+        JComponent component;
+        Object defaultValue = paramDesc.getDefaultValue();
+        if (defaultValue instanceof Double) {
+            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+        } else if (defaultValue instanceof Integer) {
+            int lowerBoundInt = paramDesc.getLowerBoundInt();
+            int upperBoundInt = paramDesc.getUpperBoundInt();
+            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+        } else if (defaultValue instanceof Long) {
+            long lowerBoundLong = paramDesc.getLowerBoundLong();
+            long upperBoundLong = paramDesc.getUpperBoundLong();
+            component = getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundLong, upperBoundLong);
+        } else if (defaultValue instanceof Boolean) {
+            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+        } else if (defaultValue instanceof String) {
+            component = getStringField(parameter, parameters, (String) defaultValue);
+        } else {
+            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+        }
+
+        Box paramRow = Box.createHorizontalBox();
+
+        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        String longDescription = paramDesc.getLongDescription();
+        if (longDescription != null) {
+            paramLabel.setToolTipText(longDescription);
+        }
+        paramRow.add(paramLabel);
+        paramRow.add(Box.createHorizontalGlue());
+        paramRow.add(component);
+
+        return paramRow;
+    }
+
+    /**
+     * Returns a DoubleTextField with specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the DoubleTextField.
+     * @param lowerBound   The lower bound for valid values.
+     * @param upperBound   The upper bound for valid values.
+     * @return A DoubleTextField with the specified parameters.
+     */
+    private static DoubleTextField getDoubleField(String parameter, Parameters parameters,
+                                                  double defaultValue, double lowerBound, double upperBound) {
+        return ParameterComponents.getDoubleField(parameter, parameters, defaultValue, lowerBound, upperBound);
+    }
+
+    /**
+     * Returns an IntTextField with the specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the IntTextField.
+     * @param lowerBound   The lower bound for valid values.
+     * @param upperBound   The upper bound for valid values.
+     * @return An IntTextField with the specified parameters.
+     */
+    private static IntTextField getIntTextField(String parameter, Parameters parameters,
+                                                int defaultValue, double lowerBound, double upperBound) {
+        return ParameterComponents.getIntTextField(parameter, parameters, defaultValue, lowerBound, upperBound);
+    }
+
+    /**
+     * Returns a LongTextField object with the specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the LongTextField.
+     * @param lowerBound   The lower bound for valid values.
+     * @param upperBound   The upper bound for valid values.
+     * @return A LongTextField object with the specified parameters.
+     */
+    private static LongTextField getLongTextField(String parameter, Parameters parameters,
+                                                  long defaultValue, long lowerBound, long upperBound) {
+        LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    /**
+     * Creates a boolean selection box with Yes and No radio buttons.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the boolean parameter
+     */
+    private static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+        Box selectionBox = Box.createHorizontalBox();
+
+        JRadioButton yesButton = new JRadioButton("Yes");
+        JRadioButton noButton = new JRadioButton("No");
+
+        // Button group to ensure only one option can be selected
+        ButtonGroup selectionBtnGrp = new ButtonGroup();
+        selectionBtnGrp.add(yesButton);
+        selectionBtnGrp.add(noButton);
+
+        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+
+        // Set default selection
+        if (aBoolean) {
+            yesButton.setSelected(true);
+        } else {
+            noButton.setSelected(true);
+        }
+
+        // Add to containing box
+        selectionBox.add(yesButton);
+        selectionBox.add(noButton);
+
+        // Event listener
+        yesButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, true);
+            }
+        });
+
+        // Event listener
+        noButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, false);
+            }
+        });
+
+        return selectionBox;
+    }
+
+    /**
+     * Returns a StringTextField object with the specified parameters.
+     *
+     * @param parameter    The name of the parameter.
+     * @param parameters   The Parameters object containing the parameter values.
+     * @param defaultValue The default value for the StringTextField.
+     * @return A StringTextField object with the specified parameters.
+     */
+    private static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        return PathsAction.getStringField(parameter, parameters, defaultValue);
+    }
+
     private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane,
                                 JLabel conditioningSetsLabel, JCheckBox removeExtranenousVariables,
                                 JCheckBox checkDependentDistribution,
-                                JLabel percentSampleLabel) {
+                                JLabel fractionSampleLabel) {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -626,9 +866,9 @@ public class MarkovCheckEditor extends JPanel {
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(addSample)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(percentSampleLabel)
+                                                        .addComponent(fractionSampleLabel)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(percent, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)))
+                                                        .addComponent(fraction, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)))
                                         .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())
         );
@@ -641,8 +881,8 @@ public class MarkovCheckEditor extends JPanel {
                                 .addComponent(params)
                                 .addComponent(resample)
                                 .addComponent(addSample)
-                                .addComponent(percentSampleLabel)
-                                .addComponent(percent, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(fractionSampleLabel)
+                                .addComponent(fraction, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -658,7 +898,7 @@ public class MarkovCheckEditor extends JPanel {
 
     private void refreshResult(MarkovCheckIndTestModel model, JTable tableIndep, JTable tableDep,
                                AbstractTableModel tableModelIndep, AbstractTableModel tableModelDep,
-                               DoubleTextField percent, boolean clear) {
+                               DoubleTextField fraction, boolean clear) {
         new WatchedProcess() {
             @Override
             public void watch() {
@@ -669,7 +909,7 @@ public class MarkovCheckEditor extends JPanel {
 
                 model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
 
-                model.getMarkovCheck().setFractionResample(percent.getValue());
+                model.getMarkovCheck().setFractionResample(fraction.getValue());
                 model.getMarkovCheck().generateResults(true, clear);
 
                 if (checkDependentDistribution.isSelected()) {
@@ -689,34 +929,6 @@ public class MarkovCheckEditor extends JPanel {
                 updateTables(model, tableIndep, tableDep);
             }
         };
-
-//        SwingUtilities.invokeLater(() -> {
-//            setTest();
-//
-//            tableModelIndep.fireTableDataChanged();
-//            tableModelDep.fireTableDataChanged();
-//
-//            model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
-//
-//            model.getMarkovCheck().setPercentResample(percent.getValue());
-//            model.getMarkovCheck().generateResults(true, clear);
-//
-//            if (checkDependentDistribution.isSelected()) {
-//                if (clear) {
-//                    model.getMarkovCheck().generateResults(true, true);
-//                    model.getMarkovCheck().generateResults(false, false);
-//                } else {
-//                    model.getMarkovCheck().generateResults(false, false);
-//                    model.getMarkovCheck().generateResults(false, false);
-//                }
-//            } else {
-//                model.getMarkovCheck().generateResults(true, clear);
-//            }
-//
-//            tableModelIndep.fireTableDataChanged();
-//            tableModelDep.fireTableDataChanged();
-//            updateTables(model, tableIndep, tableDep);
-//        });
     }
 
     private void setTest() {
@@ -1110,6 +1322,8 @@ public class MarkovCheckEditor extends JPanel {
         }
     }
 
+    // Parameter panel code from Kevin Bui.
+
     /**
      * Performs the action of opening a session from a file.
      */
@@ -1498,8 +1712,6 @@ public class MarkovCheckEditor extends JPanel {
         }
     }
 
-    // Parameter panel code from Kevin Bui.
-
     /**
      * Refreshes the test list in the GUI. Retrieves the data type of the data set. Removes all items from the test
      * combo box. Retrieves the independence test models for the given data type. Adds the independence test models to
@@ -1521,240 +1733,6 @@ public class MarkovCheckEditor extends JPanel {
         this.indTestJComboBox.setEnabled(this.indTestJComboBox.getItemCount() > 0);
 
         indTestJComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
-    }
-
-    /**
-     * Creates a parameters panel for the given independence wrapper and parameters.
-     *
-     * @param independenceWrapper The independence wrapper implementation.
-     * @param params              The parameters for the independence test.
-     * @return The JPanel containing the parameters panel.
-     */
-    private static JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
-        Set<String> testParameters = new HashSet<>(independenceWrapper.getParameters());
-        return createParamsPanel(testParameters, params);
-    }
-
-    /**
-     * Creates a parameters panel for the given set of parameters and Parameters object.
-     *
-     * @param params     The set of parameter names.
-     * @param parameters The Parameters object containing the parameter values.
-     * @return The JPanel containing the parameters panel.
-     */
-    public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
-
-        Box paramsBox = Box.createVerticalBox();
-
-        Box[] boxes = toArray(createParameterComponents(params, parameters));
-        int lastIndex = boxes.length - 1;
-        for (int i = 0; i < lastIndex; i++) {
-            paramsBox.add(boxes[i]);
-            paramsBox.add(Box.createVerticalStrut(10));
-        }
-        paramsBox.add(boxes[lastIndex]);
-
-        panel.add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
-
-        return panel;
-    }
-
-    /**
-     * Creates a map of parameter components for the given set of parameters and Parameters object.
-     *
-     * @param params     The set of parameter names.
-     * @param parameters The Parameters object containing the parameter values.
-     * @return A map of parameter names to Box components.
-     */
-    private static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
-        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
-        return params.stream()
-                .collect(Collectors.toMap(
-                        Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e)),
-                        (u, v) -> {
-                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
-                        },
-                        TreeMap::new));
-    }
-
-    /**
-     * Creates a parameter component based on the given parameter, Parameters, and ParamDescription.
-     *
-     * @param parameter  The name of the parameter.
-     * @param parameters The Parameters object containing the parameter values.
-     * @param paramDesc  The ParamDescription object with information about the parameter.
-     * @return A Box component representing the parameter component.
-     * @throws IllegalArgumentException If the default value type is unexpected.
-     */
-    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
-        JComponent component;
-        Object defaultValue = paramDesc.getDefaultValue();
-        if (defaultValue instanceof Double) {
-            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
-            double upperBoundDouble = paramDesc.getUpperBoundDouble();
-            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
-        } else if (defaultValue instanceof Integer) {
-            int lowerBoundInt = paramDesc.getLowerBoundInt();
-            int upperBoundInt = paramDesc.getUpperBoundInt();
-            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
-        } else if (defaultValue instanceof Long) {
-            long lowerBoundLong = paramDesc.getLowerBoundLong();
-            long upperBoundLong = paramDesc.getUpperBoundLong();
-            component = getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundLong, upperBoundLong);
-        } else if (defaultValue instanceof Boolean) {
-            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
-        } else if (defaultValue instanceof String) {
-            component = getStringField(parameter, parameters, (String) defaultValue);
-        } else {
-            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
-        }
-
-        Box paramRow = Box.createHorizontalBox();
-
-        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
-        String longDescription = paramDesc.getLongDescription();
-        if (longDescription != null) {
-            paramLabel.setToolTipText(longDescription);
-        }
-        paramRow.add(paramLabel);
-        paramRow.add(Box.createHorizontalGlue());
-        paramRow.add(component);
-
-        return paramRow;
-    }
-
-    /**
-     * Returns a DoubleTextField with specified parameters.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the DoubleTextField.
-     * @param lowerBound   The lower bound for valid values.
-     * @param upperBound   The upper bound for valid values.
-     * @return A DoubleTextField with the specified parameters.
-     */
-    private static DoubleTextField getDoubleField(String parameter, Parameters parameters,
-                                           double defaultValue, double lowerBound, double upperBound) {
-        return ParameterComponents.getDoubleField(parameter, parameters, defaultValue, lowerBound, upperBound);
-    }
-
-    /**
-     * Returns an IntTextField with the specified parameters.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the IntTextField.
-     * @param lowerBound   The lower bound for valid values.
-     * @param upperBound   The upper bound for valid values.
-     * @return An IntTextField with the specified parameters.
-     */
-    private static IntTextField getIntTextField(String parameter, Parameters parameters,
-                                         int defaultValue, double lowerBound, double upperBound) {
-        return ParameterComponents.getIntTextField(parameter, parameters, defaultValue, lowerBound, upperBound);
-    }
-
-    /**
-     * Returns a LongTextField object with the specified parameters.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the LongTextField.
-     * @param lowerBound   The lower bound for valid values.
-     * @param upperBound   The upper bound for valid values.
-     * @return A LongTextField object with the specified parameters.
-     */
-    private static LongTextField getLongTextField(String parameter, Parameters parameters,
-                                           long defaultValue, long lowerBound, long upperBound) {
-        LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
-
-        field.setFilter((value, oldValue) -> {
-            if (value == field.getValue()) {
-                return oldValue;
-            }
-
-            if (value < lowerBound) {
-                return oldValue;
-            }
-
-            if (value > upperBound) {
-                return oldValue;
-            }
-
-            try {
-                parameters.set(parameter, value);
-            } catch (Exception e) {
-                // Ignore.
-            }
-
-            return value;
-        });
-
-        return field;
-    }
-
-    /**
-     * Creates a boolean selection box with Yes and No radio buttons.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the boolean parameter
-     */
-    private static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
-        Box selectionBox = Box.createHorizontalBox();
-
-        JRadioButton yesButton = new JRadioButton("Yes");
-        JRadioButton noButton = new JRadioButton("No");
-
-        // Button group to ensure only one option can be selected
-        ButtonGroup selectionBtnGrp = new ButtonGroup();
-        selectionBtnGrp.add(yesButton);
-        selectionBtnGrp.add(noButton);
-
-        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
-
-        // Set default selection
-        if (aBoolean) {
-            yesButton.setSelected(true);
-        } else {
-            noButton.setSelected(true);
-        }
-
-        // Add to containing box
-        selectionBox.add(yesButton);
-        selectionBox.add(noButton);
-
-        // Event listener
-        yesButton.addActionListener((e) -> {
-            JRadioButton button = (JRadioButton) e.getSource();
-            if (button.isSelected()) {
-                parameters.set(parameter, true);
-            }
-        });
-
-        // Event listener
-        noButton.addActionListener((e) -> {
-            JRadioButton button = (JRadioButton) e.getSource();
-            if (button.isSelected()) {
-                parameters.set(parameter, false);
-            }
-        });
-
-        return selectionBox;
-    }
-
-    /**
-     * Returns a StringTextField object with the specified parameters.
-     *
-     * @param parameter    The name of the parameter.
-     * @param parameters   The Parameters object containing the parameter values.
-     * @param defaultValue The default value for the StringTextField.
-     * @return A StringTextField object with the specified parameters.
-     */
-    private static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
-        return PathsAction.getStringField(parameter, parameters, defaultValue);
     }
 
     /**

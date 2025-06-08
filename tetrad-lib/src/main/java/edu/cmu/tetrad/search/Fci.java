@@ -208,6 +208,7 @@ public final class Fci implements IGraphSearch {
                 knowledge, verbose);
         strategy.setDepth(-1);
         strategy.setMaxLength(-1);
+        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);

@@ -158,7 +158,41 @@ public class TestCheckMarkov {
         }
     }
 
-//    @Test
+    @Test
+    public void test4() {
+        for (int run = 0; run < 50; run++) {
+
+            Graph dag = RandomGraph.randomDag(20, 4, 40, 100, 100,
+                    100, false);
+            SemPm pm = new SemPm(dag);
+            SemIm im = new SemIm(pm);
+            DataSet data = im.simulateData(10000, false);
+
+            IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(data), 0.01);
+            SemBicScore score = new SemBicScore(data, 1, true);
+
+            GraspFci alg = new GraspFci(test, score);
+            alg.setVerbose(false);
+            alg.setDepth(7);
+            alg.setCompleteRuleSetUsed(false);
+            Graph pag;
+
+            try {
+                pag = alg.search();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            MarkovCheck markovCheck = new MarkovCheck(pag, test, ConditioningSetType.ORDERED_LOCAL_MARKOV_MAG);
+            markovCheck.setFractionResample(1.0);
+            markovCheck.generateResults(true, true); // Note the ordered local Markov property only returns indep case.
+
+            System.out.println("Run # " + (run + 1) + " num tests indep = " + markovCheck.getNumTests(true));
+        }
+    }
+
+
+    //    @Test
     public void testGaussianDAGPrecisionRecallForLocalOnMarkovBlanket() {
 //        Graph trueGraph = RandomGraph.randomDag(100, 0, 400, 100, 100, 100, false);
         Graph trueGraph = RandomGraph.randomDag(80, 0, 80, 100, 100, 100, false);
