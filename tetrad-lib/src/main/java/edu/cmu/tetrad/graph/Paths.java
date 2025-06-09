@@ -393,8 +393,7 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a legal mag, false otherwise
      */
     public boolean isLegalMag() {
-        List<Node> selection = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+        List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         return GraphSearchUtils.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
     }
@@ -405,8 +404,7 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a Legal PAG, false otherwise
      */
     public boolean isLegalPag() {
-        List<Node> selection = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+        List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
         return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
@@ -658,8 +656,7 @@ public class Paths implements TetradSerializable {
      *                           edges in one direction or the other.
      * @return a set of paths between node1 and node2 that satisfy the conditions
      */
-    public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
-                                    boolean allowSelectionBias) {
+    public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
         allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, -1, maxLength, conditionSet, null, allowSelectionBias);
         return paths;
@@ -677,8 +674,7 @@ public class Paths implements TetradSerializable {
      * @param allowSelectionBias true if selection bias is allowed, false otherwise
      * @return a set of lists representing all paths between node1 and node2
      */
-    public Set<List<Node>> allPaths(Node node1, Node node2, int minLength, int maxLength, Set<Node> conditionSet,
-                                    Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+    public Set<List<Node>> allPaths(Node node1, Node node2, int minLength, int maxLength, Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
         allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
         return paths;
@@ -693,15 +689,13 @@ public class Paths implements TetradSerializable {
      * @param allowSelectionBias Determines whether to allow selection bias when choosing the next node to visit.
      * @return A set containing all generated paths as lists of nodes.
      */
-    public Set<List<Node>> allPathsOutOf(Node node1, int maxLength, Set<Node> conditionSet,
-                                         boolean allowSelectionBias) {
+    public Set<List<Node>> allPathsOutOf(Node node1, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
         allPathsVisitOutOf(null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
         return paths;
     }
 
-    private void allPathsVisit(Node node1, Node node2, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int minLength, int maxLength,
-                               Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+    private void allPathsVisit(Node node1, Node node2, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int minLength, int maxLength, Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         if (minLength != -1 && path.size() - 1 < minLength) {
             return;
         }
@@ -755,8 +749,7 @@ public class Paths implements TetradSerializable {
         pathSet.remove(node1);
     }
 
-    private void allPathsVisitOutOf(Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
-                                    Set<Node> conditionSet, boolean allowSelectionBias) {
+    private void allPathsVisitOutOf(Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
         }
@@ -1452,8 +1445,7 @@ public class Paths implements TetradSerializable {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
-                      || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
+                if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y) || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
                     continue;
                 }
             }
@@ -1475,17 +1467,15 @@ public class Paths implements TetradSerializable {
      * @param selectionVariables set of selection variables (Z)
      * @return true iff there is an inducing path from x to y
      */
-    public boolean existsInducingPathBFS(Node x,
-                                         Node y,
-                                         Set<Node> selectionVariables) {
+    public boolean existsInducingPathBFS(Node x, Node y, Set<Node> selectionVariables) {
 
-        if (x.getNodeType() != NodeType.MEASURED ||
-            y.getNodeType() != NodeType.MEASURED) {
+        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException("x and y must be measured nodes");
         }
 
         // State = (prev, curr, path-so-far).
-        record State(Node prev, Node curr, LinkedList<Node> path) {}
+        record State(Node prev, Node curr, LinkedList<Node> path) {
+        }
 
         Queue<State> queue = new LinkedList<>();
 
@@ -1503,9 +1493,9 @@ public class Paths implements TetradSerializable {
 
         // Standard BFS loop
         while (!queue.isEmpty()) {
-            State s       = queue.remove();
-            Node  a       = s.prev();
-            Node  b       = s.curr();
+            State s = queue.remove();
+            Node a = s.prev();
+            Node b = s.curr();
             LinkedList<Node> path = s.path();     // already contains a and b
 
             for (Node c : graph.getAdjacentNodes(b)) {
@@ -1514,15 +1504,11 @@ public class Paths implements TetradSerializable {
                 if (path.contains(c)) continue;   // avoid cycles
 
                 // --- Same admissibility checks as the DFS version -----------------
-                if (b.getNodeType() == NodeType.MEASURED &&
-                    !graph.isDefCollider(a, b, c)) {
+                if (b.getNodeType() == NodeType.MEASURED && !graph.isDefCollider(a, b, c)) {
                     continue;
                 }
 
-                if (graph.isDefCollider(a, b, c) &&
-                    !(graph.paths().isAncestorOf(b, x) ||
-                      graph.paths().isAncestorOf(b, y) ||
-                      graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
+                if (graph.isDefCollider(a, b, c) && !(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y) || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
                     continue;
                 }
                 // ------------------------------------------------------------------
@@ -2297,6 +2283,13 @@ public class Paths implements TetradSerializable {
      * 1.  PUBLIC ENTRY POINT
      *====================================================================*/
 
+    /**
+     * Returns true if the edge form A to B is a definitely visible edge in a PAG.
+     *
+     * @param A The one node.
+     * @param B The other node.
+     * @return True if so.
+     */
     public boolean defVisiblePag(Node A, Node B) {
 
         // Sanity: we only care about directed A → B edges that exist
@@ -2326,10 +2319,8 @@ public class Paths implements TetradSerializable {
      *====================================================================*/
 
     /**
-     * True iff there exists a collider path   C = v0 … vk = A (k ≥ 1)
-     * that is arrow-headed into A and whose **interior** vertices are all
-     * parents of B.  Endpoints C and A themselves are *not* required to
-     * point to B.
+     * True iff there exists a collider path   C = v0 … vk = A (k ≥ 1) that is arrow-headed into A and whose
+     * **interior** vertices are all parents of B.  Endpoints C and A themselves are *not* required to point to B.
      */
     private boolean existsColliderPathInto(Node C, Node A, Node B) {
         return dfsColliderPath(null, C, A, B, new HashSet<>());
@@ -2351,8 +2342,7 @@ public class Paths implements TetradSerializable {
 
         /* (ii) Endpoint reached: arrowhead into A required */
         if (cur.equals(targetA)) {
-            return prev != null
-                   && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
+            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
         }
 
         /* (iii) DFS expansion with collider check */
@@ -2362,8 +2352,7 @@ public class Paths implements TetradSerializable {
 
             // collider requirement applies once we *have* a predecessor
             if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
-                if (dfsColliderPath(cur, nxt, targetA, B, onBranch))
-                    return true;
+                if (dfsColliderPath(cur, nxt, targetA, B, onBranch)) return true;
             }
         }
         onBranch.remove(cur);
@@ -2527,7 +2516,6 @@ public class Paths implements TetradSerializable {
 //        path.remove(cur);            // back-track for other branches
 //        return false;
 //    }
-
 
 
 //    private boolean existsColliderPathInto(Node C, Node A, Node B) {
@@ -2953,8 +2941,7 @@ public class Paths implements TetradSerializable {
      * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;. Return an smpty list if source ==
      * target or there is no amenable path from source to target.
      */
-    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
-                                          int nearWhichEndpoint, int maxPathLength) {
+    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint, int nearWhichEndpoint, int maxPathLength) {
         if (source == target) {
             return new ArrayList<>();
 //            throw new IllegalArgumentException("Source and target nodes must be different.");
@@ -2998,8 +2985,7 @@ public class Paths implements TetradSerializable {
         Set<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
 
         if (mpdag || mag) {
-            backdoorPaths.removeIf(path -> path.size() < 2 ||
-                                           !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
+            backdoorPaths.removeIf(path -> path.size() < 2 || !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
         } else {
             backdoorPaths.removeIf(path -> {
                 if (path.size() < 2) {
@@ -3008,12 +2994,7 @@ public class Paths implements TetradSerializable {
                 Node x = path.getFirst();
                 Node w = path.get(1);
                 Node y = target;
-                return !(graph.getEdge(x, w).pointsTowards(x)
-                         || Edges.isUndirectedEdge(graph.getEdge(x, w))
-                         || Edges.isBidirectedEdge(graph.getEdge(x, w))
-                            && (graph.paths().existsDirectedPath(w, x)
-                                || (graph.paths().existsDirectedPath(w, x)
-                                    && graph.paths().existsDirectedPath(w, y))));
+                return !(graph.getEdge(x, w).pointsTowards(x) || Edges.isUndirectedEdge(graph.getEdge(x, w)) || Edges.isBidirectedEdge(graph.getEdge(x, w)) && (graph.paths().existsDirectedPath(w, x) || (graph.paths().existsDirectedPath(w, x) && graph.paths().existsDirectedPath(w, y))));
             });
         }
 
@@ -3121,8 +3102,7 @@ public class Paths implements TetradSerializable {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }
@@ -3140,8 +3120,7 @@ public class Paths implements TetradSerializable {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }
@@ -3163,8 +3142,7 @@ public class Paths implements TetradSerializable {
      * @return true if the graph configuration is maximal, otherwise false.
      */
     public boolean isMaximal() {
-        List<Node> selection = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+        List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         List<Node> _nodes = graph.getNodes();
 
