@@ -365,6 +365,10 @@ public final class Fcit implements IGraphSearch {
             int[] choice1;
 
             while ((choice1 = gen1.next()) != null) {
+                if (!pag.isAdjacentTo(x, y)) {
+                    continue;
+                }
+
                 Set<Node> cond = GraphUtils.asSet(choice1, adjx);
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
@@ -372,32 +376,27 @@ public final class Fcit implements IGraphSearch {
                         TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     }
 
-                    Graph previousPag = new EdgeListGraph(this.pag);
-
-                    this.pag.removeEdge(x, y);
-                    sepsets.set(x, y, cond);
-                    if (refreshGraph(x + " _||_ " + y + " | " + cond, previousPag)) {
-                        continue EDGE;
-                    }
+                    tryRemovingEdge(x, y, cond, x + " _||_ " + y + " | " + cond);
                 }
             }
+
 
             SublistGenerator gen2 = new SublistGenerator(adjy.size(), adjy.size());
             int[] choice2;
 
             while ((choice2 = gen2.next()) != null) {
+                if (!pag.isAdjacentTo(x, y)) {
+                    continue EDGE;
+                }
+
                 Set<Node> cond = GraphUtils.asSet(choice2, adjy);
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
-                    TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
-
-                    Graph previousPag = new EdgeListGraph(this.pag);
-
-                    this.pag.removeEdge(x, y);
-                    sepsets.set(x, y, cond);
-                    if (refreshGraph(x + " _||_ " + y + " | " + cond, previousPag)) {
-                        continue EDGE;
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     }
+
+                    tryRemovingEdge(x, y, cond, x + " _||_ " + y + " | " + cond);
                 }
             }
         }
@@ -497,10 +496,14 @@ public final class Fcit implements IGraphSearch {
      * Refreshes the current Partial Ancestral Graph (PAG) by reorienting edges, adjusting for separation sets, and
      * applying final orientations. This method ensures the PAG remains valid after performing necessary modifications.
      *
-     * @param message     A descriptive message indicating the context or purpose of the graph refresh operation.
-     * @param previousPag The previous PAG before removing an edge and rebuilding.
+     * @param message A descriptive message indicating the context or purpose of the graph refresh operation.
      */
-    private boolean refreshGraph(String message, Graph previousPag) {
+    private boolean tryRemovingEdge(Node x, Node y, Set<Node> cond, String message) {
+        Graph _pag = new EdgeListGraph(this.pag);
+
+        this.pag.removeEdge(pag.getEdge(x, y));
+        Set<Node> _cond = sepsets.get(x, y);
+        sepsets.set(x, y, cond);
 
         GraphUtils.reorientWithCircles(this.pag, superVerbose);
         GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
@@ -510,15 +513,16 @@ public final class Fcit implements IGraphSearch {
 
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
-        if (!noteRejects(message)) {
-            this.pag = new EdgeListGraph(previousPag);
+        if (!legalPag(message)) {
+            this.pag = new EdgeListGraph(_pag);
+            sepsets.set(x, y, _cond);
             return false;
         } else {
             return true;
         }
     }
 
-    private boolean noteRejects(String message) {
+    private boolean legalPag(String message) {
         if (!this.pag.paths().isLegalPag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Rejected: " + message);
@@ -602,7 +606,7 @@ public final class Fcit implements IGraphSearch {
      * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
      * execution for asynchronous tasks.
      */
-    private void removeEdgesRecursively() {
+    private void removeEdgesRecursively() throws InterruptedException {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -651,15 +655,14 @@ public final class Fcit implements IGraphSearch {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
+                if (!this.pag.isAdjacentTo(x, y)) {
+                    break;
+                }
+
                 Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
                 // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Set<Node> _b;
-                try {
-                    _b = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                Set<Node> _b = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
 
                 if (superVerbose && !notFollowed.isEmpty()) {
                     TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + _b);
@@ -693,22 +696,12 @@ public final class Fcit implements IGraphSearch {
                         continue;
                     }
 
-                    try {
-                        if (test.checkIndependence(x, y, b).isIndependent()) {
-                            if (verbose) {
-                                TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
-                            }
-
-                            Graph previousPag = new EdgeListGraph(pag);
-
-                            this.pag.removeEdge(x, y);
-                            sepsets.set(x, y, b);
-                            refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)", previousPag);
-                            continue EDGE;
+                    if (test.checkIndependence(x, y, b).isIndependent()) {
+                        if (verbose) {
+                            TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
                         }
 
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                        tryRemovingEdge(x, y, b, x + " _||_ " + y + " | " + b + " (new sepset)");
                     }
                 }
             }
