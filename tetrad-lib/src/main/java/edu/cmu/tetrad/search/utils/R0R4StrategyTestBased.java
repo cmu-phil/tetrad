@@ -36,7 +36,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
      */
-    private BlockingType blockingType = BlockingType.GREEDY;
+    private BlockingType blockingType = BlockingType.RECURSIVE;
     /**
      * Private variable representing the knowledge.
      * <p>
@@ -56,35 +56,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Determines whether verbose mode is enabled or not.
      */
     private boolean verbose = false;
-    /**
-     * A Set of Triples representing the allowed colliders for the strategy. This variable is initially set to null and
-     * can be configured or modified through the corresponding setter methods. Allowed colliders are used within the
-     * FciOrientDataExaminationStrategy to impose constraints on the orientation of certain patterns in the graph.
-     */
-    private Set<Triple> allowedColliders = null;
-    /**
-     * This variable represents the initial set of allowed colliders for the FciOrientDataExaminationStrategy. It is a
-     * HashSet containing Triples that represent the allowed colliders.
-     * <p>
-     * The value of this variable can be set using the setInitialAllowedColliders() method and retrieved using the
-     * getInitialAllowedColliders() method.
-     * <p>
-     * Example usage:
-     * <p>
-     * FciOrientDataExaminationStrategyTestBased strategy = new FciOrientDataExaminationStrategyTestBased();
-     * <p>
-     * // Create a HashSet of Triples representing the allowed colliders HashSet<Triple> allowedColliders = new
-     * HashSet<>(); Triple collider1 = new Triple(node1, node2, node3); Triple collider2 = new Triple(node4, node5,
-     * node6); allowedColliders.add(collider1); allowedColliders.add(collider2);
-     * <p>
-     * // Set the initial allowed colliders for the strategy strategy.setInitialAllowedColliders(allowedColliders);
-     * <p>
-     * // Retrieve the initial allowed colliders HashSet<Triple> initialAllowedColliders =
-     * strategy.getInitialAllowedColliders();
-     * <p>
-     * Note: This is an example and the actual values and implementation may vary depending on the context.
-     */
-    private HashSet<Triple> initialAllowedColliders = null;
     /**
      * The maximum length of the path, for relevant paths.
      */
@@ -254,7 +225,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // This is needed for greedy and anteriority methods, which return sepsets, not recursive, which always
         // returns a blocking set.
         if (blocking == null) {
-//            TetradLogger.getInstance().log("Blocking set is null in R4.");
+            TetradLogger.getInstance().log("Blocking set is null in R4.");
             throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 
@@ -294,16 +265,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
                 return Pair.of(discriminatingPath, false);
-            }
-
-            if (initialAllowedColliders != null) {
-                initialAllowedColliders.add(new Triple(w, v, y));
-                allowedColliders.add(new Triple(w, v, y));
-            } else {
-                if (allowedColliders != null && !allowedColliders.contains(new Triple(w, v, y))) {
-                    allowedColliders.add(new Triple(w, v, y));
-                    return Pair.of(discriminatingPath, false);
-                }
             }
 
             graph.setEndpoint(w, v, Endpoint.ARROW);
@@ -368,24 +329,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     }
 
     /**
-     * Retrieves the initial set of allowed colliders.
-     *
-     * @return The initial set of allowed colliders.
-     */
-    public Set<Triple> getInitialAllowedColliders() {
-        return initialAllowedColliders;
-    }
-
-    /**
-     * Sets the initial set of allowed colliders for the FciOrientDataExaminationStrategy.
-     *
-     * @param initialAllowedColliders the HashSet containing the initial allowed colliders
-     */
-    public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
-        this.initialAllowedColliders = initialAllowedColliders;
-    }
-
-    /**
      * Sets the maximum length for relevant paths.
      *
      * @param maxLength the maximum length to be set. Set to -1 for no maximum length.
@@ -396,27 +339,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         this.maxLength = maxLength;
-    }
-
-    /**
-     * The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy. This variable is
-     * initially set to null. Use the setAllowedColliders method to set the allowed colliders. Use the
-     * getInitialAllowedColliders method to retrieve the initial set of allowed colliders.
-     *
-     * @return The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy.
-     */
-    public Set<Triple> getAllowedColliders() {
-        return allowedColliders;
-    }
-
-    /**
-     * Sets the allowed colliders for the FciOrientDataExaminationStrategy.
-     *
-     * @param allowedColliders the Set of Triples representing allowed colliders
-     */
-    @Override
-    public void setAllowedColliders(Set<Triple> allowedColliders) {
-        this.allowedColliders = allowedColliders;
     }
 
     /**

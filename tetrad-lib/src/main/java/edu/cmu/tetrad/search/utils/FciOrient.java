@@ -107,10 +107,6 @@ public class FciOrient {
      */
     private long testTimeout = -1;
     /**
-     * The allowed colliders for the discriminating path step
-     */
-    private Set<Triple> allowedColliders;
-    /**
      * Indicates whether the discriminating path step should be run in parallel.
      */
     private boolean parallel = false;
@@ -735,7 +731,7 @@ public class FciOrient {
         // Not parallel is the default.
         if (parallel) {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, null);
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream()
                         .map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS))
@@ -759,7 +755,7 @@ public class FciOrient {
 
         } else {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, allowedColliders);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, null);
                 if (tasks.isEmpty()) break;
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
@@ -815,10 +811,10 @@ public class FciOrient {
      * Makes a list of tasks for the discriminating path orientation step based on the current graph.
      *
      * @param graph           the graph
-     * @param allowedCollders the allowed colliders
+     * @param allowedColliders the allowed colliders
      * @return the list of tasks
      */
-    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedCollders) {
+    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedColliders) {
         Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
 
         Set<Node> vNodes = new HashSet<>();
@@ -828,7 +824,6 @@ public class FciOrient {
         }
 
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
-        strategy.setAllowedColliders(allowedCollders);
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
             tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, graph, vNodes));
@@ -1266,39 +1261,6 @@ public class FciOrient {
      */
     public void setTestTimeout(long testTimeout) {
         this.testTimeout = testTimeout;
-    }
-
-    /**
-     * Sets the allowed colliders for this object. These are passed to R4 is the set of unshielded colliders for the
-     * model is to be restricted. TODO Think this through again.
-     *
-     * @param allowedColliders the set of colliders allowed to interact with this object
-     */
-    public void setAllowedColliders(Set<Triple> allowedColliders) {
-        this.allowedColliders = allowedColliders;
-    }
-
-    /**
-     * Returns the initial allowed colliders based on the current strategy. These are the unshielded colliders from R4's
-     * first run.
-     * <p>
-     * TODO think this through again.
-     *
-     * @return a collection of Triple objects representing the initial allowed colliders.
-     */
-    public Collection<Triple> getInitialAllowedColliders() {
-        return strategy.getInitialAllowedColliders();
-    }
-
-    /**
-     * Sets the initial allowed colliders for the strategy.
-     * <p>
-     * TODO: Think this thorugh again.
-     *
-     * @param initialAllowedColliders The set of initial allowed colliders.
-     */
-    public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
-        strategy.setInitialAllowedColliders(initialAllowedColliders);
     }
 
     /**
