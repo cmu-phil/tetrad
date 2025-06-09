@@ -164,7 +164,7 @@ public class EnsembleMenu extends JMenu {
         add(thresholdEnsemble);
     }
 
-    private boolean isSamplingGraph(Graph graph) {
+    public static boolean isSamplingGraph(Graph graph) {
         if (graph == null) {
             return false;
         } else if (graph.getEdges().isEmpty()) {
@@ -176,7 +176,7 @@ public class EnsembleMenu extends JMenu {
         }
     }
 
-    private boolean isSameGraph(Graph graph1, Graph graph2) {
+    public static boolean isSameGraph(Graph graph1, Graph graph2) {
         if (graph1 == null || graph2 == null) {
             return false;
         }

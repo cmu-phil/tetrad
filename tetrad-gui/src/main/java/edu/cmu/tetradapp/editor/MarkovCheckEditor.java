@@ -394,7 +394,8 @@ public class MarkovCheckEditor extends JPanel {
         JButton sample = new JButton("Sample");
         JButton addSample = new JButton("Add Sample");
 
-        if (model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable) {
+        if (model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable
+            && model.getMarkovCheck().getIndependenceTest().getData() instanceof DataSet) {
             this.fraction = new DoubleTextField(Preferences.userRoot().getDouble("FractionSample", 0.5), 4, new DecimalFormat("0.0###"));
             this.fraction.setEditable(true);
         } else {
@@ -405,7 +406,8 @@ public class MarkovCheckEditor extends JPanel {
         JLabel fractionSampleLabel;
         if (!(model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable)) {
             fractionSampleLabel = new JLabel("(Test cannot be subsampled)");
-        } else if (model.getMarkovCheck().getIndependenceTest().getData() != null) {
+        } else if (model.getMarkovCheck().getIndependenceTest().getData() != null
+                   && model.getMarkovCheck().getIndependenceTest().getData() instanceof DataSet) {
             fractionSampleLabel = new JLabel("% Sample:");
         } else {
             fractionSampleLabel = new JLabel("(Not tabular data)");

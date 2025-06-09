@@ -57,10 +57,6 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
      */
     private final DataSet dataSet;
     /**
-     * A cache of results for independence facts.
-     */
-    private final Map<IndependenceFact, ChiSquareTest.Result> facts = new ConcurrentHashMap<>();
-    /**
      * The Chi Square tester.
      */
     private ChiSquareTest chiSquareTest;
@@ -215,12 +211,6 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
-        if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
-            ChiSquareTest.Result result = this.facts.get(new IndependenceFact(x, y, _z));
-            return new IndependenceResult(new IndependenceFact(x, y, _z), result.isIndep(), result.getPValue(),
-                    getAlpha() - result.getPValue());
-        }
-
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
         int[] testIndices = new int[2 + z.size()];
@@ -241,7 +231,6 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
         }
 
         ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices, sampleSize);
-        this.facts.put(new IndependenceFact(x, y, _z), result);
 
         this.xSquare = result.getXSquare();
         this.df = result.getDf();
@@ -267,11 +256,8 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
      * @return the pValue result or null if not within the cache
      */
     public Double getPValue(Node x, Node y, Set<Node> z) {
-        if (this.facts.containsKey(new IndependenceFact(x, y, z))) {
-            ChiSquareTest.Result result = this.facts.get(new IndependenceFact(x, y, z));
-            return result.getPValue();
-        }
-        return null;
+        IndependenceResult result = checkIndependence(x, y, z);
+        return result.getPValue();
     }
 
     /**

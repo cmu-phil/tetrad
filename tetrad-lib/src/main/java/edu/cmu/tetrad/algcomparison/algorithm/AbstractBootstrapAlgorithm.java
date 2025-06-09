@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TaskRunner;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,7 +82,10 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
 
             graph = new EdgeListGraph();
         } else {
-            List<Callable<Graph>> tasks = new LinkedList<>();
+
+
+
+            List<Callable<Graph>>   tasks = new LinkedList<>();
             for (DataSet dataSet : dataSets) {
                 tasks.add(() -> runSearch(dataSet, parameters));
             }
@@ -97,7 +101,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                     this.bootstrapGraphs.addAll(graphs);
                     graph = GraphSampling.createGraphWithHighProbabilityEdges(graphs);
                 } else {
-                    graph = graphs.get(0);
+                    graph = graphs.getFirst();
                 }
             }
         }

@@ -19,6 +19,13 @@ public class StructuralHammingDistance implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Indicates whether the Structural Hamming Distance (SHD) calculation should be
+     * based on the CPDAG (Completed Partially Directed Acyclic Graph) form of the true graph
+     * rather than its original PDAG (Partially Directed Acyclic Graph) form. When set to true,
+     * the SHD computation compares the estimated graph to the CPDAG of the true graph;
+     * otherwise, it compares the estimated graph to the true PDAG.
+     */
     private boolean compareToCpdag = false;
 
     /**
@@ -27,6 +34,14 @@ public class StructuralHammingDistance implements Statistic {
     public StructuralHammingDistance() {
     }
 
+    /**
+     * Constructs a StructuralHammingDistance instance with the specified comparison mode.
+     *
+     * @param compareToCpdag A boolean flag indicating whether the Structural Hamming Distance
+     * should be calculated by comparing the estimated graph to the CPDAG (Completed Partially
+     * Directed Acyclic Graph) of the true graph. If true, the calculation uses the CPDAG;
+     * otherwise, it uses the original PDAG (Partially Directed Acyclic Graph) of the true graph.
+     */
     public StructuralHammingDistance(boolean compareToCpdag) {
         this.compareToCpdag = compareToCpdag;
     }

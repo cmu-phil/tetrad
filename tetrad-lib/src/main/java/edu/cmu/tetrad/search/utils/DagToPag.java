@@ -201,11 +201,6 @@ public final class DagToPag {
                     return Pair.of(discriminatingPath, true);
                 }
             }
-
-            @Override
-            public void setAllowedColliders(Set<Triple> allowedColliders) {
-                // Ignore.
-            }
         };
     }
 
