@@ -36,8 +36,7 @@ import java.util.concurrent.*;
  */
 public class TaskRunner<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TaskRunner.class);
-
+    private static final TetradLogger logger = TetradLogger.getInstance();
     private final ExecutorService pool;
 
     /**
@@ -72,20 +71,22 @@ public class TaskRunner<T> {
         try {
             completedTasks.addAll(pool.invokeAll(tasks));
         } catch (InterruptedException exception) {
-            LOGGER.error("", exception);
+            logger.log(exception.getMessage());
         } finally {
             shutdownAndAwaitTermination(pool);
         }
 
         List<T> results = new LinkedList<>();
-        try {
-            for (Future<T> completedTask : completedTasks) {
+
+        for (Future<T> completedTask : completedTasks) {
+            try {
                 results.add(completedTask.get());
+            } catch (InterruptedException e) {
+                return Collections.EMPTY_LIST;
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+                logger.log(e.getMessage());
             }
-        } catch (InterruptedException exception) {
-            LOGGER.error("", exception);
-        } catch (ExecutionException exception) {
-            throw new RuntimeException(exception.getCause().getMessage());
         }
 
         return results;
@@ -110,7 +111,7 @@ public class TaskRunner<T> {
                 pool.shutdownNow();
 
                 if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
-                    LOGGER.error("Pool did not terminate");
+                    logger.error("Pool did not terminate");
                 }
             }
         } catch (InterruptedException ie) {
