@@ -372,11 +372,11 @@ public final class Fcit implements IGraphSearch {
                         TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
                     }
 
-                    Graph _pag = new EdgeListGraph(this.pag);
+                    Graph previousPag = new EdgeListGraph(this.pag);
 
                     this.pag.removeEdge(x, y);
                     sepsets.set(x, y, cond);
-                    if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
+                    if (refreshGraph(x + " _||_ " + y + " | " + cond, previousPag)) {
                         continue EDGE;
                     }
                 }
@@ -391,11 +391,11 @@ public final class Fcit implements IGraphSearch {
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
                     TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
 
-                    Graph _pag = new EdgeListGraph(this.pag);
+                    Graph previousPag = new EdgeListGraph(this.pag);
 
                     this.pag.removeEdge(x, y);
                     sepsets.set(x, y, cond);
-                    if (refreshGraph(x + " _||_ " + y + " | " + cond)) {
+                    if (refreshGraph(x + " _||_ " + y + " | " + cond, previousPag)) {
                         continue EDGE;
                     }
                 }
@@ -497,10 +497,10 @@ public final class Fcit implements IGraphSearch {
      * Refreshes the current Partial Ancestral Graph (PAG) by reorienting edges, adjusting for separation sets, and
      * applying final orientations. This method ensures the PAG remains valid after performing necessary modifications.
      *
-     * @param message A descriptive message indicating the context or purpose of the graph refresh operation.
+     * @param message     A descriptive message indicating the context or purpose of the graph refresh operation.
+     * @param previousPag The previous PAG before removing an edge and rebuilding.
      */
-    private boolean refreshGraph(String message) {
-        Graph _pag = new EdgeListGraph(this.pag);
+    private boolean refreshGraph(String message, Graph previousPag) {
 
         GraphUtils.reorientWithCircles(this.pag, superVerbose);
         GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
@@ -511,7 +511,7 @@ public final class Fcit implements IGraphSearch {
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
         if (!noteRejects(message)) {
-            this.pag = new EdgeListGraph(_pag);
+            this.pag = new EdgeListGraph(previousPag);
             return false;
         } else {
             return true;
@@ -699,11 +699,11 @@ public final class Fcit implements IGraphSearch {
                                 TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
                             }
 
-                            Graph _pag = new EdgeListGraph(this.pag);
+                            Graph previousPag = new EdgeListGraph(pag);
 
                             this.pag.removeEdge(x, y);
                             sepsets.set(x, y, b);
-                            refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)");
+                            refreshGraph(x + " _||_ " + y + " | " + b + " (new sepset)", previousPag);
                             continue EDGE;
                         }
 
