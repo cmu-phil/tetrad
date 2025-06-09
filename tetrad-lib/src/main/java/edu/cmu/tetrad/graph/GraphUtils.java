@@ -2564,11 +2564,6 @@ public final class GraphUtils {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
-//        fciOrient.setVerbose(verbose);
-//        fciOrient.setKnowledge(knowledge);
-//        fciOrient.setAllowedColliders(knownColliders);
-//        fciOrient.setUseR4(true);
-
         Graph orig = new EdgeListGraph(pag);
 
         boolean changed;
@@ -2718,7 +2713,6 @@ public final class GraphUtils {
         reorientWithCircles(pag, verbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         recallInitialColliders(pag, unshieldedColliders, knowledge);
-//        fciOrient.setAllowedColliders(unshieldedColliders);
         fciOrient.finalOrientation(pag);
     }
 
