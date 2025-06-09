@@ -2560,16 +2560,14 @@ public final class GraphUtils {
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> knownColliders,
                                      boolean verbose, Set<Node> selection) {
-//        System.out.println("In guarantee PAG, unshielded colliders: " + knownColliders);
-
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.setAllowedColliders(knownColliders);
-        fciOrient.setUseR4(true);
+//        fciOrient.setVerbose(verbose);
+//        fciOrient.setKnowledge(knowledge);
+//        fciOrient.setAllowedColliders(knownColliders);
+//        fciOrient.setUseR4(true);
 
         Graph orig = new EdgeListGraph(pag);
 
@@ -2581,9 +2579,11 @@ public final class GraphUtils {
             changed |= removeAlmostCycles(pag, knownColliders, verbose);
             changed |= repairMaximality(pag, verbose, selection);
             changed |= removeCycles(pag, verbose);
-
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
 
+            if (true) {
+                return pag;
+            }
         } while (changed);
 
         DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
@@ -2718,7 +2718,7 @@ public final class GraphUtils {
         reorientWithCircles(pag, verbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         recallInitialColliders(pag, unshieldedColliders, knowledge);
-        fciOrient.setAllowedColliders(unshieldedColliders);
+//        fciOrient.setAllowedColliders(unshieldedColliders);
         fciOrient.finalOrientation(pag);
     }
 
