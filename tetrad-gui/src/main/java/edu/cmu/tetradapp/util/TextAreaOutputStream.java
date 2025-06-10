@@ -113,7 +113,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      * <p>moveToEnd.</p>
      */
     public void moveToEnd() {
-        this.textArea.setCaretPosition(0);
+        this.textArea.setCaretPosition(this.textArea.getText().length());
     }
 }
 
