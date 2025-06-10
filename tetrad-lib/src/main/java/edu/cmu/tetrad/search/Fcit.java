@@ -323,7 +323,11 @@ public final class Fcit implements IGraphSearch {
         this.pag = GraphTransforms.dagToPag(dag);
 
         // This will be needed later to refresh the PAG state.
-        this.initialColliders = noteInitialColliders(best, this.pag);
+        this.initialColliders = noteInitialColliders(best, dag);
+
+        if (!this.pag.paths().isLegalPag()) {
+            throw new IllegalArgumentException("Initial PAG is not legal.");
+        }
 
         // This removes edges based on recursive path blocking. After every edge removal, the evolving PAG is
         // rebuilt based on initial unshielded colliders and learned sepsets.
@@ -334,7 +338,15 @@ public final class Fcit implements IGraphSearch {
         // is rebuilt.
         if (checkAdjacencySepsets) {
             removeEdgesSubsetsOfAdjacents();
+//            removeEdgesPossibleDsep();
+
         }
+
+        GraphUtils.reorientWithCircles(this.pag, superVerbose);
+        fciOrient.fciOrientbk(knowledge, this.pag, this.pag.getNodes());
+        GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
+        adjustForExtraSepsets();
+        fciOrient.finalOrientation(this.pag);
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -361,7 +373,7 @@ public final class Fcit implements IGraphSearch {
             adjx.remove(y);
             adjy.remove(x);
 
-            SublistGenerator gen1 = new SublistGenerator(adjx.size(), adjy.size());
+            SublistGenerator gen1 = new SublistGenerator(adjx.size(), adjx.size());
             int[] choice1;
 
             while ((choice1 = gen1.next()) != null) {
@@ -394,6 +406,58 @@ public final class Fcit implements IGraphSearch {
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
                     if (verbose) {
                         TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
+                    }
+
+                    tryRemovingEdge(x, y, cond, x + " _||_ " + y + " | " + cond);
+                }
+            }
+        }
+    }
+
+    private void removeEdgesPossibleDsep() throws InterruptedException {
+        EDGE:
+        for (Edge edge : this.pag.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            List<Node> adjx = this.pag.paths().possibleDsep(x, -1);
+            List<Node> adjy = this.pag.paths().possibleDsep(y, -1);
+            adjx.remove(y);
+            adjy.remove(x);
+
+            SublistGenerator gen1 = new SublistGenerator(adjx.size(), adjx.size());
+            int[] choice1;
+
+            while ((choice1 = gen1.next()) != null) {
+                if (!pag.isAdjacentTo(x, y)) {
+                    continue;
+                }
+
+                Set<Node> cond = GraphUtils.asSet(choice1, adjx);
+
+                if (test.checkIndependence(x, y, cond).isIndependent()) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Tried removing edge " + edge + " for possible d-sep reasons.");
+                    }
+
+                    tryRemovingEdge(x, y, cond, x + " _||_ " + y + " | " + cond);
+                }
+            }
+
+
+            SublistGenerator gen2 = new SublistGenerator(adjy.size(), adjy.size());
+            int[] choice2;
+
+            while ((choice2 = gen2.next()) != null) {
+                if (!pag.isAdjacentTo(x, y)) {
+                    continue EDGE;
+                }
+
+                Set<Node> cond = GraphUtils.asSet(choice2, adjy);
+
+                if (test.checkIndependence(x, y, cond).isIndependent()) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("Tried removing edge " + edge + " for possible d-sep reasons.");
                     }
 
                     tryRemovingEdge(x, y, cond, x + " _||_ " + y + " | " + cond);
@@ -476,7 +540,7 @@ public final class Fcit implements IGraphSearch {
 
                     if (GraphUtils.distinct(x, b, y)) {
                         if (GraphUtils.colliderAllowed(this.pag, x, b, y, knowledge)) {
-                            if (pag.isDefCollider(x, b, y)) {// && !pag.isAdjacentTo(x, y)) {
+                            if (pag.isDefCollider(x, b, y) && !pag.isAdjacentTo(x, y)) {
                                 initialColliders.add(new Triple(x, b, y));
 
                                 if (superVerbose) {
@@ -500,21 +564,18 @@ public final class Fcit implements IGraphSearch {
      */
     private boolean tryRemovingEdge(Node x, Node y, Set<Node> cond, String message) {
         Graph _pag = new EdgeListGraph(this.pag);
-
-        this.pag.removeEdge(pag.getEdge(x, y));
         Set<Node> _cond = sepsets.get(x, y);
+
+        Edge edge = pag.getEdge(x, y);
+        this.pag.removeEdge(edge);
         sepsets.set(x, y, cond);
 
-        GraphUtils.reorientWithCircles(this.pag, superVerbose);
-        GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
-        adjustForExtraSepsets();
-        fciOrient.fciOrientbk(knowledge, this.pag, this.pag.getNodes());
-        fciOrient.finalOrientation(this.pag);
+        this.pag = GraphTransforms.dagToPag(pag);
 
         // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
         // cannot cause new cycles or almost-cycles to be formed.
         if (!legalPag(message)) {
-            this.pag = new EdgeListGraph(_pag);
+            this.pag = _pag;
             sepsets.set(x, y, _cond);
             return false;
         } else {
@@ -673,6 +734,8 @@ public final class Fcit implements IGraphSearch {
                 if (_b == null) {
                     continue;
                 }
+
+//                _b.removeAll(notFollowed);
 
                 List<Node> common = this.pag.getAdjacentNodes(x);
                 common.retainAll(this.pag.getAdjacentNodes(y));
