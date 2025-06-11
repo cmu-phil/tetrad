@@ -53,7 +53,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     /**
      * The bootstrap graphs.
      */
-    private final List<Graph> bootstrapGraphs = new LinkedList<>();
+    private transient List<Graph> bootstrapGraphs = new LinkedList<>();
     /**
      * Bootstrap count, printed out to track bootstraps.
      */
@@ -111,6 +111,8 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                 tasks.add(() -> runSearch(dataModel, parameters));
             }
 
+            System.gc();
+
             TaskRunner<Graph> taskRunner = new TaskRunner<>(parameters.getInt(Params.BOOTSTRAPPING_NUM_THREADS));
             List<Graph> graphs = taskRunner.run(tasks);
 
@@ -118,8 +120,10 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                 graph = new EdgeListGraph();
             } else {
                 if (parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
-                    this.bootstrapGraphs.clear();
-                    this.bootstrapGraphs.addAll(graphs);
+                    if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) {
+                        this.bootstrapGraphs.clear();
+                        this.bootstrapGraphs.addAll(graphs);
+                    }
                     graph = GraphSampling.createGraphWithHighProbabilityEdges(graphs);
                 } else {
                     graph = graphs.getFirst();

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.editor;
 
@@ -56,13 +56,17 @@ public class SaveGraph extends AbstractAction {
      * A reference to the title, to be used a dialog title.
      */
     private String title;
+    /**
+     * True if the sampleing graph should be saved.
+     */
+    private boolean samplingGraph = false;
 
     /**
      * <p>Constructor for SaveGraph.</p>
      *
      * @param graphWorkbench The graph workbench.
-     * @param title         a {@link java.lang.String} object
-     * @param type          a {@link edu.cmu.tetradapp.editor.SaveGraph.Type} object
+     * @param title          a {@link java.lang.String} object
+     * @param type           a {@link edu.cmu.tetradapp.editor.SaveGraph.Type} object
      */
     public SaveGraph(GraphWorkbench graphWorkbench, String title, Type type) {
         super(title);
@@ -84,7 +88,8 @@ public class SaveGraph extends AbstractAction {
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {
-        Graph graph = getGraphWorkbench().getGraph();
+        Graph graph = samplingGraph ? graphWorkbench.getSamplingGraph() : graphWorkbench.getGraph();
+
         Component parent = (Component) getGraphWorkbench();
 
         if (this.type == Type.xml) {
@@ -272,6 +277,16 @@ public class SaveGraph extends AbstractAction {
 
     private GraphWorkbench getGraphWorkbench() {
         return this.graphWorkbench;
+    }
+
+    /**
+     * This sets whether the sampling graph of the graph should be saved out. If the sampling graph, this graph must be
+     * non-null.
+     *
+     * @param samplingGraph True if the sampleing graph should be saved.
+     */
+    public void setSamplingGraph(boolean samplingGraph) {
+        this.samplingGraph = samplingGraph;
     }
 
     /**
