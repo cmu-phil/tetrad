@@ -20,19 +20,21 @@ package edu.cmu.tetrad.algcomparison.algorithm;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSampling;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.GraphSampling;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.TaskRunner;
+import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.SynchronizedRandomGenerator;
+import org.apache.commons.math3.random.Well44497b;
 
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.IntStream;
+
+import static edu.cmu.tetrad.data.DataSampling.createDataSample;
 
 /**
  * This is a base class for bootstrap algorithms.
@@ -43,15 +45,30 @@ import java.util.concurrent.Callable;
  */
 public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBootstrapGraphs {
 
+    // 2025-6-10 Refactored this code so that bootstrap datasets are not all calculated up front but are calculated
+    // on the fly as they are needed for running bootstrap samples. This was needed for a use case where a client
+    // wanted to run 50,000 bootstraps. Note that with this change we are allowing the system to decide when
+    // to garbage collect rather than calling System.gc() every run, which speeds things up. jdramsey
+
     /**
      * The bootstrap graphs.
      */
-    private final List<Graph> bootstrapGraphs = new LinkedList<>();
+    private transient List<Graph> bootstrapGraphs = new LinkedList<>();
+    /**
+     * Bootstrap count, printed out to track bootstraps.
+     */
+    private int count = 0;
 
     /**
      * This is a base class for bootstrap algorithms.
      */
     protected AbstractBootstrapAlgorithm() {
+    }
+
+    private Graph runSingleBootstrapSearch(RandomGenerator randomGenerator, int[] selectedColumns, DataModel dataModel, Parameters parameters)
+            throws InterruptedException {
+        TetradLogger.getInstance().log("Bootstrap count = " + ++count);
+        return runSearch(createDataSample((DataSet) dataModel, randomGenerator, selectedColumns, parameters), parameters);
     }
 
     protected abstract Graph runSearch(DataModel dataSet, Parameters parameters) throws InterruptedException;
@@ -71,20 +88,30 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             return runSearch(dataModel, parameters);
         }
 
-        List<DataSet> dataSets = DataSampling.createDataSamples((DataSet) dataModel, parameters);
+        // create new random generator if a seed is given
+        long seed = parameters.getLong(Params.SEED);
+        RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
 
         Graph graph;
         if (Thread.currentThread().isInterrupted()) {
-            // release resources
-            dataSets.clear();
-            System.gc();
-
             graph = new EdgeListGraph();
         } else {
             List<Callable<Graph>> tasks = new LinkedList<>();
-            for (DataSet dataSet : dataSets) {
-                tasks.add(() -> runSearch(dataSet, parameters));
+
+            // select all data columns
+            int[] selectedColumns = IntStream.range(0, ((DataSet) dataModel).getNumColumns()).toArray();
+
+            this.count = 0;
+
+            for (int i = 0; i < parameters.getInt(Params.NUMBER_RESAMPLING) && !Thread.currentThread().isInterrupted(); i++) {
+                tasks.add(() -> runSingleBootstrapSearch(randomGenerator, selectedColumns, dataModel, parameters));
             }
+
+            if (parameters.getBoolean(Params.ADD_ORIGINAL_DATASET) || parameters.getInt(Params.NUMBER_RESAMPLING) == 0) {
+                tasks.add(() -> runSearch(dataModel, parameters));
+            }
+
+            System.gc();
 
             TaskRunner<Graph> taskRunner = new TaskRunner<>(parameters.getInt(Params.BOOTSTRAPPING_NUM_THREADS));
             List<Graph> graphs = taskRunner.run(tasks);
@@ -93,18 +120,16 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                 graph = new EdgeListGraph();
             } else {
                 if (parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
-                    this.bootstrapGraphs.clear();
-                    this.bootstrapGraphs.addAll(graphs);
+                    if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) {
+                        this.bootstrapGraphs.clear();
+                        this.bootstrapGraphs.addAll(graphs);
+                    }
                     graph = GraphSampling.createGraphWithHighProbabilityEdges(graphs);
                 } else {
-                    graph = graphs.get(0);
+                    graph = graphs.getFirst();
                 }
             }
         }
-
-        // release resources
-        dataSets.clear();
-        System.gc();
 
         return graph;
     }

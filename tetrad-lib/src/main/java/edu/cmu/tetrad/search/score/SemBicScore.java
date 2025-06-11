@@ -151,6 +151,29 @@ public class SemBicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      *
+     * @param covariances     The covariance matrix.
+     * @param penaltyDiscount The penalty discount of the score.
+     */
+    public SemBicScore(ICovarianceMatrix covariances, double penaltyDiscount) {
+        if (covariances == null) {
+            throw new NullPointerException();
+        }
+
+        if (penaltyDiscount <= 0) {
+            throw new IllegalArgumentException("Penalty discount must be positive");
+        }
+
+        setCovariances(covariances);
+        this.variables = covariances.getVariables();
+        this.sampleSize = covariances.getSampleSize();
+        this.indexMap = indexMap(this.variables);
+        this.logN = log(sampleSize);
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    /**
+     * Constructs the score using a covariance matrix.
+     *
      * @param dataSet               The dataset.
      * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
      */
@@ -179,7 +202,47 @@ public class SemBicScore implements Score {
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
         this.logN = log(sampleSize);
-        penaltyDiscount = 1.0;
+        this.penaltyDiscount = 1.0;
+    }
+
+    /**
+     * Constructs the score using a covariance matrix.
+     *
+     * @param dataSet               The dataset.
+     * @param penaltyDiscount       The penalty discount of th e score.
+     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
+     */
+    public SemBicScore(DataSet dataSet, double penaltyDiscount, boolean precomputeCovariances) {
+
+        if (dataSet == null) {
+            throw new NullPointerException();
+        }
+
+        if (penaltyDiscount <= 0) {
+            throw new IllegalArgumentException("Penalty discount must be positive");
+        }
+
+        this.dataModel = dataSet;
+        this.data = dataSet.getDoubleData();
+
+        if (!dataSet.existsMissingValue()) {
+            setCovariances(getCovarianceMatrix(dataSet, precomputeCovariances));
+
+            this.variables = this.covariances.getVariables();
+            this.sampleSize = this.covariances.getSampleSize();
+            this.indexMap = indexMap(this.variables);
+            this.calculateRowSubsets = false;
+            this.logN = log(sampleSize);
+            this.penaltyDiscount = penaltyDiscount;
+            return;
+        }
+
+        this.variables = dataSet.getVariables();
+        this.sampleSize = dataSet.getNumRows();
+        this.indexMap = indexMap(this.variables);
+        this.calculateRowSubsets = true;
+        this.logN = log(sampleSize);
+        this.penaltyDiscount = penaltyDiscount;
     }
 
     /**
@@ -689,11 +752,11 @@ public class SemBicScore implements Score {
 
     private void setCovariances(ICovarianceMatrix covariances) {
         this.covariances = covariances;
-        
+
         if (this.dataModel == null) {
             this.matrix = this.covariances.getMatrix();
         }
-        
+
         this.dataModel = covariances;
 
     }

@@ -160,7 +160,7 @@ public final class TestEdgeListGraph {
 
         graph2.removeEdge(nodes.get(0), nodes.get(1));
 
-        int shd = GraphSearchUtils.structuralHammingDistance(graph1, graph2);
+        int shd = GraphSearchUtils.structuralhammingdistance(graph1, graph2, true);
 
         assertEquals(3, shd);
     }

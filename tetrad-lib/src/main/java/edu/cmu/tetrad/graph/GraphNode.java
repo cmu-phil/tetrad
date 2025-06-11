@@ -20,6 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -251,7 +253,8 @@ public class GraphNode implements Node {
     public boolean equals(Object o) {
         if (o == null) return false;
         if (!(o instanceof GraphNode)) return false;
-        return getName().equals(((Node) o).getName());
+        if (!getName().equals(((Node) o).getName())) return false;
+        return getNodeType() == ((GraphNode) o).getNodeType();
     }
 
     /**

@@ -43,12 +43,12 @@ public class SepsetFinder {
         List<List<Integer>> choices = getChoices(adjx, depth);
 
         // Parallelize processing for adjx
-        Set<Node> sepset = choices.parallelStream()
+        Set<Node> sepset = choices.stream()
                 .map(choice -> combination(choice, adjx)) // Generate combinations in parallel
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
                 .filter(subset -> {
                     try {
-                        return separates(x, y, subset, test);
+                        return test.checkIndependence(x, y, subset).isIndependent();
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -68,7 +68,7 @@ public class SepsetFinder {
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
                 .filter(subset -> {
                     try {
-                        return separates(x, y, subset, test);
+                        return test.checkIndependence(x, y, subset).isIndependent();
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -129,7 +129,7 @@ public class SepsetFinder {
                 .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
                 .filter(subset -> {
                     try {
-                        return separates(x, y, subset, test);
+                        return test.checkIndependence(x, y, subset).isIndependent();
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -193,7 +193,7 @@ public class SepsetFinder {
             if (containing != null && !subset.containsAll(containing)) continue;
 
             // Check if the subset is a separating set
-            if (separates(x, y, subset, test)) {
+            if (test.checkIndependence(x, y, subset).isIndependent()) {
                 double pValue = getPValue(x, y, subset, test);
 
                 // Track the subset with the highest p-value
@@ -252,7 +252,7 @@ public class SepsetFinder {
             Set<Node> subset = combination(choice, adj);
 
             // Check if the subset is a separating set
-            if (separates(x, y, subset, test)) {
+            if (test.checkIndependence(x, y, subset).isIndependent()) {
                 double pValue = getPValue(x, y, subset, test);
 
                 // Track the subset with the smallest p-value that is still above the alpha threshold
@@ -307,10 +307,6 @@ public class SepsetFinder {
         }
 
         return combination;
-    }
-
-    private static boolean separates(Node x, Node y, Set<Node> combination, IndependenceTest test) throws InterruptedException {
-        return test.checkIndependence(x, y, combination).isIndependent();
     }
 
     private static double getPValue(Node x, Node y, Set<Node> combination, IndependenceTest test) {

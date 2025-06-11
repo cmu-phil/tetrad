@@ -8,7 +8,6 @@ import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +32,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * class FciOrientDataExaminationStrategyTestBased.
      */
     private final IndependenceTest test;
-    private Graph mag;
     /**
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
@@ -58,35 +56,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * Determines whether verbose mode is enabled or not.
      */
     private boolean verbose = false;
-    /**
-     * A Set of Triples representing the allowed colliders for the strategy. This variable is initially set to null and
-     * can be configured or modified through the corresponding setter methods. Allowed colliders are used within the
-     * FciOrientDataExaminationStrategy to impose constraints on the orientation of certain patterns in the graph.
-     */
-    private Set<Triple> allowedColliders = null;
-    /**
-     * This variable represents the initial set of allowed colliders for the FciOrientDataExaminationStrategy. It is a
-     * HashSet containing Triples that represent the allowed colliders.
-     * <p>
-     * The value of this variable can be set using the setInitialAllowedColliders() method and retrieved using the
-     * getInitialAllowedColliders() method.
-     * <p>
-     * Example usage:
-     * <p>
-     * FciOrientDataExaminationStrategyTestBased strategy = new FciOrientDataExaminationStrategyTestBased();
-     * <p>
-     * // Create a HashSet of Triples representing the allowed colliders HashSet<Triple> allowedColliders = new
-     * HashSet<>(); Triple collider1 = new Triple(node1, node2, node3); Triple collider2 = new Triple(node4, node5,
-     * node6); allowedColliders.add(collider1); allowedColliders.add(collider2);
-     * <p>
-     * // Set the initial allowed colliders for the strategy strategy.setInitialAllowedColliders(allowedColliders);
-     * <p>
-     * // Retrieve the initial allowed colliders HashSet<Triple> initialAllowedColliders =
-     * strategy.getInitialAllowedColliders();
-     * <p>
-     * Note: This is an example and the actual values and implementation may vary depending on the context.
-     */
-    private HashSet<Triple> initialAllowedColliders = null;
     /**
      * The maximum length of the path, for relevant paths.
      */
@@ -217,32 +186,35 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         Set<Node> blocking;
 
+        // If you already have a sepset, use it.
         if (sepsetMap.get(x, y) != null) {
             blocking = sepsetMap.get(x, y);
-        } else if (blockingType == BlockingType.RECURSIVE) {
-            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
-                    maxLength, maxLength, preserveMarkovHelper, depth);
 
-            if (blocking == null || !test.checkIndependence(x, y, blocking).isIndependent()) {
-                blocking = findAdjSetSepset(graph, x, y, path, v);
+        } else
 
-                if (blocking != null) {
-                    if (verbose) {
+            // Else for the recursive option see if you can find a recursive sepset; this fails for Puzzle #2.
+            if (blockingType == BlockingType.RECURSIVE) {
+                blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
+                        maxLength, maxLength, preserveMarkovHelper, depth);
+
+                if (blocking == null) { // If it does fail, use FCI style reasoning.
+                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+
+                    if (verbose && blocking != null) {
                         TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
                     }
                 }
 
-//                TetradLogger.getInstance().log("R4 Blocking found for " + x + ", " + y + ", " + blocking);
-            }
+                sepsetMap.set(x, y, blocking);
+            } else
 
-            sepsetMap.set(x, y, blocking);
-        } else if (blockingType == BlockingType.GREEDY) {
-            blocking = findAdjSetSepset(graph, x, y, path, v);
-
-            sepsetMap.set(x, y, blocking);
-        } else {
-            throw new IllegalArgumentException("Unknown blocking type.");
-        }
+                // Else for the greedy option, do FCI-style reasoning.
+                if (blockingType == BlockingType.GREEDY) {
+                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+                    sepsetMap.set(x, y, blocking);
+                } else {
+                    throw new IllegalArgumentException("Unknown blocking type.");
+                }
 
         //  *         V
         // *         **            * is either an arrowhead, a tail, or a circle
@@ -257,14 +229,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 
-        if (blockingType == BlockingType.RECURSIVE) {
-            if (!(blocking.containsAll(path) && blocking.contains(w))) {
-                throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
-            }
-        }
-
-        if (blockingType == BlockingType.GREEDY && !blocking.containsAll(path)) {
-            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path.");
+        if (!(blocking.containsAll(path) && blocking.contains(w))) {
+            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
         }
 
         // Now at this point, for the recursive case, we simply need to know whether X _||_ Y | blocking. If so, we
@@ -301,16 +267,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
                 return Pair.of(discriminatingPath, false);
             }
 
-            if (initialAllowedColliders != null) {
-                initialAllowedColliders.add(new Triple(w, v, y));
-                allowedColliders.add(new Triple(w, v, y));
-            } else {
-                if (allowedColliders != null && !allowedColliders.contains(new Triple(w, v, y))) {
-                    allowedColliders.add(new Triple(w, v, y));
-                    return Pair.of(discriminatingPath, false);
-                }
-            }
-
             graph.setEndpoint(w, v, Endpoint.ARROW);
             graph.setEndpoint(y, v, Endpoint.ARROW);
 
@@ -323,30 +279,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             return Pair.of(discriminatingPath, true);
         }
-    }
-
-    private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
-        Set<Node> blocking;
-        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-
-        Set<Node> b1 = new HashSet<>(blocking);
-        b1.remove(v);
-
-        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
-
-        Set<Node> b2 = new HashSet<>(b1);
-        b2.add(v);
-
-        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
-
-        if (b1Indep) {
-            blocking = b1;
-        } else if (b2Indep) {
-            blocking = b2;
-        } else {
-            blocking = null;
-        }
-        return blocking;
     }
 
     /**
@@ -397,24 +329,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     }
 
     /**
-     * Retrieves the initial set of allowed colliders.
-     *
-     * @return The initial set of allowed colliders.
-     */
-    public Set<Triple> getInitialAllowedColliders() {
-        return initialAllowedColliders;
-    }
-
-    /**
-     * Sets the initial set of allowed colliders for the FciOrientDataExaminationStrategy.
-     *
-     * @param initialAllowedColliders the HashSet containing the initial allowed colliders
-     */
-    public void setInitialAllowedColliders(HashSet<Triple> initialAllowedColliders) {
-        this.initialAllowedColliders = initialAllowedColliders;
-    }
-
-    /**
      * Sets the maximum length for relevant paths.
      *
      * @param maxLength the maximum length to be set. Set to -1 for no maximum length.
@@ -425,27 +339,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         this.maxLength = maxLength;
-    }
-
-    /**
-     * The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy. This variable is
-     * initially set to null. Use the setAllowedColliders method to set the allowed colliders. Use the
-     * getInitialAllowedColliders method to retrieve the initial set of allowed colliders.
-     *
-     * @return The Set of Triples representing the allowed colliders for the FciOrientDataExaminationStrategy.
-     */
-    public Set<Triple> getAllowedColliders() {
-        return allowedColliders;
-    }
-
-    /**
-     * Sets the allowed colliders for the FciOrientDataExaminationStrategy.
-     *
-     * @param allowedColliders the Set of Triples representing allowed colliders
-     */
-    @Override
-    public void setAllowedColliders(Set<Triple> allowedColliders) {
-        this.allowedColliders = allowedColliders;
     }
 
     /**

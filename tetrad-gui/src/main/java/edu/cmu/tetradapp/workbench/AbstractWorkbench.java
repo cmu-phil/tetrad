@@ -23,11 +23,13 @@ package edu.cmu.tetradapp.workbench;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -42,6 +44,9 @@ import java.io.Serial;
 import java.util.List;
 import java.util.*;
 import java.util.prefs.Preferences;
+
+import static edu.cmu.tetradapp.workbench.EnsembleMenu.isSameGraph;
+import static edu.cmu.tetradapp.workbench.EnsembleMenu.isSamplingGraph;
 
 /**
  * The functionality of the workbench which is shared between the workbench workbench and the session (and any other
@@ -211,7 +216,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param graph The graph that this workbench will display.
      */
     protected AbstractWorkbench(Graph graph) {
-        setGraph(graph);
+        if (samplingGraph != null) {
+            setGraph(GraphSampling.createDisplayGraph(samplingGraph,
+                    ResamplingEdgeEnsemble.Majority));
+        } else {
+            setGraph(graph);
+        }
         addMouseListener(this.mouseHandler);
         addMouseMotionListener(this.mouseMotionHandler);
         // setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -1115,7 +1125,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             this.graphStack.addLast(new EdgeListGraph(graph));
         }
 
-        this.graph = graph;
+        if (isSamplingGraph(graph)) {
+            Graph samplingGraph = getSamplingGraph();
+
+            // replace original sampling graph if it's a different sampling graph
+            if (!isSameGraph(samplingGraph, graph)) {
+                samplingGraph = graph;
+                setSamplingGraph(samplingGraph);
+            }
+
+            this.graph = graph;
+        } else {
+            setSamplingGraph(null);
+            this.graph = graph;
+        }
 
         if (pagEdgeSpecializationMarked) {
             GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));

@@ -291,8 +291,10 @@ public class Paths implements TetradSerializable {
 
         try {
             g.paths().makeValidOrder(pi);
-            Graph dag = getDag(pi, g/*GraphTransforms.dagFromCpdag(g)*/, false);
-            Graph cpdag = GraphTransforms.dagToCpdag(dag);
+            Graph cpdag = GraphTransforms.dagToCpdag(GraphTransforms.dagToCpdag(g));
+
+//            Graph dag = getDag(pi, GraphTransforms.dagFromCpdag(g), false);
+//            Graph cpdag = GraphTransforms.dagToCpdag(dag);
             return g.equals(cpdag);
         } catch (Exception e) {
             // There was no valid sink.
@@ -391,8 +393,7 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a legal mag, false otherwise
      */
     public boolean isLegalMag() {
-        List<Node> selection = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+        List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         return GraphSearchUtils.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
     }
@@ -403,8 +404,7 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a Legal PAG, false otherwise
      */
     public boolean isLegalPag() {
-        List<Node> selection = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+        List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
         return GraphSearchUtils.isLegalPag(graph, new HashSet<>(selection)).isLegalPag();
     }
 
@@ -584,7 +584,7 @@ public class Paths implements TetradSerializable {
             Node a = path.getFirst();
             Node b = path.get(1);
 
-            boolean visible = graph.paths().defVisible(graph.getEdge(a, b));
+            boolean visible = graph.paths().defVisiblePag(a, b);
 
             if (!(visible && graph.getEdge(a, b).pointsTowards(b))) {
                 amenablePaths.remove(path);
@@ -656,8 +656,7 @@ public class Paths implements TetradSerializable {
      *                           edges in one direction or the other.
      * @return a set of paths between node1 and node2 that satisfy the conditions
      */
-    public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet,
-                                    boolean allowSelectionBias) {
+    public Set<List<Node>> allPaths(Node node1, Node node2, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
         allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, -1, maxLength, conditionSet, null, allowSelectionBias);
         return paths;
@@ -675,8 +674,7 @@ public class Paths implements TetradSerializable {
      * @param allowSelectionBias true if selection bias is allowed, false otherwise
      * @return a set of lists representing all paths between node1 and node2
      */
-    public Set<List<Node>> allPaths(Node node1, Node node2, int minLength, int maxLength, Set<Node> conditionSet,
-                                    Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+    public Set<List<Node>> allPaths(Node node1, Node node2, int minLength, int maxLength, Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
         allPathsVisit(node1, node2, new HashSet<>(), new LinkedList<>(), paths, minLength, maxLength, conditionSet, ancestors, allowSelectionBias);
         return paths;
@@ -691,15 +689,13 @@ public class Paths implements TetradSerializable {
      * @param allowSelectionBias Determines whether to allow selection bias when choosing the next node to visit.
      * @return A set containing all generated paths as lists of nodes.
      */
-    public Set<List<Node>> allPathsOutOf(Node node1, int maxLength, Set<Node> conditionSet,
-                                         boolean allowSelectionBias) {
+    public Set<List<Node>> allPathsOutOf(Node node1, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
         Set<List<Node>> paths = new HashSet<>();
         allPathsVisitOutOf(null, node1, new HashSet<>(), new LinkedList<>(), paths, maxLength, conditionSet, allowSelectionBias);
         return paths;
     }
 
-    private void allPathsVisit(Node node1, Node node2, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int minLength, int maxLength,
-                               Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
+    private void allPathsVisit(Node node1, Node node2, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int minLength, int maxLength, Set<Node> conditionSet, Map<Node, Set<Node>> ancestors, boolean allowSelectionBias) {
         if (minLength != -1 && path.size() - 1 < minLength) {
             return;
         }
@@ -753,8 +749,7 @@ public class Paths implements TetradSerializable {
         pathSet.remove(node1);
     }
 
-    private void allPathsVisitOutOf(Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength,
-                                    Set<Node> conditionSet, boolean allowSelectionBias) {
+    private void allPathsVisitOutOf(Node previous, Node node1, Set<Node> pathSet, LinkedList<Node> path, Set<List<Node>> paths, int maxLength, Set<Node> conditionSet, boolean allowSelectionBias) {
         if (maxLength != -1 && path.size() - 1 > maxLength) {
             return;
         }
@@ -1450,8 +1445,7 @@ public class Paths implements TetradSerializable {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y)
-                      || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
+                if (!(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y) || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
                     continue;
                 }
             }
@@ -1473,17 +1467,15 @@ public class Paths implements TetradSerializable {
      * @param selectionVariables set of selection variables (Z)
      * @return true iff there is an inducing path from x to y
      */
-    public boolean existsInducingPathBFS(Node x,
-                                         Node y,
-                                         Set<Node> selectionVariables) {
+    public boolean existsInducingPathBFS(Node x, Node y, Set<Node> selectionVariables) {
 
-        if (x.getNodeType() != NodeType.MEASURED ||
-            y.getNodeType() != NodeType.MEASURED) {
+        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException("x and y must be measured nodes");
         }
 
         // State = (prev, curr, path-so-far).
-        record State(Node prev, Node curr, LinkedList<Node> path) {}
+        record State(Node prev, Node curr, LinkedList<Node> path) {
+        }
 
         Queue<State> queue = new LinkedList<>();
 
@@ -1501,9 +1493,9 @@ public class Paths implements TetradSerializable {
 
         // Standard BFS loop
         while (!queue.isEmpty()) {
-            State s       = queue.remove();
-            Node  a       = s.prev();
-            Node  b       = s.curr();
+            State s = queue.remove();
+            Node a = s.prev();
+            Node b = s.curr();
             LinkedList<Node> path = s.path();     // already contains a and b
 
             for (Node c : graph.getAdjacentNodes(b)) {
@@ -1512,15 +1504,11 @@ public class Paths implements TetradSerializable {
                 if (path.contains(c)) continue;   // avoid cycles
 
                 // --- Same admissibility checks as the DFS version -----------------
-                if (b.getNodeType() == NodeType.MEASURED &&
-                    !graph.isDefCollider(a, b, c)) {
+                if (b.getNodeType() == NodeType.MEASURED && !graph.isDefCollider(a, b, c)) {
                     continue;
                 }
 
-                if (graph.isDefCollider(a, b, c) &&
-                    !(graph.paths().isAncestorOf(b, x) ||
-                      graph.paths().isAncestorOf(b, y) ||
-                      graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
+                if (graph.isDefCollider(a, b, c) && !(graph.paths().isAncestorOf(b, x) || graph.paths().isAncestorOf(b, y) || graph.paths().isAncestorOfAnyZ(b, selectionVariables))) {
                     continue;
                 }
                 // ------------------------------------------------------------------
@@ -1990,7 +1978,7 @@ public class Paths implements TetradSerializable {
                 if (!(o instanceof EdgeNode _o)) {
                     throw new IllegalArgumentException();
                 }
-                return _o.edge == this.edge && _o.node == this.node;
+                return _o.edge.equals(this.edge) && _o.node.equals(this.node);
             }
         }
 
@@ -2291,109 +2279,189 @@ public class Paths implements TetradSerializable {
         }
     }
 
+    /*======================================================================
+     * 1.  PUBLIC ENTRY POINT
+     *====================================================================*/
+
     /**
-     * Returns true just in case the given edge is definitely visible. The reference for this is Zhang, J. (2008).
-     * Causal Reasoning with Ancestral Graphs. Journal of Machine Learning Research, 9(7).
-     * <p>
-     * This definition will work for MAGs and PAGs. "Definite" here means for PAGs that the edge is visible in all MAGs
-     * in the equivalence class.
+     * Returns true if the edge form A to B is a definitely visible edge in a PAG.
      *
-     * @param edge the edge to check.
-     * @return true if the given edge is definitely visible.
-     * @throws java.lang.IllegalArgumentException if the given edge is not a directed edge in the graph
+     * @param A The one node.
+     * @param B The other node.
+     * @return True if so.
      */
-    public boolean defVisible(Edge edge) {
+    public boolean defVisiblePag(Node A, Node B) {
 
-        // Zhang, J. (2008). Causal Reasoning with Ancestral Graphs. Journal of Machine Learning
-        // Research, 9(7)
-        //
-        // Definition 8 (Visibility) Given a MAG M, a directed edge A → B in M is visible
-        // if there is a vertex C not adjacent to B, such that either there is an edge between
-        // C and A that is into A, or there is a collider path between C and A that is into A
-        // and every vertex on the path is a parent of B. Otherwise A → B is said to be invisible.
-        // ...
-        // The definition of visibility still makes sense in PAGs, except that we will call a
-        // directed edge in a PAG definitely visible if it satisfies the condition for visibility
-        // in Definition 8, in order to emphasize that this edge is visible in all MAGs in the
-        // equivalence class. (p. 1452)
+        // Sanity: we only care about directed A → B edges that exist
+        if (!graph.isParentOf(A, B)) return false;
 
-        if (!edge.isDirected()) return false;
+        for (Node C : graph.getNodes()) {
 
-        if (graph.containsEdge(edge)) {
-            Node A = Edges.getDirectedEdgeTail(edge);
-            Node B = Edges.getDirectedEdgeHead(edge);
+            if (C == A || C == B) continue;           // trivial exclusions
+            if (graph.isAdjacentTo(C, B)) continue;   // C must NOT touch B
 
-            for (Node C : graph.getAdjacentNodes(A)) {
-                if (C != B && !graph.isAdjacentTo(C, B)) {
-                    Edge e = graph.getEdge(C, A);
-
-                    if (e.getProximalEndpoint(A) == Endpoint.ARROW) {
-                        return true;
-                    } else if (existsColliderPathInto(C, A, B)) {
-                        return true;
-                    }
-                }
+            /* ---------- Clause 1: an edge into A from C ---------------- */
+            if (graph.getEndpoint(C, A) == Endpoint.ARROW) {
+                // Covers both  C → A  and  C ↔ A  (arrowhead at A).
+                return true;
             }
 
-            return false;
-        } else {
-            throw new IllegalArgumentException("Given edge is not in the graph.");
+            /* ---------- Clause 2: collider path C … A ------------------ */
+            if (existsColliderPathInto(C, A, B)) {
+                return true;
+            }
         }
+        return false;   // no qualifying C found ⇒ edge is invisible
     }
 
-    /**
-     * A helper method for the defVisible method. This implementation uses depth-first search and can be slow for large
-     * graphs.
-     *
-     * @param from the starting node of the path
-     * @param to   the target node of the path
-     * @param into the nodes that colliders along the path must all be parents of
-     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
-     */
-    private boolean existsColliderPathIntoDfs(Node from, Node to, Node into) {
-        Set<Node> visited = new HashSet<>();
-        List<Node> currentPath = new ArrayList<>();
+    /*======================================================================
+     * 2.  COLLIDER-PATH SEARCH  (Zhang 2008, Def. 8, second bullet)
+     *====================================================================*/
 
-        if (existsColliderPathIntoDfs(null, from, to, into, visited, currentPath)) {
-            return graph.getEndpoint(currentPath.get(currentPath.size() - 2), to) == Endpoint.ARROW;
+    /**
+     * True iff there exists a collider path   C = v0 … vk = A (k ≥ 1) that is arrow-headed into A and whose
+     * **interior** vertices are all parents of B.  Endpoints C and A themselves are *not* required to point to B.
+     */
+    private boolean existsColliderPathInto(Node C, Node A, Node B) {
+        return dfsColliderPath(null, C, A, B, new HashSet<>());
+    }
+
+    /* ------------------------------------------------------------------ */
+
+    private boolean dfsColliderPath(Node prev,           // vertex before ‘cur’
+                                    Node cur,            // current vertex
+                                    Node targetA,        // destination
+                                    Node B,              // must receive arrows
+                                    Set<Node> onBranch)  // cycle guard
+    {
+        /* (i) Interior-vertex parent-of-B condition */
+        if (prev != null && !cur.equals(targetA)          // interior only
+            && !graph.isParentOf(cur, B)) {
+            return false;                                 // violates clause
         }
 
+        /* (ii) Endpoint reached: arrowhead into A required */
+        if (cur.equals(targetA)) {
+            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
+        }
+
+        /* (iii) DFS expansion with collider check */
+        onBranch.add(cur);
+        for (Node nxt : graph.getAdjacentNodes(cur)) {
+            if (onBranch.contains(nxt)) continue;         // avoid cycles
+
+            // collider requirement applies once we *have* a predecessor
+            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
+                if (dfsColliderPath(cur, nxt, targetA, B, onBranch)) return true;
+            }
+        }
+        onBranch.remove(cur);
         return false;
     }
 
-    /**
-     * A helper method for the existsColliderPathInto method.
-     *
-     * @param previous    the previous node in the path
-     * @param current     the current node in the path
-     * @param end         the target node of the path
-     * @param into        the nodes that colliders along the path must all be parents of
-     * @param visited     the set of visited nodes
-     * @param currentPath the current path
-     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
-     */
-    private boolean existsColliderPathIntoDfs(Node previous, Node current, Node end, Node into, Set<Node> visited, List<Node> currentPath) {
-        visited.add(current);
-        currentPath.add(current);
+//    /**
+//     * Returns true just in case the given edge is definitely visible. The reference for this is Zhang, J. (2008).
+//     * Causal Reasoning with Ancestral Graphs. Journal of Machine Learning Research, 9(7).
+//     * <p>
+//     * This definition will work for MAGs and PAGs. "Definite" here means for PAGs that the edge is visible in all MAGs
+//     * in the equivalence class.
+//     *
+//     * @param edge the edge to check.
+//     * @return true if the given edge is definitely visible.
+//     * @throws java.lang.IllegalArgumentException if the given edge is not a directed edge in the graph
+//     */
+//    public boolean defVisible(Edge edge) {
+//
+//        // Zhang, J. (2008). Causal Reasoning with Ancestral Graphs. Journal of Machine Learning
+//        // Research, 9(7)
+//        //
+//        // Definition 8 (Visibility) Given a MAG M, a directed edge A → B in M is visible
+//        // if there is a vertex C not adjacent to B, such that either there is an edge between
+//        // C and A that is into A, or there is a collider path between C and A that is into A
+//        // and every vertex on the path is a parent of B. Otherwise A → B is said to be invisible.
+//        // ...
+//        // The definition of visibility still makes sense in PAGs, except that we will call a
+//        // directed edge in a PAG definitely visible if it satisfies the condition for visibility
+//        // in Definition 8, in order to emphasize that this edge is visible in all MAGs in the
+//        // equivalence class. (p. 1452)
+//
+//        if (!edge.isDirected()) return false;
+//
+//        if (graph.containsEdge(edge)) {
+//            Node A = Edges.getDirectedEdgeTail(edge);
+//            Node B = Edges.getDirectedEdgeHead(edge);
+//
+//            for (Node C : graph.getAdjacentNodes(A)) {
+//                if (C != B && !graph.isAdjacentTo(C, B)) {
+//                    Edge e = graph.getEdge(C, A);
+//
+//                    if (e.getProximalEndpoint(A) == Endpoint.ARROW) {
+//                        return true;
+//                    } else if (existsColliderPathInto(C, A, B)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//
+//            return false;
+//        } else {
+//            throw new IllegalArgumentException("Given edge is not in the graph.");
+//        }
+//    }
 
-        if (current == end) {
-            return true;
-        } else {
-            for (Node next : graph.getAdjacentNodes(current)) {
-                if (!visited.contains(next) && (previous == null || (graph.isDefCollider(previous, current, next)
-                                                                     && graph.isParentOf(current, into)))) {
-                    if (existsColliderPathIntoDfs(current, next, end, into, visited, currentPath)) {
-                        return true;
-                    }
-                }
-            }
-        }
+//    /**
+//     * A helper method for the defVisible method. This implementation uses depth-first search and can be slow for large
+//     * graphs.
+//     *
+//     * @param from the starting node of the path
+//     * @param to   the target node of the path
+//     * @param into the nodes that colliders along the path must all be parents of
+//     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
+//     */
+//    private boolean existsColliderPathIntoDfs(Node from, Node to, Node into) {
+//        Set<Node> visited = new HashSet<>();
+//        List<Node> currentPath = new ArrayList<>();
+//
+//        if (existsColliderPathIntoDfs(null, from, to, into, visited, currentPath)) {
+//            return graph.getEndpoint(currentPath.get(currentPath.size() - 2), to) == Endpoint.ARROW;
+//        }
+//
+//        return false;
+//    }
 
-        currentPath.remove(currentPath.size() - 1);
-        visited.remove(current);
-
-        return false;
-    }
+//    /**
+//     * A helper method for the existsColliderPathInto method.
+//     *
+//     * @param previous    the previous node in the path
+//     * @param current     the current node in the path
+//     * @param end         the target node of the path
+//     * @param into        the nodes that colliders along the path must all be parents of
+//     * @param visited     the set of visited nodes
+//     * @param currentPath the current path
+//     * @return true if a collider path exists from 'from' to 'to' that is into 'into'
+//     */
+//    private boolean existsColliderPathIntoDfs(Node previous, Node current, Node end, Node into, Set<Node> visited, List<Node> currentPath) {
+//        visited.add(current);
+//        currentPath.add(current);
+//
+//        if (current == end) {
+//            return true;
+//        } else {
+//            for (Node next : graph.getAdjacentNodes(current)) {
+//                if (!visited.contains(next) && (previous == null || (graph.isDefCollider(previous, current, next)
+//                                                                     && graph.isParentOf(current, into)))) {
+//                    if (existsColliderPathIntoDfs(current, next, end, into, visited, currentPath)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        currentPath.remove(currentPath.size() - 1);
+//        visited.remove(current);
+//
+//        return false;
+//    }
 
     /**
      * A helper method for the defVisible method, using BFS.
@@ -2404,52 +2472,50 @@ public class Paths implements TetradSerializable {
      * @return true if a collider path exists C 'C' A 'A' that is B 'B'
      */
 
-    /**
-     * True iff there exists a path C = v0 … vk = A such that
-     *   (i)  for every i∈{1,…,k−1}, vi is a definite collider on (vi−1,vi,vi+1);
-     *   (ii) for every i∈{0,…,k},   vi → B   (i.e., vi is a parent of B);
-     *   (iii) vk−1 *-> A (arrowhead at A).
-     *
-     * @param C The C node from Zhang's (2008) definition of visible edge.
-     * @param A The A node from Zhang's (2008) definition of visible edge.
-     * @param B The B node from Zhang's (2008) definition of visible edge.
-     */
-    private boolean existsColliderPathInto(Node C, Node A, Node B) {
-        // C itself must already be a parent of B, otherwise no path can qualify.
-        if (!graph.isParentOf(C, B)) return false;
-
-        return dfsColliderPath(/*prev*/ null, /*cur*/ C, A, B, new HashSet<>());
-    }
-
-    private boolean dfsColliderPath(Node prev,
-                                    Node cur,
-                                    Node targetA,
-                                    Node B,
-                                    Set<Node> path) {
-
-        // every node on the path must be a parent of B
-        if (!graph.isParentOf(cur, B)) return false;
-
-        // reached A: last edge must have an arrowhead at A
-        if (cur.equals(targetA)) {
-            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
-        }
-
-        path.add(cur);               // mark cur for this branch
-
-        for (Node nxt : graph.getAdjacentNodes(cur)) {
-            if (path.contains(nxt)) continue;          // avoid cycles
-
-            // first step out of C has no collider constraint (prev == null)
-            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
-                if (dfsColliderPath(cur, nxt, targetA, B, path)) return true;
-            }
-        }
-
-        path.remove(cur);            // back-track for other branches
-        return false;
-    }
-
+//    /**
+//     * True iff there exists a path C = v0 … vk = A such that
+//     *   (i)  for every i∈{1,…,k−1}, vi is a definite collider on (vi−1,vi,vi+1);
+//     *   (ii) for every i∈{0,…,k},   vi → B   (i.e., vi is a parent of B);
+//     *   (iii) vk−1 *-> A (arrowhead at A).
+//     *
+//     * @param C The C node from Zhang's (2008) definition of visible edge.
+//     * @param A The A node from Zhang's (2008) definition of visible edge.
+//     * @param B The B node from Zhang's (2008) definition of visible edge.
+//     */
+//    private boolean existsColliderPathInto(Node C, Node A, Node B) {
+//        // C itself must already be a parent of B, otherwise no path can qualify.
+//        if (!graph.isParentOf(C, B)) return false;
+//
+//        return dfsColliderPath(/*prev*/ null, /*cur*/ C, A, B, new HashSet<>());
+//    }
+//    private boolean dfsColliderPath(Node prev,
+//                                    Node cur,
+//                                    Node targetA,
+//                                    Node B,
+//                                    Set<Node> path) {
+//
+//        // every node on the path must be a parent of B
+//        if (!graph.isParentOf(cur, B)) return false;
+//
+//        // reached A: last edge must have an arrowhead at A
+//        if (cur.equals(targetA)) {
+//            return prev != null && graph.getEndpoint(prev, targetA) == Endpoint.ARROW;
+//        }
+//
+//        path.add(cur);               // mark cur for this branch
+//
+//        for (Node nxt : graph.getAdjacentNodes(cur)) {
+//            if (path.contains(nxt)) continue;          // avoid cycles
+//
+//            // first step out of C has no collider constraint (prev == null)
+//            if (prev == null || graph.isDefCollider(prev, cur, nxt)) {
+//                if (dfsColliderPath(cur, nxt, targetA, B, path)) return true;
+//            }
+//        }
+//
+//        path.remove(cur);            // back-track for other branches
+//        return false;
+//    }
 
 
 //    private boolean existsColliderPathInto(Node C, Node A, Node B) {
@@ -2875,8 +2941,7 @@ public class Paths implements TetradSerializable {
      * @return A list of adjustment sets for the pair of nodes &lt;source, target&gt;. Return an smpty list if source ==
      * target or there is no amenable path from source to target.
      */
-    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint,
-                                          int nearWhichEndpoint, int maxPathLength) {
+    public List<Set<Node>> adjustmentSets(Node source, Node target, int maxNumSets, int maxDistanceFromEndpoint, int nearWhichEndpoint, int maxPathLength) {
         if (source == target) {
             return new ArrayList<>();
 //            throw new IllegalArgumentException("Source and target nodes must be different.");
@@ -2920,8 +2985,7 @@ public class Paths implements TetradSerializable {
         Set<List<Node>> backdoorPaths = allPaths(source, target, maxPathLength);
 
         if (mpdag || mag) {
-            backdoorPaths.removeIf(path -> path.size() < 2 ||
-                                           !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
+            backdoorPaths.removeIf(path -> path.size() < 2 || !(graph.getEdge(path.getFirst(), path.get(1)).pointsTowards(path.getFirst())));
         } else {
             backdoorPaths.removeIf(path -> {
                 if (path.size() < 2) {
@@ -2930,12 +2994,7 @@ public class Paths implements TetradSerializable {
                 Node x = path.getFirst();
                 Node w = path.get(1);
                 Node y = target;
-                return !(graph.getEdge(x, w).pointsTowards(x)
-                         || Edges.isUndirectedEdge(graph.getEdge(x, w))
-                         || Edges.isBidirectedEdge(graph.getEdge(x, w))
-                            && (graph.paths().existsDirectedPath(w, x)
-                                || (graph.paths().existsDirectedPath(w, x)
-                                    && graph.paths().existsDirectedPath(w, y))));
+                return !(graph.getEdge(x, w).pointsTowards(x) || Edges.isUndirectedEdge(graph.getEdge(x, w)) || Edges.isBidirectedEdge(graph.getEdge(x, w)) && (graph.paths().existsDirectedPath(w, x) || (graph.paths().existsDirectedPath(w, x) && graph.paths().existsDirectedPath(w, y))));
             });
         }
 
@@ -3043,8 +3102,7 @@ public class Paths implements TetradSerializable {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }
@@ -3062,8 +3120,7 @@ public class Paths implements TetradSerializable {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+            TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }
@@ -3085,8 +3142,7 @@ public class Paths implements TetradSerializable {
      * @return true if the graph configuration is maximal, otherwise false.
      */
     public boolean isMaximal() {
-        List<Node> selection = graph.getNodes().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+        List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         List<Node> _nodes = graph.getNodes();
 

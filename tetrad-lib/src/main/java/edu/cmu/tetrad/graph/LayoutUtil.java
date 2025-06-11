@@ -71,6 +71,18 @@ public class LayoutUtil {
      * @param graph the graph to be arranged.
      */
     public static void defaultLayout(Graph graph) {
+        boolean allOriented = true;
+
+        for (Node node : graph.getNodes()) {
+            if (node.getCenterX() == -1 || node.getCenterY() == -1) {
+                allOriented = false;
+            }
+        }
+
+        if (allOriented) {
+            return;
+        }
+
         if (graph.getNumNodes() <= 20) {
             circleLayout(graph);
         } else {

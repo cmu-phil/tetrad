@@ -27,10 +27,10 @@ import java.util.stream.Collectors;
  * m-separation holds and another list (for dependency checks) where the m-separation does not hold. Then the
  * predictions are tested against the data set using the independence test. For the Markov test, since an independence
  * test yielding p-values should be Uniform under the null hypothesis, these p-values are tested for Uniformity using
- * the Kolmogorov-Smirnov test. Also, a fraction of dependent judgments isd  returned, which should equal the alpha level
- * of the independence test if the test is Uniform under the null hypothesis. For the Faithfulness test, the p-values
- * are tested for Uniformity using the Kolmogorov-Smirnov test; these should be dependent. Also, a fraction of dependent
- * judgments is returned.
+ * the Kolmogorov-Smirnov test. Also, a fraction of dependent judgments isd  returned, which should equal the alpha
+ * level of the independence test if the test is Uniform under the null hypothesis. For the Faithfulness test, the
+ * p-values are tested for Uniformity using the Kolmogorov-Smirnov test; these should be dependent. Also, a fraction of
+ * dependent judgments is returned.
  * <p>
  * Knowledge may be supplied to the Markov check. This knowledge is used to specify independence and conditioning
  * ranges. For facts of the form X _||_ Y | Z, X and Y should be in the last tier of the knowledge, and Z should be in
@@ -63,11 +63,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The Anderson-Darling p-value for the independent case.
      */
-    private final double fisherCombinedPIndep = Double.NaN;
+    private double fisherCombinedPIndep = Double.NaN;
     /**
      * The Anderson-Darling p-value for the dependent case.
      */
-    private final double fisherCombinedPDep = Double.NaN;
+    private double fisherCombinedPDep = Double.NaN;
     /**
      * The independence test.
      */
@@ -130,8 +130,14 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private double binomialPDep = Double.NaN;
     /**
      * The percentage of all samples to use when resampling for each conditional independence test.
+     *
+     * @deprecated 2025-6-8 Changed to fraction resample.
      */
-    private double percentResample = 1.0;
+    private double percentResample = Double.NaN;
+    /**
+     * The percentage of all samples to use when resampling for each conditional independence test.
+     */
+    private double fractionResample = 1.0;
     /**
      * The number of tests for the independent case.
      */
@@ -160,6 +166,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * The maximum length of paths to consider, for relevant methods.
      */
     private int maxLength = -1;
+    /**
+     * Whether verbose output should be printed.
+     */
+    private boolean verbose = false;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -940,13 +950,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-
-            this.numTestsIndep = msep.size();
-            this.numTestsDep = mconn.size();
         }
 
-        calcStats(true);
-        calcStats(false);
+        calcStats(indep);
     }
 
 //    private @NotNull Set<Node> removeExtraneousVariables(Set<Node> z, Node x, Node y, boolean isMpdag) {
@@ -1190,11 +1196,12 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * Sets the percentage of all samples to use when resampling for each conditional independence test.
      *
-     * @param percentResample The percentage of all samples to use when resampling for each conditional independence
-     *                        test.
+     * @param fractionResample The fraction of all samples to use when resampling for each conditional independence test
+     *                         (0 to 1).
      */
-    public void setPercentResample(double percentResample) {
-        this.percentResample = percentResample;
+    public void setFractionResample(double fractionResample) {
+        this.fractionResample = fractionResample;
+        this.percentResample = fractionResample;
     }
 
     /**
@@ -1270,17 +1277,20 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @see MarkovCheckRecord
      */
     public MarkovCheckRecord getMarkovCheckRecord() throws InterruptedException {
-        setPercentResample(percentResample);
-        generateResults(true, true);
+        setFractionResample(fractionResample);
         double adInd = getAndersonDarlingP(true);
         double adDep = getAndersonDarlingP(false);
+        double ksInd = getKsPValue(true);
+        double ksDep = getKsPValue(false);
+        double fishInd = getFisherCombinedP(true);
+        double fishDep = getFisherCombinedP(false);
         double binIndep = getBinomialPValue(true);
         double binDep = getBinomialPValue(false);
         double fracDepInd = getFractionDependent(true);
         double fracDepDep = getFractionDependent(false);
         int numTestsInd = getNumTests(true);
         int numTestsDep = getNumTests(false);
-        return new MarkovCheckRecord(adInd, adDep, binIndep, binDep, fracDepInd, fracDepDep, numTestsInd, numTestsDep);
+        return new MarkovCheckRecord(adInd, adDep, ksInd, ksDep, fishInd, fishDep, binIndep, binDep, fracDepInd, fracDepDep, numTestsInd, numTestsDep);
     }
 
     /**
@@ -1294,14 +1304,18 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         NumberFormat nf = new DecimalFormat("0.000");
         MarkovCheckRecord record = getMarkovCheckRecord();
 
-        return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n" +
-               "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
-               "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
-               "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
-               "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
-               "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
-               "Number of tests (indep): " + record.numTestsInd + "\n" +
-               "Number of tests (dep): " + record.numTestsDep;
+        return "Anderson-Darling p-value (indep): " + nf.format(record.adInd()) + "\n" +
+               "Anderson-Darling p-value (dep): " + nf.format(record.adDep()) + "\n" +
+               "Kolmogorov-Smirnoff p-value (indep): " + nf.format(record.ksInd()) + "\n" +
+               "Kolmogorov-Smirnoff p-value (dep): " + nf.format(record.kdDep()) + "\n" +
+               "Fisher combined p-value (indep): " + nf.format(record.fishInd()) + "\n" +
+               "Fisher combined p-value (dep): " + nf.format(record.fishDep()) + "\n" +
+               "Binomial p-value (indep): " + nf.format(record.binInd()) + "\n" +
+               "Binomial p-value (dep): " + nf.format(record.binDep()) + "\n" +
+               "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd()) + "\n" +
+               "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep()) + "\n" +
+               "Number of tests (indep): " + record.numTestsInd() + "\n" +
+               "Number of tests (dep): " + record.numTestsDep();
     }
 
     /**
@@ -1437,7 +1451,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 Set<Node> z = fact.getZ();
 
                 if (independenceTest instanceof RowsSettable) {
-                    List<Integer> rows = getSubsampleRows(percentResample);
+                    List<Integer> rows = getSubsampleRows(fractionResample);
 //                    List<Integer> rows = getBootstrapRows(1.0);
                     ((RowsSettable) independenceTest).setRows(rows); // FisherZ will only calc pvalues to those rows
 
@@ -1459,6 +1473,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
                 try {
                     result = independenceTest.checkIndependence(x, y, z);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log(result.toString());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     TetradLogger.getInstance().log("Error in independence test; not adding result: " + e.getMessage());
@@ -1563,65 +1581,40 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         int dependent = 0;
 
         for (IndependenceResult result : results) {
-            if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
+            if (result.getPValue() <= independenceTest.getAlpha()) dependent++;
         }
 
         List<Double> pValues = getPValues(results);
 
-        double min = 0.0;
+        GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
 
-        // Optionally let the minimum of the uniform range be the minimum p-value. This is useful if we ignore
-        // p-values less than alpha. This is hard-coded for now.
-        if (false) {
-            min = Double.POSITIVE_INFINITY;
-            for (double pValue : pValues) {
-                if (pValue < min) {
-                    min = pValue;
-                }
-            }
-        }
+        double _aSquared = _generalAndersonDarlingTest.getASquared();
+        double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
+        double adP = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
+        double ksP = UniformityTest.getKsPValue(pValues, 0, 1);
+        double fishP = getFisherCombinedPValue(results);
+        double binP = getBinomialPValue(pValues, independenceTest.getAlpha());
+        double fracDep = dependent / (double) results.size();
+        int numTests = results.size();
 
         if (indep) {
-            fractionDependentIndep = dependent / (double) results.size();
-
-            if (pValues.size() < 2) {
-                ksPValueIndep = Double.NaN;
-                binomialPIndep = Double.NaN;
-                aSquaredIndep = Double.NaN;
-                aSquaredStarIndep = Double.NaN;
-                andersonDarlingPIndep = Double.NaN;
-            } else {
-                GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(min, 1));
-                double _aSquared = _generalAndersonDarlingTest.getASquared();
-                double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
-
-                ksPValueIndep = UniformityTest.getKsPValue(pValues, min, 1.0);
-                binomialPIndep = getBinomialPValue(pValues, independenceTest.getAlpha());
-                aSquaredIndep = _aSquared;
-                aSquaredStarIndep = _aSquaredStar;
-                andersonDarlingPIndep = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
-            }
+            aSquaredIndep = _aSquared;
+            aSquaredStarIndep = _aSquaredStar;
+            andersonDarlingPIndep = adP;
+            ksPValueIndep = ksP;
+            fisherCombinedPIndep = fishP;
+            binomialPIndep = binP;
+            fractionDependentIndep = fracDep;
+            numTestsIndep = numTests;
         } else {
-            fractionDependentDep = dependent / (double) results.size();
-
-            if (pValues.size() < 2) {
-                ksPValueDep = Double.NaN;
-                binomialPDep = Double.NaN;
-                aSquaredDep = Double.NaN;
-                aSquaredStarDep = Double.NaN;
-                andersonDarlingPDep = Double.NaN;
-
-            } else {
-                GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(min, 1));
-                double _aSquared = _generalAndersonDarlingTest.getASquared();
-                double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
-
-                ksPValueDep = UniformityTest.getKsPValue(pValues, 0.0, 1.0);
-                binomialPDep = getBinomialPValue(pValues, independenceTest.getAlpha());
-                aSquaredDep = _aSquared;
-                aSquaredStarDep = _aSquaredStar;
-                andersonDarlingPDep = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
-            }
+            aSquaredDep = _aSquared;
+            aSquaredStarDep = _aSquaredStar;
+            andersonDarlingPDep = adP;
+            ksPValueDep = ksP;
+            fisherCombinedPDep = fishP;
+            binomialPDep = binP;
+            fractionDependentDep = fracDep;
+            numTestsDep = numTests;
         }
     }
 
@@ -1821,7 +1814,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
     }
 
-
     /**
      * Adds a ModelObserver to the list of observers.
      *
@@ -1879,19 +1871,37 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
+     * Sets the verbosity level for logging or output. By enabling or disabling verbose mode, this method allows the
+     * control of detailed information display.
+     *
+     * @param verbose a boolean value where {@code true} enables verbose mode and {@code false} disables it
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
      * A single record for the results of the Markov check.
      *
      * @param adInd       The Anderson-Darling p-value for the independent case.
      * @param adDep       The Anderson-Darling p-value for the dependent case.
-     * @param binIndep    The Binomial p-value for the independent case.
+     * @param ksInd       The Kolmogorov-Smirnoff p-value for the independent case.
+     * @param kdDep       The Kolmogorov-Smirnoff p-value for the dependent case.
+     * @param fishInd     The Fisher combined p-value for the independent case.
+     * @param fishDep     The Fisher combined p-value for the dependent case.
+     * @param binInd      The Binomial p-value for the independent case.
      * @param binDep      The Binomial p-value for the dependent case.
      * @param fracDepInd  The fraction of dependent judgments for the independent case.
      * @param fracDepDep  The fraction of dependent judgments for the dependent case.
      * @param numTestsInd The number of tests for the independent case.
      * @param numTestsDep The number of tests for the dependent case.
      */
-    public record MarkovCheckRecord(double adInd, double adDep, double binIndep, double binDep, double fracDepInd,
-                                    double fracDepDep, int numTestsInd, int numTestsDep) {
+    public record MarkovCheckRecord(double adInd, double adDep,
+                                    double ksInd, double kdDep,
+                                    double fishInd, double fishDep,
+                                    double binInd, double binDep,
+                                    double fracDepInd, double fracDepDep,
+                                    int numTestsInd, int numTestsDep) {
     }
 
     /**

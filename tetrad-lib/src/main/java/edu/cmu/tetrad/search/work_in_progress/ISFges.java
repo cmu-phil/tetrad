@@ -159,7 +159,7 @@ public final class ISFges implements IGraphSearch {
                 if (!(o instanceof EdgeNode _o)) {
                     throw new IllegalArgumentException();
                 }
-                return _o.edge == edge && _o.node == node;
+                return _o.edge.equals(edge) && _o.node.equals(node);
             }
         }
 

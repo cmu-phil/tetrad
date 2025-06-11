@@ -72,7 +72,7 @@ public class TestFci {
 
         System.out.println(resultGraph.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
         System.out.println(unshieldedCollidersIdenticalPagMag(resultGraph)
-                ? "Unshielded colliders the same " : "Unshielded colliders different.");
+                ? "Unshielded colliders the same." : "Unshielded colliders different.");
 
         assertEquals(pag, resultGraph);
 //        System.out.println("DAG to PAG: " + dagToPag(graph));
@@ -167,7 +167,7 @@ public class TestFci {
     @Test
     public void testSearch4() {
         checkSearch("Latent(G),Latent(R),H-->F,F<--G,G-->A,A<--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
-                "A<->C,A-->D,Bo->C,Bo->D,Co->D,F<->A,F-->D,Ho->F", new Knowledge());
+                "A<->C,A-->D,Bo->C,B-->D,C-->D,F<->A,F-->D,Ho->F", new Knowledge());
     }
 
     /**
@@ -208,7 +208,7 @@ public class TestFci {
 
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
                     "H-->M,L-->M,S-->D,I-->S,P-->S",
-                "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,Lo->M,Po->S,S-->D", new Knowledge());
+                "D<->H,D-->L,D-->M,H-->M,Io->S,L<->H,L-->M,Po->S,S-->D", new Knowledge());
     }
 
     /**
@@ -241,7 +241,7 @@ public class TestFci {
                 "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge());
     }
 
-    // This fails for FCIT from Oracle understandably. (GSTs from oracle can't use knowledge.)
+    // This fails for FCIT from Oracle, understandably. (GSTs from Oracle can't use knowledge.)
     // For FCI etc. can turn it on.
 //    @Test
     public void testSearch11() {
@@ -262,8 +262,8 @@ public class TestFci {
                 "X1o->X2,X2<->X3", knowledge);
     }
 
-    // This fails for FCIT from Oracle understandably. (GSTs from oracle can't use knowledge.)
-    // For FCI etc. can turn it on.
+    // This fails for FCIT from Oracle, understandably. (GSTs from Oracle can't use knowledge.)
+    // For FCI, etc., can turn it on.
 //    @Test
     public void testSearch12() {
         checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
@@ -541,7 +541,7 @@ public class TestFci {
                                   "4. hd --> mb\n" +
                                   "5. i o-> s\n" +
                                   "6. lc <-> hd\n" +
-                                  "7. lc o-> mb\n" +
+                                  "7. lc --> mb\n" +
                                   "8. ps o-> s\n" +
                                   "9. s --> cd";
 
@@ -555,7 +555,7 @@ public class TestFci {
             System.out.println("Correct PAG");
             System.out.println(truePag_);
 
-            Fci fci = new Fci(new MsepTest(trueMag_));
+            Fci fci = new Fci(new MsepTest(trueMag_)); //TODO FCI is failing again on this problem, need to go back and see how I fixed it before.
             fci.setVerbose(verbose);
             Graph estPag1 = fci.search();
             assertEquals(truePag_, estPag1);
@@ -571,6 +571,7 @@ public class TestFci {
             fcit.setStartWith(Fcit.START_WITH.GRASP);
             fcit.setCheckAdjacencySepsets(true);
 //            fcit.setPreserveMarkov(false);
+            fcit.setVerbose(true);
             Graph estPag3 = fcit.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
@@ -648,14 +649,14 @@ public class TestFci {
     public void testSearch21() {
         boolean verbose = false;
 
-        final String trueDag = "Graph Nodes:\n" +
-                               "X1;X2;X4;X5;X6\n" +
-                               "\n" +
-                               "Graph Edges:\n" +
-                               "1. X1 o-o X4\n" +
-                               "2. X2 o-> X6\n" +
-                               "3. X4 o-> X5\n" +
-                               "4. X5 <-> X6";
+        final String trueGraph = "Graph Nodes:\n" +
+                                 "X1;X2;X4;X5;X6\n" +
+                                 "\n" +
+                                 "Graph Edges:\n" +
+                                 "1. X1 o-o X4\n" +
+                                 "2. X2 o-> X6\n" +
+                                 "3. X4 o-> X5\n" +
+                                 "4. X5 <-> X6";
 
         final String correctPag = "Graph Nodes:\n" +
                                   "X1;X2;X4;X5;X6\n" +
@@ -667,7 +668,7 @@ public class TestFci {
                                   "4. X5 <-> X6";
 
         try {
-            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueDag);
+            Graph trueMag_ = GraphSaveLoadUtils.readerToGraphTxt(trueGraph);
             Graph truePag_ = GraphSaveLoadUtils.readerToGraphTxt(correctPag);
 
             System.out.println("True DAG");
@@ -811,7 +812,7 @@ public class TestFci {
 
 //    @Test
     public void testFcitFromOracle() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 500; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
             long seed = System.nanoTime();
@@ -819,8 +820,11 @@ public class TestFci {
 
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(20, 5, 30, 100,
+            Graph dag = RandomGraph.randomGraph(15, 4, 30, 100,
                     100, 100, false);
+
+//            System.out.println("True DAG = " + dag);
+
             MsepTest independence = new MsepTest(dag);
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
@@ -840,7 +844,7 @@ public class TestFci {
 
                 fci.setCompleteRuleSetUsed(true);
                 fci.setCheckAdjacencySepsets(true);
-                fci.setVerbose(false);
+                fci.setVerbose(true);
 
                 Graph pag = fci.search();
 
@@ -866,15 +870,15 @@ public class TestFci {
                         }
                     }
 
-                    System.out.println("pag is not legal pag seed = " + seed);
+                    System.out.println("pag is not legal pag, seed = " + seed);
                 }
 
                 assertFalse(illegal);
 
-//                if (!pag.equals(_pag)) {
-//                    fci.setVerbose(true);
-//                    fci.search();
-//                }
+                if (!pag.equals(_pag)) {
+                    System.out.println("PAG not correct, seed = " + seed);
+                    System.out.println("True DAG = " + dag);
+                }
 
                 assertEquals(_pag, pag);
             } catch (InterruptedException e) {
@@ -900,10 +904,11 @@ public class TestFci {
 
             try {
                 Fcit fcit = new Fcit(test, score);
-                fcit.setPrintChanges(true);
+                fcit.setVerbose(true);
 //                fcit.setVerbose(true);
                 fcit.setDepth(7);
                 fcit.setCompleteRuleSetUsed(true);
+                fcit.setCheckAdjacencySepsets(false);
                 Graph pag = fcit.search();
 
                 if (!pag.paths().isMaximal()) {
@@ -1052,6 +1057,9 @@ public class TestFci {
             // If this fails, it could be because someone was mucking with the inducing path method. Try reverting that
             // to what it was.
             assertTrue(legalMag);
+
+            Graph pag2 = new DagToPag(mag).convert();
+            assertEquals(pag2, pag);
         }
     }
 

@@ -65,7 +65,7 @@ public class RecursiveBlocking {
 
             Blockable blockable = findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
 
-            if (blockable != Blockable.BLOCKED) {
+            if (blockable == Blockable.UNBLOCKABLE) {
                 allBlocked = false;
             }
         }
@@ -107,6 +107,10 @@ public class RecursiveBlocking {
 
         if (path.contains(b)) {
             return Blockable.UNBLOCKABLE;
+        }
+
+        if (notFollowed.contains(b)) {
+            return Blockable.BLOCKED;
         }
 
         path.add(b);

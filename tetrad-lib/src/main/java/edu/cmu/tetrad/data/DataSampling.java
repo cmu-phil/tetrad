@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.Matrix;
@@ -25,8 +25,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.SynchronizedRandomGenerator;
-import org.apache.commons.math3.random.Well44497b;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -47,21 +45,18 @@ public final class DataSampling {
     /**
      * Create a list of dataset resampled from the given dataset.
      *
-     * @param dataSet    dataset to resample
-     * @param parameters bootstrap-related parameters
+     * @param dataSet         dataset to resample
+     * @param randomGenerator the random number generate to use.
+     * @param parameters      bootstrap-related parameters
      * @return a list of resampled dataset
      */
-    public static List<DataSet> createDataSamples(DataSet dataSet, Parameters parameters) {
+    public static List<DataSet> createDataSamples(RandomGenerator randomGenerator, DataSet dataSet, Parameters parameters) {
         List<DataSet> dataSets = new LinkedList<>();
         // no resampling
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             dataSets.add(dataSet);
         } else {
-            // create new random generator if a seed is given
-            Long seed = parameters.getLong(Params.SEED);
-            RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
-
-            dataSets.addAll(createDataSamples(dataSet, parameters, randomGenerator));
+            dataSets.addAll(createDataSamples(dataSet, randomGenerator, parameters));
         }
 
         return dataSets;
@@ -71,29 +66,18 @@ public final class DataSampling {
      * Create a list of dataset resampled from the given dataset.
      *
      * @param dataSet         dataset to resample
-     * @param parameters      bootstrap-related parameters
      * @param randomGenerator random number generator (optional)
+     * @param parameters      bootstrap-related parameters
      * @return a list of resampled dataset
      */
-    public static List<DataSet> createDataSamples(DataSet dataSet, Parameters parameters, RandomGenerator randomGenerator) {
+    public static List<DataSet> createDataSamples(DataSet dataSet, RandomGenerator randomGenerator, Parameters parameters) {
         List<DataSet> datasets = new LinkedList<>();
 
-        int sampleSize = (int) (dataSet.getNumRows() * (parameters.getInt(Params.PERCENT_RESAMPLE_SIZE) / 100.0));
-        boolean isResamplingWithReplacement = parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT);
         int[] selectedColumns = IntStream.range(0, dataSet.getNumColumns()).toArray();  // select all data columns
         for (int i = 0; i < parameters.getInt(Params.NUMBER_RESAMPLING) && !Thread.currentThread().isInterrupted(); i++) {
             // select data rows to create new dataset
-            int[] selectedRows = isResamplingWithReplacement
-                    ? getRowIndexesWithReplacement(dataSet, sampleSize, randomGenerator)
-                    : getRowIndexesWithoutReplacement(dataSet, sampleSize, randomGenerator);
-
-            // create a new dataset containing selected rows and selected columns
-            Matrix matrix = dataSet.getDoubleData();
-            BoxDataSet boxDataSet = new BoxDataSet(
-                    new VerticalDoubleDataBox(matrix.view(selectedRows, selectedColumns).mat().transpose().toArray()),
-                    dataSet.getVariables());
-            boxDataSet.setKnowledge(dataSet.getKnowledge());
-            datasets.add(boxDataSet);
+            DataSet sample = createDataSample(dataSet, randomGenerator, selectedColumns, parameters);
+            datasets.add(sample);
         }
 
         // add original dataset if requested
@@ -102,6 +86,28 @@ public final class DataSampling {
         }
 
         return datasets;
+    }
+
+    /**
+     * Creates a resampled dataset from the given dataset based on the specified parameters.
+     *
+     * @param dataSet         the input dataset from which the sample will be created
+     * @param randomGenerator the random number generator used for sampling
+     * @param selectedColumns an array of column indices to include in the sampled dataset
+     * @param parameters      the parameters for sampling, including sampling fraction and resampling method
+     * @return a new dataset containing the selected rows and columns
+     */
+    public static DataSet createDataSample(DataSet dataSet, RandomGenerator randomGenerator, int[] selectedColumns, Parameters parameters) {
+        int sampleSize = (int) (dataSet.getNumRows() * (parameters.getInt(Params.FRACTION_RESAMPLE_SIZE) / 100.0));
+        boolean isResamplingWithReplacement = parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT);
+
+        int[] selectedRows = isResamplingWithReplacement ? getRowIndexesWithReplacement(dataSet, sampleSize, randomGenerator) : getRowIndexesWithoutReplacement(dataSet, sampleSize, randomGenerator);
+
+        // create a new dataset containing selected rows and selected columns
+        Matrix matrix = dataSet.getDoubleData();
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix.view(selectedRows, selectedColumns).mat().transpose().toArray()), dataSet.getVariables());
+        boxDataSet.setKnowledge(dataSet.getKnowledge());
+        return boxDataSet;
     }
 
     /**

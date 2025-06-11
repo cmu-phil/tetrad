@@ -1175,7 +1175,8 @@ public final class GraphUtils {
 
             graph.addEdge(xyEdge);
 
-            if (graph.paths().defVisible(edge)) {
+            Paths paths = graph.paths();
+            if (paths.defVisiblePag(edge.getNode1(), edge.getNode2())) {
                 edge.addProperty(Property.nl); // solid.
             } else {
                 edge.addProperty(Property.pl); // dashed
@@ -1966,9 +1967,15 @@ public final class GraphUtils {
         if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
             System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
             return new HashSet<>();
-        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
-            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
-            return new HashSet<>();
+        } else {
+            if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y)) {
+                Paths paths = G.paths();
+                Edge edge = G.getEdge(x, y);
+                if (!paths.defVisiblePag(edge.getNode1(), edge.getNode2())) {
+                    System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
+                    return new HashSet<>();
+                }
+            }
         }
 
         // Get the Markov blanket for x in G2.
@@ -2010,9 +2017,15 @@ public final class GraphUtils {
         if (G2.paths().isLegalMpdag() && G.isAdjacentTo(x, y) && !Edges.isDirectedEdge(G.getEdge(x, y))) {
             System.out.println("The edge from x to y must be visible: " + G.getEdge(x, y));
             return new HashSet<>();
-        } else if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y) && !G.paths().defVisible(G.getEdge(x, y))) {
-            System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
-            return new HashSet<>();
+        } else {
+            if (G2.paths().isLegalPag() && G.isAdjacentTo(x, y)) {
+                Paths paths = G.paths();
+                Edge edge = G.getEdge(x, y);
+                if (!paths.defVisiblePag(edge.getNode1(), edge.getNode2())) {
+                    System.out.println("The edge from x to y must be visible:" + G.getEdge(x, y));
+                    return new HashSet<>();
+                }
+            }
         }
 
         Set<Node> anteriority = G.paths().anteriority(x, y);
@@ -2092,8 +2105,11 @@ public final class GraphUtils {
             throw new IllegalArgumentException("Edge from x to y must be directed.");
         } else if (edge.pointsTowards(x)) {
             throw new IllegalArgumentException("Edge from x to y must point towards y.");
-        } else if (!G.paths().defVisible(edge)) {
-            throw new IllegalArgumentException("Edge from x to y must be visible.");
+        } else {
+            Paths paths = G.paths();
+            if (!paths.defVisiblePag(edge.getNode1(), edge.getNode2())) {
+                throw new IllegalArgumentException("Edge from x to y must be visible.");
+            }
         }
 
         Graph G2 = new EdgeListGraph(G);
@@ -2544,18 +2560,16 @@ public final class GraphUtils {
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> knownColliders,
                                      boolean verbose, Set<Node> selection) {
-//        System.out.println("In guarantee PAG, unshielded colliders: " + knownColliders);
-
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
-        fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.setAllowedColliders(knownColliders);
-        fciOrient.setUseR4(true);
 
         Graph orig = new EdgeListGraph(pag);
+
+        if (orig.paths().isLegalPag()) {
+            return orig;
+        }
 
         boolean changed;
 
@@ -2565,9 +2579,7 @@ public final class GraphUtils {
             changed |= removeAlmostCycles(pag, knownColliders, verbose);
             changed |= repairMaximality(pag, verbose, selection);
             changed |= removeCycles(pag, verbose);
-
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
-
         } while (changed);
 
         DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
@@ -2702,7 +2714,6 @@ public final class GraphUtils {
         reorientWithCircles(pag, verbose);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
         recallInitialColliders(pag, unshieldedColliders, knowledge);
-        fciOrient.setAllowedColliders(unshieldedColliders);
         fciOrient.finalOrientation(pag);
     }
 
@@ -3133,12 +3144,16 @@ public final class GraphUtils {
      * @param knowledge        the knowledge object.
      */
     public static void recallInitialColliders(Graph pag, Set<Triple> initialColliders, Knowledge knowledge) {
-        for (Triple triple : new HashSet<>(initialColliders)) {
+        for (Triple triple: new HashSet<>(initialColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
 
-            if (triple(pag, x, b, y) && colliderAllowed(pag, x, b, y, knowledge)) {
+            if (!distinct(x, b, y)) {
+                throw new IllegalArgumentException("Nodes not distinct.");
+            }
+
+            if (triple(pag, x, b, y) && !pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y, knowledge)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
             }

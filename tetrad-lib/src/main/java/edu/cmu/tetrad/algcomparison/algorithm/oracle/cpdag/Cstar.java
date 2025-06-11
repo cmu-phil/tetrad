@@ -120,7 +120,13 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
         if (targetNames.trim().equalsIgnoreCase("all")) {
             for (String name : dataSet.getVariableNames()) {
-                possibleEffects.add(dataSet.getVariable(name));
+                Node variable = dataSet.getVariable(name);
+
+                if (variable == null) {
+                    throw new NullPointerException("Variable " + name + " is not in the dataset.");
+                }
+
+                possibleEffects.add(variable);
             }
         } else {
             String string = parameters.getString(Params.TARGETS);
@@ -133,7 +139,17 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             }
 
             for (String _target : _targets) {
-                possibleEffects.add(dataSet.getVariable(_target));
+                if (_target.trim().isEmpty()) {
+                    continue;
+                }
+
+                Node variable = dataSet.getVariable(_target);
+
+                if (variable == null) {
+                    throw new NullPointerException("Variable " + _target + " is not in the dataset.");
+                }
+
+                possibleEffects.add(variable);
             }
         }
 

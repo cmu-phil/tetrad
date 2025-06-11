@@ -20,9 +20,30 @@ public class StructuralHammingDistance implements Statistic {
     private static final long serialVersionUID = 23L;
 
     /**
+     * Indicates whether the Structural Hamming Distance (SHD) calculation should be
+     * based on the CPDAG (Completed Partially Directed Acyclic Graph) form of the true graph
+     * rather than its original PDAG (Partially Directed Acyclic Graph) form. When set to true,
+     * the SHD computation compares the estimated graph to the CPDAG of the true graph;
+     * otherwise, it compares the estimated graph to the true PDAG.
+     */
+    private boolean compareToCpdag = false;
+
+    /**
      * Constructs the statistic.
      */
     public StructuralHammingDistance() {
+    }
+
+    /**
+     * Constructs a StructuralHammingDistance instance with the specified comparison mode.
+     *
+     * @param compareToCpdag A boolean flag indicating whether the Structural Hamming Distance
+     * should be calculated by comparing the estimated graph to the CPDAG (Completed Partially
+     * Directed Acyclic Graph) of the true graph. If true, the calculation uses the CPDAG;
+     * otherwise, it uses the original PDAG (Partially Directed Acyclic Graph) of the true graph.
+     */
+    public StructuralHammingDistance(boolean compareToCpdag) {
+        this.compareToCpdag = compareToCpdag;
     }
 
     /**
@@ -30,7 +51,7 @@ public class StructuralHammingDistance implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "SHD";
+        return "SHD " + (compareToCpdag ? "(CPDAG)" : "(PDAG)");
     }
 
     /**
@@ -38,7 +59,7 @@ public class StructuralHammingDistance implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Structural Hamming Distance";
+        return "Structural Hamming Distance" +(compareToCpdag ? " compared to CDAG of true PDAG" : " compared to true PDAG");
     }
 
     /**
@@ -46,8 +67,7 @@ public class StructuralHammingDistance implements Statistic {
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(trueGraph, estGraph);
-        return comparison.getShd();
+        return GraphSearchUtils.structuralhammingdistance(trueGraph, estGraph, compareToCpdag);
     }
 
     /**
