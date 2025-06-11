@@ -130,6 +130,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private double binomialPDep = Double.NaN;
     /**
      * The percentage of all samples to use when resampling for each conditional independence test.
+     *
      * @deprecated 2025-6-8 Changed to fraction resample.
      */
     private double percentResample = Double.NaN;
@@ -165,6 +166,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * The maximum length of paths to consider, for relevant methods.
      */
     private int maxLength = -1;
+    /**
+     * Whether verbose output should be printed.
+     */
+    private boolean verbose = false;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -1191,8 +1196,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * Sets the percentage of all samples to use when resampling for each conditional independence test.
      *
-     * @param fractionResample The fraction of all samples to use when resampling for each conditional independence
-     *                         test (0 to 1).
+     * @param fractionResample The fraction of all samples to use when resampling for each conditional independence test
+     *                         (0 to 1).
      */
     public void setFractionResample(double fractionResample) {
         this.fractionResample = fractionResample;
@@ -1468,6 +1473,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
                 try {
                     result = independenceTest.checkIndependence(x, y, z);
+
+                    if (verbose) {
+                        TetradLogger.getInstance().log(result.toString());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     TetradLogger.getInstance().log("Error in independence test; not adding result: " + e.getMessage());
@@ -1859,6 +1868,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public void setMaxLength(int maxLength) {
         this.maxLength = maxLength;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     /**

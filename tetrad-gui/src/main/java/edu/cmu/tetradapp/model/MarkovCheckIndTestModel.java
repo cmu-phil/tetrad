@@ -80,6 +80,10 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * | Z, X and Y should be in the last tier, and Z should be in previous tiers.
      */
     private Knowledge knowledge;
+    /**
+     * Whether verbose output should be printed.
+     */
+    private boolean verbose = false;
 
     /**
      * Constructs a new Markov checer with the given data model, graph, and parameters.
@@ -287,6 +291,11 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     @Override
     public List<String> getVariableNames() {
         return null;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+        this.getMarkovCheck().setVerbose(verbose);
     }
 }
 

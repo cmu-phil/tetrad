@@ -128,6 +128,10 @@ public class MarkovCheckEditor extends JPanel {
      */
     private final JCheckBox checkDependentDistribution;
     /**
+     * Whether verbose output should be printed to the log and console.
+     */
+    private final JCheckBox verbose;
+    /**
      * The label for the fraction of p-values less than the alpha level.
      */
     boolean updatingTestModels = true;
@@ -452,6 +456,13 @@ public class MarkovCheckEditor extends JPanel {
         checkDependentDistribution = new JCheckBox("Check Dependent Distribution");
         checkDependentDistribution.setSelected(false);
 
+        verbose = new JCheckBox("Verbose");
+        verbose.setSelected(false);
+
+        verbose.addActionListener(e -> {
+            model.setVerbose(verbose.isSelected());
+        });
+
         JTextArea testDescTextArea = new JTextArea(getHelpMessage());
         testDescTextArea.setEditable(true);
         testDescTextArea.setLineWrap(true);
@@ -471,7 +482,8 @@ public class MarkovCheckEditor extends JPanel {
             }
         };
 
-        initComponents(params, sample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables, checkDependentDistribution, fractionSampleLabel);
+        initComponents(params, sample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables, checkDependentDistribution,
+                verbose, fractionSampleLabel);
     }
 
     /**
@@ -838,7 +850,7 @@ public class MarkovCheckEditor extends JPanel {
 
     private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane,
                                 JLabel conditioningSetsLabel, JCheckBox removeExtranenousVariables,
-                                JCheckBox checkDependentDistribution,
+                                JCheckBox checkDependentDistribution, JCheckBox verbose,
                                 JLabel fractionSampleLabel) {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -856,6 +868,7 @@ public class MarkovCheckEditor extends JPanel {
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(checkDependentDistribution, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                 )
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addComponent(testLabel)
@@ -891,6 +904,7 @@ public class MarkovCheckEditor extends JPanel {
                                 .addComponent(conditioningSetsLabel)
                                 .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(checkDependentDistribution, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         )
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pane, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
