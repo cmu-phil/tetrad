@@ -1870,6 +1870,12 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         this.maxLength = maxLength;
     }
 
+    /**
+     * Sets the verbosity level for logging or output. By enabling or disabling verbose mode, this method allows the
+     * control of detailed information display.
+     *
+     * @param verbose a boolean value where {@code true} enables verbose mode and {@code false} disables it
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.Matrix;
@@ -45,8 +45,9 @@ public final class DataSampling {
     /**
      * Create a list of dataset resampled from the given dataset.
      *
-     * @param dataSet    dataset to resample
-     * @param parameters bootstrap-related parameters
+     * @param dataSet         dataset to resample
+     * @param randomGenerator the random number generate to use.
+     * @param parameters      bootstrap-related parameters
      * @return a list of resampled dataset
      */
     public static List<DataSet> createDataSamples(RandomGenerator randomGenerator, DataSet dataSet, Parameters parameters) {
@@ -55,7 +56,7 @@ public final class DataSampling {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             dataSets.add(dataSet);
         } else {
-             dataSets.addAll(createDataSamples(dataSet, randomGenerator, parameters));
+            dataSets.addAll(createDataSamples(dataSet, randomGenerator, parameters));
         }
 
         return dataSets;
@@ -87,19 +88,24 @@ public final class DataSampling {
         return datasets;
     }
 
+    /**
+     * Creates a resampled dataset from the given dataset based on the specified parameters.
+     *
+     * @param dataSet         the input dataset from which the sample will be created
+     * @param randomGenerator the random number generator used for sampling
+     * @param selectedColumns an array of column indices to include in the sampled dataset
+     * @param parameters      the parameters for sampling, including sampling fraction and resampling method
+     * @return a new dataset containing the selected rows and columns
+     */
     public static DataSet createDataSample(DataSet dataSet, RandomGenerator randomGenerator, int[] selectedColumns, Parameters parameters) {
         int sampleSize = (int) (dataSet.getNumRows() * (parameters.getInt(Params.FRACTION_RESAMPLE_SIZE) / 100.0));
         boolean isResamplingWithReplacement = parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT);
 
-        int[] selectedRows = isResamplingWithReplacement
-                ? getRowIndexesWithReplacement(dataSet, sampleSize, randomGenerator)
-                : getRowIndexesWithoutReplacement(dataSet, sampleSize, randomGenerator);
+        int[] selectedRows = isResamplingWithReplacement ? getRowIndexesWithReplacement(dataSet, sampleSize, randomGenerator) : getRowIndexesWithoutReplacement(dataSet, sampleSize, randomGenerator);
 
         // create a new dataset containing selected rows and selected columns
         Matrix matrix = dataSet.getDoubleData();
-        BoxDataSet boxDataSet = new BoxDataSet(
-                new VerticalDoubleDataBox(matrix.view(selectedRows, selectedColumns).mat().transpose().toArray()),
-                dataSet.getVariables());
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(matrix.view(selectedRows, selectedColumns).mat().transpose().toArray()), dataSet.getVariables());
         boxDataSet.setKnowledge(dataSet.getKnowledge());
         return boxDataSet;
     }
