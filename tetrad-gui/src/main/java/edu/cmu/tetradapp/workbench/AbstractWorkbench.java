@@ -216,7 +216,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param graph The graph that this workbench will display.
      */
     protected AbstractWorkbench(Graph graph) {
-        setGraph(graph);
+        if (samplingGraph != null) {
+            setGraph(GraphSampling.createDisplayGraph(samplingGraph,
+                    ResamplingEdgeEnsemble.Majority));
+        } else {
+            setGraph(graph);
+        }
         addMouseListener(this.mouseHandler);
         addMouseMotionListener(this.mouseMotionHandler);
         // setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -1129,8 +1134,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 setSamplingGraph(samplingGraph);
             }
 
-            this.graph = GraphSampling.createDisplayGraph(samplingGraph,
-                            ResamplingEdgeEnsemble.Majority);
+            this.graph = graph;
         } else {
             setSamplingGraph(null);
             this.graph = graph;
