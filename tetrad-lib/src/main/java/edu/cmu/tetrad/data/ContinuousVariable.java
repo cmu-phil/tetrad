@@ -196,7 +196,8 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     public boolean equals(Object o) {
         if (o == null) return false;
         if (!(o instanceof ContinuousVariable)) return false;
-        return getName().equals(((Node) o).getName());
+        if (!getName().equals(((Node) o).getName()))  return false;
+        return getNodeType() == ((ContinuousVariable) o).getNodeType();
     }
 
     /**

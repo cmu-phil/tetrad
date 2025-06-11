@@ -122,9 +122,12 @@ public final class Fcit implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * True if condition sets should at the end be checked that are subsets of adjacents of the variables. This is only
-     * done after all recursive sepset removals have been done. True by default. This is needed in order to pass an
-     * Oracle test but can reduce accuracy from data.
+     * A flag indicating whether to perform a final check of condition sets that are subsets of adjacent nodes of the
+     * variables in the graph, after all recursive separation set removals have been completed. This step can ensure
+     * correctness in specific theoretical tests, such as Oracle tests, but may reduce accuracy when applied to
+     * empirical data.
+     * <p>
+     * The default value is {@code true}.
      */
     private boolean checkAdjacencySepsets = true;
     /**
@@ -132,7 +135,7 @@ public final class Fcit implements IGraphSearch {
      * initialized as an empty {@link EdgeListGraph} and is updated throughout the search algorithm to incorporate
      * causal structure information.
      * <p>
-     * This graph serves as the central data structure reflecting the results of independence tests, edge orientations,
+     * This graph serves as the central data structure, reflecting the results of independence tests, edge orientations,
      * and adjustments based on causal constraints. It is used to store and refine the causal relationships inferred by
      * the algorithm.
      * <p>
@@ -142,10 +145,10 @@ public final class Fcit implements IGraphSearch {
     private @NotNull Graph pag = new EdgeListGraph();
 
     /**
-     * FCIT constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and Score
+     * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
      * object.
      * <p>
-     * In this constructor, we will use BOSS or GRaSP internally to infer an initial CPDAG and valid order of the
+     * In this constructor, we will use BOSS or GRaSP internally to infer an initial CPDAG and a valid order of the
      * variables. This is the default behavior of the FCIT algorithm.
      *
      * @param test  The IndependenceTest object to be used for testing independence between variables.
@@ -169,6 +172,38 @@ public final class Fcit implements IGraphSearch {
         if (test instanceof MsepTest) {
             this.startWith = START_WITH.GRASP;
         }
+    }
+
+    /**
+     * Identifies and notes known unshielded colliders from the provided CPDAG (Completed Partially Directed Acyclic
+     * Graph) by looking at its implied structure and transferring relevant colliders to the current PAG (Partial
+     * Ancestral Graph). This process is justified in the GFCI (Generalized Fast Causal Inference) algorithm, as
+     * described in the referenced research.
+     *
+     * @param best  A list of nodes representing the best-known nodes to be evaluated during the collider identification
+     *              process.
+     * @param graph The graph from which known unshielded colliders are identified and extracted.
+     * @return A set of triples representing the known colliders identified in the provided CPDAG.
+     */
+    private static Set<Triple> noteInitialColliders(List<Node> best, Graph graph) {
+        Set<Triple> initialColliders = new HashSet<>();
+
+        for (Node b : best) {
+            var adj = graph.getAdjacentNodes(b);
+
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node x = adj.get(i);
+                    Node y = adj.get(j);
+
+                    if (graph.isDefCollider(x, b, y) && !graph.isAdjacentTo(x, y)) {
+                        initialColliders.add(new Triple(x, b, y));
+                    }
+                }
+            }
+        }
+
+        return initialColliders;
     }
 
     /**
@@ -197,7 +232,7 @@ public final class Fcit implements IGraphSearch {
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(false);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -320,17 +355,25 @@ public final class Fcit implements IGraphSearch {
         }
 
         // The main procedure.
-        this.pag = GraphTransforms.dagToPag(dag);
 
-        // This will be needed later to refresh the PAG state.
-        this.initialColliders = noteInitialColliders(best, this.pag);
+        DagToPag dagToPag = new DagToPag(dag);
+        dagToPag.setKnowledge(knowledge);
+        dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
+        dagToPag.setVerbose(superVerbose);
+        this.pag = dagToPag.convert();
+
+        this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
+
+        if (!this.pag.paths().isLegalPag()) {
+            throw new IllegalArgumentException("Initial PAG is not legal.");
+        }
 
         // This removes edges based on recursive path blocking. After every edge removal, the evolving PAG is
         // rebuilt based on initial unshielded colliders and learned sepsets.
         removeEdgesRecursively();
 
         // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
-        // for correctness but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
+        // for correctness, but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
         // is rebuilt.
         if (checkAdjacencySepsets) {
             removeEdgesSubsetsOfAdjacents();
@@ -350,6 +393,16 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
+
+    private void redoGfciOrientation() {
+        // GFCI reorientation...
+        GraphUtils.reorientWithCircles(this.pag, superVerbose);
+        fciOrient.fciOrientbk(knowledge, this.pag, this.pag.getNodes());
+        GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
+        adjustForExtraSepsets();
+        fciOrient.finalOrientation(this.pag);
+    }
+
     private void removeEdgesSubsetsOfAdjacents() throws InterruptedException {
         EDGE:
         for (Edge edge : this.pag.getEdges()) {
@@ -361,7 +414,7 @@ public final class Fcit implements IGraphSearch {
             adjx.remove(y);
             adjy.remove(x);
 
-            SublistGenerator gen1 = new SublistGenerator(adjx.size(), adjy.size());
+            SublistGenerator gen1 = new SublistGenerator(adjx.size(), adjx.size());
             int[] choice1;
 
             while ((choice1 = gen1.next()) != null) {
@@ -373,10 +426,14 @@ public final class Fcit implements IGraphSearch {
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
                     if (verbose) {
-                        TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
+                        TetradLogger.getInstance().log("Removing edge for adjacency reasons: " + edge + "; "
+                                                       + x + " _||_ " + y + " | " + cond);
                     }
 
-                    tryRemovingEdge(x, y, cond, x + " _||_ " + y + " | " + cond);
+                    this.pag.removeEdge(edge);
+                    sepsets.set(x, y, cond);
+
+                    continue EDGE;
                 }
             }
 
@@ -393,13 +450,20 @@ public final class Fcit implements IGraphSearch {
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
                     if (verbose) {
-                        TetradLogger.getInstance().log("Tried removing edge " + edge + " for adjacency reasons.");
+                        TetradLogger.getInstance().log("Removing edge for adjacency reasons: " + edge + "; "
+                                                       + x + " _||_ " + y + " | " + cond);
                     }
 
-                    tryRemovingEdge(x, y, cond, x + " _||_ " + y + " | " + cond);
+                    this.pag.removeEdge(edge);
+                    sepsets.set(x, y, cond);
+
+                    continue EDGE;
                 }
             }
         }
+
+        System.out.println("Rebuilding PAG.");
+        redoGfciOrientation();
     }
 
     /**
@@ -445,85 +509,39 @@ public final class Fcit implements IGraphSearch {
         return grasp;
     }
 
-
-    /**
-     * Identifies and notes known unshielded colliders from the provided CPDAG (Completed Partially Directed Acyclic
-     * Graph) by looking at its implied structure and transferring relevant colliders to the current PAG (Partial
-     * Ancestral Graph). This process is justified in the GFCI (Generalized Fast Causal Inference) algorithm, as
-     * described in the referenced research.
-     *
-     * @param best A list of nodes representing the best-known nodes to be evaluated during the collider identification
-     *             process.
-     * @param pag  The CPDAG from which known colliders are identified and extracted.
-     * @return A set of triples representing the known colliders identified in the provided CPDAG.
-     */
-    private Set<Triple> noteInitialColliders(List<Node> best, Graph pag) {
-        Set<Triple> initialColliders = new HashSet<>();
-
-        // We're looking for unshielded colliders in these next steps that we can detect from the CPDAG.
-        // We do this by looking at the structure of the CPDAG implied by the BOSS graph and noting all
-        // colliders from the BOSS graph into the estimated PAG. This step is justified in the
-        // GFCI algorithm; see Ogarrio, J. M., Spirtes, P., & Ramsey, J. (2016, August). A hybrid causal search
-        // algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
-        // PMLR.
-        for (Node b : best) {
-            var adj = this.pag.getAdjacentNodes(b);
-
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = i + 1; j < adj.size(); j++) {
-                    Node x = adj.get(i);
-                    Node y = adj.get(j);
-
-                    if (GraphUtils.distinct(x, b, y)) {
-                        if (GraphUtils.colliderAllowed(this.pag, x, b, y, knowledge)) {
-                            if (pag.isDefCollider(x, b, y)) {// && !pag.isAdjacentTo(x, y)) {
-                                initialColliders.add(new Triple(x, b, y));
-
-                                if (superVerbose) {
-                                    TetradLogger.getInstance().log("Copied " + x + " *-> " + b + " <-* " + y + " from initial PAG to PAG.");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return initialColliders;
-    }
-
     /**
      * Refreshes the current Partial Ancestral Graph (PAG) by reorienting edges, adjusting for separation sets, and
      * applying final orientations. This method ensures the PAG remains valid after performing necessary modifications.
      *
-     * @param message A descriptive message indicating the context or purpose of the graph refresh operation.
+     * @param message          A descriptive message indicating the context or purpose of the graph refresh operation.
+     * @param revertIfNotLegal
      */
-    private boolean tryRemovingEdge(Node x, Node y, Set<Node> cond, String message) {
+    private boolean tryRemovingEdge(Node x, Node y, Set<Node> cond, String message, boolean revertIfNotLegal) {
         Graph _pag = new EdgeListGraph(this.pag);
-
-        this.pag.removeEdge(pag.getEdge(x, y));
         Set<Node> _cond = sepsets.get(x, y);
+
+        Edge edge = pag.getEdge(x, y);
+        this.pag.removeEdge(edge);
         sepsets.set(x, y, cond);
 
-        GraphUtils.reorientWithCircles(this.pag, superVerbose);
-        GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
-        adjustForExtraSepsets();
-        fciOrient.fciOrientbk(knowledge, this.pag, this.pag.getNodes());
-        fciOrient.finalOrientation(this.pag);
+        redoGfciOrientation();
 
-        // Don't need to check legal PAG here; can limit the check to these two conditions, as removing an edge
-        // cannot cause new cycles or almost-cycles to be formed.
-        if (!legalPag(message)) {
-            this.pag = new EdgeListGraph(_pag);
-            sepsets.set(x, y, _cond);
-            return false;
-        } else {
-            return true;
+        if (revertIfNotLegal) {
+            if (!legalPag(message)) {
+                this.pag = new EdgeListGraph(_pag);
+                sepsets.set(x, y, _cond);
+                return false;
+            } else {
+                return true;
+            }
         }
+
+        return true;
     }
 
     private boolean legalPag(String message) {
-        if (!this.pag.paths().isLegalPag()) {
+        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
+//        if (!this.pag.paths().isLegalPag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Rejected: " + message);
             }
@@ -554,11 +572,15 @@ public final class Fcit implements IGraphSearch {
      * structure represented by the PAG. The orientation of edges follows the rules
      */
     private void adjustForExtraSepsets() {
-        sepsets.keySet().forEach(edge -> {
+        for (Set<Node> edge : sepsets.keySet()) {
             List<Node> arr = new ArrayList<>(edge);
 
             Node x = arr.get(0);
             Node y = arr.get(1);
+
+            if (this.pag.isAdjacentTo(x, y)) {
+                return;
+            }
 
             List<Node> common = this.pag.getAdjacentNodes(x);
             common.retainAll(this.pag.getAdjacentNodes(y));
@@ -568,6 +590,10 @@ public final class Fcit implements IGraphSearch {
             }
 
             for (Node node : common) {
+                if (this.pag.isDefCollider(x, node, y)) {
+                    continue;
+                }
+
                 if (!sepsets.get(x, y).contains(node)) {
                     if (!this.pag.isDefCollider(x, node, y)) {
                         this.pag.setEndpoint(x, node, Endpoint.ARROW);
@@ -579,7 +605,7 @@ public final class Fcit implements IGraphSearch {
                     }
                 }
             }
-        });
+        }
     }
 
     /**
@@ -701,7 +727,9 @@ public final class Fcit implements IGraphSearch {
                             TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
                         }
 
-                        tryRemovingEdge(x, y, b, x + " _||_ " + y + " | " + b + " (new sepset)");
+                        if (!tryRemovingEdge(x, y, b, x + " _||_ " + y + " | " + b + " (new sepset)", true)) {
+                            continue EDGE;
+                        }
                     }
                 }
             }

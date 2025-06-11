@@ -88,17 +88,28 @@ public final class DagToPag {
 
         Graph graph = new EdgeListGraph(measured);
 
-        IntStream.range(0, measured.size()).forEach(i -> {
-            Node n1 = measured.get(i);
-            IntStream.range(i + 1, measured.size()).forEach(j -> {
+        for (int i = 0; i < measured.size(); i++) {
+            for (int j = i + 1; j < measured.size(); j++) {
+                Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
-                if (!graph.isAdjacentTo(n1, n2)) {
-                    if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
-                        graph.addEdge(Edges.nondirectedEdge(n1, n2));
-                    }
+
+                if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
+                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
                 }
-            });
-        });
+            }
+        }
+
+//        IntStream.range(0, measured.size()).forEach(i -> {
+//            Node n1 = measured.get(i);
+//            IntStream.range(i + 1, measured.size()).forEach(j -> {
+//                Node n2 = measured.get(j);
+//                if (!graph.isAdjacentTo(n1, n2)) {
+//                    if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
+//                        graph.addEdge(Edges.nondirectedEdge(n1, n2));
+//                    }
+//                }
+//            });
+//        });
 
         return graph;
     }
@@ -212,7 +223,10 @@ public final class DagToPag {
     public Graph convert() {
         Graph mag;
 
-        if (dag.paths().isLegalDag()) {
+        if (dag.paths().isLegalMag()) {
+            mag = dag;
+        }
+        else if (dag.paths().isLegalDag()) {
             mag = GraphTransforms.dagToMag(dag);
         } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
             mag = GraphTransforms.zhangMagFromPag(dag);
@@ -230,23 +244,23 @@ public final class DagToPag {
         fciOrient.setKnowledge(knowledge);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
 
-//        for (Node y : pag.getNodes()) {
-//            List<Node> adjy = pag.getAdjacentNodes(y);
-//
-//            for (int i = 0; i < adjy.size(); i++) {
-//                for (int j = i + 1; j < adjy.size(); j++) {
-//                    Node x = adjy.get(i);
-//                    Node z = adjy.get(j);
-//
-//                    if (mag.isDefCollider(x, y, z) && !mag.isAdjacentTo(x, z)) {
-//                        pag.setEndpoint(x, y, Endpoint.ARROW);
-//                        pag.setEndpoint(z, y, Endpoint.ARROW);
-//                    }
-//                }
-//            }
-//        }
+        for (Node y : pag.getNodes()) {
+            List<Node> adjy = pag.getAdjacentNodes(y);
 
-        fciOrient.ruleR0(pag, new HashSet<>());
+            for (int i = 0; i < adjy.size(); i++) {
+                for (int j = i + 1; j < adjy.size(); j++) {
+                    Node x = adjy.get(i);
+                    Node z = adjy.get(j);
+
+                    if (mag.isDefCollider(x, y, z) && !mag.isAdjacentTo(x, z)) {
+                        pag.setEndpoint(x, y, Endpoint.ARROW);
+                        pag.setEndpoint(z, y, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+
+//        fciOrient.ruleR0(pag, new HashSet<>());
         fciOrient.finalOrientation(pag);
 
         return pag;

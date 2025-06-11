@@ -72,7 +72,7 @@ public class TestFci {
 
         System.out.println(resultGraph.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
         System.out.println(unshieldedCollidersIdenticalPagMag(resultGraph)
-                ? "Unshielded colliders the same " : "Unshielded colliders different.");
+                ? "Unshielded colliders the same." : "Unshielded colliders different.");
 
         assertEquals(pag, resultGraph);
 //        System.out.println("DAG to PAG: " + dagToPag(graph));
@@ -241,7 +241,7 @@ public class TestFci {
                 "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge());
     }
 
-    // This fails for FCIT from Oracle understandably. (GSTs from oracle can't use knowledge.)
+    // This fails for FCIT from Oracle, understandably. (GSTs from Oracle can't use knowledge.)
     // For FCI etc. can turn it on.
 //    @Test
     public void testSearch11() {
@@ -262,8 +262,8 @@ public class TestFci {
                 "X1o->X2,X2<->X3", knowledge);
     }
 
-    // This fails for FCIT from Oracle understandably. (GSTs from oracle can't use knowledge.)
-    // For FCI etc. can turn it on.
+    // This fails for FCIT from Oracle, understandably. (GSTs from Oracle can't use knowledge.)
+    // For FCI, etc., can turn it on.
 //    @Test
     public void testSearch12() {
         checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
@@ -812,7 +812,7 @@ public class TestFci {
 
 //    @Test
     public void testFcitFromOracle() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 500; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
             long seed = System.nanoTime();
@@ -822,6 +822,9 @@ public class TestFci {
 
             Graph dag = RandomGraph.randomGraph(15, 4, 30, 100,
                     100, 100, false);
+
+//            System.out.println("True DAG = " + dag);
+
             MsepTest independence = new MsepTest(dag);
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
@@ -867,15 +870,15 @@ public class TestFci {
                         }
                     }
 
-                    System.out.println("pag is not legal pag seed = " + seed);
+                    System.out.println("pag is not legal pag, seed = " + seed);
                 }
 
                 assertFalse(illegal);
 
-//                if (!pag.equals(_pag)) {
-//                    fci.setVerbose(true);
-//                    fci.search();
-//                }
+                if (!pag.equals(_pag)) {
+                    System.out.println("PAG not correct, seed = " + seed);
+                    System.out.println("True DAG = " + dag);
+                }
 
                 assertEquals(_pag, pag);
             } catch (InterruptedException e) {
@@ -1054,6 +1057,9 @@ public class TestFci {
             // If this fails, it could be because someone was mucking with the inducing path method. Try reverting that
             // to what it was.
             assertTrue(legalMag);
+
+            Graph pag2 = new DagToPag(mag).convert();
+            assertEquals(pag2, pag);
         }
     }
 
