@@ -2564,7 +2564,12 @@ public final class GraphUtils {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
 
+
         Graph orig = new EdgeListGraph(pag);
+
+        if (orig.paths().isLegalPag()) {
+            return orig;
+        }
 
         boolean changed;
 
@@ -2575,10 +2580,6 @@ public final class GraphUtils {
             changed |= repairMaximality(pag, verbose, selection);
             changed |= removeCycles(pag, verbose);
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
-
-            if (true) {
-                return pag;
-            }
         } while (changed);
 
         DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
@@ -3143,12 +3144,16 @@ public final class GraphUtils {
      * @param knowledge        the knowledge object.
      */
     public static void recallInitialColliders(Graph pag, Set<Triple> initialColliders, Knowledge knowledge) {
-        for (Triple triple : new HashSet<>(initialColliders)) {
+        for (Triple triple: new HashSet<>(initialColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
 
-            if (triple(pag, x, b, y) && colliderAllowed(pag, x, b, y, knowledge)) {
+            if (!distinct(x, b, y)) {
+                throw new IllegalArgumentException("Nodes not distinct.");
+            }
+
+            if (triple(pag, x, b, y) && !pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y, knowledge)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
             }

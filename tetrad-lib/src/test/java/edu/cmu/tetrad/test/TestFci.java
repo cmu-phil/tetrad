@@ -822,6 +822,9 @@ public class TestFci {
 
             Graph dag = RandomGraph.randomGraph(15, 4, 30, 100,
                     100, 100, false);
+
+//            System.out.println("True DAG = " + dag);
+
             MsepTest independence = new MsepTest(dag);
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
@@ -867,15 +870,15 @@ public class TestFci {
                         }
                     }
 
-                    System.out.println("pag is not legal pag seed = " + seed);
+                    System.out.println("pag is not legal pag, seed = " + seed);
                 }
 
                 assertFalse(illegal);
 
-//                if (!pag.equals(_pag)) {
-//                    fci.setVerbose(true);
-//                    fci.search();
-//                }
+                if (!pag.equals(_pag)) {
+                    System.out.println("PAG not correct, seed = " + seed);
+                    System.out.println("True DAG = " + dag);
+                }
 
                 assertEquals(_pag, pag);
             } catch (InterruptedException e) {
@@ -1054,6 +1057,9 @@ public class TestFci {
             // If this fails, it could be because someone was mucking with the inducing path method. Try reverting that
             // to what it was.
             assertTrue(legalMag);
+
+            Graph pag2 = new DagToPag(mag).convert();
+            assertEquals(pag2, pag);
         }
     }
 
