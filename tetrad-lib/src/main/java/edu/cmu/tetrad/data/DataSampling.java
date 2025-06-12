@@ -76,8 +76,7 @@ public final class DataSampling {
         int[] selectedColumns = IntStream.range(0, dataSet.getNumColumns()).toArray();  // select all data columns
         for (int i = 0; i < parameters.getInt(Params.NUMBER_RESAMPLING) && !Thread.currentThread().isInterrupted(); i++) {
             // select data rows to create new dataset
-            double r = parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE);
-            DataSet sample = createDataSample(dataSet, randomGenerator, selectedColumns, parameters, r);
+            DataSet sample = createDataSample(dataSet, randomGenerator, selectedColumns, parameters);
             datasets.add(sample);
         }
 
@@ -99,14 +98,15 @@ public final class DataSampling {
      * @return a new dataset containing the selected rows and columns
      */
     public static DataSet createDataSample(DataSet dataSet, RandomGenerator randomGenerator, int[] selectedColumns,
-                                           Parameters parameters, double percentResamplingSize) {
-        if (percentResamplingSize < 10.0 || percentResamplingSize > 100.0) {
-            throw new IllegalArgumentException("Invalid percent resample size: " + percentResamplingSize
+                                           Parameters parameters, double percentFractionSize) {
+        if (percentFractionSize < 10.0 || percentFractionSize > 100.0) {
+            throw new IllegalArgumentException("Invalid percent resample size: " + r
                                                + "; should be >= 10% and <= 100%");
         }
-        double r = percentResamplingSize / 100.0;
+        r /= 100.0;
         int sampleSize = (int) (dataSet.getNumRows() * (r));
         boolean isResamplingWithReplacement = parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT);
+
         int[] selectedRows = isResamplingWithReplacement ? getRowIndexesWithReplacement(dataSet, sampleSize, randomGenerator) : getRowIndexesWithoutReplacement(dataSet, sampleSize, randomGenerator);
 
         // create a new dataset containing selected rows and selected columns
