@@ -68,7 +68,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     private Graph runSingleBootstrapSearch(RandomGenerator randomGenerator, int[] selectedColumns, DataModel dataModel, Parameters parameters)
             throws InterruptedException {
         TetradLogger.getInstance().log("Bootstrap count = " + ++count);
-        double r = parameters.getDouble(Params.FRACTION_RESAMPLE_SIZE);
+        double r = parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE);
         return runSearch(createDataSample((DataSet) dataModel, randomGenerator, selectedColumns, parameters, r), parameters);
     }
 
