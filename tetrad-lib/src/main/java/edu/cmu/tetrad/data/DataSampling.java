@@ -97,15 +97,13 @@ public final class DataSampling {
      * @param parameters      the parameters for sampling, including sampling fraction and resampling method
      * @return a new dataset containing the selected rows and columns
      */
-    public static DataSet createDataSample(DataSet dataSet, RandomGenerator randomGenerator, int[] selectedColumns, Parameters parameters) {
-        double r = parameters.getDouble(Params.FRACTION_RESAMPLE_SIZE);
-        if (r < 0.1 || (r > 1.0 && r < 10.0) || r > 100.0) {
-            throw new IllegalArgumentException("Invalid fraction resample size: " + r
-                + "; should be >= 10% and <= 100%");
+    public static DataSet createDataSample(DataSet dataSet, RandomGenerator randomGenerator, int[] selectedColumns,
+                                           Parameters parameters, double percentFractionSize) {
+        if (percentFractionSize < 10.0 || percentFractionSize > 100.0) {
+            throw new IllegalArgumentException("Invalid percent resample size: " + r
+                                               + "; should be >= 10% and <= 100%");
         }
-        if (r > 1.0) {
-            r /= 100.0;
-        }
+        r /= 100.0;
         int sampleSize = (int) (dataSet.getNumRows() * (r));
         boolean isResamplingWithReplacement = parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT);
 
