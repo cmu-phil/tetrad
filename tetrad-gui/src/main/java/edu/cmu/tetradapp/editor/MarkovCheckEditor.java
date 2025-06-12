@@ -412,7 +412,7 @@ public class MarkovCheckEditor extends JPanel {
             fractionSampleLabel = new JLabel("(Test cannot be subsampled)");
         } else if (model.getMarkovCheck().getIndependenceTest().getData() != null
                    && model.getMarkovCheck().getIndependenceTest().getData() instanceof DataSet) {
-            fractionSampleLabel = new JLabel("% Sample:");
+            fractionSampleLabel = new JLabel("Fraction Sample:");
         } else {
             fractionSampleLabel = new JLabel("(Not tabular data)");
         }

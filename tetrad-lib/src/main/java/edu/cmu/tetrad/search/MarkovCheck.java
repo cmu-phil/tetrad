@@ -130,12 +130,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private double binomialPDep = Double.NaN;
     /**
      * The percentage of all samples to use when resampling for each conditional independence test.
-     *
-     * @deprecated 2025-6-8 Changed to fraction resample.
-     */
-    private double percentResample = Double.NaN;
-    /**
-     * The percentage of all samples to use when resampling for each conditional independence test.
      */
     private double fractionResample = 1.0;
     /**
@@ -1201,7 +1195,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public void setFractionResample(double fractionResample) {
         this.fractionResample = fractionResample;
-        this.percentResample = fractionResample;
     }
 
     /**

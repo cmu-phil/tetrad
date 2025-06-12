@@ -76,7 +76,8 @@ public final class DataSampling {
         int[] selectedColumns = IntStream.range(0, dataSet.getNumColumns()).toArray();  // select all data columns
         for (int i = 0; i < parameters.getInt(Params.NUMBER_RESAMPLING) && !Thread.currentThread().isInterrupted(); i++) {
             // select data rows to create new dataset
-            DataSet sample = createDataSample(dataSet, randomGenerator, selectedColumns, parameters);
+            double r = parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE);
+            DataSet sample = createDataSample(dataSet, randomGenerator, selectedColumns, parameters, r);
             datasets.add(sample);
         }
 
@@ -97,10 +98,15 @@ public final class DataSampling {
      * @param parameters      the parameters for sampling, including sampling fraction and resampling method
      * @return a new dataset containing the selected rows and columns
      */
-    public static DataSet createDataSample(DataSet dataSet, RandomGenerator randomGenerator, int[] selectedColumns, Parameters parameters) {
-        int sampleSize = (int) (dataSet.getNumRows() * (parameters.getInt(Params.FRACTION_RESAMPLE_SIZE) / 100.0));
+    public static DataSet createDataSample(DataSet dataSet, RandomGenerator randomGenerator, int[] selectedColumns,
+                                           Parameters parameters, double percentResamplingSize) {
+        if (percentResamplingSize < 10.0 || percentResamplingSize > 100.0) {
+            throw new IllegalArgumentException("Invalid percent resample size: " + percentResamplingSize
+                                               + "; should be >= 10% and <= 100%");
+        }
+        double r = percentResamplingSize / 100.0;
+        int sampleSize = (int) (dataSet.getNumRows() * (r));
         boolean isResamplingWithReplacement = parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT);
-
         int[] selectedRows = isResamplingWithReplacement ? getRowIndexesWithReplacement(dataSet, sampleSize, randomGenerator) : getRowIndexesWithoutReplacement(dataSet, sampleSize, randomGenerator);
 
         // create a new dataset containing selected rows and selected columns
