@@ -364,10 +364,6 @@ public final class Fcit implements IGraphSearch {
 
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
-        if (!this.pag.paths().isLegalPag()) {
-            throw new IllegalArgumentException("Initial PAG is not legal.");
-        }
-
         // This removes edges based on recursive path blocking. After every edge removal, the evolving PAG is
         // rebuilt based on initial unshielded colliders and learned sepsets.
         removeEdgesRecursively();
