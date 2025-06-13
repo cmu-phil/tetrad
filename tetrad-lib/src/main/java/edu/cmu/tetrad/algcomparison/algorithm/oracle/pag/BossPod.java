@@ -40,7 +40,7 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BossDot extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
+public class BossPod extends AbstractBootstrapAlgorithm implements Algorithm, UsesScoreWrapper,
         HasKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -57,7 +57,7 @@ public class BossDot extends AbstractBootstrapAlgorithm implements Algorithm, Us
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * This class represents LV-Dumb algorithm.
+     * This class represents BOSS-POD algorithm.
      *
      * <p>
      * The FCIT algorithm is a bootstrap algorithm that runs a search algorithm to find a graph structure based on a
@@ -68,7 +68,7 @@ public class BossDot extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BossDot() {
+    public BossPod() {
         // Used for reflection; do not delete it.
     }
 
@@ -85,7 +85,7 @@ public class BossDot extends AbstractBootstrapAlgorithm implements Algorithm, Us
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public BossDot(ScoreWrapper score) {
+    public BossPod(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -114,7 +114,7 @@ public class BossDot extends AbstractBootstrapAlgorithm implements Algorithm, Us
         }
 
         Score score = this.score.getScore(dataModel, parameters);
-        edu.cmu.tetrad.search.BossDot search = new edu.cmu.tetrad.search.BossDot(score);
+        edu.cmu.tetrad.search.BossPod search = new edu.cmu.tetrad.search.BossPod(score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -153,7 +153,7 @@ public class BossDot extends AbstractBootstrapAlgorithm implements Algorithm, Us
      */
     @Override
     public String getDescription() {
-        return "LV-Dumb (BOSS followed by DAG to PAG) using " + this.score.getDescription();
+        return "BOSS-POD (BOSS followed by DAG to PAG) using " + this.score.getDescription();
     }
 
     /**
