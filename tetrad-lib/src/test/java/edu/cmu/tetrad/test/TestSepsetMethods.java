@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.junit.Test;
@@ -293,7 +293,7 @@ public class TestSepsetMethods {
         Graph dag = RandomGraph.randomDag(20, 10, 40, 100,
                 100, 100, false);
 
-        Graph pag = new DagToPag(dag).convert();
+        Graph pag = new MagToPag(dag).convert();
 
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
@@ -333,7 +333,7 @@ public class TestSepsetMethods {
             Graph dag = RandomGraph.randomDag(15, 5, 40, 100,
                     100, 100, false);
 
-            Graph pag = new DagToPag(GraphTransforms.dagToMag(dag)).convert();
+            Graph pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert();
 
 
             for (Node x : pag.getNodes()) {

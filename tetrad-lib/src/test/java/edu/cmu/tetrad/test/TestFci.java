@@ -32,7 +32,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -829,7 +829,7 @@ public class TestFci {
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
 
-            Graph _pag = new DagToPag(GraphTransforms.dagToMag(dag)).convert();
+            Graph _pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert();
             if (!_pag.paths().isLegalPag()) {
                 throw new IllegalArgumentException("_Pag not a legal PAG.");
             }
@@ -859,7 +859,7 @@ public class TestFci {
                         System.out.println("Unshielded colliders match between mag and pag.");
                     }
 
-                    DagToPag dagToPag = new DagToPag(mag);
+                    MagToPag dagToPag = new MagToPag(mag);
                     Graph reconstitutedPag = dagToPag.convert();
 
                     for (Edge pagEdge : pag.getEdges()) {
@@ -972,7 +972,7 @@ public class TestFci {
                         }
                     }
 
-                    DagToPag dagToPag = new DagToPag(mag);
+                    MagToPag dagToPag = new MagToPag(mag);
                     Graph reconstitutedPag = dagToPag.convert();
 
                     for (Edge pagEdge : pag.getEdges()) {
@@ -1004,7 +1004,7 @@ public class TestFci {
             RandomUtil.getInstance().setSeed(seed);
 
             Graph dag = RandomGraph.randomGraph(20, 6, 20, 100, 100, 100, false);
-            DagToPag dagToPag = new DagToPag(GraphTransforms.dagToMag(dag));
+            MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
             dagToPag.setVerbose(false);
             Graph pag = dagToPag.convert();
 
@@ -1058,7 +1058,7 @@ public class TestFci {
             // to what it was.
             assertTrue(legalMag);
 
-            Graph pag2 = new DagToPag(mag).convert();
+            Graph pag2 = new MagToPag(mag).convert();
             assertEquals(pag2, pag);
         }
     }

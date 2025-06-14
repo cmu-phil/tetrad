@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 

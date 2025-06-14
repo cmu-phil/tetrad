@@ -356,7 +356,7 @@ public final class Fcit implements IGraphSearch {
 
         // The main procedure.
 
-        DagToPag dagToPag = new DagToPag(dag);
+        MagToPag dagToPag = new MagToPag(dag);
         dagToPag.setKnowledge(knowledge);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setVerbose(superVerbose);

@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.List;
@@ -124,7 +124,7 @@ public final class BossPod implements IGraphSearch {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-        DagToPag dagToPag = new DagToPag(cpdag);
+        MagToPag dagToPag = new MagToPag(cpdag);
         dagToPag.setVerbose(verbose);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setKnowledge(knowledge);

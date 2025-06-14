@@ -2,7 +2,7 @@ package edu.cmu.tetrad.util;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.MagToPag;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -62,7 +62,7 @@ public class PagCache {
         if (pagCache.containsKey(graph)) {
             return pagCache.get(graph);
         } else {
-            DagToPag dagToPag = new DagToPag(graph);
+            MagToPag dagToPag = new MagToPag(graph);
             Graph pag = dagToPag.convert();
             pagCache.put(graph, pag);
             dagCache.put(pag, graph);
@@ -91,7 +91,7 @@ public class PagCache {
         if (pagCache.containsKey(graph)) {
             return pagCache.get(graph);
         } else {
-            DagToPag dagToPag = new DagToPag(graph);
+            MagToPag dagToPag = new MagToPag(graph);
             dagToPag.setKnowledge(knowledge);
             dagToPag.setVerbose(verbose);
             Graph pag = dagToPag.convert();

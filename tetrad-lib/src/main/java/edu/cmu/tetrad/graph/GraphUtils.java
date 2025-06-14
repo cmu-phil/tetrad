@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
@@ -2582,7 +2582,7 @@ public final class GraphUtils {
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
         } while (changed);
 
-        DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
+        MagToPag dagToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
         dagToPag.setKnowledge(knowledge);
         Graph pag2 = dagToPag.convert();
 
