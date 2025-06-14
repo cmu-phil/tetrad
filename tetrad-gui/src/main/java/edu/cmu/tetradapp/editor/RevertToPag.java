@@ -73,6 +73,10 @@ public class RevertToPag extends AbstractAction implements ClipboardOwner {
             return;
         }
 
+        if (graph.paths().isLegalDag()) {
+            workbench.setGraph(GraphTransforms.dagToMag(GraphTransforms.dagToMag(graph)));
+        }
+
         workbench.setGraph(PagCache.getInstance().getPag(graph));
 
 //        if (graph.paths().isLegalDag() || graph.paths().isLegalCpdag() || graph.paths().isLegalMpdag()) {

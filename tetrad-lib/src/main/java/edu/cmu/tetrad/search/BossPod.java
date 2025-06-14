@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.MagToPag;
@@ -114,7 +115,7 @@ public final class BossPod implements IGraphSearch {
         suborderSearch.setVerbose(verbose);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
-        var cpdag = permutationSearch.search();
+        var dag = permutationSearch.search(false);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished BOSS.");
@@ -124,7 +125,7 @@ public final class BossPod implements IGraphSearch {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-        MagToPag dagToPag = new MagToPag(cpdag);
+        MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
         dagToPag.setVerbose(verbose);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setKnowledge(knowledge);
