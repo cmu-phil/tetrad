@@ -223,17 +223,21 @@ public final class DagToPag {
     public Graph convert() {
         Graph mag;
 
-        if (dag.paths().isLegalMag()) {
+        if (!dag.paths().isLegalMag()) {
+            throw new IllegalArgumentException("Not legal mag");
+        }
+
+//        if (dag.paths().isLegalMag()) {
             mag = dag;
-        }
-        else if (dag.paths().isLegalDag()) {
-            mag = GraphTransforms.dagToMag(dag);
-        } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
-            mag = GraphTransforms.zhangMagFromPag(dag);
-        } else {
-            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no " +
-                                               "latents but possibly with circle endpoints.");
-        }
+//        }
+//        else if (dag.paths().isLegalDag()) {
+//            mag = GraphTransforms.dagToMag(dag);
+//        } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
+//            mag = GraphTransforms.zhangMagFromPag(dag);
+//        } else {
+//            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no " +
+//                                               "latents but possibly with circle endpoints.");
+//        }
 
         Graph pag = new EdgeListGraph(mag);
 

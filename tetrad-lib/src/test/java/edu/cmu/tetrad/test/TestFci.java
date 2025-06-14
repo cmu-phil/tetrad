@@ -829,7 +829,7 @@ public class TestFci {
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
 
-            Graph _pag = new DagToPag(dag).convert();
+            Graph _pag = new DagToPag(GraphTransforms.dagToMag(dag)).convert();
             if (!_pag.paths().isLegalPag()) {
                 throw new IllegalArgumentException("_Pag not a legal PAG.");
             }
@@ -1004,7 +1004,7 @@ public class TestFci {
             RandomUtil.getInstance().setSeed(seed);
 
             Graph dag = RandomGraph.randomGraph(20, 6, 20, 100, 100, 100, false);
-            DagToPag dagToPag = new DagToPag(dag);
+            DagToPag dagToPag = new DagToPag(GraphTransforms.dagToMag(dag));
             dagToPag.setVerbose(false);
             Graph pag = dagToPag.convert();
 

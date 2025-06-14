@@ -333,7 +333,7 @@ public class TestSepsetMethods {
             Graph dag = RandomGraph.randomDag(15, 5, 40, 100,
                     100, 100, false);
 
-            Graph pag = new DagToPag(dag).convert();
+            Graph pag = new DagToPag(GraphTransforms.dagToMag(dag)).convert();
 
 
             for (Node x : pag.getNodes()) {
