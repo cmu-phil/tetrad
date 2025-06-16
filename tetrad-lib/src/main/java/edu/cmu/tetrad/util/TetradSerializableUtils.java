@@ -108,6 +108,44 @@ public class TetradSerializableUtils {
         this.archiveDirectory = archiveDirectory;
     }
 
+    public void checkSerialVersionUid() {
+        System.out.println("Checking serialVersionUID values...");
+
+        List<Class> classes = getAssignableClasses(new File(getSerializableScope()),
+                TetradSerializable.class);
+
+        for (Class<?> clazz : classes) {
+            // Skip interfaces and abstract classes
+            if (Modifier.isAbstract(clazz.getModifiers()) || clazz.isInterface()) {
+                continue;
+            }
+
+            try {
+                Field field = clazz.getDeclaredField("serialVersionUID");
+
+                // Must be static, final, and long
+                int mods = field.getModifiers();
+                if (!(Modifier.isStatic(mods) && Modifier.isFinal(mods) && field.getType() == long.class)) {
+                    throw new RuntimeException("serialVersionUID in " + clazz.getName() +
+                                               " must be static final long.");
+                }
+
+                field.setAccessible(true);
+                long value = field.getLong(null); // static field, so null instance
+
+                if (value != 23L) {
+                    throw new RuntimeException("serialVersionUID for class " + clazz.getName() +
+                                               " must be 23L, but is " + value);
+                }
+
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException("Missing serialVersionUID in class " + clazz.getName(), e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Cannot access serialVersionUID in class " + clazz.getName(), e);
+            }
+        }
+    }
+
     /**
      * Checks all of the classes in the serialization scope that implement TetradSerializable to make sure all of their
      * fields are either themselves (a) primitive, (b) TetradSerializable, or (c) assignable from types designated as

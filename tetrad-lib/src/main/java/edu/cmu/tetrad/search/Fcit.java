@@ -58,7 +58,7 @@ public final class Fcit implements IGraphSearch {
      * This variable is an instance of {@link SepsetMap}, which provides methods to access and manipulate separation
      * sets - specifically to check conditional independencies between pairs of variables given a separating set.
      */
-    private final SepsetMap sepsets = new SepsetMap();
+    private SepsetMap sepsets = new SepsetMap();
     /**
      * The background knowledge.
      */
@@ -370,9 +370,8 @@ public final class Fcit implements IGraphSearch {
         Graph _pag;
 
         do {
-            _pag = new EdgeListGraph(pag);
+            _pag = new EdgeListGraph(this.pag);
             removeEdgesRecursively();
-            redoGfciOrientation();
         } while (!_pag.equals(pag));
 
         // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
@@ -380,10 +379,10 @@ public final class Fcit implements IGraphSearch {
         // is rebuilt.
         if (checkAdjacencySepsets) {
             removeEdgesSubsetsOfAdjacents();
+            redoGfciOrientation(pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
         }
 
-        System.out.println("Rebuilding PAG.");
-        redoGfciOrientation();
+        GraphUtils.guaranteePag(this.pag, fciOrient, knowledge, initialColliders, verbose, Set.of());
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -396,17 +395,24 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
+        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
+            TetradLogger.getInstance().log("Not legal mag before replace nodes");
+        } else {
+            TetradLogger.getInstance().log("Legal mag before replace nodes.");
+        }
+
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
 
-    private void redoGfciOrientation() {
+    private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
+                                            Set<Triple> initialColliders, SepsetMap sepsets, boolean superVerbose) {
         // GFCI reorientation...
-        GraphUtils.reorientWithCircles(this.pag, superVerbose);
-        fciOrient.fciOrientbk(knowledge, this.pag, this.pag.getNodes());
-        GraphUtils.recallInitialColliders(this.pag, initialColliders, knowledge);
-        adjustForExtraSepsets();
-        fciOrient.finalOrientation(this.pag);
+        GraphUtils.reorientWithCircles(pag, superVerbose);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes());
+        GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
+        adjustForExtraSepsets(sepsets, pag, superVerbose);
+        fciOrient.finalOrientation(pag);
     }
 
     private void removeEdgesSubsetsOfAdjacents() throws InterruptedException {
@@ -573,33 +579,33 @@ public final class Fcit implements IGraphSearch {
      * This adjustment ensures proper handling of induced dependencies and maintains the correctness of the causal
      * structure represented by the PAG. The orientation of edges follows the rules
      */
-    private void adjustForExtraSepsets() {
+    private static void adjustForExtraSepsets(SepsetMap sepsets, Graph pag, boolean superVerbose) {
         for (Set<Node> edge : sepsets.keySet()) {
             List<Node> arr = new ArrayList<>(edge);
 
             Node x = arr.get(0);
             Node y = arr.get(1);
 
-            if (this.pag.isAdjacentTo(x, y)) {
+            if (pag.isAdjacentTo(x, y)) {
                 return;
             }
 
-            List<Node> common = this.pag.getAdjacentNodes(x);
-            common.retainAll(this.pag.getAdjacentNodes(y));
+            List<Node> common = pag.getAdjacentNodes(x);
+            common.retainAll(pag.getAdjacentNodes(y));
 
             if (superVerbose) {
                 TetradLogger.getInstance().log("Removed adjacency " + x + " *-* " + y + " from PAG.");
             }
 
             for (Node node : common) {
-                if (this.pag.isDefCollider(x, node, y)) {
+                if (pag.isDefCollider(x, node, y)) {
                     continue;
                 }
 
                 if (!sepsets.get(x, y).contains(node)) {
-                    if (!this.pag.isDefCollider(x, node, y)) {
-                        this.pag.setEndpoint(x, node, Endpoint.ARROW);
-                        this.pag.setEndpoint(y, node, Endpoint.ARROW);
+                    if (!pag.isDefCollider(x, node, y)) {
+                        pag.setEndpoint(x, node, Endpoint.ARROW);
+                        pag.setEndpoint(y, node, Endpoint.ARROW);
 
                         if (superVerbose) {
                             TetradLogger.getInstance().log("Oriented " + x + " *-> " + node + " <-* " + y + " in PAG.");
@@ -717,9 +723,49 @@ public final class Fcit implements IGraphSearch {
 
                 {
                     List<Node> common = this.pag.getAdjacentNodes(x);
-                    common.addAll(this.pag.getAdjacentNodes(y));
-                    common.remove(x);
                     common.remove(y);
+
+                    common.retainAll(_b);
+
+                    SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
+                    int[] choice2;
+
+                    while ((choice2 = gen2.next()) != null) {
+                        if (!this.pag.isAdjacentTo(x, y)) {
+                            break;
+                        }
+
+                        Set<Node> b = new HashSet<>(_b);
+                        Set<Node> b2 = new HashSet<>(b);
+
+                        Set<Node> c = GraphUtils.asSet(choice2, common);
+                        b.removeAll(c);
+
+                        if (b.equals(b2)) {
+                            continue;
+                        }
+
+                        if (S.contains(b)) continue;
+                        S.add(new HashSet<>(b));
+
+                        if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
+                            continue;
+                        }
+
+                        if (test.checkIndependence(x, y, b).isIndependent()) {
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Removing " + edge + " for recursive reasons.");
+                            }
+
+                            toRemove.put(edge, b);
+                            continue EDGE;
+                        }
+                    }
+                }
+
+                {
+                    List<Node> common = this.pag.getAdjacentNodes(y);
+                    common.remove(x);
 
                     common.retainAll(_b);
 
@@ -761,9 +807,69 @@ public final class Fcit implements IGraphSearch {
             }
         }
 
+        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
+            TetradLogger.getInstance().log("Not legal mag before modifications");
+        }
+
+        SepsetMap _sepsets = new SepsetMap(sepsets);
+
+        Graph __pag = new EdgeListGraph(this.pag);
+
         for (Edge edge : toRemove.keySet()) {
             this.pag.removeEdge(edge);
             sepsets.set(edge.getNode1(), edge.getNode2(), toRemove.get(edge));
+        }
+
+        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
+
+        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
+            TetradLogger.getInstance().log("Trying to recover legal MAG status.");
+
+            List<Edge> edges = new ArrayList<>(toRemove.keySet());
+
+            SublistGenerator gen = new SublistGenerator(edges.size(), edges.size());
+            int[] choice;
+            while ((choice = gen.next()) != null) {
+                if (choice.length == 0) {
+                    continue;
+                }
+
+                List<Edge> edgesToReadd = new ArrayList<>();
+
+                for (int j : choice) {
+                    edgesToReadd.add(edges.get(j));
+                }
+
+                List<Edge> edgesToRemove = new ArrayList<>(toRemove.keySet());
+                edgesToRemove.removeAll(edgesToReadd);
+
+                Graph _pag = new EdgeListGraph(__pag);
+                sepsets = new SepsetMap(_sepsets);
+
+                for (Edge edge : edgesToRemove) {
+                   _pag.removeEdge(edge);
+                    sepsets.set(edge.getNode1(), edge.getNode2(), toRemove.get(edge));
+                }
+
+                for (Edge edge : toRemove.keySet()) {
+                    if (!edgesToReadd.contains(edge)) {
+                        sepsets.set(edge.getNode1(), edge.getNode2(), toRemove.get(edge));
+                    }
+                }
+
+                redoGfciOrientation(_pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
+
+                if (GraphTransforms.zhangMagFromPag(_pag).paths().isLegalMag()) {
+                    for (Edge edge : edgesToReadd) {
+                        TetradLogger.getInstance().log("Re-adding " + edge + " to regain MAG status.");
+                    }
+
+                    this.pag = _pag;
+                    break;
+                } else {
+                    sepsets = new SepsetMap(_sepsets);
+                }
+            }
         }
     }
 

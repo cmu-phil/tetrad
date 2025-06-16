@@ -2577,7 +2577,7 @@ public final class GraphUtils {
             changed = false;
 
             changed |= removeAlmostCycles(pag, knownColliders, verbose);
-            changed |= repairMaximality(pag, verbose, selection);
+            changed |= repairMaximality(pag, verbose, selection, fciOrient, knowledge, knownColliders);
             changed |= removeCycles(pag, verbose);
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
         } while (changed);
@@ -2653,16 +2653,20 @@ public final class GraphUtils {
     }
 
     /**
-     * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that
-     * any inducing path between two nodes not currently adjacent in the graph
-     * results in an added non-directed edge. The method modifies the graph in-place.
+     * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that any inducing path between two nodes
+     * not currently adjacent in the graph results in an added non-directed edge. The method modifies the graph
+     * in-place.
      *
-     * @param pag the Partial Ancestral Graph to be repaired for maximality
-     * @param verbose if true, logs the actions performed during the repair process
-     * @param selection a set of nodes to be considered during the inducing path check
+     * @param pag            the Partial Ancestral Graph to be repaired for maximality
+     * @param verbose        if true, logs the actions performed during the repair process
+     * @param selection      a set of nodes to be considered during the inducing path check
+     * @param fciOrient
+     * @param knowledge
+     * @param knownColliders
      * @return true if the graph was modified during the repair process; false otherwise
      */
-    public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
+    public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection, FciOrient fciOrient,
+                                           Knowledge knowledge, Set<Triple> knownColliders) {
         boolean changed = false;
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
@@ -2673,6 +2677,8 @@ public final class GraphUtils {
                         if (verbose) TetradLogger.getInstance().log("Maximality repair: added edge " + x + " o-o " + y);
                     }
                 }
+
+//                reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
             }
         }
         return changed;

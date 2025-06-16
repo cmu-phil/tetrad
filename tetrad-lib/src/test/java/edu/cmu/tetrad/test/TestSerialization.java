@@ -115,6 +115,7 @@ public class TestSerialization {
                 serializableScope, currentDirectory, archiveDirectory);
 
         try {
+            utils.checkSerialVersionUid();
             utils.checkNestingOfFields();
             utils.serializeCurrentDirectory();
             utils.deserializeCurrentDirectory();
@@ -139,6 +140,7 @@ public class TestSerialization {
         TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);
 
+        utils.checkNestingOfFields();
         utils.checkNestingOfFields();
         utils.serializeCurrentDirectory();
         utils.deserializeCurrentDirectory();
