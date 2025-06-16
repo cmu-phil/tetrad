@@ -366,7 +366,14 @@ public final class Fcit implements IGraphSearch {
 
         // This removes edges based on recursive path blocking. After every edge removal, the evolving PAG is
         // rebuilt based on initial unshielded colliders and learned sepsets.
-        removeEdgesRecursively();
+
+        Graph _pag;
+
+        do {
+            _pag = new EdgeListGraph(pag);
+            removeEdgesRecursively();
+            redoGfciOrientation();
+        } while (!_pag.equals(pag));
 
         // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
         // for correctness, but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
@@ -374,6 +381,9 @@ public final class Fcit implements IGraphSearch {
         if (checkAdjacencySepsets) {
             removeEdgesSubsetsOfAdjacents();
         }
+
+        System.out.println("Rebuilding PAG.");
+        redoGfciOrientation();
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -457,9 +467,6 @@ public final class Fcit implements IGraphSearch {
                 }
             }
         }
-
-        System.out.println("Rebuilding PAG.");
-        redoGfciOrientation();
     }
 
     /**
@@ -505,39 +512,38 @@ public final class Fcit implements IGraphSearch {
         return grasp;
     }
 
-    /**
-     * Refreshes the current Partial Ancestral Graph (PAG) by reorienting edges, adjusting for separation sets, and
-     * applying final orientations. This method ensures the PAG remains valid after performing necessary modifications.
-     *
-     * @param message          A descriptive message indicating the context or purpose of the graph refresh operation.
-     * @param revertIfNotLegal
-     */
-    private boolean tryRemovingEdge(Node x, Node y, Set<Node> cond, String message, boolean revertIfNotLegal) {
-        Graph _pag = new EdgeListGraph(this.pag);
-        Set<Node> _cond = sepsets.get(x, y);
+//    /**
+//     * Refreshes the current Partial Ancestral Graph (PAG) by reorienting edges, adjusting for separation sets, and
+//     * applying final orientations. This method ensures the PAG remains valid after performing necessary modifications.
+//     *
+//     * @param message          A descriptive message indicating the context or purpose of the graph refresh operation.
+//     * @param revertIfNotLegal Whether to revert if not a legal MAG.
+//     */
+//    private boolean tryRemovingEdge(Node x, Node y, Set<Node> cond, String message, boolean revertIfNotLegal) {
+//        Graph _pag = new EdgeListGraph(this.pag);
+//        Set<Node> _cond = sepsets.get(x, y);
+//
+//        Edge edge = pag.getEdge(x, y);
+//        this.pag.removeEdge(edge);
+//        sepsets.set(x, y, cond);
+//
+//        redoGfciOrientation();
+//
+//        if (revertIfNotLegal) {
+//            if (!legalMag(message)) {
+//                this.pag = new EdgeListGraph(_pag);
+//                sepsets.set(x, y, _cond);
+//                return false;
+//            } else {
+//                return true;
+//            }
+//        }
+//
+//        return true;
+//    }
 
-        Edge edge = pag.getEdge(x, y);
-        this.pag.removeEdge(edge);
-        sepsets.set(x, y, cond);
-
-        redoGfciOrientation();
-
-        if (revertIfNotLegal) {
-            if (!legalPag(message)) {
-                this.pag = new EdgeListGraph(_pag);
-                sepsets.set(x, y, _cond);
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean legalPag(String message) {
+    private boolean legalMag(String message) {
         if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
-//        if (!this.pag.paths().isLegalPag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("Rejected: " + message);
             }
@@ -646,10 +652,20 @@ public final class Fcit implements IGraphSearch {
             pathsByEdge.get(Set.of(x, y)).add(path);
         }
 
+        Map<Edge, Set<Node>> toRemove = new HashMap<>();
+
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
         EDGE:
         for (Edge edge : this.pag.getEdges()) {
+            if (sepsets.get(edge.getNode1(), edge.getNode2()) != null) {
+                continue;
+            }
+
+            if (toRemove.containsKey(edge)) {
+                continue;
+            }
+
             if (superVerbose) {
                 TetradLogger.getInstance().log("Considering removing edge " + edge);
             }
@@ -669,6 +685,9 @@ public final class Fcit implements IGraphSearch {
                     perhapsNotFollowed.add(path.getV());
                 }
             }
+
+            List<Node> _common = pag.getAdjacentNodes(x);
+            _common.retainAll(pag.getAdjacentNodes(y));
 
             List<Node> E = new ArrayList<>(perhapsNotFollowed);
 
@@ -696,39 +715,55 @@ public final class Fcit implements IGraphSearch {
                     continue;
                 }
 
-                List<Node> common = this.pag.getAdjacentNodes(x);
-                common.retainAll(this.pag.getAdjacentNodes(y));
+                {
+                    List<Node> common = this.pag.getAdjacentNodes(x);
+                    common.addAll(this.pag.getAdjacentNodes(y));
+                    common.remove(x);
+                    common.remove(y);
 
-                SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
-                int[] choice2;
+                    common.retainAll(_b);
 
-                while ((choice2 = gen2.next()) != null) {
-                    if (!this.pag.isAdjacentTo(x, y)) {
-                        break;
-                    }
+                    SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
+                    int[] choice2;
 
-                    Set<Node> b = new HashSet<>(_b);
-                    Set<Node> c = GraphUtils.asSet(choice2, common);
-                    b.removeAll(c);
-
-                    if (S.contains(b)) continue;
-                    S.add(new HashSet<>(b));
-
-                    if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
-                        continue;
-                    }
-
-                    if (test.checkIndependence(x, y, b).isIndependent()) {
-                        if (verbose) {
-                            TetradLogger.getInstance().log("Tried removing " + edge + " for recursive reasons.");
+                    while ((choice2 = gen2.next()) != null) {
+                        if (!this.pag.isAdjacentTo(x, y)) {
+                            break;
                         }
 
-                        if (!tryRemovingEdge(x, y, b, x + " _||_ " + y + " | " + b + " (new sepset)", true)) {
+                        Set<Node> b = new HashSet<>(_b);
+                        Set<Node> b2 = new HashSet<>(b);
+
+                        Set<Node> c = GraphUtils.asSet(choice2, common);
+                        b.removeAll(c);
+
+                        if (b.equals(b2)) {
+                            continue;
+                        }
+
+                        if (S.contains(b)) continue;
+                        S.add(new HashSet<>(b));
+
+                        if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
+                            continue;
+                        }
+
+                        if (test.checkIndependence(x, y, b).isIndependent()) {
+                            if (verbose) {
+                                TetradLogger.getInstance().log("Removing " + edge + " for recursive reasons.");
+                            }
+
+                            toRemove.put(edge, b);
                             continue EDGE;
                         }
                     }
                 }
             }
+        }
+
+        for (Edge edge : toRemove.keySet()) {
+            this.pag.removeEdge(edge);
+            sepsets.set(edge.getNode1(), edge.getNode2(), toRemove.get(edge));
         }
     }
 

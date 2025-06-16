@@ -3,7 +3,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -44,7 +43,7 @@ public class RecursiveBlocking {
     }
 
     private static Set<Node> blockPathsRecursivelyVisit(Graph graph, Node x, Node y, Set<Node> containing,
-                                                                       Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
+                                                        Set<Node> notFollowed, Map<Node, Set<Node>> ancestorMap, int maxPathLength)
             throws InterruptedException {
         if (x == y) {
             throw new NullPointerException("x and y are equal");
@@ -54,24 +53,16 @@ public class RecursiveBlocking {
 
         Set<Node> path = new HashSet<>();
         path.add(x);
-        boolean allBlocked = true;
 
         for (Node b : graph.getAdjacentNodes(x)) {
             if (Thread.currentThread().isInterrupted()) {
                 return null;
             }
 
-            if (b == y) continue;
-
-            Blockable blockable = findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
-
-            if (blockable == Blockable.UNBLOCKABLE) {
-                allBlocked = false;
-            }
+            findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);
         }
 
         return z;
-//        return allBlocked ? z : null;
     }
 
     /**
@@ -110,8 +101,12 @@ public class RecursiveBlocking {
         }
 
         if (notFollowed.contains(b)) {
-            return Blockable.BLOCKED;
+            return Blockable.INDETERMINATE;
         }
+
+//        if (notFollowed.contains(y)) {
+//            return Blockable.UNBLOCKABLE;
+//        }
 
         path.add(b);
 
@@ -124,18 +119,21 @@ public class RecursiveBlocking {
         // If b is latent, we cannot condition on it. If z already contains b, we know we've already conditioned on
         // it, so there's no point considering further whether to condition on it or now.
         if (b.getNodeType() == NodeType.LATENT || z.contains(b)) {
-            List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
-            passNodes.removeAll(notFollowed);
 
-            for (Node c : passNodes) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
-                }
+            {
+                List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
+                passNodes.removeAll(notFollowed);
 
-                Blockable blockable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
+                for (Node c : passNodes) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new InterruptedException();
+                    }
 
-                if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
-                    return Blockable.UNBLOCKABLE;
+                    Blockable blockable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
+
+                    if (blockable == Blockable.UNBLOCKABLE || blockable == Blockable.INDETERMINATE) {
+                        return Blockable.UNBLOCKABLE;
+                    }
                 }
             }
 
@@ -146,51 +144,56 @@ public class RecursiveBlocking {
             // We're going to look to see whether the path to y has already been blocked by z. If it has, we can
             // stop here. If it hasn't, we'll see if we can block it by conditioning also on b. If it can't be
             // blocked either way, well, then, it just can't be blocked.
-            boolean blockable1 = true;
 
-            List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
-            passNodes.removeAll(notFollowed);
+            {
+                boolean blockable1 = true;
 
-            for (Node c : passNodes) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
+                List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
+                passNodes.removeAll(notFollowed);
+
+                for (Node c : passNodes) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new InterruptedException();
+                    }
+
+                    Blockable blockType = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
+
+                    if (blockType == Blockable.UNBLOCKABLE || blockType == Blockable.INDETERMINATE) {
+                        blockable1 = false;
+                        break;
+                    }
                 }
 
-                Blockable blockType = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
-
-                if (blockType == Blockable.UNBLOCKABLE || blockType == Blockable.INDETERMINATE) {
-                    blockable1 = false;
-                    break;
+                if (blockable1) {
+                    path.remove(b);
+                    return Blockable.BLOCKED;
                 }
-            }
-
-            if (blockable1) {
-                path.remove(b);
-                return Blockable.BLOCKED;
             }
 
             z.add(b);
 
-            boolean blockable2 = true;
-            passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
-            passNodes.removeAll(notFollowed);
+            {
+                boolean blockable2 = true;
+                List<Node> passNodes = getReachableNodes(graph, a, b, z, ancestorMap);
+                passNodes.removeAll(notFollowed);
 
-            for (Node c : passNodes) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
+                for (Node c : passNodes) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new InterruptedException();
+                    }
+
+                    Blockable blackable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
+
+                    if (blackable == Blockable.UNBLOCKABLE || blackable == Blockable.INDETERMINATE) {
+                        blockable2 = false;
+                        break;
+                    }
                 }
 
-                Blockable blackable = findPathToTarget(graph, b, c, y, path, z, maxPathLength, notFollowed, ancestorMap);
-
-                if (blackable == Blockable.UNBLOCKABLE || blackable == Blockable.INDETERMINATE) {
-                    blockable2 = false;
-                    break;
+                if (blockable2) {
+                    path.remove(b);
+                    return Blockable.BLOCKED;
                 }
-            }
-
-            if (blockable2) {
-                path.remove(b);
-                return Blockable.BLOCKED;
             }
 
             path.remove(b);
