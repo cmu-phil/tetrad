@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -63,10 +64,6 @@ public class RecursiveBlocking {
         for (Node b : graph.getAdjacentNodes(x)) {
             if (Thread.currentThread().isInterrupted()) {
                 return null;
-            }
-
-            if (knowledge != null && knowledge.isForbidden(b.getName(), x.getName())) {
-                continue;
             }
 
             findPathToTarget(graph, x, b, y, path, z, maxPathLength, notFollowed, ancestorMap);

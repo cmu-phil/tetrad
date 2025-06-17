@@ -192,7 +192,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // If you already have a sepset, use it.
         if (sepsetMap.get(x, y) != null) {
             blocking = sepsetMap.get(x, y);
-
         }
 
         if (blocking == null && blockingType == BlockingType.RECURSIVE) {
@@ -207,8 +206,9 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         if (blocking != null) {
             sepsetMap.set(x, y, blocking);
         } else {
-            TetradLogger.getInstance().log("Blocking set is null in R4.");
-            throw new IllegalArgumentException("Blocking set is null in R4.");
+            blocking = Set.of();
+//            TetradLogger.getInstance().log("Blocking set is null in R4.");
+//            throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 
         if (!(blocking.containsAll(path) && blocking.contains(w))) {
