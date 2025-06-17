@@ -709,7 +709,7 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> notFollowed = GraphUtils.asSet(choice, E);
 
                 // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Set<Node> _b = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1);
+                Set<Node> _b = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, knowledge);
 
                 if (superVerbose && !notFollowed.isEmpty()) {
                     TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + _b);
