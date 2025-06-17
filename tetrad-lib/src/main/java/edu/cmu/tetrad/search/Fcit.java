@@ -143,6 +143,16 @@ public final class Fcit implements IGraphSearch {
      * instantiated to an empty graph structure.
      */
     private @NotNull Graph pag = new EdgeListGraph();
+    /**
+     * Indicates whether the search algorithm guarantees that the output graph is a valid Partial Ancestral Graph (PAG).
+     * If set to true, the algorithm ensures the validity of the PAG by making necessary adjustments and conforming to
+     * PAG-specific rules.
+     * <p>
+     * This flag is useful for scenarios where a valid PAG is a mandatory requirement for further causal inference or
+     * analysis. If false, the algorithm does not enforce this guarantee, which might allow more freedom in the search
+     * process but could result in outputs that are not strictly valid as PAGs.
+     */
+    private boolean guaranteePag = false;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -425,25 +435,46 @@ public final class Fcit implements IGraphSearch {
         dagToPag.setVerbose(superVerbose);
         this.pag = dagToPag.convert();
 
+        Graph origPag = new EdgeListGraph(this.pag);
+
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
         // This removes edges based on recursive path blocking. After every edge removal, the evolving PAG is
         // rebuilt based on initial unshielded colliders and learned sepsets.
+
+        Map<Edge, Set<Node>> toRemove = new HashMap<>();
+
         while (true) {
-            if (!removeEdgesRecursively()) {
+            Map<Edge, Set<Node>> _roRemove = removeEdgesRecursively();
+
+            if (_roRemove.isEmpty()) {
                 break;
             }
+
+            toRemove.putAll(_roRemove);
+
+//            if (!_roRemove) {
+//                break;
+//            }
         }
+
 
         // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
         // for correctness, but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
         // is rebuilt.
         if (checkAdjacencySepsets) {
-            removeEdgesSubsetsOfAdjacents();
-            redoGfciOrientation(pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
+            removeEdgesSubsetsOfAdjacents(toRemove);
         }
 
-//        GraphUtils.guaranteePag(this.pag, fciOrient, knowledge, initialColliders, verbose, Set.of());
+        redoGfciOrientation(pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
+
+        SepsetMap _sepsets = new SepsetMap(sepsets);
+
+        Graph __pag = new EdgeListGraph(this.pag);
+
+        if (guaranteePag) {
+            tryToRecoverLegalMagStatus(toRemove, __pag, origPag, _sepsets);
+        }
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -465,7 +496,7 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
-    private void removeEdgesSubsetsOfAdjacents() throws InterruptedException {
+    private void removeEdgesSubsetsOfAdjacents(Map<Edge, Set<Node>> toRemove) throws InterruptedException {
         EDGE:
         for (Edge edge : this.pag.getEdges()) {
             Node x = edge.getNode1();
@@ -492,8 +523,10 @@ public final class Fcit implements IGraphSearch {
                                                        + x + " _||_ " + y + " | " + cond);
                     }
 
-                    this.pag.removeEdge(edge);
-                    sepsets.set(x, y, cond);
+                    toRemove.put(edge, cond);
+
+//                    this.pag.removeEdge(edge);
+//                    sepsets.set(x, y, cond);
 
                     continue EDGE;
                 }
@@ -598,21 +631,21 @@ public final class Fcit implements IGraphSearch {
         return grasp;
     }
 
-    private boolean legalMag(String message) {
-        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
-            if (verbose) {
-                TetradLogger.getInstance().log("Rejected: " + message);
-            }
-
-            return false;
-        } else {
-            if (verbose) {
-                TetradLogger.getInstance().log("ACCEPTED: " + message);
-            }
-
-            return true;
-        }
-    }
+//    private boolean legalMag(String message) {
+//        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
+//            if (verbose) {
+//                TetradLogger.getInstance().log("Rejected: " + message);
+//            }
+//
+//            return false;
+//        } else {
+//            if (verbose) {
+//                TetradLogger.getInstance().log("ACCEPTED: " + message);
+//            }
+//
+//            return true;
+//        }
+//    }
 
     /**
      * Removes extra edges from a Partial Ancestral Graph (PAG) by analyzing discriminating paths that could not be
@@ -638,12 +671,10 @@ public final class Fcit implements IGraphSearch {
      * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
      * execution for asynchronous tasks.
      */
-    private boolean removeEdgesRecursively() throws InterruptedException {
+    private Map<Edge, Set<Node>> removeEdgesRecursively() throws InterruptedException {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
-
-        boolean changed = false;
 
         // The final orientation rules were applied just before this step, so this should list only
         // discriminating paths that could not be oriented by them...
@@ -741,14 +772,9 @@ public final class Fcit implements IGraphSearch {
                         }
 
                         Set<Node> b = new HashSet<>(_b);
-                        Set<Node> b2 = new HashSet<>(b);
 
                         Set<Node> c = GraphUtils.asSet(choice2, common);
                         b.removeAll(c);
-
-                        if (b.equals(b2)) {
-                            continue;
-                        }
 
                         if (S.contains(b)) continue;
                         S.add(new HashSet<>(b));
@@ -783,14 +809,9 @@ public final class Fcit implements IGraphSearch {
                         }
 
                         Set<Node> b = new HashSet<>(_b);
-                        Set<Node> b2 = new HashSet<>(b);
 
                         Set<Node> c = GraphUtils.asSet(choice2, common);
                         b.removeAll(c);
-
-                        if (b.equals(b2)) {
-                            continue;
-                        }
 
                         if (S.contains(b)) continue;
                         S.add(new HashSet<>(b));
@@ -816,29 +837,19 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Not legal mag before modifications");
         }
 
-        SepsetMap _sepsets = new SepsetMap(sepsets);
-
-        Graph __pag = new EdgeListGraph(this.pag);
-
         for (Edge edge : toRemove.keySet()) {
             this.pag.removeEdge(edge);
             sepsets.set(edge.getNode1(), edge.getNode2(), toRemove.get(edge));
-            changed = true;
         }
 
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
 
-        boolean _changed = tryToRecoverLegalMagStatus(toRemove, __pag, _sepsets);
-        return changed && _changed;
+        return toRemove;
     }
 
-    private boolean tryToRecoverLegalMagStatus(Map<Edge, Set<Node>> toRemove, Graph __pag, SepsetMap _sepsets) {
-        if (GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
-            return false;
-        } else {
+    private void tryToRecoverLegalMagStatus(Map<Edge, Set<Node>> toRemove, Graph __pag, Graph origPag, SepsetMap _sepsets) {
+        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
             TetradLogger.getInstance().log("Resetting to BOSS-POD result and trying to remove edges one at a time maintaining MAG status");
-
-            boolean changed = false;
 
             List<Edge> edges = new ArrayList<>(toRemove.keySet());
 
@@ -878,21 +889,18 @@ public final class Fcit implements IGraphSearch {
                     if (verbose) {
                         for (Edge edge : newlyRemoved) {
                             TetradLogger.getInstance().log("Removing " + edge + " retaining MAG status.");
-                            changed = true;
+
                         }
                     }
 
                     this.pag = _pag;
                 } else {
                     sepsets = new SepsetMap(_sepsets);
-                    this.pag = __pag;
-                    redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
-                    changed = false;
+                    this.pag = origPag;
                     break;
                 }
             }
 
-            return changed;
         }
     }
 
@@ -994,6 +1002,16 @@ public final class Fcit implements IGraphSearch {
      */
     public void setCheckAdjacencySepsets(boolean checkAdjacencySepsets) {
         this.checkAdjacencySepsets = checkAdjacencySepsets;
+    }
+
+    /**
+     * Sets the flag indicating whether the algorithm should guarantee the generation of a valid Partial Ancestral Graph
+     * (PAG).
+     *
+     * @param guaranteePag true to guarantee a valid PAG, false otherwise
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
     }
 
     /**

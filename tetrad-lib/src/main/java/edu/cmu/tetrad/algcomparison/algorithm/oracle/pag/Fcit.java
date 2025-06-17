@@ -158,6 +158,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
         return search.search();
     }
@@ -213,6 +214,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         params.add(Params.CHECK_ADJACENCY_SEPSETS);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
+        params.add(Params.GUARANTEE_PAG);
 
         // General
         params.add(Params.TIME_LAG);
