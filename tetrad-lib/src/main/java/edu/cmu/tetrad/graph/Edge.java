@@ -109,17 +109,17 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         }
 
         // Flip edges pointing left the other way.
-        if (pointingLeft(endpoint1, endpoint2)) {
-            this.node1 = node2;
-            this.node2 = node1;
-            this.endpoint1 = endpoint2;
-            this.endpoint2 = endpoint1;
-        } else {
+//        if (pointingLeft(endpoint1, endpoint2)) {
+//            this.node1 = node2;
+//            this.node2 = node1;
+//            this.endpoint1 = endpoint2;
+//            this.endpoint2 = endpoint1;
+//        } else {
             this.node1 = node1;
             this.node2 = node2;
             this.endpoint1 = endpoint1;
             this.endpoint2 = endpoint2;
-        }
+//        }
     }
 
     // =========================CONSTRUCTORS============================//
