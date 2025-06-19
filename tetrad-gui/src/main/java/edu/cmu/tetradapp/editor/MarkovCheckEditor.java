@@ -1277,29 +1277,12 @@ public class MarkovCheckEditor extends JPanel {
                 );
 
                 andersonDarlingPLabelIndep.setText(
-                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, 0.0))
+                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
                 );
 
                 fisherCombinedLabelIndep.setText(
                         "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
                 );
-
-                double effectiveAlpha = 1.0;
-                double lastAlpha = 0.0;
-
-                for (double min = 0.0; min <= 1.0; min += 0.01) {
-                    double _alpha = model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, min);
-//                    double alpha = model. getMarkovCheck().getIndependenceTest().getAlpha();
-
-                    if (_alpha > min) {
-                        effectiveAlpha = lastAlpha;
-                    }
-
-                    lastAlpha = min;
-                }
-
-                fractionDepLabelIndep.setText(
-                        "Effective Alpha = " + nf.format(effectiveAlpha));
 
                 histogramPanelIndep.removeAll();
                 histogramPanelIndep.add(createHistogramPanel(visiblePairs), BorderLayout.CENTER);
@@ -1340,7 +1323,7 @@ public class MarkovCheckEditor extends JPanel {
                 );
 
                 andersonDarlingPLabelDep.setText(
-                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, 0.0))
+                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
                 );
 
                 fisherCombinedPLabelDep.setText(

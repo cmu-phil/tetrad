@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
@@ -50,12 +50,12 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     /**
      * The first node.
      */
-    private final Node node1;
+    private Node node1;
 
     /**
      * The second node.
      */
-    private final Node node2;
+    private Node node2;
 
     /**
      * The endpoint at the first node.
@@ -100,6 +100,10 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @param endpoint2 the endpoint at the second node
      */
     public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2) {
+        this(node1, node2, endpoint1, endpoint2, true);
+    }
+
+    public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2, boolean flipIfBackwards) {
         if (node1 == null || node2 == null) {
             throw new NullPointerException("Nodes must not be null. node1 = " + node1 + " node2 = " + node2);
         }
@@ -108,14 +112,15 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             throw new NullPointerException("Endpoints must not be null.");
         }
 
-        // Removing the flip here--this messes with bootstrapping -jdramsey 2025-6-19
-        // Flip edges pointing left the other way.
-        if (pointingLeft(endpoint1, endpoint2)) {
+        if (flipIfBackwards && pointingLeft(endpoint1, endpoint2)) {
             this.node1 = node2;
             this.node2 = node1;
             this.endpoint1 = endpoint2;
             this.endpoint2 = endpoint1;
         } else {
+
+            // At the moment, this is only needed for the bootstrapping API. Please don't use
+            // wantonly.
             this.node1 = node1;
             this.node2 = node2;
             this.endpoint1 = endpoint1;

@@ -158,14 +158,14 @@ public final class GraphSampling {
         }
 
         return switch (edgeTypeProbability.getEdgeType()) {
-            case ta -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
-            case at -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
-            case ca -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
-            case ac -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
-            case cc -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
-            case aa -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
-            case tt -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
-            default -> new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
+            case ta -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW, false);
+            case at -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL, false);
+            case ca -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW, false);
+            case ac -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE, false);
+            case cc -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE, false);
+            case aa -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW, false);
+            case tt -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL, false);
+            default -> new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL, false);
         };
     }
 
