@@ -166,8 +166,8 @@ public class RandomGraph {
                 -1);
     }
 
-        /**
-         * Generates a random graph with the specified parameters and properties.
+    /**
+     * Generates a random graph with the specified parameters and properties.
      *
      * @param nodes The list of nodes to include in the graph.
      * @param numLatentConfounders The number of latent confounders in the graph.
