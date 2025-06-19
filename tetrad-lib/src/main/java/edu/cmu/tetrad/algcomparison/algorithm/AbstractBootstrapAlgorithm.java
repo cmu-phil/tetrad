@@ -23,6 +23,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
@@ -132,7 +133,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             }
         }
 
-        return graph;
+        return GraphUtils.fixDirections(graph);
     }
 
     /**

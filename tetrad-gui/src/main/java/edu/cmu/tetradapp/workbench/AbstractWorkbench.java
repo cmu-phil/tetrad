@@ -29,7 +29,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -218,7 +217,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     protected AbstractWorkbench(Graph graph) {
         if (samplingGraph != null) {
             setGraph(GraphSampling.createDisplayGraph(samplingGraph,
-                    ResamplingEdgeEnsemble.Majority));
+                    EnsembleMenu.resamplingEdgeEnsemble));
         } else {
             setGraph(graph);
         }

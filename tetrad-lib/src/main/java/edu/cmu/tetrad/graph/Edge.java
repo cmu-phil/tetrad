@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
+import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -291,7 +292,20 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @return the edge with endpoints reversed.
      */
     public Edge reverse() {
-        return new Edge(getNode2(), getNode1(), getEndpoint1(), getEndpoint2());
+        Edge _edge = new Edge(getNode2(), getNode1(), getEndpoint1(), getEndpoint2());
+        _edge.lineColor = lineColor;
+        _edge.bold = bold;
+        _edge.highlighted = highlighted;
+        _edge.properties = new ArrayList<>(properties);
+        _edge.edgeTypeProbabilities = new ArrayList<>();
+
+        for (EdgeTypeProbability etp : edgeTypeProbabilities) {
+            EdgeType reversedEdgeType = GraphSampling.getReversed(etp.getEdgeType());
+            _edge.edgeTypeProbabilities.add(new EdgeTypeProbability(reversedEdgeType, etp.getProbability()));
+        }
+
+        _edge.probability = probability;
+        return _edge;
     }
 
     /**

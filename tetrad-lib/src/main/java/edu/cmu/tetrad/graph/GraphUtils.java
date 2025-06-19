@@ -3297,6 +3297,20 @@ public final class GraphUtils {
         return _test.getP();
     }
 
+    public static @NotNull Graph fixDirections(Graph graph) {
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        Graph fixedDirections = new EdgeListGraph(graph.getNodes());
+
+        for (Edge edge : edges) {
+            if (edge.pointsTowards(edge.getNode1())) {
+                fixedDirections.addEdge(edge.reverse());
+            } else {
+                fixedDirections.addEdge(edge);
+            }
+        }
+        return fixedDirections;
+    }
+
     /**
      * The GraphType enum represents the types of graphs that can be used in the application.
      */

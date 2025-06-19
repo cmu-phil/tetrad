@@ -272,7 +272,7 @@ public final class GraphSampling {
         return Arrays.asList(etps);
     }
 
-    private static EdgeType getReversed(EdgeType edgeType) {
+    public static EdgeType getReversed(EdgeType edgeType) {
         return switch (edgeType) {
             case ac -> EdgeType.ca;
             case at -> EdgeType.ta;

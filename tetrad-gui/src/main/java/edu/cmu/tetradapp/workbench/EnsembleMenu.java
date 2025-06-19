@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.GraphSampling;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
@@ -42,6 +43,8 @@ public class EnsembleMenu extends JMenu {
      * The workbench graph.
      */
     private final GraphWorkbench graphWorkbench;
+
+    public static ResamplingEdgeEnsemble resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Majority;
 
     /**
      * <p>Constructor for EnsembleMenu.</p>
@@ -72,9 +75,14 @@ public class EnsembleMenu extends JMenu {
                     graphWorkbench.setSamplingGraph(samplingGraph);
                 }
 
-                graphWorkbench.setGraph(
-                        GraphSampling.createDisplayGraph(samplingGraph,
-                                ResamplingEdgeEnsemble.Highest));
+                Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph,
+                        ResamplingEdgeEnsemble.Highest);
+
+                resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Highest;
+
+                displayGraph = GraphUtils.fixDirections(displayGraph);
+
+                graphWorkbench.setGraph(displayGraph);
             } else {
                 graphWorkbench.setSamplingGraph(null);
             }
@@ -90,9 +98,14 @@ public class EnsembleMenu extends JMenu {
                     graphWorkbench.setSamplingGraph(samplingGraph);
                 }
 
-                graphWorkbench.setGraph(
-                        GraphSampling.createDisplayGraph(samplingGraph,
-                                ResamplingEdgeEnsemble.Majority));
+                Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph,
+                        ResamplingEdgeEnsemble.Majority);
+
+                resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Majority;
+
+                displayGraph = GraphUtils.fixDirections(displayGraph);
+
+                graphWorkbench.setGraph(displayGraph);
             } else {
                 graphWorkbench.setSamplingGraph(null);
             }
@@ -108,9 +121,14 @@ public class EnsembleMenu extends JMenu {
                     graphWorkbench.setSamplingGraph(samplingGraph);
                 }
 
-                graphWorkbench.setGraph(
-                        GraphSampling.createDisplayGraph(samplingGraph,
-                                ResamplingEdgeEnsemble.Preserved));
+                Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph,
+                        ResamplingEdgeEnsemble.Preserved);
+
+                resamplingEdgeEnsemble =  ResamplingEdgeEnsemble.Preserved;
+
+                displayGraph = GraphUtils.fixDirections(displayGraph);
+
+                graphWorkbench.setGraph(displayGraph);
             } else {
                 graphWorkbench.setSamplingGraph(null);
             }
@@ -150,9 +168,14 @@ public class EnsembleMenu extends JMenu {
                     graphWorkbench.setSamplingGraph(samplingGraph);
                 }
 
-                graphWorkbench.setGraph(
-                        GraphSampling.createDisplayGraph(samplingGraph,
-                                ResamplingEdgeEnsemble.Threshold));
+                Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph,
+                        ResamplingEdgeEnsemble.Threshold);
+
+                resamplingEdgeEnsemble =  ResamplingEdgeEnsemble.Threshold;
+
+                displayGraph = GraphUtils.fixDirections(displayGraph);
+
+                graphWorkbench.setGraph(displayGraph);
             } else {
                 graphWorkbench.setSamplingGraph(null);
             }
@@ -187,7 +210,7 @@ public class EnsembleMenu extends JMenu {
             return false;
         }
 
-        return graph1Nodes.get(0) == graph2Nodes.get(0);
+        return graph1Nodes.getFirst() == graph2Nodes.getFirst();
     }
 
 }
