@@ -1765,16 +1765,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * Calculates the Anderson-Darling p-value for a given list of independence results.
      *
-     * @param _visiblePairs the list of independence results
+     * @param visiblePairs the list of independence results
      * @return the Anderson-Darling p-value
      */
-    public double getAndersonDarlingPValue(List<IndependenceResult> _visiblePairs, double min) {
-        List<Double> pValues = new ArrayList<>();
-
-        for (IndependenceResult p : _visiblePairs) if (p.getPValue() > min) pValues.add(p.getPValue());
-
+    public double getAndersonDarlingPValue(List<IndependenceResult> visiblePairs) {
+        List<Double> pValues = getPValues(visiblePairs);
         if (pValues.isEmpty()) return Double.NaN;
-        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(min, 1));
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
 //        double aSquared = generalAndersonDarlingTest.getASquared();
         double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);

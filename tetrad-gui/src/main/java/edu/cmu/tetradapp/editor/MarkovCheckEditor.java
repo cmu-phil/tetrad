@@ -1277,28 +1277,29 @@ public class MarkovCheckEditor extends JPanel {
                 );
 
                 andersonDarlingPLabelIndep.setText(
-                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, 0))
+                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, 0.0))
                 );
 
                 fisherCombinedLabelIndep.setText(
                         "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
                 );
 
-                double _min = 1.0;
+                double effectiveAlpha = 1.0;
+                double lastAlpha = 0.0;
 
-                for (double min = 0.0; min < 1.0; min += 0.01) {
-                    double p = model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, min);
-                    double alpha = model.getMarkovCheck().getIndependenceTest().getAlpha();
+                for (double min = 0.0; min <= 1.0; min += 0.01) {
+                    double _alpha = model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, min);
+//                    double alpha = model. getMarkovCheck().getIndependenceTest().getAlpha();
 
-                    if (p > alpha) {
-                        _min = min;
-                        break;
+                    if (_alpha > min) {
+                        effectiveAlpha = lastAlpha;
                     }
+
+                    lastAlpha = min;
                 }
 
                 fractionDepLabelIndep.setText(
-                        "Min for AD Unif = " + _min
-                );
+                        "Effective Alpha = " + nf.format(effectiveAlpha));
 
                 histogramPanelIndep.removeAll();
                 histogramPanelIndep.add(createHistogramPanel(visiblePairs), BorderLayout.CENTER);
@@ -1339,7 +1340,7 @@ public class MarkovCheckEditor extends JPanel {
                 );
 
                 andersonDarlingPLabelDep.setText(
-                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, 0))
+                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, 0.0))
                 );
 
                 fisherCombinedPLabelDep.setText(

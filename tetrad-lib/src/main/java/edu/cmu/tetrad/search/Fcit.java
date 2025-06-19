@@ -544,7 +544,7 @@ public final class Fcit implements IGraphSearch {
 //                        pag.addEdge(edge);
                         this.pag = _pag;
                         sepsets.set(x, y, sepset);
-                        continue;
+                        continue EDGE;
                     }
 
                     if (verbose) {
@@ -585,7 +585,7 @@ public final class Fcit implements IGraphSearch {
 //                        pag.addEdge(edge);
                         this.pag = _pag;
                         sepsets.set(x, y, sepset);
-                        continue;
+                        continue EDGE;
                     }
 
                     if (verbose) {
