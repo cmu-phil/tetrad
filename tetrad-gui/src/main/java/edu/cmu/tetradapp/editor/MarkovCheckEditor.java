@@ -1277,11 +1277,27 @@ public class MarkovCheckEditor extends JPanel {
                 );
 
                 andersonDarlingPLabelIndep.setText(
-                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
+                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, 0))
                 );
 
                 fisherCombinedLabelIndep.setText(
                         "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
+                );
+
+                double _min = 1.0;
+
+                for (double min = 0.0; min < 1.0; min += 0.01) {
+                    double p = model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, min);
+                    double alpha = model.getMarkovCheck().getIndependenceTest().getAlpha();
+
+                    if (p > alpha) {
+                        _min = min;
+                        break;
+                    }
+                }
+
+                fractionDepLabelIndep.setText(
+                        "Min for AD Unif = " + _min
                 );
 
                 histogramPanelIndep.removeAll();
@@ -1323,7 +1339,7 @@ public class MarkovCheckEditor extends JPanel {
                 );
 
                 andersonDarlingPLabelDep.setText(
-                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs))
+                        "Anderson-Darling p-value = " + nf.format(model.getMarkovCheck().getAndersonDarlingPValue(visiblePairs, 0))
                 );
 
                 fisherCombinedPLabelDep.setText(
