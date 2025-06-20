@@ -69,7 +69,7 @@ public class EnsembleMenu extends JMenu {
             if (isSamplingGraph(workbenchGraph)) {
                 Graph samplingGraph = graphWorkbench.getSamplingGraph();
 
-                // replace original sampling graph if it's a different sampling graph
+                // replace the original sampling graph if it's a different sampling graph
                 if (!isSameGraph(samplingGraph, workbenchGraph)) {
                     samplingGraph = workbenchGraph;
                     graphWorkbench.setSamplingGraph(samplingGraph);

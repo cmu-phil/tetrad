@@ -292,7 +292,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @return the edge with endpoints reversed.
      */
     public Edge reverse() {
-        Edge _edge = new Edge(getNode2(), getNode1(), getEndpoint1(), getEndpoint2());
+        Edge _edge = new Edge(getNode2(), getNode1(), getEndpoint2(), getEndpoint1());
         _edge.lineColor = lineColor;
         _edge.bold = bold;
         _edge.highlighted = highlighted;

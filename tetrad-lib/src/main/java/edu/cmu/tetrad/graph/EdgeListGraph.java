@@ -94,6 +94,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * The ambiguous triples.
      */
     private Set<Triple> ambiguousTriples = new HashSet<>();
+    /**
+     * A map from names of graphs to ancillary graphs for this graph.
+     */
+    private final Map<String, Graph> ancillaryGraphs = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
     /**
@@ -1578,5 +1582,19 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, this));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, this));
         return triplesList;
+    }
+
+    public void setAncillaryGraph(String name, Graph graph) {
+        ancillaryGraphs.put(name,  new EdgeListGraph(graph));
+    }
+
+    public Graph getAncillaryGraph(String name) {
+        Graph graph = ancillaryGraphs.get(name);
+
+        if (graph == null) {
+            throw new NullPointerException("Ancillary graph with name " + name + " not found");
+        }
+
+        return new EdgeListGraph(graph);
     }
 }

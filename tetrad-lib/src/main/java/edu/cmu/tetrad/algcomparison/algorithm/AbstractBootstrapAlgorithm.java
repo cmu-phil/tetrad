@@ -90,7 +90,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             return runSearch(dataModel, parameters);
         }
 
-        // create new random generator if a seed is given
+        // create a new random generator if a seed is given
         long seed = parameters.getLong(Params.SEED);
         RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
 
@@ -113,10 +113,10 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                 tasks.add(() -> runSearch(dataModel, parameters));
             }
 
-            System.gc();
-
             TaskRunner<Graph> taskRunner = new TaskRunner<>(parameters.getInt(Params.BOOTSTRAPPING_NUM_THREADS));
             List<Graph> graphs = taskRunner.run(tasks);
+
+            System.gc();
 
             if (graphs.isEmpty()) {
                 graph = new EdgeListGraph();
