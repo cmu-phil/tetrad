@@ -364,8 +364,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             if (tabbedPane.getSelectedIndex() == 1) { // "Edges" tab
                 updateBootstrapTable(graph);
                 this.edgeTypeTable.update(graph);
-                this.edgeTypeTable.revalidate();
-                this.edgeTypeTable.repaint();
+                super.revalidate();
+                super.repaint();
             }
         });
 

@@ -148,7 +148,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.dottedUnderLineTriples = graph.getDottedUnderlines();
         this.ambiguousTriples = graph.getAmbiguousTriples();
 
-        if (graph instanceof EdgeListGraph) {
+        // Keep the nullity check for backward compatibility with 7.6.8
+        // @deprecated
+        if (graph instanceof EdgeListGraph && ((EdgeListGraph) graph).ancillaryGraphs != null) {
             for (String name : ((EdgeListGraph) graph).ancillaryGraphs.keySet()) {
                 ancillaryGraphs.put(name, ((EdgeListGraph) graph).ancillaryGraphs.get(name));
             }
