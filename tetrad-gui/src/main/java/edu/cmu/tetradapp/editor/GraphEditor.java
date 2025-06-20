@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphWrapper;
@@ -32,10 +33,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
-import edu.cmu.tetradapp.workbench.DisplayEdge;
-import edu.cmu.tetradapp.workbench.DisplayNode;
-import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import edu.cmu.tetradapp.workbench.LayoutMenu;
+import edu.cmu.tetradapp.workbench.*;
 
 import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
@@ -260,6 +258,10 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     private void initUI(GraphWrapper graphWrapper) {
         Graph graph = graphWrapper.getGraph();
 
+//        if (((EdgeListGraph) graph).getAncillaryGraph("samplingGraph") != null) {
+//            graph = GraphSampling.createDisplayGraph(graph, EnsembleMenu.resamplingEdgeEnsemble);
+//        }
+
         this.workbench = new GraphWorkbench(graph);
         this.workbench.setEnableEditing(this.enableEditing);
 
@@ -362,10 +364,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         tabbedPane.addChangeListener(e -> {
             if (tabbedPane.getSelectedIndex() == 1) { // "Edges" tab
-                updateBootstrapTable(graph);
-                this.edgeTypeTable.update(graph);
-                super.revalidate();
-                super.repaint();
+                updateBootstrapTable(workbench.getGraph());
+                this.edgeTypeTable.update(workbench.getGraph());
             }
         });
 

@@ -40,8 +40,8 @@ public final class GraphSampling {
     /**
      * Create a graph for displaying and print out.
      *
-     * @param graph          a {@link Graph} object
-     * @param ensemble       a {@link ResamplingEdgeEnsemble} object
+     * @param graph    a {@link Graph} object
+     * @param ensemble a {@link ResamplingEdgeEnsemble} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph createDisplayGraph(Graph graph, ResamplingEdgeEnsemble ensemble) {
@@ -64,7 +64,6 @@ public final class GraphSampling {
                     ensembleGraph.addEdge(highestProbEdge);
                 }
             }
-
         }
 
         setEdgeProbabilitiesOfNonNullEdges(ensembleGraph);
