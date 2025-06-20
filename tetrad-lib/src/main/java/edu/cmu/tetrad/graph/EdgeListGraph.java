@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -75,6 +75,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     private final Map<Pair<Node, Node>, Boolean> semidirectedPathCache = new HashMap<>();
     /**
+     * A map from names of graphs to ancillary graphs for this graph.
+     */
+    private final Map<String, Graph> ancillaryGraphs = new HashMap<>();
+    /**
      * Map from each node to the List of edges connected to that node.
      */
     Map<Node, Set<Edge>> edgeLists;
@@ -94,10 +98,6 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * The ambiguous triples.
      */
     private Set<Triple> ambiguousTriples = new HashSet<>();
-    /**
-     * A map from names of graphs to ancillary graphs for this graph.
-     */
-    private final Map<String, Graph> ancillaryGraphs = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
     /**
@@ -147,6 +147,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.underLineTriples = graph.getUnderLines();
         this.dottedUnderLineTriples = graph.getDottedUnderlines();
         this.ambiguousTriples = graph.getAmbiguousTriples();
+
+        if (graph instanceof EdgeListGraph) {
+            for (String name : ((EdgeListGraph) graph).ancillaryGraphs.keySet()) {
+                ancillaryGraphs.put(name, ((EdgeListGraph) graph).ancillaryGraphs.get(name));
+            }
+        }
     }
 
     /**
@@ -170,6 +176,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.dottedUnderLineTriples = graph.getDottedUnderlines();
         this.ambiguousTriples = graph.getAmbiguousTriples();
 
+        for (String name : ((EdgeListGraph) graph).ancillaryGraphs.keySet()) {
+            ancillaryGraphs.put(name, ((EdgeListGraph) graph).ancillaryGraphs.get(name));
+        }
+
+        graph.ancillaryGraphs.replaceAll((n, v) -> v);
     }
 
     /**
@@ -437,6 +448,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     /**
      * Determines whether one node is an ancestor of another. Including this here for caching purposes.
+     *
      * @param node1 The first node.
      * @param node2 The second node.
      * @return True if the first node is an ancestor of the second, false if not.
@@ -454,6 +466,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     /**
      * Determines whether one node is an ancestor of another. Including this here for caching purposes.
+     *
      * @param node1 The first node.
      * @param node2 The second node.
      * @return True if the first node is an ancestor of the second, false if not.
@@ -1584,15 +1597,31 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return triplesList;
     }
 
+    /**
+     * Sets an ancillary graph with the given name.
+     *
+     * @param name  The name of the ancillary graph.
+     * @param graph The ancillary graph.
+     */
     public void setAncillaryGraph(String name, Graph graph) {
-        ancillaryGraphs.put(name,  new EdgeListGraph(graph));
+        if (graph == null) {
+            ancillaryGraphs.remove(name);
+        } else {
+            ancillaryGraphs.put(name, new EdgeListGraph(graph));
+        }
     }
 
+    /**
+     * Returns the ancillary graph with the given name, or null if no ancillary graph by that name has been set.
+     *
+     * @param name The name of the ancillary graph.
+     * @return The ancillary graph, or null if no such has been set.
+     */
     public Graph getAncillaryGraph(String name) {
         Graph graph = ancillaryGraphs.get(name);
 
         if (graph == null) {
-            throw new NullPointerException("Ancillary graph with name " + name + " not found");
+            return null;
         }
 
         return new EdgeListGraph(graph);

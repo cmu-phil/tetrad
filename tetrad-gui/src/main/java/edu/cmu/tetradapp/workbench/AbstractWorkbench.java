@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
@@ -17,13 +17,12 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.SessionWrapper;
@@ -40,12 +39,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.prefs.Preferences;
-
-import static edu.cmu.tetradapp.workbench.EnsembleMenu.isSameGraph;
-import static edu.cmu.tetradapp.workbench.EnsembleMenu.isSamplingGraph;
 
 /**
  * The functionality of the workbench which is shared between the workbench workbench and the session (and any other
@@ -198,10 +194,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Whether to do pag edge specialization markup.
      */
     private boolean pagEdgeSpecializationMarked = false;
-    /**
-     * The graph to be used for sampling.
-     */
-    private Graph samplingGraph;
+//    /**
+//     * The graph to be used for sampling.
+//     */
+//    private Graph samplingGraph;
     /**
      * The knowledge.
      */
@@ -215,12 +211,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param graph The graph that this workbench will display.
      */
     protected AbstractWorkbench(Graph graph) {
-        if (samplingGraph != null) {
-            setGraph(GraphSampling.createDisplayGraph(samplingGraph,
-                    EnsembleMenu.resamplingEdgeEnsemble));
-        } else {
-            setGraph(graph);
-        }
+        setGraph(graph);
         addMouseListener(this.mouseHandler);
         addMouseMotionListener(this.mouseMotionHandler);
         // setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -611,23 +602,23 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         this.allowEdgeReorientations = allowEdgeReorientations;
     }
 
-    /**
-     * <p>Getter for the field <code>samplingGraph</code>.</p>
-     *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public final Graph getSamplingGraph() {
-        return samplingGraph;
-    }
+//    /**
+//     * <p>Getter for the field <code>samplingGraph</code>.</p>
+//     *
+//     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+//     */
+//    public final Graph getSamplingGraph() {
+//        return samplingGraph;
+//    }
 
-    /**
-     * <p>Setter for the field <code>samplingGraph</code>.</p>
-     *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public final void setSamplingGraph(Graph graph) {
-        samplingGraph = graph;
-    }
+//    /**
+//     * <p>Setter for the field <code>samplingGraph</code>.</p>
+//     *
+//     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+//     */
+//    public final void setSamplingGraph(Graph graph) {
+//        samplingGraph = graph;
+//    }
 
     /**
      * Sets the label for an edge to a particular JComponent. The label will be displayed halfway along the edge
@@ -1124,20 +1115,22 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             this.graphStack.addLast(new EdgeListGraph(graph));
         }
 
-        if (isSamplingGraph(graph)) {
-            Graph samplingGraph = getSamplingGraph();
+        this.graph = graph;
 
-            // replace original sampling graph if it's a different sampling graph
-            if (!isSameGraph(samplingGraph, graph)) {
-                samplingGraph = graph;
-                setSamplingGraph(samplingGraph);
-            }
-
-            this.graph = graph;
-        } else {
-            setSamplingGraph(null);
-            this.graph = graph;
-        }
+//        if (isSamplingGraph(graph)) {
+//            Graph samplingGraph = getSamplingGraph();
+//
+//            // replace original sampling graph if it's a different sampling graph
+//            if (!isSameGraph(samplingGraph, graph)) {
+//                samplingGraph = graph;
+//                setSamplingGraph(samplingGraph);
+//            }
+//
+//            this.graph = graph;
+//        } else {
+//            setSamplingGraph(null);
+//            this.graph = graph;
+//        }
 
         if (pagEdgeSpecializationMarked) {
             GraphUtils.addEdgeSpecializationMarkup(new EdgeListGraph(graph));
@@ -2274,14 +2267,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                     text.append("</html>");
 
-                  setEdgeToolTip(edge, text.toString());
+                    setEdgeToolTip(edge, text.toString());
                 }
             }
         } else if (source instanceof DisplayNode displayNode) {
             Node node = displayNode.getModelNode();
             if (this.graph.containsNode(node)) {
                 Map<String, Object> attributes = node.getAllAttributes();
-                if (!attributes.isEmpty()) {                    StringBuilder attribute = new StringBuilder();
+                if (!attributes.isEmpty()) {
+                    StringBuilder attribute = new StringBuilder();
                     for (String key : attributes.keySet()) {
                         Object value = attributes.get(key);
                         attribute.append(key).append(": ").append(value).append("<br>");

@@ -21,6 +21,9 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+
 import javax.swing.*;
 
 
@@ -69,10 +72,14 @@ public final class GraphFileMenu extends JMenu {
 //        save.add(new SaveGraph(editable, "PCALG...", SaveGraph.Type.pcalg));
         save.add(new SaveGraph(editable.getWorkbench(), "lavaan...", SaveGraph.Type.lavaan));
 
-        if (editable.getWorkbench().getSamplingGraph() != null) {
-            SaveGraph sampling = new SaveGraph(editable.getWorkbench(), "Sampling Graph...", SaveGraph.Type.text);
-            sampling.setSamplingGraph(true);
-            save.add(sampling);
+        Graph graph = editable.getWorkbench().getGraph();
+
+        if (graph instanceof EdgeListGraph) {
+            if (((EdgeListGraph) graph).getAncillaryGraph("samplingGraph") != null) {
+                SaveGraph sampling = new SaveGraph(editable.getWorkbench(), "Sampling Graph...", SaveGraph.Type.text);
+                sampling.setSamplingGraph(true);
+                save.add(sampling);
+            }
         }
 
         addSeparator();

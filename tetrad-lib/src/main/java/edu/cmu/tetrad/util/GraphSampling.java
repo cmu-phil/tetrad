@@ -40,12 +40,12 @@ public final class GraphSampling {
     /**
      * Create a graph for displaying and print out.
      *
-     * @param graph    a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+     * @param graph          a {@link Graph} object
+     * @param ensemble       a {@link ResamplingEdgeEnsemble} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph createDisplayGraph(Graph graph, ResamplingEdgeEnsemble ensemble) {
-        Graph ensembleGraph = new EdgeListGraph(graph.getNodes());
+        EdgeListGraph ensembleGraph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
             List<EdgeTypeProbability> edgeTypeProbabilities = edge.getEdgeTypeProbabilities();
@@ -68,22 +68,21 @@ public final class GraphSampling {
         }
 
         setEdgeProbabilitiesOfNonNullEdges(ensembleGraph);
-
         return ensembleGraph;
     }
 
-    /**
-     * <p>createGraphWithHighProbabilityEdges.</p>
-     *
-     * @param graphs   a {@link java.util.List} object
-     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs, ResamplingEdgeEnsemble ensemble) {
-        Graph graph = createGraphWithHighProbabilityEdges(graphs);
-
-        return createDisplayGraph(graph, ensemble);
-    }
+//    /**
+//     * <p>createGraphWithHighProbabilityEdges.</p>
+//     *
+//     * @param graphs   a {@link java.util.List} object
+//     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+//     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+//     */
+//    public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs, ResamplingEdgeEnsemble ensemble) {
+//        Graph graph = createGraphWithHighProbabilityEdges(graphs);
+//
+//        return createDisplayGraph(graph, ensemble);
+//    }
 
     /**
      * Combine all the edges from the list of graphs onto one graph with the edge type that has the highest frequency

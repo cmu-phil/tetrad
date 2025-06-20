@@ -133,7 +133,11 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             }
         }
 
-        return GraphUtils.fixDirections(graph);
+        graph = GraphUtils.fixDirections(graph);
+
+        ((EdgeListGraph) graph).setAncillaryGraph("samplingGraph", graph);
+
+        return graph;
     }
 
     /**
