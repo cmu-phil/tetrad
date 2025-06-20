@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphWrapper;
@@ -33,7 +32,10 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
-import edu.cmu.tetradapp.workbench.*;
+import edu.cmu.tetradapp.workbench.DisplayEdge;
+import edu.cmu.tetradapp.workbench.DisplayNode;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
@@ -44,8 +46,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.Serial;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for editing tetrad-style graphs.
@@ -258,10 +260,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     private void initUI(GraphWrapper graphWrapper) {
         Graph graph = graphWrapper.getGraph();
 
-//        if (((EdgeListGraph) graph).getAncillaryGraph("samplingGraph") != null) {
-//            graph = GraphSampling.createDisplayGraph(graph, EnsembleMenu.resamplingEdgeEnsemble);
-//        }
-
         this.workbench = new GraphWorkbench(graph);
         this.workbench.setEnableEditing(this.enableEditing);
 
@@ -271,10 +269,11 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                 if (getWorkbench() != null) {
                     Graph targetGraph = getWorkbench().getGraph();
 
-                    // Update the graphWrapper
-                    graphWrapper.setGraph(targetGraph);
-                    // Also need to update the UI
+                    SwingUtilities.invokeLater(() -> {
+                        graphWrapper.setGraph(targetGraph);
+                        // Also need to update the UI
 //                    updateBootstrapTable(targetGraph);
+                    });
                 }
             } else if ("modelChanged".equals(propertyName)) {
                 firePropertyChange("modelChanged", null, null);
@@ -351,7 +350,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 //        //Use JSplitPane to allow resize the bottom box - Zhou
 //        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
 //        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
-
 
 
         // Switching to tabbed pane because of resizing problems with the split pane... jdramsey 2021.08.25
