@@ -37,6 +37,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
@@ -1665,19 +1667,20 @@ public final class SemIm implements Im, ISemIm {
         // Pick error values e, for each calculate inv * e.
         Matrix sim = new Matrix(sampleSize, numVars);
 
-        ROW:
-        for (int row = 0; row < sampleSize; row++) {
 
+        AtomicInteger rowCounter = new AtomicInteger(0);
+
+        IntStream.range(0, sampleSize).parallel().forEach(row -> {
             // Step 1. Generate normal samples.
-            Vector e = new Vector(this.edgeCoef.getNumColumns());
+            Vector e = new Vector(edgeCoef.getNumColumns());
 
             for (int i = 0; i < e.size(); i++) {
                 if (errorType == 1) {
-                    double errCovar = this.errCovar.get(i, i);
-                    if (errCovar == 0.0) {
+                    double covar = errCovar.get(i, i);
+                    if (covar == 0.0) {
                         e.set(i, 0.0);
                     } else {
-                        e.set(i, RandomUtil.getInstance().nextGaussian(0, sqrt(errCovar)));
+                        e.set(i, RandomUtil.getInstance().nextGaussian(0, sqrt(covar)));
                     }
                 } else if (errorType == 2) {
                     e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
@@ -1692,17 +1695,46 @@ public final class SemIm implements Im, ISemIm {
 
             // Step 3. Calculate the new rows in the data.
             Vector sample = iMinusBInv.times(e);
-            sim.assignRow(row, sample);
 
+            boolean valid = true;
             for (int col = 0; col < sample.size(); col++) {
-                double value = sim.get(row, col) + this.variableMeans[col];
-
+                double value = sample.get(col) + variableMeans[col];
                 if (isSimulatedPositiveDataOnly() && value < 0) {
-                    row--;
-                    continue ROW;
+                    valid = false;
+                    break;
                 }
+                sample.set(col, value);
+            }
 
-                sim.set(row, col, value);
+            if (valid) {
+                int currentRow = rowCounter.getAndIncrement();
+                if (currentRow < sampleSize) {
+                    synchronized (sim) {
+                        sim.assignRow(currentRow, sample);
+                    }
+                }
+            }
+        });
+
+        // Ensure we have enough valid rows
+        while (rowCounter.get() < sampleSize) {
+            Vector e = new Vector(edgeCoef.getNumColumns());
+            // [Rest of error generation code]
+            Vector sample = iMinusBInv.times(e);
+            boolean valid = true;
+            for (int col = 0; col < sample.size(); col++) {
+                double value = sample.get(col) + variableMeans[col];
+                if (isSimulatedPositiveDataOnly() && value < 0) {
+                    valid = false;
+                    break;
+                }
+                sample.set(col, value);
+            }
+            if (valid) {
+                int currentRow = rowCounter.getAndIncrement();
+                if (currentRow < sampleSize) {
+                    sim.assignRow(currentRow, sample);
+                }
             }
         }
 
