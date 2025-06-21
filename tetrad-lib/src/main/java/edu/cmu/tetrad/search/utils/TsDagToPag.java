@@ -35,7 +35,7 @@ import java.util.*;
  * @author danielmalinsky
  * @version $Id: $Id
  * @see Fci
- * @see DagToPag
+ * @see MagToPag
  */
 public final class TsDagToPag {
 

@@ -2,7 +2,8 @@ package edu.cmu.tetrad.util;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.utils.MagToPag;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -13,26 +14,24 @@ import java.util.WeakHashMap;
 public class PagCache {
 
     /**
-     * Private constructor to prevent instantiation of the PagCache class.
-     */
-    private PagCache() {
-    }
-
-    /**
      * A singleton instance of the PagCache class. This ensures that only one instance of the cache exists at any given
      * time.
      */
     private static final PagCache instance = new PagCache();
-
     /**
      * A map that stores the PAGs corresponding to the DAGs.
      */
     private final Map<Graph, Graph> pagCache = new WeakHashMap<>();
-
     /**
      * A map that stores the DAGs corresponding to the PAGs.
      */
     private final Map<Graph, Graph> dagCache = new WeakHashMap<>();
+
+    /**
+     * Private constructor to prevent instantiation of the PagCache class.
+     */
+    private PagCache() {
+    }
 
     /**
      * Returns the singleton instance of the PagCache.
@@ -53,21 +52,36 @@ public class PagCache {
      * @throws IllegalArgumentException if the input graph is not a DAG
      */
     public Graph getPag(Graph graph) {
-        if (!(graph.paths().isLegalDag() || graph.paths().isLegalMag())) {
-            throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
-        }
 
-        // If the graph is already in the cache, return it; otherwise, call GraphTransforms.dagToPag(graph)
-        // to get the PAG and put it into the cache.
-        if (pagCache.containsKey(graph)) {
-            return pagCache.get(graph);
+        // This caching caused problems at one point, turning it off for now. jdramsey 2025-06-14
+//        if (!(graph.paths().isLegalDag() || graph.paths().isLegalMag())) {
+//            throw new IllegalArgumentException("Graph must be a DAG or a MAG.");
+//        }
+//
+//        // If the graph is already in the cache, return it; otherwise, call GraphTransforms.dagToPag(graph)
+//        // to get the PAG and put it into the cache.
+//        if (pagCache.containsKey(graph)) {
+//            return pagCache.get(graph);
+//        } else {
+
+        if (graph.paths().isLegalMag()) {
+            MagToPag magToPag = new MagToPag(graph);
+            return magToPag.convert();
+        } else if (graph.paths().isLegalDag()) {
+            MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
+            return magToPag.convert();
         } else {
-            DagToPag dagToPag = new DagToPag(graph);
-            Graph pag = dagToPag.convert();
-            pagCache.put(graph, pag);
-            dagCache.put(pag, graph);
-            return pag;
+            Graph mag = GraphTransforms.zhangMagFromPag(graph);
+            MagToPag magToPag = new MagToPag(mag);
+            return magToPag.convert();
         }
+//
+//        MagToPag dagToPag = new MagToPag(graph);
+//        Graph pag = dagToPag.convert();
+//        pagCache.put(graph, pag);
+//        dagCache.put(pag, graph);
+//        return pag;
+////        }
     }
 
     /**
@@ -91,7 +105,7 @@ public class PagCache {
         if (pagCache.containsKey(graph)) {
             return pagCache.get(graph);
         } else {
-            DagToPag dagToPag = new DagToPag(graph);
+            MagToPag dagToPag = new MagToPag(graph);
             dagToPag.setKnowledge(knowledge);
             dagToPag.setVerbose(verbose);
             Graph pag = dagToPag.convert();

@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.GraphInPag;
 import edu.cmu.tetrad.util.PagCache;
 import org.junit.Test;
 
@@ -66,7 +67,7 @@ public final class TestSelectionVariables {
 //        DagToPag dagToPag = new DagToPag(dag);
 //        Graph pag = dagToPag.convert();
 
-        Graph pag = PagCache.getInstance().getPag(dag);
+        Graph pag = PagCache.getInstance().getPag(GraphTransforms.dagToMag(dag));
 
         nodes.remove(s);
 

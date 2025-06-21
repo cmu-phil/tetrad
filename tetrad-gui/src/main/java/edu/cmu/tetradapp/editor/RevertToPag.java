@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -72,6 +71,10 @@ public class RevertToPag extends AbstractAction implements ClipboardOwner {
         if (graph == null) {
             JOptionPane.showMessageDialog(this.workbench, "No graph to run Meek rules on.");
             return;
+        }
+
+        if (graph.paths().isLegalDag()) {
+            workbench.setGraph(GraphTransforms.dagToMag(GraphTransforms.dagToMag(graph)));
         }
 
         workbench.setGraph(PagCache.getInstance().getPag(graph));

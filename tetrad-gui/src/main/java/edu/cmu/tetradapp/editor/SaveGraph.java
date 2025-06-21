@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetradapp.model.EditorUtils;
@@ -88,9 +89,23 @@ public class SaveGraph extends AbstractAction {
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {
-        Graph graph = samplingGraph ? graphWorkbench.getSamplingGraph() : graphWorkbench.getGraph();
+        Graph graph = graphWorkbench.getGraph();
 
-        Component parent = (Component) getGraphWorkbench();
+        if (samplingGraph) {
+            Graph samplingGraph = null;
+
+            if (graph instanceof EdgeListGraph) {
+                samplingGraph = ((EdgeListGraph) graph).getAncillaryGraph("samplingGraph");
+            }
+
+            if (samplingGraph == null) {
+                throw new IllegalArgumentException("Trying to save the sampling graph, but a sampling graph is not available");
+            }
+
+            graph = samplingGraph;
+        }
+
+        Component parent = getGraphWorkbench();
 
         if (this.type == Type.xml) {
             File file = EditorUtils.getSaveFile("graph", "xml", parent, false, this.title);

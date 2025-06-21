@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -2577,12 +2577,12 @@ public final class GraphUtils {
             changed = false;
 
             changed |= removeAlmostCycles(pag, knownColliders, verbose);
-            changed |= repairMaximality(pag, verbose, selection);
+            changed |= repairMaximality(pag, verbose, selection, fciOrient, knowledge, knownColliders);
             changed |= removeCycles(pag, verbose);
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
         } while (changed);
 
-        DagToPag dagToPag = new DagToPag(GraphTransforms.zhangMagFromPag(pag));
+        MagToPag dagToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
         dagToPag.setKnowledge(knowledge);
         Graph pag2 = dagToPag.convert();
 
@@ -2653,16 +2653,20 @@ public final class GraphUtils {
     }
 
     /**
-     * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that
-     * any inducing path between two nodes not currently adjacent in the graph
-     * results in an added non-directed edge. The method modifies the graph in-place.
+     * Repairs the maximality of a PAG (Partial Ancestral Graph) by ensuring that any inducing path between two nodes
+     * not currently adjacent in the graph results in an added non-directed edge. The method modifies the graph
+     * in-place.
      *
-     * @param pag the Partial Ancestral Graph to be repaired for maximality
-     * @param verbose if true, logs the actions performed during the repair process
-     * @param selection a set of nodes to be considered during the inducing path check
+     * @param pag            the Partial Ancestral Graph to be repaired for maximality
+     * @param verbose        if true, logs the actions performed during the repair process
+     * @param selection      a set of nodes to be considered during the inducing path check
+     * @param fciOrient
+     * @param knowledge
+     * @param knownColliders
      * @return true if the graph was modified during the repair process; false otherwise
      */
-    public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection) {
+    public static boolean repairMaximality(Graph pag, boolean verbose, Set<Node> selection, FciOrient fciOrient,
+                                           Knowledge knowledge, Set<Triple> knownColliders) {
         boolean changed = false;
         for (Node x : pag.getNodes()) {
             for (Node y : pag.getNodes()) {
@@ -2673,6 +2677,8 @@ public final class GraphUtils {
                         if (verbose) TetradLogger.getInstance().log("Maximality repair: added edge " + x + " o-o " + y);
                     }
                 }
+
+//                reorientWithFci(pag, fciOrient, knowledge, knownColliders, verbose);
             }
         }
         return changed;
@@ -3144,7 +3150,7 @@ public final class GraphUtils {
      * @param knowledge        the knowledge object.
      */
     public static void recallInitialColliders(Graph pag, Set<Triple> initialColliders, Knowledge knowledge) {
-        for (Triple triple: new HashSet<>(initialColliders)) {
+        for (Triple triple : new HashSet<>(initialColliders)) {
             Node x = triple.getX();
             Node b = triple.getY();
             Node y = triple.getZ();
@@ -3208,10 +3214,10 @@ public final class GraphUtils {
     /**
      * Initializes and evaluates p-values for local Markov properties in a given graph.
      *
-     * @param dag          The input graph, a DAG (Directed Acyclic Graph).
+     * @param dag            The input graph, a DAG (Directed Acyclic Graph).
      * @param preserveMarkov Flag indicating that the method should proceed only if set to true.
-     * @param test         The statistical test instance used to check for conditional independence.
-     * @param pValues      A map to store the p-values, indexed by pairs of nodes.
+     * @param test           The statistical test instance used to check for conditional independence.
+     * @param pValues        A map to store the p-values, indexed by pairs of nodes.
      * @return The percentage of p-values that are less than the significance level (alpha) used in the test. Returns
      * 0.0 if the number of p-values is less than 5 or if preserveMarkov is false or test instance is invalid.
      * @throws IllegalArgumentException if preserveMarkov is false.
@@ -3289,6 +3295,27 @@ public final class GraphUtils {
 
         AndersonDarlingTest _test = new AndersonDarlingTest(pValuesArray);
         return _test.getP();
+    }
+
+    public static @NotNull Graph fixDirections(Graph graph) {
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        EdgeListGraph fixedDirections = new EdgeListGraph(graph.getNodes());
+
+        for (Edge edge : edges) {
+            if (edge.pointsTowards(edge.getNode1())) {
+                fixedDirections.addEdge(edge.reverse());
+            } else {
+                fixedDirections.addEdge(edge);
+            }
+        }
+
+        Graph samplingGraph = ((EdgeListGraph) graph).getAncillaryGraph("samplingGraph");
+
+        if (samplingGraph != null) {
+            fixedDirections.setAncillaryGraph("samplingGraph", samplingGraph);
+        }
+
+        return fixedDirections;
     }
 
     /**

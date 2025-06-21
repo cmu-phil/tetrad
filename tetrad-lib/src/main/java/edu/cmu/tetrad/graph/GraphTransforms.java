@@ -2,10 +2,9 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.CombinationGenerator;
-import edu.cmu.tetrad.util.PagCache;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -323,7 +322,7 @@ public class GraphTransforms {
     @NotNull
     public static Graph dagToPag(Graph graph) {
 //        return PagCache.getInstance().getPag(graph);
-        return new DagToPag(graph).convert();
+        return new MagToPag(GraphTransforms.dagToMag(graph)).convert();
     }
 
     /**
@@ -348,7 +347,7 @@ public class GraphTransforms {
      */
     public static @NotNull Graph dagToMag(Graph dag) {
         Map<Node, Set<Node>> ancestorMap = dag.paths().getDescendantsMap();
-        Graph graph = DagToPag.calcAdjacencyGraph(dag);
+        Graph graph = calcAdjacencyGraph(dag);
 
         List<Node> allNodes = dag.getNodes();
 
@@ -374,6 +373,49 @@ public class GraphTransforms {
                 graph.setEndpoint(y, x, Endpoint.ARROW);
             }
         }
+
+        return graph;
+    }
+
+    /**
+     * Calculates the adjacency graph for the given Directed Acyclic Graph (DAG).
+     *
+     * @param dag The input MAG.
+     * @return The adjacency graph represented by a Graph object.
+     */
+    public static Graph calcAdjacencyGraph(Graph dag) {
+        List<Node> allNodes = dag.getNodes();
+
+        List<Node> selection = allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
+
+        List<Node> measured = allNodes.stream()
+                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
+
+        Graph graph = new EdgeListGraph(measured);
+
+        for (int i = 0; i < measured.size(); i++) {
+            for (int j = i + 1; j < measured.size(); j++) {
+                Node n1 = measured.get(i);
+                Node n2 = measured.get(j);
+
+                if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
+                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
+                }
+            }
+        }
+
+//        IntStream.range(0, measured.size()).forEach(i -> {
+//            Node n1 = measured.get(i);
+//            IntStream.range(i + 1, measured.size()).forEach(j -> {
+//                Node n2 = measured.get(j);
+//                if (!graph.isAdjacentTo(n1, n2)) {
+//                    if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
+//                        graph.addEdge(Edges.nondirectedEdge(n1, n2));
+//                    }
+//                }
+//            });
+//        });
 
         return graph;
     }

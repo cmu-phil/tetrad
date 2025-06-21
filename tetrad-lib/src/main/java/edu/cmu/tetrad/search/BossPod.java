@@ -22,21 +22,22 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.List;
 
 /**
- * BOSS-POD is a class that implements the IGraphSearch interface. The LV-Dumb algorithm finds the BOSS DAG for
+ * BOSS-POD is a class that implements the IGraphSearch interface. The BOSS-POD algorithm finds the BOSS DAG for
  * the dataset and then simply reports the PAG (Partially Ancestral Graph) structure of the BOSS DAG, without
  * doing any further latent variable reasoning.
  *
  * @author josephramsey
  */
-public final class BossDot implements IGraphSearch {
+public final class BossPod implements IGraphSearch {
     /**
      * The score.
      */
@@ -69,13 +70,13 @@ public final class BossDot implements IGraphSearch {
     private boolean completeRuleSetUsed = true;
 
     /**
-     * LV-Dumb constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
+     * BOSS-POD constructor. Initializes a new object of FCIT search algorithm with the given IndependenceTest and
      * Score object.
      *
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if score is null.
      */
-    public BossDot(Score score) {
+    public BossPod(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -96,7 +97,7 @@ public final class BossDot implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("===Starting LV-Dumb===");
+            TetradLogger.getInstance().log("===Starting BOSS-POD===");
         }
 
         if (verbose) {
@@ -114,7 +115,7 @@ public final class BossDot implements IGraphSearch {
         suborderSearch.setVerbose(verbose);
         var permutationSearch = new PermutationSearch(suborderSearch);
         permutationSearch.setKnowledge(knowledge);
-        var cpdag = permutationSearch.search();
+        var dag = permutationSearch.search(false);
 
         if (verbose) {
             TetradLogger.getInstance().log("Finished BOSS.");
@@ -124,7 +125,7 @@ public final class BossDot implements IGraphSearch {
             TetradLogger.getInstance().log("Calculating PAG from CPDAG.");
         }
 
-        DagToPag dagToPag = new DagToPag(cpdag);
+        MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
         dagToPag.setVerbose(verbose);
         dagToPag.setCompleteRuleSetUsed(completeRuleSetUsed);
         dagToPag.setKnowledge(knowledge);
@@ -135,7 +136,7 @@ public final class BossDot implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("LV-Dumb finished.");
+            TetradLogger.getInstance().log("BOSS-POD finished.");
         }
 
         return pag;

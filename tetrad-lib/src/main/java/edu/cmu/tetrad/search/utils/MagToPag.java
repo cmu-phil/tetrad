@@ -27,26 +27,23 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 
 /**
- * Converts a DAG (Directed acyclic graph) into the PAG (partial ancestral graph) which it is in the equivalence class
- * of.
+ * Converts a MAG to a PAG.
  *
  * @author josephramsey
  * @author peterspirtes
  * @version $Id: $Id
  */
-public final class DagToPag {
+public final class MagToPag {
 
     /**
-     * The DAG to be converted.
+     * The MAG to be converted.
      */
-    private final Graph dag;
+    private final Graph mag;
     /*
      * The background knowledge.
      */
@@ -65,53 +62,10 @@ public final class DagToPag {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
-     * @param dag a {@link Graph} object
+     * @param mag a {@link Graph} object
      */
-    public DagToPag(Graph dag) {
-        this.dag = new EdgeListGraph(dag);
-    }
-
-    /**
-     * Calculates the adjacency graph for the given Directed Acyclic Graph (DAG).
-     *
-     * @param dag The input Directed Acyclic Graph (DAG).
-     * @return The adjacency graph represented by a Graph object.
-     */
-    public static Graph calcAdjacencyGraph(Graph dag) {
-        List<Node> allNodes = dag.getNodes();
-
-        List<Node> selection = allNodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
-        List<Node> measured = allNodes.stream()
-                .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
-
-        Graph graph = new EdgeListGraph(measured);
-
-        for (int i = 0; i < measured.size(); i++) {
-            for (int j = i + 1; j < measured.size(); j++) {
-                Node n1 = measured.get(i);
-                Node n2 = measured.get(j);
-
-                if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
-                    graph.addEdge(Edges.nondirectedEdge(n1, n2));
-                }
-            }
-        }
-
-//        IntStream.range(0, measured.size()).forEach(i -> {
-//            Node n1 = measured.get(i);
-//            IntStream.range(i + 1, measured.size()).forEach(j -> {
-//                Node n2 = measured.get(j);
-//                if (!graph.isAdjacentTo(n1, n2)) {
-//                    if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
-//                        graph.addEdge(Edges.nondirectedEdge(n1, n2));
-//                    }
-//                }
-//            });
-//        });
-
-        return graph;
+    public MagToPag(Graph mag) {
+        this.mag = new EdgeListGraph(mag);
     }
 
     /**
@@ -216,23 +170,13 @@ public final class DagToPag {
     }
 
     /**
-     * This method does the conversion of DAG to PAG.
+     * This method does the conversion of MAG to PAG.
      *
      * @return Returns the converted PAG.
      */
     public Graph convert() {
-        Graph mag;
-
-        if (dag.paths().isLegalMag()) {
-            mag = dag;
-        }
-        else if (dag.paths().isLegalDag()) {
-            mag = GraphTransforms.dagToMag(dag);
-        } else if (dag.getNodes().stream().noneMatch(n -> n.getNodeType() == NodeType.LATENT)) {
-            mag = GraphTransforms.zhangMagFromPag(dag);
-        } else {
-            throw new IllegalArgumentException("Expecting either a DAG possibly with latents or else a graph with no " +
-                                               "latents but possibly with circle endpoints.");
+        if (!this.mag.paths().isLegalMag()) {
+            throw new IllegalArgumentException("Not legal mag");
         }
 
         Graph pag = new EdgeListGraph(mag);

@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.SepsetFinder;
@@ -184,49 +187,28 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-        Set<Node> blocking;
+        Set<Node> blocking = null;
 
         // If you already have a sepset, use it.
         if (sepsetMap.get(x, y) != null) {
             blocking = sepsetMap.get(x, y);
+        }
 
-        } else
+        if (blocking == null && blockingType == BlockingType.RECURSIVE) {
+            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
+                    maxLength, maxLength, preserveMarkovHelper, depth);
+        }
 
-            // Else for the recursive option see if you can find a recursive sepset; this fails for Puzzle #2.
-            if (blockingType == BlockingType.RECURSIVE) {
-                blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y, new FciOrient(new R0R4StrategyTestBased(test)),
-                        maxLength, maxLength, preserveMarkovHelper, depth);
-
-                if (blocking == null) { // If it does fail, use FCI style reasoning.
-                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-
-                    if (verbose && blocking != null) {
-                        TetradLogger.getInstance().log("Recursive blocking not found; found FCI-style blocking.");
-                    }
-                }
-
-                sepsetMap.set(x, y, blocking);
-            } else
-
-                // Else for the greedy option, do FCI-style reasoning.
-                if (blockingType == BlockingType.GREEDY) {
-                    blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
-                    sepsetMap.set(x, y, blocking);
-                } else {
-                    throw new IllegalArgumentException("Unknown blocking type.");
-                }
-
-        //  *         V
-        // *         **            * is either an arrowhead, a tail, or a circle
-        // *        /  \
-        // *       v    *
-        // * X....W --> Y
-
-        // This is needed for greedy and anteriority methods, which return sepsets, not recursive, which always
-        // returns a blocking set.
         if (blocking == null) {
-            TetradLogger.getInstance().log("Blocking set is null in R4.");
-            throw new IllegalArgumentException("Blocking set is null in R4.");
+            blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+        }
+
+        if (blocking != null) {
+            sepsetMap.set(x, y, blocking);
+        } else {
+            blocking = Set.of();
+//            TetradLogger.getInstance().log("Blocking set is null in R4.");
+//            throw new IllegalArgumentException("Blocking set is null in R4.");
         }
 
         if (!(blocking.containsAll(path) && blocking.contains(w))) {

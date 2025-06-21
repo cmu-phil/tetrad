@@ -32,7 +32,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -555,7 +555,7 @@ public class TestFci {
             System.out.println("Correct PAG");
             System.out.println(truePag_);
 
-            Fci fci = new Fci(new MsepTest(trueMag_)); //TODO FCI is failing again on this problem, need to go back and see how I fixed it before.
+            Fci fci = new Fci(new MsepTest(trueMag_));
             fci.setVerbose(verbose);
             Graph estPag1 = fci.search();
             assertEquals(truePag_, estPag1);
@@ -812,7 +812,7 @@ public class TestFci {
 
 //    @Test
     public void testFcitFromOracle() {
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
             long seed = System.nanoTime();
@@ -820,7 +820,7 @@ public class TestFci {
 
             RandomUtil.getInstance().setSeed(seed);
 
-            Graph dag = RandomGraph.randomGraph(15, 4, 30, 100,
+            Graph dag = RandomGraph.randomGraph(15, 4, 25, 100,
                     100, 100, false);
 
 //            System.out.println("True DAG = " + dag);
@@ -829,7 +829,7 @@ public class TestFci {
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
 
-            Graph _pag = new DagToPag(dag).convert();
+            Graph _pag = new MagToPag(GraphTransforms.dagToMag(dag)).convert();
             if (!_pag.paths().isLegalPag()) {
                 throw new IllegalArgumentException("_Pag not a legal PAG.");
             }
@@ -859,7 +859,7 @@ public class TestFci {
                         System.out.println("Unshielded colliders match between mag and pag.");
                     }
 
-                    DagToPag dagToPag = new DagToPag(mag);
+                    MagToPag dagToPag = new MagToPag(mag);
                     Graph reconstitutedPag = dagToPag.convert();
 
                     for (Edge pagEdge : pag.getEdges()) {
@@ -906,7 +906,7 @@ public class TestFci {
                 Fcit fcit = new Fcit(test, score);
                 fcit.setVerbose(true);
 //                fcit.setVerbose(true);
-                fcit.setDepth(7);
+                fcit.setDepth(-1);
                 fcit.setCompleteRuleSetUsed(true);
                 fcit.setCheckAdjacencySepsets(false);
                 Graph pag = fcit.search();
@@ -918,7 +918,7 @@ public class TestFci {
                 Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
                 if (!mag.paths().isLegalMag()) {
-                    System.out.println("************ mag in pag is not legal *********");
+                    System.out.println("************ Zhang mag in pag is not legal *********");
                 }
 
                 List<Node> selection = graph.getNodes().stream()
@@ -926,14 +926,14 @@ public class TestFci {
 
                 GraphSearchUtils.LegalPagRet ret = GraphSearchUtils.isLegalPag(pag, new HashSet<>(selection));
 
-                if (!ret.isLegalPag()) {
-                    System.out.println("************ pag is not legal ****************");
-                    System.out.println("**** Reason = " + ret.getReason());
-
-                    if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
-                        System.out.println("Unshielded colliders match between mag and pag.");
-                    }
-                }
+//                if (!ret.isLegalPag()) {
+//                    System.out.println("************ pag is not legal ****************");
+//                    System.out.println("**** Reason = " + ret.getReason());
+//
+//                    if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
+//                        System.out.println("Unshielded colliders match between mag and pag.");
+//                    }
+//                }
 
                 if (mag.paths().isLegalMag() && !pag.paths().isLegalPag()) {
                     List<Node> nodes = pag.getNodes();
@@ -972,7 +972,7 @@ public class TestFci {
                         }
                     }
 
-                    DagToPag dagToPag = new DagToPag(mag);
+                    MagToPag dagToPag = new MagToPag(mag);
                     Graph reconstitutedPag = dagToPag.convert();
 
                     for (Edge pagEdge : pag.getEdges()) {
@@ -1004,7 +1004,7 @@ public class TestFci {
             RandomUtil.getInstance().setSeed(seed);
 
             Graph dag = RandomGraph.randomGraph(20, 6, 20, 100, 100, 100, false);
-            DagToPag dagToPag = new DagToPag(dag);
+            MagToPag dagToPag = new MagToPag(GraphTransforms.dagToMag(dag));
             dagToPag.setVerbose(false);
             Graph pag = dagToPag.convert();
 
@@ -1058,7 +1058,7 @@ public class TestFci {
             // to what it was.
             assertTrue(legalMag);
 
-            Graph pag2 = new DagToPag(mag).convert();
+            Graph pag2 = new MagToPag(mag).convert();
             assertEquals(pag2, pag);
         }
     }

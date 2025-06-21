@@ -40,12 +40,12 @@ public final class GraphSampling {
     /**
      * Create a graph for displaying and print out.
      *
-     * @param graph    a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+     * @param graph    a {@link Graph} object
+     * @param ensemble a {@link ResamplingEdgeEnsemble} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph createDisplayGraph(Graph graph, ResamplingEdgeEnsemble ensemble) {
-        Graph ensembleGraph = new EdgeListGraph(graph.getNodes());
+        EdgeListGraph ensembleGraph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
             List<EdgeTypeProbability> edgeTypeProbabilities = edge.getEdgeTypeProbabilities();
@@ -64,26 +64,24 @@ public final class GraphSampling {
                     ensembleGraph.addEdge(highestProbEdge);
                 }
             }
-
         }
 
         setEdgeProbabilitiesOfNonNullEdges(ensembleGraph);
-
         return ensembleGraph;
     }
 
-    /**
-     * <p>createGraphWithHighProbabilityEdges.</p>
-     *
-     * @param graphs   a {@link java.util.List} object
-     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs, ResamplingEdgeEnsemble ensemble) {
-        Graph graph = createGraphWithHighProbabilityEdges(graphs);
-
-        return createDisplayGraph(graph, ensemble);
-    }
+//    /**
+//     * <p>createGraphWithHighProbabilityEdges.</p>
+//     *
+//     * @param graphs   a {@link java.util.List} object
+//     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+//     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+//     */
+//    public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs, ResamplingEdgeEnsemble ensemble) {
+//        Graph graph = createGraphWithHighProbabilityEdges(graphs);
+//
+//        return createDisplayGraph(graph, ensemble);
+//    }
 
     /**
      * Combine all the edges from the list of graphs onto one graph with the edge type that has the highest frequency
@@ -158,14 +156,14 @@ public final class GraphSampling {
         }
 
         return switch (edgeTypeProbability.getEdgeType()) {
-            case ta -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
-            case at -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
-            case ca -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
-            case ac -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
-            case cc -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
-            case aa -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
-            case tt -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
-            default -> new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL);
+            case ta -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW, false);
+            case at -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL, false);
+            case ca -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW, false);
+            case ac -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE, false);
+            case cc -> new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE, false);
+            case aa -> new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW, false);
+            case tt -> new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL, false);
+            default -> new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL, false);
         };
     }
 
@@ -272,7 +270,7 @@ public final class GraphSampling {
         return Arrays.asList(etps);
     }
 
-    private static EdgeType getReversed(EdgeType edgeType) {
+    public static EdgeType getReversed(EdgeType edgeType) {
         return switch (edgeType) {
             case ac -> EdgeType.ca;
             case at -> EdgeType.ta;

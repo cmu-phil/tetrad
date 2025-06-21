@@ -28,11 +28,13 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.SimulationParamsSource;
 import edu.cmu.tetradapp.util.IonInput;
+import edu.cmu.tetradapp.workbench.EnsembleMenu;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -300,7 +302,16 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getGraph() {
-        return this.graphs.get(getModelIndex());
+        Graph graph = this.graphs.get(getModelIndex());
+//
+//        if (((EdgeListGraph) graph).getAncillaryGraph("samplingGraph") != null) {
+//            Graph samplingGraph =  ((EdgeListGraph) graph).getAncillaryGraph("samplingGraph");
+//            graph = GraphSampling.createDisplayGraph(graph, EnsembleMenu.resamplingEdgeEnsemble);
+//            ((EdgeListGraph) graph).setAncillaryGraph("samplingGraph", samplingGraph);
+//            this.graphs.set(getModelIndex(), graph);
+//        }
+
+        return graph;
     }
 
     /**

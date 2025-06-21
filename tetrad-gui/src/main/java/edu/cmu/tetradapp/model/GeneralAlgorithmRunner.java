@@ -924,7 +924,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         if (this.graphList == null || this.graphList.isEmpty()) {
             return null;
         } else {
-            return this.graphList.get(0);
+            return this.graphList.getFirst();
         }
     }
 

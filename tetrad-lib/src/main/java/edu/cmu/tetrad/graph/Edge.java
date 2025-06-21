@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -17,11 +17,12 @@
 // You should have received a copy of the GNU General Public License         //
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
+import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
@@ -50,12 +51,12 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     /**
      * The first node.
      */
-    private final Node node1;
+    private Node node1;
 
     /**
      * The second node.
      */
-    private final Node node2;
+    private Node node2;
 
     /**
      * The endpoint at the first node.
@@ -100,6 +101,10 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @param endpoint2 the endpoint at the second node
      */
     public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2) {
+        this(node1, node2, endpoint1, endpoint2, true);
+    }
+
+    public Edge(Node node1, Node node2, Endpoint endpoint1, Endpoint endpoint2, boolean flipIfBackwards) {
         if (node1 == null || node2 == null) {
             throw new NullPointerException("Nodes must not be null. node1 = " + node1 + " node2 = " + node2);
         }
@@ -108,13 +113,15 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             throw new NullPointerException("Endpoints must not be null.");
         }
 
-        // Flip edges pointing left the other way.
-        if (pointingLeft(endpoint1, endpoint2)) {
+        if (flipIfBackwards && pointingLeft(endpoint1, endpoint2)) {
             this.node1 = node2;
             this.node2 = node1;
             this.endpoint1 = endpoint2;
             this.endpoint2 = endpoint1;
         } else {
+
+            // At the moment, this is only needed for the bootstrapping API. Please don't use
+            // wantonly.
             this.node1 = node1;
             this.node2 = node2;
             this.endpoint1 = endpoint1;
@@ -285,7 +292,20 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * @return the edge with endpoints reversed.
      */
     public Edge reverse() {
-        return new Edge(getNode2(), getNode1(), getEndpoint1(), getEndpoint2());
+        Edge _edge = new Edge(getNode2(), getNode1(), getEndpoint2(), getEndpoint1());
+        _edge.lineColor = lineColor;
+        _edge.bold = bold;
+        _edge.highlighted = highlighted;
+        _edge.properties = new ArrayList<>(properties);
+        _edge.edgeTypeProbabilities = new ArrayList<>();
+
+        for (EdgeTypeProbability etp : edgeTypeProbabilities) {
+            EdgeType reversedEdgeType = GraphSampling.getReversed(etp.getEdgeType());
+            _edge.edgeTypeProbabilities.add(new EdgeTypeProbability(reversedEdgeType, etp.getProbability()));
+        }
+
+        _edge.probability = probability;
+        return _edge;
     }
 
     /**
