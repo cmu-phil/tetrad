@@ -56,8 +56,7 @@ public final class Tetrad implements PropertyChangeListener {
     public static boolean enableExperimental;
     /**
      * The variable frame represents the main JFrame of the application.
-     * It is a static field of the Tetrad class.
-     */
+     * It is a static field of the Tetrad class.     */
     public static JFrame frame;
     /**
      * The main application title.
