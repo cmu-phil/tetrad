@@ -105,7 +105,7 @@ public class TestIndTestFisherZ {
 
         assertEquals(0.0, p1, 0.01);
         assertEquals(0.0, p2, 0.01);
-//        assertEquals(0.38, p3, 0.01); // With parallelized sem simulation this fails.
+        assertEquals(0.38, p3, 0.01);
     }
 
     @Test

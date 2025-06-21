@@ -61,6 +61,6 @@ public class TestCpdagParentDistancesFromTrue {
         System.out.println("distances = ");
         System.out.println(new Matrix(distances));
 
-//        assertEquals(0.0091, distances[0][3], 0.001); With parallelized sem im this fails.
+        assertEquals(0.0091, distances[0][3], 0.001);
     }
 }
