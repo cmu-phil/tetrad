@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
@@ -136,6 +137,12 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         graph = GraphUtils.fixDirections(graph);
 
         ((EdgeListGraph) graph).setAncillaryGraph("samplingGraph", graph);
+
+        Graph displayGraph = GraphSampling.createDisplayGraph(graph,
+                ResamplingEdgeEnsemble.Highest);
+        ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", graph);
+
+        graph = GraphUtils.fixDirections(displayGraph);
 
         return graph;
     }
