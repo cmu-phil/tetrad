@@ -3303,7 +3303,7 @@ public final class GraphUtils {
 
         for (Edge edge : edges) {
             if (edge.pointsTowards(edge.getNode1())) {
-                fixedDirections.addEdge(edge.reverse());
+                fixedDirections.addEdge(edge.sameEdgeFlippedDirection());
             } else {
                 fixedDirections.addEdge(edge);
             }
