@@ -23,13 +23,16 @@ package edu.cmu.tetradapp.workbench;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.editor.GraphFileMenu;
+import edu.cmu.tetradapp.editor.GraphPropertiesAction;
+import edu.cmu.tetradapp.editor.PathsAction;
+import edu.cmu.tetradapp.editor.UnderliningsAction;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -2107,6 +2110,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         if (this instanceof GraphWorkbench) {
             popup.add(new EnsembleMenu((GraphWorkbench) this));
         }
+
+        popup.addSeparator();
+
+        if (this instanceof GraphWorkbench) {
+            popup.add(new GraphFileMenu((GraphWorkbench) this));
+        }
+
+        popup.add(createGraphMenu());
+
         popup.show(this, e.getX(), e.getY());
     }
 
@@ -2684,6 +2696,30 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                                            + ", " + e.getMessage());
             throw e;
         }
+    }
+
+    private JMenu createGraphMenu() {
+        JMenu graph = new JMenu("Graph");
+
+        JMenuItem graphProperties = new JMenuItem(new GraphPropertiesAction(((GraphWorkbench) this)));
+        JMenuItem pathsAction = new JMenuItem(new PathsAction((GraphWorkbench) this, new Parameters()));
+        graphProperties.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_DOWN_MASK));
+        pathsAction.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_DOWN_MASK));
+
+        graph.add(graphProperties);
+        graph.add(pathsAction);
+        graph.add(new UnderliningsAction(((GraphWorkbench) this)));
+        graph.addSeparator();
+
+        graph.add(edu.cmu.tetradapp.util.GraphUtils.getHighlightMenu(((GraphWorkbench) this)));
+        graph.add(edu.cmu.tetradapp.util.GraphUtils.getCheckGraphMenu(((GraphWorkbench) this)));
+        edu.cmu.tetradapp.util.GraphUtils.addGraphManipItems(graph, ((GraphWorkbench) this));
+        graph.addSeparator();
+        graph.add(edu.cmu.tetradapp.util.GraphUtils.addPagEdgeSpecializationsItems(((GraphWorkbench) this)));
+
+        return graph;
     }
 
     /**

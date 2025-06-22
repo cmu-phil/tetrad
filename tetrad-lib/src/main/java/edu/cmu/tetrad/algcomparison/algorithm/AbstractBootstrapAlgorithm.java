@@ -136,12 +136,19 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
 
         graph = GraphUtils.fixDirections(graph);
 
+        // Fix the returned graph so that it is a proper display graph. Note that we need to set the "sample graph"
+        // for this graph to the above graph so that ensemble choices can be done using the right click menu in the
+        // interface. A "proper display graph" doesn't include the "..." edges that represent non-adjacency and
+        // are only needed for the sampling graph because they contain bootstrapping information. We return a
+        // graph without these edges so that, e.g., accuracies or other graph operations can be performed on the
+        // graph that is displayed in the interface. jdramsey 2025-6-22
         ((EdgeListGraph) graph).setAncillaryGraph("samplingGraph", graph);
 
-        Graph displayGraph = GraphSampling.createDisplayGraph(graph,
-                ResamplingEdgeEnsemble.Highest);
+        Graph displayGraph = GraphSampling.createDisplayGraph(graph, ResamplingEdgeEnsemble.Highest);
         ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", graph);
 
+        // Make double sure that all directable edges point to the right before returning this graph.
+        // jdramsey 2025-6-21
         graph = GraphUtils.fixDirections(displayGraph);
 
         return graph;
