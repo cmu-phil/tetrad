@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.SepsetFinder;
+import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -304,7 +306,7 @@ public class Paths implements TetradSerializable {
         // a valid sink. If validOrder returns an order, then I look to see whether G = CPDAG(DAG(validOrder(G)))
         // and return that judgment.
         //
-        //I think I can prove that this works.
+        // I think I can prove that this works.
         //
         // Theorem 1: If validOrder(G) throws an exception, then G is not a CPDAG.
         //
@@ -341,14 +343,11 @@ public class Paths implements TetradSerializable {
 
         try {
             g.paths().makeValidOrder(pi);
-            Graph cpdag = GraphTransforms.dagToCpdag(GraphTransforms.dagToCpdag(g));
-
-//            Graph dag = getDag(pi, GraphTransforms.dagFromCpdag(g), false);
-//            Graph cpdag = GraphTransforms.dagToCpdag(dag);
+            Graph cpdag = GraphTransforms.dagToCpdag(getDag(pi, g, false));
             return g.equals(cpdag);
         } catch (Exception e) {
             // There was no valid sink.
-            System.out.println(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
             return false;
         }
     }
@@ -375,27 +374,27 @@ public class Paths implements TetradSerializable {
 
         try {
             g.paths().makeValidOrder(pi);
-            Graph dag = getDag(pi, g, false);
-            Graph cpdag = GraphTransforms.dagToCpdag(dag);
+            Graph cpdag = GraphTransforms.dagToCpdag(getDag(pi, g, false));
             Graph _g = new EdgeListGraph(g);
             _g = GraphTransforms.dagToCpdag(_g);
 
-            boolean equals = _g.equals(cpdag);
+            return cpdag.equals(_g);
 
-            // Check maximality...
-            if (equals) {
-                Graph __g = new EdgeListGraph(g);
-                MeekRules meekRules = new MeekRules();
-                meekRules.setRevertToUnshieldedColliders(false);
-                meekRules.setVerbose(false);
-                meekRules.orientImplied(__g);
-                return g.equals(__g);
-            }
+//            // Check maximality...
+//            if (!cpdag.equals(_g)) {
+//                return false;
+//            }
+//
+//            Graph __g = new EdgeListGraph(g);
+//            MeekRules meekRules = new MeekRules();
+//            meekRules.setRevertToUnshieldedColliders(false);
+//            meekRules.setVerbose(false);
+//            meekRules.orientImplied(__g);
+//            return g.equals(__g);
 
-            return false;
         } catch (Exception e) {
             // There was no valid sink.
-            System.out.println(e.getMessage());
+            TetradLogger.getInstance().log(e.getMessage());
             return false;
         }
     }
