@@ -279,6 +279,56 @@ public class Paths implements TetradSerializable {
      * @return true if the graph is a legal CPDAG, false otherwise.
      */
     public synchronized boolean isLegalCpdag() {
+
+        // This is this idea I had for checking whether a graph is a CPDAG. What do you think?
+        //
+        // I'm using Bryan's method, validOrder, which repeatedly looks for a valid sink in the graph (no children,
+        // neighbors forming a clique) and removes it, then reports the removed nodes in reverse order.
+        //
+        // Bryan gave this example: G = “X1-->X2,X2---X3,X3<--X4”. validOrder gets π = [X1, X2, X4, X3]. (This is
+        // a malformed “valid order,” but it’s what the algorithm says.) This makes sense because according to
+        // the valid order method, X3 is a valid sink (only X2 is a neighbor, so the neighbors form a clique),
+        // and the rest follows. So now you’re in a situation where you’re using d-separation on G, but it’s not
+        // even a CPDAG. This is interesting to think about, just as an exercise in using the d-separation algorithm
+        // on a malformed graph. What happens is you end up with an extra adjacency in the induced DAG because
+        // there is no collider on the path X2--X3<-X4, and you only get to condition on the prefix of X2, which
+        // is {X1} by the RU method, so there is no way to remove the adjacency X2--X4. So, G can’t be a CPDAG.
+        // But we need a test of CPDAG that can handle graphs like G; I had to think about it.
+        //
+        // So let validOrder be this method. Let DAG(π, dsep) be the Raskutti-Uhler method of forming a DAG given
+        // permutation π and a d-separation relation dsep, taking G as the “true graph” (possibly malformed) yielding
+        // a (possibly malformed) oracle of d-separation facts. Let CPDAG(G’) for DAG G’ be the MEC graph for G’.
+        //
+        // I propose that if the validOrder method throws an exception because it can't find a valid sink, then G is
+        // not a CPDAG, since all CPDAGs have valid sinks, and any CPDAG with valid sinks removed in series also has
+        // a valid sink. If validOrder returns an order, then I look to see whether G = CPDAG(DAG(validOrder(G)))
+        // and return that judgment.
+        //
+        //I think I can prove that this works.
+        //
+        // Theorem 1: If validOrder(G) throws an exception, then G is not a CPDAG.
+        //
+        // Proof. We know the contrapositive. That is, we know that if G is a CPDAG, a valid order exists, so
+        // validOrder in that case will not throw an exception.
+        //
+        // Theorem 2: For permutation π, DAG(π, dsep) always returns a DAG in cases where a valid order for G exists,
+        // no matter the d-separation relation dsep (even based on possibly malformed information).
+        //
+        // Proof. DAG(π, dsep) always chooses parents for a variable x from prefix(x, π), so the method will always
+        // return a DAG.
+        //
+        // Theorem 3: When validOrder(G) returns an order π, G is a CPDAG if and only if G = CPDAG(DAG(π, dsep(G))),
+        // where dsep(G) is the usual d-separation algorithm applied to (possibly malformed) G.
+        //
+        // Proof. Let π = validOrder(G). Note that if G is, in fact, a CPDAG, it follows from the construction of the
+        // validOrder method and the Raskutti-Uhler method for building DAGs that G = CPDAG(DAG(π, dsep(G))). So,
+        // let G not be a CPDAG and assume G = CPDAG(DAG(π, dsep(G))). But then G is, in fact, a CPDAG by construction
+        // since DAG(π, dsep(G)) is a DAG (Theorem 2), which is a contradiction. It follows that
+        // G != CPDAG(DAG(π, dsepG))), which proves the theorem.
+        //
+        // In any case, I can't get this method to fail, and it's easy to implement, given the other stuff we already
+        // have implemented in Tetrad.
+
         Graph g = this.graph;
 
         for (Edge e : g.getEdges()) {
