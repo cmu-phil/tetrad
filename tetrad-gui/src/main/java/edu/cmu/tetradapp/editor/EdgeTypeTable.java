@@ -126,7 +126,7 @@ public class EdgeTypeTable extends JPanel {
             this.table.setTransferHandler(new EdgeTypeTableTransferHandler());
             tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES_AND_EDGE_TYPES);
 
-            JTableHeader header = this.table.getTableHeader();
+//            JTableHeader header = this.table.getTableHeader();
 //            Font boldFont = new Font(header.getFont().getFontName(), Font.BOLD, 18);
 //            TableCellRenderer headerRenderer = header.getDefaultRenderer();
 //            header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
@@ -424,6 +424,10 @@ public class EdgeTypeTable extends JPanel {
             tableColumn.setPreferredWidth(FastMath.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
 
             return component;
+        }
+
+        public void setValueAt(Object value, int row, int col) {
+            // No op. Don't allow values in the table to be changed.
         }
 
     }
