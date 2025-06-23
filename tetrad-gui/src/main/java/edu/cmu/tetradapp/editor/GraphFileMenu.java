@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 
@@ -37,6 +38,33 @@ import javax.swing.*;
 public final class GraphFileMenu extends JMenu {
 
     private static final long serialVersionUID = 8003709852565658589L;
+
+    public GraphFileMenu(GraphWorkbench workbench) {
+        super("File");
+
+        JMenu save = new JMenu("Save...");
+        add(save);
+
+        save.add(new SaveGraph(workbench, "Text...", SaveGraph.Type.text));
+        save.add(new SaveGraph(workbench, "XML...", SaveGraph.Type.xml));
+        save.add(new SaveGraph(workbench, "Json...", SaveGraph.Type.json));
+        save.add(new SaveGraph(workbench, "R...", SaveGraph.Type.r));
+        save.add(new SaveGraph(workbench, "Dot...", SaveGraph.Type.dot));
+        save.add(new SaveGraph(workbench, "amat.cpdag...", SaveGraph.Type.amatCpdag));
+        save.add(new SaveGraph(workbench, "amat.pag...", SaveGraph.Type.amatPag));
+//        save.add(new SaveGraph(editable, "PCALG...", SaveGraph.Type.pcalg));
+        save.add(new SaveGraph(workbench, "lavaan...", SaveGraph.Type.lavaan));
+
+        Graph graph = workbench.getGraph();
+
+        if (graph instanceof EdgeListGraph) {
+            if (((EdgeListGraph) graph).getAncillaryGraph("samplingGraph") != null) {
+                SaveGraph sampling = new SaveGraph(workbench, "Sampling Graph...", SaveGraph.Type.text);
+                sampling.setSamplingGraph(true);
+                save.add(sampling);
+            }
+        }
+    }
 
     /**
      * <p>Constructor for GraphFileMenu.</p>

@@ -51,12 +51,12 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     /**
      * The first node.
      */
-    private Node node1;
+    private final Node node1;
 
     /**
      * The second node.
      */
-    private Node node2;
+    private final Node node2;
 
     /**
      * The endpoint at the first node.
@@ -113,15 +113,14 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             throw new NullPointerException("Endpoints must not be null.");
         }
 
+        // At the moment, flipping only needs to be avoided for the bootstrapping API. Please don't use
+        // wantonly.
         if (flipIfBackwards && pointingLeft(endpoint1, endpoint2)) {
             this.node1 = node2;
             this.node2 = node1;
             this.endpoint1 = endpoint2;
             this.endpoint2 = endpoint1;
         } else {
-
-            // At the moment, this is only needed for the bootstrapping API. Please don't use
-            // wantonly.
             this.node1 = node1;
             this.node2 = node2;
             this.endpoint1 = endpoint1;
@@ -287,12 +286,21 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * <p>reverse.</p>
+     * Reverses the edge, so that it if was X->Y it's now Y->X, or vice-versa.
      *
      * @return the edge with endpoints reversed.
      */
     public Edge reverse() {
-        Edge _edge = new Edge(getNode2(), getNode1(), getEndpoint2(), getEndpoint1());
+        return new Edge(getNode2(), getNode1(), getEndpoint1(), getEndpoint2());
+    }
+
+    /**
+     * Flips this edge, so that if it's X->Y it's now Y<-X, or vice-versa.
+     *
+     * @return The flipped edge.
+     */
+    public Edge sameEdgeFlippedDirection() {
+        Edge _edge = new Edge(getNode2(), getNode1(), getEndpoint2(), getEndpoint1(), false);
         _edge.lineColor = lineColor;
         _edge.bold = bold;
         _edge.highlighted = highlighted;
