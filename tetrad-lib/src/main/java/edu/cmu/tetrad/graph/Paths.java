@@ -318,7 +318,7 @@ public class Paths implements TetradSerializable {
         // Theorem 2: For permutation π, DAG(π, dsep) always returns a DAG in cases where a valid order for G exists,
         // no matter the d-separation relation dsep (even based on possibly malformed information).
         //
-        // Proof. DAG(π, dsep) always chooses parents for a variable x from prefix(x, π), so the method will always
+        // Proof. DAG(π, dsep) always choos  es parents for a variable x from prefix(x, π), so the method will always
         // return a DAG.
         //
         // Theorem 3: When validOrder(G) returns an order π, G is a CPDAG if and only if G = CPDAG(DAG(π, dsep(G))),
@@ -377,8 +377,7 @@ public class Paths implements TetradSerializable {
         try {
             g.paths().makeValidOrder(pi);
             Graph cpdag = GraphTransforms.dagToCpdag(getDag(pi, g, false));
-            Graph _g = GraphTransforms.dagToCpdag(g);
-            return cpdag.equals(_g);
+            return cpdag.equals(GraphTransforms.dagToCpdag(g));
         } catch (Exception e) {
             // There was no valid sink.
             TetradLogger.getInstance().log(e.getMessage());
