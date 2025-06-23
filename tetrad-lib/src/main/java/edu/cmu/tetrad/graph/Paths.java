@@ -282,6 +282,8 @@ public class Paths implements TetradSerializable {
      */
     public synchronized boolean isLegalCpdag() {
 
+        // jdramsey 2024-2-17
+        //
         // This is this idea I had for checking whether a graph is a CPDAG. What do you think?
         //
         // I'm using Bryan's method, validOrder, which repeatedly looks for a valid sink in the graph (no children,
@@ -375,23 +377,8 @@ public class Paths implements TetradSerializable {
         try {
             g.paths().makeValidOrder(pi);
             Graph cpdag = GraphTransforms.dagToCpdag(getDag(pi, g, false));
-            Graph _g = new EdgeListGraph(g);
-            _g = GraphTransforms.dagToCpdag(_g);
-
+            Graph _g = GraphTransforms.dagToCpdag(g);
             return cpdag.equals(_g);
-
-//            // Check maximality...
-//            if (!cpdag.equals(_g)) {
-//                return false;
-//            }
-//
-//            Graph __g = new EdgeListGraph(g);
-//            MeekRules meekRules = new MeekRules();
-//            meekRules.setRevertToUnshieldedColliders(false);
-//            meekRules.setVerbose(false);
-//            meekRules.orientImplied(__g);
-//            return g.equals(__g);
-
         } catch (Exception e) {
             // There was no valid sink.
             TetradLogger.getInstance().log(e.getMessage());
