@@ -273,6 +273,9 @@ public class GraphUtils {
     public static void addGraphManipItems(JMenu graph, GraphWorkbench workbench) {
 
         JMenu transformGraph = new JMenu("Manipulate Graph");
+        JMenuItem revertToUnshieldedCollidersPag = new JMenuItem(new RevertToUnshieldedCollidersPag(workbench));
+        JMenuItem revertToUnshieldedCollidersCpdag = new JMenuItem(new RevertToUnshieldedCollidersCpdag(workbench));
+
         JMenuItem runMeekRules = new JMenuItem(new ApplyMeekRules(workbench));
         JMenuItem runFinalFciRules = new JMenuItem(new ApplyFinalFciRules(workbench));
         JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(workbench));
@@ -295,11 +298,13 @@ public class GraphUtils {
             workbench.repaint();
         });
 
+        transformGraph.add(revertToUnshieldedCollidersCpdag);
         transformGraph.add(runMeekRules);
         transformGraph.add(revertToCpdag);
         transformGraph.add(randomDagInCpdag);
         transformGraph.addSeparator();
 
+        transformGraph.add(revertToUnshieldedCollidersPag);
         transformGraph.add(runFinalFciRules);
         transformGraph.add(revertToPag);
 //        transformGraph.add(randomMagInPag);
