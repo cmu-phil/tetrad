@@ -92,10 +92,11 @@ public final class DataSampling {
     /**
      * Creates a resampled dataset from the given dataset based on the specified parameters.
      *
-     * @param dataSet         the input dataset from which the sample will be created
-     * @param randomGenerator the random number generator used for sampling
-     * @param selectedColumns an array of column indices to include in the sampled dataset
-     * @param parameters      the parameters for sampling, including sampling fraction and resampling method
+     * @param dataSet               the input dataset from which the sample will be created
+     * @param randomGenerator       the random number generator used for sampling
+     * @param selectedColumns       an array of column indices to include in the sampled dataset
+     * @param parameters            the parameters for sampling, including sampling fraction and resampling method
+     * @param percentResamplingSize The percentage of random rows to use for each resampling.
      * @return a new dataset containing the selected rows and columns
      */
     public static DataSet createDataSample(DataSet dataSet, RandomGenerator randomGenerator, int[] selectedColumns,

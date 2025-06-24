@@ -44,6 +44,22 @@ public class RecursiveBlocking {
         return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength, null);
     }
 
+    /**
+     * Identifies and returns a subset of nodes that blocks all blockable paths between two given nodes (x and y)
+     * within a graph under specified constraints. This method considers the inclusion of certain nodes,
+     * avoidance of specific nodes, and limits on path lengths while performing the analysis.
+     *
+     * @param graph         the graph to analyze
+     * @param x             the starting node
+     * @param y             the ending node
+     * @param containing    the set of nodes that must be included in the blocking subset
+     * @param notFollowed   the set of nodes that should not be traversed along the path
+     * @param maxPathLength the maximum allowable length for a path between x and y
+     * @param knowledge     additional knowledge constraints that inform the path blocking process
+     * @return a set of nodes that blocks the paths between x and y based on the specified conditions, or null if
+     * no blocking subset can be determined
+     * @throws InterruptedException if the operation is interrupted during execution
+     */
     public static Set<Node> blockPathsRecursively(Graph graph, Node x, Node y, Set<Node> containing, Set<Node> notFollowed,
                                                   int maxPathLength, Knowledge knowledge) throws InterruptedException {
         return blockPathsRecursivelyVisit(graph, x, y, containing, notFollowed, graph.paths().getDescendantsMap(), maxPathLength, knowledge);
