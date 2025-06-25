@@ -435,12 +435,11 @@ public final class Fcit implements IGraphSearch {
         dagToPag.setVerbose(superVerbose);
         this.pag = dagToPag.convert();
 
-        Graph origPag = new EdgeListGraph(this.pag);
-
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
-        // This removes edges based on recursive path blocking. After every edge removal, the evolving PAG is
-        // rebuilt based on initial unshielded colliders and learned sepsets.
+        // In what follows, we look for sepsets to remove edges. After every removal we rebuild the PAG and
+        // optionally check to see if the Zhang MAG in the PAG is a legal MAG, and if not reset the PAG
+        // and any changed sepsets) to the previous state.
 
         while (true) {
             if (!removeEdgesRecursively()) {
@@ -450,7 +449,8 @@ public final class Fcit implements IGraphSearch {
 
         // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
         // for correctness, but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
-        // is rebuilt.
+        // is rebuilt and the Zhang MAG in the PAG optionally checked.
+
         if (checkAdjacencySepsets) {
             removeEdgesSubsetsOfAdjacents();
         }
@@ -716,13 +716,6 @@ public final class Fcit implements IGraphSearch {
                 if (superVerbose && !notFollowed.isEmpty()) {
                     TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + _b);
                 }
-
-                // b will be null if the search did not conclude with a set known to either m-separate
-                // or not m-separate x and y.
-                // This is set up to always return a set jdramsey 2025-6-25
-//                if (_b == null) {
-//                    continue;
-//                }
 
                 {
                     List<Node> common = this.pag.getAdjacentNodes(x);
