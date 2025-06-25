@@ -303,7 +303,7 @@ public final class Fcit implements IGraphSearch {
 
         fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
-        fciOrient.setParallel(false);
+        fciOrient.setParallel(true);
         fciOrient.setCompleteRuleSetUsed(true);
         fciOrient.setKnowledge(knowledge);
 
@@ -463,6 +463,10 @@ public final class Fcit implements IGraphSearch {
 
         long stop2 = System.currentTimeMillis();
 
+        if (verbose) {
+            System.out.println();
+        }
+
         TetradLogger.getInstance().log("FCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
@@ -478,7 +482,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     private void removeEdgesSubsetsOfAdjacents() throws InterruptedException {
-        System.out.println();
 
         EDGE:
         for (Edge edge : this.pag.getEdges()) {
@@ -486,7 +489,9 @@ public final class Fcit implements IGraphSearch {
                 continue;
             }
 
-            System.out.print(".");
+            if (verbose) {
+                System.out.print(".");
+            }
 
             Node x = edge.getNode1();
             Node y = edge.getNode2();
@@ -655,8 +660,6 @@ public final class Fcit implements IGraphSearch {
             pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
             pathsByEdge.get(Set.of(x, y)).add(path);
         }
-
-        System.out.println();
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.

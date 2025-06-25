@@ -810,7 +810,7 @@ public class TestFci {
         }
     }
 
-//    @Test
+    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -835,18 +835,19 @@ public class TestFci {
             }
 
             try {
-//                Fci fci = new Fci(independence);
-//                Gfci fci = new Gfci(independence, score);
-//                GraspFci fci = new GraspFci(independence, score);
+//                Fci alg = new Fci(independence);
+//                Gfci alg = new Gfci(independence, score);
+//                GraspFci alg = new GraspFci(independence, score);
 
-                Fcit fci = new Fcit(independence, score);
-                fci.setStartWith(Fcit.START_WITH.GRASP);
+                Fcit alg = new Fcit(independence, score);
+                alg.setStartWith(Fcit.START_WITH.GRASP);
+                alg.setUseBes(true); // Guarantees correct CPDAG under Faithfulness.
 
-                fci.setCompleteRuleSetUsed(true);
-                fci.setCheckAdjacencySepsets(true);
-                fci.setVerbose(true);
+                alg.setCompleteRuleSetUsed(true);
+                alg.setCheckAdjacencySepsets(true);
+                alg.setVerbose(true);
 
-                Graph pag = fci.search();
+                Graph pag = alg.search();
 
                 boolean illegal = !isLegalPag(pag);
 
