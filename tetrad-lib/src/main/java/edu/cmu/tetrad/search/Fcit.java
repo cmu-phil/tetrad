@@ -58,7 +58,7 @@ public final class Fcit implements IGraphSearch {
      * This variable is an instance of {@link SepsetMap}, which provides methods to access and manipulate separation
      * sets - specifically to check conditional independencies between pairs of variables given a separating set.
      */
-    private SepsetMap sepsets = new SepsetMap();
+    private final SepsetMap sepsets = new SepsetMap();
     /**
      * The background knowledge.
      */
