@@ -72,9 +72,7 @@ public class RevertToUnshieldedCollidersPag extends AbstractAction implements Cl
             return;
         }
 
-        Graph _graph = GraphUtils2.revertUnshieldedPag(graph);
-
-        workbench.setGraph(_graph);
+        workbench.setGraph(GraphTransforms.revertToUnshieldedColliders(graph, true));
     }
 
     /**

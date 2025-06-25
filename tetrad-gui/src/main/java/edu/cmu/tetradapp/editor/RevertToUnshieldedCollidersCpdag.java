@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -32,7 +29,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.util.List;
 
 /**
  * Reverts the given graph to a PAG
@@ -76,30 +72,7 @@ public class RevertToUnshieldedCollidersCpdag extends AbstractAction implements 
             return;
         }
 
-        Graph _graph = new EdgeListGraph(graph);
-
-        _graph.reorientAllWith(Endpoint.TAIL);
-
-        List<Node> nodes = _graph.getNodes();
-
-        for (Node z : nodes) {
-            List<Node> adjNodes = _graph.getAdjacentNodes(z);
-
-            for (int i = 0; i < adjNodes.size(); i++) {
-                for (int j = i + 1; j < adjNodes.size(); j++) {
-                    Node x =  adjNodes.get(i);
-                    Node y = adjNodes.get(j);
-
-                    if (!graph.isAdjacentTo(x, y) && graph.isDefCollider(x, z, y)) {
-                        _graph.setEndpoint(x, z, Endpoint.ARROW);
-                        _graph.setEndpoint(y, z, Endpoint.ARROW);
-                    }
-                }
-            }
-
-        }
-
-        workbench.setGraph(_graph);
+        workbench.setGraph(GraphTransforms.revertToUnshieldedColliders(graph, false));
     }
 
     /**

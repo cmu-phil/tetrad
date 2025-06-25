@@ -419,4 +419,43 @@ public class GraphTransforms {
 
         return graph;
     }
+
+    /**
+     * Reverts the provided graph to its unshielded colliders, with other endpoints oriented either as circles (PAG
+     * case) or tails (CPDAG case). The operation orients a copy of the graph with no orientations, then iterates
+     * through the unshielded colliders (X --&gt; Y &lt;-- Z with ~adj(X, Z)) in the original graph and makes these
+     * orientations in the new graph.
+     *
+     * @param graph   the input graph on which the operation is performed.
+     * @param circles if other endpoints should otherwise be circles (PAG case), false if tails (CPDAG case).
+     * @return a new graph with the specified updates applied.
+     */
+    public static Graph revertToUnshieldedColliders(Graph graph, boolean circles) {
+        Graph _graph = new EdgeListGraph(graph);
+
+        if (circles) {
+            _graph.reorientAllWith(Endpoint.CIRCLE);
+        } else {
+            _graph.reorientAllWith(Endpoint.TAIL);
+        }
+
+        List<Node> nodes = _graph.getNodes();
+
+        for (Node z : nodes) {
+            List<Node> adjNodes = _graph.getAdjacentNodes(z);
+
+            for (int i = 0; i < adjNodes.size(); i++) {
+                for (int j = i + 1; j < adjNodes.size(); j++) {
+                    Node x = adjNodes.get(i);
+                    Node y = adjNodes.get(j);
+
+                    if (!graph.isAdjacentTo(x, y) && graph.isDefCollider(x, z, y)) {
+                        _graph.setEndpoint(x, z, Endpoint.ARROW);
+                        _graph.setEndpoint(y, z, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+        return _graph;
+    }
 }
