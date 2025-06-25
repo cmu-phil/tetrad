@@ -570,7 +570,6 @@ public class TestFci {
             Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
             fcit.setStartWith(Fcit.START_WITH.GRASP);
             fcit.setCheckAdjacencySepsets(true);
-//            fcit.setPreserveMarkov(false);
             fcit.setVerbose(true);
             Graph estPag3 = fcit.search();
 
@@ -692,7 +691,6 @@ public class TestFci {
             Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
             fcit.setStartWith(Fcit.START_WITH.GRASP);
             fcit.setVerbose(true);
-//            fcit.setPreserveMarkov(false);
             Graph estPag3 = fcit.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
@@ -835,18 +833,19 @@ public class TestFci {
             }
 
             try {
-//                Fci fci = new Fci(independence);
-//                Gfci fci = new Gfci(independence, score);
-//                GraspFci fci = new GraspFci(independence, score);
+//                Fci alg = new Fci(independence);
+//                Gfci alg = new Gfci(independence, score);
+//                GraspFci alg = new GraspFci(independence, score);
 
-                Fcit fci = new Fcit(independence, score);
-                fci.setStartWith(Fcit.START_WITH.GRASP);
+                Fcit alg = new Fcit(independence, score);
+                alg.setStartWith(Fcit.START_WITH.GRASP);
+                alg.setUseBes(true); // Guarantees correct CPDAG under Faithfulness.
 
-                fci.setCompleteRuleSetUsed(true);
-                fci.setCheckAdjacencySepsets(true);
-                fci.setVerbose(true);
+                alg.setCompleteRuleSetUsed(true);
+                alg.setCheckAdjacencySepsets(true);
+                alg.setVerbose(true);
 
-                Graph pag = fci.search();
+                Graph pag = alg.search();
 
                 boolean illegal = !isLegalPag(pag);
 
@@ -905,6 +904,8 @@ public class TestFci {
             try {
                 Fcit fcit = new Fcit(test, score);
                 fcit.setVerbose(true);
+                fcit.setUseBes(true);
+                fcit.setGuaranteeMag(true);
 //                fcit.setVerbose(true);
                 fcit.setDepth(-1);
                 fcit.setCompleteRuleSetUsed(true);
