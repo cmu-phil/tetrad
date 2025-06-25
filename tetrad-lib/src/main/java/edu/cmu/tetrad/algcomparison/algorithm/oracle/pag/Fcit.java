@@ -158,7 +158,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, UsesS
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setGuaranteeMag(parameters.getBoolean(Params.GUARANTEE_PAG));
 
         return search.search();
     }
