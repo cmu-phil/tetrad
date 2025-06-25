@@ -570,7 +570,6 @@ public class TestFci {
             Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
             fcit.setStartWith(Fcit.START_WITH.GRASP);
             fcit.setCheckAdjacencySepsets(true);
-//            fcit.setPreserveMarkov(false);
             fcit.setVerbose(true);
             Graph estPag3 = fcit.search();
 
