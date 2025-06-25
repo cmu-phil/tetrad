@@ -529,6 +529,7 @@ public final class Fcit implements IGraphSearch {
                     }
 
                     if (verbose) {
+                        System.out.println();
                         TetradLogger.getInstance().log("Removing edge for adjacency reasons: " + edge + "; "
                                                        + x + " _||_ " + y + " | " + cond);
                     }
@@ -564,6 +565,7 @@ public final class Fcit implements IGraphSearch {
                     }
 
                     if (verbose) {
+                        System.out.println();
                         TetradLogger.getInstance().log("Removing edge for adjacency reasons: " + edge + "; "
                                                        + x + " _||_ " + y + " | " + cond);
                     }
@@ -717,9 +719,10 @@ public final class Fcit implements IGraphSearch {
 
                 // b will be null if the search did not conclude with a set known to either m-separate
                 // or not m-separate x and y.
-                if (_b == null) {
-                    continue;
-                }
+                // This is set up to always return a set jdramsey 2025-6-25
+//                if (_b == null) {
+//                    continue;
+//                }
 
                 {
                     List<Node> common = this.pag.getAdjacentNodes(x);
@@ -765,6 +768,7 @@ public final class Fcit implements IGraphSearch {
                             }
 
                             if (verbose) {
+                                System.out.println();
                                 TetradLogger.getInstance().log("Removing " + edge + " for recursive reasons.");
                             }
 
@@ -816,6 +820,7 @@ public final class Fcit implements IGraphSearch {
                             }
 
                             if (verbose) {
+                                System.out.println();
                                 TetradLogger.getInstance().log("Removing " + edge + " for recursive reasons.");
                             }
 

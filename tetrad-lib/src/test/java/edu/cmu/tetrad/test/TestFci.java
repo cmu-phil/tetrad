@@ -889,7 +889,7 @@ public class TestFci {
     }
 
 
-//    @Test
+    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -906,6 +906,8 @@ public class TestFci {
             try {
                 Fcit fcit = new Fcit(test, score);
                 fcit.setVerbose(true);
+                fcit.setUseBes(true);
+                fcit.setGuaranteeMag(true);
 //                fcit.setVerbose(true);
                 fcit.setDepth(-1);
                 fcit.setCompleteRuleSetUsed(true);
