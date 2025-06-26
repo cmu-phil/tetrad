@@ -316,10 +316,14 @@ public class GraphUtils {
 
         graph.add(transformGraph);
 
+        revertToUnshieldedCollidersCpdag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.ALT_DOWN_MASK));
         runMeekRules.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.ALT_DOWN_MASK));
         revertToCpdag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK));
+        revertToUnshieldedCollidersPag.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.ALT_DOWN_MASK));
         runFinalFciRules.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK));
         revertToPag.setAccelerator(
