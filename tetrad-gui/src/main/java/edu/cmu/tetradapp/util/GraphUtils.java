@@ -280,8 +280,7 @@ public class GraphUtils {
         JMenuItem runFinalFciRules = new JMenuItem(new ApplyFinalFciRules(workbench));
         JMenuItem revertToCpdag = new JMenuItem(new RevertToCpdag(workbench));
         JMenuItem revertToPag = new JMenuItem(new RevertToPag(workbench));
-        JMenuItem randomDagInCpdag = new JMenuItem(new PickRandomDagInCpdagAction(workbench));
-//        JMenuItem randomMagInPag = new JMenuItem(new PickRandomMagInPagAction(workbench));
+        JMenuItem dagInCpdag = new JMenuItem(new PickDagInCpdagAction(workbench));
         JMenuItem zhangMagInPag = new JMenuItem(new PickZhangMagInPagAction(workbench));
         JMenuItem correlateExogenous = new JMenuItem("Correlate Exogenous Variables");
         JMenuItem uncorrelateExogenous = new JMenuItem("Uncorrelate Exogenous Variables");
@@ -301,13 +300,12 @@ public class GraphUtils {
         transformGraph.add(revertToUnshieldedCollidersCpdag);
         transformGraph.add(runMeekRules);
         transformGraph.add(revertToCpdag);
-        transformGraph.add(randomDagInCpdag);
+        transformGraph.add(dagInCpdag);
         transformGraph.addSeparator();
 
         transformGraph.add(revertToUnshieldedCollidersPag);
         transformGraph.add(runFinalFciRules);
         transformGraph.add(revertToPag);
-//        transformGraph.add(randomMagInPag);
         transformGraph.add(zhangMagInPag);
         transformGraph.addSeparator();
 
@@ -328,10 +326,8 @@ public class GraphUtils {
                 KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK));
         revertToPag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK));
-        randomDagInCpdag.setAccelerator(
+        dagInCpdag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_DOWN_MASK));
-//        randomMagInPag.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
         zhangMagInPag.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK));
     }
