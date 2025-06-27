@@ -166,6 +166,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private boolean verbose = false;
 
     /**
+     * The most recent list of all independence facts used by the generate results method.
+     */
+    private Set<IndependenceFact> allIndependenceFacts = null;
+
+    /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
      *
      * @param graph            The graph.
@@ -932,6 +937,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     }
                 }
             }
+            this.allIndependenceFacts = allIndependenceFacts;
 
             try {
                 generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
