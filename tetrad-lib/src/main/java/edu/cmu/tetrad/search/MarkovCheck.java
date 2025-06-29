@@ -244,21 +244,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return The list of local independence facts for the given node.
      */
     public List<IndependenceFact> checkIndependenceForTargetNode(Node x) {
-        Set<Node> parents = new HashSet<>(graph.getParents(x));
-
-        // Remove all parent nodes and x node itself from the graph
-        List<Node> graphNodes_others = graph.getNodes();
-        graphNodes_others.remove(x);
-        for (Node p : parents) graphNodes_others.remove(p);
-
-        List<IndependenceFact> factList = new ArrayList<>();
-        for (Node y : graphNodes_others) {
-            // Make a new MsepTest based on the true graph.
-            MsepTest msepTest = new MsepTest(graph);
-            IndependenceResult testRes = msepTest.checkIndependence(x, y, parents);
-            if (testRes.isIndependent()) factList.add(testRes.getFact());
+        List<IndependenceFact> facts = new ArrayList<>();
+        for (IndependenceFact fact : allIndependenceFacts) {
+            if (x.equals((fact.getX())) || x.equals(fact.getY())) facts.add(fact);
         }
-        return factList;
+        return facts;
     }
 
     /**
