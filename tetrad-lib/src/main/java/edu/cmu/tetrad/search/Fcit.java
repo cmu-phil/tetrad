@@ -641,7 +641,7 @@ public final class Fcit implements IGraphSearch {
         // there in this graph.
         Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
 
-        List<Result> results = findResultsRecursive(edgePool, pathsByEdge);
+        List<Result> results = findIndependenceChecksRecursive(edgePool, pathsByEdge);
 
         if (verbose) {
             System.out.println();
@@ -659,15 +659,15 @@ public final class Fcit implements IGraphSearch {
         return changed;
     }
 
-    private List<Result> findResultsRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge) throws InterruptedException {
+    private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge) {
         return new HashSet<>(edges).parallelStream()
                 .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
                 .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
                                 || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
                 .map(edge -> {
-                    CheckResult checkResult = null;
+                    IndependenceCheck checkResult = null;
                     try {
-                        checkResult = findResultRecursive(edge, pathsByEdge);
+                        checkResult = findIndependenceCheckRecursive(edge, pathsByEdge);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -677,7 +677,7 @@ public final class Fcit implements IGraphSearch {
                 .collect(Collectors.toList());
     }
 
-    private CheckResult findResultRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge) throws InterruptedException {
+    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge) throws InterruptedException {
         if (verbose) {
             System.out.print(".");
         }
@@ -746,9 +746,8 @@ public final class Fcit implements IGraphSearch {
                         continue;
                     }
 
-
                     if (test.checkIndependence(x, y, b).isIndependent()) {
-                        return new CheckResult(edge, b, new HashSet<>(Set.of(edge)));
+                        return new IndependenceCheck(edge, b, new HashSet<>(Set.of(edge)));
                     }
                 }
             }
@@ -779,11 +778,12 @@ public final class Fcit implements IGraphSearch {
                     }
 
                     if (test.checkIndependence(x, y, b).isIndependent()) {
-                        return new CheckResult(edge, b, new HashSet<>(Set.of(edge)));
+                        return new IndependenceCheck(edge, b, new HashSet<>(Set.of(edge)));
                     }
                 }
             }
         }
+
         return null;
     }
 
@@ -946,7 +946,7 @@ public final class Fcit implements IGraphSearch {
     private record Result(Edge edge, Set<Node> cond) {
     }
 
-    private record CheckResult(Edge edge, Set<Node> b, Set<Edge> checkedEdges) {
+    private record IndependenceCheck(Edge edge, Set<Node> b, Set<Edge> checkedEdges) {
     }
 
 }
