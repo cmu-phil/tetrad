@@ -481,73 +481,56 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
-    private void removeEdgesSubsetsOfAdjacents() throws InterruptedException {
+    private IndependenceCheck findIndependenceCheckSubsetOfAdjacents(Edge edge) throws InterruptedException {
 
-        EDGE:
-        for (Edge edge : this.pag.getEdges()) {
-            if (sepsets.get(edge.getNode1(), edge.getNode2()) != null) {
+        if (sepsets.get(edge.getNode1(), edge.getNode2()) != null) {
+            return  null;
+        }
+
+        if (verbose) {
+            System.out.print(".");
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        List<Node> adjx = this.pag.getAdjacentNodes(x);
+        List<Node> adjy = this.pag.getAdjacentNodes(y);
+        adjx.remove(y);
+        adjy.remove(x);
+
+        SublistGenerator gen1 = new SublistGenerator(adjx.size(), adjx.size());
+        int[] choice1;
+
+        while ((choice1 = gen1.next()) != null) {
+            if (!pag.isAdjacentTo(x, y)) {
                 continue;
             }
 
-            if (verbose) {
-                System.out.print(".");
-            }
+            Set<Node> cond = GraphUtils.asSet(choice1, adjx);
 
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            List<Node> adjx = this.pag.getAdjacentNodes(x);
-            List<Node> adjy = this.pag.getAdjacentNodes(y);
-            adjx.remove(y);
-            adjy.remove(x);
-
-            SublistGenerator gen1 = new SublistGenerator(adjx.size(), adjx.size());
-            int[] choice1;
-
-            while ((choice1 = gen1.next()) != null) {
-                if (!pag.isAdjacentTo(x, y)) {
-                    continue;
-                }
-
-                Set<Node> cond = GraphUtils.asSet(choice1, adjx);
-
-                if (test.checkIndependence(x, y, cond).isIndependent()) {
-                    if (!tryToModifyGraph(x, y, cond)) continue;
-
-                    if (verbose) {
-                        System.out.println();
-                        TetradLogger.getInstance().log("Removing edge for adjacency reasons: " + edge + "; "
-                                                       + x + " _||_ " + y + " | " + cond);
-                    }
-
-                    continue EDGE;
-                }
-            }
-
-
-            SublistGenerator gen2 = new SublistGenerator(adjy.size(), adjy.size());
-            int[] choice2;
-
-            while ((choice2 = gen2.next()) != null) {
-                if (!pag.isAdjacentTo(x, y)) {
-                    continue EDGE;
-                }
-
-                Set<Node> cond = GraphUtils.asSet(choice2, adjy);
-
-                if (test.checkIndependence(x, y, cond).isIndependent()) {
-                    if (!tryToModifyGraph(x, y, cond)) continue;
-
-                    if (verbose) {
-                        System.out.println();
-                        TetradLogger.getInstance().log("Removing edge for adjacency reasons: " + edge + "; "
-                                                       + x + " _||_ " + y + " | " + cond);
-                    }
-
-                    continue EDGE;
-                }
+            if (test.checkIndependence(x, y, cond).isIndependent()) {
+                return new IndependenceCheck(edge, cond, new HashSet<>(Set.of(edge)));
             }
         }
+
+
+        SublistGenerator gen2 = new SublistGenerator(adjy.size(), adjy.size());
+        int[] choice2;
+
+        while ((choice2 = gen2.next()) != null) {
+            if (!pag.isAdjacentTo(x, y)) {
+                continue;
+            }
+
+            Set<Node> cond = GraphUtils.asSet(choice2, adjy);
+
+            if (test.checkIndependence(x, y, cond).isIndependent()) {
+                return new IndependenceCheck(edge, cond, new HashSet<>(Set.of(edge)));
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -649,10 +632,35 @@ public final class Fcit implements IGraphSearch {
 
         for (Result result : results) {
             Edge edge = result.edge();
-
-            edge = result.edge();
             Set<Node> b = result.cond();
-            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b);
+            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "recursive");
+            changed |= didChange;
+        }
+
+        return changed;
+    }
+
+    private boolean removeEdgesSubsetsOfAdjacents() throws InterruptedException {
+        if (superVerbose) {
+            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
+        }
+
+        boolean changed = false;
+
+        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
+        // there in this graph.
+        Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
+
+        List<Result> results = findIndependenceChecksSubsetOfAdjacents(edgePool);
+
+        if (verbose) {
+            System.out.println();
+        }
+
+        for (Result result : results) {
+            Edge edge = result.edge();
+            Set<Node> b = result.cond();
+            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "subsets of adjacents");
             changed |= didChange;
         }
 
@@ -668,6 +676,24 @@ public final class Fcit implements IGraphSearch {
                     IndependenceCheck checkResult = null;
                     try {
                         checkResult = findIndependenceCheckRecursive(edge, pathsByEdge);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return checkResult != null ? new Result(checkResult.edge(), checkResult.b()) : null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    private List<Result> findIndependenceChecksSubsetOfAdjacents(Set<Edge> edges) {
+        return new HashSet<>(edges).parallelStream()
+                .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
+                .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
+                                || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
+                .map(edge -> {
+                    IndependenceCheck checkResult = null;
+                    try {
+                        checkResult = findIndependenceCheckSubsetOfAdjacents(edge);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -787,7 +813,7 @@ public final class Fcit implements IGraphSearch {
         return null;
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b) {
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type) {
         Edge _edge = pag.getEdge(x, y);
         Graph _pag = new EdgeListGraph(pag);
 
@@ -805,7 +831,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + " for recursive reasons.");
+            TetradLogger.getInstance().log("Removing " + _edge + " for " + type + " reasons.");
         }
 
         return true;
