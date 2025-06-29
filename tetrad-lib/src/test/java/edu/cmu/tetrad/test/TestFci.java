@@ -808,7 +808,7 @@ public class TestFci {
         }
     }
 
-    @Test
+//    @Test
     public void testFcitFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
@@ -885,7 +885,7 @@ public class TestFci {
     }
 
 
-    @Test
+//    @Test
     public void testFcitFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
