@@ -33,7 +33,7 @@ import java.awt.event.ActionEvent;
  * This class represents an action to convert a CPDAG (Completed Partially Directed Acyclic Graph) to a random DAG
  * (Directed Acyclic Graph).
  */
-public class PickRandomDagInCpdagAction extends AbstractAction {
+public class PickDagInCpdagAction extends AbstractAction {
 
     /**
      * The desktop containing the target session editor.
@@ -46,7 +46,7 @@ public class PickRandomDagInCpdagAction extends AbstractAction {
      *
      * @param  workbench The workbench containing the graph.
      */
-    public PickRandomDagInCpdagAction(GraphWorkbench workbench) {
+    public PickDagInCpdagAction(GraphWorkbench workbench) {
         super("Pick Random DAG in CPDAG");
 
         if (workbench == null) {

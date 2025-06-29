@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
@@ -21,7 +21,9 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -67,27 +69,7 @@ public class RevertToPag extends AbstractAction implements ClipboardOwner {
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
         Graph graph = this.workbench.getGraph();
-
-        if (graph == null) {
-            JOptionPane.showMessageDialog(this.workbench, "No graph to run Meek rules on.");
-            return;
-        }
-
-        if (graph.paths().isLegalDag()) {
-            workbench.setGraph(GraphTransforms.dagToMag(GraphTransforms.dagToMag(graph)));
-        }
-
         workbench.setGraph(PagCache.getInstance().getPag(graph));
-
-//        if (graph.paths().isLegalDag() || graph.paths().isLegalCpdag() || graph.paths().isLegalMpdag()) {
-//            workbench.setGraph(new DagToPag(graph).convert());
-//        } else if (graph.paths().isLegalMpag()) {
-//            workbench.setGraph(new DagToPag(graph).convert());
-//        } else if (graph.paths().isLegalPag()) {
-//            JOptionPane.showMessageDialog(this.workbench, "Graph is already a PAG.");
-//        } else {
-//            JOptionPane.showMessageDialog(this.workbench, "Graph is not a legal DAG, CPDAG, MPDAG, MAG or PAG.");
-//        }
     }
 
     /**
