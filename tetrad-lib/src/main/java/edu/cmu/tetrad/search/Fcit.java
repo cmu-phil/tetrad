@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
@@ -231,12 +232,12 @@ public final class Fcit implements IGraphSearch {
      * independence evidence and ensuring consistency with known independence and causality constraints. This method
      * identifies and orients specific edges in the PAG to maintain its validity.
      * <p>
-     * The method performs the following steps: (a) Iterates over all edges in the separation set map's key set. (b) For
-     * each edge, identifies adjacent nodes in the PAG and finds their common neighbors. (c) Removes adjacency between
-     * the nodes if applicable and logs the operation if verbose mode is enabled. (d) Examines each common neighbor,
-     * checking whether it is part of the separation set for the given nodes. If it is not part of the separation set
-     * and does not create a forbidden collider, the endpoints of the edge between the common neighbor and the adjacent
-     * nodes are adjusted to a directed orientation. (e) Logs oriented relationships in verbose mode.
+     * The method performs the following steps: (a) Iterates over all edges in the separation set map's key set. (cond)
+     * For each edge, identifies adjacent nodes in the PAG and finds their common neighbors. (c) Removes adjacency
+     * between the nodes if applicable and logs the operation if verbose mode is enabled. (d) Examines each common
+     * neighbor, checking whether it is part of the separation set for the given nodes. If it is not part of the
+     * separation set and does not create a forbidden collider, the endpoints of the edge between the common neighbor
+     * and the adjacent nodes are adjusted to a directed orientation. (e) Logs oriented relationships in verbose mode.
      * <p>
      * This adjustment ensures proper handling of induced dependencies and maintains the correctness of the causal
      * structure represented by the PAG. The orientation of edges follows the rules
@@ -440,13 +441,13 @@ public final class Fcit implements IGraphSearch {
         // In what follows, we look for sepsets to remove edges. After every removal we rebuild the PAG and
         // optionally check to see if the Zhang MAG in the PAG is a legal MAG, and if not reset the PAG
         // and any changed sepsets) to the previous state.
-        removeEdgesRecursively();
+//        removeEdgesRecursively();
 
-//        while (true) {
-//            if (!removeEdgesRecursively()) {
-//                break;
-//            }
-//        }
+        do {
+            if (verbose) {
+                TetradLogger.getInstance().log("===== NEW ROUND =====");
+            }
+        } while (removeEdgesRecursively());
 
         // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
         // for correctness, but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
@@ -455,8 +456,6 @@ public final class Fcit implements IGraphSearch {
         if (checkAdjacencySepsets) {
             removeEdgesSubsetsOfAdjacents();
         }
-
-        redoGfciOrientation(pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -473,11 +472,11 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
 
-        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
-            TetradLogger.getInstance().log("Not legal mag before replace nodes");
-        } else {
-            TetradLogger.getInstance().log("Legal mag before replace nodes.");
-        }
+//        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
+//            TetradLogger.getInstance().log("Not legal mag before replace nodes");
+//        } else {
+//            TetradLogger.getInstance().log("Legal mag before replace nodes.");
+//        }
 
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
@@ -513,7 +512,7 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> cond = GraphUtils.asSet(choice1, adjx);
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
-                    if (!tryToModifyGraph(edge, x, y, cond)) continue;
+                    if (!tryToModifyGraph(x, y, cond)) continue;
 
                     if (verbose) {
                         System.out.println();
@@ -537,7 +536,7 @@ public final class Fcit implements IGraphSearch {
                 Set<Node> cond = GraphUtils.asSet(choice2, adjy);
 
                 if (test.checkIndependence(x, y, cond).isIndependent()) {
-                    if (!tryToModifyGraph(edge, x, y, cond)) continue;
+                    if (!tryToModifyGraph(x, y, cond)) continue;
 
                     if (verbose) {
                         System.out.println();
@@ -642,41 +641,25 @@ public final class Fcit implements IGraphSearch {
         // there in this graph.
         Set<Edge> edgePool = new HashSet<>(this.pag.getEdges());
 
-        while (!edgePool.isEmpty()) {
-            Edge _edge = null;
-            Set<Node> _b = null;
+        List<Result> results = findResultsRecursive(edgePool, pathsByEdge);
 
-            Result result = getResult(edgePool, pathsByEdge, changed, _edge, _b);
+        if (verbose) {
+            System.out.println();
+        }
 
-            if (result != null) {
-                Edge edge = result._edge();
-                Set<Node> b = result._b();
+        for (Result result : results) {
+            Edge edge = result.edge();
 
-                boolean didChange = tryToModifyGraph(edge, edge.getNode1(), edge.getNode2(), b);
-                changed |= didChange;
-            } else {
-                break;
-            }
+            edge = result.edge();
+            Set<Node> b = result.cond();
+            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b);
+            changed |= didChange;
         }
 
         return changed;
     }
 
-
-    private Result getResult(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, boolean changed, Edge _edge, Set<Node> _b) throws InterruptedException {
-        Result result = findFirstNonNullResult(edges, pathsByEdge, changed);
-        if (result != null && result._edge() != null) {
-            CheckResult checkResult = tryRemovingEdgeRecursively(result._edge(), pathsByEdge, changed);
-            if (checkResult != null) {
-                edges.removeAll(checkResult.checkedEdges());
-                return new Result(checkResult.edge(), checkResult.b());
-            }
-        }
-        return null;
-    }
-
-
-    private Result findFirstNonNullResult(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, boolean changed) throws InterruptedException {
+    private List<Result> findResultsRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge) throws InterruptedException {
         return new HashSet<>(edges).parallelStream()
                 .filter(edge -> sepsets.get(edge.getNode1(), edge.getNode2()) == null)
                 .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
@@ -684,19 +667,20 @@ public final class Fcit implements IGraphSearch {
                 .map(edge -> {
                     CheckResult checkResult = null;
                     try {
-                        checkResult = tryRemovingEdgeRecursively(edge, pathsByEdge, changed);
+                        checkResult = findResultRecursive(edge, pathsByEdge);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                     return checkResult != null ? new Result(checkResult.edge(), checkResult.b()) : null;
                 })
                 .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+                .collect(Collectors.toList());
     }
 
-    private CheckResult tryRemovingEdgeRecursively(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge, boolean changed) throws InterruptedException {
-        System.out.print(".");
+    private CheckResult findResultRecursive(Edge edge, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge) throws InterruptedException {
+        if (verbose) {
+            System.out.print(".");
+        }
 
         Node x = edge.getNode1();
         Node y = edge.getNode2();
@@ -734,13 +718,12 @@ public final class Fcit implements IGraphSearch {
             Set<Node> _b = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, knowledge);
 
             if (superVerbose && !notFollowed.isEmpty()) {
-                TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + _b);
+                TetradLogger.getInstance().log("Not followed set = " + notFollowed + " cond set = " + _b);
             }
 
             {
                 List<Node> common = this.pag.getAdjacentNodes(x);
                 common.remove(y);
-
                 common.retainAll(_b);
 
                 SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
@@ -763,7 +746,7 @@ public final class Fcit implements IGraphSearch {
                         continue;
                     }
 
-                    
+
                     if (test.checkIndependence(x, y, b).isIndependent()) {
                         return new CheckResult(edge, b, new HashSet<>(Set.of(edge)));
                     }
@@ -773,7 +756,6 @@ public final class Fcit implements IGraphSearch {
             {
                 List<Node> common = this.pag.getAdjacentNodes(y);
                 common.remove(x);
-
                 common.retainAll(_b);
 
                 SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
@@ -805,17 +787,17 @@ public final class Fcit implements IGraphSearch {
         return null;
     }
 
-    private boolean tryToModifyGraph(Edge edge, Node x, Node y, Set<Node> b) {
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b) {
         Edge _edge = pag.getEdge(x, y);
         Graph _pag = new EdgeListGraph(pag);
 
-        pag.removeEdge(_edge);
+        this.pag.removeEdge(_edge);
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-        redoGfciOrientation(pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
+        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
 
         if (guaranteeMag) {
-            if (!(GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag())) {
+            if (!GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag()) {
                 this.pag = _pag;
                 sepsets.set(x, y, sepset);
                 return false;
@@ -823,196 +805,10 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (verbose) {
-            System.out.println();
-            TetradLogger.getInstance().log("Removing " + edge + " for recursive reasons.");
+            TetradLogger.getInstance().log("Removing " + _edge + " for recursive reasons.");
         }
+
         return true;
-    }
-
-    private boolean removeEdgesRecursivelyNonParallel() throws InterruptedException {
-        if (superVerbose) {
-            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-        }
-
-        boolean changed = false;
-
-        // The final orientation rules were applied just before this step, so this should list only
-        // discriminating paths that could not be oriented by them...
-        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(this.pag,
-                -1, false);
-        Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge = new HashMap<>();
-        for (DiscriminatingPath path : discriminatingPaths) {
-            Node x = path.getX();
-            Node y = path.getY();
-
-            pathsByEdge.computeIfAbsent(Set.of(x, y), k -> new HashSet<>());
-            pathsByEdge.get(Set.of(x, y)).add(path);
-        }
-
-        // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
-        // there in this graph.
-        EDGE:
-        for (Edge edge : this.pag.getEdges()) {
-            if (sepsets.get(edge.getNode1(), edge.getNode2()) != null) {
-                continue;
-            }
-
-            System.out.print('.');
-
-            if (knowledge != null && Edges.isDirectedEdge(edge)
-                && knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
-                continue;
-            }
-
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            Set<DiscriminatingPath> paths = pathsByEdge.get(Set.of(x, y));
-            paths = (paths == null) ? Set.of() : paths;
-            Set<Node> perhapsNotFollowed = new HashSet<>();
-
-            // Don't repeat the same independence test twice for this edge x *-* y.
-            Set<Set<Node>> S = new HashSet<>();
-
-            for (DiscriminatingPath path : paths) {
-                if (this.pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
-                    perhapsNotFollowed.add(path.getV());
-                }
-            }
-
-            List<Node> _common = pag.getAdjacentNodes(x);
-            _common.retainAll(pag.getAdjacentNodes(y));
-
-            List<Node> E = new ArrayList<>(perhapsNotFollowed);
-
-            // Generate subsets and check blocking paths
-            SublistGenerator gen = new SublistGenerator(E.size(), E.size());
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                if (!this.pag.isAdjacentTo(x, y)) {
-                    break;
-                }
-
-                Set<Node> notFollowed = GraphUtils.asSet(choice, E);
-
-                // Instead of newSingleThreadExecutor(), we use the shared 'executor'
-                Set<Node> _b = RecursiveBlocking.blockPathsRecursively(this.pag, x, y, Set.of(), notFollowed, -1, knowledge);
-
-                if (superVerbose && !notFollowed.isEmpty()) {
-                    TetradLogger.getInstance().log("Not followed set = " + notFollowed + " b set = " + _b);
-                }
-
-                {
-                    List<Node> common = this.pag.getAdjacentNodes(x);
-                    common.remove(y);
-
-                    common.retainAll(_b);
-
-                    SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
-                    int[] choice2;
-
-                    while ((choice2 = gen2.next()) != null) {
-                        if (!this.pag.isAdjacentTo(x, y)) {
-                            break;
-                        }
-
-                        Set<Node> b = new HashSet<>(_b);
-
-                        Set<Node> c = GraphUtils.asSet(choice2, common);
-                        b.removeAll(c);
-
-                        if (S.contains(b)) continue;
-                        S.add(new HashSet<>(b));
-
-                        if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
-                            continue;
-                        }
-
-                        if (test.checkIndependence(x, y, b).isIndependent()) {
-                            Edge _edge = pag.getEdge(x, y);
-                            Graph _pag = new EdgeListGraph(pag);
-
-                            pag.removeEdge(_edge);
-                            Set<Node> sepset = sepsets.get(x, y);
-                            sepsets.set(x, y, b);
-                            redoGfciOrientation(pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
-
-                            if (guaranteeMag) {
-                                if (!(GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag())) {
-                                    this.pag = _pag;
-                                    sepsets.set(x, y, sepset);
-                                    continue;
-                                }
-                            }
-
-                            if (verbose) {
-                                System.out.println();
-                                TetradLogger.getInstance().log("Removing " + edge + " for recursive reasons.");
-                            }
-
-                            changed = true;
-                            continue EDGE;
-                        }
-                    }
-                }
-
-                {
-                    List<Node> common = this.pag.getAdjacentNodes(y);
-                    common.remove(x);
-
-                    common.retainAll(_b);
-
-                    SublistGenerator gen2 = new SublistGenerator(common.size(), common.size());
-                    int[] choice2;
-
-                    while ((choice2 = gen2.next()) != null) {
-                        if (!this.pag.isAdjacentTo(x, y)) {
-                            break;
-                        }
-
-                        Set<Node> b = new HashSet<>(_b);
-
-                        Set<Node> c = GraphUtils.asSet(choice2, common);
-                        b.removeAll(c);
-
-                        if (S.contains(b)) continue;
-                        S.add(new HashSet<>(b));
-
-                        if (b.size() > (depth == -1 ? test.getVariables().size() : depth)) {
-                            continue;
-                        }
-
-                        if (test.checkIndependence(x, y, b).isIndependent()) {
-                            Edge _edge = pag.getEdge(x, y);
-                            Graph _pag = new EdgeListGraph(pag);
-
-                            pag.removeEdge(_edge);
-                            Set<Node> sepset = sepsets.get(x, y);
-                            sepsets.set(x, y, b);
-                            redoGfciOrientation(pag, fciOrient, knowledge, initialColliders, sepsets, superVerbose);
-
-                            if (!(GraphTransforms.zhangMagFromPag(pag).paths().isLegalMag())) {
-                                this.pag = _pag;
-                                sepsets.set(x, y, sepset);
-                                continue;
-                            }
-
-                            if (verbose) {
-                                System.out.println();
-                                TetradLogger.getInstance().log("Removing " + edge + " for recursive reasons.");
-                            }
-
-                            changed = true;
-
-                            continue EDGE;
-                        }
-                    }
-                }
-            }
-        }
-
-        return changed;
     }
 
     /**
@@ -1147,7 +943,7 @@ public final class Fcit implements IGraphSearch {
         INITIAL_GRAPH
     }
 
-    private record Result(Edge _edge, Set<Node> _b) {
+    private record Result(Edge edge, Set<Node> cond) {
     }
 
     private record CheckResult(Edge edge, Set<Node> b, Set<Edge> checkedEdges) {

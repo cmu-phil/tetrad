@@ -821,8 +821,6 @@ public class TestFci {
             Graph dag = RandomGraph.randomGraph(15, 4, 25, 100,
                     100, 100, false);
 
-//            System.out.println("True DAG = " + dag);
-
             MsepTest independence = new MsepTest(dag);
             dag = GraphUtils.replaceNodes(dag, independence.getVariables());
             GraphScore score = new GraphScore(dag);
@@ -906,15 +904,10 @@ public class TestFci {
                 fcit.setVerbose(true);
                 fcit.setUseBes(true);
                 fcit.setGuaranteeMag(true);
-//                fcit.setVerbose(true);
                 fcit.setDepth(-1);
                 fcit.setCompleteRuleSetUsed(true);
                 fcit.setCheckAdjacencySepsets(false);
                 Graph pag = fcit.search();
-
-                if (!pag.paths().isMaximal()) {
-                    System.out.println("************ pag is not maximal **************");
-                }
 
                 Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
@@ -926,15 +919,6 @@ public class TestFci {
                         .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
                 GraphSearchUtils.LegalPagRet ret = GraphSearchUtils.isLegalPag(pag, new HashSet<>(selection));
-
-//                if (!ret.isLegalPag()) {
-//                    System.out.println("************ pag is not legal ****************");
-//                    System.out.println("**** Reason = " + ret.getReason());
-//
-//                    if (getUnshieldedColliders(pag).equals(getUnshieldedColliders(mag))) {
-//                        System.out.println("Unshielded colliders match between mag and pag.");
-//                    }
-//                }
 
                 if (mag.paths().isLegalMag() && !pag.paths().isLegalPag()) {
                     List<Node> nodes = pag.getNodes();
@@ -995,11 +979,7 @@ public class TestFci {
 
         // Make a random DAG and then try DAG to PAG and then PAG to MAG and see if the MAG is cyclic.
 
-        int index = 0;
-
         for (int i = 0; i < 1000; i++) {
-//            System.out.println("================= RUN " + (i + 1) + " TEST ====================");
-
             long seed = RandomUtil.getInstance().nextLong();
 //            long seed = -6064115539269406491L;
             RandomUtil.getInstance().setSeed(seed);
@@ -1009,12 +989,7 @@ public class TestFci {
             dagToPag.setVerbose(false);
             Graph pag = dagToPag.convert();
 
-//            if (!isLegalPag(pag)) {
-//                System.out.println("Not a legal pag seed = " + seed);
-//            }
-
             Graph mag = GraphTransforms.zhangMagFromPag(pag);
-//            mag = GraphTransforms.dagToMag(dag);
 
             Set<Triple> magUnshieldedTriples = getUnshieldedColliders(mag);
             Set<Triple> pagUnshieldedTriples = getUnshieldedColliders(pag);
@@ -1040,19 +1015,6 @@ public class TestFci {
                 }
 
                 System.out.println("mag is not legal mag seed = " + seed);
-
-//                DagToPag dagToPag2 = new DagToPag(dag);
-//                dagToPag2.setVerbose(true);
-//                Graph pag2 = dagToPag2.convert();
-//
-//                System.out.println("pag2 legal = " + pag2.paths().isLegalPag());
-//
-//                index++;
-//
-//                System.out.println("index = " + index);
-//                GraphSaveLoadUtils.saveGraph(dag, new File("/Users/josephramsey/Downloads/check_graphs/dag." + index + ".txt"), false);
-//                GraphSaveLoadUtils.saveGraph(pag, new File("/Users/josephramsey/Downloads/check_graphs/pag." + index + ".txt"), false);
-//                GraphSaveLoadUtils.saveGraph(mag, new File("/Users/josephramsey/Downloads/check_graphs/mag." + index + ".txt"), false);
             }
 
             // If this fails, it could be because someone was mucking with the inducing path method. Try reverting that
