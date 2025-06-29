@@ -439,10 +439,8 @@ public final class Fcit implements IGraphSearch {
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
         // In what follows, we look for sepsets to remove edges. After every removal we rebuild the PAG and
-        // optionally check to see if the Zhang MAG in the PAG is a legal MAG, and if not reset the PAG
-        // and any changed sepsets) to the previous state.
-//        removeEdgesRecursively();
-
+        // optionally check to see if the Zhang MAG in the PAG is a legal MAG, and if not, reset the PAG
+        // and any changed sepsets) to the previous state. Repeat until no more edges are removed.
         do {
             if (verbose) {
                 TetradLogger.getInstance().log("===== NEW ROUND =====");
@@ -452,8 +450,9 @@ public final class Fcit implements IGraphSearch {
         // This (optional) step removes edges based on FCI-style subsets of adjacents reasoning. This is needed
         // for correctness, but can lead to lower accuracies. Again, after every edge removal, the evolving PAG
         // is rebuilt and the Zhang MAG in the PAG optionally checked.
-
         if (checkAdjacencySepsets) {
+
+            // This only needs to be done once.
             removeEdgesSubsetsOfAdjacents();
         }
 
@@ -471,12 +470,6 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
-
-//        if (!GraphTransforms.zhangMagFromPag(this.pag).paths().isLegalMag()) {
-//            TetradLogger.getInstance().log("Not legal mag before replace nodes");
-//        } else {
-//            TetradLogger.getInstance().log("Legal mag before replace nodes.");
-//        }
 
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
@@ -600,7 +593,7 @@ public final class Fcit implements IGraphSearch {
      * Exceptions such as `InterruptedException` are caught and wrapped in a runtime exception to ensure proper flow of
      * execution for asynchronous tasks.
      */
-    private boolean removeEdgesRecursively() throws InterruptedException {
+    private boolean removeEdgesRecursively() {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -640,12 +633,10 @@ public final class Fcit implements IGraphSearch {
         return changed;
     }
 
-    private boolean removeEdgesSubsetsOfAdjacents() throws InterruptedException {
+    private void removeEdgesSubsetsOfAdjacents() {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
-
-        boolean changed = false;
 
         // Now test the specific extra condition where DDPs colliders would have been oriented had an edge not been
         // there in this graph.
@@ -660,11 +651,8 @@ public final class Fcit implements IGraphSearch {
         for (Result result : results) {
             Edge edge = result.edge();
             Set<Node> b = result.cond();
-            boolean didChange = tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "subsets of adjacents");
-            changed |= didChange;
+            tryToModifyGraph(edge.getNode1(), edge.getNode2(), b, "subsets of adjacents");
         }
-
-        return changed;
     }
 
     private List<Result> findIndependenceChecksRecursive(Set<Edge> edges, Map<Set<Node>, Set<DiscriminatingPath>> pathsByEdge) {
@@ -673,7 +661,7 @@ public final class Fcit implements IGraphSearch {
                 .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
                                 || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
                 .map(edge -> {
-                    IndependenceCheck checkResult = null;
+                    IndependenceCheck checkResult;
                     try {
                         checkResult = findIndependenceCheckRecursive(edge, pathsByEdge);
                     } catch (InterruptedException e) {
@@ -691,7 +679,7 @@ public final class Fcit implements IGraphSearch {
                 .filter(edge -> knowledge == null || !Edges.isDirectedEdge(edge)
                                 || !knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()))
                 .map(edge -> {
-                    IndependenceCheck checkResult = null;
+                    IndependenceCheck checkResult;
                     try {
                         checkResult = findIndependenceCheckSubsetOfAdjacents(edge);
                     } catch (InterruptedException e) {
