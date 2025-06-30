@@ -245,6 +245,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public List<IndependenceFact> checkIndependenceForTargetNode(Node x) {
         List<IndependenceFact> facts = new ArrayList<>();
+
+        if (allIndependenceFacts == null) {
+            generateAllResults();
+        }
+
         for (IndependenceFact fact : allIndependenceFacts) {
             if (x.equals((fact.getX())) || x.equals(fact.getY())) facts.add(fact);
         }
