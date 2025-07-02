@@ -147,6 +147,38 @@ public final class GraphUtils {
     }
 
     /**
+     * Calculates the subgraph over the parents of a target node for a DAG, CPDAG, MAG, or PAG. This is not
+     * necessarily minimal (i.e. not necessarily a Markov Boundary). Target Node is included in the result graph's nodes
+     * list. Edges including the target node is included in the result graph's edges list.
+     *
+     * @param target a node in the given graph.
+     * @param graph  a DAG, CPDAG, MAG, or PAG.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph getParentsSubgraphWithTargetNode(Graph graph, Node target) {
+        EdgeListGraph g = new EdgeListGraph(graph);
+        List<Node> parents = graph.getParents(target);
+        parents.add(target);
+        return g.subgraph(parents);
+    }
+
+    /**
+     * Calculates the subgraph over the adjacency of a target node for a DAG, CPDAG, MAG, or PAG. This is not
+     * necessarily minimal (i.e. not necessarily a Markov Boundary). Target Node is included in the result graph's nodes
+     * list. Edges including the target node is included in the result graph's edges list.
+     *
+     * @param target a node in the given graph.
+     * @param graph  a DAG, CPDAG, MAG, or PAG.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public static Graph getAdjacencySubgraphWithTargetNode(Graph graph, Node target) {
+        EdgeListGraph g = new EdgeListGraph(graph);
+        List<Node> adjs = graph.getAdjacentNodes(target);
+        adjs.add(target);
+        return g.subgraph(adjs);
+    }
+
+    /**
      * <p>removeBidirectedOrientations.</p>
      *
      * @param estCpdag a {@link edu.cmu.tetrad.graph.Graph} object

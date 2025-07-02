@@ -721,6 +721,49 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
+     *
+     * Calculates the precision and recall on the general definition of local sub graph of a target node, plot data.
+     * @param x
+     * @param estimatedGraph
+     * @param trueGraph
+     * @param conditioningSetType
+     * @param subgraphFeature features of a subgraph, can be either parents, adjacencies, or MB.
+     * @return
+     */
+    public List<Double> getPrecisionAndRecallGraphPlotData(Node x, Graph estimatedGraph, Graph trueGraph, ConditioningSetType conditioningSetType, String subgraphFeature) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xConditioningSetTypeLookupGraph = null;
+        Graph xConditioningSetTypeEstimatedGraph = null;
+
+        // A more general definition of what "local subgraph" means
+        if (subgraphFeature.equals("MB")) { // TODO VBC: create a enum for subgraph features
+            xConditioningSetTypeLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+            System.out.println("xMBLookupGraph:" + xConditioningSetTypeLookupGraph);
+            xConditioningSetTypeEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
+            System.out.println("xMBEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+        } else if (subgraphFeature.equals("parents")) {
+            xConditioningSetTypeLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
+            System.out.println("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
+            xConditioningSetTypeEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
+            System.out.println("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+        } else if (subgraphFeature.equals("adjacency")) {
+            xConditioningSetTypeLookupGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(lookupGraph, x);
+            System.out.println("xParentsLookupGraph:" + xConditioningSetTypeLookupGraph);
+            xConditioningSetTypeEstimatedGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(estimatedGraph, x);
+            System.out.println("xParentsEstimatedGraph:" + xConditioningSetTypeEstimatedGraph);
+
+        } else {
+            throw new IllegalArgumentException("Unsupported subgraph feature: " + subgraphFeature);
+        }
+        double ap = new AdjacencyPrecision().getValue(xConditioningSetTypeLookupGraph, xConditioningSetTypeEstimatedGraph, null, new Parameters());
+        double ar = new AdjacencyRecall().getValue(xConditioningSetTypeLookupGraph, xConditioningSetTypeEstimatedGraph, null, new Parameters());
+        double ahp = new ArrowheadPrecision().getValue(xConditioningSetTypeLookupGraph, xConditioningSetTypeEstimatedGraph, null, new Parameters());
+        double ahr = new ArrowheadRecall().getValue(xConditioningSetTypeLookupGraph, xConditioningSetTypeEstimatedGraph, null, new Parameters());
+        return Arrays.asList(ap, ar, ahp, ahr);
+    }
+
+    /**
      * Calculates the precision and recall using LocalGraphConfusion (which calculates the combination of Adjacency and
      * ArrowHead) on the Markov Blanket graph for a given node. Prints the statistics to the console.
      *
