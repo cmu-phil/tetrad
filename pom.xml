@@ -54,7 +54,7 @@
                 <version>0.8.0</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <pgublishingServerId>central</pgublishingServerId>
+                    <publishingServerId>central</publishingServerId>
                     <autoPublish>true</autoPublish>
                 </configuration>
             </plugin>
