@@ -251,7 +251,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
 
         for (IndependenceFact fact : allIndependenceFacts) {
-            if (x.equals((fact.getX())) || x.equals(fact.getY())) facts.add(fact);
+            if (this.setType == ConditioningSetType.ORDERED_LOCAL_MARKOV) {
+                if (x.equals((fact.getX()))) facts.add(fact);
+            } else {
+                if (x.equals((fact.getX())) || x.equals(fact.getY())) facts.add(fact);
+            }
         }
         return facts;
     }
