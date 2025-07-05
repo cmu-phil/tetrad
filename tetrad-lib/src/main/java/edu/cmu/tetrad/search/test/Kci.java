@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
@@ -39,7 +40,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author josephramsey refactoring 7/4/2018, 12/6/2024
  * @version $Id: $Id
  */
-public class Kci implements IndependenceTest, RowsSettable {
+public class Kci implements IndependenceTest, RowsSettable, RawMarginalIndependenceTest {
 
     /**
      * A static final map that stores precomputed instances of {@link SimpleMatrix} where each matrix is filled with
@@ -580,6 +581,10 @@ public class Kci implements IndependenceTest, RowsSettable {
         SimpleMatrix k = kernelMatrix(_data, y, null, this.scalingFactor, hash, _h, _rows);
         SimpleMatrix ky = H.mult(k).mult(H);
 
+        return isIndepententUnconditionFromCenteredMatrices(fact, kx, ky, N);
+    }
+
+    private @NotNull IndependenceResult isIndepententUnconditionFromCenteredMatrices(IndependenceFact fact, SimpleMatrix kx, SimpleMatrix ky, int N) {
         try {
             if (this.approximate) {
                 return getIndependenceResultApproximate(kx, ky, kx.trace() * ky.trace() / N, 2 * kx.mult(kx).trace() * ky.mult(ky).trace() / (N * N), fact);
@@ -590,6 +595,53 @@ public class Kci implements IndependenceTest, RowsSettable {
             TetradLogger.getInstance().log(e.getMessage());
             return new IndependenceResult(fact, false, Double.NaN, Double.NaN);
         }
+    }
+
+    public double computePValue(double[] x, double[] y) {
+        int n = x.length;
+        if (y.length != n) throw new IllegalArgumentException("Length mismatch");
+
+        SimpleMatrix kx = computeGaussianKernel(x, this.scalingFactor);
+        SimpleMatrix ky = computeGaussianKernel(y, this.scalingFactor);
+
+        SimpleMatrix centeredKx = centerKernel(kx);
+        SimpleMatrix centeredKy = centerKernel(ky);
+
+        return computePValueFromCenteredKernels(centeredKx, centeredKy);
+    }
+
+    private SimpleMatrix computeGaussianKernel(double[] data, double sigma) {
+        int n = data.length;
+        SimpleMatrix K = new SimpleMatrix(n, n);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                double diff = data[i] - data[j];
+                double val = Math.exp(-diff * diff / (2 * sigma * sigma));
+                K.set(i, j, val);
+            }
+        }
+        return K;
+    }
+
+    private double computePValueFromCenteredKernels(SimpleMatrix kx, SimpleMatrix ky) {
+        int n = kx.getNumRows();
+//        double hsicStat = kx.elementMult(ky).elementSum() / (double) (n * n);
+
+        return isIndepententUnconditionFromCenteredMatrices(null, kx, ky, n).getPValue();
+
+//        double varHsic = estimateVariance(hsicStat, kx, ky); // existing method or approximation
+//        double meanHsic = estimateMean(hsicStat);            // possibly also fixed or empirical
+//
+//        GammaDistribution gamma = fitGamma(meanHsic, varHsic);
+//        return 1.0 - gamma.cumulativeProbability(hsicStat);
+    }
+
+    private SimpleMatrix centerKernel(SimpleMatrix K) {
+        int n = K.numRows();
+        SimpleMatrix I = SimpleMatrix.identity(n);
+        SimpleMatrix oneN = new SimpleMatrix(n, n);
+        oneN.fill(1.0 / n);
+        return I.minus(oneN).mult(K).mult(I.minus(oneN));
     }
 
     /*

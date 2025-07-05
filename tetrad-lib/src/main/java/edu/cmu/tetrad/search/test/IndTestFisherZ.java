@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Vector;
@@ -50,7 +51,8 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Frank Wimberly
  * @version $Id: $Id
  */
-public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable {
+public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable,
+        RawMarginalIndependenceTest {
     /**
      * A hash from variable names to indices.
      */
@@ -686,6 +688,27 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     public void setLambda(double lambda) {
         this.lambda = lambda;
+    }
+
+    @Override
+    public double computePValue(double[] x, double[] y) {
+        double[][] combined = new double[x.length][2];
+        for (int i = 0; i < x.length; i++) {
+            combined[i][0] = x[i];
+            combined[i][1] = y[i];
+        }
+
+        Node _x = new ContinuousVariable("X_computePValue");
+        Node _y = new ContinuousVariable("Y_computePValue");
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(_x);
+        nodes.add(_y);
+
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(combined), nodes);
+
+        IndTestFisherZ test = new IndTestFisherZ(dataSet, alpha);
+
+        return test.getPValue(_x, _y, new HashSet<>());
     }
 }
 
