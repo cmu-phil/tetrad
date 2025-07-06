@@ -1,12 +1,9 @@
-// Faithful translation of causal-learn's GIN (Generalized Independent Noise) method
-// with graph-building logic compatible with the Tetrad framework.
-
 package edu.cmu.tetrad.search;
 
-import cern.colt.matrix.linalg.SingularValueDecomposition;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.UniformityTest;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
@@ -18,22 +15,19 @@ import java.util.Set;
 public class Gin {
     private final double alpha;
     private final RawMarginalIndependenceTest test;
-    private final Graph pag; // optional PAG to constrain adjacency
 
-    public Gin(double alpha, RawMarginalIndependenceTest test, Graph pag) {
+    public Gin(double alpha, RawMarginalIndependenceTest test) {
         this.alpha = alpha;
         this.test = test;
-        this.pag = pag;
     }
 
-    public static double[] computeE(DataSet data, SimpleMatrix cov, List<Integer> X, List<Integer> Z) {
+    private static double[] computeE(DataSet data, SimpleMatrix cov, List<Integer> X, List<Integer> Z) {
         SimpleMatrix covM = new SimpleMatrix(Z.size(), X.size());
         for (int i = 0; i < Z.size(); i++) {
             for (int j = 0; j < X.size(); j++) {
                 covM.set(i, j, cov.get(Z.get(i), X.get(j)));
             }
         }
-
         SimpleSVD<SimpleMatrix> svd = covM.svd();
         SimpleMatrix v = svd.getV();
         SimpleMatrix omega = v.extractVector(false, v.getNumCols() - 1);
@@ -44,56 +38,58 @@ public class Gin {
                 subData.set(i, j, data.getDouble(i, X.get(j)));
             }
         }
-
-        SimpleMatrix result = subData.mult(omega);
-        return result.getDDRM().getData();
+        return subData.mult(omega).getDDRM().getData();
     }
 
-    public static double uniform(List<Double> pvals) {
-        return ksTest(pvals);
-//        double stat = -2 * pvals.stream().mapToDouble(Math::log).sum();
-//        int df = 2 * pvals.size();
-//        return new GammaDistribution(df / 2.0, 2.0).cumulativeProbability(stat);
-//        return Gamma.cdf(stat, df / 2.0, 1.0);
+    private static double fisher(List<Double> pvals) {
+        if (pvals.isEmpty()) return 0;
+        for (Double pval : pvals) {
+            if (pval == 0 || Double.isNaN(pval)) return 0;
+        }
+        double stat = -2 * pvals.stream().mapToDouble(Math::log).sum();
+        int df = 2 * pvals.size();
+        return new ChiSquaredDistribution(df).cumulativeProbability(stat);
     }
 
-    public static double ksTest(List<Double> pvals) {
-//        GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pvals, new UniformRealDistribution(0, 1));
-//        return _generalAndersonDarlingTest.getP();
-
-        return UniformityTest.getKsPValue(pvals, 0.0, 1.0);
-    }
-
-    public Graph search(DataSet data, SimpleMatrix cov) {
+    public Graph search(DataSet data) {
+        SimpleMatrix cov = new SimpleMatrix(data.getCovarianceMatrix().getDataCopy());
+        SimpleMatrix rawData = new SimpleMatrix(data.getDoubleData().getDataCopy());
         List<Node> variables = data.getVariables();
 
-        SimpleMatrix _data = new SimpleMatrix(data.getDoubleData().getDataCopy());
-        int numVars = data.getNumColumns();
+        // Step 1: Find causal clusters
+        List<List<Integer>> clusters = findCausalClusters(data, cov, rawData);
 
-        Set<Integer> candidates = new HashSet<>();
-        for (int i = 0; i < numVars; i++) candidates.add(i);
+        // Step 2: Create latent nodes and build cluster graph
+        Graph graph = new EdgeListGraph();
+        List<Node> latents = new ArrayList<>();
+        for (Node node : variables) graph.addNode(node);
 
-        List<List<Integer>> clusters = new ArrayList<>();
+        int latentId = 0;
+        for (List<Integer> cluster : clusters) {
+            Node latent = new GraphNode("L" + (++latentId));
+            latent.setNodeType(NodeType.LATENT);
+            graph.addNode(latent);
+            latents.add(latent);
+            for (int idx : cluster) {
+                graph.addDirectedEdge(latent, variables.get(idx));
+            }
+        }
 
-        // Iterate through variable pairs and grow clusters greedily
-        for (int i = 0; i < numVars; i++) {
-            for (int j = i + 1; j < numVars; j++) {
-                if (!candidates.contains(i) || !candidates.contains(j)) continue;
-                if (!areBidirectedEligibleInPag(i, j, data)) continue;
+        // Step 3: Orient latent variables
+        for (int i = 0; i < clusters.size(); i++) {
+            for (int j = 0; j < clusters.size(); j++) {
+                if (i == j) continue;
 
-                List<Integer> cluster = new ArrayList<>();
-                cluster.add(i);
-                cluster.add(j);
+                List<Integer> Z = clusters.get(i); // cause candidates
+                List<Integer> Y = clusters.get(j); // effect candidates
 
-                Set<Integer> remainder = new HashSet<>(candidates);
-                remainder.remove(i);
-                remainder.remove(j);
+                if (Z.isEmpty() || Y.isEmpty()) continue;
 
-                double[] e = computeE(data, cov, cluster, new ArrayList<>(remainder));
+                double[] e = computeE(data, cov, Y, Z);
                 List<Double> pvals = new ArrayList<>();
 
-                for (int z : remainder) {
-                    double[] zData = _data.extractVector(false, z).getDDRM().getData();
+                for (int z : Z) {
+                    double[] zData = rawData.extractVector(false, z).getDDRM().getData();
                     double pval = 0;
                     try {
                         pval = test.computePValue(e, zData);
@@ -103,16 +99,51 @@ public class Gin {
                     pvals.add(Math.min(pval, 1 - 1e-5));
                 }
 
-                double fisherP = uniform(pvals);
-                if (fisherP < alpha) continue;
+                double p = fisher(pvals);
+                if (p > alpha) {
+                    graph.addDirectedEdge(latents.get(i), latents.get(j));
+                }
+            }
+        }
 
-                // Try to greedily grow the cluster
+        return graph;
+    }
+
+    private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, SimpleMatrix rawData) {
+        List<List<Integer>> clusters = new ArrayList<>();
+        int numVars = data.getNumColumns();
+        Set<Integer> candidates = new HashSet<>();
+        for (int i = 0; i < numVars; i++) candidates.add(i);
+
+        List<Node> variables = data.getVariables();
+
+        for (int i = 0; i < numVars; i++) {
+
+            J:
+            for (int j = i + 1; j < numVars; j++) {
+                if (!candidates.contains(i) || !candidates.contains(j)) continue;
+                List<Integer> cluster = new ArrayList<>(List.of(i, j));
+
+                Set<Integer> remainder = new HashSet<>(candidates);
+                remainder.removeAll(cluster);
+
+                double[] e = computeE(data, cov, cluster, new ArrayList<>(remainder));
+                List<Double> pvals = new ArrayList<>();
+                for (int z : remainder) {
+                    double[] zData = rawData.extractVector(false, z).getDDRM().getData();
+                    try {
+                        pvals.add(Math.max(test.computePValue(e, zData), 1e-5));
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                if (fisher(pvals) < alpha) continue;
+
+                // Greedy grow
                 boolean grown;
                 do {
                     grown = false;
                     for (int k : new HashSet<>(remainder)) {
-                        if (!isAdjacentToCluster(k, cluster, data)) continue;
-
                         List<Integer> candidate = new ArrayList<>(cluster);
                         candidate.add(k);
 
@@ -123,18 +154,14 @@ public class Gin {
                         e = computeE(data, cov, candidate, new ArrayList<>(rest));
                         pvals = new ArrayList<>();
                         for (int z : rest) {
-                            double[] zData = _data.extractVector(false, z).getDDRM().getData();
-                            double pval = 0;
+                            double[] zData = rawData.extractVector(false, z).getDDRM().getData();
                             try {
-                                pval = test.computePValue(e, zData);
+                                pvals.add(Math.max(test.computePValue(e, zData), 1e-5));
                             } catch (InterruptedException ex) {
                                 throw new RuntimeException(ex);
                             }
-                            pvals.add(Math.min(pval, 1 - 1e-5));
                         }
-
-                        fisherP = uniform(pvals);
-                        if (fisherP >= alpha) {
+                        if (fisher(pvals) >= alpha) {
                             cluster = candidate;
                             remainder.remove(k);
                             grown = true;
@@ -147,58 +174,6 @@ public class Gin {
                 cluster.forEach(candidates::remove);
             }
         }
-
-        // Build graph with latent variables
-        Graph graph = pag != null ? new EdgeListGraph(pag) : new EdgeListGraph(variables);
-
-        int latentId = 0;
-        for (List<Integer> cluster : clusters) {
-            Node latent = new GraphNode("L" + (++latentId));
-            latent.setNodeType(NodeType.LATENT);
-            graph.addNode(latent);
-            for (int index : cluster) {
-                Node observed = variables.get(index);
-                graph.addDirectedEdge(latent, observed);
-            }
-        }
-
-        return graph;
-    }
-
-    private boolean areAdjacentInPag(int i, int j, DataSet data) {
-        if (pag == null) return true;
-        Node ni = data.getVariable(i);
-        Node nj = data.getVariable(j);
-        return pag.isAdjacentTo(ni, nj);
-    }
-
-    private boolean areBidirectedEligibleInPag(int i, int j, DataSet data) {
-        if (pag == null) return true;  // No constraint
-
-        Node ni = data.getVariable(i);
-        Node nj = data.getVariable(j);
-        Edge edge = pag.getEdge(ni, nj);
-
-        if (edge == null) return false;
-
-        Endpoint endpoint1 = edge.getEndpoint1();
-        Endpoint endpoint2 = edge.getEndpoint2();
-
-        // Ensure ordering matches
-        if (!edge.getNode1().equals(ni)) {
-            endpoint1 = edge.getEndpoint2();
-            endpoint2 = edge.getEndpoint1();
-        }
-
-        // Allow only these edge types: o-o, o->, <-o, <->, or undirected
-        return (endpoint1 == Endpoint.CIRCLE || endpoint1 == Endpoint.ARROW)
-               && (endpoint2 == Endpoint.CIRCLE || endpoint2 == Endpoint.ARROW);
-    }
-
-    private boolean isAdjacentToCluster(int k, List<Integer> cluster, DataSet data) {
-        for (int idx : cluster) {
-            if (areBidirectedEligibleInPag(k, idx, data)) return true;
-        }
-        return false;
+        return clusters;
     }
 }

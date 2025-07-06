@@ -5,22 +5,16 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -41,12 +35,10 @@ import java.util.List;
 )
 @Bootstrapping
 public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
-        UsesScoreWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix {
     @Serial
     private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private ScoreWrapper score;
 
     /**
      * Constructs a new BOSS algorithm.
@@ -64,29 +56,15 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         DataSet dataSet = (DataSet) dataModel;
         IndependenceTest test = this.test.getTest(dataSet, parameters);
-        Score score = this.score.getScore(dataSet, parameters);
 
         if (!(test instanceof RawMarginalIndependenceTest)) {
             throw new IllegalArgumentException("Test must implement RawIndependenceTest");
         }
 
-        Graph pag = null;
-
-        if (parameters.getBoolean(Params.GUARANTEE_PAG)) {
-            Fcit alg = new Fcit(test, score);
-            pag = alg.search();
-        }
-
-        if (pag != null) {
-            pag = GraphUtils.replaceNodes(pag, dataSet.getVariables());
-        }
-
-        System.out.println("PAG for GIN: " + pag);
-
         edu.cmu.tetrad.search.Gin gin = new edu.cmu.tetrad.search.Gin(parameters.getDouble(Params.ALPHA),
-                (RawMarginalIndependenceTest) test, pag);
+                (RawMarginalIndependenceTest) test);
 
-        return gin.search(dataSet, new CovarianceMatrix(dataSet).getMatrix().getDataCopy());
+        return gin.search(dataSet);
     }
 
     /**
@@ -142,15 +120,5 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return score;
-    }
-
-    @Override
-    public void setScoreWrapper(ScoreWrapper score) {
-        this.score = score;
     }
 }
