@@ -121,7 +121,7 @@ public class Gin {
                 List<Integer> cluster = new ArrayList<>(List.of(i, j));
 
                 Set<Integer> remainder = new HashSet<>(candidates);
-                remainder.removeAll(cluster);
+                cluster.forEach(remainder::remove);
 
                 double[] e = computeE(data, cov, cluster, new ArrayList<>(remainder));
                 List<Double> pvals = new ArrayList<>();
