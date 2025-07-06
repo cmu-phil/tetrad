@@ -115,8 +115,6 @@ public class Gin {
         Set<Integer> candidates = new HashSet<>();
         for (int i = 0; i < numVars; i++) candidates.add(i);
 
-        List<Node> variables = data.getVariables();
-
         for (int i = 0; i < numVars; i++) {
 
             J:
