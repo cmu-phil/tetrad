@@ -116,8 +116,6 @@ public class Gin {
         for (int i = 0; i < numVars; i++) candidates.add(i);
 
         for (int i = 0; i < numVars; i++) {
-
-            J:
             for (int j = i + 1; j < numVars; j++) {
                 if (!candidates.contains(i) || !candidates.contains(j)) continue;
                 List<Integer> cluster = new ArrayList<>(List.of(i, j));
