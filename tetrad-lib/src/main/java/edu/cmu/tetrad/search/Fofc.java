@@ -323,7 +323,7 @@ public class Fofc {
                     List<Integer> _cluster = new ArrayList<>(cluster);
                     _cluster.add(o);
 
-                    if (!containsZeroCorrlation(_cluster) && vanishes(_cluster)) {
+                    if (!containsZeroCorrelation(_cluster) && vanishes(_cluster)) {
                         for (int _o : unclustered) {
                             if (_cluster.contains(_o)) continue;
 
@@ -364,7 +364,7 @@ public class Fofc {
      * @return True if the quartet is pure, false otherwise.
      */
     private boolean pure(List<Integer> quartet) {
-        if (containsZeroCorrlation(quartet)) {
+        if (containsZeroCorrelation(quartet)) {
             return false;
         }
 
@@ -430,7 +430,7 @@ public class Fofc {
      * @param cluster The list of integers representing the cluster.
      * @return True if the cluster has zero correlation, false otherwise.
      */
-    private boolean containsZeroCorrlation(List<Integer> cluster) {
+    private boolean containsZeroCorrelation(List<Integer> cluster) {
         int count = 0;
 
         for (int i = 0; i < cluster.size(); i++) {
