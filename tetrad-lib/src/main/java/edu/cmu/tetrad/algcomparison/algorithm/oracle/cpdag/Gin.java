@@ -110,7 +110,6 @@ public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
         // Parameters
         params.add(Params.ALPHA);
-        params.add(Params.GUARANTEE_PAG);
         return params;
     }
 
