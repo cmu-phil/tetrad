@@ -485,54 +485,54 @@ public class Mimbuild {
         return latentscov;
     }
 
-    private void optimizeNonMeasureVariancesQuick(Matrix latentscov, double[][] loadings, Node[][] indicators, Matrix measurescov,
-                                                  int[][] indicatorIndices) {
-        int count = 0;
-
-        for (int i = 0; i < latentscov.getNumRows(); i++) {
-            for (int j = i; j < latentscov.getNumRows(); j++) {
-                if (i == j) {
-                    if (latentscov.get(i, j) <= 0) {
-                        throw new IllegalArgumentException("Diagonal element of latentcov is <= 0.");
-                    }
-                }
-
-                count++;
-            }
-        }
-
-        for (double[] loading : loadings) {
-            for (int j = 0; j < loading.length; j++) {
-                count++;
-            }
-        }
-
-        double[] values = new double[count];
-        count = 0;
-
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = i; j < indicators.length; j++) {
-                values[count++] = latentscov.get(i, j);
-            }
-        }
-
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = 0; j < indicators[i].length; j++) {
-                values[count++] = loadings[i][j];
-            }
-        }
-
-        Function1 function1 = new Function1(latentscov, loadings, indicatorIndices, measurescov);
-        MultivariateOptimizer search = new PowellOptimizer(1e-5, 1e-5);
-
-        PointValuePair pair = search.optimize(
-                new InitialGuess(values),
-                new ObjectiveFunction(function1),
-                GoalType.MINIMIZE,
-                new MaxEval(100000));
-
-        this.minimum = pair.getValue();
-    }
+//    private void optimizeNonMeasureVariancesQuick(Matrix latentscov, double[][] loadings, Node[][] indicators, Matrix measurescov,
+//                                                  int[][] indicatorIndices) {
+//        int count = 0;
+//
+//        for (int i = 0; i < latentscov.getNumRows(); i++) {
+//            for (int j = i; j < latentscov.getNumRows(); j++) {
+//                if (i == j) {
+//                    if (latentscov.get(i, j) <= 0) {
+//                        throw new IllegalArgumentException("Diagonal element of latentcov is <= 0.");
+//                    }
+//                }
+//
+//                count++;
+//            }
+//        }
+//
+//        for (double[] loading : loadings) {
+//            for (int j = 0; j < loading.length; j++) {
+//                count++;
+//            }
+//        }
+//
+//        double[] values = new double[count];
+//        count = 0;
+//
+//        for (int i = 0; i < indicators.length; i++) {
+//            for (int j = i; j < indicators.length; j++) {
+//                values[count++] = latentscov.get(i, j);
+//            }
+//        }
+//
+//        for (int i = 0; i < indicators.length; i++) {
+//            for (int j = 0; j < indicators[i].length; j++) {
+//                values[count++] = loadings[i][j];
+//            }
+//        }
+//
+//        Function1 function1 = new Function1(latentscov, loadings, indicatorIndices, measurescov);
+//        MultivariateOptimizer search = new PowellOptimizer(1e-5, 1e-5);
+//
+//        PointValuePair pair = search.optimize(
+//                new InitialGuess(values),
+//                new ObjectiveFunction(function1),
+//                GoalType.MINIMIZE,
+//                new MaxEval(100000));
+//
+//        this.minimum = pair.getValue();
+//    }
 
     private int optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
                                                 Matrix latentscov, double[][] loadings,
@@ -770,7 +770,7 @@ public class Mimbuild {
             Matrix I = Matrix.identity(implied.getNumRows());
             Matrix diff = I.minus((implied.times(this.measuresCovInverse)));
 
-            return 0.5 * (diff.times(diff)).trace();
+            return -0.5 * (diff.times(diff)).trace();
         }
     }
 }

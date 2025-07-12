@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.ReidentifyVariables;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.simple.SimpleMatrix;
@@ -10,13 +9,43 @@ import org.ejml.simple.SimpleSVD;
 
 import java.util.*;
 
-public class Gin {
+public class Gin3 {
     private final double alpha;
     private final RawMarginalIndependenceTest test;
 
-    public Gin(double alpha, RawMarginalIndependenceTest test) {
+    public Gin3(double alpha, RawMarginalIndependenceTest test) {
         this.alpha = alpha;
         this.test = test;
+    }
+
+    private static double[] computeE(DataSet data, SimpleMatrix cov, List<Integer> X, List<Integer> Z) {
+        SimpleMatrix covM = new SimpleMatrix(Z.size(), X.size());
+        for (int i = 0; i < Z.size(); i++) {
+            for (int j = 0; j < X.size(); j++) {
+                covM.set(i, j, cov.get(Z.get(i), X.get(j)));
+            }
+        }
+        SimpleSVD<SimpleMatrix> svd = covM.svd();
+        SimpleMatrix v = svd.getV();
+        SimpleMatrix omega = v.extractVector(false, v.getNumCols() - 1);
+
+        SimpleMatrix subData = new SimpleMatrix(data.getNumRows(), X.size());
+        for (int i = 0; i < data.getNumRows(); i++) {
+            for (int j = 0; j < X.size(); j++) {
+                subData.set(i, j, data.getDouble(i, X.get(j)));
+            }
+        }
+        return subData.mult(omega).getDDRM().getData();
+    }
+
+    private static double fisher(List<Double> pvals) {
+        if (pvals.isEmpty()) return 0;
+        for (Double pval : pvals) {
+            if (pval == 0 || Double.isNaN(pval)) return 0;
+        }
+        double stat = -2 * pvals.stream().mapToDouble(Math::log).sum();
+        int df = 2 * pvals.size();
+        return new ChiSquaredDistribution(df).cumulativeProbability(stat);
     }
 
     public Graph search(DataSet data) {
@@ -44,7 +73,7 @@ public class Gin {
         }
 
         Map<Double, Pair<List<Integer>, List<Integer>>> pValues = new HashMap<>();
-
+        
         // Step 3: Orient latent variables
         for (int i = 0; i < clusters.size(); i++) {
             for (int j = 0; j < clusters.size(); j++) {
@@ -57,7 +86,7 @@ public class Gin {
 
                 double[] e = computeE(data, cov, Y, Z);
                 List<Double> pvals = new ArrayList<>();
-
+                
 
                 for (int z : Z) {
                     double[] zData = rawData.extractVector(false, z).getDDRM().getData();
@@ -72,13 +101,13 @@ public class Gin {
 
                 double p = fisher(pvals);
                 pValues.put(p, Pair.of(Z, Y));
-
-                if (p > alpha && !graph.isAncestorOf(latents.get(j), latents.get(i))) {
+                
+                if (p > alpha) {
                     graph.addDirectedEdge(latents.get(i), latents.get(j));
                 }
             }
         }
-
+        
         List<Double> keys = new ArrayList<>(pValues.keySet());
         keys.sort(Collections.reverseOrder());
 
@@ -99,142 +128,21 @@ public class Gin {
         return graph;
     }
 
-    private double[] computeE(DataSet data, SimpleMatrix cov, List<Integer> X, List<Integer> Z) {
-        SimpleMatrix covM = new SimpleMatrix(Z.size(), X.size());
-        for (int i = 0; i < Z.size(); i++) {
-            for (int j = 0; j < X.size(); j++) {
-                covM.set(i, j, cov.get(Z.get(i), X.get(j)));
-            }
-        }
-        SimpleSVD<SimpleMatrix> svd = covM.svd();
-        SimpleMatrix v = svd.getV();
-        SimpleMatrix omega = v.extractVector(false, v.getNumCols() - 1);
-
-        SimpleMatrix subData = new SimpleMatrix(data.getNumRows(), X.size());
-        for (int i = 0; i < data.getNumRows(); i++) {
-            for (int j = 0; j < X.size(); j++) {
-                subData.set(i, j, data.getDouble(i, X.get(j)));
-            }
-        }
-        return subData.mult(omega).getDDRM().getData();
-    }
-
-    private double fisher(List<Double> pvals) {
-        if (pvals.isEmpty()) return 0;
-        for (Double pval : pvals) {
-            if (pval == 0 || Double.isNaN(pval)) return 0;
-        }
-        double stat = -2 * pvals.stream().mapToDouble(Math::log).sum();
-        int df = 2 * pvals.size();
-        return new ChiSquaredDistribution(df).cumulativeProbability(stat);
-    }
-
     private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, SimpleMatrix rawData) {
-        Fofc fofc = new Fofc(data, 1, alpha);
-        Graph fofcGraph = fofc.search();
-        List<Node> vars = data.getVariables();
-
-        List<Node> fofcLatents = ReidentifyVariables.getLatents(fofcGraph);
-
         List<List<Integer>> clusters = new ArrayList<>();
-
-        for (Node l : fofcLatents) {
-            List<Node> children = fofcGraph.getChildren(l);
-            List<Integer> cluster = new ArrayList<>();
-            for (Node n : children) {
-                int e = vars.indexOf(n);
-                cluster.add(e);
-            }
-
-            clusters.add(cluster);
-        }
-
         int numVars = data.getNumColumns();
         Set<Integer> candidates = new HashSet<>();
         for (int i = 0; i < numVars; i++) candidates.add(i);
         List<Node> nodes = data.getVariables();
 
-        for (List<Integer> cluster : clusters) {
-            cluster.forEach(candidates::remove);
-        }
-
-        for (List<Integer> cluster : new ArrayList<>(clusters)) {
-            Set<Integer> remainder = new HashSet<>(candidates);
-            cluster.forEach(remainder::remove);
-
-            double[] e = computeE(data, cov, cluster, new ArrayList<>(remainder));
-            List<Double> pvals = new ArrayList<>();
-            for (int z : remainder) {
-                double[] zData = rawData.extractVector(false, z).getDDRM().getData();
-                try {
-                    pvals.add(Math.max(test.computePValue(e, zData), 1e-5));
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-            if (fisher(pvals) < alpha) continue;
-
-            // Greedy grow
-            boolean grown;
-            do {
-                grown = false;
-                K:
-                for (int k : new HashSet<>(remainder)) {
-                    List<Integer> candidate = new ArrayList<>(cluster);
-                    candidate.add(k);
-
-                    for (int k1 = 0; k1 < cluster.size(); k1++) {
-                        for (int l1 = k1 + 1; l1 < cluster.size(); l1++) {
-                            try {
-                                if (!((IndependenceTest) test).checkIndependence(nodes.get(cluster.get(k1)), nodes.get(cluster.get(l1))).isDependent()) {
-                                    continue K;
-                                }
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                    }
-
-                    Set<Integer> rest = new HashSet<>(candidates);
-                    candidate.forEach(rest::remove);
-                    if (rest.isEmpty()) continue;
-
-                    e = computeE(data, cov, candidate, new ArrayList<>(rest));
-                    pvals = new ArrayList<>();
-                    for (int z : rest) {
-                        double[] zData = rawData.extractVector(false, z).getDDRM().getData();
-                        try {
-                            pvals.add(Math.max(test.computePValue(e, zData), 1e-5));
-                        } catch (InterruptedException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                    if (fisher(pvals) >= alpha) {
-                        cluster = candidate;
-                        remainder.remove(k);
-                        grown = true;
-                        break;
-                    }
-                }
-            } while (grown);
-
-            clusters.add(cluster);
-            cluster.forEach(candidates::remove);
-        }
-
-        for (List<Integer> cluster : clusters) {
-            candidates.removeAll(cluster);
-        }
-
         for (int i = 0; i < numVars; i++) {
             J:
             for (int j = i + 1; j < numVars; j++) {
                 if (!candidates.contains(i) || !candidates.contains(j)) continue;
-
                 List<Integer> cluster = new ArrayList<>(List.of(i, j));
 
-                for (int k = 0; k < cluster.size(); k++) {
-                    for (int l = k + 1; l < cluster.size(); l++) {
+                for (int k = 0; k < clusters.size(); k++) {
+                    for (int l = i + 1; l < clusters.size(); l++) {
                         try {
                             if (!((IndependenceTest) test).checkIndependence(nodes.get(cluster.get(k)), nodes.get(cluster.get(l))).isDependent()) {
                                 continue J;
@@ -269,8 +177,8 @@ public class Gin {
                         List<Integer> candidate = new ArrayList<>(cluster);
                         candidate.add(k);
 
-                        for (int k1 = 0; k1 < cluster.size(); k1++) {
-                            for (int l1 = k1 + 1; l1 < cluster.size(); l1++) {
+                        for (int k1 = 0; k1 < clusters.size(); k1++) {
+                            for (int l1 = i + 1; l1 < clusters.size(); l1++) {
                                 try {
                                     if (!((IndependenceTest) test).checkIndependence(nodes.get(cluster.get(k1)), nodes.get(cluster.get(l1))).isDependent()) {
                                         continue K;
@@ -308,8 +216,6 @@ public class Gin {
                 cluster.forEach(candidates::remove);
             }
         }
-
-
         return clusters;
     }
 }

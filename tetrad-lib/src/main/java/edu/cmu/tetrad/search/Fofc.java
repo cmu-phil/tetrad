@@ -33,10 +33,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
@@ -63,6 +60,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @see Ftfc
  */
 public class Fofc {
+    private static List<Integer> quartet;
     /**
      * The type of test used.
      */
@@ -113,6 +111,8 @@ public class Fofc {
      * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
      */
     private boolean includeAllNodes = false;
+    private Set<Set<Integer>> pureQuartets;
+    private Set<Set<Integer>> impureQuartets;
 
     /**
      * Conctructor.
@@ -135,12 +135,25 @@ public class Fofc {
         this.corr = new CorrelationMatrix(dataSet);
     }
 
+    private static void printPure(List<Integer> quartet, List<Node> variables) {
+        Fofc.quartet = quartet;
+        List<Node> _quartet = new ArrayList<>(quartet.size());
+        for (int o : quartet) {
+            _quartet.add(variables.get(o));
+        }
+
+        System.out.println("PURE " + _quartet);
+    }
+
     /**
      * Runs the search and returns a graph of clusters with the ir respective latent parents.
      *
      * @return This graph.
      */
     public Graph search() {
+        this.pureQuartets = new HashSet<>();
+        this.impureQuartets = new HashSet<>();
+
         Set<List<Integer>> allClusters;
 
         allClusters = estimateClustersSag();
@@ -256,24 +269,61 @@ public class Fofc {
         return clusters;
     }
 
-    private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
+//    private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
+//
+//        for (int o : unclustered) {
+//            if (cluster.contains(o)) continue;
+//
+//            int i = 0;
+//
+//            List<Integer> _cluster = new ArrayList<>(cluster);
+//            _cluster.remove(_cluster.get(i));
+//            _cluster.add(i, o);
+//
+//            List<Integer> __cluster = new ArrayList<>();
+//            __cluster.add(_cluster.get(i));
+//            __cluster.add(_cluster.get(i + 1));
+//            __cluster.add(_cluster.get(i + 2));
+//            __cluster.add(_cluster.get(i + 3));
+//
+//            if (!pure(__cluster)) {
+//                continue;
+//            }
+//
+//            log("Extending by " + this.variables.get(o));
+//            cluster.add(o);
+//        }
+//    }
 
-        O:
-        for (int o : unclustered) {
+    private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
+        Iterator<Integer> iterator = unclustered.iterator();
+
+        while (iterator.hasNext()) {
+            int o = iterator.next();
+
             if (cluster.contains(o)) continue;
 
-            for (int i = 0; i < cluster.size(); i++) {
-                List<Integer> quartet = new ArrayList<>(cluster);
-                quartet.remove(quartet.get(i));
-                quartet.add(i, o);
+            boolean allQuartetsPure = true;
 
-                if (!pure(quartet)) {
-                    continue O;
+            // Check all quartets with o and 3 other elements in the cluster
+            int size = cluster.size();
+
+            for (int i = 0; i < size - 2 && allQuartetsPure; i++) {
+                for (int j = i + 1; j < size - 1 && allQuartetsPure; j++) {
+                    for (int k = j + 1; k < size && allQuartetsPure; k++) {
+                        List<Integer> quartet = List.of(cluster.get(i), cluster.get(j), cluster.get(k), o);
+                        if (!pure(quartet)) {
+                            allQuartetsPure = false;
+                        }
+                    }
                 }
             }
 
-            log("Extending by " + this.variables.get(o));
-            cluster.add(o);
+            if (allQuartetsPure) {
+                log("Extending by " + variables.get(o));
+                cluster.addLast(o);   // or addFirst(o) if you want to keep consistent with previous logic
+                iterator.remove();    // remove from unclustered
+            }
         }
     }
 
@@ -327,8 +377,14 @@ public class Fofc {
                         for (int _o : unclustered) {
                             if (_cluster.contains(_o)) continue;
 
-                            List<Integer> __cluster = new ArrayList<>(_cluster);
-                            __cluster.add(_o);
+                            List<Integer> ___cluster = new ArrayList<>(_cluster);
+                            ___cluster.addFirst(_o);
+
+                            List<Integer> __cluster = new ArrayList<>();
+                            __cluster.add(___cluster.get(0));
+                            __cluster.add(___cluster.get(1));
+                            __cluster.add(___cluster.get(2));
+                            __cluster.add(___cluster.get(3));
 
                             if (pure(__cluster)) {
                                 growCluster(unclustered, __cluster);
@@ -368,6 +424,14 @@ public class Fofc {
             return false;
         }
 
+        if (pureQuartets.contains(new HashSet<>(quartet))) {
+            return true;
+        }
+
+        if (impureQuartets.contains(new HashSet<>(quartet))) {
+            return false;
+        }
+
         if (vanishes(quartet)) {
             List<Integer> vars = allVariables();
 
@@ -379,14 +443,22 @@ public class Fofc {
                     _quartet.set(j, o);
 
                     if (!vanishes(_quartet)) {
+                        impureQuartets.add(new HashSet<>(_quartet));
                         return false;
                     }
                 }
             }
 
+            pureQuartets.add(new HashSet<>(quartet));
+
+            List<Node> variables = dataModel.getVariables();
+
+            printPure(quartet, variables);
+
             return true;
         }
 
+        impureQuartets.add(new HashSet<>(quartet));
         return false;
     }
 
@@ -416,6 +488,10 @@ public class Fofc {
      * @return True if the quartet vanishes, false otherwise.
      */
     private boolean vanishes(List<Integer> quartet) {
+        if (quartet.size() != 4) {
+            throw new IllegalArgumentException("Expecting a quartet: " + quartet);
+        }
+
         int n1 = quartet.get(0);
         int n2 = quartet.get(1);
         int n3 = quartet.get(2);
