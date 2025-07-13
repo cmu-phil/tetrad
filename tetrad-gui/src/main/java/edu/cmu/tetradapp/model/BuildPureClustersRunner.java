@@ -170,7 +170,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                 BpcTestType testType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
 
                 if (source instanceof ICovarianceMatrix) {
-                    bpc = new Bpc((ICovarianceMatrix) source,
+                    bpc = new Bpc((CorrelationMatrix) source,
                             getParams().getDouble("alpha", 0.001),
                             testType
                     );

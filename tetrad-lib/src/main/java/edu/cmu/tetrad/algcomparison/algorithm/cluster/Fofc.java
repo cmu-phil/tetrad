@@ -11,7 +11,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Mimbuild;
+import edu.cmu.tetrad.search.MimbuildPca;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -86,7 +86,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
             Clusters clusters = ClusterUtils.mimClusters(graph);
 
-            Mimbuild mimbuild = new Mimbuild();
+            MimbuildPca mimbuild = new MimbuildPca();
             mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
             List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
@@ -99,7 +99,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
             Graph structureGraph = null;
             try {
-                structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
+                structureGraph = mimbuild.search(partition, latentNames, dataSet);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } catch (SingularMatrixException e) {

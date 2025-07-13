@@ -7,12 +7,14 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Mimbuild;
+import edu.cmu.tetrad.search.MimbuildPca;
 import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.ejml.data.SingularMatrixException;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -68,7 +70,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
             throw new IllegalArgumentException("Unexpected test type: " + tetradTest);
         }
 
-        edu.cmu.tetrad.search.Bpc bpc = new edu.cmu.tetrad.search.Bpc(cov, alpha, testType);
+        edu.cmu.tetrad.search.Bpc bpc = new edu.cmu.tetrad.search.Bpc(new CorrelationMatrix(cov), alpha, testType);
         bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         if (parameters.getInt(Params.CHECK_TYPE) == 1) {
@@ -94,16 +96,36 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
 
             Clusters clusters = ClusterUtils.mimClusters(graph);
 
-            Mimbuild mimbuild = new Mimbuild();
+            MimbuildPca mimbuild = new MimbuildPca();
             mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+
             List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
+
             List<String> latentNames = new ArrayList<>();
 
             for (int i = 0; i < clusters.getNumClusters(); i++) {
                 latentNames.add(clusters.getClusterName(i));
             }
 
-            Graph structureGraph = mimbuild.search(partition, latentNames, cov);
+            Graph structureGraph = null;
+            try {
+                structureGraph = mimbuild.search(partition, latentNames, (DataSet) dataModel);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (SingularMatrixException e) {
+                throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
+            }
+
+//            Mimbuild mimbuild = new Mimbuild();
+//            mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+//            List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
+//            List<String> latentNames = new ArrayList<>();
+//
+//            for (int i = 0; i < clusters.getNumClusters(); i++) {
+//                latentNames.add(clusters.getClusterName(i));
+//            }
+//
+//            Graph structureGraph = mimbuild.search(partition, latentNames, cov);
             LayoutUtil.defaultLayout(structureGraph);
             LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 

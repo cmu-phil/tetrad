@@ -84,7 +84,7 @@ public final class Bpc {
     final int EDGE_RED = 4;
     final int MAX_CLIQUE_TRIALS = 50;
     private boolean outputMessage;
-    private ICovarianceMatrix covarianceMatrix;
+    private CorrelationMatrix covarianceMatrix;
     private int numVariables;
     private BpcTestType sigTestType;
     private int[] labels;
@@ -106,7 +106,7 @@ public final class Bpc {
      * @param sigTestType      The type of the significance test to use.
      * @see BpcTestType
      */
-    public Bpc(ICovarianceMatrix covarianceMatrix, double alpha, BpcTestType sigTestType) {
+    public Bpc(CorrelationMatrix covarianceMatrix, double alpha, BpcTestType sigTestType) {
         if (covarianceMatrix == null) {
             throw new IllegalArgumentException("Covariance matrix cannot be null.");
         }
@@ -126,7 +126,7 @@ public final class Bpc {
     public Bpc(DataSet dataSet, double alpha, BpcTestType sigTestType) {
         if (dataSet.isContinuous()) {
             this.dataSet = dataSet;
-            this.covarianceMatrix = new CovarianceMatrix(dataSet);
+            this.covarianceMatrix = new CorrelationMatrix(dataSet);
             initAlgorithm(alpha, sigTestType);
         } else if (dataSet.isDiscrete()) {
             throw new IllegalArgumentException("Discrete data is not supported " + "for this search.");

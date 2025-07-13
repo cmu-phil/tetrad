@@ -60,7 +60,6 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @see Ftfc
  */
 public class Fofc {
-    private static List<Integer> quartet;
     /**
      * The type of test used.
      */
@@ -133,16 +132,6 @@ public class Fofc {
         this.dataModel = dataSet;
 
         this.corr = new CorrelationMatrix(dataSet);
-    }
-
-    private static void printPure(List<Integer> quartet, List<Node> variables) {
-        Fofc.quartet = quartet;
-        List<Node> _quartet = new ArrayList<>(quartet.size());
-        for (int o : quartet) {
-            _quartet.add(variables.get(o));
-        }
-
-        System.out.println("PURE " + _quartet);
     }
 
     /**
@@ -269,32 +258,6 @@ public class Fofc {
         return clusters;
     }
 
-//    private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
-//
-//        for (int o : unclustered) {
-//            if (cluster.contains(o)) continue;
-//
-//            int i = 0;
-//
-//            List<Integer> _cluster = new ArrayList<>(cluster);
-//            _cluster.remove(_cluster.get(i));
-//            _cluster.add(i, o);
-//
-//            List<Integer> __cluster = new ArrayList<>();
-//            __cluster.add(_cluster.get(i));
-//            __cluster.add(_cluster.get(i + 1));
-//            __cluster.add(_cluster.get(i + 2));
-//            __cluster.add(_cluster.get(i + 3));
-//
-//            if (!pure(__cluster)) {
-//                continue;
-//            }
-//
-//            log("Extending by " + this.variables.get(o));
-//            cluster.add(o);
-//        }
-//    }
-
     private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
         Iterator<Integer> iterator = unclustered.iterator();
 
@@ -328,8 +291,7 @@ public class Fofc {
     }
 
     /**
-     * Finds clusters of size 3 for the SAG algorithm. If a 3-cluster is found, we attempt to grow it into a larger
-     * cluster.
+     * Finds clusters of size 3 for the SAG algorithm.
      *
      * @param unionClustered The set of union pure variables.
      * @return A set of lists of integers representing the mixed clusters.
@@ -387,23 +349,15 @@ public class Fofc {
                             __cluster.add(___cluster.get(3));
 
                             if (pure(__cluster)) {
-                                growCluster(unclustered, __cluster);
-                                mixedClusters.add(__cluster);
-                                unionClustered.addAll(__cluster);
+                                mixedClusters.add(cluster);
+                                unionClustered.addAll(cluster);
 
                                 if (this.verbose) {
-                                    log("3-cluster found and grown: " + ClusterSignificance.variablesForIndices(__cluster, this.variables));
+                                    log("3-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
                                 }
 
                                 continue DO;
                             }
-                        }
-
-                        mixedClusters.add(_cluster);
-                        unionClustered.addAll(_cluster);
-
-                        if (this.verbose) {
-                            log("3-cluster found: " + ClusterSignificance.variablesForIndices(_cluster, this.variables));
                         }
                     }
                 }
@@ -450,11 +404,6 @@ public class Fofc {
             }
 
             pureQuartets.add(new HashSet<>(quartet));
-
-            List<Node> variables = dataModel.getVariables();
-
-            printPure(quartet, variables);
-
             return true;
         }
 
