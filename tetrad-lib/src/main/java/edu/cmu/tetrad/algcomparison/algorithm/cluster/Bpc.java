@@ -1,15 +1,19 @@
 package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Mimbuild;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.MimbuildPca;
-import edu.cmu.tetrad.search.utils.BpcTestType;
-import edu.cmu.tetrad.search.utils.ClusterSignificance;
+import edu.cmu.tetrad.search.ntad_test.Cca;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -21,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Build Pure Clusters.
+ * Find One Factor Clusters.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -32,127 +36,102 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class Bpc implements Algorithm, ClusterAlgorithm,
+public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * Constructs a new BPC algorithm.
+     * The knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+
+    /**
+     * <p>Constructor for Fofc.</p>
      */
     public Bpc() {
     }
 
     /**
-     * Runs the search algorithm to build a graph using the given data model and parameters.
+     * Runs the search algorithm and returns the resulting graph.
      *
-     * @param dataModel  The data model to be used for the search.
+     * @param dataModel  The data model containing the variables.
      * @param parameters The parameters for the search algorithm.
      * @return The resulting graph.
-     * @throws IllegalArgumentException If the check type is unexpected.
+     * @throws IllegalArgumentException if the check type parameter is unexpected.
      */
     @Override
-    public Graph search(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
-
-        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataModel, precomputeCovariances);
-        double alpha = parameters.getDouble(Params.ALPHA);
-
-        int tetradTest = parameters.getInt(Params.TETRAD_TEST_BPC);
-        BpcTestType testType;
-
-        if (tetradTest == 1) {
-            testType = BpcTestType.TETRAD_WISHART;
-        } else if (tetradTest == 2) {
-            testType = BpcTestType.TETRAD_DELTA;
-        } else {
-            throw new IllegalArgumentException("Unexpected test type: " + tetradTest);
+    public Graph runSearch(DataModel dataModel, Parameters parameters) {
+        if (parameters.getBoolean(Params.VERBOSE)) {
+            System.out.println("alpha = " + parameters.getDouble(Params.FOFC_ALPHA));
+            System.out.println("penaltyDiscount = " + parameters.getDouble(Params.PENALTY_DISCOUNT));
+            System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
+            System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
         }
 
-        edu.cmu.tetrad.search.Bpc bpc = new edu.cmu.tetrad.search.Bpc(new CorrelationMatrix(cov), alpha, testType);
-        bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        DataSet dataSet = (DataSet) dataModel;
+        double alpha = parameters.getDouble(Params.FOFC_ALPHA);
 
-        if (parameters.getInt(Params.CHECK_TYPE) == 1) {
-            bpc.setCheckType(ClusterSignificance.CheckType.Significance);
-        } else if (parameters.getInt(Params.CHECK_TYPE) == 2) {
-            bpc.setCheckType(ClusterSignificance.CheckType.Clique);
-        } else if (parameters.getInt(Params.CHECK_TYPE) == 3) {
-            bpc.setCheckType(ClusterSignificance.CheckType.None);
-        } else {
-            throw new IllegalArgumentException("Unexpected check type");
+        edu.cmu.tetrad.search.Bpc search = new edu.cmu.tetrad.search.Bpc(new Cca(dataSet.getDoubleData().getDataCopy(),
+                false), new IndTestFisherZ(dataSet, alpha), dataSet.getVariableNames(), alpha);
+        search.findClusters();
+
+        List<List<String>> clusters = search.getClusters();
+
+        Clusters clusters1 = new Clusters();
+
+        for (int i = 0; i < clusters.size(); i++) {
+            List<String> cluster = clusters.get(i);
+
+            for (int j = 0; j < cluster.size(); j++) {
+                clusters1.addToCluster(i, cluster.get(j));
+            }
         }
 
-        Graph graph = null;
+        MimbuildPca mimbuild = new MimbuildPca();
+        mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+
+        List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters1, dataModel.getVariables());
+
+        List<String> latentNames = new ArrayList<>();
+
+        for (int i = 0; i < clusters1.getNumClusters(); i++) {
+            latentNames.add(clusters1.getClusterName(i));
+        }
+
+        Graph structureGraph = null;
         try {
-            graph = bpc.search();
+            structureGraph = mimbuild.search(partition, latentNames, dataSet);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
         }
 
-        if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
-            return graph;
-        } else {
+        LayoutUtil.defaultLayout(structureGraph);
+        LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
-            Clusters clusters = ClusterUtils.mimClusters(graph);
+        ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
-            MimbuildPca mimbuild = new MimbuildPca();
-            mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-            List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
+        Graph fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+        LayoutUtil.defaultLayout(fullGraph);
+        LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
-            List<String> latentNames = new ArrayList<>();
-
-            for (int i = 0; i < clusters.getNumClusters(); i++) {
-                latentNames.add(clusters.getClusterName(i));
-            }
-
-            Graph structureGraph = null;
-            try {
-                structureGraph = mimbuild.search(partition, latentNames, (DataSet) dataModel);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (SingularMatrixException e) {
-                throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
-            }
-
-//            Mimbuild mimbuild = new Mimbuild();
-//            mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-//            List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
-//            List<String> latentNames = new ArrayList<>();
-//
-//            for (int i = 0; i < clusters.getNumClusters(); i++) {
-//                latentNames.add(clusters.getClusterName(i));
-//            }
-//
-//            Graph structureGraph = mimbuild.search(partition, latentNames, cov);
-            LayoutUtil.defaultLayout(structureGraph);
-            LayoutUtil.fruchtermanReingoldLayout(structureGraph);
-
-            ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
-
-            if (parameters.getBoolean(Params.VERBOSE)) {
-                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
-            }
-
-            Graph fullGraph = mimbuild.getFullGraph(dataModel.getVariables());
-            LayoutUtil.defaultLayout(fullGraph);
-            LayoutUtil.fruchtermanReingoldLayout(fullGraph);
-
-            return fullGraph;
-        }
+        return fullGraph;
     }
 
     /**
-     * Returns the comparison graph for the given true directed graph.
+     * This method returns a comparison graph that is obtained from the given true directed graph.
      *
      * @param graph The true directed graph, if there is one.
-     * @return The comparison graph.
+     * @return The comparison graph obtained by applying the CPDAG algorithm to the true directed graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        Graph dag = new EdgeListGraph(graph);
-        return GraphTransforms.dagToCpdag(dag);
+        return GraphTransforms.dagToCpdag(graph);
     }
 
     /**
@@ -166,9 +145,9 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
     }
 
     /**
-     * Retrieves the data type of the algorithm's output.
+     * Returns the data type that the search requires, whether continuous, discrete, or mixed.
      *
-     * @return The data type of the algorithm's output.
+     * @return The data type required by the search.
      */
     @Override
     public DataType getDataType() {
@@ -176,21 +155,40 @@ public class Bpc implements Algorithm, ClusterAlgorithm,
     }
 
     /**
-     * Retrieves the list of parameters used by the algorithm.
+     * Returns a list of parameters for the search algorithm.
      *
-     * @return A list of strings representing the parameters used by the algorithm.
+     * @return The list of parameters for the search algorithm.
      */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.ALPHA);
+        parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.TETRAD_TEST_BPC);
+        parameters.add(Params.TETRAD_TEST_FOFC);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
-        parameters.add(Params.CHECK_TYPE);
-        parameters.add(Params.PRECOMPUTE_COVARIANCES);
+        parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.VERBOSE);
 
         return parameters;
+    }
+
+    /**
+     * Returns the knowledge associated with this object.
+     *
+     * @return the knowledge associated with this object
+     */
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    /**
+     * Sets the knowledge associated with this object.
+     *
+     * @param knowledge Background knowledge.
+     */
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge(knowledge);
     }
 }
