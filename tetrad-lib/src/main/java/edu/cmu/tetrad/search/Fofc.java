@@ -204,7 +204,22 @@ public class Fofc {
         Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
 
-        return allClusters;
+        int count = 0;
+        while (count++ < 20 && exchange(allClusters));
+
+        System.out.println("All clusters: " + ClusterSignificance.variablesForIndices(allClusters, this.variables));
+
+        Set<List<Integer>> finalClusters =  new HashSet<>();
+
+        for (List<Integer> cluster : new HashSet<>(allClusters)) {
+            if (cluster.size() >= 4) {
+                finalClusters.add(cluster);
+            }
+        }
+
+        System.out.println("finalClusters = " + ClusterSignificance.variablesForIndices(finalClusters, this.variables));
+
+        return finalClusters;
     }
 
     // Finds clusters of size 4 or higher for the tetrad-first algorithm.
@@ -388,26 +403,115 @@ public class Fofc {
             return Purity.IMPURE;
         }
 
-        List<Integer> vars = allVariables();
+        if (vanishes(quartet)) {
+            List<Integer> vars = allVariables();
 
-        for (int o : vars) {
-            if (quartet.contains(o)) continue;
+            for (int o : vars) {
+                if (quartet.contains(o)) continue;
 
-            for (int j = 0; j < quartet.size(); j++) {
-                List<Integer> _quartet = new ArrayList<>(quartet);
-                _quartet.set(j, o);
+                for (int j = 0; j < quartet.size(); j++) {
+                    List<Integer> _quartet = new ArrayList<>(quartet);
+                    _quartet.set(j, o);
 
-                if (!vanishes(_quartet)) {
-                    impureQuartets.add(new HashSet<>(_quartet));
-                    return Purity.IMPURE;
+                    if (!vanishes(_quartet)) {
+                        impureQuartets.add(new HashSet<>(_quartet));
+                        return Purity.IMPURE;
+                    }
+                }
+            }
+
+            System.out.println("PURE: " + quartet);
+
+            pureQuartets.add(new HashSet<>(quartet));
+            return Purity.PURE;
+        } else {
+            impureQuartets.add(new HashSet<>(quartet));
+            return Purity.IMPURE;
+        }
+    }
+
+    private boolean exchange(Set<List<Integer>> clusters) {
+        boolean moved = false;
+
+        for (List<Integer> cluster : new HashSet<>(clusters)) {
+            if (cluster.size() != 4) {
+                continue;
+            }
+
+            for (Integer o : new HashSet<>(cluster)) {
+                for (List<Integer> _cluster : new HashSet<>(clusters)) {
+                    if (_cluster == cluster) {
+                        continue;
+                    }
+
+                    if (_cluster.contains(o)) continue;
+                    if (!cluster.contains(o)) continue;
+
+                    if (isAllQuartetsPureAppended(_cluster, o)) {
+                        _cluster.add(o);
+
+                        if (!containsZeroCorrelation(_cluster)) {
+                            cluster.remove(o);
+                            clusters.remove(cluster);
+                            moved = true;
+//                            break;
+                        } else {
+                            _cluster.remove(o);
+                        }
+                    }
+                }
+            }
+
+            Set<Integer> unclustered = new HashSet<>(allVariables());
+            Set<Integer> clustered = union(clusters);
+            unclustered.removeAll(clustered);
+
+            for (Integer o : new HashSet<>(unclustered)) {
+                for (List<Integer> _cluster : new HashSet<>(clusters)) {
+                    if (_cluster == cluster) {
+                        continue;
+                    }
+
+                    if (_cluster.contains(o)) continue;
+                    if (!cluster.contains(o)) continue;
+
+                    if (isAllQuartetsPureAppended(_cluster, o)) {
+                        _cluster.add(o);
+
+                        if (!containsZeroCorrelation(_cluster)) {
+                            cluster.remove(o);
+                            clusters.remove(cluster);
+                            moved = true;
+//                            break;
+                        } else {
+                            _cluster.remove(o);
+                        }
+                    }
                 }
             }
         }
 
-        System.out.println("PURE: " + quartet);
+        return moved;
+    }
 
-        pureQuartets.add(new HashSet<>(quartet));
-        return Purity.PURE;
+    private boolean isAllQuartetsPureAppended(List<Integer> cluster, int o) {
+
+        // Check all quartets with o and 3 other elements in the cluster
+        int size = cluster.size();
+
+        for (int i = 0; i < size - 2; i++) {
+            for (int j = i + 1; j < size - 1; j++) {
+                for (int k = j + 1; k < size; k++) {
+                    List<Integer> quartet = List.of(cluster.get(i), cluster.get(j), cluster.get(k), o);
+
+                    if (pure(quartet) != Purity.PURE) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -464,6 +568,7 @@ public class Fofc {
                 double f = sqrt(N) * FastMath.log((1. + r) / (1. - r));
                 double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(f)));
                 if (p > this.alpha) count++;
+
             }
         }
 
@@ -563,7 +668,17 @@ public class Fofc {
     private Set<Integer> union(Set<List<Integer>> pureClusters) {
         Set<Integer> unionPure = new HashSet<>();
 
-        for (List<Integer> cluster : pureClusters) {
+        for (Collection<Integer> cluster : pureClusters) {
+            unionPure.addAll(cluster);
+        }
+
+        return unionPure;
+    }
+
+    private Set<Integer> unionSet(Set<Set<Integer>> pureClusters) {
+        Set<Integer> unionPure = new HashSet<>();
+
+        for (Collection<Integer> cluster : pureClusters) {
             unionPure.addAll(cluster);
         }
 
