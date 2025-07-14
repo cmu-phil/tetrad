@@ -8,16 +8,16 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import java.util.List;
 
 /**
- * A confusion matrix for arrows--i.e. TP, FP, TN, FN for counts of arrow endpoints. A true positive arrow is counted
- * for X*-&gt;Y in the estimated graph if X is X*-&gt;y.
+ * A confusion matrix for circles--i.e. TP, FP, TN, FN for counts of circle endpoints. A true positive circle is counted
+ * for X*-oY in the estimated graph if X*-oY in the true graph.
  *
- * @author josephramsey, rubens (November, 2016)
+ * @author Verity Bing Chu (July, 2025)
  * @version $Id: $Id
  */
-public class ArrowConfusion {
+public class CircleConfusion {
 
     /**
-     * For arrowhead FP's, don't count an error unless the variables are adj in the true graph.
+     * For circle FP's, don't count an error unless the variables are adj in the true graph.
      */
     private final boolean truthAdj;
 
@@ -62,38 +62,23 @@ public class ArrowConfusion {
     private int tnc;
 
     /**
-     * The true positive count for two-cycles.
-     */
-    private int TCtp;
-
-    /**
-     * The false negative count for two-cycles.
-     */
-    private int TCfn;
-
-    /**
-     * The false positive count for two-cycles.
-     */
-    private int TCfp;
-
-    /**
-     * Constructs a new ArrowConfusion object.
+     * Constructs a new CircleConfusion object.
      *
      * @param truth the true graph
      * @param est   the estimated graph
      */
-    public ArrowConfusion(Graph truth, Graph est) {
+    public CircleConfusion(Graph truth, Graph est) {
         this(truth, est, false);
     }
 
     /**
-     * Constructs a new ArrowConfusion object.
+     * Constructs a new CircleConfusion object.
      *
      * @param truth    the true graph
      * @param est      the estimated graph
-     * @param truthAdj if true, use the true graph to determine adjacency for arrowhead FP's
+     * @param truthAdj if true, use the true graph to determine adjacency for circle FP's
      */
-    public ArrowConfusion(Graph truth, Graph est, boolean truthAdj) {
+    public CircleConfusion(Graph truth, Graph est, boolean truthAdj) {
         Graph truth1 = truth;
         Graph est1 = est;
         this.tp = 0;
@@ -102,9 +87,6 @@ public class ArrowConfusion {
         this.fpc = 0;
         this.fn = 0;
         this.fnc = 0;
-        this.TCtp = 0; //for the two-cycle accuracy
-        this.TCfn = 0;
-        this.TCfp = 0;
         this.truthAdj = truthAdj;
 
 
@@ -157,56 +139,56 @@ public class ArrowConfusion {
             }
 
 
-            if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW) {
+            if (e1True == Endpoint.CIRCLE && e1Est != Endpoint.CIRCLE) {
                 this.fn++;
             }
 
-            if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW) {
+            if (e2True == Endpoint.CIRCLE && e2Est != Endpoint.CIRCLE) {
                 this.fn++;
             }
 
-            if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            if (e1True == Endpoint.CIRCLE && e1Est != Endpoint.CIRCLE && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.fnc = getFnc() + 1;
             }
 
-            if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            if (e2True == Endpoint.CIRCLE && e2Est != Endpoint.CIRCLE && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.fnc = getFnc() + 1;
             }
 
 
-            if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW) {
+            if (e1True == Endpoint.CIRCLE && e1Est == Endpoint.CIRCLE) {
                 this.tp++;
             }
 
-            if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW) {
+            if (e2True == Endpoint.CIRCLE && e2Est == Endpoint.CIRCLE) {
                 this.tp++;
             }
 
-            if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            if (e1True == Endpoint.CIRCLE && e1Est == Endpoint.CIRCLE && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.tpc = getTpc() + 1;
             }
 
-            if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            if (e2True == Endpoint.CIRCLE && e2Est == Endpoint.CIRCLE && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.tpc = getTpc() + 1;
             }
 
-            if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW) {
+            if (e1True != Endpoint.CIRCLE && e1Est != Endpoint.CIRCLE) {
                 this.tn++;
             }
 
-            if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW) {
+            if (e2True != Endpoint.CIRCLE && e2Est != Endpoint.CIRCLE) {
                 this.tn++;
             }
 
-            if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            if (e1True != Endpoint.CIRCLE && e1Est != Endpoint.CIRCLE && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.tnc = getTnc() + 1;
             }
 
-            if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+            if (e2True != Endpoint.CIRCLE && e2Est != Endpoint.CIRCLE && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                 this.tnc = getTnc() + 1;
             }
         }
-// Get edges from the estimated graph to compute only FalsePositives
+        // Get edges from the estimated graph to compute only FalsePositives
         // System.out.println(this.est.getEdges());
 
         for (Edge edge : est1.getEdges()) {
@@ -252,70 +234,33 @@ public class ArrowConfusion {
 
             if (isTruthAdj()) {
                 if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                    if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
+                    if (e1Est == Endpoint.CIRCLE && e1True != Endpoint.CIRCLE) {
                         this.fp++;
                     }
 
-                    if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW) {
+                    if (e2Est == Endpoint.CIRCLE && e2True != Endpoint.CIRCLE) {
                         this.fp++;
                     }
                 }
             } else {
-                if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
+                if (e1Est == Endpoint.CIRCLE && e1True != Endpoint.CIRCLE) {
                     this.fp++;
                 }
 
-                if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW) {
+                if (e2Est == Endpoint.CIRCLE && e2True != Endpoint.CIRCLE) {
                     this.fp++;
                 }
             }
 
-            if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW && edge1 != null && edge2 != null) {
+            if (e1Est == Endpoint.CIRCLE && e1True != Endpoint.CIRCLE && edge1 != null && edge2 != null) {
                 this.fpc = getFpc() + 1;
             }
 
-            if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW && edge1 != null && edge2 != null) {
+            if (e2Est == Endpoint.CIRCLE && e2True != Endpoint.CIRCLE && edge1 != null && edge2 != null) {
                 this.fpc = getFpc() + 1;
             }
 
         }
-
-
-        // test for 2-cycle
-
-        for (Edge edge : truth1.getEdges()) {
-
-
-            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
-            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
-
-            if (TwoCycle1.size() == 2 && TwoCycle2.size() == 2) {
-                //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
-                this.TCtp++;
-            }
-
-            if (TwoCycle1.size() == 2 && TwoCycle2.size() != 2) {
-                //             System.out.println("2-cycle not inferred " + TwoCycle1);
-                this.TCfn++;
-            }
-        }
-
-        for (Edge edge : est1.getEdges()) {
-
-            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
-            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
-
-            if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
-                //              System.out.println("2-cycle falsely inferred" + TwoCycle2);
-                this.TCfp++;
-            }
-        }
-
-        //divide by 2, the 2cycle accuracy is duplicated due to how getEdges is used
-        this.TCtp = this.TCtp / 2;
-        this.TCfn = this.TCfn / 2;
-        this.TCfp = this.TCfp / 2;
-
     }
 
     /**
@@ -355,33 +300,6 @@ public class ArrowConfusion {
     }
 
     /**
-     * Two positives for two-cycles.
-     *
-     * @return the number of true positives for two-cycles.
-     */
-    public int getTwoCycleTp() {
-        return this.TCtp;
-    }
-
-    /**
-     * False positives for two-cycles.
-     *
-     * @return the number of false positives for two-cycles.
-     */
-    public int getTwoCycleFp() {
-        return this.TCfp;
-    }
-
-    /**
-     * False negatives for two-cycles.
-     *
-     * @return the number of false negatives for two-cycles.
-     */
-    public int getTwoCycleFn() {
-        return this.TCfn;
-    }
-
-    /**
      * True positives for common edges.
      *
      * @return the number of true positives for common edges
@@ -418,9 +336,9 @@ public class ArrowConfusion {
     }
 
     /**
-     * Returns true if the truth graph is used to determine adjacency for arrowhead FP's.
+     * Returns true if the truth graph is used to determine adjacency for circle FP's.
      *
-     * @return true if the truth graph is used to determine adjacency for arrowhead FP's
+     * @return true if the truth graph is used to determine adjacency for circle FP's
      */
     public boolean isTruthAdj() {
         return this.truthAdj;

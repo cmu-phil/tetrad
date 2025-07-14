@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * A confusion matrix for tails--i.e. TP, FP, TN, FN for counts of arrow endpoints. A true positive arrow is counted for
- * X*-&gt;Y in the estimated graph if X is not adjacent to Y or X--Y or X&lt;--Y.
+ * X*--Y in the estimated graph if X--*Y.
  *
  * @author josephramsey, rubens (November, 2016)
  * @version $Id: $Id
