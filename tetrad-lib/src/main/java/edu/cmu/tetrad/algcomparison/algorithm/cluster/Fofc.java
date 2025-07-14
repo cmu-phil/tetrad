@@ -89,7 +89,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             Graph structureGraph = null;
             Graph fullGraph = null;
 
-            if (false) {
+            if (true) {
                 MimbuildPca mimbuild = new MimbuildPca();
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 

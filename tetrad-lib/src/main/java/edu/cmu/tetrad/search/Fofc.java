@@ -299,7 +299,6 @@ public class Fofc {
             }
 
             if (allQuartetsPure) {
-//                log("Extending by " + variables.get(o));
                 cluster.addLast(o);   // or addFirst(o) if you want to keep consistent with previous logic
                 iterator.remove();    // remove from unclustered
             }
@@ -454,7 +453,6 @@ public class Fofc {
                             cluster.remove(o);
                             clusters.remove(cluster);
                             moved = true;
-//                            break;
                         } else {
                             _cluster.remove(o);
                         }
@@ -482,7 +480,6 @@ public class Fofc {
                             cluster.remove(o);
                             clusters.remove(cluster);
                             moved = true;
-//                            break;
                         } else {
                             _cluster.remove(o);
                         }
