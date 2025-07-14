@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * A confusion matrix for circles--i.e. TP, FP, TN, FN for counts of circle endpoints. A true positive circle is counted
- * for X*-o;Y in the estimated graph if X is not adjacent to Y or X--Y or Xo;--Y. // TODO VBC: is this correct?
+ * for X*-oY in the estimated graph if X*-oY in the true graph.
  *
  * @author Verity Bing Chu (July, 2025)
  * @version $Id: $Id
@@ -188,7 +188,7 @@ public class CircleConfusion {
                 this.tnc = getTnc() + 1;
             }
         }
-// Get edges from the estimated graph to compute only FalsePositives
+        // Get edges from the estimated graph to compute only FalsePositives
         // System.out.println(this.est.getEdges());
 
         for (Edge edge : est1.getEdges()) {
