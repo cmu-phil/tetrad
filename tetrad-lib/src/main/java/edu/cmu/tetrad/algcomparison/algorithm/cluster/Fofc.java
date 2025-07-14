@@ -11,6 +11,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.MimbuildPca;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -85,37 +86,71 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         } else {
 
             Clusters clusters = ClusterUtils.mimClusters(graph);
-
-            MimbuildPca mimbuild = new MimbuildPca();
-            mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-
-            List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
-
-            List<String> latentNames = new ArrayList<>();
-
-            for (int i = 0; i < clusters.getNumClusters(); i++) {
-                latentNames.add(clusters.getClusterName(i));
-            }
-
             Graph structureGraph = null;
-            try {
-                structureGraph = mimbuild.search(partition, latentNames, dataSet);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (SingularMatrixException e) {
-                throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
+            Graph fullGraph = null;
+
+            if (false) {
+                MimbuildPca mimbuild = new MimbuildPca();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+
+                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
+
+                List<String> latentNames = new ArrayList<>();
+
+                for (int i = 0; i < clusters.getNumClusters(); i++) {
+                    latentNames.add(clusters.getClusterName(i));
+                }
+
+                try {
+                    structureGraph = mimbuild.search(partition, latentNames, dataSet);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (SingularMatrixException e) {
+                    throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
+                }
+
+                LayoutUtil.defaultLayout(structureGraph);
+                LayoutUtil.fruchtermanReingoldLayout(structureGraph);
+
+                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+
+                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+
+                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                LayoutUtil.defaultLayout(fullGraph);
+                LayoutUtil.fruchtermanReingoldLayout(fullGraph);
+            } else {
+                Mimbuild mimbuild = new Mimbuild();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+
+                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
+
+                List<String> latentNames = new ArrayList<>();
+
+                for (int i = 0; i < clusters.getNumClusters(); i++) {
+                    latentNames.add(clusters.getClusterName(i));
+                }
+
+                try {
+                    structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (SingularMatrixException e) {
+                    throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
+                }
+
+                LayoutUtil.defaultLayout(structureGraph);
+                LayoutUtil.fruchtermanReingoldLayout(structureGraph);
+
+                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+
+                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+
+                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                LayoutUtil.defaultLayout(fullGraph);
+                LayoutUtil.fruchtermanReingoldLayout(fullGraph);
+
             }
-
-            LayoutUtil.defaultLayout(structureGraph);
-            LayoutUtil.fruchtermanReingoldLayout(structureGraph);
-
-            ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
-
-            TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
-
-            Graph fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
-            LayoutUtil.defaultLayout(fullGraph);
-            LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
             return fullGraph;
         }

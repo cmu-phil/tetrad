@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.work_in_progress.BpcOld;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -62,7 +61,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @version $Id: $Id
- * @see BpcOld
+ * @see Bpc
  * @see Fofc
  * @see #getLatentsCov()
  * @see Boss
@@ -771,7 +770,7 @@ public class Mimbuild {
             Matrix I = Matrix.identity(implied.getNumRows());
             Matrix diff = I.minus((implied.times(this.measuresCovInverse)));
 
-            return -0.5 * (diff.times(diff)).trace();
+            return 0.5 * (diff.times(diff)).trace();
         }
     }
 }

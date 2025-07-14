@@ -235,7 +235,7 @@ public class Fofc {
 
                 // Note that purity needs to be assessed with respect to all the variables to
                 // remove all latent-measure impurities between pairs of latents.
-                if (pure(cluster)) {
+                if (pure(cluster) == Purity.PURE) {
                     List<Integer> unclustered = new ArrayList<>(variables);
                     unclustered.removeAll(union(clusters));
 
@@ -275,7 +275,8 @@ public class Fofc {
                 for (int j = i + 1; j < size - 1 && allQuartetsPure; j++) {
                     for (int k = j + 1; k < size && allQuartetsPure; k++) {
                         List<Integer> quartet = List.of(cluster.get(i), cluster.get(j), cluster.get(k), o);
-                        if (!pure(quartet)) {
+
+                        if (pure(quartet) != Purity.PURE) {
                             allQuartetsPure = false;
                         }
                     }
@@ -283,7 +284,7 @@ public class Fofc {
             }
 
             if (allQuartetsPure) {
-                log("Extending by " + variables.get(o));
+//                log("Extending by " + variables.get(o));
                 cluster.addLast(o);   // or addFirst(o) if you want to keep consistent with previous logic
                 iterator.remove();    // remove from unclustered
             }
@@ -348,7 +349,7 @@ public class Fofc {
                             __cluster.add(___cluster.get(2));
                             __cluster.add(___cluster.get(3));
 
-                            if (pure(__cluster)) {
+                            if (pure(__cluster) == Purity.PURE) {
                                 mixedClusters.add(cluster);
                                 unionClustered.addAll(cluster);
 
@@ -371,44 +372,42 @@ public class Fofc {
      * Determines if a given quartet of variables satisfies the conditions for being considered pure.
      *
      * @param quartet The list of integers representing a quartet of variables.
-     * @return True if the quartet is pure, false otherwise.
+     * @return The Purity judgment of the quarter
+     * @see Purity
      */
-    private boolean pure(List<Integer> quartet) {
+    private Purity pure(List<Integer> quartet) {
         if (containsZeroCorrelation(quartet)) {
-            return false;
+            return Purity.UNDECIDED;
         }
 
         if (pureQuartets.contains(new HashSet<>(quartet))) {
-            return true;
+            return Purity.PURE;
         }
 
         if (impureQuartets.contains(new HashSet<>(quartet))) {
-            return false;
+            return Purity.IMPURE;
         }
 
-        if (vanishes(quartet)) {
-            List<Integer> vars = allVariables();
+        List<Integer> vars = allVariables();
 
-            for (int o : vars) {
-                if (quartet.contains(o)) continue;
+        for (int o : vars) {
+            if (quartet.contains(o)) continue;
 
-                for (int j = 0; j < quartet.size(); j++) {
-                    List<Integer> _quartet = new ArrayList<>(quartet);
-                    _quartet.set(j, o);
+            for (int j = 0; j < quartet.size(); j++) {
+                List<Integer> _quartet = new ArrayList<>(quartet);
+                _quartet.set(j, o);
 
-                    if (!vanishes(_quartet)) {
-                        impureQuartets.add(new HashSet<>(_quartet));
-                        return false;
-                    }
+                if (!vanishes(_quartet)) {
+                    impureQuartets.add(new HashSet<>(_quartet));
+                    return Purity.IMPURE;
                 }
             }
-
-            pureQuartets.add(new HashSet<>(quartet));
-            return true;
         }
 
-        impureQuartets.add(new HashSet<>(quartet));
-        return false;
+        System.out.println("PURE: " + quartet);
+
+        pureQuartets.add(new HashSet<>(quartet));
+        return Purity.PURE;
     }
 
     /**
@@ -592,6 +591,8 @@ public class Fofc {
     public void setIncludeAllNodes(boolean includeAllNodes) {
         this.includeAllNodes = includeAllNodes;
     }
+
+    private enum Purity {PURE, IMPURE, UNDECIDED}
 }
 
 
