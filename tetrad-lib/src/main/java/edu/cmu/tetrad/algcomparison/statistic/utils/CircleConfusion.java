@@ -62,21 +62,6 @@ public class CircleConfusion {
     private int tnc;
 
     /**
-     * The true positive count for two-cycles.
-     */
-    private int TCtp;
-
-    /**
-     * The false negative count for two-cycles.
-     */
-    private int TCfn;
-
-    /**
-     * The false positive count for two-cycles.
-     */
-    private int TCfp;
-
-    /**
      * Constructs a new CircleConfusion object.
      *
      * @param truth the true graph
@@ -102,9 +87,6 @@ public class CircleConfusion {
         this.fpc = 0;
         this.fn = 0;
         this.fnc = 0;
-        this.TCtp = 0; //for the two-cycle accuracy
-        this.TCfn = 0;
-        this.TCfp = 0;
         this.truthAdj = truthAdj;
 
 
@@ -279,43 +261,6 @@ public class CircleConfusion {
             }
 
         }
-
-
-        // test for 2-cycle
-
-        for (Edge edge : truth1.getEdges()) {
-
-
-            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
-            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
-
-            if (TwoCycle1.size() == 2 && TwoCycle2.size() == 2) {
-                //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
-                this.TCtp++;
-            }
-
-            if (TwoCycle1.size() == 2 && TwoCycle2.size() != 2) {
-                //             System.out.println("2-cycle not inferred " + TwoCycle1);
-                this.TCfn++;
-            }
-        }
-
-        for (Edge edge : est1.getEdges()) {
-
-            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
-            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
-
-            if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
-                //              System.out.println("2-cycle falsely inferred" + TwoCycle2);
-                this.TCfp++;
-            }
-        }
-
-        //divide by 2, the 2cycle accuracy is duplicated due to how getEdges is used
-        this.TCtp = this.TCtp / 2;
-        this.TCfn = this.TCfn / 2;
-        this.TCfp = this.TCfp / 2;
-
     }
 
     /**
@@ -352,33 +297,6 @@ public class CircleConfusion {
      */
     public int getTn() {
         return this.tn;
-    }
-
-    /**
-     * Two positives for two-cycles.
-     *
-     * @return the number of true positives for two-cycles.
-     */
-    public int getTwoCycleTp() {
-        return this.TCtp;
-    }
-
-    /**
-     * False positives for two-cycles.
-     *
-     * @return the number of false positives for two-cycles.
-     */
-    public int getTwoCycleFp() {
-        return this.TCfp;
-    }
-
-    /**
-     * False negatives for two-cycles.
-     *
-     * @return the number of false negatives for two-cycles.
-     */
-    public int getTwoCycleFn() {
-        return this.TCfn;
     }
 
     /**
