@@ -3,18 +3,17 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Implements the Silva et al. (2003, 2006) BuildPureClusters approach using the NtadTest framework.
- * Follows a Seed-and-Grow strategy:
- *
- * Stage 1:
- *   - Identify pure tetrads (sets of 4 variables with all tetrads passing and all pairs dependent).
- *   - Grow each seed by adding one unclustered variable at a time while preserving purity and dependence.
- *
- * Stage 2:
- *   - Rescue unclustered size-3 sets by growing them into valid size-4 pure clusters.
+ * Implements the Silva et al. (2003, 2006) BuildPureClusters approach using the NtadTest framework. Follows a
+ * Seed-and-Grow strategy:
+ * <p>
+ * Stage 1: - Identify pure tetrads (sets of 4 variables with all tetrads passing and all pairs dependent). - Grow each
+ * seed by adding one unclustered variable at a time while preserving purity and dependence.
+ * <p>
+ * Stage 2: - Rescue unclustered size-3 sets by growing them into valid size-4 pure clusters.
  */
 public class Bpc {
     private final NtadTest ntadTest;
