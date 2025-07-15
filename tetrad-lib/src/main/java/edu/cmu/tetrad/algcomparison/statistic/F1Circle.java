@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
+import edu.cmu.tetrad.algcomparison.statistic.utils.CircleConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -33,7 +33,7 @@ public class F1Circle implements Statistic{
      */
     @Override
     public String getAbbreviation() {
-        return "F1Arrow";
+        return "F1Circle";
     }
 
     /**
@@ -41,7 +41,7 @@ public class F1Circle implements Statistic{
      */
     @Override
     public String getDescription() {
-        return "F1 statistic for arrows";
+        return "F1 statistic for circles";
     }
 
     /**
@@ -49,13 +49,13 @@ public class F1Circle implements Statistic{
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        ArrowConfusion arrowConfusion = new ArrowConfusion(trueGraph, estGraph);
-        int arrowTp = arrowConfusion.getTp();
-        int arrowFp = arrowConfusion.getFp();
-        int arrowFn = arrowConfusion.getFn();
-        double arrowPrecision = arrowTp / (double) (arrowTp + arrowFp);
-        double arrowRecall = arrowTp / (double) (arrowTp + arrowFn);
-        return 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);
+        CircleConfusion circleConfusion = new CircleConfusion(trueGraph, estGraph);
+        int circleTp = circleConfusion.getTp();
+        int circleFp = circleConfusion.getFp();
+        int circleFn = circleConfusion.getFn();
+        double circlePrecision = circleTp / (double) (circleTp + circleFp);
+        double circleRecall = circleTp / (double) (circleTp + circleFn);
+        return 2 * (circlePrecision * circleRecall) / (circlePrecision + circleRecall);
     }
 
     /**
