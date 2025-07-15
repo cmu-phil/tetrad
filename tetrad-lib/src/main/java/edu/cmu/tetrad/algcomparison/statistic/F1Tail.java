@@ -13,9 +13,9 @@ import java.io.Serial;
  *  <a href="https://en.wikipedia.org/wiki/F1_score">...</a>
  *  <p>
  *  We use what's on this page called the "traditional" F1 statistic.
- *  If the true contains X*-oY and estimated graph
- *  either does not contain an edge from X to Y or else does not contain a tail at X for an edge from X to Y, one
- *  false positive is counted. Similarly for false negatives
+ *  A true positive arrow is counted for
+ *  X*-&gt;Y in the estimated graph if X is not adjacent to Y or X--Y or X&lt;--Y.
+ *  Similarly for false negatives.
  *  *
  */
 public class F1Tail implements Statistic {
