@@ -107,8 +107,8 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         } else {
 
             Clusters clusters = ClusterUtils.mimClusters(graph);
-            Graph structureGraph = null;
-            Graph fullGraph = null;
+            Graph structureGraph;
+            Graph fullGraph;
 
             if (true) {
                 MimbuildPca mimbuild = new MimbuildPca();
