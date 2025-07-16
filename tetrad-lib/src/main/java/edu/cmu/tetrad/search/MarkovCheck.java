@@ -672,6 +672,27 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return accepts_rejects_lowRecall;
     }
 
+    public void getPrecisionAndRecallWholeGraph(Graph estimatedGraph, Graph trueGraph) {
+        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+
+        double ap = new AdjacencyPrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double ar = new AdjacencyRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double ahp = new ArrowheadPrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double ahr = new ArrowheadRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double tp = new TailPrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double tr = new TailRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double cp = new CirclePrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        double cr = new CircleRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+
+        NumberFormat nf = new DecimalFormat("0.00");
+        System.out.println("Whole graph statistics: " + " \n" +
+                " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
+                " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr) + " \n" +
+                " TailPrecision = " + nf.format(tp) + " TailRecall = " + nf.format(tr) + " \n" +
+                " CirclePrecision = " + nf.format(cp) + " CircleRecall = " + nf.format(cr) + " \n");
+    }
+
     /**
      * Calculates the precision and recall on the Markov Blanket graph for a given node. Prints the statistics to the
      * console.
