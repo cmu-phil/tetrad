@@ -708,6 +708,21 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
 
+    public List<Double> getF1StatsForTargetNodeAdjacency(Node x, Graph estimatedGraph, Graph trueGraph) {
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xAdjacencyLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
+        Graph xAdjacencyEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
+
+        double f1Adj = new F1Adj().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+        double f1Circle = new F1Circle().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+        double f1Tail = new F1Tail().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
+    }
+
+
+
 
 
 
