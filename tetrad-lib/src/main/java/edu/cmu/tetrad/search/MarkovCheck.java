@@ -682,7 +682,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
 
-    public List<Double> getF1StatsForTargetNodeMB(Node x, Graph estimatedGraph, Graph trueGraph) {
+    public List<Double> getF1StatsForTargetNodeMBSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
         Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
@@ -695,7 +695,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
 
-    public List<Double> getF1StatsForTargetNodeParents(Node x, Graph estimatedGraph, Graph trueGraph) {
+    public List<Double> getF1StatsForTargetNodeParentsSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xParentsLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
         Graph xParentsEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
@@ -708,7 +708,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
 
-    public List<Double> getF1StatsForTargetNodeAdjacency(Node x, Graph estimatedGraph, Graph trueGraph) {
+    public List<Double> getF1StatsForTargetNodeAdjacencySubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
         Graph xAdjacencyLookupGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(lookupGraph, x);
         Graph xAdjacencyEstimatedGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(estimatedGraph, x);
@@ -720,11 +720,6 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
-
-
-
-
-
 
     /**
      * Calculates the precision and recall on the Markov Blanket graph for a given node. Prints the statistics to the
