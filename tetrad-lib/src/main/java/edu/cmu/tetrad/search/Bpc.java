@@ -31,11 +31,10 @@ public class Bpc {
 
     private List<List<Integer>> clusters = new ArrayList<>();
     private final boolean[] used;
-    private final IndependenceTest independenceTest;
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
 
-    public Bpc(NtadTest test, IndependenceTest indTest, DataSet dataSet, List<String> vars, double alpha) {
+    public Bpc(NtadTest test, DataSet dataSet, List<String> vars, double alpha) {
         this.ntadTest = test;
-        this.independenceTest = indTest;
         this.alpha = alpha;
         this.p = test.variables().size();
         this.variableNames = vars;
@@ -121,13 +120,6 @@ public class Bpc {
                 .toList();
     }
 
-    public void printClusters() {
-        List<List<String>> namedClusters = getClusters();
-        for (int i = 0; i < namedClusters.size(); i++) {
-            System.out.println("Cluster " + (i + 1) + ": " + namedClusters.get(i));
-        }
-    }
-
     private List<int[][]> generateTetrads(List<Integer> vars) {
         List<int[][]> tetrads = new ArrayList<>();
         if (vars.size() < 4) return tetrads;
@@ -146,8 +138,6 @@ public class Bpc {
         }
         return tetrads;
     }
-
-    private final NormalDistribution normal = new NormalDistribution(0, 1);
 
     private boolean clusterDependent(List<Integer> cluster) {
         boolean found = false;

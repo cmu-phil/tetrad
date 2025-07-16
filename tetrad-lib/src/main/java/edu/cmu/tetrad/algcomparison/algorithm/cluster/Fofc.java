@@ -13,6 +13,7 @@ import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.MimbuildPca;
+import edu.cmu.tetrad.search.ntad_test.*;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -74,9 +75,16 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
 
         int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
+        NtadTest test = switch (testType) {
+            case 1 -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
+            case 2 -> new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
+            case 3 -> new Wishart(dataSet.getDoubleData().getDataCopy(), false);
+            case 4 -> new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
+            default -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
+        };
 
         edu.cmu.tetrad.search.Fofc search
-                = new edu.cmu.tetrad.search.Fofc(dataSet, testType, new IndTestFisherZ(dataSet, alpha), alpha);
+                = new edu.cmu.tetrad.search.Fofc(dataSet, test, alpha);
         search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 

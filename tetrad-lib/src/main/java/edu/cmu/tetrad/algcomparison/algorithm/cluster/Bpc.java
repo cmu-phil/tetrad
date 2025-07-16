@@ -82,7 +82,6 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
         edu.cmu.tetrad.search.Bpc search = new edu.cmu.tetrad.search.Bpc(
                 test,
-                new IndTestFisherZ(dataSet, alpha),
                 dataSet,
                 dataSet.getVariableNames(),
                 alpha);

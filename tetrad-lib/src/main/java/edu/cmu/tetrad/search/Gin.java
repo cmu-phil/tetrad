@@ -2,7 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -131,7 +131,7 @@ public class Gin {
     }
 
     private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, SimpleMatrix rawData) {
-        Fofc fofc = new Fofc(data, 1, new IndTestFisherZ(data, alpha), alpha);
+        Fofc fofc = new Fofc(data, new Cca(data.getDoubleData().getDataCopy(), false), alpha);
         Graph fofcGraph = fofc.search();
         List<Node> vars = data.getVariables();
 

@@ -25,7 +25,8 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.ntad_test.*;
+import edu.cmu.tetrad.search.ntad_test.BollenTing;
+import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -77,28 +78,14 @@ public class Fofc {
      */
     private final transient DataModel dataModel;
     /**
-     * The type of test used.
+     * A standard normal distribution object used for statistical calculations within the Fofc class. The distribution
+     * is characterized by a mean of 0 and a standard deviation of 1.
      */
-    private final int testType;
-    /**
-     * The Wishart test. This tests a single tetrad.
-     */
-    private final NtadTest test1;
-    /**
-     * The Delta test. Testing two tetrads simultaneously.
-     */
-    private final NtadTest test2;
-    /**
-     * The Delta test. Testing two tetrads simultaneously.
-     */
-    private final NtadTest test3;
-    /**
-     * The Delta test. Testing two tetrads simultaneously.
-     */
-    private final NtadTest test4;
-    private final IndependenceTest independenceTest;
-    private final List<String> variableNames;
     private final NormalDistribution normal = new NormalDistribution(0, 1);
+    /**
+     * The Tetrad test to use.
+     */
+    private final NtadTest test;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -113,29 +100,27 @@ public class Fofc {
      * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
      */
     private boolean includeAllNodes = false;
+    /**
+     * A cache of pure quarters.
+     */
     private Set<Set<Integer>> pureQuartets;
+    /**
+     * A cache of impure quartets.
+     */
     private Set<Set<Integer>> impureQuartets;
 
     /**
      * Conctructor.
      *
-     * @param dataSet  The continuous dataset searched over.
-     * @param testType The type of test used. 1 = CCA, 2 = Bollen-Ting, 3 = Wishart
-     * @param alpha    The alpha significance cutoff.
+     * @param dataSet The continuous dataset searched over.
+     * @param test    The NTad test to use.
+     * @param alpha   The alpha significance cutoff.
      */
-    public Fofc(DataSet dataSet, int testType, IndependenceTest test, double alpha) {
+    public Fofc(DataSet dataSet, NtadTest test, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
-        this.testType = testType;
-        this.test1 = new Cca(dataSet.getDoubleData().getDataCopy(), false);
-        this.test2 = new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
-        this.test3 = new Wishart(dataSet.getDoubleData().getDataCopy(), false);
-        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
-//        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 0.25);
+        this.test = test;
         this.dataModel = dataSet;
-        this.independenceTest = test;
-        this.variableNames = dataSet.getVariableNames();
-
         this.corr = new CorrelationMatrix(dataSet);
     }
 
@@ -210,9 +195,11 @@ public class Fofc {
         allClusters.addAll(mixedClusters);
 
         int count = 0;
-        while (count++ < 20 && exchange(allClusters)) ;
+        boolean changed;
 
-//        System.out.println("All clusters: " + ClusterSignificance.variablesForIndices(allClusters, this.variables));
+        do {
+            changed = exchange(allClusters);
+        } while (changed && count++ < 20);
 
         Set<List<Integer>> finalClusters = new HashSet<>();
 
@@ -232,13 +219,13 @@ public class Fofc {
         return finalClusters;
     }
 
-    // Finds clusters of size 4 or higher for the tetrad-first algorithm.
+    /**
+     * Finds clusters of size 4 or higher for the tetrad-first algorithm.
+     */
     private Set<List<Integer>> findPureClusters() {
         List<Integer> variables = allVariables();
         Set<List<Integer>> clusters = new HashSet<>();
 
-        VARIABLES:
-//        while (!variables.isEmpty()) {
         log(variables.toString());
 
         List<Integer> unclustered = new ArrayList<>(variables);
@@ -268,8 +255,6 @@ public class Fofc {
             // Note that purity needs to be assessed with respect to all the variables to
             // remove all latent-measure impurities between pairs of latents.
             if (pure(cluster) == Purity.PURE) {
-
-
                 growCluster(unclustered, cluster);
 
                 if (this.verbose) {
@@ -277,16 +262,9 @@ public class Fofc {
                 }
 
                 clusters.add(cluster);
-//                variables.removeAll(cluster);
-
                 unclustered.removeAll(cluster);
-
-//                    continue VARIABLES;
             }
         }
-//
-//            break;
-//        }
 
         return clusters;
     }
@@ -360,7 +338,7 @@ public class Fofc {
                 continue;
             }
 
-            List<Integer> cluster = new  ArrayList<>();
+            List<Integer> cluster = new ArrayList<>();
             cluster.add(n1);
             cluster.add(n2);
             cluster.add(n3);
@@ -442,6 +420,11 @@ public class Fofc {
         }
     }
 
+    /**
+     * Attempts to move nodes from one cluster to another to improve clustering,.
+     * @param clusters The clusters to adjust.
+     * @return True if a change was made.
+     */
     private boolean exchange(Set<List<Integer>> clusters) {
         boolean moved = false;
 
@@ -562,28 +545,11 @@ public class Fofc {
         return vanishes(n1, n2, n3, n4);
     }
 
-    private boolean allPairsDependent(List<Integer> vars) {
-
-
-        for (int i = 0; i < vars.size(); i++) {
-            for (int j = i + 1; j < vars.size(); j++) {
-                Node x = independenceTest.getVariable(variableNames.get(vars.get(i)));
-                Node y = independenceTest.getVariable(variableNames.get(vars.get(j)));
-                try {
-                    if (independenceTest.checkIndependence(x, y).isIndependent()) return false;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        return true;
-    }
-
     /**
-     * Checks if a given cluster has a zero correlation among its variables. Legitimate clusters have zero correlation.
+     * Checks if a given cluster is pairwise dependent.
      *
      * @param cluster The list of integers representing the cluster.
-     * @return True if the cluster has zero correlation, false otherwise.
+     * @return True if the cluster is pairwise dependent, false otherwise.
      */
     private boolean clusterDependent(List<Integer> cluster) {
         boolean found = false;
@@ -626,22 +592,11 @@ public class Fofc {
         ints.add(ints1);
         ints.add(ints2);
 
-        switch (this.testType) {
-            case 1 -> {
-                return this.test1.allGreaterThanAlpha(ints, this.alpha);
-            }
-            case 2 -> {
-                return this.test2.tetrads(ints) > this.alpha;
-            }
-            case 3 -> {
-                return this.test3.allGreaterThanAlpha(ints, this.alpha);
-            }
-            case 4 -> {
-                return this.test4.allGreaterThanAlpha(ints, this.alpha);
-            }
+        if (test instanceof BollenTing) {
+            return test.tetrads(ints) > this.alpha;
+        } else {
+            return test.allGreaterThanAlpha(ints, this.alpha);
         }
-
-        throw new IllegalArgumentException("Only the delta and wishart tests are being used: " + this.testType);
     }
 
     /**
