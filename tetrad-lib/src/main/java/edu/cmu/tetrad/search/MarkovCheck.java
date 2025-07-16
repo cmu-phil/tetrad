@@ -672,25 +672,53 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return accepts_rejects_lowRecall;
     }
 
-    public void getPrecisionAndRecallWholeGraph(Graph estimatedGraph, Graph trueGraph) {
-        // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
+    public List<Double> getF1StatsForWholeGraph(Graph estimatedGraph, Graph trueGraph) {
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        double f1Adj = new F1Adj().getValue(lookupGraph, estimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(lookupGraph, estimatedGraph);
+        double f1Circle = new F1Circle().getValue(lookupGraph, estimatedGraph);
+        double f1Tail = new F1Tail().getValue(lookupGraph, estimatedGraph);
 
-        double ap = new AdjacencyPrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
-        double ar = new AdjacencyRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
-        double ahp = new ArrowheadPrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
-        double ahr = new ArrowheadRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
-        double tp = new TailPrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
-        double tr = new TailRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
-        double cp = new CirclePrecision().getValue(lookupGraph, estimatedGraph, null, new Parameters());
-        double cr = new CircleRecall().getValue(lookupGraph, estimatedGraph, null, new Parameters());
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
+    }
 
-        NumberFormat nf = new DecimalFormat("0.00");
-        System.out.println("Whole graph statistics: " + " \n" +
-                " AdjPrecision = " + nf.format(ap) + " AdjRecall = " + nf.format(ar) + " \n" +
-                " ArrowHeadPrecision = " + nf.format(ahp) + " ArrowHeadRecall = " + nf.format(ahr) + " \n" +
-                " TailPrecision = " + nf.format(tp) + " TailRecall = " + nf.format(tr) + " \n" +
-                " CirclePrecision = " + nf.format(cp) + " CircleRecall = " + nf.format(cr) + " \n");
+    public List<Double> getF1StatsForTargetNodeMBSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xMBLookupGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(lookupGraph, x);
+        Graph xMBEstimatedGraph = GraphUtils.getMarkovBlanketSubgraphWithTargetNode(estimatedGraph, x);
+
+        double f1Adj = new F1Adj().getValue(xMBLookupGraph, xMBEstimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(xMBLookupGraph, xMBEstimatedGraph);
+        double f1Circle = new F1Circle().getValue(xMBLookupGraph, xMBEstimatedGraph);
+        double f1Tail = new F1Tail().getValue(xMBLookupGraph, xMBEstimatedGraph);
+
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
+    }
+
+    public List<Double> getF1StatsForTargetNodeParentsSubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xParentsLookupGraph = GraphUtils.getParentsSubgraphWithTargetNode(lookupGraph, x);
+        Graph xParentsEstimatedGraph = GraphUtils.getParentsSubgraphWithTargetNode(estimatedGraph, x);
+
+        double f1Adj = new F1Adj().getValue(xParentsLookupGraph, xParentsEstimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(xParentsLookupGraph, xParentsEstimatedGraph);
+        double f1Circle = new F1Circle().getValue(xParentsLookupGraph, xParentsEstimatedGraph);
+        double f1Tail = new F1Tail().getValue(xParentsLookupGraph, xParentsEstimatedGraph);
+
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
+    }
+
+    public List<Double> getF1StatsForTargetNodeAdjacencySubgraph(Node x, Graph estimatedGraph, Graph trueGraph) {
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        Graph xAdjacencyLookupGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(lookupGraph, x);
+        Graph xAdjacencyEstimatedGraph = GraphUtils.getAdjacencySubgraphWithTargetNode(estimatedGraph, x);
+
+        double f1Adj = new F1Adj().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+        double f1Circle = new F1Circle().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+        double f1Tail = new F1Tail().getValue(xAdjacencyLookupGraph, xAdjacencyEstimatedGraph);
+
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
     }
 
     /**
