@@ -13,6 +13,7 @@ import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.MimbuildPca;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -75,7 +76,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
 
         edu.cmu.tetrad.search.Fofc search
-                = new edu.cmu.tetrad.search.Fofc(dataSet, testType, alpha);
+                = new edu.cmu.tetrad.search.Fofc(dataSet, testType, new IndTestFisherZ(dataSet, alpha), alpha);
         search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 

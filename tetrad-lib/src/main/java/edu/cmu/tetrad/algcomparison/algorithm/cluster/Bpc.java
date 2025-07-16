@@ -7,12 +7,10 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.MimbuildPca;
-import edu.cmu.tetrad.search.ntad_test.Cca;
+import edu.cmu.tetrad.search.ntad_test.*;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -73,54 +71,116 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         DataSet dataSet = (DataSet) dataModel;
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
 
-        edu.cmu.tetrad.search.Bpc search = new edu.cmu.tetrad.search.Bpc(new Cca(dataSet.getDoubleData().getDataCopy(),
-                false), new IndTestFisherZ(dataSet, alpha), dataSet.getVariableNames(), alpha);
+        int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
+        NtadTest test = switch (testType) {
+            case 1 -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
+            case 2 -> new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
+            case 3 -> new Wishart(dataSet.getDoubleData().getDataCopy(), false);
+            case 4 -> new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
+            default -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
+        };
+
+        edu.cmu.tetrad.search.Bpc search = new edu.cmu.tetrad.search.Bpc(
+                test,
+                new IndTestFisherZ(dataSet, alpha),
+                dataSet,
+                dataSet.getVariableNames(),
+                alpha);
         search.findClusters();
 
-        List<List<String>> clusters = search.getClusters();
+        List<List<String>> _clusters = search.getClusters();
 
-        Clusters clusters1 = new Clusters();
+        int latentCount = 0;
+        Graph graph = new EdgeListGraph();
 
-        for (int i = 0; i < clusters.size(); i++) {
-            List<String> cluster = clusters.get(i);
+        for (List<String> cluster : _clusters) {
+            Node latent = new ContinuousVariable("L" + (++latentCount));
+            latent.setNodeType(NodeType.LATENT);
+            graph.addNode(latent);
 
-            for (int j = 0; j < cluster.size(); j++) {
-                clusters1.addToCluster(i, cluster.get(j));
+            for (String name : cluster) {
+                Node measure = new ContinuousVariable(name);
+                graph.addNode(measure);
+                graph.addDirectedEdge(latent, measure);
             }
         }
 
-        MimbuildPca mimbuild = new MimbuildPca();
-        mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
+            return graph;
+        } else {
 
-        List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters1, dataModel.getVariables());
+            Clusters clusters = ClusterUtils.mimClusters(graph);
+            Graph structureGraph = null;
+            Graph fullGraph = null;
 
-        List<String> latentNames = new ArrayList<>();
+            if (true) {
+                MimbuildPca mimbuild = new MimbuildPca();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
-        for (int i = 0; i < clusters1.getNumClusters(); i++) {
-            latentNames.add(clusters1.getClusterName(i));
+                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
+
+                List<String> latentNames = new ArrayList<>();
+
+                for (int i = 0; i < clusters.getNumClusters(); i++) {
+                    latentNames.add(clusters.getClusterName(i));
+                }
+
+                try {
+                    structureGraph = mimbuild.search(partition, latentNames, dataSet);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (SingularMatrixException e) {
+                    throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
+                }
+
+                LayoutUtil.defaultLayout(structureGraph);
+                LayoutUtil.fruchtermanReingoldLayout(structureGraph);
+
+                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+
+                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+
+                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                LayoutUtil.defaultLayout(fullGraph);
+                LayoutUtil.fruchtermanReingoldLayout(fullGraph);
+            } else {
+                Mimbuild mimbuild = new Mimbuild();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+
+                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
+
+                List<String> latentNames = new ArrayList<>();
+
+                for (int i = 0; i < clusters.getNumClusters(); i++) {
+                    latentNames.add(clusters.getClusterName(i));
+                }
+
+                try {
+                    structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (SingularMatrixException e) {
+                    throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
+                }
+
+                LayoutUtil.defaultLayout(structureGraph);
+                LayoutUtil.fruchtermanReingoldLayout(structureGraph);
+
+                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+
+                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+
+                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                LayoutUtil.defaultLayout(fullGraph);
+                LayoutUtil.fruchtermanReingoldLayout(fullGraph);
+
+            }
+
+            return fullGraph;
         }
 
-        Graph structureGraph = null;
-        try {
-            structureGraph = mimbuild.search(partition, latentNames, dataSet);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
-        }
 
-        LayoutUtil.defaultLayout(structureGraph);
-        LayoutUtil.fruchtermanReingoldLayout(structureGraph);
-
-        ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
-
-        TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
-
-        Graph fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
-        LayoutUtil.defaultLayout(fullGraph);
-        LayoutUtil.fruchtermanReingoldLayout(fullGraph);
-
-        return fullGraph;
+//        return fullGraph;
     }
 
     /**

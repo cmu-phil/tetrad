@@ -29,8 +29,8 @@ import edu.cmu.tetrad.search.ntad_test.*;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
@@ -96,6 +96,9 @@ public class Fofc {
      * The Delta test. Testing two tetrads simultaneously.
      */
     private final NtadTest test4;
+    private final IndependenceTest independenceTest;
+    private final List<String> variableNames;
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -120,7 +123,7 @@ public class Fofc {
      * @param testType The type of test used. 1 = CCA, 2 = Bollen-Ting, 3 = Wishart
      * @param alpha    The alpha significance cutoff.
      */
-    public Fofc(DataSet dataSet, int testType, double alpha) {
+    public Fofc(DataSet dataSet, int testType, IndependenceTest test, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.testType = testType;
@@ -130,6 +133,8 @@ public class Fofc {
         this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
 //        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 0.25);
         this.dataModel = dataSet;
+        this.independenceTest = test;
+        this.variableNames = dataSet.getVariableNames();
 
         this.corr = new CorrelationMatrix(dataSet);
     }
@@ -205,11 +210,11 @@ public class Fofc {
         allClusters.addAll(mixedClusters);
 
         int count = 0;
-        while (count++ < 20 && exchange(allClusters));
+        while (count++ < 20 && exchange(allClusters)) ;
 
-        System.out.println("All clusters: " + ClusterSignificance.variablesForIndices(allClusters, this.variables));
+//        System.out.println("All clusters: " + ClusterSignificance.variablesForIndices(allClusters, this.variables));
 
-        Set<List<Integer>> finalClusters =  new HashSet<>();
+        Set<List<Integer>> finalClusters = new HashSet<>();
 
         for (List<Integer> cluster : new HashSet<>(allClusters)) {
             if (cluster.size() >= 4) {
@@ -217,7 +222,12 @@ public class Fofc {
             }
         }
 
-        System.out.println("finalClusters = " + ClusterSignificance.variablesForIndices(finalClusters, this.variables));
+        Set<Integer> unionClustered2 = union(finalClusters);
+        Set<List<Integer>> mixedClusters2 = findMixedClusters(unionClustered2);
+
+        finalClusters.addAll(mixedClusters2);
+
+        System.out.println("final clusters = " + ClusterSignificance.variablesForIndices(finalClusters, this.variables));
 
         return finalClusters;
     }
@@ -228,47 +238,55 @@ public class Fofc {
         Set<List<Integer>> clusters = new HashSet<>();
 
         VARIABLES:
-        while (!variables.isEmpty()) {
-            log(variables.toString());
+//        while (!variables.isEmpty()) {
+        log(variables.toString());
 
-            if (variables.size() < 4) break;
+        List<Integer> unclustered = new ArrayList<>(variables);
+        unclustered.removeAll(union(clusters));
 
-            ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 4);
-            int[] choice;
+        if (variables.size() < 4) return new HashSet<>();
 
-            while ((choice = gen.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 4);
+        int[] choice;
 
-                int n1 = variables.get(choice[0]);
-                int n2 = variables.get(choice[1]);
-                int n3 = variables.get(choice[2]);
-                int n4 = variables.get(choice[3]);
-
-                List<Integer> cluster = quartet(n1, n2, n3, n4);
-
-                // Note that purity needs to be assessed with respect to all the variables to
-                // remove all latent-measure impurities between pairs of latents.
-                if (pure(cluster) == Purity.PURE) {
-                    List<Integer> unclustered = new ArrayList<>(variables);
-                    unclustered.removeAll(union(clusters));
-
-                    growCluster(unclustered, cluster);
-
-                    if (this.verbose) {
-                        log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
-                    }
-
-                    clusters.add(cluster);
-                    variables.removeAll(cluster);
-
-                    continue VARIABLES;
-                }
+        while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
             }
 
-            break;
+            int n1 = variables.get(choice[0]);
+            int n2 = variables.get(choice[1]);
+            int n3 = variables.get(choice[2]);
+            int n4 = variables.get(choice[3]);
+
+            if (!(unclustered.contains(n1) && unclustered.contains(n2) && unclustered.contains(n3) && unclustered.contains(n4))) {
+                continue;
+            }
+
+            List<Integer> cluster = quartet(n1, n2, n3, n4);
+
+            // Note that purity needs to be assessed with respect to all the variables to
+            // remove all latent-measure impurities between pairs of latents.
+            if (pure(cluster) == Purity.PURE) {
+
+
+                growCluster(unclustered, cluster);
+
+                if (this.verbose) {
+                    log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
+                }
+
+                clusters.add(cluster);
+//                variables.removeAll(cluster);
+
+                unclustered.removeAll(cluster);
+
+//                    continue VARIABLES;
+            }
         }
+//
+//            break;
+//        }
 
         return clusters;
     }
@@ -312,72 +330,67 @@ public class Fofc {
      * @return A set of lists of integers representing the mixed clusters.
      */
     private Set<List<Integer>> findMixedClusters(Set<Integer> unionClustered) {
-        List<Integer> variables = allVariables();
         Set<List<Integer>> mixedClusters = new HashSet<>();
 
         if (unionClustered.isEmpty()) {
             return new HashSet<>();
         }
 
-        Set<Integer> _unionClustered;
+        Set<Integer> _unionClustered = new HashSet<>(unionClustered);
+        List<Integer> unclustered = new ArrayList<>(allVariables());
+        unclustered.removeAll(_unionClustered);
 
-        DO:
-        do {
-            _unionClustered = new HashSet<>(unionClustered);
-            List<Integer> unclustered = new ArrayList<>(variables);
-            unclustered.removeAll(unionClustered);
+        List<Integer> variables = new ArrayList<>(unclustered);
 
-            ChoiceGenerator gen = new ChoiceGenerator(unclustered.size(), 3);
-            int[] choice;
+        ChoiceGenerator gen = new ChoiceGenerator(unclustered.size(), 3);
+        int[] choice;
 
-            while ((choice = gen.next()) != null) {
+
+        CHOICE:
+        while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            int n1 = unclustered.get(choice[0]);
+            int n2 = unclustered.get(choice[1]);
+            int n3 = unclustered.get(choice[2]);
+
+            if (!(variables.contains(n1) && variables.contains(n2) && variables.contains(n3))) {
+                continue;
+            }
+
+            List<Integer> cluster = new  ArrayList<>();
+            cluster.add(n1);
+            cluster.add(n2);
+            cluster.add(n3);
+
+            for (int o : allVariables()) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                List<Integer> cluster = new ArrayList<>();
-                cluster.add(unclustered.get(choice[0]));
-                cluster.add(unclustered.get(choice[1]));
-                cluster.add(unclustered.get(choice[2]));
+                if (cluster.contains(o)) continue;
 
-                for (int o : unclustered) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
+                List<Integer> _cluster = new ArrayList<>(cluster);
+                _cluster.add(o);
 
-                    if (cluster.contains(o)) continue;
+                if (containsZeroCorrelation(cluster)) {
+                    continue CHOICE;
+                }
 
-                    List<Integer> _cluster = new ArrayList<>(cluster);
-                    _cluster.add(o);
+                if (!vanishes(_cluster)) {
+                    continue CHOICE;
+                }
 
-                    if (!containsZeroCorrelation(_cluster) && vanishes(_cluster)) {
-                        for (int _o : unclustered) {
-                            if (_cluster.contains(_o)) continue;
+                mixedClusters.add(cluster);
+                variables.removeAll(cluster);
 
-                            List<Integer> ___cluster = new ArrayList<>(_cluster);
-                            ___cluster.addFirst(_o);
-
-                            List<Integer> __cluster = new ArrayList<>();
-                            __cluster.add(___cluster.get(0));
-                            __cluster.add(___cluster.get(1));
-                            __cluster.add(___cluster.get(2));
-                            __cluster.add(___cluster.get(3));
-
-                            if (pure(__cluster) == Purity.PURE) {
-                                mixedClusters.add(cluster);
-                                unionClustered.addAll(cluster);
-
-                                if (this.verbose) {
-                                    log("3-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
-                                }
-
-                                continue DO;
-                            }
-                        }
-                    }
+                if (this.verbose) {
+                    log("3-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
                 }
             }
-        } while (!unionClustered.equals(_unionClustered));
+        }
 
         return mixedClusters;
     }
@@ -549,6 +562,23 @@ public class Fofc {
         return vanishes(n1, n2, n3, n4);
     }
 
+    private boolean allPairsDependent(List<Integer> vars) {
+
+
+        for (int i = 0; i < vars.size(); i++) {
+            for (int j = i + 1; j < vars.size(); j++) {
+                Node x = independenceTest.getVariable(variableNames.get(vars.get(i)));
+                Node y = independenceTest.getVariable(variableNames.get(vars.get(j)));
+                try {
+                    if (independenceTest.checkIndependence(x, y).isIndependent()) return false;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * Checks if a given cluster has a zero correlation among its variables. Legitimate clusters have zero correlation.
      *
@@ -556,20 +586,24 @@ public class Fofc {
      * @return True if the cluster has zero correlation, false otherwise.
      */
     private boolean containsZeroCorrelation(List<Integer> cluster) {
-        int count = 0;
-
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = this.corr.getValue(cluster.get(i), cluster.get(j));
-                int N = this.corr.getSampleSize();
-                double f = sqrt(N) * FastMath.log((1. + r) / (1. - r));
-                double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(f)));
-                if (p > this.alpha) count++;
+                int n = this.corr.getSampleSize();
+                int zSize = 0;
 
+                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
+                double df = n - 3. - zSize;
+
+                double fisherZ = sqrt(df) * q;
+
+                if (2 * (1.0 - this.normal.cumulativeProbability(fisherZ)) > alpha) {
+                    return true;
+                }
             }
         }
 
-        return count >= 1;
+        return false;
     }
 
     /**

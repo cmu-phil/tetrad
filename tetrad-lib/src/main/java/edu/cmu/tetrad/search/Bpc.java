@@ -1,10 +1,20 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
+import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Implements the Silva et al. (2003, 2006) BuildPureClusters approach using the NtadTest framework. Follows a
@@ -20,18 +30,21 @@ public class Bpc {
     private final double alpha;
     private final int p;
     private final List<String> variableNames;
+    private final CorrelationMatrix corr;
 
-    private final List<List<Integer>> clusters = new ArrayList<>();
+    private List<List<Integer>> clusters = new ArrayList<>();
     private final boolean[] used;
     private final IndependenceTest independenceTest;
 
-    public Bpc(NtadTest test, IndependenceTest indTest, List<String> vars, double alpha) {
+    public Bpc(NtadTest test, IndependenceTest indTest, DataSet dataSet, List<String> vars, double alpha) {
         this.ntadTest = test;
         this.independenceTest = indTest;
         this.alpha = alpha;
         this.p = test.variables().size();
         this.variableNames = vars;
         this.used = new boolean[p];
+
+        this.corr = new CorrelationMatrix(dataSet);
     }
 
     public void findClusters() {
@@ -69,6 +82,16 @@ public class Bpc {
                     }
                 }
             }
+
+            List<List<Integer>> finalClusters = new ArrayList<>();
+
+            for (List<Integer> cluster : new HashSet<>(clusters)) {
+                if (cluster.size() >= 5) {
+                    finalClusters.add(cluster);
+                }
+            }
+
+            clusters = finalClusters;
         }
 
         // ----- Stage 2: Rescue size-3 clusters -----
@@ -130,6 +153,8 @@ public class Bpc {
     }
 
     private boolean allPairsDependent(List<Integer> vars) {
+        if (true) return !containsZeroCorrelation(vars);
+
         for (int i = 0; i < vars.size(); i++) {
             for (int j = i + 1; j < vars.size(); j++) {
                 Node x = independenceTest.getVariable(variableNames.get(vars.get(i)));
@@ -142,5 +167,32 @@ public class Bpc {
             }
         }
         return true;
+    }
+
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
+
+    private boolean containsZeroCorrelation(List<Integer> cluster) {
+//        if (true) return !allPairsDependent(cluster);
+
+        int count = 0;
+
+        for (int i = 0; i < cluster.size(); i++) {
+            for (int j = i + 1; j < cluster.size(); j++) {
+                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
+                int n = this.corr.getSampleSize();
+                int zSize = 0;
+
+                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
+                double df = n - 3. - zSize;
+
+                double fisherZ = sqrt(df) * q;
+
+                if (2 * (1.0 - this.normal.cumulativeProbability(fisherZ)) > alpha) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
