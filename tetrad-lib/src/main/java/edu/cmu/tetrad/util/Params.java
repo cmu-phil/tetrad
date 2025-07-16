@@ -1035,6 +1035,10 @@ public final class Params {
      * Constant <code>DO_ONE_EQUATION_ONLY="doOneEquationOnly"</code>
      */
     public static final String DO_ONE_EQUATION_ONLY = "doOneEquationOnly";
+    /**
+     * Constant <code>MIMBUILD_TYPE="mimbuildType"</code>
+     */
+    public static final String MIMBUILD_TYPE = "mimbuildType";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

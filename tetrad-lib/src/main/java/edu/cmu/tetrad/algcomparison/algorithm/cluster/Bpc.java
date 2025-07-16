@@ -105,12 +105,17 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
             return graph;
         } else {
-
             Clusters clusters = ClusterUtils.mimClusters(graph);
             Graph structureGraph;
             Graph fullGraph;
 
-            if (true) {
+            Fofc.MimbuildType mimbuildType =  switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
+                case 1 -> Fofc.MimbuildType.PCA;
+                case 2 -> Fofc.MimbuildType.BOLLEN;
+                default -> Fofc.MimbuildType.PCA;
+            };
+
+            if (mimbuildType == Fofc.MimbuildType.PCA) {
                 MimbuildPca mimbuild = new MimbuildPca();
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
@@ -170,14 +175,10 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                 fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
-
             }
 
             return fullGraph;
         }
-
-
-//        return fullGraph;
     }
 
     /**
@@ -224,6 +225,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         parameters.add(Params.TETRAD_TEST_FOFC);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
+        parameters.add(Params.MIMBUILD_TYPE);
         parameters.add(Params.VERBOSE);
 
         return parameters;

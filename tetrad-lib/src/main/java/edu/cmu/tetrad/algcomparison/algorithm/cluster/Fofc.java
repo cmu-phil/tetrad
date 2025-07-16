@@ -42,11 +42,14 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
     @Serial
     private static final long serialVersionUID = 23L;
-
     /**
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * The type of Mimbuild algorithm to use.
+     */
+    private MimbuildType mimbuildType = MimbuildType.PCA;
 
     /**
      * <p>Constructor for Fofc.</p>
@@ -83,6 +86,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             default -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
         };
 
+
         edu.cmu.tetrad.search.Fofc search
                 = new edu.cmu.tetrad.search.Fofc(dataSet, test, alpha);
         search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
@@ -98,7 +102,14 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             Graph structureGraph = null;
             Graph fullGraph = null;
 
-            if (true) {
+
+            MimbuildType mimbuildType =  switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
+                case 1 -> MimbuildType.PCA;
+                case 2 -> MimbuildType.BOLLEN;
+                default -> MimbuildType.PCA;
+            };
+
+            if (mimbuildType == MimbuildType.PCA) {
                 MimbuildPca mimbuild = new MimbuildPca();
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
@@ -158,7 +169,6 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
                 fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
-
             }
 
             return fullGraph;
@@ -209,6 +219,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.TETRAD_TEST_FOFC);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
+        parameters.add(Params.MIMBUILD_TYPE);
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -233,4 +244,6 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
+
+    public enum MimbuildType{PCA, BOLLEN}
 }
