@@ -672,6 +672,16 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return accepts_rejects_lowRecall;
     }
 
+    public List<Double> getF1StatsForWholeGraph(Graph estimatedGraph, Graph trueGraph) {
+        Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
+        double f1Adj = new F1Adj().getValue(lookupGraph, estimatedGraph);
+        double f1Arrow = new F1Arrow().getValue(lookupGraph, estimatedGraph);
+        double f1Circle = new F1Circle().getValue(lookupGraph, estimatedGraph);
+        double f1Tail = new F1Tail().getValue(lookupGraph, estimatedGraph);
+
+        return Arrays.asList(f1Adj, f1Arrow, f1Circle, f1Tail);
+    }
+
     /**
      * Calculates the precision and recall on the Markov Blanket graph for a given node. Prints the statistics to the
      * console.
