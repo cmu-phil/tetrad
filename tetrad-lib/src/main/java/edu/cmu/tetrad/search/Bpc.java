@@ -23,32 +23,65 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Stage 2: - Rescue unclustered size-3 sets by growing them into valid size-4 pure clusters.
  */
 public class Bpc {
+    /**
+     * The tetrad test.
+     */
     private final NtadTest ntadTest;
+    /**
+     * The alpha cutoff.
+     */
     private final double alpha;
-    private final int p;
+    /**
+     * The number of varaibles.
+     */
+    private final int numVars;
+    /**
+     * The variable names, in order.
+     */
     private final List<String> variableNames;
-    private final CorrelationMatrix corr;
-
-    private List<List<Integer>> clusters = new ArrayList<>();
+    /**
+     * The variables that have already been used to form clusters.
+     */
     private final boolean[] used;
+    /**
+     * A standard Normal distribution.
+     */
     private final NormalDistribution normal = new NormalDistribution(0, 1);
+    /**
+     * The correlation matrix.
+     */
+    private final CorrelationMatrix corr;
+    /**
+     * The clusters (to be discovered).
+     */
+    private List<List<Integer>> clusters = new ArrayList<>();
 
-    public Bpc(NtadTest test, DataSet dataSet, List<String> vars, double alpha) {
+
+    /**
+     * Constructor.
+     *
+     * @param test    The tetrad test.
+     * @param dataSet The dataset.
+     * @param alpha   The alpha cutoff level.
+     */
+    public Bpc(NtadTest test, DataSet dataSet, double alpha) {
         this.ntadTest = test;
         this.alpha = alpha;
-        this.p = test.variables().size();
-        this.variableNames = vars;
-        this.used = new boolean[p];
-
+        this.numVars = test.variables().size();
+        this.variableNames = dataSet.getVariableNames();
+        this.used = new boolean[numVars];
         this.corr = new CorrelationMatrix(dataSet);
     }
 
+    /**
+     * Finds the clusters using the BPC method.
+     */
     public void findClusters() {
         // ----- Stage 1: Seed-and-Grow from pure tetrads -----
-        for (int i = 0; i < p; i++) {
-            for (int j = i + 1; j < p; j++) {
-                for (int k = j + 1; k < p; k++) {
-                    for (int l = k + 1; l < p; l++) {
+        for (int i = 0; i < numVars; i++) {
+            for (int j = i + 1; j < numVars; j++) {
+                for (int k = j + 1; k < numVars; k++) {
+                    for (int l = k + 1; l < numVars; l++) {
                         if (used[i] || used[j] || used[k] || used[l]) continue;
 
                         List<Integer> seed = List.of(i, j, k, l);
@@ -59,7 +92,7 @@ public class Bpc {
                         boolean expanded;
                         do {
                             expanded = false;
-                            for (int x = 0; x < p; x++) {
+                            for (int x = 0; x < numVars; x++) {
                                 if (used[x] || cluster.contains(x)) continue;
 
                                 List<Integer> candidate = new ArrayList<>(cluster);
@@ -90,15 +123,15 @@ public class Bpc {
         }
 
         // ----- Stage 2: Rescue size-3 clusters -----
-        for (int i = 0; i < p; i++) {
-            for (int j = i + 1; j < p; j++) {
-                for (int k = j + 1; k < p; k++) {
+        for (int i = 0; i < numVars; i++) {
+            for (int j = i + 1; j < numVars; j++) {
+                for (int k = j + 1; k < numVars; k++) {
                     if (used[i] || used[j] || used[k]) continue;
 
                     List<Integer> triple = List.of(i, j, k);
                     if (!clusterDependent(triple)) continue;
 
-                    for (int x = 0; x < p; x++) {
+                    for (int x = 0; x < numVars; x++) {
                         if (used[x] || triple.contains(x)) continue;
 
                         List<Integer> candidate = new ArrayList<>(triple);
@@ -114,12 +147,23 @@ public class Bpc {
         }
     }
 
+    /**
+     * Returns the clusters.
+     *
+     * @return Tha clusters.
+     */
     public List<List<String>> getClusters() {
         return clusters.stream()
                 .map(cluster -> cluster.stream().map(variableNames::get).toList())
                 .toList();
     }
 
+    /**
+     * Generates the list of tetrads in the given list of variables.
+     *
+     * @param vars The variables (indices).
+     * @return The list of tetrads.
+     */
     private List<int[][]> generateTetrads(List<Integer> vars) {
         List<int[][]> tetrads = new ArrayList<>();
         if (vars.size() < 4) return tetrads;
@@ -139,6 +183,12 @@ public class Bpc {
         return tetrads;
     }
 
+    /**
+     * True if thge variables in the cluster are pairwise dependent.
+     *
+     * @param cluster The cluster.
+     * @return True if pairwise dependent.
+     */
     private boolean clusterDependent(List<Integer> cluster) {
         boolean found = false;
 

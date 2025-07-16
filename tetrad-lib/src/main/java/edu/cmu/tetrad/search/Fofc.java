@@ -295,8 +295,8 @@ public class Fofc {
             }
 
             if (allQuartetsPure) {
-                cluster.addLast(o);   // or addFirst(o) if you want to keep consistent with previous logic
-                iterator.remove();    // remove from unclustered
+                cluster.addLast(o);
+                iterator.remove();
             }
         }
     }
