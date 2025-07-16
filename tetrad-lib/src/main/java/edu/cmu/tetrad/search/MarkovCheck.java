@@ -724,15 +724,33 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return Arrays.asList(ap, ar, ahp, ahr);
     }
 
+//    /**
+//     *
+//     * Calculates the precision and recall on the general definition of local sub graph of a target node, plot data.
+//     * @param x
+//     * @param estimatedGraph
+//     * @param trueGraph
+//     * @param conditioningSetType
+//     * @param subgraphFeature features of a subgraph, can be either parents, adjacencies, or MB.
+//     * @return
+//     */
+
     /**
+     * Computes the precision and recall values for a specified subgraph structure
+     * between an estimated graph and a true graph. The method supports various
+     * subgraph features such as Markov Blanket, parent relationships, and adjacency.
      *
-     * Calculates the precision and recall on the general definition of local sub graph of a target node, plot data.
-     * @param x
-     * @param estimatedGraph
-     * @param trueGraph
-     * @param conditioningSetType
-     * @param subgraphFeature features of a subgraph, can be either parents, adjacencies, or MB.
-     * @return
+     * @param x                            The target node for which the precision and recall are calculated.
+     * @param estimatedGraph               The estimated graph being evaluated.
+     * @param trueGraph                    The true graph used as ground truth for evaluation.
+     * @param conditioningSetType          The type of conditioning set used in the evaluation process.
+     * @param subgraphFeature              The specific subgraph feature to evaluate precision and recall on,
+     *                                     e.g., "MB" (Markov Blanket), "parents", or "adjacency".
+     * @return A list containing the following four values in order:
+     *                                     1. Adjacency Precision
+     *                                     2. Adjacency Recall
+     *                                     3. Arrowhead Precision
+     *                                     4. Arrowhead Recall
      */
     public List<Double> getPrecisionAndRecallGraphPlotData(Node x, Graph estimatedGraph, Graph trueGraph, ConditioningSetType conditioningSetType, String subgraphFeature) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.

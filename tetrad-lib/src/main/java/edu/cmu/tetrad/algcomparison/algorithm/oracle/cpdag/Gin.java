@@ -23,23 +23,28 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * GIN (Generalized Independent Noise Search)
- *
- * @author josephramsey
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "GIN",
-        command = "gin",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+///**
+// * GIN (Generalized Independent Noise Search)
+// *
+// * @author josephramsey
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "GIN",
+//        command = "gin",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class Gin extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * An instance of IndependenceWrapper used to represent or encapsulate
+     * a specific independence test for statistical evaluation. This test is
+     * utilized within algorithms that assess independence relations in data.
+     */
     private IndependenceWrapper test;
 
     /**

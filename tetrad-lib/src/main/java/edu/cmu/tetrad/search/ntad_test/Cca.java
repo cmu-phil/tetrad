@@ -41,7 +41,7 @@ public class Cca extends NtadTest {
      * sets of indices representing structural relationships among variables. This method evaluates and combines results
      * for all provided configurations, with optional resampling.
      *
-     * @param tets     a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
+     * @param tet     a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
      *                 configuration defines sets of indices representing structural relationships among variables.
      * @param resample a boolean indicating whether resampling should be applied to the data matrix for the
      *                 computation.

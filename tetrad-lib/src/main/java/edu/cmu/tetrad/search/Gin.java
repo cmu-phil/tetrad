@@ -11,15 +11,69 @@ import org.ejml.simple.SimpleSVD;
 
 import java.util.*;
 
+/**
+ * The Gin class implements an algorithm for causal discovery, leveraging
+ * statistical independence tests and clustering techniques to infer
+ * latent structures and build a graphical representation of causal relationships.
+ *
+ * This class executes a multi-step process including the identification of
+ * causal clusters, creation of latent nodes linked to observed variables,
+ * and orientation of directed edges among the latent variables.
+ *
+ * Key functionalities:
+ * - Use of a raw marginal independence test to compute p-values for
+ *   independence checks.
+ * - Identification of causal clusters using FOFC (fast orientation for causation)
+ *   and further refinement via statistical tests.
+ * - Construction of a causal graph accommodating both observed and latent nodes.
+ *
+ * The algorithm relies heavily on covariance matrices and additional statistical
+ * procedures such as Fisher's method for p-value combination and singular value
+ * decomposition (SVD).
+ *
+ * The algorithm is tailored for use with time-series or multivariate datasets,
+ * where causal inference in the presence of latent confounding variables is necessary.
+ *
+ * Thread-safety: Not guaranteed. This class is not designed to be thread-safe.
+ */
 public class Gin {
+    /**
+     * The significance level threshold used in statistical tests to determine causal
+     * relationships or dependencies within the data. This parameter typically ranges
+     * between 0 and 1, where a smaller value indicates stricter criteria for significance.
+     */
     private final double alpha;
+    /**
+     * An instance of {@link RawMarginalIndependenceTest} used to perform tests
+     * for marginal independence between variables during computations within
+     * the {@code Gin} class.
+     *
+     * This field encapsulates the logic for evaluating statistical independence
+     * between pairs of variables, which is a foundational operation for the
+     * methods provided by the enclosing class.
+     */
     private final RawMarginalIndependenceTest test;
 
+    /**
+     * Constructs a Gin object with the specified significance level and marginal independence test.
+     *
+     * @param alpha the significance level to be used for the hypothesis tests; must be a value between 0 and 1
+     * @param test an implementation of the {@code RawMarginalIndependenceTest} interface to perform variable independence testing
+     */
     public Gin(double alpha, RawMarginalIndependenceTest test) {
         this.alpha = alpha;
         this.test = test;
     }
 
+    /**
+     * Executes a causal discovery algorithm on the provided dataset to construct
+     * a graph representing the causal relationships between variables.
+     *
+     * @param data the dataset containing variables and their associated covariance matrix;
+     *             must contain sufficient information for causal analysis.
+     * @return a graph structure representing causal relationships, including observed
+     *         and latent variables, derived from the input dataset.
+     */
     public Graph search(DataSet data) {
         SimpleMatrix cov = new SimpleMatrix(data.getCovarianceMatrix().getDataCopy());
         SimpleMatrix rawData = new SimpleMatrix(data.getDoubleData().getDataCopy());
@@ -100,6 +154,18 @@ public class Gin {
         return graph;
     }
 
+    /**
+     * Computes the result of a matrix operation based on the provided dataset, covariance matrix,
+     * and specified subsets of variables. This method extracts specific rows and columns
+     * based on the provided indices and performs singular value decomposition (SVD)
+     * to compute the resulting array.
+     *
+     * @param data the dataset containing observations and values for variables
+     * @param cov the covariance matrix of the dataset
+     * @param X a list of indices indicating a subset of variables from the dataset
+     * @param Z a list of indices identifying another subset of variables from the dataset
+     * @return an array of computed double values resulting from the matrix operations
+     */
     private double[] computeE(DataSet data, SimpleMatrix cov, List<Integer> X, List<Integer> Z) {
         SimpleMatrix covM = new SimpleMatrix(Z.size(), X.size());
         for (int i = 0; i < Z.size(); i++) {
@@ -120,6 +186,14 @@ public class Gin {
         return subData.mult(omega).getDDRM().getData();
     }
 
+    /**
+     * Computes the Fisher's combined probability test statistic for a list of p-values
+     * and returns the cumulative probability from the chi-squared distribution.
+     *
+     * @param pvals a list of p-values to combine; should not contain zero or NaN values.
+     * @return the cumulative probability resulting from the Fisher's test, or 0 if the
+     *         input list is empty or contains invalid values.
+     */
     private double fisher(List<Double> pvals) {
         if (pvals.isEmpty()) return 0;
         for (Double pval : pvals) {

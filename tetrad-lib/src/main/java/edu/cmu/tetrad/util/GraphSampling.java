@@ -270,6 +270,18 @@ public final class GraphSampling {
         return Arrays.asList(etps);
     }
 
+    /**
+     * Returns the reversed counterpart of the specified edge type.
+     * The reversal mapping is defined as follows:
+     * - EdgeType.ac is reversed to EdgeType.ca
+     * - EdgeType.at is reversed to EdgeType.ta
+     * - EdgeType.ca is reversed to EdgeType.ac
+     * - EdgeType.ta is reversed to EdgeType.at
+     * For any other edge type, the method returns the input edge type unchanged.
+     *
+     * @param edgeType the edge type to be reversed
+     * @return the reversed edge type, or the input edge type if no reversal is defined
+     */
     public static EdgeType getReversed(EdgeType edgeType) {
         return switch (edgeType) {
             case ac -> EdgeType.ca;

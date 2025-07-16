@@ -245,5 +245,31 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         this.knowledge = new Knowledge(knowledge);
     }
 
-    public enum MimbuildType{PCA, BOLLEN}
+    /**
+     * The MimbuildType enum represents the different types of model construction
+     * strategies available for specific use in algorithms within the Fofc class.
+     * It specifies selectable methods for building models based on input data.
+     *
+     * The enum includes the following types:
+     * - PCA: Principal Component Analysis-based model building.
+     * - BOLLEN: Model building method inspired by Bollen's statistical techniques.
+     */
+    public enum MimbuildType{
+
+        /**
+         * Represents the Principal Component Analysis (PCA)-based model building strategy
+         * within the MimbuildType enum. PCA is a dimensionality reduction technique commonly
+         * used in statistical and machine learning algorithms to transform input data into
+         * a set of uncorrelated features, reducing complexity while preserving key information.
+         */
+        PCA,
+
+        /**
+         * Represents the model building method inspired by Bollen's statistical techniques
+         * within the MimbuildType enum. This method is often employed to develop models
+         * that utilize sophisticated statistical principles, aiming to analyze and interpret
+         * structural relationships between variables in complex datasets.
+         */
+        BOLLEN
+    }
 }
