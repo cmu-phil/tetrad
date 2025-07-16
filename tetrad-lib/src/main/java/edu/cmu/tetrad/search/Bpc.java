@@ -2,16 +2,13 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
-import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
@@ -57,7 +54,7 @@ public class Bpc {
 
                         List<Integer> seed = List.of(i, j, k, l);
                         if (!ntadTest.allGreaterThanAlpha(generateTetrads(seed), alpha)) continue;
-                        if (!allPairsDependent(seed)) continue;
+                        if (!clusterDependent(seed)) continue;
 
                         List<Integer> cluster = new ArrayList<>(seed);
                         boolean expanded;
@@ -68,8 +65,7 @@ public class Bpc {
 
                                 List<Integer> candidate = new ArrayList<>(cluster);
                                 candidate.add(x);
-                                if (ntadTest.allGreaterThanAlpha(generateTetrads(candidate), alpha)
-                                    && allPairsDependent(candidate)) {
+                                if (ntadTest.allGreaterThanAlpha(generateTetrads(candidate), alpha) && clusterDependent(candidate)) {
                                     cluster = candidate;
                                     expanded = true;
                                     break;
@@ -101,15 +97,14 @@ public class Bpc {
                     if (used[i] || used[j] || used[k]) continue;
 
                     List<Integer> triple = List.of(i, j, k);
-                    if (!allPairsDependent(triple)) continue;
+                    if (!clusterDependent(triple)) continue;
 
                     for (int x = 0; x < p; x++) {
                         if (used[x] || triple.contains(x)) continue;
 
                         List<Integer> candidate = new ArrayList<>(triple);
                         candidate.add(x);
-                        if (ntadTest.allGreaterThanAlpha(generateTetrads(candidate), alpha)
-                            && allPairsDependent(candidate)) {
+                        if (ntadTest.allGreaterThanAlpha(generateTetrads(candidate), alpha) && clusterDependent(candidate)) {
                             clusters.add(candidate);
                             for (int v : candidate) used[v] = true;
                             break;
@@ -152,29 +147,10 @@ public class Bpc {
         return tetrads;
     }
 
-    private boolean allPairsDependent(List<Integer> vars) {
-        if (true) return !containsZeroCorrelation(vars);
-
-        for (int i = 0; i < vars.size(); i++) {
-            for (int j = i + 1; j < vars.size(); j++) {
-                Node x = independenceTest.getVariable(variableNames.get(vars.get(i)));
-                Node y = independenceTest.getVariable(variableNames.get(vars.get(j)));
-                try {
-                    if (independenceTest.checkIndependence(x, y).isIndependent()) return false;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        return true;
-    }
-
     private final NormalDistribution normal = new NormalDistribution(0, 1);
 
-    private boolean containsZeroCorrelation(List<Integer> cluster) {
-//        if (true) return !allPairsDependent(cluster);
-
-        int count = 0;
+    private boolean clusterDependent(List<Integer> cluster) {
+        boolean found = false;
 
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
@@ -188,11 +164,12 @@ public class Bpc {
                 double fisherZ = sqrt(df) * q;
 
                 if (2 * (1.0 - this.normal.cumulativeProbability(fisherZ)) > alpha) {
-                    return true;
+                    found = true;
+                    break;
                 }
             }
         }
 
-        return false;
+        return !found;
     }
 }

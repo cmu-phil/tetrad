@@ -375,7 +375,7 @@ public class Fofc {
                 List<Integer> _cluster = new ArrayList<>(cluster);
                 _cluster.add(o);
 
-                if (containsZeroCorrelation(cluster)) {
+                if (!clusterDependent(cluster)) {
                     continue CHOICE;
                 }
 
@@ -403,7 +403,7 @@ public class Fofc {
      * @see Purity
      */
     private Purity pure(List<Integer> quartet) {
-        if (containsZeroCorrelation(quartet)) {
+        if (!clusterDependent(quartet)) {
             return Purity.UNDECIDED;
         }
 
@@ -462,7 +462,7 @@ public class Fofc {
                     if (isAllQuartetsPureAppended(_cluster, o)) {
                         _cluster.add(o);
 
-                        if (!containsZeroCorrelation(_cluster)) {
+                        if (clusterDependent(_cluster)) {
                             cluster.remove(o);
                             clusters.remove(cluster);
                             moved = true;
@@ -489,7 +489,7 @@ public class Fofc {
                     if (isAllQuartetsPureAppended(_cluster, o)) {
                         _cluster.add(o);
 
-                        if (!containsZeroCorrelation(_cluster)) {
+                        if (clusterDependent(_cluster)) {
                             cluster.remove(o);
                             clusters.remove(cluster);
                             moved = true;
@@ -585,7 +585,9 @@ public class Fofc {
      * @param cluster The list of integers representing the cluster.
      * @return True if the cluster has zero correlation, false otherwise.
      */
-    private boolean containsZeroCorrelation(List<Integer> cluster) {
+    private boolean clusterDependent(List<Integer> cluster) {
+        boolean found = false;
+
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = this.corr.getValue(cluster.get(i), cluster.get(j));
@@ -598,12 +600,13 @@ public class Fofc {
                 double fisherZ = sqrt(df) * q;
 
                 if (2 * (1.0 - this.normal.cumulativeProbability(fisherZ)) > alpha) {
-                    return true;
+                    found = true;
+                    break;
                 }
             }
         }
 
-        return false;
+        return !found;
     }
 
     /**
