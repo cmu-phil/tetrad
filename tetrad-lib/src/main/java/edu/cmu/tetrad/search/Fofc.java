@@ -565,7 +565,7 @@ public class Fofc {
 
                 double fisherZ = sqrt(df) * q;
 
-                if (2 * (1.0 - this.normal.cumulativeProbability(fisherZ)) > alpha) {
+                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) > alpha) {
                     found = true;
                     break;
                 }
