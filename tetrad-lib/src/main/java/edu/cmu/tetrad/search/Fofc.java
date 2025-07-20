@@ -552,11 +552,17 @@ public class Fofc {
      * @return True if the cluster is pairwise dependent, false otherwise.
      */
     private boolean clusterDependent(List<Integer> cluster) {
-        boolean found = false;
+        int numDependencies = 0;
+        int all = 0;
 
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = this.corr.getValue(cluster.get(i), cluster.get(j));
+
+                if (Double.isNaN(r)) {
+                    continue;
+                }
+
                 int n = this.corr.getSampleSize();
                 int zSize = 0;
 
@@ -565,14 +571,15 @@ public class Fofc {
 
                 double fisherZ = sqrt(df) * q;
 
-                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) > alpha) {
-                    found = true;
-                    break;
+                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) < alpha) {
+                    numDependencies++;
                 }
+
+                all++;
             }
         }
 
-        return !found;
+        return numDependencies == all;
     }
 
     /**
