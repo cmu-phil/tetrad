@@ -564,7 +564,7 @@ public class Fofc {
                 }
 
                 int n = this.corr.getSampleSize();
-                int zSize = 0;
+                int zSize = 0; // Unconditional check.
 
                 double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
                 double df = n - 3. - zSize;
