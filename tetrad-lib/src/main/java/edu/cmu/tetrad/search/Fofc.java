@@ -199,7 +199,7 @@ public class Fofc {
 
         do {
             changed = exchange(allClusters);
-        } while (changed && count++ < 20);
+        } while (changed && count++ < 100);
 
         Set<List<Integer>> finalClusters = new HashSet<>();
 
