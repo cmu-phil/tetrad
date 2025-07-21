@@ -168,9 +168,14 @@ public class PetersTrekSepIdea {
         }
 
         Set<List<Integer>> clusters = new HashSet<>();
+        Set<Integer> usedVariables = new HashSet<>();
 
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
+                if (usedVariables.contains(variables.get(i)) && usedVariables.contains(variables.get(j))) {
+                    continue;
+                }
+
                 int[] yIndices = new int[]{variables.get(i), variables.get(j)};
                 int[] xIndices = new int[variables.size() - 2];
 
@@ -178,7 +183,7 @@ public class PetersTrekSepIdea {
 
                 for (int k = 0; k < variables.size(); k++) {
                     if (k != i && k != j) {
-                        xIndices[index++] =  variables.get(k);
+                        xIndices[index++] = variables.get(k);
                     }
                 }
 
@@ -193,11 +198,12 @@ public class PetersTrekSepIdea {
 
                     if (clusterDependent(_cluster)) {
                         clusters.add(_cluster);
+                        usedVariables.add(variables.get(i));
+                        usedVariables.add(variables.get(j));
                     }
                 }
             }
         }
-
 
         clusters = mergeOverlappingClusters(clusters);
 

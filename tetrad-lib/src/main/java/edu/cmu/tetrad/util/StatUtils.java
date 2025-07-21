@@ -2743,59 +2743,109 @@ public final class StatUtils {
      * @param d        The hypothesized rank which defines the number of singular values to consider.
      * @return The calculated p-value of the test based on the given inputs.
      */
+//    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
+//
+//        // Check inputs.
+//
+//        if (xIndices.length == 0 || yIndices.length == 0) {
+//            throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
+//        }
+//
+//        for (int xIndex : xIndices) {
+//            if (xIndex < 0 || xIndex >= S.getNumRows()) {
+//                throw new IllegalArgumentException("xIndices out of bounds.");
+//            }
+//        }
+//
+//        for (int yIndex : yIndices) {
+//            if (yIndex < 0 || yIndex >= S.getNumRows()) {
+//                throw new IllegalArgumentException("yIndices out of bounds.");
+//            }
+//        }
+//
+//        if (n <= 0) {
+//            throw new IllegalArgumentException("n must be positive.");
+//        }
+//
+//        if (d <= 0) {
+//            throw new IllegalArgumentException("d must be positive.");
+//        }
+//
+//        // Step 1: Extract submatrices based on given indices
+//        SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
+//        SimpleMatrix YY = extractSubMatrix(S, yIndices, yIndices);
+//        SimpleMatrix XY = extractSubMatrix(S, xIndices, yIndices);
+//
+//        // Step 2: Perform Cholesky decompositions and their inverses
+//        SimpleMatrix XXir = chol(XX).invert();
+//        SimpleMatrix YYir = chol(YY).invert();
+//        SimpleMatrix product = XXir.mult(XY).mult(YYir);
+//
+//        // Step 3: Get singular values of product
+//        double[] singularValues = product.svd().getSingularValues();
+//
+//        // Step 4: Compute test statistic using last d singular values
+//        double stat = 0.0;
+//        for (int i = singularValues.length - d; i < singularValues.length; i++) {
+//            double adjustedValue = 1 - Math.pow(singularValues[i], 2);
+//            adjustedValue = Math.max(adjustedValue, 1e-6);  // Clip to avoid log(0)
+//            stat += adjustedValue;
+//        }
+//        stat *= (d + 3.0 / 2.0 - n) * Math.log(stat);
+//
+//        // Step 5: Chi-squared test for current d
+//        ChiSquaredDistribution chi2 = new ChiSquaredDistribution((xIndices.length + 1 - d) * (yIndices.length + 1 - d));
+//        return 1 - chi2.cumulativeProbability(stat);
+//    }
+
     public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
-
-        // Check inputs.
-
         if (xIndices.length == 0 || yIndices.length == 0) {
             throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
         }
 
-        for (int xIndex : xIndices) {
-            if (xIndex < 0 || xIndex >= S.getNumRows()) {
-                throw new IllegalArgumentException("xIndices out of bounds.");
-            }
+        int p = xIndices.length;
+        int q = yIndices.length;
+        int r = Math.min(p, q);
+
+        if (d < 0 || d >= r) {
+            throw new IllegalArgumentException("d must be in [0, min(p, q) - 1]");
         }
 
-        for (int yIndex : yIndices) {
-            if (yIndex < 0 || yIndex >= S.getNumRows()) {
-                throw new IllegalArgumentException("yIndices out of bounds.");
-            }
+        if (n <= p + q + 1) {
+            throw new IllegalArgumentException("Sample size too small for reliable test.");
         }
 
-        if (n <= 0) {
-            throw new IllegalArgumentException("n must be positive.");
-        }
-
-        if (d <= 0) {
-            throw new IllegalArgumentException("d must be positive.");
-        }
-
-        // Step 1: Extract submatrices based on given indices
+        // Step 1: Extract submatrices
         SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
         SimpleMatrix YY = extractSubMatrix(S, yIndices, yIndices);
         SimpleMatrix XY = extractSubMatrix(S, xIndices, yIndices);
 
-        // Step 2: Perform Cholesky decompositions and their inverses
-        SimpleMatrix XXir = chol(XX).invert();
-        SimpleMatrix YYir = chol(YY).invert();
-        SimpleMatrix product = XXir.mult(XY).mult(YYir);
+        // Step 2: Cholesky inverses
+        SimpleMatrix XXinvSqrt = chol(XX).invert();
+        SimpleMatrix YYinvSqrt = chol(YY).invert();
+        SimpleMatrix product = XXinvSqrt.mult(XY).mult(YYinvSqrt);
 
-        // Step 3: Get singular values of product
-        double[] singularValues = product.svd().getSingularValues();
+        // Step 3: SVD
+        double[] s = product.svd().getSingularValues();
 
-        // Step 4: Compute test statistic using last d singular values
+        // Step 4: Compute stat from the LAST (r - d) singular values
         double stat = 0.0;
-        for (int i = singularValues.length - d; i < singularValues.length; i++) {
-            double adjustedValue = 1 - Math.pow(singularValues[i], 2);
-            adjustedValue = Math.max(adjustedValue, 1e-6);  // Clip to avoid log(0)
-            stat += Math.log(adjustedValue);
+        for (int i = d; i < r; i++) {
+            double val = s[i];
+            val = Math.min(1.0, Math.max(0.0, val)); // clip to [0, 1]
+            double adjusted = 1.0 - val * val;
+            adjusted = Math.max(adjusted, 1e-6); // avoid log(0)
+            stat += Math.log(adjusted);
         }
-        stat *= (d + 3.0 / 2.0 - n);
 
-        // Step 5: Chi-squared test for current d
-        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(d * d);
-        return 1 - chi2.cumulativeProbability(stat);
+        // Step 5: Scale
+        double scale = n - 0.5 * (p + q + 1);
+        stat *= -scale;
+
+        // Step 6: Chi-squared test
+        int df = (p - d) * (q - d);
+        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
+        return 1.0 - chi2.cumulativeProbability(stat);
     }
 
     /**
