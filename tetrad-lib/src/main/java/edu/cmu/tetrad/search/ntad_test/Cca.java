@@ -36,6 +36,19 @@ public class Cca extends NtadTest {
         super(df, covariances);
     }
 
+    /**
+     * Computes the aggregate statistical measure based on a list of tetrad configurations. Each configuration specifies
+     * sets of indices representing structural relationships among variables. This method evaluates and combines results
+     * for all provided configurations, with optional resampling.
+     *
+     * @param tet     a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
+     *                 configuration defines sets of indices representing structural relationships among variables.
+     * @param resample a boolean indicating whether resampling should be applied to the data matrix for the
+     *                 computation.
+     * @param frac     a double value representing the fraction of data to use during resampling, ignored if resample is
+     *                 false.
+     * @return a double value representing the sum of the statistical measures for all provided tetrad configurations.
+     */
     @Override
     public double tetrad(int[][] tet, boolean resample, double frac) {
         // Determine S (either resample or use the default covariance matrix)

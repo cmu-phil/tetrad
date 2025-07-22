@@ -287,8 +287,8 @@ public class PlotMatrix extends JPanel {
 
                     charts.add(panel);
                 } else {
-                    ScatterPlot scatterPlot = new ScatterPlot(dataSet, addRegressionLines, nodes.get(colIndex).getName(),
-                            nodes.get(rowIndex).getName(), removeZeroPointsPerPlot);
+                    ScatterPlot scatterPlot = new ScatterPlot(dataSet, addRegressionLines, nodes.get(rowIndex).getName(),
+                            nodes.get(colIndex).getName(), removeZeroPointsPerPlot);
 
                     for (Node node : conditioningPanelMap.keySet()) {
                         if (node instanceof ContinuousVariable var) {

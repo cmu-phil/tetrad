@@ -7,10 +7,12 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.MimbuildPca;
-import edu.cmu.tetrad.search.ntad_test.*;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -28,17 +30,16 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BPC",
-        command = "bpc",
+        name = "TSC",
+        command = "tsc",
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
+public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 
     @Serial
     private static final long serialVersionUID = 23L;
-
     /**
      * The knowledge.
      */
@@ -47,7 +48,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     /**
      * <p>Constructor for Fofc.</p>
      */
-    public Bpc() {
+    public TrekSeparationClusters() {
     }
 
     /**
@@ -62,52 +63,26 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
         if (parameters.getBoolean(Params.VERBOSE)) {
             System.out.println("alpha = " + parameters.getDouble(Params.FOFC_ALPHA));
-            System.out.println("penaltyDiscount = " + parameters.getDouble(Params.PENALTY_DISCOUNT));
-            System.out.println("includeStructureModel = " + parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL));
             System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
         }
 
         DataSet dataSet = (DataSet) dataModel;
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
 
-        int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
-        NtadTest test = switch (testType) {
-            case 1 -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
-            case 2 -> new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
-            case 3 -> new Wishart(dataSet.getDoubleData().getDataCopy(), false);
-            case 4 -> new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
-            default -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
-        };
-
-        edu.cmu.tetrad.search.Bpc search = new edu.cmu.tetrad.search.Bpc(
-                test,
-                dataSet,
-                alpha);
-        search.findClusters();
-
-        List<List<String>> _clusters = search.getClusters();
-
-        int latentCount = 0;
-        Graph graph = new EdgeListGraph();
-
-        for (List<String> cluster : _clusters) {
-            Node latent = new ContinuousVariable("L" + (++latentCount));
-            latent.setNodeType(NodeType.LATENT);
-            graph.addNode(latent);
-
-            for (String name : cluster) {
-                Node measure = new ContinuousVariable(name);
-                graph.addNode(measure);
-                graph.addDirectedEdge(latent, measure);
-            }
-        }
+        edu.cmu.tetrad.search.TrekSeparationClusters search
+                = new edu.cmu.tetrad.search.TrekSeparationClusters(dataSet, alpha);
+        search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        Graph graph = search.search();
 
         if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
             return graph;
         } else {
+
             Clusters clusters = ClusterUtils.mimClusters(graph);
-            Graph structureGraph;
-            Graph fullGraph;
+            Graph structureGraph = null;
+            Graph fullGraph = null;
+
 
             Fofc.MimbuildType mimbuildType =  switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
                 case 1 -> Fofc.MimbuildType.PCA;
@@ -199,7 +174,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
      */
     @Override
     public String getDescription() {
-        return "BPC (Build Pure Clusters)";
+        return "TSC (Trek Separation Clusters)";
     }
 
     /**
@@ -222,7 +197,6 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.TETRAD_TEST_FOFC);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.MIMBUILD_TYPE);
@@ -249,5 +223,30 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * The MimbuildType enum represents the different types of model construction strategies available for specific use
+     * in algorithms within the Fofc class. It specifies selectable methods for building models based on input data.
+     * <p>
+     * The enum includes the following types: - PCA: Principal Component Analysis-based model building. - BOLLEN: Model
+     * building method inspired by Bollen's statistical techniques.
+     */
+    public enum MimbuildType {
+
+        /**
+         * Represents the Principal Component Analysis (PCA)-based model building strategy within the MimbuildType enum.
+         * PCA is a dimensionality reduction technique commonly used in statistical and machine learning algorithms to
+         * transform input data into a set of uncorrelated features, reducing complexity while preserving key
+         * information.
+         */
+        PCA,
+
+        /**
+         * Represents the model building method inspired by Bollen's statistical techniques within the MimbuildType
+         * enum. This method is often employed to develop models that utilize sophisticated statistical principles,
+         * aiming to analyze and interpret structural relationships between variables in complex datasets.
+         */
+        BOLLEN
     }
 }

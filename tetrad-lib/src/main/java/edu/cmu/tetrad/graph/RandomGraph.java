@@ -603,11 +603,12 @@ public class RandomGraph {
             return;
         }
 
-        List<Node> commonCausesAndEffects = getCommonCausesAndEffects(graph);
+//        List<Node> commonCausesAndEffects = getCommonCausesAndEffects(graph);
+        List<Node> commonCausesAndEffects = getCommonCauses(graph);
         int index = 0;
 
         while (index++ < numLatentConfounders) {
-            if (commonCausesAndEffects.size() == 0) {
+            if (commonCausesAndEffects.isEmpty()) {
                 index--;
                 break;
             }
@@ -620,7 +621,7 @@ public class RandomGraph {
         List<Node> nodes = graph.getNodes();
         while (index++ < numLatentConfounders) {
             int r = RandomUtil.getInstance().nextInt(nodes.size());
-            if (nodes.get(r).getNodeType() == NodeType.LATENT) {
+            if (nodes.get(r).getNodeType() != NodeType.LATENT) {
                 index--;
             } else {
                 nodes.get(r).setNodeType(NodeType.LATENT);

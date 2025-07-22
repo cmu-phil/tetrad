@@ -25,18 +25,16 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.ntad_test.*;
+import edu.cmu.tetrad.search.ntad_test.BollenTing;
+import edu.cmu.tetrad.search.ntad_test.NtadTest;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
@@ -80,25 +78,14 @@ public class Fofc {
      */
     private final transient DataModel dataModel;
     /**
-     * The type of test used.
+     * A standard normal distribution object used for statistical calculations within the Fofc class. The distribution
+     * is characterized by a mean of 0 and a standard deviation of 1.
      */
-    private final int testType;
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
     /**
-     * The Wishart test. This tests a single tetrad.
+     * The Tetrad test to use.
      */
-    private final NtadTest test1;
-    /**
-     * The Delta test. Testing two tetrads simultaneously.
-     */
-    private final NtadTest test2;
-    /**
-     * The Delta test. Testing two tetrads simultaneously.
-     */
-    private final NtadTest test3;
-    /**
-     * The Delta test. Testing two tetrads simultaneously.
-     */
-    private final NtadTest test4;
+    private final NtadTest test;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -113,25 +100,27 @@ public class Fofc {
      * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
      */
     private boolean includeAllNodes = false;
+    /**
+     * A cache of pure quarters.
+     */
+    private Set<Set<Integer>> pureQuartets;
+    /**
+     * A cache of impure quartets.
+     */
+    private Set<Set<Integer>> impureQuartets;
 
     /**
      * Conctructor.
      *
-     * @param dataSet  The continuous dataset searched over.
-     * @param testType The type of test used. 1 = CCA, 2 = Bollen-Ting, 3 = Wishart
-     * @param alpha    The alpha significance cutoff.
+     * @param dataSet The continuous dataset searched over.
+     * @param test    The NTad test to use.
+     * @param alpha   The alpha significance cutoff.
      */
-    public Fofc(DataSet dataSet, int testType, double alpha) {
+    public Fofc(DataSet dataSet, NtadTest test, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
-        this.testType = testType;
-        this.test1 = new Cca(dataSet.getDoubleData().getDataCopy(), false);
-        this.test2 = new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
-        this.test3 = new Wishart(dataSet.getDoubleData().getDataCopy(), false);
-        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
-//        this.test4 = new Ark(dataSet.getDoubleData().getDataCopy(), 0.25);
+        this.test = test;
         this.dataModel = dataSet;
-
         this.corr = new CorrelationMatrix(dataSet);
     }
 
@@ -141,6 +130,9 @@ public class Fofc {
      * @return This graph.
      */
     public Graph search() {
+        this.pureQuartets = new HashSet<>();
+        this.impureQuartets = new HashSet<>();
+
         Set<List<Integer>> allClusters;
 
         allClusters = estimateClustersSag();
@@ -202,157 +194,181 @@ public class Fofc {
         Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
 
-        return allClusters;
+        int count = 0;
+        boolean changed;
+
+        do {
+            changed = exchange(allClusters);
+        } while (changed && count++ < 100);
+
+        Set<List<Integer>> finalClusters = new HashSet<>();
+
+        for (List<Integer> cluster : new HashSet<>(allClusters)) {
+            if (cluster.size() >= 4) {
+                finalClusters.add(cluster);
+            }
+        }
+
+        Set<Integer> unionClustered2 = union(finalClusters);
+        Set<List<Integer>> mixedClusters2 = findMixedClusters(unionClustered2);
+
+        finalClusters.addAll(mixedClusters2);
+
+        System.out.println("final clusters = " + ClusterSignificance.variablesForIndices(finalClusters, this.variables));
+
+        return finalClusters;
     }
 
-    // Finds clusters of size 4 or higher for the tetrad-first algorithm.
+    /**
+     * Finds clusters of size 4 or higher for the tetrad-first algorithm.
+     */
     private Set<List<Integer>> findPureClusters() {
         List<Integer> variables = allVariables();
         Set<List<Integer>> clusters = new HashSet<>();
 
-        VARIABLES:
-        while (!variables.isEmpty()) {
-            log(variables.toString());
+        log(variables.toString());
 
-            if (variables.size() < 4) break;
+        List<Integer> unclustered = new ArrayList<>(variables);
+        unclustered.removeAll(union(clusters));
 
-            ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 4);
-            int[] choice;
+        if (variables.size() < 4) return new HashSet<>();
 
-            while ((choice = gen.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 4);
+        int[] choice;
 
-                int n1 = variables.get(choice[0]);
-                int n2 = variables.get(choice[1]);
-                int n3 = variables.get(choice[2]);
-                int n4 = variables.get(choice[3]);
-
-                List<Integer> cluster = quartet(n1, n2, n3, n4);
-
-                // Note that purity needs to be assessed with respect to all the variables to
-                // remove all latent-measure impurities between pairs of latents.
-                if (pure(cluster)) {
-                    List<Integer> unclustered = new ArrayList<>(variables);
-                    unclustered.removeAll(union(clusters));
-
-                    growCluster(unclustered, cluster);
-
-                    if (this.verbose) {
-                        log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
-                    }
-
-                    clusters.add(cluster);
-                    variables.removeAll(cluster);
-
-                    continue VARIABLES;
-                }
+        while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
             }
 
-            break;
+            int n1 = variables.get(choice[0]);
+            int n2 = variables.get(choice[1]);
+            int n3 = variables.get(choice[2]);
+            int n4 = variables.get(choice[3]);
+
+            if (!(unclustered.contains(n1) && unclustered.contains(n2) && unclustered.contains(n3) && unclustered.contains(n4))) {
+                continue;
+            }
+
+            List<Integer> cluster = quartet(n1, n2, n3, n4);
+
+            // Note that purity needs to be assessed with respect to all the variables to
+            // remove all latent-measure impurities between pairs of latents.
+            if (pure(cluster) == Purity.PURE) {
+                growCluster(unclustered, cluster);
+
+                if (this.verbose) {
+                    log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
+                }
+
+                clusters.add(cluster);
+                unclustered.removeAll(cluster);
+            }
         }
 
         return clusters;
     }
 
     private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
+        Iterator<Integer> iterator = unclustered.iterator();
 
-        O:
-        for (int o : unclustered) {
+        while (iterator.hasNext()) {
+            int o = iterator.next();
+
             if (cluster.contains(o)) continue;
 
-            for (int i = 0; i < cluster.size(); i++) {
-                List<Integer> quartet = new ArrayList<>(cluster);
-                quartet.remove(quartet.get(i));
-                quartet.add(i, o);
+            boolean allQuartetsPure = true;
 
-                if (!pure(quartet)) {
-                    continue O;
+            // Check all quartets with o and 3 other elements in the cluster
+            int size = cluster.size();
+
+            for (int i = 0; i < size - 2 && allQuartetsPure; i++) {
+                for (int j = i + 1; j < size - 1 && allQuartetsPure; j++) {
+                    for (int k = j + 1; k < size && allQuartetsPure; k++) {
+                        List<Integer> quartet = List.of(cluster.get(i), cluster.get(j), cluster.get(k), o);
+
+                        if (pure(quartet) != Purity.PURE) {
+                            allQuartetsPure = false;
+                        }
+                    }
                 }
             }
 
-            log("Extending by " + this.variables.get(o));
-            cluster.add(o);
+            if (allQuartetsPure) {
+                cluster.addLast(o);
+                iterator.remove();
+            }
         }
     }
 
     /**
-     * Finds clusters of size 3 for the SAG algorithm. If a 3-cluster is found, we attempt to grow it into a larger
-     * cluster.
+     * Finds clusters of size 3 for the SAG algorithm.
      *
      * @param unionClustered The set of union pure variables.
      * @return A set of lists of integers representing the mixed clusters.
      */
     private Set<List<Integer>> findMixedClusters(Set<Integer> unionClustered) {
-        List<Integer> variables = allVariables();
         Set<List<Integer>> mixedClusters = new HashSet<>();
 
         if (unionClustered.isEmpty()) {
             return new HashSet<>();
         }
 
-        Set<Integer> _unionClustered;
+        Set<Integer> _unionClustered = new HashSet<>(unionClustered);
+        List<Integer> unclustered = new ArrayList<>(allVariables());
+        unclustered.removeAll(_unionClustered);
 
-        DO:
-        do {
-            _unionClustered = new HashSet<>(unionClustered);
-            List<Integer> unclustered = new ArrayList<>(variables);
-            unclustered.removeAll(unionClustered);
+        List<Integer> variables = new ArrayList<>(unclustered);
 
-            ChoiceGenerator gen = new ChoiceGenerator(unclustered.size(), 3);
-            int[] choice;
+        ChoiceGenerator gen = new ChoiceGenerator(unclustered.size(), 3);
+        int[] choice;
 
-            while ((choice = gen.next()) != null) {
+
+        CHOICE:
+        while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            int n1 = unclustered.get(choice[0]);
+            int n2 = unclustered.get(choice[1]);
+            int n3 = unclustered.get(choice[2]);
+
+            if (!(variables.contains(n1) && variables.contains(n2) && variables.contains(n3))) {
+                continue;
+            }
+
+            List<Integer> cluster = new ArrayList<>();
+            cluster.add(n1);
+            cluster.add(n2);
+            cluster.add(n3);
+
+            for (int o : allVariables()) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                List<Integer> cluster = new ArrayList<>();
-                cluster.add(unclustered.get(choice[0]));
-                cluster.add(unclustered.get(choice[1]));
-                cluster.add(unclustered.get(choice[2]));
+                if (cluster.contains(o)) continue;
 
-                for (int o : unclustered) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
+                List<Integer> _cluster = new ArrayList<>(cluster);
+                _cluster.add(o);
 
-                    if (cluster.contains(o)) continue;
+                if (!clusterDependent(cluster)) {
+                    continue CHOICE;
+                }
 
-                    List<Integer> _cluster = new ArrayList<>(cluster);
-                    _cluster.add(o);
+                if (!vanishes(_cluster)) {
+                    continue CHOICE;
+                }
 
-                    if (!containsZeroCorrlation(_cluster) && vanishes(_cluster)) {
-                        for (int _o : unclustered) {
-                            if (_cluster.contains(_o)) continue;
+                mixedClusters.add(cluster);
+                variables.removeAll(cluster);
 
-                            List<Integer> __cluster = new ArrayList<>(_cluster);
-                            __cluster.add(_o);
-
-                            if (pure(__cluster)) {
-                                growCluster(unclustered, __cluster);
-                                mixedClusters.add(__cluster);
-                                unionClustered.addAll(__cluster);
-
-                                if (this.verbose) {
-                                    log("3-cluster found and grown: " + ClusterSignificance.variablesForIndices(__cluster, this.variables));
-                                }
-
-                                continue DO;
-                            }
-                        }
-
-                        mixedClusters.add(_cluster);
-                        unionClustered.addAll(_cluster);
-
-                        if (this.verbose) {
-                            log("3-cluster found: " + ClusterSignificance.variablesForIndices(_cluster, this.variables));
-                        }
-                    }
+                if (this.verbose) {
+                    log("3-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
                 }
             }
-        } while (!unionClustered.equals(_unionClustered));
+        }
 
         return mixedClusters;
     }
@@ -361,11 +377,20 @@ public class Fofc {
      * Determines if a given quartet of variables satisfies the conditions for being considered pure.
      *
      * @param quartet The list of integers representing a quartet of variables.
-     * @return True if the quartet is pure, false otherwise.
+     * @return The Purity judgment of the quarter
+     * @see Purity
      */
-    private boolean pure(List<Integer> quartet) {
-        if (containsZeroCorrlation(quartet)) {
-            return false;
+    private Purity pure(List<Integer> quartet) {
+        if (!clusterDependent(quartet)) {
+            return Purity.UNDECIDED;
+        }
+
+        if (pureQuartets.contains(new HashSet<>(quartet))) {
+            return Purity.PURE;
+        }
+
+        if (impureQuartets.contains(new HashSet<>(quartet))) {
+            return Purity.IMPURE;
         }
 
         if (vanishes(quartet)) {
@@ -379,15 +404,107 @@ public class Fofc {
                     _quartet.set(j, o);
 
                     if (!vanishes(_quartet)) {
-                        return false;
+                        impureQuartets.add(new HashSet<>(_quartet));
+                        return Purity.IMPURE;
                     }
                 }
             }
 
-            return true;
+            System.out.println("PURE: " + quartet);
+
+            pureQuartets.add(new HashSet<>(quartet));
+            return Purity.PURE;
+        } else {
+            impureQuartets.add(new HashSet<>(quartet));
+            return Purity.IMPURE;
+        }
+    }
+
+    /**
+     * Attempts to move nodes from one cluster to another to improve clustering,.
+     * @param clusters The clusters to adjust.
+     * @return True if a change was made.
+     */
+    private boolean exchange(Set<List<Integer>> clusters) {
+        boolean moved = false;
+
+        for (List<Integer> cluster : new HashSet<>(clusters)) {
+            if (cluster.size() != 4) {
+                continue;
+            }
+
+            for (Integer o : new HashSet<>(cluster)) {
+                for (List<Integer> _cluster : new HashSet<>(clusters)) {
+                    if (_cluster == cluster) {
+                        continue;
+                    }
+
+                    if (_cluster.contains(o)) continue;
+                    if (!cluster.contains(o)) continue;
+
+                    if (isAllQuartetsPureAppended(_cluster, o)) {
+                        _cluster.add(o);
+
+                        if (clusterDependent(_cluster)) {
+                            cluster.remove(o);
+                            clusters.remove(cluster);
+                            moved = true;
+                        } else {
+                            _cluster.remove(o);
+                        }
+                    }
+                }
+            }
+
+            Set<Integer> unclustered = new HashSet<>(allVariables());
+            Set<Integer> clustered = union(clusters);
+            unclustered.removeAll(clustered);
+
+            for (Integer o : new HashSet<>(unclustered)) {
+                for (List<Integer> _cluster : new HashSet<>(clusters)) {
+                    if (_cluster == cluster) {
+                        continue;
+                    }
+
+                    if (_cluster.contains(o)) continue;
+                    if (!cluster.contains(o)) continue;
+
+                    if (isAllQuartetsPureAppended(_cluster, o)) {
+                        _cluster.add(o);
+
+                        if (clusterDependent(_cluster)) {
+                            cluster.remove(o);
+                            clusters.remove(cluster);
+                            moved = true;
+                        } else {
+                            _cluster.remove(o);
+                        }
+                    }
+                }
+            }
         }
 
-        return false;
+        return moved;
+    }
+
+    private boolean isAllQuartetsPureAppended(List<Integer> cluster, int o) {
+
+        // Check all quartets with o and 3 other elements in the cluster
+        int size = cluster.size();
+
+        for (int i = 0; i < size - 2; i++) {
+            for (int j = i + 1; j < size - 1; j++) {
+                for (int k = j + 1; k < size; k++) {
+                    List<Integer> quartet = List.of(cluster.get(i), cluster.get(j), cluster.get(k), o);
+
+                    if (pure(quartet) != Purity.PURE) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -416,6 +533,10 @@ public class Fofc {
      * @return True if the quartet vanishes, false otherwise.
      */
     private boolean vanishes(List<Integer> quartet) {
+        if (quartet.size() != 4) {
+            throw new IllegalArgumentException("Expecting a quartet: " + quartet);
+        }
+
         int n1 = quartet.get(0);
         int n2 = quartet.get(1);
         int n3 = quartet.get(2);
@@ -425,25 +546,40 @@ public class Fofc {
     }
 
     /**
-     * Checks if a given cluster has a zero correlation among its variables. Legitimate clusters have zero correlation.
+     * Checks if a given cluster is pairwise dependent.
      *
      * @param cluster The list of integers representing the cluster.
-     * @return True if the cluster has zero correlation, false otherwise.
+     * @return True if the cluster is pairwise dependent, false otherwise.
      */
-    private boolean containsZeroCorrlation(List<Integer> cluster) {
-        int count = 0;
+    private boolean clusterDependent(List<Integer> cluster) {
+        int numDependencies = 0;
+        int all = 0;
 
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = this.corr.getValue(cluster.get(i), cluster.get(j));
-                int N = this.corr.getSampleSize();
-                double f = sqrt(N) * FastMath.log((1. + r) / (1. - r));
-                double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(f)));
-                if (p > this.alpha) count++;
+
+                if (Double.isNaN(r)) {
+                    continue;
+                }
+
+                int n = this.corr.getSampleSize();
+                int zSize = 0; // Unconditional check.
+
+                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
+                double df = n - 3. - zSize;
+
+                double fisherZ = sqrt(df) * q;
+
+                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) < alpha) {
+                    numDependencies++;
+                }
+
+                all++;
             }
         }
 
-        return count >= 1;
+        return numDependencies == all;
     }
 
     /**
@@ -463,22 +599,11 @@ public class Fofc {
         ints.add(ints1);
         ints.add(ints2);
 
-        switch (this.testType) {
-            case 1 -> {
-                return this.test1.allGreaterThanAlpha(ints, this.alpha);
-            }
-            case 2 -> {
-                return this.test2.tetrads(ints) > this.alpha;
-            }
-            case 3 -> {
-                return this.test3.allGreaterThanAlpha(ints, this.alpha);
-            }
-            case 4 -> {
-                return this.test4.allGreaterThanAlpha(ints, this.alpha);
-            }
+        if (test instanceof BollenTing) {
+            return test.tetrads(ints) > this.alpha;
+        } else {
+            return test.allGreaterThanAlpha(ints, this.alpha);
         }
-
-        throw new IllegalArgumentException("Only the delta and wishart tests are being used: " + this.testType);
     }
 
     /**
@@ -539,7 +664,17 @@ public class Fofc {
     private Set<Integer> union(Set<List<Integer>> pureClusters) {
         Set<Integer> unionPure = new HashSet<>();
 
-        for (List<Integer> cluster : pureClusters) {
+        for (Collection<Integer> cluster : pureClusters) {
+            unionPure.addAll(cluster);
+        }
+
+        return unionPure;
+    }
+
+    private Set<Integer> unionSet(Set<Set<Integer>> pureClusters) {
+        Set<Integer> unionPure = new HashSet<>();
+
+        for (Collection<Integer> cluster : pureClusters) {
             unionPure.addAll(cluster);
         }
 
@@ -567,6 +702,8 @@ public class Fofc {
     public void setIncludeAllNodes(boolean includeAllNodes) {
         this.includeAllNodes = includeAllNodes;
     }
+
+    private enum Purity {PURE, IMPURE, UNDECIDED}
 }
 
 

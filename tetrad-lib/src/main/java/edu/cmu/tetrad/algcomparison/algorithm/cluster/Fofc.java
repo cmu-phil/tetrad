@@ -12,6 +12,9 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Mimbuild;
+import edu.cmu.tetrad.search.MimbuildPca;
+import edu.cmu.tetrad.search.ntad_test.*;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -39,11 +42,14 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
     @Serial
     private static final long serialVersionUID = 23L;
-
     /**
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * The type of Mimbuild algorithm to use.
+     */
+    private MimbuildType mimbuildType = MimbuildType.PCA;
 
     /**
      * <p>Constructor for Fofc.</p>
@@ -72,9 +78,17 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
 
         int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
+        NtadTest test = switch (testType) {
+            case 1 -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
+            case 2 -> new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
+            case 3 -> new Wishart(dataSet.getDoubleData().getDataCopy(), false);
+            case 4 -> new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
+            default -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
+        };
+
 
         edu.cmu.tetrad.search.Fofc search
-                = new edu.cmu.tetrad.search.Fofc(dataSet, testType, alpha);
+                = new edu.cmu.tetrad.search.Fofc(dataSet, test, alpha);
         search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -85,37 +99,77 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         } else {
 
             Clusters clusters = ClusterUtils.mimClusters(graph);
-
-            Mimbuild mimbuild = new Mimbuild();
-            mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-
-            List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
-
-            List<String> latentNames = new ArrayList<>();
-
-            for (int i = 0; i < clusters.getNumClusters(); i++) {
-                latentNames.add(clusters.getClusterName(i));
-            }
-
             Graph structureGraph = null;
-            try {
-                structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (SingularMatrixException e) {
-                throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
+            Graph fullGraph = null;
+
+
+            MimbuildType mimbuildType =  switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
+                case 1 -> MimbuildType.PCA;
+                case 2 -> MimbuildType.BOLLEN;
+                default -> MimbuildType.PCA;
+            };
+
+            if (mimbuildType == MimbuildType.PCA) {
+                MimbuildPca mimbuild = new MimbuildPca();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+
+                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
+
+                List<String> latentNames = new ArrayList<>();
+
+                for (int i = 0; i < clusters.getNumClusters(); i++) {
+                    latentNames.add(clusters.getClusterName(i));
+                }
+
+                try {
+                    structureGraph = mimbuild.search(partition, latentNames, dataSet);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (SingularMatrixException e) {
+                    throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
+                }
+
+                LayoutUtil.defaultLayout(structureGraph);
+                LayoutUtil.fruchtermanReingoldLayout(structureGraph);
+
+                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+
+                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+
+                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                LayoutUtil.defaultLayout(fullGraph);
+                LayoutUtil.fruchtermanReingoldLayout(fullGraph);
+            } else {
+                Mimbuild mimbuild = new Mimbuild();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+
+                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
+
+                List<String> latentNames = new ArrayList<>();
+
+                for (int i = 0; i < clusters.getNumClusters(); i++) {
+                    latentNames.add(clusters.getClusterName(i));
+                }
+
+                try {
+                    structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (SingularMatrixException e) {
+                    throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
+                }
+
+                LayoutUtil.defaultLayout(structureGraph);
+                LayoutUtil.fruchtermanReingoldLayout(structureGraph);
+
+                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+
+                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
+
+                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                LayoutUtil.defaultLayout(fullGraph);
+                LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             }
-
-            LayoutUtil.defaultLayout(structureGraph);
-            LayoutUtil.fruchtermanReingoldLayout(structureGraph);
-
-            ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
-
-            TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
-
-            Graph fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
-            LayoutUtil.defaultLayout(fullGraph);
-            LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
             return fullGraph;
         }
@@ -165,6 +219,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         parameters.add(Params.TETRAD_TEST_FOFC);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
+        parameters.add(Params.MIMBUILD_TYPE);
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -188,5 +243,33 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * The MimbuildType enum represents the different types of model construction
+     * strategies available for specific use in algorithms within the Fofc class.
+     * It specifies selectable methods for building models based on input data.
+     *
+     * The enum includes the following types:
+     * - PCA: Principal Component Analysis-based model building.
+     * - BOLLEN: Model building method inspired by Bollen's statistical techniques.
+     */
+    public enum MimbuildType{
+
+        /**
+         * Represents the Principal Component Analysis (PCA)-based model building strategy
+         * within the MimbuildType enum. PCA is a dimensionality reduction technique commonly
+         * used in statistical and machine learning algorithms to transform input data into
+         * a set of uncorrelated features, reducing complexity while preserving key information.
+         */
+        PCA,
+
+        /**
+         * Represents the model building method inspired by Bollen's statistical techniques
+         * within the MimbuildType enum. This method is often employed to develop models
+         * that utilize sophisticated statistical principles, aiming to analyze and interpret
+         * structural relationships between variables in complex datasets.
+         */
+        BOLLEN
     }
 }

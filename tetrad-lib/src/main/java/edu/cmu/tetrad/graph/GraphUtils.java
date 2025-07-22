@@ -3329,6 +3329,15 @@ public final class GraphUtils {
         return _test.getP();
     }
 
+    /**
+     * Processes the given graph by fixing the directions of edges to ensure
+     * consistency, flipping edges where necessary, and optionally preserving
+     * ancillary graph information.
+     *
+     * @param graph the input graph whose edge directions are to be fixed
+     * @return a new graph with corrected edge directions, preserving ancillary
+     *         graph information if present
+     */
     public static @NotNull Graph fixDirections(Graph graph) {
         List<Edge> edges = new ArrayList<>(graph.getEdges());
         EdgeListGraph fixedDirections = new EdgeListGraph(graph.getNodes());
