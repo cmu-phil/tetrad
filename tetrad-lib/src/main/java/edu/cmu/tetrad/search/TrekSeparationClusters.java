@@ -63,6 +63,9 @@ public class TrekSeparationClusters {
      * The covariance matrix.
      */
     private final CorrelationMatrix corr;
+    /**
+     * The correlation matrix as a SimpleMatrix.
+     */
     private final SimpleMatrix S;
     /**
      * The list of all variables.
@@ -188,8 +191,6 @@ public class TrekSeparationClusters {
 
                 double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, dataSet.getNumRows(), 1);
 
-                System.out.println("p = " + p);
-
                 if (p >= alpha) {
                     List<Integer> _cluster = new ArrayList<>();
                     _cluster.add(variables.get(i));
@@ -230,7 +231,7 @@ public class TrekSeparationClusters {
                 List<Integer> mergedCluster = new ArrayList<>(cluster1);
 
                 for (List<Integer> cluster2 : clusters) {
-                    if (cluster1 == cluster2 || used.contains(cluster2)) continue;
+                    if (cluster1 == cluster2) continue;// || used.contains(cluster2)) continue;
 
                     Set<Integer> intersection = new HashSet<>(cluster1);
                     intersection.retainAll(cluster2);
