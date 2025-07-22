@@ -30,12 +30,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "PTSI",
-        command = "ptsi",
+        name = "TSC",
+        command = "tsc",
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class PetersTrekSepIdea extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
+public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 
     @Serial
@@ -48,7 +48,7 @@ public class PetersTrekSepIdea extends AbstractBootstrapAlgorithm implements Alg
     /**
      * <p>Constructor for Fofc.</p>
      */
-    public PetersTrekSepIdea() {
+    public TrekSeparationClusters() {
     }
 
     /**
@@ -69,8 +69,8 @@ public class PetersTrekSepIdea extends AbstractBootstrapAlgorithm implements Alg
         DataSet dataSet = (DataSet) dataModel;
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
 
-        edu.cmu.tetrad.search.PetersTrekSepIdea search
-                = new edu.cmu.tetrad.search.PetersTrekSepIdea(dataSet, alpha);
+        edu.cmu.tetrad.search.TrekSeparationClusters search
+                = new edu.cmu.tetrad.search.TrekSeparationClusters(dataSet, alpha);
         search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         Graph graph = search.search();
@@ -174,7 +174,7 @@ public class PetersTrekSepIdea extends AbstractBootstrapAlgorithm implements Alg
      */
     @Override
     public String getDescription() {
-        return "PTSI (Peter's Trek Separation Idea})";
+        return "TSC (Trek Separation Clusters)";
     }
 
     /**

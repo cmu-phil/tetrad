@@ -1,15 +1,23 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ntad_test.Cca;
+import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
 import java.util.*;
+
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * The Gin class implements an algorithm for causal discovery, leveraging
@@ -37,6 +45,7 @@ import java.util.*;
  * Thread-safety: Not guaranteed. This class is not designed to be thread-safe.
  */
 public class Gin {
+
     /**
      * The significance level threshold used in statistical tests to determine causal
      * relationships or dependencies within the data. This parameter typically ranges
@@ -53,6 +62,11 @@ public class Gin {
      * methods provided by the enclosing class.
      */
     private final RawMarginalIndependenceTest test;
+    private CorrelationMatrix corr;
+    private SimpleMatrix S;
+    private DataSet dataSet;
+    private List<Node> variables;
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
 
     /**
      * Constructs a Gin object with the specified significance level and marginal independence test.
@@ -77,6 +91,12 @@ public class Gin {
     public Graph search(DataSet data) {
         SimpleMatrix cov = new SimpleMatrix(data.getCovarianceMatrix().getDataCopy());
         SimpleMatrix rawData = new SimpleMatrix(data.getDoubleData().getDataCopy());
+
+        this.corr = new CorrelationMatrix(data);
+        this.S = corr.getMatrix().getDataCopy();
+        this.dataSet = data;
+        this.variables = data.getVariables();
+
         List<Node> variables = data.getVariables();
 
         // Step 1: Find causal clusters
@@ -202,6 +222,132 @@ public class Gin {
         double stat = -2 * pvals.stream().mapToDouble(Math::log).sum();
         int df = 2 * pvals.size();
         return new ChiSquaredDistribution(df).cumulativeProbability(stat);
+    }
+
+    private Set<List<Integer>> estimateClusters() {
+        List<Integer> variables = allVariables();
+        if (new HashSet<>(variables).size() != variables.size()) {
+            throw new IllegalArgumentException("Variables must be unique.");
+        }
+
+        Set<List<Integer>> clusters = new HashSet<>();
+        Set<Integer> usedVariables = new HashSet<>();
+
+        for (int i = 0; i < variables.size(); i++) {
+            for (int j = i + 1; j < variables.size(); j++) {
+                if (usedVariables.contains(variables.get(i)) && usedVariables.contains(variables.get(j))) {
+                    continue;
+                }
+
+                int[] yIndices = new int[]{variables.get(i), variables.get(j)};
+                int[] xIndices = new int[variables.size() - 2];
+
+                int index = 0;
+
+                for (int k = 0; k < variables.size(); k++) {
+                    if (k != i && k != j) {
+                        xIndices[index++] = variables.get(k);
+                    }
+                }
+
+                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, dataSet.getNumRows(), 1);
+
+                System.out.println("p = " + p);
+
+                if (p >= alpha) {
+                    List<Integer> _cluster = new ArrayList<>();
+                    _cluster.add(variables.get(i));
+                    _cluster.add(variables.get(j));
+
+                    if (clusterDependent(_cluster)) {
+                        clusters.add(_cluster);
+                        usedVariables.add(variables.get(i));
+                        usedVariables.add(variables.get(j));
+                    }
+                }
+            }
+        }
+
+        clusters = mergeOverlappingClusters(clusters);
+
+        System.out.println("final clusters = " + ClusterSignificance.variablesForIndices(clusters, this.variables));
+
+        return clusters;
+    }
+
+    private Set<List<Integer>> mergeOverlappingClusters(Set<List<Integer>> clusters) {
+        boolean merged;
+        do {
+            merged = false;
+            Set<List<Integer>> newClusters = new HashSet<>();
+            Set<List<Integer>> used = new HashSet<>();
+
+            for (List<Integer> cluster1 : clusters) {
+                if (used.contains(cluster1)) continue;
+
+                List<Integer> mergedCluster = new ArrayList<>(cluster1);
+
+                for (List<Integer> cluster2 : clusters) {
+                    if (cluster1 == cluster2 || used.contains(cluster2)) continue;
+
+                    Set<Integer> intersection = new HashSet<>(cluster1);
+                    intersection.retainAll(cluster2);
+
+                    if (!intersection.isEmpty()) {
+                        mergedCluster.addAll(cluster2);
+                        used.add(cluster2);
+                        merged = true;
+                    }
+                }
+
+                used.add(cluster1);
+                newClusters.add(mergedCluster);
+            }
+
+            clusters = newClusters;
+        } while (merged);
+
+        return clusters;
+    }
+
+    private boolean clusterDependent(List<Integer> cluster) {
+        int numDependencies = 0;
+        int all = 0;
+
+        for (int i = 0; i < cluster.size(); i++) {
+            for (int j = i + 1; j < cluster.size(); j++) {
+                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
+
+                if (Double.isNaN(r)) {
+                    continue;
+                }
+
+                int n = this.corr.getSampleSize();
+                int zSize = 0; // Unconditional check.
+
+                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
+                double df = n - 3. - zSize;
+
+                double fisherZ = sqrt(df) * q;
+
+                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) < alpha) {
+                    numDependencies++;
+                }
+
+                all++;
+            }
+        }
+
+        return numDependencies == all;
+    }
+
+
+
+
+    private List<Integer> allVariables() {
+        List<Integer> _variables = new ArrayList<>();
+        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
+        return _variables;
     }
 
     private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, SimpleMatrix rawData) {

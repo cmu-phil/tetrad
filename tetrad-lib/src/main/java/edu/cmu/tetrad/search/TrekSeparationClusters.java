@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
@@ -59,7 +58,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @version $Id: $Id
  * @see Ftfc
  */
-public class PetersTrekSepIdea {
+public class TrekSeparationClusters {
     /**
      * The covariance matrix.
      */
@@ -103,7 +102,7 @@ public class PetersTrekSepIdea {
      * @param dataSet The continuous dataset searched over.
      * @param alpha   The alpha significance cutoff.
      */
-    public PetersTrekSepIdea(DataSet dataSet, double alpha) {
+    public TrekSeparationClusters(DataSet dataSet, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.dataSet = dataSet.getDoubleData().getDataCopy();
