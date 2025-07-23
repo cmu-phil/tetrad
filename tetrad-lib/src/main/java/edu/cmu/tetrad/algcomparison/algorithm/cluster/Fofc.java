@@ -46,10 +46,6 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The type of Mimbuild algorithm to use.
-     */
-    private MimbuildType mimbuildType = MimbuildType.PCA;
 
     /**
      * <p>Constructor for Fofc.</p>
