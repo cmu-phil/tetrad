@@ -16,30 +16,29 @@ import java.util.*;
 public class BollenTing extends NtadTest {
 
     /**
-     * Constructs a BollenTing object for performing statistical operations based on the given data matrix.
-     * This constructor initializes the instance using the input data matrix and sets a default value for
-     * the covariances flag (false), meaning the covariance matrices will be computed from the input data.
+     * Constructs a BollenTing object for performing statistical operations based on the given data matrix. This
+     * constructor initializes the instance using the input data matrix and sets a default value for the correlations
+     * flag (false), meaning the correlation matrices will be computed from the input data.
      *
-     * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation
-     *           and each column represents a variable.
+     * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation and each
+     *           column represents a variable.
      */
     public BollenTing(SimpleMatrix df) {
         this(df, false);
     }
 
     /**
-     * Constructs a BollenTing object for performing statistical operations. This constructor
-     * initializes the instance using a data matrix and a boolean flag indicating whether
-     * covariance matrices should be used directly or computed from the input data.
+     * Constructs a BollenTing object for performing statistical operations. This constructor initializes the instance
+     * using a data matrix and a boolean flag indicating whether corelation matrices should be used directly or computed
+     * from the input data.
      *
-     * @param df the input data matrix as a SimpleMatrix object, where each row represents an
-     *           observation and each column represents a variable.
-     * @param covariances a boolean flag that determines whether the input matrix is treated
-     *                    as a covariance matrix (true) or as raw data from which covariances
-     *                    should be calculated (false).
+     * @param df           the input data matrix as a SimpleMatrix object, where each row represents an observation and
+     *                     each column represents a variable.
+     * @param correlations a boolean flag that determines whether the input matrix is treated as a correlation matrix
+     *                     (true) or as raw data from which correlations should be calculated (false).
      */
-    public BollenTing(SimpleMatrix df, boolean covariances) {
-        super(df, covariances);
+    public BollenTing(SimpleMatrix df, boolean correlations) {
+        super(df, correlations);
     }
 
     @Override

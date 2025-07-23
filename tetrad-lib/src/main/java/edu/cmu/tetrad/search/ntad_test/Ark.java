@@ -13,8 +13,8 @@ import java.util.List;
 
 /**
  * The Ark class extends the NtadTest class and provides a mechanism to perform statistical operations based on tetrads
- * and their probabilities. It leverages covariance computation, sampling, and matrix manipulation to calculate p-values
- * and z-scores for tetrads. This class is specifically designed to operate on instances of SimpleMatrix for
+ * and their probabilities. It leverages correlation computation, sampling, and matrix manipulation to calculate
+ * p-values and z-scores for tetrads. This class is specifically designed to operate on instances of SimpleMatrix for
  * multivariate analysis.
  *
  * @author bryanandrews
@@ -27,7 +27,7 @@ public class Ark extends NtadTest {
     /**
      * Constructs an Ark object based on the given data matrix and split proportion. This method initializes the Ark
      * analysis by splitting the data matrix into two segments based on the given split proportion, and computes the
-     * covariance matrix for each segment.
+     * correlation matrix for each segment.
      *
      * @param df the input data matrix as a SimpleMatrix object, where each row represents an observation and each
      *           column represents a variable.

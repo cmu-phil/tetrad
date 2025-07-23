@@ -25,15 +25,15 @@ import java.util.List;
 public class Cca extends NtadTest {
 
     /**
-     * Constructs a new Cca object based on the provided data matrix and covariance option.
+     * Constructs a new Cca object based on the provided data matrix and correlation option.
      *
      * @param df          the input data matrix as a SimpleMatrix object, where each row represents an observation and
      *                    each column represents a variable.
-     * @param covariances a boolean indicating whether the provided data matrix represents covariances (true) or raw
-     *                    data (false). If false, the covariance matrix will be computed from the raw data.
+     * @param correlations a boolean indicating whether the provided data matrix represents correlations (true) or raw
+     *                    data (false). If false, the correlation matrix will be computed from the raw data.
      */
-    public Cca(SimpleMatrix df, boolean covariances) {
-        super(df, covariances);
+    public Cca(SimpleMatrix df, boolean correlations) {
+        super(df, correlations);
     }
 
     /**
@@ -51,7 +51,7 @@ public class Cca extends NtadTest {
      */
     @Override
     public double tetrad(int[][] tet, boolean resample, double frac) {
-        // Determine S (either resample or use the default covariance matrix)
+        // Determine S (either resample or use the default correlation matrix)
         SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
         int[] a = tet[0];
         int[] b = tet[1];

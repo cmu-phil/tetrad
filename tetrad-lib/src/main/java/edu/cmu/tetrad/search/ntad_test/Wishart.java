@@ -12,21 +12,21 @@ import java.util.List;
 /**
  * The Wishart class is a concrete implementation of the NtadTest abstract class, specifically for statistical tests
  * based on the Wishart distribution. It performs calculations for tetrads and their associated p-values using
- * covariance matrices derived from the input data.
+ * correlation matrices derived from the input data.
  *
  * @author bryanandrews
  */
 public class Wishart extends NtadTest {
 
     /**
-     * Constructs a Wishart test object based on the given data matrix and covariance option. This method initializes
+     * Constructs a Wishart test object based on the given data matrix and correlation option. This method initializes
      *
      * @param df          the input data matrix as a SimpleMatrix object, where each row represents an observation and
      *                    each
-     * @param covariances a boolean flag indicating whether to compute covariances.
+     * @param correlations a boolean flag indicating whether to compute correlations.
      */
-    public Wishart(SimpleMatrix df, boolean covariances) {
-        super(df, covariances);
+    public Wishart(SimpleMatrix df, boolean correlations) {
+        super(df, correlations);
     }
 
     @Override
