@@ -68,10 +68,12 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
 
         DataSet dataSet = (DataSet) dataModel;
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
+        boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
+
 
         edu.cmu.tetrad.search.TrekSeparationClusters search
                 = new edu.cmu.tetrad.search.TrekSeparationClusters(dataSet, alpha);
-        search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
+        search.setIncludeAllNodes(includeAllNodes);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         Graph graph = search.search();
 
@@ -80,8 +82,8 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         } else {
 
             Clusters clusters = ClusterUtils.mimClusters(graph);
-            Graph structureGraph = null;
-            Graph fullGraph = null;
+            Graph structureGraph;
+            Graph fullGraph;
 
 
             Fofc.MimbuildType mimbuildType =  switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
@@ -117,7 +119,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
 
                 TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                fullGraph = mimbuild.getFullGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             } else {
@@ -147,7 +149,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
 
                 TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                fullGraph = mimbuild.getFullGraph(includeAllNodes ? dataSet.getVariables(): new ArrayList<>());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             }

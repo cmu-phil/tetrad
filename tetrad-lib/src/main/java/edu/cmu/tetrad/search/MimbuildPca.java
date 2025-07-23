@@ -213,6 +213,10 @@ public class MimbuildPca {
             }
         }
 
+        for (Node node : includeNodes) {
+            if (!graph.containsNode(node)) graph.addNode(node);
+        }
+
         LayoutUtil.fruchtermanReingoldLayout(graph);
         return graph;
     }

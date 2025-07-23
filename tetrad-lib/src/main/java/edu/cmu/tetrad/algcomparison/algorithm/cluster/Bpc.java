@@ -85,10 +85,12 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
                 alpha);
         search.findClusters();
 
+        boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
+
         List<List<String>> _clusters = search.getClusters();
 
         int latentCount = 0;
-        Graph graph = new EdgeListGraph();
+        Graph graph = new EdgeListGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
 
         for (List<String> cluster : _clusters) {
             Node latent = new ContinuousVariable("L" + (++latentCount));
@@ -109,7 +111,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
             Graph structureGraph;
             Graph fullGraph;
 
-            Fofc.MimbuildType mimbuildType =  switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
+            Fofc.MimbuildType mimbuildType = switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
                 case 1 -> Fofc.MimbuildType.PCA;
                 case 2 -> Fofc.MimbuildType.BOLLEN;
                 default -> Fofc.MimbuildType.PCA;
@@ -142,7 +144,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
                 TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                fullGraph = mimbuild.getFullGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             } else {
@@ -172,7 +174,7 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
                 TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                fullGraph = mimbuild.getFullGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             }

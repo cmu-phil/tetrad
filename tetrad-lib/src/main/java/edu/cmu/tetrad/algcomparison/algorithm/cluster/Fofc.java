@@ -86,10 +86,11 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
             default -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
         };
 
+        boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
 
         edu.cmu.tetrad.search.Fofc search
                 = new edu.cmu.tetrad.search.Fofc(dataSet, test, alpha);
-        search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
+        search.setIncludeAllNodes(includeAllNodes);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         Graph graph = search.search();
@@ -136,7 +137,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
                 TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                fullGraph = mimbuild.getFullGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             } else {
@@ -166,7 +167,7 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
                 TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-                fullGraph = mimbuild.getFullGraph(dataSet.getVariables());
+                fullGraph = mimbuild.getFullGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             }

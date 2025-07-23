@@ -372,12 +372,11 @@ public class Mimbuild {
             }
         }
 
-        // These should not be included, as they mess with the counts for degrees of freedom.
-//        for (Node node : includeNodes) {
-//            if (graph.getNode(node.getName()) == null) {
-//                graph.addNode(new GraphNode(node.getName()));
-//            }
-//        }
+        for (Node node : includeNodes) {
+            if (graph.getNode(node.getName()) == null) {
+                graph.addNode(new GraphNode(node.getName()));
+            }
+        }
 
         LayoutUtil.fruchtermanReingoldLayout(graph);
 
