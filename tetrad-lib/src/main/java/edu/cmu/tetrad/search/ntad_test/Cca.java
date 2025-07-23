@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.search.ntad_test;
 
 import edu.cmu.tetrad.util.StatUtils;
-import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
-import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
@@ -27,10 +24,10 @@ public class Cca extends NtadTest {
     /**
      * Constructs a new Cca object based on the provided data matrix and correlation option.
      *
-     * @param df          the input data matrix as a SimpleMatrix object, where each row represents an observation and
-     *                    each column represents a variable.
+     * @param df           the input data matrix as a SimpleMatrix object, where each row represents an observation and
+     *                     each column represents a variable.
      * @param correlations a boolean indicating whether the provided data matrix represents correlations (true) or raw
-     *                    data (false). If false, the correlation matrix will be computed from the raw data.
+     *                     data (false). If false, the correlation matrix will be computed from the raw data.
      */
     public Cca(SimpleMatrix df, boolean correlations) {
         super(df, correlations);
@@ -41,7 +38,7 @@ public class Cca extends NtadTest {
      * sets of indices representing structural relationships among variables. This method evaluates and combines results
      * for all provided configurations, with optional resampling.
      *
-     * @param tet     a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
+     * @param tet      a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
      *                 configuration defines sets of indices representing structural relationships among variables.
      * @param resample a boolean indicating whether resampling should be applied to the data matrix for the
      *                 computation.
