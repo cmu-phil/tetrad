@@ -2736,68 +2736,13 @@ public final class StatUtils {
      * calculates the test statistic using the last d singular values of a product matrix derived from the input
      * covariance matrix and performs a chi-squared test to return the p-value.
      *
-     * @param S        The input covariance matrix represented as a SimpleMatrix object.
+     * @param S        The input correlation matrix represented as a SimpleMatrix object.
      * @param xIndices The indices representing the subset of variables in the first group.
      * @param yIndices The indices representing the subset of variables in the second group.
      * @param n        The sample size used in the analysis.
      * @param d        The hypothesized rank which defines the number of singular values to consider.
      * @return The calculated p-value of the test based on the given inputs.
      */
-//    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
-//
-//        // Check inputs.
-//
-//        if (xIndices.length == 0 || yIndices.length == 0) {
-//            throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
-//        }
-//
-//        for (int xIndex : xIndices) {
-//            if (xIndex < 0 || xIndex >= S.getNumRows()) {
-//                throw new IllegalArgumentException("xIndices out of bounds.");
-//            }
-//        }
-//
-//        for (int yIndex : yIndices) {
-//            if (yIndex < 0 || yIndex >= S.getNumRows()) {
-//                throw new IllegalArgumentException("yIndices out of bounds.");
-//            }
-//        }
-//
-//        if (n <= 0) {
-//            throw new IllegalArgumentException("n must be positive.");
-//        }
-//
-//        if (d <= 0) {
-//            throw new IllegalArgumentException("d must be positive.");
-//        }
-//
-//        // Step 1: Extract submatrices based on given indices
-//        SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
-//        SimpleMatrix YY = extractSubMatrix(S, yIndices, yIndices);
-//        SimpleMatrix XY = extractSubMatrix(S, xIndices, yIndices);
-//
-//        // Step 2: Perform Cholesky decompositions and their inverses
-//        SimpleMatrix XXir = chol(XX).invert();
-//        SimpleMatrix YYir = chol(YY).invert();
-//        SimpleMatrix product = XXir.mult(XY).mult(YYir);
-//
-//        // Step 3: Get singular values of product
-//        double[] singularValues = product.svd().getSingularValues();
-//
-//        // Step 4: Compute test statistic using last d singular values
-//        double stat = 0.0;
-//        for (int i = singularValues.length - d; i < singularValues.length; i++) {
-//            double adjustedValue = 1 - Math.pow(singularValues[i], 2);
-//            adjustedValue = Math.max(adjustedValue, 1e-6);  // Clip to avoid log(0)
-//            stat += adjustedValue;
-//        }
-//        stat *= (d + 3.0 / 2.0 - n) * Math.log(stat);
-//
-//        // Step 5: Chi-squared test for current d
-//        ChiSquaredDistribution chi2 = new ChiSquaredDistribution((xIndices.length + 1 - d) * (yIndices.length + 1 - d));
-//        return 1 - chi2.cumulativeProbability(stat);
-//    }
-
     public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
         if (xIndices.length == 0 || yIndices.length == 0) {
             throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
@@ -2806,6 +2751,16 @@ public final class StatUtils {
         int p = xIndices.length;
         int q = yIndices.length;
         int r = Math.min(p, q);
+
+        if (p < q) {
+            S = S.transpose();
+            int t = p;
+            p = q;
+            q = t;
+            int[] tIndices =  xIndices;
+            xIndices = yIndices;
+            yIndices = tIndices;
+        }
 
         if (d < 0 || d >= r) {
             throw new IllegalArgumentException("d must be in [0, min(p, q) - 1]");
@@ -2832,9 +2787,14 @@ public final class StatUtils {
         double stat = 0.0;
         for (int i = d; i < r; i++) {
             double val = s[i];
-            val = Math.min(1.0, Math.max(0.0, val)); // clip to [0, 1]
+
+            if (val < 0.0 || val > 1.0) {
+                throw new IllegalStateException("Singular value out of range: " + val);
+            }
+
+//            val = Math.min(1.0, Math.max(0.0, val)); // clip to [0, 1]
             double adjusted = 1.0 - val * val;
-            adjusted = Math.max(adjusted, 1e-6); // avoid log(0)
+//            adjusted = Math.max(adjusted, 1e-20); // avoid log(0)
             stat += Math.log(adjusted);
         }
 

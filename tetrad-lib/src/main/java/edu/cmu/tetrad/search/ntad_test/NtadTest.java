@@ -9,6 +9,8 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.lang.Math.sqrt;
+
 /**
  * NtadTest is an abstract base class for implementing tetrad-based statistical tests. A tetrad specifies structural
  * relationships among variables, and this class provides methods to compute covariance matrices, generate combinations,
@@ -23,23 +25,23 @@ public abstract class NtadTest {
     protected SimpleMatrix S;
 
     /**
-     * Constructs an NtadTest object with the provided data matrix and a flag indicating whether
-     * the input matrix represents covariances or raw data.
+     * Constructs an NtadTest object with the provided data matrix and a flag indicating whether the input matrix
+     * represents covariances or raw data.
      *
-     * @param df           the input data matrix as a SimpleMatrix object, where each row represents
-     *                     an observation and each column represents a variable
-     * @param covariances  a boolean flag indicating whether the provided matrix is a covariance matrix (true)
-     *                     or raw data requiring covariance computation (false)
+     * @param df          the input data matrix as a SimpleMatrix object, where each row represents an observation and
+     *                    each column represents a variable
+     * @param correlations a boolean flag indicating whether the provided matrix is a covariance matrix (true) or raw
+     *                    data requiring covariance computation (false)
      */
-    public NtadTest(SimpleMatrix df, boolean covariances) {
+    public NtadTest(SimpleMatrix df, boolean correlations) {
         this.df = df;
         this.n = df.getNumRows();
         this.p = df.getNumCols();
 
-        if (covariances) {
+        if (correlations) {
             this.S = df;
         } else {
-            this.S = computeCovariance(df);
+            this.S = computeCorrelations(df);
         }
     }
 
@@ -125,14 +127,14 @@ public abstract class NtadTest {
     }
 
     /**
-     * Computes the covariance matrix for the given data matrix. The covariance matrix is calculated using the centered
+     * Computes the correlation matrix for the given data matrix. The covariance matrix is calculated using the centered
      * data and normalizing by the number of observations minus one.
      *
      * @param data the input data matrix as a SimpleMatrix object, where each row represents an observation and each
      *             column represents a variable
      * @return a SimpleMatrix object representing the covariance matrix of the input data
      */
-    protected SimpleMatrix computeCovariance(SimpleMatrix data) {
+    protected SimpleMatrix computeCorrelations(SimpleMatrix data) {
         int n = data.getNumRows();
         int m = data.getNumCols();
 
@@ -151,7 +153,23 @@ public abstract class NtadTest {
         }
 
         // Covariance matrix: (X^T * X) / (n - 1)
-        return centeredData.transpose().mult(centeredData).scale(1.0 / (n - 1));
+        SimpleMatrix cov = centeredData.transpose().mult(centeredData).scale(1.0 / (n - 1));
+
+        System.out.println("m = " + cov.getNumRows() + " n = " + cov.getNumCols());
+
+        for (int i = 0; i < cov.getNumRows(); i++) {
+            System.out.println(i + " " + cov.get(i, i));
+        }
+
+        SimpleMatrix corr = new SimpleMatrix(cov.getNumRows(), cov.getNumCols());
+
+        for (int i = 0; i < cov.getNumRows(); i++) {
+            for (int j = 0; j < cov.getNumCols(); j++) {
+                corr.set(i, j, cov.get(i, j) / sqrt(cov.get(i, i) * cov.get(j, j)));
+            }
+        }
+
+        return cov;
     }
 
     /**

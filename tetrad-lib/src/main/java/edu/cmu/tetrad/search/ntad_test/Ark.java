@@ -40,8 +40,8 @@ public class Ark extends NtadTest {
         this.sp = sp > 0 ? sp : 1 - sp;
         int splitIndex = (int) (this.sp * df.getNumRows());
 
-        this.S1 = computeCovariance(df.extractMatrix(0, splitIndex, 0, df.getNumCols()));
-        this.S2 = computeCovariance(df.extractMatrix(splitIndex, df.getNumRows(), 0, df.getNumCols()));
+        this.S1 = computeCorrelations(df.extractMatrix(0, splitIndex, 0, df.getNumCols()));
+        this.S2 = computeCorrelations(df.extractMatrix(splitIndex, df.getNumRows(), 0, df.getNumCols()));
     }
 
     @Override
@@ -53,8 +53,8 @@ public class Ark extends NtadTest {
             SimpleMatrix sampledDf = sampleRows(df, frac);
             n = sampledDf.getNumRows();
             int splitIndex = (int) (this.sp * n);
-            S1 = computeCovariance(sampledDf.extractMatrix(0, splitIndex, 0, sampledDf.getNumCols()));
-            S2 = computeCovariance(sampledDf.extractMatrix(splitIndex, n, 0, sampledDf.getNumCols()));
+            S1 = computeCorrelations(sampledDf.extractMatrix(0, splitIndex, 0, sampledDf.getNumCols()));
+            S2 = computeCorrelations(sampledDf.extractMatrix(splitIndex, n, 0, sampledDf.getNumCols()));
         } else {
             n = this.n;
             S1 = this.S1;

@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
@@ -110,7 +111,7 @@ public class TrekSeparationClusters {
         this.alpha = alpha;
         this.dataSet = dataSet.getDoubleData().getDataCopy();
         this.corr = new CorrelationMatrix(dataSet);
-        this.S = new CorrelationMatrix(dataSet).getMatrix().getDataCopy();
+        this.S = this.corr.getMatrix().getDataCopy();
     }
 
     /**

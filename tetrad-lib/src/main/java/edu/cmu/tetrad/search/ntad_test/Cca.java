@@ -52,7 +52,7 @@ public class Cca extends NtadTest {
     @Override
     public double tetrad(int[][] tet, boolean resample, double frac) {
         // Determine S (either resample or use the default covariance matrix)
-        SimpleMatrix S = resample ? computeCovariance(sampleRows(df, frac)) : this.S;
+        SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
         int[] a = tet[0];
         int[] b = tet[1];
         int n = resample ? (int) (frac * this.n) : this.n;

@@ -31,7 +31,7 @@ public class Wishart extends NtadTest {
 
     @Override
     public double tetrad(int[][] tet, boolean resample, double frac) {
-        SimpleMatrix S = resample ? computeCovariance(sampleRows(df, frac)) : this.S;
+        SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
         int[] a = tet[0];
         int[] b = tet[1];
         int n = resample ? (int) (frac * this.n) : this.n;
