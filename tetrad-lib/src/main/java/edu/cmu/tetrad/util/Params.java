@@ -1039,6 +1039,10 @@ public final class Params {
      * Constant <code>MIMBUILD_TYPE="mimbuildType"</code>
      */
     public static final String MIMBUILD_TYPE = "mimbuildType";
+    /**
+     * Constant <code>EXPECTED_SAMPLE_SIZE="expectedSampleSize"</code>
+     */
+    public static final String EXPECTED_SAMPLE_SIZE = "expectedSampleSize";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

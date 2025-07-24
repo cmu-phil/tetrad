@@ -66,13 +66,26 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
             System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
         }
 
-        DataSet dataSet = (DataSet) dataModel;
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
+        int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
 
+        edu.cmu.tetrad.search.TrekSeparationClusters search;
 
-        edu.cmu.tetrad.search.TrekSeparationClusters search
-                = new edu.cmu.tetrad.search.TrekSeparationClusters(dataSet, alpha);
+        if (dataModel instanceof CovarianceMatrix) {
+            if (ess == -1) {
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha);
+            } else {
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, ess);
+            }
+        } else {
+            if (ess == -1) {
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha);
+            } else {
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha, ess);
+            }
+        }
+
         search.setIncludeAllNodes(includeAllNodes);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         Graph graph = search.search();
@@ -86,7 +99,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
             Graph fullGraph;
 
 
-            Fofc.MimbuildType mimbuildType =  switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
+            Fofc.MimbuildType mimbuildType = switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
                 case 1 -> Fofc.MimbuildType.PCA;
                 case 2 -> Fofc.MimbuildType.BOLLEN;
                 default -> Fofc.MimbuildType.PCA;
@@ -104,8 +117,12 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
                     latentNames.add(clusters.getClusterName(i));
                 }
 
+                if (!(dataModel instanceof DataSet)) {
+                    throw new IllegalArgumentException("Mimbuild requires tabular data.");
+                }
+
                 try {
-                    structureGraph = mimbuild.search(partition, latentNames, dataSet);
+                    structureGraph = mimbuild.search(partition, latentNames, (DataSet) dataModel);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (SingularMatrixException e) {
@@ -119,7 +136,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
 
                 TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-                fullGraph = mimbuild.getFullGraph(includeAllNodes ? dataSet.getVariables() : new ArrayList<>());
+                fullGraph = mimbuild.getFullGraph(includeAllNodes ? ((DataSet) dataModel).getVariables() : new ArrayList<>());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             } else {
@@ -134,8 +151,12 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
                     latentNames.add(clusters.getClusterName(i));
                 }
 
+                if (!(dataModel instanceof DataSet)) {
+                    throw new IllegalArgumentException("Mimbuild requires tabular data.");
+                }
+
                 try {
-                    structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix(dataSet));
+                    structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix((DataSet) dataModel));
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (SingularMatrixException e) {
@@ -149,7 +170,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
 
                 TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
 
-                fullGraph = mimbuild.getFullGraph(includeAllNodes ? dataSet.getVariables(): new ArrayList<>());
+                fullGraph = mimbuild.getFullGraph(includeAllNodes ? ((DataSet) dataModel).getVariables() : new ArrayList<>());
                 LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
             }
@@ -202,6 +223,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.MIMBUILD_TYPE);
+        parameters.add(Params.EXPECTED_SAMPLE_SIZE);
         parameters.add(Params.VERBOSE);
 
         return parameters;

@@ -25,23 +25,19 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
-import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.decomposition.chol.CholeskyDecompositionLDL_DDRM;
-import org.ejml.interfaces.decomposition.CholeskyDecomposition;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import static java.lang.Math.max;
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
@@ -84,14 +80,14 @@ public class TrekSeparationClusters {
      */
     private final double alpha;
     /**
-     * The data.
-     */
-    private final SimpleMatrix dataSet;
-    /**
      * A standard normal distribution object used for statistical calculations within the Fofc class. The distribution
      * is characterized by a mean of 0 and a standard deviation of 1.
      */
     private final NormalDistribution normal = new NormalDistribution(0, 1);
+    /**
+     * The sample size.
+     */
+    private final int sampleSize;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -108,16 +104,48 @@ public class TrekSeparationClusters {
     private boolean includeAllNodes = false;
 
     /**
-     * Conctructor.
+     * Conctructor using a dataset.
      *
      * @param dataSet The continuous dataset searched over.
      * @param alpha   The alpha significance cutoff.
      */
     public TrekSeparationClusters(DataSet dataSet, double alpha) {
-        this.variables = dataSet.getVariables();
+        this(new CorrelationMatrix(dataSet), alpha);
+    }
+
+    /**
+     * Conctructor using a dataset.
+     *
+     * @param dataSet The continuous dataset searched over.
+     * @param alpha   The alpha significance cutoff.
+     * @param ess     The expected sample size.
+     */
+    public TrekSeparationClusters(DataSet dataSet, double alpha, int ess) {
+        this(new CorrelationMatrix(dataSet), alpha, ess);
+    }
+
+    /**
+     * Constructor using a covariance matrix (could be a correlation matrix).
+     *
+     * @param cov   The covariance matrix.
+     * @param alpha The alpha level.
+     */
+    public TrekSeparationClusters(CovarianceMatrix cov, double alpha) {
+        this(new CorrelationMatrix(cov), alpha, cov.getSampleSize());
+    }
+
+    /**
+     * Constructor for the TrekSeparationClusters class using a covariance matrix.
+     *
+     * @param cov   The covariance matrix that could also be a correlation matrix.
+     * @param alpha The alpha level for significance cutoff.
+     * @param ess   The expected sample size for the analysis.
+     */
+    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, int ess) {
+        this.variables = cov.getVariables();
         this.alpha = alpha;
-        this.dataSet = dataSet.getDoubleData().getDataCopy();
-        this.corr = new CorrelationMatrix(dataSet);
+        this.sampleSize = ess;
+        this.corr = new CorrelationMatrix(cov);
         this.S = this.corr.getMatrix().getDataCopy();
     }
 
@@ -192,7 +220,7 @@ public class TrekSeparationClusters {
                     }
                 }
 
-                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, dataSet.getNumRows(), 1, true);
+                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, sampleSize, 1, true);
 
                 if (p >= alpha) {
                     List<Integer> _cluster = new ArrayList<>();
