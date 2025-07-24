@@ -25,16 +25,23 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.decomposition.chol.CholeskyDecompositionLDL_DDRM;
+import org.ejml.interfaces.decomposition.CholeskyDecomposition;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static java.lang.Math.max;
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
@@ -171,14 +178,9 @@ public class TrekSeparationClusters {
         }
 
         Set<List<Integer>> clusters = new HashSet<>();
-        Set<Integer> usedVariables = new HashSet<>();
 
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
-                if (usedVariables.contains(variables.get(i)) && usedVariables.contains(variables.get(j))) {
-                    continue;
-                }
-
                 int[] yIndices = new int[]{variables.get(i), variables.get(j)};
                 int[] xIndices = new int[variables.size() - 2];
 
@@ -190,7 +192,7 @@ public class TrekSeparationClusters {
                     }
                 }
 
-                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, dataSet.getNumRows(), 1);
+                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, dataSet.getNumRows(), 1, true);
 
                 if (p >= alpha) {
                     List<Integer> _cluster = new ArrayList<>();
@@ -199,8 +201,6 @@ public class TrekSeparationClusters {
 
                     if (clusterDependent(_cluster)) {
                         clusters.add(_cluster);
-                        usedVariables.add(variables.get(i));
-                        usedVariables.add(variables.get(j));
                     }
                 }
             }
@@ -332,22 +332,6 @@ public class TrekSeparationClusters {
         }
 
         return convertSearchGraphNodes(_clustering, includeAllNodes);
-    }
-
-    /**
-     * Returns the union of all integers in the given list of clusters.
-     *
-     * @param pureClusters The set of clusters, where each cluster is represented as a list of integers.
-     * @return A set containing the union of all integers in the clusters.
-     */
-    private Set<Integer> union(Set<List<Integer>> pureClusters) {
-        Set<Integer> unionPure = new HashSet<>();
-
-        for (Collection<Integer> cluster : pureClusters) {
-            unionPure.addAll(cluster);
-        }
-
-        return unionPure;
     }
 
     /**

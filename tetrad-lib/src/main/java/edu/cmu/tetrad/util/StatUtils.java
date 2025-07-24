@@ -25,6 +25,10 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.UtilEjml;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
+import org.ejml.interfaces.decomposition.SingularValueDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
@@ -2743,7 +2747,7 @@ public final class StatUtils {
      * @param d        The hypothesized rank which defines the number of singular values to consider.
      * @return The calculated p-value of the test based on the given inputs.
      */
-    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
+    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d, boolean relaxedScaling) {
         if (xIndices.length == 0 || yIndices.length == 0) {
             throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
         }
@@ -2751,16 +2755,6 @@ public final class StatUtils {
         int p = xIndices.length;
         int q = yIndices.length;
         int r = Math.min(p, q);
-
-        if (p < q) {
-            S = S.transpose();
-            int t = p;
-            p = q;
-            q = t;
-            int[] tIndices =  xIndices;
-            xIndices = yIndices;
-            yIndices = tIndices;
-        }
 
         if (d < 0 || d >= r) {
             throw new IllegalArgumentException("d must be in [0, min(p, q) - 1]");
@@ -2779,6 +2773,16 @@ public final class StatUtils {
         SimpleMatrix XXinvSqrt = chol(XX).invert();
         SimpleMatrix YYinvSqrt = chol(YY).invert();
         SimpleMatrix product = XXinvSqrt.mult(XY).mult(YYinvSqrt);
+
+        // Transpose if p < q
+        if (p < q) {
+            product = product.transpose();
+
+            // swap p and q
+            int tmp = p;
+            p = q;
+            q = tmp;
+        }
 
         // Step 3: SVD
         double[] s = product.svd().getSingularValues();
@@ -2799,7 +2803,7 @@ public final class StatUtils {
         }
 
         // Step 5: Scale
-        double scale = n - 0.5 * (p + q + 1);
+        double scale = relaxedScaling ? n : n - 0.5 * (p + q + 1);
         stat *= -scale;
 
         // Step 6: Chi-squared test
@@ -2833,7 +2837,7 @@ public final class StatUtils {
         }
 
         for (int d = 1; d <= maxRank; d++) {
-            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d);
+            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d, true);
 
             // Step 6: Stop when p-value is below the threshold
             if (pValue < pThreshold) {
