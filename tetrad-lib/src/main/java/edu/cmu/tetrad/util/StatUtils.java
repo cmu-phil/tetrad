@@ -25,10 +25,6 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
-import org.ejml.UtilEjml;
-import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
-import org.ejml.interfaces.decomposition.SingularValueDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
@@ -2740,11 +2736,12 @@ public final class StatUtils {
      * calculates the test statistic using the last d singular values of a product matrix derived from the input
      * covariance matrix and performs a chi-squared test to return the p-value.
      *
-     * @param S        The input correlation matrix represented as a SimpleMatrix object.
-     * @param xIndices The indices representing the subset of variables in the first group.
-     * @param yIndices The indices representing the subset of variables in the second group.
-     * @param n        The sample size used in the analysis.
-     * @param d        The hypothesized rank which defines the number of singular values to consider.
+     * @param S              The input correlation matrix represented as a SimpleMatrix object.
+     * @param xIndices       The indices representing the subset of variables in the first group.
+     * @param yIndices       The indices representing the subset of variables in the second group.
+     * @param n              The sample size used in the analysis.
+     * @param d              The hypothesized rank which defines the number of singular values to consider.
+     * @param relaxedScaling If true, the stat is multipled by n instead of n + 0.5(p + q + 1).
      * @return The calculated p-value of the test based on the given inputs.
      */
     public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d, boolean relaxedScaling) {

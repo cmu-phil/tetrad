@@ -672,6 +672,14 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return accepts_rejects_lowRecall;
     }
 
+    /**
+     * Calculates and prints precision and recall metrics for the whole graph, comparing an estimated graph
+     * to the true graph. Metrics include adjacency precision and recall, arrowhead precision and recall,
+     * tail precision and recall, and circle precision and recall.
+     *
+     * @param estimatedGraph the graph generated through estimation or inference methods
+     * @param trueGraph the ground truth graph to which the estimated graph is compared
+     */
     public void getPrecisionAndRecallWholeGraph(Graph estimatedGraph, Graph trueGraph) {
         // Lookup graph is the same structure as trueGraph's structure but node objects replaced by estimated graph nodes.
         Graph lookupGraph = GraphUtils.replaceNodes(trueGraph, estimatedGraph.getNodes());
