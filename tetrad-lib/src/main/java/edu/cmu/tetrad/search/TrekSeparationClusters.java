@@ -220,7 +220,9 @@ public class TrekSeparationClusters {
                     }
                 }
 
-                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, sampleSize, 1, true);
+                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, sampleSize, 1);
+
+                System.out.println("p = " + p);
 
                 if (p >= alpha) {
                     List<Integer> _cluster = new ArrayList<>();

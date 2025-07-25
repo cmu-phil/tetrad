@@ -250,7 +250,7 @@ public class Gin {
                     }
                 }
 
-                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, dataSet.getNumRows(), 1, true);
+                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, dataSet.getNumRows(), 1);
 
                 System.out.println("p = " + p);
 

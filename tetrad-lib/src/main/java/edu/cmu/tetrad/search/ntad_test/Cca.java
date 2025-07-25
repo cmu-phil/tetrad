@@ -56,7 +56,7 @@ public class Cca extends NtadTest {
 
         // Use the getCcaPValueRankD method for rank d = 1 (or make d configurable if needed)
         int d = 1;  // You can adjust this if you want to explore larger rank tests
-        return StatUtils.getCcaPValueRankD(S, a, b, n, d, true);
+        return StatUtils.getCcaPValueRankD(S, a, b, n, d);
     }
 
     @Override

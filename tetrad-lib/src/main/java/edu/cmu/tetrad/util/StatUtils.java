@@ -2736,15 +2736,14 @@ public final class StatUtils {
      * calculates the test statistic using the last d singular values of a product matrix derived from the input
      * covariance matrix and performs a chi-squared test to return the p-value.
      *
-     * @param S              The input correlation matrix represented as a SimpleMatrix object.
-     * @param xIndices       The indices representing the subset of variables in the first group.
-     * @param yIndices       The indices representing the subset of variables in the second group.
-     * @param n              The sample size used in the analysis.
-     * @param d              The hypothesized rank which defines the number of singular values to consider.
-     * @param relaxedScaling If true, the stat is multipled by n instead of n + 0.5(p + q + 1).
+     * @param S        The input correlation matrix represented as a SimpleMatrix object.
+     * @param xIndices The indices representing the subset of variables in the first group.
+     * @param yIndices The indices representing the subset of variables in the second group.
+     * @param n        The sample size used in the analysis.
+     * @param d        The hypothesized rank which defines the number of singular values to consider.
      * @return The calculated p-value of the test based on the given inputs.
      */
-    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d, boolean relaxedScaling) {
+    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
         if (xIndices.length == 0 || yIndices.length == 0) {
             throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
         }
@@ -2753,12 +2752,12 @@ public final class StatUtils {
         int q = yIndices.length;
         int r = Math.min(p, q);
 
-        if (d < 0 || d >= r) {
-            throw new IllegalArgumentException("d must be in [0, min(p, q) - 1]");
+        if (d < 1 || d > r) {
+            throw new IllegalArgumentException("d must be in [1, min(p, q)]");
         }
 
-        if (n <= p + q + 1) {
-            throw new IllegalArgumentException("Sample size too small for reliable test.");
+        if (n < p + q) {
+            throw new IllegalArgumentException("Sample size too small for a meaningful test.");
         }
 
         // Step 1: Extract submatrices
@@ -2786,25 +2785,22 @@ public final class StatUtils {
 
         // Step 4: Compute stat from the LAST (r - d) singular values
         double stat = 0.0;
-        for (int i = d; i < r; i++) {
-            double val = s[i];
+        int i = r - d + 1;
 
-            if (val < 0.0 || val > 1.0) {
-                throw new IllegalStateException("Singular value out of range: " + val);
-            }
-
-//            val = Math.min(1.0, Math.max(0.0, val)); // clip to [0, 1]
+        for (int j = i; j <= r; j++) {
+            double val = s[j - 1];
+            val = Math.min(1.0, Math.max(0.0, val)); // clip to [0, 1]
             double adjusted = 1.0 - val * val;
-//            adjusted = Math.max(adjusted, 1e-20); // avoid log(0)
+            adjusted = Math.max(adjusted, 1e-10); // avoid log(0)
             stat += Math.log(adjusted);
         }
 
         // Step 5: Scale
-        double scale = relaxedScaling ? n : n - 0.5 * (p + q + 1);
+        double scale = (n - 1) - 0.5 * (p + q + 1);
         stat *= -scale;
 
         // Step 6: Chi-squared test
-        int df = (p - d) * (q - d);
+        int df = (p - i + 1) * (q - i + 1);
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         return 1.0 - chi2.cumulativeProbability(stat);
     }
@@ -2834,7 +2830,7 @@ public final class StatUtils {
         }
 
         for (int d = 1; d <= maxRank; d++) {
-            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d, true);
+            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d);
 
             // Step 6: Stop when p-value is below the threshold
             if (pValue < pThreshold) {
