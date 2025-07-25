@@ -42,24 +42,23 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 
 
 /**
- * Implements the Find One Factor Clusters (FOFC) algorithm by Erich Kummerfeld, which uses reasoning about vanishing
- * tetrads of algorithms to infer clusters of the measured variables in a dataset that each be explained by a single
- * latent variable. A reference is the following
+ * Implements the Find Two Factor Clusters (FOFC) algorithm, which uses reasoning about vanishing tetrads of algorithms
+ * to infer clusters of the measured variables in a dataset that each be explained by a single latent variable. The
+ * reference is as follows:
  * <p>
- * Kummerfeld, E., &amp; Ramsey, J. (2016, August). Causal clustering for 1-factor measurement models. In Proceedings of
- * the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1655-1664).
+ * Kummerfeld, E. &amp; Ramsey, J. &amp; Yang, R. &amp; Spirtes, P. &amp; Scheines, R. (2014). Causal Clustering for
+ * 2-Factor Measurement Models. In T. Calders, F. Esposito, E. Hullermeier, and R. Meo, editors, Machine Learning and
+ * Knowledge Discovery in Databases, volume 8725 of Lecture Notes in Computer Science, pages 34-49. Springer Berlin
+ * Heidelberg.
  * <p>
- * The algorithm uses tests of vanishing tetrads (list of 4 variables that follow a certain pattern in the
- * exchangeability of latent paths with respect to the data). The notion of vanishing tetrads is an old one but is
- * explained in this book:
- * <p>
- * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
+ * The two-factor version of the algorithm substitutes sextad tests for tetrad tests and searches for clusters of at
+ * least 6 variables that can be explained by two latent factors by calculating vanishing sextads.
  *
- * @author erichkummerfeld
  * @author peterspirtes
+ * @author erichkummerfeld
  * @author josephramsey
  * @version $Id: $Id
- * @see Ftfc
+ * @see Fofc
  */
 public class Ftfc2 {
     /**
