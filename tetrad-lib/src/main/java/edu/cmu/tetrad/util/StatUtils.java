@@ -2803,6 +2803,7 @@ public final class StatUtils {
 
         // Step 6: Chi-squared test
         int df = (p - i + 1) * (q - i + 1);
+//        int df = (p - d) * (q - d);
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         return 1.0 - chi2.cumulativeProbability(stat);
     }

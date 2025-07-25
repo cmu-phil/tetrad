@@ -6,10 +6,15 @@ import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.ntad_test.BollenTing;
+import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -59,8 +64,11 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         double alpha = parameters.getDouble(Params.ALPHA);
 
         assert dataSet instanceof DataSet;
-        edu.cmu.tetrad.search.Ftfc search
-                = new edu.cmu.tetrad.search.Ftfc((DataSet) dataSet, alpha);
+        edu.cmu.tetrad.search.Ftfc2 search
+                = new edu.cmu.tetrad.search.Ftfc2((DataSet) dataSet,
+                new BollenTing(((DataSet) dataSet).getDoubleData().getDataCopy(), false),
+                alpha);
+        search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return search.search();
@@ -109,6 +117,7 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
+        parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.VERBOSE);
 
         return parameters;
