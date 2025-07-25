@@ -197,7 +197,7 @@ public class Ftfc2 {
 
         int count = 0;
         boolean changed;
-//
+
         do {
             changed = exchange(allClusters);
         } while (changed && count++ < 500);
