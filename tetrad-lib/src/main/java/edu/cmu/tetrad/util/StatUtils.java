@@ -2744,6 +2744,8 @@ public final class StatUtils {
      * @return The calculated p-value of the test based on the given inputs.
      */
     public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
+        // See https://en.wikipedia.org/wiki/Canonical_correlation for an explanation of this test.
+
         if (xIndices.length == 0 || yIndices.length == 0) {
             throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
         }

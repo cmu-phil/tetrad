@@ -222,8 +222,6 @@ public class TrekSeparationClusters {
 
                 double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, sampleSize, 1);
 
-                System.out.println("p = " + p);
-
                 if (p >= alpha) {
                     List<Integer> _cluster = new ArrayList<>();
                     _cluster.add(variables.get(i));
@@ -251,30 +249,26 @@ public class TrekSeparationClusters {
      */
     private Set<List<Integer>> mergeOverlappingClusters(Set<List<Integer>> clusters) {
         boolean merged;
+
         do {
             merged = false;
             Set<List<Integer>> newClusters = new HashSet<>();
-            Set<List<Integer>> used = new HashSet<>();
 
             for (List<Integer> cluster1 : clusters) {
-                if (used.contains(cluster1)) continue;
-
                 List<Integer> mergedCluster = new ArrayList<>(cluster1);
 
                 for (List<Integer> cluster2 : clusters) {
-                    if (cluster1 == cluster2) continue;// || used.contains(cluster2)) continue;
+                    if (cluster1 == cluster2) continue;
 
                     Set<Integer> intersection = new HashSet<>(cluster1);
                     intersection.retainAll(cluster2);
 
-                    if (!intersection.isEmpty()) {
+                    if (!intersection.isEmpty() && !new HashSet<>(mergedCluster).containsAll(cluster2)) {
                         mergedCluster.addAll(cluster2);
-                        used.add(cluster2);
                         merged = true;
                     }
                 }
 
-                used.add(cluster1);
                 newClusters.add(mergedCluster);
             }
 
