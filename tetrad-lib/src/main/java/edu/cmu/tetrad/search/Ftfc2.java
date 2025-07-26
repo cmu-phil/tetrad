@@ -194,12 +194,12 @@ public class Ftfc2 {
         Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
 
-        int count = 0;
-        boolean changed;
-
-        do {
-            changed = exchange(allClusters);
-        } while (changed && count++ < 500);
+//        int count = 0;
+//        boolean changed;
+//
+//        do {
+//            changed = exchange(allClusters);
+//        } while (changed && count++ < 500);
 
         Set<List<Integer>> finalClusters = new HashSet<>();
 
@@ -282,7 +282,7 @@ public class Ftfc2 {
 
             boolean allSextadsPure = true;
 
-            // Check all sextets with o and 3 other elements in the cluster
+            // Check all sextets with o and 5 other elements in the cluster
             int size = cluster.size();
 
             for (int i = 0; i < size - 2 && allSextadsPure; i++) {
@@ -563,10 +563,10 @@ public class Ftfc2 {
         int n5 = sextet.get(4);
         int n6 = sextet.get(5);
 
-        return vanishes(n1, n2, n3, n4, n5, n6)
-               && vanishes(n3, n2, n1, n6, n5, n4)
-               && vanishes(n4, n5, n6, n1, n2, n3)
-               && vanishes(n6, n5, n4, n3, n2, n1);
+        return vanishes(n1, n2, n3, n4, n5, n6);
+//               && vanishes(n3, n2, n1, n6, n5, n4)
+//               && vanishes(n4, n5, n6, n1, n2, n3)
+//               && vanishes(n6, n5, n4, n3, n2, n1);
     }
 
     /**
@@ -605,7 +605,7 @@ public class Ftfc2 {
             }
         }
 
-        return numDependencies > all * 0.75;
+        return numDependencies > all * 0.90;
     }
 
     /**
@@ -631,7 +631,7 @@ public class Ftfc2 {
         Sextad t10 = new Sextad(n1, n2, n6, n3, n4, n5);
 
         List<Sextad[]> independents = new ArrayList<>();
-        independents.add(new Sextad[]{t1, t2, t3, t5, t6});
+        independents.add(new Sextad[]{t1, t2, t3, t5, t6, t6});
 
         for (Sextad[] sextads : independents) {
             List<int[][]> _independents = new ArrayList<>();
