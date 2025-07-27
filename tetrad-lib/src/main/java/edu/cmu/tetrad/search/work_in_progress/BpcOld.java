@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fofc;
-import edu.cmu.tetrad.search.Ftfc;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndTestGSquare;
@@ -73,7 +72,7 @@ import java.util.*;
  * @author Ricardo Silva
  * @version $Id: $Id
  * @see Fofc
- * @see Ftfc
+ * @see Ftfc2
  */
 public final class BpcOld {
     /*

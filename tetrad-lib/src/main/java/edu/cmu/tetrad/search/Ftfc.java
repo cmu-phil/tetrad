@@ -22,21 +22,20 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ntad_test.BollenTing;
 import edu.cmu.tetrad.search.ntad_test.NtadTest;
+import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.search.utils.Sextad;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
@@ -63,7 +62,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public class Ftfc {
     /**
-     * The correlation matrix.
+     * The type of test used.
      */
     private final CorrelationMatrix corr;
     /**
@@ -75,65 +74,102 @@ public class Ftfc {
      */
     private final double alpha;
     /**
-     * The Delta test. Testing two sextads simultaneously.
+     * The data.
+     */
+    private final transient DataModel dataModel;
+    /**
+     * A standard normal distribution object used for statistical calculations within the Fofc class. The distribution
+     * is characterized by a mean of 0 and a standard deviation of 1.
+     */
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
+    /**
+     * The sextad test to use.
      */
     private final NtadTest test;
     /**
-     * The clusters found.
+     * The clusters that are output by the algorithm from the last call to search().
      */
     private List<List<Node>> clusters;
     /**
-     * Whether verbose output should be printed.
+     * Whether verbose output is desired.
      */
     private boolean verbose;
+    /**
+     * Indicates whether all nodes should be included in the graph construction or processing. When set to true, the
+     * algorithm will incorporate all nodes into the resulting graph, regardless of specific clustering or filtering
+     * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
+     */
+    private boolean includeAllNodes = false;
+    /**
+     * A cache of pure sextets.
+     */
+    private Set<Set<Integer>> pureSextets;
+    /**
+     * A cache of impure sextets.
+     */
+    private Set<Set<Integer>> impureSextets;
 
     /**
      * Conctructor.
      *
      * @param dataSet The continuous dataset searched over.
+     * @param test    The NTad test to use.
      * @param alpha   The alpha significance cutoff.
      */
-    public Ftfc(DataSet dataSet, double alpha) {
+    public Ftfc(DataSet dataSet, NtadTest test, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
-        this.test = new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
+        this.test = test;
+        this.dataModel = dataSet;
         this.corr = new CorrelationMatrix(dataSet);
     }
 
     /**
-     * Runs the search and returns a graph of clusters, each of which has two common latent parents.
+     * Runs the search and returns a graph of clusters with the ir respective latent parents.
      *
      * @return This graph.
      */
     public Graph search() {
+        this.pureSextets = new HashSet<>();
+        this.impureSextets = new HashSet<>();
+
         Set<List<Integer>> allClusters;
-        allClusters = estimateClustersSAG();
-        this.clusters = variablesForIndices(allClusters);
-        return convertToGraph(allClusters);
+
+        allClusters = estimateClustersSag();
+        this.clusters = ClusterSignificance.variablesForIndices(allClusters, variables);
+
+        log("clusters = " + this.clusters);
+
+        if (verbose) {
+            ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
+            clusterSignificance.printClusterPValues(allClusters);
+        }
+
+        return convertToGraph(allClusters, includeAllNodes);
     }
 
     /**
-     * Returns clusters output by the algorithm from the last call to search().
+     * The clusters that are output by the algorithm from the last call to search().
      *
-     * @return These clusters.
+     * @return a {@link List} object
      */
     public List<List<Node>> getClusters() {
         return this.clusters;
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * <p>Setter for the field <code>verbose</code>.</p>
      *
-     * @param verbose True if the case.
+     * @param verbose a boolean
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Returns a list of all variables.
+     * Retrieves a list of all variables.
      *
-     * @return A list of all variables.
+     * @return A list of integers representing all variables.
      */
     private List<Integer> allVariables() {
         List<Integer> _variables = new ArrayList<>();
@@ -142,316 +178,375 @@ public class Ftfc {
     }
 
     /**
-     * Estimates the clusters using the SAG algorithm.
+     * Estimates clusters using the tetrads-first algorithm.
      *
-     * @return A set of clusters found by the SAG algorithm.
+     * @return A set of lists of integers representing the clusters.
      */
-    private Set<List<Integer>> estimateClustersSAG() {
-        List<Integer> _variables = allVariables();
+    private Set<List<Integer>> estimateClustersSag() {
+        List<Integer> variables = allVariables();
+        if (new HashSet<>(variables).size() != variables.size()) {
+            throw new IllegalArgumentException("Variables must be unique.");
+        }
 
-        Set<List<Integer>> pureClusters = findPureClusters(_variables);
-        Set<List<Integer>> mixedClusters = findMixedClusters(_variables, unionPure(pureClusters));
+        Set<List<Integer>> pureClusters = findPureClusters();
+        Set<Integer> unionClustered = union(pureClusters);
+        Set<List<Integer>> mixedClusters = findMixedClusters(unionClustered);
         Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
-        return allClusters;
+
+//        int count = 0;
+//        boolean changed;
+//
+//        do {
+//            changed = exchange(allClusters);
+//        } while (changed && count++ < 500);
+
+        Set<List<Integer>> finalClusters = new HashSet<>();
+
+        for (List<Integer> cluster : new HashSet<>(allClusters)) {
+            if (cluster.size() >= 6) {
+                finalClusters.add(cluster);
+            }
+        }
+
+        Set<Integer> unionClustered2 = union(finalClusters);
+        Set<List<Integer>> mixedClusters2 = findMixedClusters(unionClustered2);
+
+        finalClusters.addAll(mixedClusters2);
+
+        System.out.println("final clusters = " + ClusterSignificance.variablesForIndices(finalClusters, this.variables));
+
+        return finalClusters;
     }
 
     /**
-     * Finds clusters of size 6 or higher for the IntSextad first algorithm.
-     *
-     * @param _variables The list of variables to search for pure clusters.
-     * @return A set of pure clusters found from the given list of variables.
+     * Finds clusters of size 6 or higher for the tetrad-first algorithm.
      */
-    private Set<List<Integer>> findPureClusters(List<Integer> _variables) {
+    private Set<List<Integer>> findPureClusters() {
+        List<Integer> variables = allVariables();
         Set<List<Integer>> clusters = new HashSet<>();
 
-        for (int k = 6; k >= 6; k--) {
-            VARIABLES:
-            while (!_variables.isEmpty()) {
-                if (this.verbose) {
-                    System.out.println(_variables);
-                }
-                if (_variables.size() < 6) break;
+        log(variables.toString());
 
-                ChoiceGenerator gen = new ChoiceGenerator(_variables.size(), 6);
-                int[] choice;
+        List<Integer> unclustered = new ArrayList<>(variables);
+        unclustered.removeAll(union(clusters));
 
-                while ((choice = gen.next()) != null) {
-                    int n1 = _variables.get(choice[0]);
-                    int n2 = _variables.get(choice[1]);
-                    int n3 = _variables.get(choice[2]);
-                    int n4 = _variables.get(choice[3]);
-                    int n5 = _variables.get(choice[4]);
-                    int n6 = _variables.get(choice[5]);
+        if (variables.size() < 6) return new HashSet<>();
 
-                    List<Integer> cluster = sextet(n1, n2, n3, n4, n5, n6);
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 6);
+        int[] choice;
 
-                    // Note that purity needs to be assessed with respect to all of the variables in order to
-                    // remove all latent-measure impurities between pairs of latents.
-                    if (pure(cluster)) {
-                        if (this.verbose) {
-                            log("Found a pure: " + variablesForIndices(cluster), false);
-                        }
-
-                        addOtherVariables(_variables, cluster);
-
-                        if (cluster.size() < k) continue;
-
-                        if (this.verbose) {
-                            log("Cluster found: " + variablesForIndices(cluster), true);
-                            System.out.println("Indices for cluster = " + cluster);
-                        }
-
-                        clusters.add(cluster);
-                        _variables.removeAll(cluster);
-
-                        continue VARIABLES;
-                    }
-                }
-
+        while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
+            int n1 = variables.get(choice[0]);
+            int n2 = variables.get(choice[1]);
+            int n3 = variables.get(choice[2]);
+            int n4 = variables.get(choice[3]);
+            int n5 = variables.get(choice[4]);
+            int n6 = variables.get(choice[5]);
+
+            if (!(unclustered.contains(n1) && unclustered.contains(n2) && unclustered.contains(n3)
+                  && unclustered.contains(n4) && unclustered.contains(n5) && unclustered.contains(n6))) {
+                continue;
+            }
+
+            List<Integer> cluster = sextad(n1, n2, n3, n4, n5, n6);
+
+            // Note that purity needs to be assessed with respect to all the variables to
+            // remove all latent-measure impurities between pairs of latents.
+            if (pure(cluster) == Purity.PURE) {
+                growCluster(unclustered, cluster);
+
+                if (this.verbose) {
+                    log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
+                }
+
+                clusters.add(cluster);
+                unclustered.removeAll(cluster);
+            }
         }
 
         return clusters;
     }
 
-    /**
-     * Adds other variables to the cluster if they meet certain conditions.
-     *
-     * @param _variables The list of variables to consider.
-     * @param cluster    The current cluster.
-     */
-    private void addOtherVariables(List<Integer> _variables, List<Integer> cluster) {
+    private void growCluster(List<Integer> unclustered, List<Integer> cluster) {
+        Iterator<Integer> iterator = unclustered.iterator();
 
-        O:
-        for (int o : _variables) {
+        while (iterator.hasNext()) {
+            int o = iterator.next();
+
             if (cluster.contains(o)) continue;
-            List<Integer> _cluster = new ArrayList<>(cluster);
 
-            ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 6);
-            int[] choice;
+            boolean allSextadsPure = true;
 
-            while ((choice = gen2.next()) != null) {
-                int t1 = _cluster.get(choice[0]);
-                int t2 = _cluster.get(choice[1]);
-                int t3 = _cluster.get(choice[2]);
-                int t4 = _cluster.get(choice[3]);
-                int t5 = _cluster.get(choice[4]);
+            // Check all sextets with o and 5 other elements in the cluster
+            int size = cluster.size();
 
-                List<Integer> sextad = pentad(t1, t2, t3, t4, t5);
-                sextad.add(o);
+            for (int i = 0; i < size - 2 && allSextadsPure; i++) {
+                for (int j = i + 1; j < size - 1 && allSextadsPure; j++) {
+                    for (int k = j + 1; k < size && allSextadsPure; k++) {
+                        for (int l = k + 1; l < size && allSextadsPure; l++) {
+                            for (int m = l + 1; m < size && allSextadsPure; m++) {
+                                List<Integer> sextad = List.of(cluster.get(i), cluster.get(j), cluster.get(k),
+                                        cluster.get(l), cluster.get(m), o);
 
-                if (!pure(sextad)) {
-                    continue O;
+                                if (pure(sextad) != Purity.PURE) {
+                                    allSextadsPure = false;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            log("Extending by " + this.variables.get(o), false);
-            cluster.add(o);
+            if (allSextadsPure) {
+                cluster.addLast(o);
+                iterator.remove();
+            }
         }
     }
 
     /**
-     * Finds clusters of size 5 for the sextet-first algorithm.
+     * Finds clusters of size 3 for the SAG algorithm.
      *
-     * @param remaining The list of remaining variables.
-     * @param unionPure The set of variables that have been added to clusters.
-     * @return The set of clusters of size 5 found by the algorithm.
+     * @param unionClustered The set of union pure variables.
+     * @return A set of lists of integers representing the mixed clusters.
      */
-    private Set<List<Integer>> findMixedClusters(List<Integer> remaining, Set<Integer> unionPure) {
-        Set<List<Integer>> pentads = new HashSet<>();
+    private Set<List<Integer>> findMixedClusters(Set<Integer> unionClustered) {
+        Set<List<Integer>> mixedClusters = new HashSet<>();
 
-        if (unionPure.isEmpty()) {
+        if (unionClustered.isEmpty()) {
             return new HashSet<>();
         }
 
-        REMAINING:
-        while (true) {
-            if (remaining.size() < 5) break;
+        Set<Integer> _unionClustered = new HashSet<>(unionClustered);
+        List<Integer> unclustered = new ArrayList<>(allVariables());
+        unclustered.removeAll(_unionClustered);
 
-            if (this.verbose) {
-                log("UnionPure = " + variablesForIndices(new ArrayList<>(unionPure)), false);
+        List<Integer> variables = new ArrayList<>(unclustered);
+
+        ChoiceGenerator gen = new ChoiceGenerator(unclustered.size(), 5);
+        int[] choice;
+
+
+        CHOICE:
+        while ((choice = gen.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
             }
 
-            ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 5);
-            int[] choice;
+            int n1 = unclustered.get(choice[0]);
+            int n2 = unclustered.get(choice[1]);
+            int n3 = unclustered.get(choice[2]);
+            int n4 = unclustered.get(choice[3]);
+            int n5 = unclustered.get(choice[4]);
 
-            while ((choice = gen.next()) != null) {
-                int t2 = remaining.get(choice[0]);
-                int t3 = remaining.get(choice[1]);
-                int t4 = remaining.get(choice[2]);
-                int t5 = remaining.get(choice[3]);
-                int t6 = remaining.get(choice[4]);
-
-                List<Integer> cluster = new ArrayList<>();
-                cluster.add(t2);
-                cluster.add(t3);
-                cluster.add(t4);
-                cluster.add(t5);
-                cluster.add(t6);
-
-                if (zeroCorr(cluster)) {
-                    continue;
-                }
-
-                // Check all x as a cross-check; really only one should be necessary.
-                boolean allVanish = true;
-                boolean someVanish = false;
-
-                for (int t1 : allVariables()) {
-                    if (cluster.contains(t1)) continue;
-
-                    List<Integer> _cluster = new ArrayList<>(cluster);
-                    _cluster.add(t1);
-
-
-                    if (vanishes(_cluster)) {
-                        someVanish = true;
-                    } else {
-                        allVanish = false;
-                        break;
-                    }
-                }
-
-                if (someVanish && allVanish) {
-                    pentads.add(cluster);
-                    unionPure.addAll(cluster);
-                    remaining.removeAll(cluster);
-
-                    if (this.verbose) {
-                        log("3-cluster found: " + variablesForIndices(cluster), false);
-                    }
-
-                    continue REMAINING;
-                }
+            if (!(variables.contains(n1) && variables.contains(n2) && variables.contains(n3)
+                  && variables.contains(n4) && variables.contains(n5))) {
+                continue;
             }
 
-            break;
+            List<Integer> cluster = new ArrayList<>();
+            cluster.add(n1);
+            cluster.add(n2);
+            cluster.add(n3);
+            cluster.add(n4);
+            cluster.add(n5);
+
+            for (int o : allVariables()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                if (cluster.contains(o)) continue;
+
+                List<Integer> _cluster = new ArrayList<>(cluster);
+                _cluster.add(o);
+
+                if (!clusterDependent(cluster)) {
+                    continue CHOICE;
+                }
+
+                if (!vanishes(_cluster)) {
+                    continue CHOICE;
+                }
+
+                mixedClusters.add(cluster);
+                variables.removeAll(cluster);
+
+                if (this.verbose) {
+                    log("5-cluster found: " + ClusterSignificance.variablesForIndices(cluster, this.variables));
+                }
+            }
         }
 
-        return pentads;
+        return mixedClusters;
     }
 
     /**
-     * Returns a list of Node objects corresponding to the indices in the provided cluster.
+     * Determines if a given sextet of variables satisfies the conditions for being considered pure.
      *
-     * @param cluster The list of indices representing variables.
-     * @return A list of Node objects corresponding to the indices in the cluster.
+     * @param sextet The list of integers representing a sextet of variables.
+     * @return The Purity judgment of the sextet
+     * @see Purity
      */
-    private List<Node> variablesForIndices(List<Integer> cluster) {
-        List<Node> _cluster = new ArrayList<>();
-
-        for (int c : cluster) {
-            _cluster.add(this.variables.get(c));
+    private Purity pure(List<Integer> sextet) {
+        if (!clusterDependent(sextet)) {
+            return Purity.UNDECIDED;
         }
 
-        return _cluster;
-    }
-
-    /**
-     * Returns a list of Node objects corresponding to the indices in the provided cluster.
-     *
-     * @param clusters The list of indices representing variables, for each cluster.
-     * @return A list of Node objects corresponding to the indices in the cluster.
-     */
-    private List<List<Node>> variablesForIndices(Set<List<Integer>> clusters) {
-        List<List<Node>> variables = new ArrayList<>();
-
-        for (List<Integer> cluster : clusters) {
-            variables.add(variablesForIndices(cluster));
+        if (pureSextets.contains(new HashSet<>(sextet))) {
+            return Purity.PURE;
         }
 
-        return variables;
-    }
-
-    /**
-     * Determines if a sextet of variables is pure.
-     *
-     * @param sextet The list of indices representing variables in the sextet.
-     * @return True if the sextet is pure, false otherwise.
-     */
-    private boolean pure(List<Integer> sextet) {
-        if (zeroCorr(sextet)) {
-            return false;
+        if (impureSextets.contains(new HashSet<>(sextet))) {
+            return Purity.IMPURE;
         }
 
         if (vanishes(sextet)) {
-            for (int o : allVariables()) {
+            List<Integer> vars = allVariables();
+
+            for (int o : vars) {
                 if (sextet.contains(o)) continue;
 
-                for (int i = 0; i < sextet.size(); i++) {
+                for (int j = 0; j < sextet.size(); j++) {
                     List<Integer> _sextet = new ArrayList<>(sextet);
-                    _sextet.remove(sextet.get(i));
-                    _sextet.add(i, o);
+                    _sextet.set(j, o);
 
-                    if (!(vanishes(_sextet))) {
-                        return false;
+                    if (!vanishes(_sextet)) {
+                        impureSextets.add(new HashSet<>(_sextet));
+                        return Purity.IMPURE;
                     }
                 }
             }
 
-            System.out.println("PURE: " + variablesForIndices(sextet));
+            System.out.println("PURE: " + sextet);
 
-            return true;
+            pureSextets.add(new HashSet<>(sextet));
+            return Purity.PURE;
+        } else {
+            impureSextets.add(new HashSet<>(sextet));
+            return Purity.IMPURE;
+        }
+    }
+
+    /**
+     * Attempts to move nodes from one cluster to another to improve clustering,.
+     *
+     * @param clusters The clusters to adjust.
+     * @return True if a change was made.
+     */
+    private boolean exchange(Set<List<Integer>> clusters) {
+        boolean moved = false;
+
+        for (List<Integer> cluster : new HashSet<>(clusters)) {
+            if (cluster.size() != 6) {
+                continue;
+            }
+
+            for (Integer o : new HashSet<>(cluster)) {
+                for (List<Integer> _cluster : new HashSet<>(clusters)) {
+                    if (_cluster == cluster) {
+                        continue;
+                    }
+
+                    if (_cluster.contains(o)) continue;
+                    if (!cluster.contains(o)) continue;
+
+                    if (isAllSextetsPureAppended(_cluster, o)) {
+                        _cluster.add(o);
+
+                        if (clusterDependent(_cluster)) {
+                            cluster.remove(o);
+                            clusters.remove(cluster);
+                            moved = true;
+                        } else {
+                            _cluster.remove(o);
+                        }
+                    }
+                }
+            }
+
+            Set<Integer> unclustered = new HashSet<>(allVariables());
+            Set<Integer> clustered = union(clusters);
+            unclustered.removeAll(clustered);
+
+            for (Integer o : new HashSet<>(unclustered)) {
+                for (List<Integer> _cluster : new HashSet<>(clusters)) {
+                    if (_cluster == cluster) {
+                        continue;
+                    }
+
+                    if (_cluster.contains(o)) continue;
+                    if (!cluster.contains(o)) continue;
+
+                    if (isAllSextetsPureAppended(_cluster, o)) {
+                        _cluster.add(o);
+
+                        if (clusterDependent(_cluster)) {
+                            cluster.remove(o);
+                            clusters.remove(cluster);
+                            moved = true;
+                        } else {
+                            _cluster.remove(o);
+                        }
+                    }
+                }
+            }
         }
 
-        return false;
+        return moved;
+    }
+
+    private boolean isAllSextetsPureAppended(List<Integer> cluster, int o) {
+
+        // Check all sextets with o and 3 other elements in the cluster
+        int size = cluster.size();
+
+        for (int i = 0; i < size - 2; i++) {
+            for (int j = i + 1; j < size - 1; j++) {
+                for (int k = j + 1; k < size; k++) {
+                    for (int l = k + 1; l < size; l++) {
+                        for (int m = l + 1; m < size; m++) {
+                            List<Integer> sextet = List.of(cluster.get(i), cluster.get(j), cluster.get(k),
+                                    cluster.get(l), cluster.get(m), o);
+
+                            if (pure(sextet) != Purity.PURE) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
-     * Constructs a List of six integers representing a sextet. The six integers must be unique.
+     * Constructs a sextet from four given integers.
      *
-     * @param n1 the first integer
-     * @param n2 the second integer
-     * @param n3 the third integer
-     * @param n4 the fourth integer
-     * @param n5 the fifth integer
-     * @param n6 the sixth integer
-     * @return a List of six integers representing a sextet
-     * @throws IllegalArgumentException if the sextet elements are not unique
+     * @param n1 The first integer.
+     * @param n2 The second integer.
+     * @param n3 The third integer.
+     * @param n4 The fourth integer.
+     * @param n5 The fifth integer.
+     * @param n6 The sixth integer.
+     * @return A list containing the four integers in the order they were passed in.
+     * @throws IllegalArgumentException If any of the integers are duplicated.
      */
-    private List<Integer> sextet(int n1, int n2, int n3, int n4, int n5, int n6) {
-        List<Integer> sextet = new ArrayList<>();
-        sextet.add(n1);
-        sextet.add(n2);
-        sextet.add(n3);
-        sextet.add(n4);
-        sextet.add(n5);
-        sextet.add(n6);
-
-        if (new HashSet<>(sextet).size() < 6)
-            throw new IllegalArgumentException("sextet elements must be unique: <" + n1 + ", " + n2 + ", " + n3
-                                               + ", " + n4 + ", " + n5 + ", " + n6 + ">");
-
-        return sextet;
-    }
-
-    /**
-     * Constructs a List of five integers representing a pentad. The five integers must be unique.
-     *
-     * @param n1 the first integer
-     * @param n2 the second integer
-     * @param n3 the third integer
-     * @param n4 the fourth integer
-     * @param n5 the fifth integer
-     * @return a List of five integers representing a pentad
-     * @throws IllegalArgumentException if the pentad elements are not unique
-     */
-    private List<Integer> pentad(int n1, int n2, int n3, int n4, int n5) {
-        List<Integer> pentad = new ArrayList<>();
-        pentad.add(n1);
-        pentad.add(n2);
-        pentad.add(n3);
-        pentad.add(n4);
-        pentad.add(n5);
-
-        if (new HashSet<>(pentad).size() < 5)
-            throw new IllegalArgumentException("pentad elements must be unique: <" + n1 + ", " + n2 + ", " + n3
-                                               + ", " + n4 + ", " + n5 + ">");
-
-        return pentad;
+    private List<Integer> sextad(int n1, int n2, int n3, int n4, int n5, int n6) {
+        List<Integer> sextad = new ArrayList<>();
+        sextad.add(n1);
+        sextad.add(n2);
+        sextad.add(n3);
+        sextad.add(n4);
+        sextad.add(n5);
+        sextad.add(n6);
+        return sextad;
     }
 
     /**
@@ -468,33 +563,46 @@ public class Ftfc {
         int n5 = sextet.get(4);
         int n6 = sextet.get(5);
 
-        return vanishes(n1, n2, n3, n4, n5, n6)
-               && vanishes(n3, n2, n1, n6, n5, n4)
-               && vanishes(n4, n5, n6, n1, n2, n3)
-               && vanishes(n6, n5, n4, n3, n2, n1);
+        return vanishes(n1, n2, n3, n4, n5, n6);
     }
 
     /**
-     * Determines whether any pair of variables in the given cluster has a correlation that does not meet a statistical
-     * significance threshold.
+     * Checks if a given cluster is pairwise dependent.
      *
-     * @param cluster The list of variables in the cluster.
-     * @return True if at least one pair of variables has a non-significant correlation; false otherwise.
+     * @param cluster The list of integers representing the cluster.
+     * @return True if the cluster is pairwise dependent, false otherwise.
      */
-    private boolean zeroCorr(List<Integer> cluster) {
-        int count = 0;
+    private boolean clusterDependent(List<Integer> cluster) {
+//        if (true) return true;
+
+        int numDependencies = 0;
+        int all = 0;
 
         for (int i = 0; i < cluster.size(); i++) {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = this.corr.getValue(cluster.get(i), cluster.get(j));
-                int N = this.corr.getSampleSize();
-                double f = sqrt(N) * FastMath.log((1. + r) / (1. - r));
-                double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(f)));
-                if (p > this.alpha) count++;
+
+                if (Double.isNaN(r)) {
+                    continue;
+                }
+
+                int n = this.corr.getSampleSize();
+                int zSize = 0; // Unconditional check.
+
+                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
+                double df = n - 3. - zSize;
+
+                double fisherZ = sqrt(df) * q;
+
+                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) < alpha) {
+                    numDependencies++;
+                }
+
+                all++;
             }
         }
 
-        return count > 0;
+        return numDependencies > all * 0.90;
     }
 
     /**
@@ -510,14 +618,15 @@ public class Ftfc {
      */
     private boolean vanishes(int n1, int n2, int n3, int n4, int n5, int n6) {
         Sextad t1 = new Sextad(n1, n2, n3, n4, n5, n6);
-        Sextad t2 = new Sextad(n1, n5, n6, n2, n3, n4);
-        Sextad t3 = new Sextad(n1, n4, n6, n2, n3, n5);
+        Sextad t2 = new Sextad(n1, n2, n4, n3, n5, n6);
+        Sextad t3 = new Sextad(n1, n2, n5, n3, n4, n6);
+        Sextad t4 = new Sextad(n1, n2, n6, n3, n4, n5);
         Sextad t5 = new Sextad(n1, n3, n4, n2, n5, n6);
         Sextad t6 = new Sextad(n1, n3, n5, n2, n4, n6);
         Sextad t7 = new Sextad(n1, n3, n6, n2, n4, n5);
-        Sextad t8 = new Sextad(n1, n2, n4, n3, n5, n6);
-        Sextad t9 = new Sextad(n1, n2, n5, n3, n4, n6);
-        Sextad t10 = new Sextad(n1, n2, n6, n3, n4, n5);
+        Sextad t8 = new Sextad(n1, n4, n5, n2, n3, n6);
+        Sextad t9 = new Sextad(n1, n4, n6, n2, n3, n5);
+        Sextad t10 = new Sextad(n1, n5, n6, n2, n3, n4);
 
         List<Sextad[]> independents = new ArrayList<>();
         independents.add(new Sextad[]{t1, t2, t3, t5, t6});
@@ -532,13 +641,19 @@ public class Ftfc {
                 _independents.add(new int[][]{x, y});
             }
 
-            double p = this.test.ntads(_independents);
+            if (this.test instanceof BollenTing) {
 
-            if (Double.isNaN(p)) {
-                return false;
+                double p = this.test.ntads(_independents);
+                if (Double.isNaN(p)) {
+                    return false;
+                }
+
+                if (p < this.alpha) return false;
+            } else {
+                if (!this.test.allGreaterThanAlpha(_independents, alpha)) {
+                    return false;
+                }
             }
-
-            if (p < this.alpha) return false;
         }
 
         return true;
@@ -551,8 +666,8 @@ public class Ftfc {
      * @param clusters The set of clusters represented by sets of nodes.
      * @return The graph representation of the clusters.
      */
-    private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
-        Graph graph = new EdgeListGraph(this.variables);
+    private Graph convertSearchGraphNodes(Set<Set<Node>> clusters, boolean includeAllNodes) {
+        Graph graph = new EdgeListGraph();
         List<Node> latentsA = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
@@ -587,17 +702,23 @@ public class Ftfc {
             }
         }
 
+        if (includeAllNodes) {
+            for (Node node : variables) {
+                if (!graph.containsNode(node)) graph.addNode(node);
+            }
+        }
+
         return graph;
     }
 
+
     /**
-     * Converts a set of clusters represented by sets of integer indices into a graph representation. Each cluster is
-     * represented by a latent node connected to its member nodes.
+     * Converts search graph nodes to a Graph object.
      *
-     * @param allClusters The set of clusters represented by sets of integer indices.
-     * @return The graph representation of the clusters.
+     * @param allClusters The set of sets of Node objects representing the clusters.
+     * @return A Graph object representing the search graph nodes.
      */
-    private Graph convertToGraph(Set<List<Integer>> allClusters) {
+    private Graph convertToGraph(Set<List<Integer>> allClusters, boolean includeAllNodes) {
         Set<Set<Node>> _clustering = new HashSet<>();
 
         for (List<Integer> cluster : allClusters) {
@@ -610,19 +731,19 @@ public class Ftfc {
             _clustering.add(nodes);
         }
 
-        return convertSearchGraphNodes(_clustering);
+        return convertSearchGraphNodes(_clustering, includeAllNodes);
     }
 
     /**
-     * Calculates the union of all elements in the given set of clusters.
+     * Returns the union of all integers in the given list of clusters.
      *
-     * @param pureClusters The set of clusters containing integer elements.
-     * @return The union of all elements in the given set of clusters.
+     * @param pureClusters The set of clusters, where each cluster is represented as a list of integers.
+     * @return A set containing the union of all integers in the clusters.
      */
-    private Set<Integer> unionPure(Set<List<Integer>> pureClusters) {
+    private Set<Integer> union(Set<List<Integer>> pureClusters) {
         Set<Integer> unionPure = new HashSet<>();
 
-        for (List<Integer> cluster : pureClusters) {
+        for (Collection<Integer> cluster : pureClusters) {
             unionPure.addAll(cluster);
         }
 
@@ -630,16 +751,28 @@ public class Ftfc {
     }
 
     /**
-     * Logs the given message if the toLog parameter is true.
+     * Logs a message if the verbose flag is set to true.
      *
-     * @param s     The message to be logged.
-     * @param toLog Indicates whether the message should be logged or not.
+     * @param s The message to log.
      */
-    private void log(String s, boolean toLog) {
-        if (toLog) {
+    private void log(String s) {
+        if (this.verbose) {
             TetradLogger.getInstance().log(s);
         }
     }
+
+    /*
+     * Indicates whether all nodes should be included in the graph construction or processing. When set to true, the
+     * algorithm will incorporate all nodes into the resulting graph, regardless of specific clustering or filtering
+     * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
+     *
+     * @param includeAllNodes True if all nodes should be included in the graph output.
+     */
+    public void setIncludeAllNodes(boolean includeAllNodes) {
+        this.includeAllNodes = includeAllNodes;
+    }
+
+    private enum Purity {PURE, IMPURE, UNDECIDED}
 }
 
 
