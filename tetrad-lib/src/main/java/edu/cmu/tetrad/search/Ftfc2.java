@@ -83,7 +83,7 @@ public class Ftfc2 {
      */
     private final NormalDistribution normal = new NormalDistribution(0, 1);
     /**
-     * The Tetrad test to use.
+     * The sextad test to use.
      */
     private final NtadTest test;
     /**
@@ -564,9 +564,6 @@ public class Ftfc2 {
         int n6 = sextet.get(5);
 
         return vanishes(n1, n2, n3, n4, n5, n6);
-//               && vanishes(n3, n2, n1, n6, n5, n4)
-//               && vanishes(n4, n5, n6, n1, n2, n3)
-//               && vanishes(n6, n5, n4, n3, n2, n1);
     }
 
     /**
@@ -621,17 +618,18 @@ public class Ftfc2 {
      */
     private boolean vanishes(int n1, int n2, int n3, int n4, int n5, int n6) {
         Sextad t1 = new Sextad(n1, n2, n3, n4, n5, n6);
-        Sextad t2 = new Sextad(n1, n5, n6, n2, n3, n4);
-        Sextad t3 = new Sextad(n1, n4, n6, n2, n3, n5);
+        Sextad t2 = new Sextad(n1, n2, n4, n3, n5, n6);
+        Sextad t3 = new Sextad(n1, n2, n5, n3, n4, n6);
+        Sextad t4 = new Sextad(n1, n2, n6, n3, n4, n5);
         Sextad t5 = new Sextad(n1, n3, n4, n2, n5, n6);
         Sextad t6 = new Sextad(n1, n3, n5, n2, n4, n6);
         Sextad t7 = new Sextad(n1, n3, n6, n2, n4, n5);
-        Sextad t8 = new Sextad(n1, n2, n4, n3, n5, n6);
-        Sextad t9 = new Sextad(n1, n2, n5, n3, n4, n6);
-        Sextad t10 = new Sextad(n1, n2, n6, n3, n4, n5);
+        Sextad t8 = new Sextad(n1, n4, n5, n2, n3, n6);
+        Sextad t9 = new Sextad(n1, n4, n6, n2, n3, n5);
+        Sextad t10 = new Sextad(n1, n5, n6, n2, n3, n4);
 
         List<Sextad[]> independents = new ArrayList<>();
-        independents.add(new Sextad[]{t1, t2, t3, t5, t6, t6});
+        independents.add(new Sextad[]{t1, t2, t3, t5, t6});
 
         for (Sextad[] sextads : independents) {
             List<int[][]> _independents = new ArrayList<>();
@@ -645,14 +643,14 @@ public class Ftfc2 {
 
             if (this.test instanceof BollenTing) {
 
-                double p = this.test.tetrads(_independents);
+                double p = this.test.ntads(_independents);
                 if (Double.isNaN(p)) {
                     return false;
                 }
 
                 if (p < this.alpha) return false;
             } else {
-                if (this.test.allGreaterThanAlpha(_independents, alpha)) {
+                if (!this.test.allGreaterThanAlpha(_independents, alpha)) {
                     return false;
                 }
             }

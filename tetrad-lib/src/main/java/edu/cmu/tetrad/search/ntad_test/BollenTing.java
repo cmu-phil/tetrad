@@ -42,17 +42,17 @@ public class BollenTing extends NtadTest {
     }
 
     @Override
-    public double tetrad(int[][] tet, boolean resample, double frac) {
-        return tetrads(Collections.singletonList(tet), resample, frac);
+    public double ntad(int[][] ntad, boolean resample, double frac) {
+        return ntads(Collections.singletonList(ntad), resample, frac);
     }
 
     @Override
-    public double tetrads(List<int[][]> tets, boolean resample, double frac) {
+    public double ntads(List<int[][]> ntads, boolean resample, double frac) {
         SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
         int n = resample ? (int) (frac * this.n) : this.n;
 
         Set<Integer> V = new HashSet<>();
-        for (int[][] tet : tets) {
+        for (int[][] tet : ntads) {
             for (int[] pair : tet) {
                 for (int v : pair) {
                     V.add(v);
@@ -71,11 +71,11 @@ public class BollenTing extends NtadTest {
             }
         }
 
-        SimpleMatrix dt_ds = new SimpleMatrix(pairs.size(), tets.size());
-        SimpleMatrix t = new SimpleMatrix(tets.size(), 1);
+        SimpleMatrix dt_ds = new SimpleMatrix(pairs.size(), ntads.size());
+        SimpleMatrix t = new SimpleMatrix(ntads.size(), 1);
 
-        for (int i = 0; i < tets.size(); i++) {
-            int[][] tet = tets.get(i);
+        for (int i = 0; i < ntads.size(); i++) {
+            int[][] tet = ntads.get(i);
             int[] a = tet[0];
             int[] b = tet[1];
             SimpleMatrix A = StatUtils.extractSubMatrix(S, a, b);
@@ -99,25 +99,25 @@ public class BollenTing extends NtadTest {
         SimpleMatrix ttInv = tt.invert();
         double T = n * t.transpose().mult(ttInv).mult(t).get(0, 0);
 
-        return 1 - new ChiSquaredDistribution(tets.size()).cumulativeProbability(T);
+        return 1 - new ChiSquaredDistribution(ntads.size()).cumulativeProbability(T);
     }
 
     @Override
-    public double tetrad(int[][] tet) {
+    public double ntad(int[][] ntad) {
         List<int[][]> tetList = new ArrayList<>();
-        tetList.add(tet);
-        return tetrads(tetList);
+        tetList.add(ntad);
+        return ntads(tetList);
     }
 
     @Override
-    public double tetrads(int[][]... tets) {
+    public double ntads(int[][]... ntads) {
         List<int[][]> tetList = new ArrayList<>();
-        Collections.addAll(tetList, tets);
-        return tetrads(tetList);
+        Collections.addAll(tetList, ntads);
+        return ntads(tetList);
     }
 
     @Override
-    public double tetrads(List<int[][]> tets) {
-        return tetrads(tets, false, 1);
+    public double ntads(List<int[][]> ntads) {
+        return ntads(ntads, false, 1);
     }
 }

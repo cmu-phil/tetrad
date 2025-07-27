@@ -14,6 +14,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -78,6 +79,21 @@ public class ClusterSignificance {
         }
 
         return variables;
+    }
+
+    public static Set<Set<Node>> variablesForIndicesSets(Set<Set<Integer>> clusters, List<Node> _variables) {
+        Set<Set<Node>> _clusters = new HashSet<>();
+
+        for (Set<Integer> cluster : clusters) {
+            Set<Node> _cluster = new HashSet<>();
+            for (int c : cluster) {
+                _cluster.add(_variables.get(c));
+            }
+
+            _clusters.add(_cluster);
+        }
+
+        return _clusters;
     }
 
     private static int dofHarman(int n) {

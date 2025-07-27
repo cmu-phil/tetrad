@@ -30,10 +30,10 @@ public class Wishart extends NtadTest {
     }
 
     @Override
-    public double tetrad(int[][] tet, boolean resample, double frac) {
+    public double ntad(int[][] ntad, boolean resample, double frac) {
         SimpleMatrix S = resample ? computeCorrelations(sampleRows(df, frac)) : this.S;
-        int[] a = tet[0];
-        int[] b = tet[1];
+        int[] a = ntad[0];
+        int[] b = ntad[1];
         int n = resample ? (int) (frac * this.n) : this.n;
 
         double sigma2 = (double) (n + 1) / (n - 1) * determinant(StatUtils.extractSubMatrix(S, a, a)) * determinant(StatUtils.extractSubMatrix(S, b, b))
@@ -55,37 +55,37 @@ public class Wishart extends NtadTest {
     }
 
     @Override
-    public double tetrad(int[][] tet) {
-        return tetrad(tet, false, 1);
+    public double ntad(int[][] ntad) {
+        return ntad(ntad, false, 1);
     }
 
     /**
      * Returns the p-value for the tetrad. This constructor is required by the interface, though in truth it will throw
      * and exception if more than one tetrad is provided.
      *
-     * @param tets A single tetrad.
+     * @param ntads A single tetrad.
      * @return The p-value for the tetrad.
      */
     @Override
-    public double tetrads(int[][]... tets) {
+    public double ntads(int[][]... ntads) {
         List<int[][]> tetList = new ArrayList<>();
-        Collections.addAll(tetList, tets);
-        return tetrads(tetList);
+        Collections.addAll(tetList, ntads);
+        return ntads(tetList);
     }
 
     /**
      * Returns the p-value for the tetrad. This constructor is required by the interface, though in truth it will throw
      * and exception if more than one tetrad is provided.
      *
-     * @param tets A single tetrad.
+     * @param ntads A single tetrad.
      * @return The p-value for the tetrad.
      */
     @Override
-    public double tetrads(List<int[][]> tets) {
-        if (tets.size() != 1) {
+    public double ntads(List<int[][]> ntads) {
+        if (ntads.size() != 1) {
             throw new IllegalArgumentException("Only one tetrad is allowed for the Wishart test.");
         }
 
-        return tetrad(tets.getFirst());
+        return ntad(ntads.getFirst());
     }
 }

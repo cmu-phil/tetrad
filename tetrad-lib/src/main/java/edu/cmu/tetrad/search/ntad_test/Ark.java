@@ -45,7 +45,7 @@ public class Ark extends NtadTest {
     }
 
     @Override
-    public double tetrad(int[][] tet, boolean resample, double frac) {
+    public double ntad(int[][] ntad, boolean resample, double frac) {
         SimpleMatrix S1, S2;
         int n;
 
@@ -61,8 +61,8 @@ public class Ark extends NtadTest {
             S2 = this.S2;
         }
 
-        int[] a = tet[0];
-        int[] b = tet[1];
+        int[] a = ntad[0];
+        int[] b = ntad[1];
         int z = a.length;
 
         SimpleMatrix XY = this.sp < 1 ? StatUtils.extractSubMatrix(S2, a, b) : StatUtils.extractSubMatrix(S1, a, b);
@@ -113,23 +113,23 @@ public class Ark extends NtadTest {
     }
 
     @Override
-    public double tetrad(int[][] tet) {
-        return tetrad(tet, false, 1);
+    public double ntad(int[][] ntad) {
+        return ntad(ntad, false, 1);
     }
 
     @Override
-    public double tetrads(int[][]... tets) {
+    public double ntads(int[][]... ntads) {
         List<int[][]> tetList = new ArrayList<>();
-        Collections.addAll(tetList, tets);
-        return tetrads(tetList);
+        Collections.addAll(tetList, ntads);
+        return ntads(tetList);
     }
 
     @Override
-    public double tetrads(List<int[][]> tets) {
+    public double ntads(List<int[][]> ntads) {
         double sum = 0.0;
         int count = 0;
 
-        for (int[][] tet : tets) {
+        for (int[][] tet : ntads) {
             if (tet.length != 2) {
                 throw new IllegalArgumentException("Each tetrad must contain two pairs of nodes.");
             }
@@ -137,7 +137,7 @@ public class Ark extends NtadTest {
                 throw new IllegalArgumentException("Each pair of nodes must have the same length.");
             }
 
-            double pValue = this.tetrad(tet);
+            double pValue = this.ntad(tet);
             if (pValue == 0) {
                 sum = Double.NEGATIVE_INFINITY;
             } else {

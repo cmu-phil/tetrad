@@ -532,7 +532,7 @@ public class Ftfc {
                 _independents.add(new int[][]{x, y});
             }
 
-            double p = this.test.tetrads(_independents);
+            double p = this.test.ntads(_independents);
 
             if (Double.isNaN(p)) {
                 return false;

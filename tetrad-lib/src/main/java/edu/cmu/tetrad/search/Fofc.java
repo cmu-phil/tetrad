@@ -600,7 +600,7 @@ public class Fofc {
         ints.add(ints2);
 
         if (test instanceof BollenTing) {
-            return test.tetrads(ints) > this.alpha;
+            return test.ntads(ints) > this.alpha;
         } else {
             return test.allGreaterThanAlpha(ints, this.alpha);
         }

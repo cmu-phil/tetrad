@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 import static java.lang.Math.sqrt;
 
 /**
- * NtadTest is an abstract base class for implementing tetrad-based statistical tests. A tetrad specifies structural
+ * NtadTest is an abstract base class for implementing ntad-based statistical tests. A ntad specifies structural
  * relationships among variables, and this class provides methods to compute covariance matrices, generate combinations,
  * and perform resampling for such tests.
  *
@@ -28,10 +28,10 @@ public abstract class NtadTest {
      * Constructs an NtadTest object with the provided data matrix and a flag indicating whether the input matrix
      * represents covariances or raw data.
      *
-     * @param df          the input data matrix as a SimpleMatrix object, where each row represents an observation and
-     *                    each column represents a variable
+     * @param df           the input data matrix as a SimpleMatrix object, where each row represents an observation and
+     *                     each column represents a variable
      * @param correlations a boolean flag indicating whether the provided matrix is a covariance matrix (true) or raw
-     *                    data requiring covariance computation (false)
+     *                     data requiring covariance computation (false)
      */
     public NtadTest(SimpleMatrix df, boolean correlations) {
         this.df = df;
@@ -56,19 +56,19 @@ public abstract class NtadTest {
     }
 
     /**
-     * Computes the value of a statistical test based on the given tetrad configuration, with optional resampling. A
-     * tetrad is a set of indices representing structural relationships among variables. This method evaluates the
+     * Computes the value of a statistical test based on the given ntad configuration, with optional resampling. An
+     * ntad is a set of indices representing structural relationships among variables. This method evaluates the
      * statistical consistency of such configurations.
      *
-     * @param tet      a 2D integer array where each inner array defines a tetrad configuration. Each configuration
+     * @param ntad      a 2D integer array where each inner array defines a ntad configuration. Each configuration
      *                 specifies indices representing structural relationships among variables.
      * @param resample a boolean indicating whether resampling should be applied to the data matrix for the
      *                 computation.
      * @param frac     a double value representing the fraction of data to use during resampling, ignored if resample is
      *                 false.
-     * @return a double value representing the computed result of the statistical tetrad test.
+     * @return a double value representing the computed result of the statistical ntd test.
      */
-    public abstract double tetrad(int[][] tet, boolean resample, double frac);
+    public abstract double ntad(int[][] ntad, boolean resample, double frac);
 
     /**
      * Generates all possible combinations of size k from a list of integers. Each combination is represented as an
@@ -110,20 +110,20 @@ public abstract class NtadTest {
     }
 
     /**
-     * Computes the aggregate statistical measure based on a list of tetrad configurations. Each configuration specifies
+     * Computes the aggregate statistical measure based on a list of ntad configurations. Each configuration specifies
      * sets of indices representing structural relationships among variables. This method evaluates and combines results
      * for all provided configurations, with optional resampling.
      *
-     * @param tets     a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
+     * @param ntads     a list of 2D integer arrays where each array contains multiple ntad configurations. Each
      *                 configuration defines sets of indices representing structural relationships among variables.
      * @param resample a boolean indicating whether resampling should be applied to the data matrix for the
      *                 computation.
      * @param frac     a double value representing the fraction of data to use during resampling, ignored if resample is
      *                 false.
-     * @return a double value representing the sum of the statistical measures for all provided tetrad configurations.
+     * @return a double value representing the sum of the statistical measures for all provided ntad configurations.
      */
-    protected double tetrads(List<int[][]> tets, boolean resample, double frac) {
-        return tets.stream().mapToDouble(tet -> tetrad(tet, resample, frac)).sum();
+    protected double ntads(List<int[][]> ntads, boolean resample, double frac) {
+        return ntads.stream().mapToDouble(ntad -> ntad(ntad, resample, frac)).sum();
     }
 
     /**
@@ -200,48 +200,48 @@ public abstract class NtadTest {
     }
 
     /**
-     * Computes the value of a statistical test based on the input tetrad configuration. A tetrad is a set of indices
+     * Computes the value of a statistical test based on the input ntad configuration. A ntad is a set of indices
      * specifying structural relationships between variables, and this method evaluates the statistical consistency of
      * such configurations.
      *
-     * @param tet a 2D integer array where each inner array defines a tetrad configuration. Each tetrad specifies
-     *            indices representing a structural relationship among variables.
-     * @return a double value representing the computed result of the statistical tetrad test.
+     * @param ntad a 2D integer array where each inner array defines an ntad configuration. Each ntad specifies indices
+     *             representing a structural relationship among variables.
+     * @return a double value representing the computed result of the statistical ntad test.
      */
-    public abstract double tetrad(int[][] tet);
+    public abstract double ntad(int[][] ntad);
 
     /**
-     * Computes the statistical test results for multiple sets of tetrad configurations. A tetrad is a set of indices
+     * Computes the statistical test results for multiple sets of ntad configurations. A ntad is a set of indices
      * specifying structural relationships among variables, and this method evaluates the statistical consistency for
      * each provided configuration.
      *
-     * @param tets a series of 2D integer arrays, where each array contains multiple tetrad configurations. Each
-     *             configuration specifies a set of indices representing structural relationships among variables.
+     * @param ntads a series of 2D integer arrays, where each array contains multiple ntad configurations. Each
+     *              configuration specifies a set of indices representing structural relationships among variables.
      * @return a double value representing the aggregated or combined result of the statistical tests applied to the
-     * provided tetrad configurations.
+     * provided ntad configurations.
      */
-    public abstract double tetrads(int[][]... tets);
+    public abstract double ntads(int[][]... ntads);
 
     /**
-     * Computes a statistical measure based on the input list of tetrad configurations. Each tetrad configuration
-     * represents a set of structural relationships among variables. This method evaluates and combines the statistical
-     * results of all provided configurations.
+     * Computes a statistical measure based on the input list of ntad configurations. Each ntad configuration represents
+     * a set of structural relationships among variables. This method evaluates and combines the statistical results of
+     * all provided configurations.
      *
-     * @param tets a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
-     *             configuration is a set of integer indices representing structural relationships.
-     * @return a double value representing the combined statistical measure for the provided tetrad configurations.
+     * @param ntads a list of 2D integer arrays where each array contains multiple ntad configurations. Each
+     *              configuration is a set of integer indices representing structural relationships.
+     * @return a double value representing the combined statistical measure for the provided ntad configurations.
      */
-    public abstract double tetrads(List<int[][]> tets);
+    public abstract double ntads(List<int[][]> ntads);
 
     /**
-     * Checks if all tetrads in the provided list have a value greater than the specified alpha.
+     * Checks if all ntads in the provided list have a value greater than the specified alpha.
      *
-     * @param tets  The list of tetrads to check.
+     * @param ntads The list of ntads to check.
      * @param alpha The threshold value.
-     * @return true if all tetrads are greater than alpha, false otherwise.
+     * @return true if all ntads are greater than alpha, false otherwise.
      */
-    public boolean allGreaterThanAlpha(List<int[][]> tets, double alpha) {
-        return tets.stream().allMatch(tet -> tetrad(tet) > alpha);
+    public boolean allGreaterThanAlpha(List<int[][]> ntads, double alpha) {
+        return ntads.stream().allMatch(ntad -> ntad(ntad) > alpha);
     }
 }
 

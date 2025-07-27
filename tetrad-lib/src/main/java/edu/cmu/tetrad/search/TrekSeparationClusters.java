@@ -27,16 +27,17 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
@@ -91,7 +92,7 @@ public class TrekSeparationClusters {
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
-    private List<List<Node>> clusters;
+    private Set<Set<Node>> clusters;
     /**
      * Whether verbose output is desired.
      */
@@ -155,10 +156,10 @@ public class TrekSeparationClusters {
      * @return This graph.
      */
     public Graph search() {
-        Set<List<Integer>> allClusters;
+        Set<Set<Integer>> allClusters;
 
         allClusters = estimateClusters();
-        this.clusters = ClusterSignificance.variablesForIndices(allClusters, variables);
+        this.clusters = ClusterSignificance.variablesForIndicesSets(allClusters, variables);
 
         log("clusters = " + this.clusters);
 
@@ -170,7 +171,7 @@ public class TrekSeparationClusters {
      *
      * @return a {@link List} object
      */
-    public List<List<Node>> getClusters() {
+    public Set<Set<Node>> getClusters() {
         return this.clusters;
     }
 
@@ -199,46 +200,93 @@ public class TrekSeparationClusters {
      *
      * @return A set of lists of integers representing the clusters.
      */
-    private Set<List<Integer>> estimateClusters() {
+    private Set<Set<Integer>> estimateClusters() {
         List<Integer> variables = allVariables();
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
-        Set<List<Integer>> clusters = new HashSet<>();
+        Set<Set<Integer>> allClusters = new HashSet<>();
 
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
-                int[] yIndices = new int[]{variables.get(i), variables.get(j)};
-                int[] xIndices = new int[variables.size() - 2];
-
-                int index = 0;
-
-                for (int k = 0; k < variables.size(); k++) {
-                    if (k != i && k != j) {
-                        xIndices[index++] = variables.get(k);
-                    }
-                }
-
-                double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, sampleSize, 1);
-
-                if (p >= alpha) {
-                    List<Integer> _cluster = new ArrayList<>();
-                    _cluster.add(variables.get(i));
-                    _cluster.add(variables.get(j));
-
-                    if (clusterDependent(_cluster)) {
-                        clusters.add(_cluster);
-                    }
-                }
-            }
+        for (int depth = 2; depth <= 3; depth++) {
+            Set<Set<Integer>> _clusters = findClustersOfDepth(variables, depth, allClusters);
+            Set<Set<Integer>> __clusters = mergeOverlappingClusters(_clusters);
+            allClusters.addAll(__clusters);
         }
 
-        clusters = mergeOverlappingClusters(clusters);
+//        Set<Set<Integer>> cluster1 = findClustersOfDepth(variables, 2, new HashSet<>());
+//        Set<Set<Integer>> _clusters1 = mergeOverlappingClusters(cluster1);
+//
+//        Set<Set<Integer>> cluster2 = findClustersOfDepth(variables, 3, _clusters1);
+//        Set<Set<Integer>> _clusters2 = mergeOverlappingClusters(cluster2);
+//
+//        Set<Set<Integer>> _clusters = new HashSet<>(_clusters1);
+//        _clusters.addAll(_clusters2);
 
-        System.out.println("final clusters = " + ClusterSignificance.variablesForIndices(clusters, this.variables));
+        System.out.println("final clusters = " + ClusterSignificance.variablesForIndicesSets(allClusters, this.variables));
 
-        return clusters;
+        return allClusters;
+    }
+
+    private @NotNull Set<Set<Integer>> findClustersOfDepth(List<Integer> variables, int depth, Set<Set<Integer>> avoid) {
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), depth);
+        int[] _choice;
+
+        List<int[]> choices = new ArrayList<>();
+        while ((_choice = gen.next()) != null) {
+            choices.add(Arrays.copyOf(_choice, _choice.length));
+        }
+
+        Set<Set<Integer>> finalClusters = ConcurrentHashMap.newKeySet();
+
+        choices.parallelStream().forEach(choice -> {
+            int[] yIndices = new int[depth];
+
+            for (int i = 0; i < depth; i++) {
+                yIndices[i] = variables.get(choice[i]);
+            }
+
+            Set<Integer> ySet = new HashSet<>();
+            for (int y : yIndices) {
+                ySet.add(y);
+            }
+
+            for (Set<Integer> set : avoid) {
+                if (set.containsAll(ySet)) {
+                    continue;
+                }
+            }
+
+
+            int[] xIndices = new int[variables.size() - depth];
+
+            int index = 0;
+
+            for (int q = 0; q < variables.size(); q++) {
+                boolean found = false;
+                for (int y : yIndices) {
+                    if (q == y) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) continue;
+
+                xIndices[index++] = variables.get(q);
+            }
+
+            int rank = depth - 1;
+            double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, sampleSize, rank);
+
+            if (p >= alpha) {
+                List<Integer> _cluster = MathUtils.getInts(yIndices);
+
+                if (clusterDependent(_cluster)) {
+                    finalClusters.add(new HashSet<>(_cluster));
+                }
+            }
+        });
+        return finalClusters;
     }
 
     /**
@@ -247,17 +295,17 @@ public class TrekSeparationClusters {
      * @param clusters The lists of integers representing the clusters.
      * @return The merged clusters.
      */
-    private Set<List<Integer>> mergeOverlappingClusters(Set<List<Integer>> clusters) {
+    private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters) {
         boolean merged;
 
         do {
             merged = false;
-            Set<List<Integer>> newClusters = new HashSet<>();
+            Set<Set<Integer>> newClusters = new HashSet<>();
 
-            for (List<Integer> cluster1 : clusters) {
-                List<Integer> mergedCluster = new ArrayList<>(cluster1);
+            for (Set<Integer> cluster1 : clusters) {
+                Set<Integer> mergedCluster = new HashSet<>(cluster1);
 
-                for (List<Integer> cluster2 : clusters) {
+                for (Set<Integer> cluster2 : clusters) {
                     if (cluster1 == cluster2) continue;
 
                     Set<Integer> intersection = new HashSet<>(cluster1);
@@ -342,10 +390,10 @@ public class TrekSeparationClusters {
      * @param allClusters The set of sets of Node objects representing the clusters.
      * @return A Graph object representing the search graph nodes.
      */
-    private Graph convertToGraph(Set<List<Integer>> allClusters, boolean includeAllNodes) {
+    private Graph convertToGraph(Set<Set<Integer>> allClusters, boolean includeAllNodes) {
         Set<Set<Node>> _clustering = new HashSet<>();
 
-        for (List<Integer> cluster : allClusters) {
+        for (Set<Integer> cluster : allClusters) {
             Set<Node> nodes = new HashSet<>();
 
             for (int i : cluster) {
