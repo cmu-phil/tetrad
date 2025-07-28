@@ -1043,6 +1043,10 @@ public final class Params {
      * Constant <code>EXPECTED_SAMPLE_SIZE="expectedSampleSize"</code>
      */
     public static final String EXPECTED_SAMPLE_SIZE = "expectedSampleSize";
+    /**
+     * Constant <code>CLUSTER_SIZES="clusterSizes"</code>
+     */
+    public static final String CLUSTER_SIZES = "clusterSizes";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

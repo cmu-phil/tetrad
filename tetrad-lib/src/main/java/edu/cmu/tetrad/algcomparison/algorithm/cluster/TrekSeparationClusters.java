@@ -21,6 +21,7 @@ import org.ejml.data.SingularMatrixException;
 
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -70,19 +71,41 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
 
+
+        String clusterSizes = parameters.getString(Params.CLUSTER_SIZES);
+        String[] sizes = clusterSizes.trim().split(",");
+        List<Integer> _sizes = new ArrayList<>();
+        for (int i = 0; i < sizes.length; i++) {
+            try {
+                if (sizes[i].trim().isEmpty()) {
+                    continue;
+                }
+                _sizes.add(Integer.parseInt(sizes[i].trim()));
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Could not parse '" + sizes[i] + "'", e);
+            }
+        }
+        
+        if (_sizes.isEmpty()) {
+            _sizes.add(2);
+        }
+
+        int[] __sizes = _sizes.stream().mapToInt(Integer::intValue).toArray();
+
         edu.cmu.tetrad.search.TrekSeparationClusters search;
 
         if (dataModel instanceof CovarianceMatrix) {
             if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, __sizes);
             } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, ess);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, __sizes,
+                        ess);
             }
         } else {
             if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, __sizes, alpha);
             } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha, ess);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha, __sizes, ess);
             }
         }
 
@@ -224,6 +247,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.MIMBUILD_TYPE);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);
+        parameters.add(Params.CLUSTER_SIZES);
         parameters.add(Params.VERBOSE);
 
         return parameters;

@@ -89,6 +89,7 @@ public class TrekSeparationClusters {
      * The sample size.
      */
     private final int sampleSize;
+    private final int[] clusterSizes;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -110,8 +111,8 @@ public class TrekSeparationClusters {
      * @param dataSet The continuous dataset searched over.
      * @param alpha   The alpha significance cutoff.
      */
-    public TrekSeparationClusters(DataSet dataSet, double alpha) {
-        this(new CorrelationMatrix(dataSet), alpha);
+    public TrekSeparationClusters(DataSet dataSet, int[] clusterSizes, double alpha) {
+        this(new CorrelationMatrix(dataSet), alpha, clusterSizes);
     }
 
     /**
@@ -121,8 +122,8 @@ public class TrekSeparationClusters {
      * @param alpha   The alpha significance cutoff.
      * @param ess     The expected sample size.
      */
-    public TrekSeparationClusters(DataSet dataSet, double alpha, int ess) {
-        this(new CorrelationMatrix(dataSet), alpha, ess);
+    public TrekSeparationClusters(DataSet dataSet, double alpha, int[] clusterSizes, int ess) {
+        this(new CorrelationMatrix(dataSet), alpha, clusterSizes, ess);
     }
 
     /**
@@ -131,8 +132,8 @@ public class TrekSeparationClusters {
      * @param cov   The covariance matrix.
      * @param alpha The alpha level.
      */
-    public TrekSeparationClusters(CovarianceMatrix cov, double alpha) {
-        this(new CorrelationMatrix(cov), alpha, cov.getSampleSize());
+    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, int[] clusterSizes) {
+        this(new CorrelationMatrix(cov), alpha, clusterSizes, cov.getSampleSize());
     }
 
     /**
@@ -142,10 +143,18 @@ public class TrekSeparationClusters {
      * @param alpha The alpha level for significance cutoff.
      * @param ess   The expected sample size for the analysis.
      */
-    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, int ess) {
+    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, int[] clustersizes, int ess) {
         this.variables = cov.getVariables();
         this.alpha = alpha;
         this.sampleSize = ess;
+
+        for (int size : clustersizes) {
+            if (size < 2) {
+                throw new IllegalArgumentException("Cluster sizes must be at least 2");
+            }
+        }
+
+        this.clusterSizes = clustersizes;
         this.corr = new CorrelationMatrix(cov);
         this.S = this.corr.getMatrix().getDataCopy();
     }
@@ -208,8 +217,10 @@ public class TrekSeparationClusters {
 
         Set<Set<Integer>> allClusters = new HashSet<>();
 
-        for (int depth = 2; depth <= 3; depth++) {
-            Set<Set<Integer>> _clusters = findClustersOfDepth(variables, depth, allClusters);
+        System.out.println("Cluster sizes: " + Arrays.toString(clusterSizes));
+
+        for (int size : clusterSizes) {
+            Set<Set<Integer>> _clusters = findClustersOfSize(variables, size, allClusters);
             Set<Set<Integer>> __clusters = mergeOverlappingClusters(_clusters);
             allClusters.addAll(__clusters);
         }
@@ -219,7 +230,7 @@ public class TrekSeparationClusters {
         return allClusters;
     }
 
-    private @NotNull Set<Set<Integer>> findClustersOfDepth(List<Integer> variables, int depth, Set<Set<Integer>> avoid) {
+    private @NotNull Set<Set<Integer>> findClustersOfSize(List<Integer> variables, int depth, Set<Set<Integer>> avoid) {
         ChoiceGenerator gen = new ChoiceGenerator(variables.size(), depth);
         int[] _choice;
 
@@ -266,11 +277,9 @@ public class TrekSeparationClusters {
                 xIndices[index++] = variables.get(q);
             }
 
-//            int rank = depth - 1;
-            int rank = 1;
+            int rank = depth - 1;
 //            double p = StatUtils.getCcaPValueRankLE(S, xIndices, yIndices, sampleSize, rank);
-
-            boolean equal = StatUtils.isCcaRankEqualTo(S, xIndices, yIndices, sampleSize, 1, alpha);
+            boolean equal = StatUtils.isCcaRankEqualTo(S, xIndices, yIndices, sampleSize, rank, alpha);
 
             if (equal) {
 //            if (p >= alpha) {
