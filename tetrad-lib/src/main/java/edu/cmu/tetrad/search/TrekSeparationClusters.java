@@ -277,7 +277,7 @@ public class TrekSeparationClusters {
                 xIndices[index++] = variables.get(q);
             }
 
-            int rank = depth - 1;
+            int rank = 1;
 //            double p = StatUtils.getCcaPValueRankLE(S, xIndices, yIndices, sampleSize, rank);
             boolean equal = StatUtils.isCcaRankEqualTo(S, xIndices, yIndices, sampleSize, rank, alpha);
 
