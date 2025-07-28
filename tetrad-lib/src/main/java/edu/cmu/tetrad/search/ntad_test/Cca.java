@@ -38,7 +38,7 @@ public class Cca extends NtadTest {
      * sets of indices representing structural relationships among variables. This method evaluates and combines results
      * for all provided configurations, with optional resampling.
      *
-     * @param ntad      a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
+     * @param ntad     a list of 2D integer arrays where each array contains multiple tetrad configurations. Each
      *                 configuration defines sets of indices representing structural relationships among variables.
      * @param resample a boolean indicating whether resampling should be applied to the data matrix for the
      *                 computation.
@@ -54,9 +54,15 @@ public class Cca extends NtadTest {
         int[] b = ntad[1];
         int n = resample ? (int) (frac * this.n) : this.n;
 
-        // Use the getCcaPValueRankD method for rank d = 1 (or make d configurable if needed)
-        int d = 1;  // You can adjust this if you want to explore larger rank tests
-        return StatUtils.getCcaPValueRankD(S, a, b, n, d);
+//        boolean ccaRankEqualTo = StatUtils.isCcaRankEqualTo(S, a, b, n, 2, 0.01);
+//
+//        if (ccaRankEqualTo) {
+        // Use the getCcaPValueRankD method for rank r = 1 (or make r configurable if needed)
+        int r = 1;  // You can adjust this if you want to explore larger rank tests
+        return StatUtils.getCcaPValueRankLE(S, a, b, n, r);
+//        } else {
+//            return 0.0;
+//        }
     }
 
     @Override

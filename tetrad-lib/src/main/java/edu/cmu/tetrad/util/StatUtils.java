@@ -2732,30 +2732,28 @@ public final class StatUtils {
     }
 
     /**
-     * Computes the p-value for Canonical Correlation Analysis (CCA) based on a rank-d hypothesis. This method
-     * calculates the test statistic using the last d singular values of a product matrix derived from the input
-     * covariance matrix and performs a chi-squared test to return the p-value.
+     * Computes the p-value for Canonical Correlation Analysis (CCA) based on the hypothesis H0: canonical correlation
+     * rank ≤ r versus H1: rank > r. The method uses the log-likelihood ratio test on the remaining min(p, q) - r
+     * canonical correlations.
      *
-     * @param S        The input correlation matrix represented as a SimpleMatrix object.
-     * @param xIndices The indices representing the subset of variables in the first group.
-     * @param yIndices The indices representing the subset of variables in the second group.
-     * @param n        The sample size used in the analysis.
-     * @param d        The hypothesized rank which defines the number of singular values to consider.
-     * @return The calculated p-value of the test based on the given inputs.
+     * @param S        The input correlation matrix as a SimpleMatrix.
+     * @param xIndices Indices of the first variable group.
+     * @param yIndices Indices of the second variable group.
+     * @param n        Sample size.
+     * @param r        The hypothesized maximum rank under the null hypothesis.
+     * @return p-value from the chi-squared test.
      */
-    public static double getCcaPValueRankD(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int d) {
-        // See https://en.wikipedia.org/wiki/Canonical_correlation for an explanation of this test.
-
+    public static double getCcaPValueRankLE(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int r) {
         if (xIndices.length == 0 || yIndices.length == 0) {
             throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
         }
 
         int p = xIndices.length;
         int q = yIndices.length;
-        int r = Math.min(p, q);
+        int minpq = Math.min(p, q);
 
-        if (d < 1 || d > r) {
-            throw new IllegalArgumentException("d must be in [1, min(p, q)]");
+        if (r < 0 || r >= minpq) {
+            throw new IllegalArgumentException("r must be in [0, min(p, q) - 1]");
         }
 
         if (n < p + q) {
@@ -2775,8 +2773,6 @@ public final class StatUtils {
         // Transpose if p < q
         if (p < q) {
             product = product.transpose();
-
-            // swap p and q
             int tmp = p;
             p = q;
             q = tmp;
@@ -2785,15 +2781,13 @@ public final class StatUtils {
         // Step 3: SVD
         double[] s = product.svd().getSingularValues();
 
-        // Step 4: Compute stat from the LAST (r - d) singular values
+        // Step 4: Compute test statistic from canonical correlations j = r+1 to minpq
         double stat = 0.0;
-        int i = r - d + 1;
-
-        for (int j = i; j <= r; j++) {
+        for (int j = r + 1; j <= minpq; j++) {
             double val = s[j - 1];
-            val = Math.min(1.0, Math.max(0.0, val)); // clip to [0, 1]
+            val = Math.min(1.0, Math.max(0.0, val));
             double adjusted = 1.0 - val * val;
-            adjusted = Math.max(adjusted, 1e-10); // avoid log(0)
+            adjusted = Math.max(adjusted, 1e-20);
             stat += Math.log(adjusted);
         }
 
@@ -2801,47 +2795,64 @@ public final class StatUtils {
         double scale = (n - 1) - 0.5 * (p + q + 1);
         stat *= -scale;
 
-        // Step 6: Chi-squared test
-        int df = (p - i + 1) * (q - i + 1);
-//        int df = (p - d) * (q - d);
+        // Step 6: Degrees of freedom = (p - r)(q - r)
+        int df = (p - r) * (q - r);
+
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         return 1.0 - chi2.cumulativeProbability(stat);
     }
 
     /**
-     * Estimates the rank of a matrix based on a statistical hypothesis testing approach. The method evaluates singular
-     * values and uses a chi-squared distribution to determine the highest rank that satisfies a predefined significance
-     * threshold.
+     * Tests whether the canonical correlation rank is equal to r, at a given alpha level. This is done by testing
+     * whether the rank is ≤ r (not rejected) and ≤ r - 1 (rejected).
      *
-     * @param S          The input matrix for which the rank is to be estimated.
-     * @param xIndices   The indices representing the subset of variables in the first group.
-     * @param yIndices   The indices representing the subset of variables in the second group.
-     * @param maxRank    The maximum rank to test for the matrix.
-     * @param n          The sample size used in the analysis.
-     * @param pThreshold The significance threshold for the hypothesis test.
-     * @return The estimated rank of the input matrix, which is the highest rank that satisfies the significance
-     * threshold. Returns maxRank if all ranks pass the test.
+     * @param S        The input correlation matrix.
+     * @param xIndices Indices of variables in the first group.
+     * @param yIndices Indices of variables in the second group.
+     * @param n        Sample size.
+     * @param r        The hypothesized rank to test for equality.
+     * @param alpha    The significance level (e.g., 0.05).
+     * @return true if rank = r at the given significance level.
      */
-    public int estimateRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int maxRank, int n, double pThreshold) {
-
-        if (maxRank <= 0) {
-            throw new IllegalArgumentException("maxRank must be positive.");
+    public static boolean isCcaRankEqualTo(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int r, double alpha) {
+        if (r < 0) {
+            throw new IllegalArgumentException("Rank must be non-negative.");
         }
-
-        if (pThreshold <= 0 || pThreshold >= 1) {
-            throw new IllegalArgumentException("pThreshold must be between 0 and 1.");
+        if (r == 0) {
+            // Test only rank ≤ 0 (i.e., all correlations zero)
+            double pVal0 = getCcaPValueRankLE(S, xIndices, yIndices, n, 0);
+            return pVal0 > alpha;
+        } else {
+            double pValR = getCcaPValueRankLE(S, xIndices, yIndices, n, r);
+            double pValRm1 = getCcaPValueRankLE(S, xIndices, yIndices, n, r - 1);
+            return pValR > alpha && pValRm1 <= alpha;
         }
+    }
 
-        for (int d = 1; d <= maxRank; d++) {
-            double pValue = getCcaPValueRankD(S, xIndices, yIndices, n, d);
+    /**
+     * Estimates the canonical correlation rank of the cross-correlation matrix using sequential likelihood ratio
+     * tests.
+     *
+     * @param S        The correlation matrix.
+     * @param xIndices Indices of the first variable set.
+     * @param yIndices Indices of the second variable set.
+     * @param n        Sample size.
+     * @param alpha    Significance level (e.g., 0.05).
+     * @return The estimated rank (0 ≤ rank ≤ min(p, q)).
+     */
+    public static int estimateCcaRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, double alpha) {
+        int p = xIndices.length;
+        int q = yIndices.length;
+        int minpq = Math.min(p, q);
 
-            // Step 6: Stop when p-value is below the threshold
-            if (pValue < pThreshold) {
-                return d - 1;  // Return the highest rank that passed the test
+        for (int r = 0; r <= minpq; r++) {
+            double pVal = getCcaPValueRankLE(S, xIndices, yIndices, n, r);
+            if (pVal > alpha) {
+                return r; // First non-rejected rank
             }
         }
 
-        return maxRank;  // If all ranks pass, return the maximum rank
+        return minpq; // All tests rejected, full rank assumed
     }
 }
 

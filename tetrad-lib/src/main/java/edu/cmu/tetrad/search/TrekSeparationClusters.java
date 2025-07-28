@@ -214,16 +214,7 @@ public class TrekSeparationClusters {
             allClusters.addAll(__clusters);
         }
 
-//        Set<Set<Integer>> cluster1 = findClustersOfDepth(variables, 2, new HashSet<>());
-//        Set<Set<Integer>> _clusters1 = mergeOverlappingClusters(cluster1);
-//
-//        Set<Set<Integer>> cluster2 = findClustersOfDepth(variables, 3, _clusters1);
-//        Set<Set<Integer>> _clusters2 = mergeOverlappingClusters(cluster2);
-//
-//        Set<Set<Integer>> _clusters = new HashSet<>(_clusters1);
-//        _clusters.addAll(_clusters2);
-
-        System.out.println("final clusters = " + ClusterSignificance.variablesForIndicesSets(allClusters, this.variables));
+        log("final clusters = " + ClusterSignificance.variablesForIndicesSets(allClusters, this.variables));
 
         return allClusters;
     }
@@ -275,8 +266,9 @@ public class TrekSeparationClusters {
                 xIndices[index++] = variables.get(q);
             }
 
-            int rank = depth - 1;
-            double p = StatUtils.getCcaPValueRankD(S, xIndices, yIndices, sampleSize, rank);
+//            int rank = depth - 1;
+            int rank = 1;
+            double p = StatUtils.getCcaPValueRankLE(S, xIndices, yIndices, sampleSize, rank);
 
             if (p >= alpha) {
                 List<Integer> _cluster = MathUtils.getInts(yIndices);
