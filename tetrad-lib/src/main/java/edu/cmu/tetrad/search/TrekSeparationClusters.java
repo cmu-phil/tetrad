@@ -268,9 +268,12 @@ public class TrekSeparationClusters {
 
 //            int rank = depth - 1;
             int rank = 1;
-            double p = StatUtils.getCcaPValueRankLE(S, xIndices, yIndices, sampleSize, rank);
+//            double p = StatUtils.getCcaPValueRankLE(S, xIndices, yIndices, sampleSize, rank);
 
-            if (p >= alpha) {
+            boolean equal = StatUtils.isCcaRankEqualTo(S, xIndices, yIndices, sampleSize, 1, alpha);
+
+            if (equal) {
+//            if (p >= alpha) {
                 List<Integer> _cluster = MathUtils.getInts(yIndices);
 
                 if (clusterDependent(_cluster)) {
