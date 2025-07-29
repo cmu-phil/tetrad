@@ -2845,7 +2845,7 @@ public final class StatUtils {
         int q = yIndices.length;
         int minpq = Math.min(p, q);
 
-        for (int r = 0; r <= minpq; r++) {
+        for (int r = 0; r < minpq; r++) {
             double pVal = getCcaPValueRankLE(S, xIndices, yIndices, n, r);
             if (pVal > alpha) {
                 return r; // First non-rejected rank
