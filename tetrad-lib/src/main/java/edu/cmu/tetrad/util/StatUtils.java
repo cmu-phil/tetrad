@@ -2771,13 +2771,13 @@ public final class StatUtils {
         SimpleMatrix YYinvSqrt = chol(YY).invert();
         SimpleMatrix product = XXinvSqrt.mult(XY).mult(YYinvSqrt);
 
-        // Transpose if m < n
-        if (m < n) {
-            product = product.transpose();
-            int tmp = m;
-            m = n;
-            n = tmp;
-        }
+//        // Transpose if m < n
+//        if (m > n) {
+//            product = product.transpose();
+//            int tmp = m;
+//            m = n;
+//            n = tmp;
+//        }
 
         // Step 3: SVD
         SimpleSVD<SimpleMatrix> svd = product.svd();

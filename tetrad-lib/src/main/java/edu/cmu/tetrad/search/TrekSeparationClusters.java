@@ -226,7 +226,7 @@ public class TrekSeparationClusters {
 
         for (int i = 0; i < clusterSpecs.length; i++) {
             log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
-            Set<Set<Integer>> _clusters = findClustersOfSize(variables, clusterSpecs[i][0], clusterSpecs[i][1], allClusters);
+            Set<Set<Integer>> _clusters = findClustersOfSize(variables, clusterSpecs, i, clusterList);
             log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNames(_clusters, dataNodes));
             clusterList.add(mergeOverlappingClusters(_clusters));
             log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " + toNames(mergeOverlappingClusters(_clusters), dataNodes));
@@ -236,7 +236,6 @@ public class TrekSeparationClusters {
                     clusterList.get(j).addAll(clusterList.get(i));
                     clusterList.set(j, mergeOverlappingClusters(clusterList.get(j)));
                     log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNames(clusterList.get(j), dataNodes));
-
                     clusterList.get(i).clear();
                 }
             }
@@ -276,9 +275,8 @@ public class TrekSeparationClusters {
         return sb.toString();
     }
 
-    private @NotNull Set<Set<Integer>> findClustersOfSize(List<Integer> variables, int depth, int rank,
-                                                          Set<Set<Integer>> avoid) {
-        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), depth);
+    private @NotNull Set<Set<Integer>> findClustersOfSize(List<Integer> variables, int[][] clusterSpecs, int i, List<Set<Set<Integer>>> clusterList) {
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), clusterSpecs[i][0]);
         int[] _choice;
 
         List<int[]> choices = new ArrayList<>();
@@ -289,10 +287,10 @@ public class TrekSeparationClusters {
         Set<Set<Integer>> finalClusters = ConcurrentHashMap.newKeySet();
 
         choices.parallelStream().forEach(choice -> {
-            int[] yIndices = new int[depth];
+            int[] yIndices = new int[clusterSpecs[i][0]];
 
-            for (int i = 0; i < depth; i++) {
-                yIndices[i] = variables.get(choice[i]);
+            for (int q = 0; q < clusterSpecs[i][0]; q++) {
+                yIndices[q] = variables.get(choice[q]);
             }
 
             Set<Integer> ySet = new HashSet<>();
@@ -300,13 +298,15 @@ public class TrekSeparationClusters {
                 ySet.add(y);
             }
 
-            for (Set<Integer> set : avoid) {
-                if (set.containsAll(ySet)) {
-                    return;
+            for (int j = 0; j < i; j++) {
+                for (Set<Integer> set : clusterList.get(j)) {
+                    if (set.containsAll(ySet)) {
+                        return;
+                    }
                 }
             }
 
-            int[] xIndices = new int[variables.size() - depth];
+            int[] xIndices = new int[variables.size() - clusterSpecs[i][0]];
 
             int index = 0;
 
@@ -325,7 +325,7 @@ public class TrekSeparationClusters {
 
             int _rank = StatUtils.estimateCcaRank(S, xIndices, yIndices, sampleSize, alpha);
 
-            if (_rank == rank) {
+            if (_rank == clusterSpecs[i][1]) {
                 List<Integer> _cluster = MathUtils.getInts(yIndices);
 
                 if (clusterDependent(_cluster)) {
@@ -474,8 +474,6 @@ public class TrekSeparationClusters {
     public void setIncludeAllNodes(boolean includeAllNodes) {
         this.includeAllNodes = includeAllNodes;
     }
-
-    private enum Purity {PURE, IMPURE, UNDECIDED}
 }
 
 
