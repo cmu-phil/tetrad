@@ -66,7 +66,7 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         assert dataSet instanceof DataSet;
         edu.cmu.tetrad.search.Ftfc search
                 = new edu.cmu.tetrad.search.Ftfc((DataSet) dataSet,
-                new BollenTing(((DataSet) dataSet).getDoubleData().getDataCopy(), false),
+                new Cca(((DataSet) dataSet).getDoubleData().getDataCopy(), false),
                 alpha);
         search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));

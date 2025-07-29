@@ -89,7 +89,7 @@ public class TrekSeparationClusters {
      * The sample size.
      */
     private final int sampleSize;
-    private final int[] clusterSizes;
+    private final int[][] clusterSpecs;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -111,8 +111,8 @@ public class TrekSeparationClusters {
      * @param dataSet The continuous dataset searched over.
      * @param alpha   The alpha significance cutoff.
      */
-    public TrekSeparationClusters(DataSet dataSet, int[] clusterSizes, double alpha) {
-        this(new CorrelationMatrix(dataSet), alpha, clusterSizes);
+    public TrekSeparationClusters(DataSet dataSet, int[][] clusterSpecs, double alpha) {
+        this(new CorrelationMatrix(dataSet), alpha, clusterSpecs);
     }
 
     /**
@@ -122,8 +122,8 @@ public class TrekSeparationClusters {
      * @param alpha   The alpha significance cutoff.
      * @param ess     The expected sample size.
      */
-    public TrekSeparationClusters(DataSet dataSet, double alpha, int[] clusterSizes, int ess) {
-        this(new CorrelationMatrix(dataSet), alpha, clusterSizes, ess);
+    public TrekSeparationClusters(DataSet dataSet, double alpha, int[][] clusterSpecs, int ess) {
+        this(new CorrelationMatrix(dataSet), alpha, clusterSpecs, ess);
     }
 
     /**
@@ -132,8 +132,8 @@ public class TrekSeparationClusters {
      * @param cov   The covariance matrix.
      * @param alpha The alpha level.
      */
-    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, int[] clusterSizes) {
-        this(new CorrelationMatrix(cov), alpha, clusterSizes, cov.getSampleSize());
+    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, int[][] clusterSpecs) {
+        this(new CorrelationMatrix(cov), alpha, clusterSpecs, cov.getSampleSize());
     }
 
     /**
@@ -143,18 +143,22 @@ public class TrekSeparationClusters {
      * @param alpha The alpha level for significance cutoff.
      * @param ess   The expected sample size for the analysis.
      */
-    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, int[] clustersizes, int ess) {
+    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, int[][] clusterSpecs, int ess) {
         this.variables = cov.getVariables();
         this.alpha = alpha;
         this.sampleSize = ess;
 
-        for (int size : clustersizes) {
-            if (size < 2) {
-                throw new IllegalArgumentException("Cluster sizes must be at least 2");
+        for (int[] spec : clusterSpecs) {
+            if (spec.length != 2) {
+                throw new IllegalArgumentException("Cluster specs must have two elements");
+            }
+
+            if (spec[0] < 2 || spec[1] > spec[0]) {
+                throw new IllegalArgumentException("Cluster spec must be of form a:b where a >= 2 and b <= a.");
             }
         }
 
-        this.clusterSizes = clustersizes;
+        this.clusterSpecs = clusterSpecs;
         this.corr = new CorrelationMatrix(cov);
         this.S = this.corr.getMatrix().getDataCopy();
     }
@@ -217,10 +221,10 @@ public class TrekSeparationClusters {
 
         Set<Set<Integer>> allClusters = new HashSet<>();
 
-        System.out.println("Cluster sizes: " + Arrays.toString(clusterSizes));
+        System.out.println("Cluster sizes: " + Arrays.toString(clusterSpecs));
 
-        for (int size : clusterSizes) {
-            Set<Set<Integer>> _clusters = findClustersOfSize(variables, size, allClusters);
+        for (int[] spec : clusterSpecs) {
+            Set<Set<Integer>> _clusters = findClustersOfSize(variables, spec[0], spec[1], allClusters);
             Set<Set<Integer>> __clusters = mergeOverlappingClusters(_clusters);
             allClusters.addAll(__clusters);
         }
@@ -230,7 +234,8 @@ public class TrekSeparationClusters {
         return allClusters;
     }
 
-    private @NotNull Set<Set<Integer>> findClustersOfSize(List<Integer> variables, int depth, Set<Set<Integer>> avoid) {
+    private @NotNull Set<Set<Integer>> findClustersOfSize(List<Integer> variables, int depth, int rank,
+                                                          Set<Set<Integer>> avoid) {
         ChoiceGenerator gen = new ChoiceGenerator(variables.size(), depth);
         int[] _choice;
 
@@ -277,9 +282,9 @@ public class TrekSeparationClusters {
                 xIndices[index++] = variables.get(q);
             }
 
-            int rank = depth - 1;
+//            int rank = depth - 1;
 //            double p = StatUtils.getCcaPValueRankLE(S, xIndices, yIndices, sampleSize, rank);
-            boolean equal = StatUtils.isCcaRankEqualTo(S, xIndices, yIndices, sampleSize, rank, alpha);
+//            boolean equal = StatUtils.isCcaRankEqualTo(S, xIndices, yIndices, sampleSize, rank, alpha);
 
             int _rank = StatUtils.estimateCcaRank(S, xIndices, yIndices, sampleSize, alpha);
 

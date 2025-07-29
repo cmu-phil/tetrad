@@ -21,7 +21,6 @@ import org.ejml.data.SingularMatrixException;
 
 import java.io.Serial;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -73,39 +72,72 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
 
 
         String clusterSizes = parameters.getString(Params.CLUSTER_SIZES);
-        String[] sizes = clusterSizes.trim().split(",");
-        List<Integer> _sizes = new ArrayList<>();
-        for (int i = 0; i < sizes.length; i++) {
-            try {
-                if (sizes[i].trim().isEmpty()) {
+        String[] tokens = clusterSizes.split(",");
+        List<int[]> _specs = new ArrayList<>();
+
+        for (String token : tokens) {
+            if (token.trim().isEmpty()) {
+                continue;
+            }
+
+            String[] token2 = token.trim().split(":");
+            int[] spec = new int[2];
+
+            if (token2.length == 1) {
+                if (token2[0].trim().isEmpty()) {
                     continue;
                 }
-                _sizes.add(Integer.parseInt(sizes[i].trim()));
-            } catch (NumberFormatException e) {
-                throw new RuntimeException("Could not parse '" + sizes[i] + "'", e);
+                try {
+                    int i = Integer.parseInt(token2[0].trim());
+                    spec = new int[]{i, i - 1};
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Could not parse '" + token2[0] + "'", e);
+                }
+            } else if (token2.length == 2) {
+                if (token2[0].trim().isEmpty() || token2[1].trim().isEmpty()) {
+                    continue;
+                }
+                try {
+                    spec[0] = Integer.parseInt(token2[0].trim());
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Could not parse '" + token2[0] + "'", e);
+                }
+                try {
+                    spec[1] = Integer.parseInt(token2[1].trim());
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Could not parse '" + token2[1] + "'", e);
+                }
+            } else {
+                throw new RuntimeException("Could not parse '" + token + "'");
             }
-        }
-        
-        if (_sizes.isEmpty()) {
-            _sizes.add(2);
+
+            _specs.add(spec);
         }
 
-        int[] __sizes = _sizes.stream().mapToInt(Integer::intValue).toArray();
+        if (_specs.isEmpty()) {
+            _specs.add(new int[]{2, 1});
+        }
+
+        int[][] specs = new int[_specs.size()][];
+        for (int i = 0; i < _specs.size(); i++) {
+            specs[i] = _specs.get(i);
+        }
+
 
         edu.cmu.tetrad.search.TrekSeparationClusters search;
 
         if (dataModel instanceof CovarianceMatrix) {
             if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, __sizes);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, specs);
             } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, __sizes,
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, specs,
                         ess);
             }
         } else {
             if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, __sizes, alpha);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, specs, alpha);
             } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha, __sizes, ess);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha, specs, ess);
             }
         }
 
