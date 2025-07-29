@@ -90,6 +90,7 @@ public class TrekSeparationClusters {
      */
     private final int sampleSize;
     private final int[][] clusterSpecs;
+    private final List<Node> dataNodes;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -147,6 +148,7 @@ public class TrekSeparationClusters {
         this.variables = cov.getVariables();
         this.alpha = alpha;
         this.sampleSize = ess;
+        this.dataNodes = cov.getVariables();
 
         for (int[] spec : clusterSpecs) {
             if (spec.length != 2) {
@@ -219,19 +221,59 @@ public class TrekSeparationClusters {
             throw new IllegalArgumentException("Variables must be unique.");
         }
 
+        List<Set<Set<Integer>>> clusterList = new ArrayList<>();
         Set<Set<Integer>> allClusters = new HashSet<>();
 
-        System.out.println("Cluster sizes: " + Arrays.toString(clusterSpecs));
+        for (int i = 0; i < clusterSpecs.length; i++) {
+            log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
+            Set<Set<Integer>> _clusters = findClustersOfSize(variables, clusterSpecs[i][0], clusterSpecs[i][1], allClusters);
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNames(_clusters, dataNodes));
+            clusterList.add(mergeOverlappingClusters(_clusters));
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " + toNames(mergeOverlappingClusters(_clusters), dataNodes));
 
-        for (int[] spec : clusterSpecs) {
-            Set<Set<Integer>> _clusters = findClustersOfSize(variables, spec[0], spec[1], allClusters);
-            Set<Set<Integer>> __clusters = mergeOverlappingClusters(_clusters);
-            allClusters.addAll(__clusters);
+            for (int j = 0; j < i; j++) {
+                if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
+                    clusterList.get(j).addAll(clusterList.get(i));
+                    clusterList.set(j, mergeOverlappingClusters(clusterList.get(j)));
+                    log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNames(clusterList.get(j), dataNodes));
+
+                    clusterList.get(i).clear();
+                }
+            }
+
+            allClusters.clear();
+
+            for (Set<Set<Integer>> cluster2 : clusterList) {
+                allClusters.addAll(cluster2);
+            }
         }
 
         log("final clusters = " + ClusterSignificance.variablesForIndicesSets(allClusters, this.variables));
 
         return allClusters;
+    }
+
+    private String toNames(Set<Set<Integer>> clusters, List<Node> variables) {
+        StringBuilder sb = new StringBuilder();
+
+        int count0 = 0;
+
+        for (Set<Integer> cluster : clusters) {
+            sb.append("[");
+            int count = 0;
+
+            for (Integer var :  cluster) {
+                sb.append(variables.get(var));
+
+                if (count++ < cluster.size() - 1) sb.append(", ");
+            }
+
+            sb.append("]");
+
+            if (count0++ < clusters.size() - 1) sb.append("; ");
+        }
+
+        return sb.toString();
     }
 
     private @NotNull Set<Set<Integer>> findClustersOfSize(List<Integer> variables, int depth, int rank,
@@ -260,10 +302,9 @@ public class TrekSeparationClusters {
 
             for (Set<Integer> set : avoid) {
                 if (set.containsAll(ySet)) {
-                    continue;
+                    return;
                 }
             }
-
 
             int[] xIndices = new int[variables.size() - depth];
 
@@ -282,14 +323,9 @@ public class TrekSeparationClusters {
                 xIndices[index++] = variables.get(q);
             }
 
-//            int rank = depth - 1;
-//            double p = StatUtils.getCcaPValueRankLE(S, xIndices, yIndices, sampleSize, rank);
-//            boolean equal = StatUtils.isCcaRankEqualTo(S, xIndices, yIndices, sampleSize, rank, alpha);
-
             int _rank = StatUtils.estimateCcaRank(S, xIndices, yIndices, sampleSize, alpha);
 
             if (_rank == rank) {
-//            if (p >= alpha) {
                 List<Integer> _cluster = MathUtils.getInts(yIndices);
 
                 if (clusterDependent(_cluster)) {

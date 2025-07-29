@@ -26,6 +26,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.simple.SimpleMatrix;
+import org.ejml.simple.SimpleSVD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2739,24 +2740,24 @@ public final class StatUtils {
      * @param S        The input correlation matrix as a SimpleMatrix.
      * @param xIndices Indices of the first variable group.
      * @param yIndices Indices of the second variable group.
-     * @param n        Sample size.
+     * @param N        Sample size.
      * @param r        The hypothesized maximum rank under the null hypothesis.
      * @return p-value from the chi-squared test.
      */
-    public static double getCcaPValueRankLE(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int r) {
+    public static double getCcaPValueRankLE(SimpleMatrix S, int[] xIndices, int[] yIndices, int N, int r) {
         if (xIndices.length == 0 || yIndices.length == 0) {
             throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
         }
 
-        int p = xIndices.length;
-        int q = yIndices.length;
-        int minpq = Math.min(p, q);
+        int m = xIndices.length;
+        int n = yIndices.length;
+        int minpq = Math.min(m, n);
 
         if (r < 0 || r >= minpq) {
-            throw new IllegalArgumentException("r must be in [0, min(p, q) - 1]");
+            throw new IllegalArgumentException("r must be in [0, min(m, n) - 1]");
         }
 
-        if (n < p + q) {
+        if (N < m + n) {
             throw new IllegalArgumentException("Sample size too small for a meaningful test.");
         }
 
@@ -2770,33 +2771,33 @@ public final class StatUtils {
         SimpleMatrix YYinvSqrt = chol(YY).invert();
         SimpleMatrix product = XXinvSqrt.mult(XY).mult(YYinvSqrt);
 
-        // Transpose if p < q
-        if (p < q) {
+        // Transpose if m < n
+        if (m < n) {
             product = product.transpose();
-            int tmp = p;
-            p = q;
-            q = tmp;
+            int tmp = m;
+            m = n;
+            n = tmp;
         }
 
         // Step 3: SVD
-        double[] s = product.svd().getSingularValues();
+        SimpleSVD<SimpleMatrix> svd = product.svd();
 
         // Step 4: Compute test statistic from canonical correlations j = r+1 to minpq
         double stat = 0.0;
         for (int j = r + 1; j <= minpq; j++) {
-            double val = s[j - 1];
-            val = Math.min(1.0, Math.max(0.0, val));
+            double val = svd.getSingleValue(j - 1);
+//            val = Math.min(1.0, Math.max(0.0, val));
             double adjusted = 1.0 - val * val;
-            adjusted = Math.max(adjusted, 1e-20);
+//            adjusted = Math.max(adjusted, 1e-20);
             stat += Math.log(adjusted);
         }
 
         // Step 5: Scale
-        double scale = (n - 1) - 0.5 * (p + q + 1);
+        double scale = (N - 1) - 0.5 * (m + n + 1);
         stat *= -scale;
 
-        // Step 6: Degrees of freedom = (p - r)(q - r)
-        int df = (p - r) * (q - r);
+        // Step 6: Degrees of freedom = (m - r) * (n - r)
+        int df = (m - r) * (n - r);
 
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         return 1.0 - chi2.cumulativeProbability(stat);
