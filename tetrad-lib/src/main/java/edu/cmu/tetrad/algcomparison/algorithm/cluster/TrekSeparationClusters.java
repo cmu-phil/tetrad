@@ -125,19 +125,20 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
 
 
         edu.cmu.tetrad.search.TrekSeparationClusters search;
+        double penalty = parameters.getDouble(Params.PENALTY_DISCOUNT);
 
         if (dataModel instanceof CovarianceMatrix) {
             if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, specs);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, specs, penalty);
             } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, specs,
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, penalty, specs,
                         ess);
             }
         } else {
             if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, specs, alpha);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, specs, alpha, penalty);
             } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha, specs, ess);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha, penalty, specs, ess);
             }
         }
 
@@ -145,7 +146,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         Graph graph = search.search();
 
-        if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
+        if (true) {//!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
             return graph;
         } else {
 
@@ -275,7 +276,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
+//        parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.MIMBUILD_TYPE);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);

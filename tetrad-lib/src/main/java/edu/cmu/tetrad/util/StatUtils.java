@@ -2771,14 +2771,6 @@ public final class StatUtils {
         SimpleMatrix YYinvSqrt = chol(YY).invert();
         SimpleMatrix product = XXinvSqrt.mult(XY).mult(YYinvSqrt);
 
-//        // Transpose if m < n
-//        if (m > n) {
-//            product = product.transpose();
-//            int tmp = m;
-//            m = n;
-//            n = tmp;
-//        }
-
         // Step 3: SVD
         SimpleSVD<SimpleMatrix> svd = product.svd();
 
@@ -2786,9 +2778,7 @@ public final class StatUtils {
         double stat = 0.0;
         for (int j = r + 1; j <= minpq; j++) {
             double val = svd.getSingleValue(j - 1);
-//            val = Math.min(1.0, Math.max(0.0, val));
             double adjusted = 1.0 - val * val;
-//            adjusted = Math.max(adjusted, 1e-20);
             stat += Math.log(adjusted);
         }
 
