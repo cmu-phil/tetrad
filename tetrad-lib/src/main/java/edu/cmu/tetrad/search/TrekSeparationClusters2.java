@@ -111,8 +111,8 @@ public class TrekSeparationClusters2 {
 
     // Entry point
     public Graph search() {
-        int size = 2;
-        int rank = 1;
+        int size = 3;
+        int rank = 2;
 
         Set<Set<Integer>> P = findClustersAtRank(size, rank);
 //        P.addAll(findClustersAtRank(3, 2));
@@ -121,49 +121,114 @@ public class TrekSeparationClusters2 {
 
         removeNested(P);
 
-        Set<Set<Integer>> usedPairs = new HashSet<>();
+        Set<Set<Integer>> usedClusters = new HashSet<>();
         Set<Set<Integer>> mergedClusters = new HashSet<>(P);
 
         boolean changed = false;
 
+//        while (!P.isEmpty()) {
+//            Set<Integer> seed = P.iterator().next();
+//            Set<Integer> cluster = new HashSet<>(seed);
+//            usedClusters.add(seed);
+//            P.remove(seed);
+//
+//            boolean found = false;
+//
+//            do {
+//                changed = false;
+//                for (Iterator<Set<Integer>> it = P.iterator(); it.hasNext(); ) {
+//                    Set<Integer> _cluster = it.next();
+//                    if (usedClusters.contains(_cluster)) continue;
+//
+//                    if (!Collections.disjoint(_cluster, cluster)) {
+//                        cluster.addAll(_cluster);
+//                        usedClusters.add(_cluster);
+//
+//                        if (cluster.size() < rank || cluster.size() > variables.size() - rank) {
+//                            break;
+//                        }
+//
+//                        if (cluster.size() >= variables.size() / 2) {
+//                            break;
+//                        }
+//
+//                        if (checkRank && lookupCluster(cluster) != rank) {
+//                            break;
+//                        }
+//
+//                        System.out.println("Rank for " + toNamesCluster(cluster, nodes) + " = " + rank(cluster));
+//
+//                        it.remove();  // modify P
+//                        changed = true;
+//                        found = true;
+//                        break;
+//                    }
+//                }
+//            } while (changed);
+//
+//            if (found) {
+//                // Remove any subset pairs from mergedClusters
+//                mergedClusters.removeIf(cluster::containsAll);
+//                mergedClusters.add(cluster);
+//
+//                System.out.println("Adding " + toNamesCluster(cluster, nodes) + " to " + toNamesClusters(mergedClusters, nodes));
+//            }
+//        }
+
+        // ... outside until complete search is done:
         while (!P.isEmpty()) {
             Set<Integer> seed = P.iterator().next();
             Set<Integer> cluster = new HashSet<>(seed);
-            usedPairs.add(seed);
+            usedClusters.add(seed);
             P.remove(seed);
 
+            boolean extended;
             do {
-                changed = false;
-                for (Iterator<Set<Integer>> it = P.iterator(); it.hasNext(); ) {
-                    Set<Integer> pair = it.next();
-                    if (usedPairs.contains(pair)) continue;
+                extended = false;
+                Iterator<Set<Integer>> it = P.iterator();
+                Set<Integer> frozen = new HashSet<>(cluster);
 
-                    if (!Collections.disjoint(pair, cluster)) {
-                        cluster.addAll(pair);
-                        usedPairs.add(pair);
+                while (it.hasNext()) {
+                    Set<Integer> candidate = it.next();
+                    if (usedClusters.contains(candidate)) continue;
+                    if (Collections.disjoint(candidate, frozen)) continue;
 
-                        if (cluster.size() < rank || cluster.size() > variables.size() - rank) {
-                            break;
-                        }
+                    Set<Integer> union = new HashSet<>(frozen);
+                    union.addAll(candidate);
 
-                        if (checkRank && lookupCluster(cluster) != rank) {
-                            System.out.println("Rank for " + cluster + " = " + rank(cluster));
-                            break;
-                        }
-
-                        it.remove();  // modify P
-                        changed = true;
-                        break;
+                    // Size constraints
+                    if (union.size() < rank
+                        || union.size() > variables.size() - rank
+                        || union.size() >= variables.size() / 2) {
+                        continue;  // skip early, do not mutate cluster
                     }
-                }
-            } while (changed);
 
-            // Remove any subset pairs from mergedClusters
+                    if (checkRank && lookupRank(union) != rank) {
+                        continue;  // skip non‑rank‑2 cluster
+                    }
+
+//                    System.out.println("Union: " + union + " rank = " + lookupRank(union));
+
+                    // Passed all tests—commit to new cluster
+                    cluster = union;
+                    usedClusters.add(candidate);
+                    it.remove();
+                    extended = true;
+                    break;
+                }
+            } while (extended);
+
+            // Now that cluster is fully grown and valid, replace nested subsets
             mergedClusters.removeIf(cluster::containsAll);
+
+            System.out.println("Adding: " + toNamesCluster(cluster, nodes) + " rank = " + lookupRank(cluster));
+
             mergedClusters.add(cluster);
         }
 
         removeNested(mergedClusters);
+
+//        removeNested(mergedClusters);
 
         List<Set<Integer>> clusters = new ArrayList<>();
         for (Set<Integer> cluster : mergedClusters) {
@@ -215,7 +280,7 @@ public class TrekSeparationClusters2 {
                 cluster.add(variables.get(i));
             }
 
-            if (lookupCluster(cluster) == rank) {
+            if (lookupRank(cluster) == rank) {
                 clusters.add(cluster);
             }
         }
@@ -223,7 +288,7 @@ public class TrekSeparationClusters2 {
         return clusters;
     }
 
-    private int lookupCluster(Set<Integer> cluster) {
+    private int lookupRank(Set<Integer> cluster) {
         if (!rankCache.containsKey(cluster)) {
             rankCache.put(cluster, rank(cluster));
         }
@@ -239,11 +304,11 @@ public class TrekSeparationClusters2 {
         List<Integer> clusterList = new ArrayList<>(cluster);
         List<Integer> otherVars = new ArrayList<>(variables);
         otherVars.removeAll(clusterList);
-        return lookupCluster(clusterList, otherVars, rank);  // This is your method
+        return lookupRank(clusterList, otherVars, rank);  // This is your method
     }
 
     // Dummy placeholder. Replace this with your own implementation.
-    private boolean lookupCluster(List<Integer> ySet, List<Integer> xSet, int rank) {
+    private boolean lookupRank(List<Integer> ySet, List<Integer> xSet, int rank) {
         int[] xIndices = new int[xSet.size()];
         int[] yIndices = new int[ySet.size()];
 
