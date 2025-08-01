@@ -69,6 +69,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
+        boolean includeStructure = parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL);
 
 
         String clusterSizes = parameters.getString(Params.CLUSTER_SIZES);
@@ -143,6 +144,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         }
 
         search.setIncludeAllNodes(includeAllNodes);
+        search.setIncludeStructureModel(includeStructure);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         Graph graph = search.search();
 
@@ -276,7 +278,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-//        parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
+        parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.MIMBUILD_TYPE);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);

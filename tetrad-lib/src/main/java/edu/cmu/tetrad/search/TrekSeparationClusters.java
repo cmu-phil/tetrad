@@ -28,10 +28,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.MathUtils;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 import org.ejml.data.DMatrixRMaj;
@@ -96,6 +93,7 @@ public class TrekSeparationClusters {
     private final int sampleSize;
     private final int[][] clusterSpecs;
     private final List<Node> dataNodes;
+    private final double penalty;
     /**
      * The clusters that are output by the algorithm from the last call to search().
      */
@@ -110,6 +108,7 @@ public class TrekSeparationClusters {
      * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
      */
     private boolean includeAllNodes = false;
+    private boolean includeStructureModel = false;
 
     /**
      * Conctructor using a dataset.
@@ -157,6 +156,7 @@ public class TrekSeparationClusters {
         this.variables = cov.getVariables();
         this.alpha = alpha;
         this.sampleSize = ess;
+        this.penalty = penalty;
         this.dataNodes = cov.getVariables();
 
         for (int[] spec : clusterSpecs) {
@@ -175,8 +175,8 @@ public class TrekSeparationClusters {
     }
 
     public static double[][] toDoubleArray(SimpleMatrix matrix) {
-        int numRows = matrix.numRows();
-        int numCols = matrix.numCols();
+        int numRows = matrix.getNumRows();
+        int numCols = matrix.getNumCols();
         double[][] result = new double[numRows][numCols];
 
         for (int i = 0; i < numRows; i++) {
@@ -186,6 +186,38 @@ public class TrekSeparationClusters {
         }
 
         return result;
+    }
+
+    private static @NotNull String toNamesClusters(Set<Set<Integer>> clusters, List<Node> variables) {
+        StringBuilder sb = new StringBuilder();
+
+        int count0 = 0;
+
+        for (Set<Integer> cluster : clusters) {
+            StringBuilder _sb = toNamesCluster(cluster, variables);
+
+            if (count0++ < clusters.size() - 1) _sb.append("; ");
+
+            sb.append(_sb);
+        }
+
+        return sb.toString();
+    }
+
+    private static @NotNull StringBuilder toNamesCluster(Set<Integer> cluster, List<Node> variables) {
+        StringBuilder _sb = new StringBuilder();
+
+        _sb.append("[");
+        int count = 0;
+
+        for (Integer var : cluster) {
+            _sb.append(variables.get(var));
+
+            if (count++ < cluster.size() - 1) _sb.append(", ");
+        }
+
+        _sb.append("]");
+        return _sb;
     }
 
     /**
@@ -201,29 +233,16 @@ public class TrekSeparationClusters {
 
         log("clusters = " + this.clusters);
 
-        List<List<Integer>> _allClusters = new ArrayList<>();
+        List<List<Integer>> clusters = new ArrayList<>();
         for (Set<Integer> cluster : allClusters) {
-            _allClusters.add(new ArrayList<>(cluster));
+            clusters.add(new ArrayList<>(cluster));
         }
 
-        List<SimpleMatrix> eigenvectors = LatentGraphBuilder.extractFirstEigenvectors(S, _allClusters);
-        SimpleMatrix latentsCov = LatentGraphBuilder.latentLatentCorrelationMatrix(S, _allClusters, eigenvectors);
-
-        List<Node> latents = defineLatents(_allClusters);
-        Graph graph = convertToGraph(_allClusters, latents, includeAllNodes);
-
-        try {
-            CovarianceMatrix cov = new CovarianceMatrix(latents, toDoubleArray(latentsCov), corr.getSampleSize());
-            SemBicScore score = new SemBicScore(cov, 2);
-            Graph structureGraph = new PermutationSearch(new Boss(score)).search();
-
-            for (Edge edge : structureGraph.getEdges()) {
-                graph.addEdge(edge);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        List<Node> latents = defineLatents(clusters);
+        Graph graph = convertSearchGraphClusters(clusters, latents, includeAllNodes);
+        if (includeStructureModel) {
+            addStructureEdges(clusters, latents, graph);
         }
-
         return graph;
     }
 
@@ -273,15 +292,23 @@ public class TrekSeparationClusters {
         for (int i = 0; i < clusterSpecs.length; i++) {
             log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
             Set<Set<Integer>> _clusters = findClustersOfSize(variables, clusterSpecs, i, clusterList);
-            log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNames(_clusters, dataNodes));
-            clusterList.add(mergeOverlappingClusters(_clusters));
-            log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " + toNames(mergeOverlappingClusters(_clusters), dataNodes));
+
+            Set<Set<Integer>> baseClusters = new HashSet<>(_clusters);
+
+//            if (clusterSpecs[i][1] == 2) {
+//                baseClusters = new HashSet<>(_clusters);
+//            }
+
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters, dataNodes));
+            clusterList.add(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
+                toNamesClusters(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]), dataNodes));
 
             for (int j = 0; j < i; j++) {
                 if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
                     clusterList.get(j).addAll(clusterList.get(i));
-                    clusterList.set(j, mergeOverlappingClusters(clusterList.get(j)));
-                    log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNames(clusterList.get(j), dataNodes));
+                    clusterList.set(j, mergeOverlappingClusters(clusterList.get(j), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
+                    log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNamesClusters(clusterList.get(j), dataNodes));
                     clusterList.get(i).clear();
                 }
             }
@@ -298,29 +325,6 @@ public class TrekSeparationClusters {
         return allClusters;
     }
 
-    private String toNames(Set<Set<Integer>> clusters, List<Node> variables) {
-        StringBuilder sb = new StringBuilder();
-
-        int count0 = 0;
-
-        for (Set<Integer> cluster : clusters) {
-            sb.append("[");
-            int count = 0;
-
-            for (Integer var : cluster) {
-                sb.append(variables.get(var));
-
-                if (count++ < cluster.size() - 1) sb.append(", ");
-            }
-
-            sb.append("]");
-
-            if (count0++ < clusters.size() - 1) sb.append("; ");
-        }
-
-        return sb.toString();
-    }
-
     private @NotNull Set<Set<Integer>> findClustersOfSize(List<Integer> variables, int[][] clusterSpecs, int i, List<Set<Set<Integer>>> clusterList) {
         ChoiceGenerator gen = new ChoiceGenerator(variables.size(), clusterSpecs[i][0]);
         int[] _choice;
@@ -333,62 +337,140 @@ public class TrekSeparationClusters {
         Set<Set<Integer>> finalClusters = ConcurrentHashMap.newKeySet();
 
         choices.parallelStream().forEach(choice -> {
-            int[] yIndices = new int[clusterSpecs[i][0]];
+            int[] yIndices = new int[choice.length];
 
-            for (int q = 0; q < clusterSpecs[i][0]; q++) {
+            for (int q = 0; q < choice.length; q++) {
                 yIndices[q] = variables.get(choice[q]);
             }
 
-            Set<Integer> ySet = new HashSet<>();
-            for (int y : yIndices) {
-                ySet.add(y);
-            }
+            int _rank = getRank(yIndices, variables, clusterList, i);
 
-            for (int j = 0; j < i; j++) {
-                for (Set<Integer> set : clusterList.get(j)) {
-                    if (set.containsAll(ySet)) {
-                        return;
-                    }
-                }
-            }
 
-            int[] xIndices = new int[variables.size() - clusterSpecs[i][0]];
-
-            int index = 0;
-
-            for (int q = 0; q < variables.size(); q++) {
-                boolean found = false;
-                for (int y : yIndices) {
-                    if (q == y) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (found) continue;
-
-                xIndices[index++] = variables.get(q);
-            }
-
-            int _rank = StatUtils.estimateCcaRank(S, xIndices, yIndices, sampleSize, alpha);
 
             if (_rank == clusterSpecs[i][1]) {
                 List<Integer> _cluster = MathUtils.getInts(yIndices);
+
+                System.out.println("_rank = " + _rank + ": " + toNamesCluster(new HashSet<>(_cluster), this.variables));
 
                 if (clusterDependent(_cluster)) {
                     finalClusters.add(new HashSet<>(_cluster));
                 }
             }
         });
+
         return finalClusters;
+    }
+
+    private int getRank(int[] cluster, List<Integer> variables, List<Set<Set<Integer>>> clusterList, int avoidToIndex) {
+        Set<Integer> ySet = new HashSet<>();
+        for (int y : cluster) {
+            ySet.add(y);
+        }
+
+        for (int j = 0; j < avoidToIndex; j++) {
+            for (Set<Integer> set : clusterList.get(j)) {
+                if (set.containsAll(ySet)) {
+                    return -1;
+                }
+            }
+        }
+
+        int[] other = new int[variables.size() - cluster.length];
+
+        int index = 0;
+
+        for (int q = 0; q < variables.size(); q++) {
+            boolean found = false;
+            for (int y : cluster) {
+                if (q == y) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) continue;
+
+            other[index++] = variables.get(q);
+        }
+
+        return StatUtils.estimateCcaRank(S, other, cluster, sampleSize, alpha);
     }
 
     /**
      * Merges the given clusters.
      *
      * @param clusters The lists of integers representing the clusters.
+     * @param rank
      * @return The merged clusters.
      */
-    private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters) {
+//    private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters, Set<Set<Integer>> baseClusters,
+//                                                       int size, int rank) {
+//        boolean merged;
+//        System.out.println("Base clusters: " + toNamesClusters(baseClusters, dataNodes));
+//
+//        do {
+//            merged = false;
+//            Set<Set<Integer>> newClusters = new HashSet<>();
+//
+//            for (Set<Integer> cluster1 : clusters) {
+//                Set<Integer> mergedCluster = new HashSet<>(cluster1);
+//                boolean passing = true;
+//
+//                C:
+//                for (Set<Integer> cluster2 : clusters) {
+//                    if (cluster1 == cluster2) continue;
+//                    Set<Integer> intersection = new HashSet<>(cluster1);
+//                    intersection.retainAll(cluster2);
+//
+//                    if (!intersection.isEmpty() && !new HashSet<>(mergedCluster).containsAll(cluster2)) {
+//                        mergedCluster.addAll(cluster2);
+//
+//                        List<Integer> _merged = new  ArrayList<>(mergedCluster);
+//
+//                        ChoiceGenerator generator = new ChoiceGenerator(_merged.size(), size);
+//                        int[] choice;
+//
+//                        while ((choice = generator.next()) != null) {
+//                            Set<Integer> _cluster = new HashSet<>();
+//
+//                            for (int i : choice) {
+//                                _cluster.add(_merged.get(i));
+//                            }
+//
+//                            if (baseClusters.contains(_cluster)) {
+////                                passing++;
+//                            } else {
+//                                passing = false;
+//                                continue C;
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                if (mergedCluster.size() >= size) {
+//                    newClusters.add(mergedCluster);
+//                }
+//
+//                if (!passing) {
+//                    continue;
+//                }
+//
+//                merged = true;
+//            }
+//
+//            if (newClusters.isEmpty()) {
+//                continue;
+//            }
+//
+//            clusters = newClusters;
+//        } while (merged);
+//
+//        return clusters;
+//    }
+
+    private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters,
+                                                       Set<Set<Integer>> baseClusters,
+                                                       int size, int rank) {
+        System.out.println("Base clusters: " + toNamesClusters(baseClusters, dataNodes));
         boolean merged;
 
         do {
@@ -397,29 +479,62 @@ public class TrekSeparationClusters {
 
             for (Set<Integer> cluster1 : clusters) {
                 Set<Integer> mergedCluster = new HashSet<>(cluster1);
+                boolean passing = true;
+                boolean localMerged = false;
 
+                C:
                 for (Set<Integer> cluster2 : clusters) {
                     if (cluster1 == cluster2) continue;
 
                     Set<Integer> intersection = new HashSet<>(cluster1);
                     intersection.retainAll(cluster2);
 
-                    if (!intersection.isEmpty() && !new HashSet<>(mergedCluster).containsAll(cluster2)) {
+                    if (!intersection.isEmpty() && !mergedCluster.containsAll(cluster2)) {
                         mergedCluster.addAll(cluster2);
-                        merged = true;
+                        localMerged = true;
+
+                        // If size == 2, check that all pairs in mergedCluster are in baseClusters
+                        if (false) {
+                            List<Integer> mergedList = new ArrayList<>(mergedCluster);
+                            int n = mergedList.size();
+                            outer:
+                            for (int i = 0; i < n; i++) {
+                                for (int j = i + 1; j < n; j++) {
+                                    Set<Integer> pair = new HashSet<>();
+                                    pair.add(mergedList.get(i));
+                                    pair.add(mergedList.get(j));
+                                    if (!baseClusters.contains(pair)) {
+                                        passing = false;
+                                        break outer;
+                                    }
+                                }
+                            }
+                        }
+                        // If size > 2, no subset check — merge willy-nilly
                     }
                 }
 
-                newClusters.add(mergedCluster);
+                if (passing && mergedCluster.size() >= size) {
+                    newClusters.add(mergedCluster);
+                }
+                if (localMerged) {
+                    merged = true;
+                }
             }
 
-            clusters = newClusters;
+            if (!newClusters.equals(clusters)) {
+                clusters = newClusters;
+            } else {
+                merged = false;
+            }
         } while (merged);
 
         return clusters;
     }
 
     private boolean clusterDependent(List<Integer> cluster) {
+//        if (true) return true;
+
         int numDependencies = 0;
         int all = 0;
 
@@ -485,6 +600,37 @@ public class TrekSeparationClusters {
         return latents;
     }
 
+    private Graph convertSearchGraphClusters(List<List<Integer>> clusters, List<Node> latents, boolean includeAllNodes) {
+        Graph graph = includeAllNodes ? new EdgeListGraph(this.variables) : new EdgeListGraph();
+
+        for (int i = 0; i < clusters.size(); i++) {
+            graph.addNode(latents.get(i));
+
+            for (int j : clusters.get(i)) {
+                if (!graph.containsNode(variables.get(j))) graph.addNode(variables.get(j));
+                graph.addDirectedEdge(latents.get(i), variables.get(j));
+            }
+        }
+
+        return graph;
+    }
+
+    private void addStructureEdges(List<List<Integer>> clusters, List<Node> latents, Graph graph) {
+        try {
+            List<SimpleMatrix> eigenvectors = LatentGraphBuilder.extractFirstEigenvectors(S, clusters);
+            SimpleMatrix latentsCov = LatentGraphBuilder.latentLatentCorrelationMatrix(S, clusters, eigenvectors);
+            CovarianceMatrix cov = new CovarianceMatrix(latents, toDoubleArray(latentsCov), sampleSize);
+            SemBicScore score = new SemBicScore(cov, penalty);
+            Graph structureGraph = new PermutationSearch(new Boss(score)).search();
+
+            for (Edge edge : structureGraph.getEdges()) {
+                graph.addEdge(edge);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Converts search graph nodes to a Graph object.
      *
@@ -527,6 +673,10 @@ public class TrekSeparationClusters {
      */
     public void setIncludeAllNodes(boolean includeAllNodes) {
         this.includeAllNodes = includeAllNodes;
+    }
+
+    public void setIncludeStructureModel(boolean includeStructure) {
+        this.includeStructureModel = includeStructure;
     }
 
     private static class LatentGraphBuilder {

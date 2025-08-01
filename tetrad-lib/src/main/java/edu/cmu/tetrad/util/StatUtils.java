@@ -2751,9 +2751,9 @@ public final class StatUtils {
 
         int m = xIndices.length;
         int n = yIndices.length;
-        int minpq = Math.min(m, n);
+        int minmn = Math.min(m, n);
 
-        if (r < 0 || r >= minpq) {
+        if (r < 0 || r >= minmn) {
             throw new IllegalArgumentException("r must be in [0, min(m, n) - 1]");
         }
 
@@ -2774,20 +2774,21 @@ public final class StatUtils {
         // Step 3: SVD
         SimpleSVD<SimpleMatrix> svd = product.svd();
 
-        // Step 4: Compute test statistic from canonical correlations j = r+1 to minpq
+        // Step 4: Compute test statistic from canonical correlations j = r + 1 to minmn
         double stat = 0.0;
-        for (int j = r + 1; j <= minpq; j++) {
+        for (int j = r + 1; j <= minmn; j++) {
             double val = svd.getSingleValue(j - 1);
             double adjusted = 1.0 - val * val;
             stat += Math.log(adjusted);
         }
 
         // Step 5: Scale
-        double scale = (N - 1) - 0.5 * (m + n + 1);
+//        double scale = (N - 1) - 0.5 * (m + n + 1);
+        double scale = (N - (m + n + 3) / 2.);
         stat *= -scale;
 
         // Step 6: Degrees of freedom = (m - r) * (n - r)
-        int df = (m - r) * (n - r);
+        double df = (m - r) * (n - r);
 
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         return 1.0 - chi2.cumulativeProbability(stat);
@@ -2836,6 +2837,7 @@ public final class StatUtils {
         int q = yIndices.length;
         int minpq = Math.min(p, q);
 
+        // Rank 0 always gives NaN though... but the inequality will fail then. jdramsey 2025-8-1
         for (int r = 0; r < minpq; r++) {
             double pVal = getCcaPValueRankLE(S, xIndices, yIndices, n, r);
             if (pVal > alpha) {
