@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.data.DMatrixRMaj;
@@ -40,7 +41,7 @@ public class TrekSeparationClusters2 {
 
     private final List<Node> nodes;
     private final List<Integer> variables;
-    private final Map<Set<Integer>, Boolean> rank1Cache = new HashMap<>();
+    private final Map<Set<Integer>, Integer> rankCache = new HashMap<>();
 
     /**
      * The correlation matrix as a SimpleMatrix.
@@ -52,6 +53,7 @@ public class TrekSeparationClusters2 {
     private double penalty = 2;
     private boolean includeAllNodes = false;
     private boolean verbose = false;
+    private boolean checkRank = true;
 
     public TrekSeparationClusters2(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
         this.nodes = new ArrayList<>(variables);
@@ -65,7 +67,7 @@ public class TrekSeparationClusters2 {
         this.S = new CovarianceMatrix(cov).getMatrix().getDataCopy();
     }
 
-    private static @NotNull StringBuilder toNamesCluster(List<Integer> cluster, List<Node> nodes) {
+    private static @NotNull StringBuilder toNamesCluster(Collection<Integer> cluster, List<Node> nodes) {
         StringBuilder _sb = new StringBuilder();
 
         _sb.append("[");
@@ -81,12 +83,12 @@ public class TrekSeparationClusters2 {
         return _sb;
     }
 
-    private static @NotNull String toNamesClusters(List<List<Integer>> clusters, List<Node> nodes) {
+    private static @NotNull String toNamesClusters(Set<Set<Integer>> clusters, List<Node> nodes) {
         StringBuilder sb = new StringBuilder();
 
         int count0 = 0;
 
-        for (List<Integer> cluster : clusters) {
+        for (Collection<Integer> cluster : clusters) {
             StringBuilder _sb = toNamesCluster(cluster, nodes);
 
             if (count0++ < clusters.size() - 1) _sb.append("; ");
@@ -97,112 +99,78 @@ public class TrekSeparationClusters2 {
         return sb.toString();
     }
 
-    public static double[][] toDoubleArray(SimpleMatrix matrix) {
-        int numRows = matrix.getNumRows();
-        int numCols = matrix.getNumCols();
-        double[][] result = new double[numRows][numCols];
-
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                result[i][j] = matrix.get(i, j);
-            }
-        }
-
-        return result;
+    private static void removeNested(Set<Set<Integer>> mergedClusters) {
+        boolean _changed;
+        do {
+            _changed = mergedClusters.removeIf(
+                    sub -> mergedClusters.stream()
+                            .anyMatch(cluster -> cluster != sub && cluster.containsAll(sub))
+            );
+        } while (_changed);
     }
 
     // Entry point
     public Graph search() {
-        Set<Set<Integer>> P = findAllRank1Pairs();
+        int size = 2;
+        int rank = 1;
+
+        Set<Set<Integer>> P = findClustersAtRank(size, rank);
+//        P.addAll(findClustersAtRank(3, 2));
+
+        System.out.println("P  = " + toNamesClusters(P, nodes));
+
+        removeNested(P);
+
         Set<Set<Integer>> usedPairs = new HashSet<>();
-        List<Set<Integer>> mergedClusters = new ArrayList<>();
+        Set<Set<Integer>> mergedClusters = new HashSet<>(P);
+
+        boolean changed = false;
 
         while (!P.isEmpty()) {
-            // Get a starting pair not already used
-            Optional<Set<Integer>> seedOpt = P.stream().filter(p -> !usedPairs.contains(p)).findFirst();
-            if (seedOpt.isEmpty()) break;
+            Set<Integer> seed = P.iterator().next();
+            Set<Integer> cluster = new HashSet<>(seed);
+            usedPairs.add(seed);
+            P.remove(seed);
 
-            Set<Integer> cluster = new HashSet<>(seedOpt.get());
-            usedPairs.add(seedOpt.get());
-
-            boolean changed;
             do {
                 changed = false;
-
-                P:
-                for (Set<Integer> pair : P) {
+                for (Iterator<Set<Integer>> it = P.iterator(); it.hasNext(); ) {
+                    Set<Integer> pair = it.next();
                     if (usedPairs.contains(pair)) continue;
 
-                    Set<Integer> intersection = new HashSet<>(pair);
-                    intersection.retainAll(cluster);
-                    if (!intersection.isEmpty()) {
-                        Set<Integer> extension = new HashSet<>(pair);
-                        extension.removeAll(cluster);
-
-                        Set<Integer> candidate = new HashSet<>(cluster);
-                        candidate.addAll(pair);
-
-                        List<Integer> candidateList = new ArrayList<>(candidate);
-                        for (int i = 0; i < candidateList.size(); i++) {
-                            for (int j = i + 1; j < candidateList.size(); j++) {
-                                for (Set<Integer> _merged : mergedClusters) {
-                                    if (_merged.containsAll(pair)) {
-                                        continue P;
-                                    }
-                                }
-
-                                Set<Integer> candidateSet = new HashSet<>(candidateList);
-                                candidateSet.add(candidateList.get(i));
-                                candidateSet.add(candidateList.get(j));
-
-                                if (!P.contains(candidateSet)) {
-                                    continue P;
-                                }
-                            }
-                        }
-
-//                        if (new HashSet<>(variables).containsAll(extension) &&
-//                            isRankOneCached(candidate)) {
+                    if (!Collections.disjoint(pair, cluster)) {
                         cluster.addAll(pair);
                         usedPairs.add(pair);
+
+                        if (cluster.size() < rank || cluster.size() > variables.size() - rank) {
+                            break;
+                        }
+
+                        if (checkRank && lookupCluster(cluster) != rank) {
+                            System.out.println("Rank for " + cluster + " = " + rank(cluster));
+                            break;
+                        }
+
+                        it.remove();  // modify P
                         changed = true;
                         break;
-//                        }
                     }
                 }
             } while (changed);
 
+            // Remove any subset pairs from mergedClusters
+            mergedClusters.removeIf(cluster::containsAll);
             mergedClusters.add(cluster);
         }
 
-        // Try merging overlapping clusters if the union is still rank 1
-        boolean merged;
-        do {
-            merged = false;
-            outer:
-            for (int i = 0; i < mergedClusters.size(); i++) {
-                for (int j = i + 1; j < mergedClusters.size(); j++) {
-                    Set<Integer> ci = mergedClusters.get(i);
-                    Set<Integer> cj = mergedClusters.get(j);
-                    Set<Integer> union = new HashSet<>(ci);
-                    union.addAll(cj);
-                    if (isRankOneCached(union)) {
-                        mergedClusters.remove(ci);
-                        mergedClusters.remove(cj);
-                        mergedClusters.add(union);
-                        merged = true;
-                        break outer;
-                    }
-                }
-            }
-        } while (merged);
+        removeNested(mergedClusters);
 
-        List<List<Integer>> clusters = new ArrayList<>();
+        List<Set<Integer>> clusters = new ArrayList<>();
         for (Set<Integer> cluster : mergedClusters) {
-            clusters.add(new ArrayList<>(cluster));
+            clusters.add(new HashSet<>(cluster));
         }
 
-        log("clusters = " + toNamesClusters(clusters, nodes));
+        log("clusters = " + toNamesClusters(mergedClusters, nodes));
 
         List<Node> latents = defineLatents(clusters);
         Graph graph = convertSearchGraphClusters(clusters, latents, isIncludeAllNodes());
@@ -212,14 +180,18 @@ public class TrekSeparationClusters2 {
         }
 
         return graph;
-
     }
 
-    private void addStructureEdges(List<List<Integer>> clusters, List<Node> latents, Graph graph) {
+    private void addStructureEdges(List<Set<Integer>> clusters, List<Node> latents, Graph graph) {
         try {
-            List<SimpleMatrix> eigenvectors = LatentGraphBuilder.extractFirstEigenvectors(S, clusters);
-            SimpleMatrix latentsCov = LatentGraphBuilder.latentLatentCorrelationMatrix(S, clusters, eigenvectors);
-            CovarianceMatrix cov = new CovarianceMatrix(latents, toDoubleArray(latentsCov), sampleSize);
+            List<List<Integer>> _clusters = new ArrayList<>();
+            for (Set<Integer> cluster : clusters) {
+                _clusters.add(new ArrayList<>(cluster));
+            }
+
+            List<SimpleMatrix> eigenvectors = LatentGraphBuilder.extractFirstEigenvectors(S, _clusters);
+            SimpleMatrix latentsCov = LatentGraphBuilder.latentLatentCorrelationMatrix(S, _clusters, eigenvectors);
+            CovarianceMatrix cov = new CovarianceMatrix(latents, TrekSeparationClusters.toDoubleArray(latentsCov), sampleSize);
             SemBicScore score = new SemBicScore(cov, getPenalty());
             Graph structureGraph = new PermutationSearch(new Boss(score)).search();
 
@@ -231,38 +203,47 @@ public class TrekSeparationClusters2 {
         }
     }
 
-    private Set<Set<Integer>> findAllRank1Pairs() {
-        Set<Set<Integer>> pairs = new HashSet<>();
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
-                Set<Integer> pair = new HashSet<>();
-                pair.add(variables.get(i));
-                pair.add(variables.get(j));
-                if (isRankOneCached(pair)) {
-                    pairs.add(pair);
-                }
+    private Set<Set<Integer>> findClustersAtRank(int size, int rank) {
+        Set<Set<Integer>> clusters = new HashSet<>();
+
+        ChoiceGenerator generator = new ChoiceGenerator(variables.size(), size);
+        int[] choice;
+
+        while ((choice = generator.next()) != null) {
+            Set<Integer> cluster = new HashSet<>();
+            for (int i : choice) {
+                cluster.add(variables.get(i));
+            }
+
+            if (lookupCluster(cluster) == rank) {
+                clusters.add(cluster);
             }
         }
-        return pairs;
+
+        return clusters;
     }
 
-    private boolean isRankOneCached(Set<Integer> cluster) {
-        return rank1Cache.computeIfAbsent(cluster, this::isRankOne);
+    private int lookupCluster(Set<Integer> cluster) {
+        if (!rankCache.containsKey(cluster)) {
+            rankCache.put(cluster, rank(cluster));
+        }
+
+        return rankCache.get(cluster);
     }
 
     /**
      * You already have this implemented — we call your tested version.
      */
-    private boolean isRankOne(Set<Integer> cluster) {
+    private boolean isCluster(Set<Integer> cluster, int rank) {
         // Uses your existing isRankOne(List<String> clusterVars) method
         List<Integer> clusterList = new ArrayList<>(cluster);
         List<Integer> otherVars = new ArrayList<>(variables);
         otherVars.removeAll(clusterList);
-        return isRankOne(clusterList, otherVars);  // This is your method
+        return lookupCluster(clusterList, otherVars, rank);  // This is your method
     }
 
     // Dummy placeholder. Replace this with your own implementation.
-    private boolean isRankOne(List<Integer> ySet, List<Integer> xSet) {
+    private boolean lookupCluster(List<Integer> ySet, List<Integer> xSet, int rank) {
         int[] xIndices = new int[xSet.size()];
         int[] yIndices = new int[ySet.size()];
 
@@ -274,7 +255,26 @@ public class TrekSeparationClusters2 {
             yIndices[i] = ySet.get(i);
         }
 
-        return StatUtils.estimateCcaRank(S, xIndices, yIndices, sampleSize, alpha) == 1;
+        return StatUtils.isCcaRankEqualTo(S, xIndices, yIndices, sampleSize, rank, alpha);
+    }
+
+    private int rank(Set<Integer> cluster) {
+        List<Integer> xSet = new ArrayList<>(cluster);
+        List<Integer> ySet = new ArrayList<>(variables);
+        ySet.removeAll(xSet);
+
+        int[] xIndices = new int[xSet.size()];
+        int[] yIndices = new int[ySet.size()];
+
+        for (int i = 0; i < xSet.size(); i++) {
+            xIndices[i] = xSet.get(i);
+        }
+
+        for (int i = 0; i < ySet.size(); i++) {
+            yIndices[i] = ySet.get(i);
+        }
+
+        return StatUtils.estimateCcaRank(S, xIndices, yIndices, sampleSize, alpha);
     }
 
     /**
@@ -283,7 +283,7 @@ public class TrekSeparationClusters2 {
      * @param clusters The set of sets of Node objects representing the clusters.
      * @return A Graph object representing the search graph nodes.
      */
-    private Graph convertSearchGraphClusters(List<List<Integer>> clusters, List<Node> latents, boolean includeAllNodes) {
+    private Graph convertSearchGraphClusters(List<Set<Integer>> clusters, List<Node> latents, boolean includeAllNodes) {
         Graph graph = includeAllNodes ? new EdgeListGraph(this.nodes) : new EdgeListGraph();
 
         for (int i = 0; i < clusters.size(); i++) {
@@ -298,7 +298,7 @@ public class TrekSeparationClusters2 {
         return graph;
     }
 
-    private List<Node> defineLatents(List<List<Integer>> clusters) {
+    private List<Node> defineLatents(List<Set<Integer>> clusters) {
         List<Node> latents = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
@@ -342,6 +342,10 @@ public class TrekSeparationClusters2 {
         if (verbose) {
             TetradLogger.getInstance().log(s);
         }
+    }
+
+    public void setCheckRank(boolean checkRank) {
+        this.checkRank = checkRank;
     }
 
     private static class LatentGraphBuilder {

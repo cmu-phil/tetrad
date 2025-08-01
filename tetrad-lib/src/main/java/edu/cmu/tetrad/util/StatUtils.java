@@ -2754,7 +2754,7 @@ public final class StatUtils {
         int minmn = Math.min(m, n);
 
         if (r < 0 || r >= minmn) {
-            throw new IllegalArgumentException("r must be in [0, min(m, n) - 1]");
+            throw new IllegalArgumentException("r must be in [0, min(m, n) - 1]: min = " + minmn + " r = " + r);
         }
 
         if (N < m + n) {
@@ -2794,30 +2794,76 @@ public final class StatUtils {
         return 1.0 - chi2.cumulativeProbability(stat);
     }
 
+//    /**
+//     * Tests whether the canonical correlation rank is equal to r, at a given alpha level. This is done by testing
+//     * whether the rank is ≤ r (not rejected) and ≤ r - 1 (rejected).
+//     *
+//     * @param S        The input correlation matrix.
+//     * @param xIndices Indices of variables in the first group.
+//     * @param yIndices Indices of variables in the second group.
+//     * @param n        Sample size.
+//     * @param r        The hypothesized rank to test for equality.
+//     * @param alpha    The significance level (e.g., 0.05).
+//     * @return true if rank = r at the given significance level.
+//     */
+//    public static boolean isCcaRankEqualTo(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int r, double alpha) {
+//        if (r < 0) {
+//            throw new IllegalArgumentException("Rank must be non-negative.");
+//        }
+//        if (r == 0) {
+//            // Test only rank ≤ 0 (i.e., all correlations zero)
+//            double pVal0 = getCcaPValueRankLE(S, xIndices, yIndices, n, 0);
+//            return pVal0 > alpha;
+//        } else {
+//            double pValR = getCcaPValueRankLE(S, xIndices, yIndices, n, r);
+//            double pValRm1 = getCcaPValueRankLE(S, xIndices, yIndices, n, r - 1);
+//            return pValR > alpha && pValRm1 <= alpha;
+//        }
+//    }
+
     /**
-     * Tests whether the canonical correlation rank is equal to r, at a given alpha level. This is done by testing
-     * whether the rank is ≤ r (not rejected) and ≤ r - 1 (rejected).
+     * Tests whether the canonical correlation rank is exactly r, at level alpha.
+     * That is:
+     *   • if r == 0: returns true only if p-value_rankLE(0) > alpha;
+     *   • else if r == min(xVars, yVars): (only the upper bound test doesn’t exist in this case),
+     *       return ( p-value_rankLE(r–1) <= alpha ).
+     *   • else: require p-value_rankLE(r) > alpha  AND  p-value_rankLE(r–1) <= alpha
      *
-     * @param S        The input correlation matrix.
-     * @param xIndices Indices of variables in the first group.
-     * @param yIndices Indices of variables in the second group.
-     * @param n        Sample size.
-     * @param r        The hypothesized rank to test for equality.
-     * @param alpha    The significance level (e.g., 0.05).
-     * @return true if rank = r at the given significance level.
+     * @param S         Correlation matrix of all variables.
+     * @param xIndices  indices belonging to one side
+     * @param yIndices  indices for the other side
+     * @param n         sample size
+     * @param r         hypothesized rank
+     * @param alpha     significance level (e.g. 0.05)
+     * @return          true iff rank = r at given alpha
      */
-    public static boolean isCcaRankEqualTo(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int r, double alpha) {
-        if (r < 0) {
-            throw new IllegalArgumentException("Rank must be non-negative.");
+    public static boolean isCcaRankEqualTo(
+            SimpleMatrix S,
+            int[] xIndices,
+            int[] yIndices,
+            int n,
+            int r,
+            double alpha) {
+        if (r < 0) throw new IllegalArgumentException("Rank must be non-negative.");
+        final int maxRank = Math.min(xIndices.length, yIndices.length);
+        if (r > maxRank) {
+            throw new IllegalArgumentException("Rank r=" + r +
+                                               " exceeds maximum possible (" + maxRank + ")");
         }
+
         if (r == 0) {
-            // Test only rank ≤ 0 (i.e., all correlations zero)
             double pVal0 = getCcaPValueRankLE(S, xIndices, yIndices, n, 0);
             return pVal0 > alpha;
+        }
+
+        double pValRm1 = getCcaPValueRankLE(S, xIndices, yIndices, n, r - 1);
+
+        if (r == maxRank) {
+            // No rank > r, so simply require rejection of ≤ r–1
+            return pValRm1 <= alpha;
         } else {
             double pValR = getCcaPValueRankLE(S, xIndices, yIndices, n, r);
-            double pValRm1 = getCcaPValueRankLE(S, xIndices, yIndices, n, r - 1);
-            return pValR > alpha && pValRm1 <= alpha;
+            return (pValR > alpha) && (pValRm1 <= alpha);
         }
     }
 
