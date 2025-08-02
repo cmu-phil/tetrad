@@ -25,6 +25,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
+import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
@@ -2767,8 +2768,12 @@ public final class StatUtils {
         SimpleMatrix XY = extractSubMatrix(S, xIndices, yIndices);
 
         // Step 2: Cholesky inverses
-        SimpleMatrix XXinvSqrt = chol(XX).invert();
-        SimpleMatrix YYinvSqrt = chol(YY).invert();
+//        SimpleMatrix XXinvSqrt = chol(XX).invert();
+//        SimpleMatrix YYinvSqrt = chol(YY).invert();
+
+        SimpleMatrix XXinvSqrt = inverseSqrt(XX);// chol(XX).invert();
+        SimpleMatrix YYinvSqrt = inverseSqrt(YY);// chol(YY).invert();
+
         SimpleMatrix product = XXinvSqrt.mult(XY).mult(YYinvSqrt);
 
         // Step 3: SVD
@@ -2792,6 +2797,30 @@ public final class StatUtils {
 
         ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
         return 1.0 - chi2.cumulativeProbability(stat);
+    }
+
+    public static SimpleMatrix inverseSqrt(SimpleMatrix A) {
+        if (!A.isIdentical(A.transpose(), 1e-10)) {
+            throw new IllegalArgumentException("Matrix must be symmetric");
+        }
+
+        SimpleEVD<SimpleMatrix> eig = A.eig();
+
+        SimpleMatrix Q = new SimpleMatrix(A.getNumRows(), A.getNumCols());
+        SimpleMatrix L_invSqrt = new SimpleMatrix(A.getNumRows(), A.getNumCols());
+
+        for (int i = 0; i < A.getNumRows(); i++) {
+            double eigenvalue = eig.getEigenvalue(i).getReal();
+            if (eigenvalue <= 0) {
+                throw new RuntimeException("Matrix not positive definite");
+            }
+
+            SimpleMatrix eigenvector = eig.getEigenVector(i);
+            Q.setColumn(i, 0, eigenvector.getDDRM().getData());
+            L_invSqrt.set(i, i, 1.0 / Math.sqrt(eigenvalue));
+        }
+
+        return Q.mult(L_invSqrt).mult(Q.transpose());
     }
 
 //    /**
