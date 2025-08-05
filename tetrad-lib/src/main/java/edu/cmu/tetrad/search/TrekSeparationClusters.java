@@ -345,8 +345,6 @@ public class TrekSeparationClusters {
 
             int _rank = getRank(yIndices, variables, clusterList, i);
 
-
-
             if (_rank == clusterSpecs[i][1]) {
                 List<Integer> _cluster = MathUtils.getInts(yIndices);
 
@@ -367,13 +365,13 @@ public class TrekSeparationClusters {
             ySet.add(y);
         }
 
-        for (int j = 0; j < avoidToIndex; j++) {
-            for (Set<Integer> set : clusterList.get(j)) {
-                if (set.containsAll(ySet)) {
-                    return -1;
-                }
-            }
-        }
+//        for (int j = 0; j < avoidToIndex; j++) {
+//            for (Set<Integer> set : clusterList.get(j)) {
+//                if (set.containsAll(ySet)) {
+//                    return -1;
+//                }
+//            }
+//        }
 
         int[] other = new int[variables.size() - cluster.length];
 
@@ -392,7 +390,7 @@ public class TrekSeparationClusters {
             other[index++] = variables.get(q);
         }
 
-        return StatUtils.estimateCcaRank(S, other, cluster, sampleSize, alpha);
+        return RankTests.estimateRccaRank(S, other, cluster, sampleSize, alpha, 0.01);
     }
 
     /**

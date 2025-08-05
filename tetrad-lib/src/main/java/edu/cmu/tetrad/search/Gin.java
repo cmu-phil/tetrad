@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
+import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -250,7 +251,7 @@ public class Gin {
                     }
                 }
 
-                double p = StatUtils.getCcaPValueRankLE(S, xIndices, yIndices, dataSet.getNumRows(), 1);
+                double p = RankTests.getCcaPValueRankLE(S, xIndices, yIndices, dataSet.getNumRows(), 1);
 
                 System.out.println("p = " + p);
 

@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.ntad_test;
 
+import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.StatUtils;
 import org.ejml.simple.SimpleMatrix;
 
@@ -54,15 +55,9 @@ public class Cca extends NtadTest {
         int[] b = ntad[1];
         int n = resample ? (int) (frac * this.n) : this.n;
 
-//        boolean ccaRankEqualTo = StatUtils.isCcaRankEqualTo(S, a, b, n, 2, 0.01);
-//
-//        if (ccaRankEqualTo) {
         // Use the getCcaPValueRankD method for rank r = 1 (or make r configurable if needed)
         int r = 1;  // You can adjust this if you want to explore larger rank tests
-        return StatUtils.getCcaPValueRankLE(S, a, b, n, r);
-//        } else {
-//            return 0.0;
-//        }
+        return RankTests.getCcaPValueRankLE(S, a, b, n, r);
     }
 
     @Override
