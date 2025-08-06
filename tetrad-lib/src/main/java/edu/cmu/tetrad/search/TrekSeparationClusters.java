@@ -1,286 +1,139 @@
-/// ////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
-//                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
-
+/**
+ * Implements Trek Separation algorithm for finding latent variable clusters. This class analyzes covariance matrices to
+ * identify clusters of observed variables that share common latent parents. It uses rank-based tests to determine trek
+ * separations between variable sets.
+ * <p>
+ * Copyright (C) 1998-2022 by Peter Spirtes, Richard Scheines, Joseph Ramsey, and Clark Glymour.
+ * <p>
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ */
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.util.FastMath;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.EigenDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
-import org.ejml.simple.SimpleSVD;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.sqrt;
-
+import java.util.stream.Collectors;
 
 /**
- * Implements the Find One Factor Clusters (FOFC) algorithm by Erich Kummerfeld, which uses reasoning about vanishing
- * tetrads of algorithms to infer clusters of the measured variables in a dataset that each be explained by a single
- * latent variable. A reference is the following
+ * The TrekSeparationClusters2 class implements methods for detecting and analyzing clusters of variables using trek
+ * separation tests. This class is designed to identify latent structure in a given covariance matrix with capabilities
+ * for clustering, ranking, and graph construction.
  * <p>
- * Kummerfeld, E., &amp; Ramsey, J. (2016, August). Causal clustering for 1-factor measurement models. In Proceedings of
- * the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1655-1664).
- * <p>
- * The algorithm uses tests of vanishing tetrads (list of 4 variables that follow a certain pattern in the
- * exchangeability of latent paths with respect to the data). The notion of vanishing tetrads is an old one but is
- * explained in this book:
- * <p>
- * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
- *
- * @author erichkummerfeld
- * @author peterspirtes
- * @author josephramsey
- * @version $Id: $Id
- * @see Ftfc
+ * It uses various parameters such as rank, penalties, and testing settings to guide the process and adjust the behavior
+ * of the clustering algorithm. The main functionalities include searching for latent clusters, generating random
+ * clusters, identifying disjoint clusters, and constructing resulting graphical models.
  */
 public class TrekSeparationClusters {
     /**
-     * The covariance matrix.
+     * List of observed variables/nodes
      */
-    private final CorrelationMatrix corr;
+    private final List<Node> nodes;
     /**
-     * The correlation matrix as a SimpleMatrix.
+     * List of variable indices
      */
-    private final SimpleMatrix S;
+    private final List<Integer> variables;
     /**
-     * The list of all variables.
+     * Cache of previously computed ranks
      */
-    private final List<Node> variables;
+    private final Map<Set<Integer>, Integer> rankCache = new HashMap<>();
     /**
-     * The significance level.
-     */
-    private final double alpha;
-    /**
-     * A standard normal distribution object used for statistical calculations within the Fofc class. The distribution
-     * is characterized by a mean of 0 and a standard deviation of 1.
-     */
-    private final NormalDistribution normal = new NormalDistribution(0, 1);
-    /**
-     * The sample size.
+     * Sample size for statistical tests
      */
     private final int sampleSize;
-    private final int[][] clusterSpecs;
-    private final List<Node> dataNodes;
-    private final double penalty;
     /**
-     * The clusters that are output by the algorithm from the last call to search().
+     * The covariance/correlation matrix
      */
-    private Set<Set<Node>> clusters;
+    private SimpleMatrix S;
     /**
-     * Whether verbose output is desired.
+     * Alpha level for rank tests
      */
-    private boolean verbose;
+    private double alpha = 0.01;
     /**
-     * Indicates whether all nodes should be included in the graph construction or processing. When set to true, the
-     * algorithm will incorporate all nodes into the resulting graph, regardless of specific clustering or filtering
-     * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
+     * Whether to include structure model between latents
+     */
+    private boolean includeStructureModel = false;
+    /**
+     * Penalty discount for structure model
+     */
+    private double penalty = 2;
+    /**
+     * Whether to include all nodes in output graph
      */
     private boolean includeAllNodes = false;
-    private boolean includeStructureModel = false;
+    /**
+     * Whether to output verbose logging
+     */
+    private boolean verbose = false;
 
     /**
-     * Conctructor using a dataset.
+     * Constructs a TrekSeparationClusters2 object, initializes the node and variable lists, and adjusts the covariance
+     * matrix with a small scaling factor to ensure numerical stability.
      *
-     * @param dataSet The continuous dataset searched over.
-     * @param alpha   The alpha significance cutoff.
-     * @param penalty
+     * @param variables  The list of Node objects representing the variables to be analyzed.
+     * @param cov        The covariance matrix of the observed variables.
+     * @param sampleSize The number of samples in the dataset.
      */
-    public TrekSeparationClusters(DataSet dataSet, int[][] clusterSpecs, double alpha, double penalty) {
-        this(new CorrelationMatrix(dataSet), alpha, clusterSpecs, penalty);
+    public TrekSeparationClusters(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
+        this.nodes = new ArrayList<>(variables);
+        this.sampleSize = sampleSize;
+
+        this.variables = new ArrayList<>(variables.size());
+        for (int i = 0; i < variables.size(); i++) {
+            this.variables.add(i);
+        }
+
+        this.S = new CovarianceMatrix(cov).getMatrix().getDataCopy();
+        this.S = this.S.plus(SimpleMatrix.identity(S.getNumRows()).scale(0.001));
     }
+
 
     /**
-     * Conctructor using a dataset.
+     * Searches for latent clusters using specified size and rank parameters.
      *
-     * @param dataSet The continuous dataset searched over.
-     * @param alpha   The alpha significance cutoff.
-     * @param penalty
-     * @param ess     The expected sample size.
+     * @param clusterSpecs int[i][0] is the ith size, int[i][1] is th ith rank.
+     * @return Graph containing identified latent structure
      */
-    public TrekSeparationClusters(DataSet dataSet, double alpha, double penalty, int[][] clusterSpecs, int ess) {
-        this(new CorrelationMatrix(dataSet), alpha, penalty, clusterSpecs, ess);
-    }
+    public Graph search(int[][] clusterSpecs) {
+        Set<Set<Integer>> _clusters = estimateClusters(clusterSpecs);
 
-    /**
-     * Constructor using a covariance matrix (could be a correlation matrix).
-     *
-     * @param cov     The covariance matrix.
-     * @param alpha   The alpha level.
-     * @param penalty
-     */
-    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, int[][] clusterSpecs, double penalty) {
-        this(new CorrelationMatrix(cov), alpha, penalty, clusterSpecs, cov.getSampleSize());
-    }
+        List<Set<Integer>> clusters = new ArrayList<>(_clusters);
 
-    /**
-     * Constructor for the TrekSeparationClusters class using a covariance matrix.
-     *
-     * @param cov     The covariance matrix that could also be a correlation matrix.
-     * @param alpha   The alpha level for significance cutoff.
-     * @param penalty
-     * @param ess     The expected sample size for the analysis.
-     */
-    public TrekSeparationClusters(CovarianceMatrix cov, double alpha, double penalty, int[][] clusterSpecs, int ess) {
-        this.variables = cov.getVariables();
-        this.alpha = alpha;
-        this.sampleSize = ess;
-        this.penalty = penalty;
-        this.dataNodes = cov.getVariables();
-
-        for (int[] spec : clusterSpecs) {
-            if (spec.length != 2) {
-                throw new IllegalArgumentException("Cluster specs must have two elements");
-            }
-
-            if (spec[0] < 2 || spec[1] > spec[0]) {
-                throw new IllegalArgumentException("Cluster spec must be of form a:b where a >= 2 and b <= a.");
-            }
-        }
-
-        this.clusterSpecs = clusterSpecs;
-        this.corr = new CorrelationMatrix(cov);
-        this.S = this.corr.getMatrix().getDataCopy();
-    }
-
-    public static double[][] toDoubleArray(SimpleMatrix matrix) {
-        int numRows = matrix.getNumRows();
-        int numCols = matrix.getNumCols();
-        double[][] result = new double[numRows][numCols];
-
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                result[i][j] = matrix.get(i, j);
-            }
-        }
-
-        return result;
-    }
-
-    private static @NotNull String toNamesClusters(Set<Set<Integer>> clusters, List<Node> variables) {
-        StringBuilder sb = new StringBuilder();
-
-        int count0 = 0;
-
-        for (Set<Integer> cluster : clusters) {
-            StringBuilder _sb = toNamesCluster(cluster, variables);
-
-            if (count0++ < clusters.size() - 1) _sb.append("; ");
-
-            sb.append(_sb);
-        }
-
-        return sb.toString();
-    }
-
-    private static @NotNull StringBuilder toNamesCluster(Set<Integer> cluster, List<Node> variables) {
-        StringBuilder _sb = new StringBuilder();
-
-        _sb.append("[");
-        int count = 0;
-
-        for (Integer var : cluster) {
-            _sb.append(variables.get(var));
-
-            if (count++ < cluster.size() - 1) _sb.append(", ");
-        }
-
-        _sb.append("]");
-        return _sb;
-    }
-
-    /**
-     * Runs the search and returns a graph of clusters with the ir respective latent parents.
-     *
-     * @return This graph.
-     */
-    public Graph search() {
-        Set<Set<Integer>> allClusters;
-
-        allClusters = estimateClusters();
-        this.clusters = ClusterSignificance.variablesForIndicesSets(allClusters, variables);
-
-        log("clusters = " + this.clusters);
-
-        List<List<Integer>> clusters = new ArrayList<>();
-        for (Set<Integer> cluster : allClusters) {
-            clusters.add(new ArrayList<>(cluster));
-        }
+        log("clusters = " + toNamesClusters(new HashSet<>(clusters)));
 
         List<Node> latents = defineLatents(clusters);
         Graph graph = convertSearchGraphClusters(clusters, latents, includeAllNodes);
+
         if (includeStructureModel) {
             addStructureEdges(clusters, latents, graph);
         }
+
         return graph;
     }
 
     /**
-     * The clusters that are output by the algorithm from the last call to search().
+     * Estimates clusters based on the provided specifications, processes overlapping clusters, and returns a set of
+     * merged unique clusters.
      *
-     * @return a {@link List} object
+     * @param clusterSpecs a 2D array where each row defines cluster specifications. The first element in each row
+     *                     specifies the size of the cluster, and the second element specifies the rank.
+     * @return a set of sets, where each inner set represents a unique cluster identified and merged according to the
+     * given specifications.
+     * @throws IllegalArgumentException if the variables used for clustering are not unique.
      */
-    public Set<Set<Node>> getClusters() {
-        return this.clusters;
-    }
-
-    /**
-     * <p>Setter for the field <code>verbose</code>.</p>
-     *
-     * @param verbose a boolean
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * Retrieves a list of all variables.
-     *
-     * @return A list of integers representing all variables.
-     */
-    private List<Integer> allVariables() {
-        List<Integer> _variables = new ArrayList<>();
-        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
-        return _variables;
-    }
-
-    /**
-     * Estimates clusters using the tetrads-first algorithm.
-     *
-     * @return A set of lists of integers representing the clusters.
-     */
-    private Set<Set<Integer>> estimateClusters() {
+    private Set<Set<Integer>> estimateClusters(int[][] clusterSpecs) {
         List<Integer> variables = allVariables();
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
@@ -291,24 +144,22 @@ public class TrekSeparationClusters {
 
         for (int i = 0; i < clusterSpecs.length; i++) {
             log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
-            Set<Set<Integer>> _clusters = findClustersOfSize(variables, clusterSpecs, i, clusterList);
+            int size = clusterSpecs[i][0];
+            int rank = clusterSpecs[i][1];
+            Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
 
             Set<Set<Integer>> baseClusters = new HashSet<>(_clusters);
 
-//            if (clusterSpecs[i][1] == 2) {
-//                baseClusters = new HashSet<>(_clusters);
-//            }
-
-            log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters, dataNodes));
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters));
             clusterList.add(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
             log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
-                toNamesClusters(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]), dataNodes));
+                toNamesClusters(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
 
             for (int j = 0; j < i; j++) {
                 if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
                     clusterList.get(j).addAll(clusterList.get(i));
                     clusterList.set(j, mergeOverlappingClusters(clusterList.get(j), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
-                    log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNamesClusters(clusterList.get(j), dataNodes));
+                    log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNamesClusters(clusterList.get(j)));
                     clusterList.get(i).clear();
                 }
             }
@@ -320,94 +171,25 @@ public class TrekSeparationClusters {
             }
         }
 
-        log("final clusters = " + ClusterSignificance.variablesForIndicesSets(allClusters, this.variables));
+        log("final clusters = " + toNamesClusters(allClusters));
 
         return allClusters;
     }
 
-    private @NotNull Set<Set<Integer>> findClustersOfSize(List<Integer> variables, int[][] clusterSpecs, int i, List<Set<Set<Integer>>> clusterList) {
-        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), clusterSpecs[i][0]);
-        int[] _choice;
-
-        List<int[]> choices = new ArrayList<>();
-        while ((_choice = gen.next()) != null) {
-            choices.add(Arrays.copyOf(_choice, _choice.length));
-        }
-
-        Set<Set<Integer>> finalClusters = ConcurrentHashMap.newKeySet();
-
-        choices.parallelStream().forEach(choice -> {
-            int[] yIndices = new int[choice.length];
-
-            boolean skip = false;
-            for (int k = 0; k < i; k++) {
-                for (Set<Integer> prevCluster : clusterList.get(k)) {
-                    boolean allContained = true;
-                    for (int c : choice) {
-                        if (!prevCluster.contains(variables.get(c))) {
-                            allContained = false;
-                            break;
-                        }
-                    }
-                    if (allContained) {
-                        skip = true;
-                        break;
-                    }
-                }
-                if (skip) break;
-            }
-            if (skip) return;
-
-            for (int q = 0; q < choice.length; q++) {
-                yIndices[q] = variables.get(choice[q]);
-            }
-
-            int _rank = getRank(yIndices, variables, clusterList, i);
-
-            if (_rank == clusterSpecs[i][1]) {
-                List<Integer> _cluster = MathUtils.getInts(yIndices);
-
-                System.out.println("_rank = " + _rank + ": " + toNamesCluster(new HashSet<>(_cluster), this.variables));
-
-                if (clusterDependent(_cluster)) {
-                    finalClusters.add(new HashSet<>(_cluster));
-                }
-            }
-        });
-
-        return finalClusters;
-    }
-
-    private int getRank(int[] cluster, List<Integer> variables, List<Set<Set<Integer>>> clusterList, int avoidToIndex) {
-        Set<Integer> ySet = new HashSet<>();
-        for (int y : cluster) {
-            ySet.add(y);
-        }
-
-        int[] other = new int[variables.size() - cluster.length];
-
-        int index = 0;
-
-        for (int q = 0; q < variables.size(); q++) {
-            boolean found = false;
-            for (int y : cluster) {
-                if (q == y) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) continue;
-
-            other[index++] = variables.get(q);
-        }
-
-        return RankTests.estimateRccaRank(S, other, cluster, sampleSize, alpha, 0.01);
-    }
-
+    /**
+     * Merges overlapping clusters based on the given criteria and parameters. The merging continues iteratively until
+     * no further merging is possible.
+     *
+     * @param clusters     the initial set of clusters to be merged
+     * @param baseClusters the base set of clusters for reference during the merging process
+     * @param size         the minimum acceptable size for a cluster to qualify for merging
+     * @param rank         the upper limit for the rank of any resulting merged cluster
+     * @return a set of merged clusters, with any overlapping clusters combined
+     */
     private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters,
                                                        Set<Set<Integer>> baseClusters,
                                                        int size, int rank) {
-        System.out.println("Base clusters: " + toNamesClusters(baseClusters, dataNodes));
+        System.out.println("Base clusters: " + toNamesClusters(baseClusters));
         boolean merged;
 
         do {
@@ -416,7 +198,6 @@ public class TrekSeparationClusters {
 
             for (Set<Integer> cluster1 : clusters) {
                 Set<Integer> mergedCluster = new HashSet<>(cluster1);
-                boolean passing = true;
                 boolean localMerged = false;
 
                 C:
@@ -428,30 +209,16 @@ public class TrekSeparationClusters {
 
                     if (!intersection.isEmpty() && !mergedCluster.containsAll(cluster2)) {
                         mergedCluster.addAll(cluster2);
-                        localMerged = true;
 
-                        // If size == 2, check that all pairs in mergedCluster are in baseClusters
-                        if (false) {
-                            List<Integer> mergedList = new ArrayList<>(mergedCluster);
-                            int n = mergedList.size();
-                            outer:
-                            for (int i = 0; i < n; i++) {
-                                for (int j = i + 1; j < n; j++) {
-                                    Set<Integer> pair = new HashSet<>();
-                                    pair.add(mergedList.get(i));
-                                    pair.add(mergedList.get(j));
-                                    if (!baseClusters.contains(pair)) {
-                                        passing = false;
-                                        break outer;
-                                    }
-                                }
-                            }
+                        if (lookupRank(mergedCluster) > rank) {
+                            continue;
                         }
-                        // If size > 2, no subset check — merge willy-nilly
+
+                        localMerged = true;
                     }
                 }
 
-                if (passing && mergedCluster.size() >= size) {
+                if (mergedCluster.size() >= size) {
                     newClusters.add(mergedCluster);
                 }
                 if (localMerged) {
@@ -469,94 +236,176 @@ public class TrekSeparationClusters {
         return clusters;
     }
 
-    private boolean clusterDependent(List<Integer> cluster) {
-//        if (true) return true;
 
-        int numDependencies = 0;
-        int all = 0;
+    /**
+     * Retrieves a list of all variables.
+     *
+     * @return A list of integers representing all variables.
+     */
+    private List<Integer> allVariables() {
+        List<Integer> _variables = new ArrayList<>();
+        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
+        return _variables;
+    }
 
-        for (int i = 0; i < cluster.size(); i++) {
-            for (int j = i + 1; j < cluster.size(); j++) {
-                double r = this.corr.getValue(cluster.get(i), cluster.get(j));
 
-                if (Double.isNaN(r)) {
-                    continue;
-                }
-
-                int n = this.corr.getSampleSize();
-                int zSize = 0; // Unconditional check.
-
-                double q = .5 * (FastMath.log(1.0 + abs(r)) - FastMath.log(1.0 - abs(r)));
-                double df = n - 3. - zSize;
-
-                double fisherZ = sqrt(df) * q;
-
-                if (2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ))) < alpha) {
-                    numDependencies++;
-                }
-
-                all++;
-            }
-        }
-
-        return numDependencies == all;
+    /**
+     * Sets the alpha value, which may be used as a significance level or parameter threshold in the underlying analysis
+     * or computation within the class.
+     *
+     * @param alpha The alpha value to be set. It should be provided as a double, and typically represents a probability
+     *              level or tuning parameter depending on the context of its use.
+     */
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
     /**
-     * Converts search graph nodes to a Graph object.
+     * Sets whether to include structure models in the analysis or computation.
      *
-     * @param clusters The set of sets of Node objects representing the clusters.
-     * @return A Graph object representing the search graph nodes.
+     * @param includeStructureModel A boolean value indicating whether structure models should be included. If true,
+     *                              structure models will be considered in the process; if false, they will be
+     *                              excluded.
      */
-    private Graph convertSearchGraphNodes(Set<Set<Node>> clusters, List<Node> latents, boolean includeAllNodes) {
-        Graph graph = includeAllNodes ? new EdgeListGraph(this.variables) : new EdgeListGraph();
+    public void setIncludeStructureModel(boolean includeStructureModel) {
+        this.includeStructureModel = includeStructureModel;
+    }
 
-        List<Set<Node>> _clusters = new ArrayList<>(clusters);
+    /**
+     * Sets the penalty value.
+     *
+     * @param penalty the penalty to be set, must be a positive double value
+     */
+    public void setPenalty(double penalty) {
+        this.penalty = penalty;
+    }
 
-        for (int i = 0; i < _clusters.size(); i++) {
-            graph.addNode(latents.get(i));
+    /**
+     * Sets whether all nodes should be included or not.
+     *
+     * @param includeAllNodes a boolean value where true indicates that all nodes should be included, and false
+     *                        indicates otherwise.
+     */
+    public void setIncludeAllNodes(boolean includeAllNodes) {
+        this.includeAllNodes = includeAllNodes;
+    }
 
-            for (Node node : _clusters.get(i)) {
-                if (!graph.containsNode(node)) graph.addNode(node);
-                graph.addDirectedEdge(latents.get(i), node);
+    /**
+     * Sets the verbosity mode for the current operation or process.
+     *
+     * @param verbose a boolean value where true enables verbose mode, providing detailed log or output information, and
+     *                false disables it.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Performs a sequential cluster search within the given variables, using the specified size and rank criteria. The
+     * method iteratively finds clusters that meet the rank condition, merges overlapping or related clusters, and
+     * ensures that no nested clusters exist in the final result.
+     *
+     * @param vars A list of integers representing the variables to analyze.
+     * @param size The size of the initial clusters to consider during the search.
+     * @param rank The target rank used to determine cluster validity and merging criteria.
+     * @return A set of sets where each inner set represents a cluster of integers identified during the search.
+     */
+    private @NotNull Set<Set<Integer>> getRunSequentialClusterSearch(List<Integer> vars, int size, int rank) {
+        Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
+
+        removeNested(P);
+
+        Set<Set<Integer>> mergedClusters = new HashSet<>();
+        Set<Integer> used = new HashSet<>();
+
+        while (!P.isEmpty()) {
+            Set<Integer> seed = P.iterator().next();
+            P.remove(seed);
+
+            if (!Collections.disjoint(used, seed)) {
+                continue;
             }
+
+            Set<Integer> cluster = new HashSet<>(seed);
+            boolean extended;
+
+            do {
+                extended = false;
+                Iterator<Set<Integer>> it = P.iterator();
+
+                W:
+                while (it.hasNext()) {
+                    Set<Integer> candidate = it.next();
+                    if (!Collections.disjoint(used, candidate)) continue;
+                    if (Collections.disjoint(candidate, cluster)) continue;
+
+                    Set<Integer> union = new HashSet<>(cluster);
+                    union.addAll(candidate);
+
+                    int rankOfUnion = lookupRank(union);
+                    System.out.println("Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
+
+                    if (rankOfUnion <= rank) {
+
+                        // Accept this union, grow cluster
+                        cluster = union;
+                        it.remove();
+                        extended = true;
+                        break;
+                    }
+                }
+            } while (extended);
+
+            int finalRank = lookupRank(cluster);
+            mergedClusters.removeIf(cluster::containsAll);  // Avoid nesting
+            System.out.println("Adding cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
+            mergedClusters.add(cluster);
+            used.addAll(cluster);
         }
 
-        return graph;
+        removeNested(mergedClusters);
+        System.out.println("Merged clusters = " + toNamesClusters(mergedClusters));
+        return mergedClusters;
     }
 
-    private List<Node> defineLatents(List<List<Integer>> clusters) {
-        List<Node> latents = new ArrayList<>();
-
-        for (int i = 0; i < clusters.size(); i++) {
-            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
-            latent.setNodeType(NodeType.LATENT);
-            latents.add(latent);
-        }
-
-        return latents;
+    /**
+     * Removes nested clusters from a set of merged clusters. A cluster is considered nested if it is a subset of
+     * another cluster within the set. The method iteratively checks and removes such nested clusters until no changes
+     * occur.
+     *
+     * @param mergedClusters A set of sets, where each inner set represents a cluster of integers. The input is expected
+     *                       to potentially contain nested clusters, which will be removed to leave only non-nested
+     *                       clusters.
+     */
+    private void removeNested(Set<Set<Integer>> mergedClusters) {
+        boolean _changed;
+        do {
+            _changed = mergedClusters.removeIf(
+                    sub -> mergedClusters.stream()
+                            .anyMatch(cluster -> !cluster.equals(sub) && cluster.containsAll(sub))
+            );
+        } while (_changed);
     }
 
-    private Graph convertSearchGraphClusters(List<List<Integer>> clusters, List<Node> latents, boolean includeAllNodes) {
-        Graph graph = includeAllNodes ? new EdgeListGraph(this.variables) : new EdgeListGraph();
-
-        for (int i = 0; i < clusters.size(); i++) {
-            graph.addNode(latents.get(i));
-
-            for (int j : clusters.get(i)) {
-                if (!graph.containsNode(variables.get(j))) graph.addNode(variables.get(j));
-                graph.addDirectedEdge(latents.get(i), variables.get(j));
-            }
-        }
-
-        return graph;
-    }
-
-    private void addStructureEdges(List<List<Integer>> clusters, List<Node> latents, Graph graph) {
+    /**
+     * Adds structure edges to the given graph based on provided clusters and latent nodes. The method processes
+     * clusters, derives a structure graph using a permutation search, and adds the resulting edges to the specified
+     * graph.
+     *
+     * @param clusters The list of sets where each set represents a cluster of integers that denote related elements.
+     * @param latents  The list of latent nodes to be used for building the latent structure and covariance matrix.
+     * @param graph    The graph to which the derived structure edges will be added.
+     */
+    private void addStructureEdges(List<Set<Integer>> clusters, List<Node> latents, Graph graph) {
         try {
-            List<SimpleMatrix> eigenvectors = LatentGraphBuilder.extractFirstEigenvectors(S, clusters);
-            SimpleMatrix latentsCov = LatentGraphBuilder.latentLatentCorrelationMatrix(S, clusters, eigenvectors);
-            CovarianceMatrix cov = new CovarianceMatrix(latents, toDoubleArray(latentsCov), sampleSize);
+            List<List<Integer>> _clusters = new ArrayList<>();
+            for (Set<Integer> cluster : clusters) {
+                _clusters.add(new ArrayList<>(cluster));
+            }
+
+            List<SimpleMatrix> eigenvectors = LatentGraphBuilder.extractFirstEigenvectors(S, _clusters);
+            SimpleMatrix latentsCov = LatentGraphBuilder.latentLatentCorrelationMatrix(S, _clusters, eigenvectors);
+            CovarianceMatrix cov = new CovarianceMatrix(latents, TrekSeparationClusters3.toDoubleArray(latentsCov), sampleSize);
             SemBicScore score = new SemBicScore(cov, penalty);
             Graph structureGraph = new PermutationSearch(new Boss(score)).search();
 
@@ -569,85 +418,325 @@ public class TrekSeparationClusters {
     }
 
     /**
-     * Converts search graph nodes to a Graph object.
+     * Finds all clusters of a specified size from the given list of variables, where each cluster satisfies the given
+     * rank constraint.
      *
-     * @param allClusters The set of sets of Node objects representing the clusters.
-     * @return A Graph object representing the search graph nodes.
+     * @param vars A list of integers representing the variables to analyze.
+     * @param size The size of clusters to generate from the variables.
+     * @param rank The rank constraint that each cluster must satisfy.
+     * @return A set of sets, where each inner set represents a cluster of integers that meets the specified rank
+     * constraint.
      */
-    private Graph convertToGraph(List<List<Integer>> allClusters, List<Node> latents, boolean includeAllNodes) {
-        Set<Set<Node>> _clustering = new HashSet<>();
+    private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
+        Set<Set<Integer>> clusters = new HashSet<>();
 
-        for (List<Integer> cluster : allClusters) {
-            Set<Node> nodes = new HashSet<>();
+        ChoiceGenerator generator = new ChoiceGenerator(vars.size(), size);
+        int[] choice;
 
-            for (int i : cluster) {
-                nodes.add(this.variables.get(i));
+        while ((choice = generator.next()) != null) {
+            Set<Integer> cluster = new HashSet<>();
+            for (int i : choice) {
+                cluster.add(vars.get(i));
             }
 
-            _clustering.add(nodes);
+            if (lookupRank(cluster) == rank) {
+                clusters.add(cluster);
+            }
         }
 
-        return convertSearchGraphNodes(_clustering, latents, includeAllNodes);
+        return clusters;
     }
 
     /**
-     * Logs a message if the verbose flag is set to true.
+     * Retrieves the rank of a specified cluster. The method first checks if the rank for the given cluster is already
+     * computed and stored in a cache. If not, it computes the rank using the defined rank computation method and
+     * updates the cache.
      *
-     * @param s The message to log.
+     * @param cluster A set of integers representing the cluster for which the rank is to be determined.
+     * @return An integer representing the calculated or cached rank of the given cluster.
+     */
+    private int lookupRank(Set<Integer> cluster) {
+        if (!rankCache.containsKey(cluster)) {
+            rankCache.put(cluster, rank(cluster));
+        }
+
+        return rankCache.get(cluster);
+    }
+
+    /**
+     * Converts a collection of integer cluster indices to their corresponding names based on the node mappings and
+     * returns them as a string in a formatted name cluster.
+     *
+     * @param cluster A collection of integer indices representing the cluster elements. Each index corresponds to a
+     *                specific node in the nodes mapping.
+     * @return A {@code StringBuilder} containing the formatted names cluster as a string. The names are enclosed in
+     * square brackets and separated by commas.
+     */
+    private @NotNull StringBuilder toNamesCluster(Collection<Integer> cluster) {
+        StringBuilder _sb = new StringBuilder();
+
+        _sb.append("[");
+        int count = 0;
+
+        for (Integer var : cluster) {
+            _sb.append(nodes.get(var));
+
+            if (count++ < cluster.size() - 1) _sb.append(", ");
+        }
+
+        _sb.append("]");
+        return _sb;
+    }
+
+    /**
+     * Converts a set of clusters, where each cluster is represented as a set of integer indices, to a formatted string
+     * representation using their corresponding names. This method combines the names of all clusters into a single
+     * string, with individual clusters separated by a semicolon.
+     *
+     * @param clusters A set of sets where each inner set represents a cluster of integers. Each integer corresponds to
+     *                 a specific node in the nodes mapping.
+     * @return A non-null string containing the formatted cluster names. Each cluster is enclosed in square brackets,
+     * its elements are separated by commas, and clusters are separated by semicolons.
+     */
+    private @NotNull String toNamesClusters(Set<Set<Integer>> clusters) {
+        StringBuilder sb = new StringBuilder();
+
+        int count0 = 0;
+
+        for (Collection<Integer> cluster : clusters) {
+            StringBuilder _sb = toNamesCluster(cluster);
+
+            if (count0++ < clusters.size() - 1) _sb.append("; ");
+
+            sb.append(_sb);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Computes the rank of the specified cluster using Canonical Correlation Analysis (CCA). This method evaluates the
+     * association between the supplied cluster and the complement of the cluster within the given set of variables. The
+     * computed rank is determined based on the input covariance matrix, sample size, and alpha level for significance
+     * testing.
+     *
+     * @param cluster A set of integers representing the cluster for which the rank is to be calculated. Each integer
+     *                corresponds to a variable index in the analysis.
+     * @return An integer representing the estimated rank of the provided cluster.
+     */
+    private int rank(Set<Integer> cluster) {
+        List<Integer> ySet = new ArrayList<>(cluster);
+        List<Integer> xSet = new ArrayList<>(variables);
+        xSet.removeAll(ySet);
+
+        int[] xIndices = new int[xSet.size()];
+        int[] yIndices = new int[ySet.size()];
+
+        for (int i = 0; i < xSet.size(); i++) {
+            xIndices[i] = xSet.get(i);
+        }
+
+        for (int i = 0; i < ySet.size(); i++) {
+            yIndices[i] = ySet.get(i);
+        }
+
+        return RankTests.estimateCcaRank(S, xIndices, yIndices, sampleSize, alpha);
+    }
+
+    /**
+     * Converts search graph nodes to a Graph object.
+     *
+     * @param clusters The set of sets of Node objects representing the clusters.
+     * @return A Graph object representing the search graph nodes.
+     */
+    private Graph convertSearchGraphClusters(List<Set<Integer>> clusters, List<Node> latents, boolean includeAllNodes) {
+        Graph graph = includeAllNodes ? new EdgeListGraph(this.nodes) : new EdgeListGraph();
+
+        for (int i = 0; i < clusters.size(); i++) {
+            graph.addNode(latents.get(i));
+
+            for (int j : clusters.get(i)) {
+                if (!graph.containsNode(nodes.get(j))) graph.addNode(nodes.get(j));
+                graph.addDirectedEdge(latents.get(i), nodes.get(j));
+            }
+        }
+
+        return graph;
+    }
+
+    /**
+     * Defines and creates a list of latent nodes based on the given clusters. Each latent node is assigned a unique
+     * identifier and marked as a latent node type.
+     *
+     * @param clusters A list of sets, where each set represents a cluster of integers. The size of the list determines
+     *                 the number of latent nodes to be created.
+     * @return A list of Node objects, each representing a latent variable corresponding to a cluster.
+     */
+    private List<Node> defineLatents(List<Set<Integer>> clusters) {
+        List<Node> latents = new ArrayList<>();
+
+        for (int i = 0; i < clusters.size(); i++) {
+            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
+            latent.setNodeType(NodeType.LATENT);
+            latents.add(latent);
+        }
+
+        return latents;
+    }
+
+    /**
+     * Logs the provided message if verbose logging is enabled.
+     *
+     * @param s the message to be logged
      */
     private void log(String s) {
-        if (this.verbose) {
+        if (verbose) {
             TetradLogger.getInstance().log(s);
         }
     }
 
     /**
-     * Indicates whether all nodes should be included in the graph construction or processing. When set to true, the
-     * algorithm will incorporate all nodes into the resulting graph, regardless of specific clustering or filtering
-     * criteria. If false, only nodes that meet specific clustering or filtering conditions will be included.
+     * Identifies clusters of nodes using a depth-first search expansion strategy.
      *
-     * @param includeAllNodes True if all nodes should be included in the graph output.
+     * @param size the number of nodes in the input graph.
+     * @param rank the rank used to determine the clustering threshold.
+     * @return a set of depth-first expanded clusters, where each cluster is represented as a set of integers.
      */
-    public void setIncludeAllNodes(boolean includeAllNodes) {
-        this.includeAllNodes = includeAllNodes;
-    }
-
-    public void setIncludeStructureModel(boolean includeStructure) {
-        this.includeStructureModel = includeStructure;
-    }
-
-    private static class LatentGraphBuilder {
-
-        // Assume data is standardized
-        public static SimpleMatrix[] extractLatentScores(SimpleMatrix data, List<List<Integer>> clusters) {
-            SimpleMatrix[] latentScores = new SimpleMatrix[clusters.size()];
-
-            for (int i = 0; i < clusters.size(); i++) {
-                List<Integer> cluster = clusters.get(i);
-
-                // Extract submatrix for this cluster
-                SimpleMatrix subData = extractColumns(data, cluster);
-
-                // Get the first principal component
-                SimpleSVD<SimpleMatrix> svd = subData.svd();
-                SimpleMatrix u = svd.getU();
-                SimpleMatrix s = svd.getW();
-
-                // Score = first column of U * first singular value
-                SimpleMatrix scores = u.cols(0, 0).scale(s.get(0, 0));
-                latentScores[i] = scores;
-            }
-
-            return latentScores;
+    private Set<Set<Integer>> getDepthFirstClusters(int size, int rank) {
+        List<Integer> vars = new ArrayList<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            vars.add(i);
         }
 
+        Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
+        removeNested(P);
+
+        // Step 2: Expand each seed cluster depth-first
+        Set<Set<Integer>> allExpandedClusters = new HashSet<>();
+        for (Set<Integer> seed : P) {
+            Set<Set<Integer>> leaves = new HashSet<>();
+            expandClusterDFS(seed, P, rank, new HashSet<>(), leaves, new HashSet<>());
+            allExpandedClusters.addAll(leaves);
+        }
+
+        // Step 3: Select disjoint clusters from largest to smallest
+        List<Set<Integer>> mergedClusters = new ArrayList<>(selectDisjointClusters(allExpandedClusters));
+        return new HashSet<>(mergedClusters);
+    }
+
+    /**
+     * Expands a given cluster using a depth-first search (DFS) approach by finding and merging overlapping sets from
+     * the provided set of candidate clusters, based on specific criteria such as rank and disjoint conditions. Updates
+     * the visited clusters during the traversal and collects leaf clusters when no further expansion is possible.
+     *
+     * @param cluster      The current cluster being expanded.
+     * @param P            The set of candidate clusters to explore for potential expansions.
+     * @param rank         The rank of the current cluster, used as a filtering condition for union operations.
+     * @param visited      The set of clusters that have already been visited during the expansion process to avoid
+     *                     duplicates.
+     * @param leafClusters The collection where identified leaf clusters (that cannot be further expanded) are stored.
+     * @param used         The set of elements that are already part of the current expansion process.
+     */
+    private void expandClusterDFS(Set<Integer> cluster,
+                                  Set<Set<Integer>> P,
+                                  int rank,
+                                  Set<Set<Integer>> visited,
+                                  Set<Set<Integer>> leafClusters, Set<Integer> used) {
+        boolean extended = false;
+
+        System.out.println("P size = " + P.size());
+
+        for (Set<Integer> candidate : P) {
+            if (Collections.disjoint(cluster, candidate)) continue;
+
+            Set<Integer> union = new HashSet<>(cluster);
+            union.addAll(candidate);
+
+            if (union.equals(cluster)) continue;
+            if (visited.contains(union)) continue;
+
+            int unionRank = lookupRank(union);
+            if (unionRank != rank) continue;
+
+            visited.add(union);
+            Set<Integer> _used = new HashSet<>(used);
+            _used.addAll(union);
+
+            System.out.println("_used = " + _used + " rank = " + lookupRank(union));
+
+            expandClusterDFS(union, P, rank, visited, leafClusters, _used);
+            extended = true;
+        }
+
+        if (!extended) {
+            leafClusters.add(cluster);
+        }
+    }
+
+    /**
+     * Selects a subset of disjoint clusters from the given collection of clusters. A cluster is selected if it does not
+     * share any elements with clusters that have already been selected. Clusters are prioritized by size, with larger
+     * clusters being considered first.
+     *
+     * @param clusters the collection of clusters to process, where each cluster is represented as a set of integers
+     * @return a set of disjoint clusters selected from the input collection
+     */
+    private Set<Set<Integer>> selectDisjointClusters(Collection<Set<Integer>> clusters) {
+        List<Set<Integer>> sorted = new ArrayList<>(new HashSet<>(clusters));
+        sorted.sort((a, b) -> Integer.compare(b.size(), a.size()));
+
+        List<Set<Integer>> result = new ArrayList<>();
+        Set<Integer> used = new HashSet<>();
+
+        for (Set<Integer> cluster : sorted) {
+            if (Collections.disjoint(used, cluster)) {
+                result.add(cluster);
+                used.addAll(cluster);
+            }
+        }
+
+        return new HashSet<>(result);
+    }
+
+    /**
+     * Converts a collection of integer-based clusters into a single formatted string representation. Each cluster is
+     * transformed into a string representation of names and concatenated into a single output string.
+     *
+     * @param clusters a collection of sets, where each set represents a cluster containing integers
+     * @return a formatted string representation of the clusters, with each cluster represented as a string, combined
+     * together and delimited by commas, enclosed in square brackets
+     */
+    private String toNamesClusters(Collection<Set<Integer>> clusters) {
+        return clusters.stream()
+                .map(this::toNamesCluster)
+                .collect(Collectors.joining(", ", "[", "]"));
+    }
+
+    /**
+     * Converts a set of cluster indices into a formatted string representation of the cluster names.
+     *
+     * @param cluster a set of integer indices representing the cluster
+     * @return a string with the cluster names enclosed in curly braces and separated by spaces
+     */
+    private String toNamesCluster(Set<Integer> cluster) {
+        return cluster.stream()
+                .map(i -> nodes.get(i).getName())
+                .collect(Collectors.joining(" ", "{", "}"));
+    }
+
+    /**
+     * The LatentGraphBuilder class provides methods for processing and analyzing latent structures in matrices using
+     * eigenvector-based techniques. These methods are particularly useful for extracting important patterns and
+     * relationships within data, such as through clustering and correlation matrix computation.
+     */
+    private static class LatentGraphBuilder {
         public static List<SimpleMatrix> extractFirstEigenvectors(SimpleMatrix S, List<List<Integer>> clusters) {
             List<SimpleMatrix> eigenvectors = new ArrayList<>();
 
             for (List<Integer> cluster : clusters) {
                 SimpleMatrix submatrix = extractSubmatrix(S, cluster);
 
-                EigenDecomposition_F64<DMatrixRMaj> eig = DecompositionFactory_DDRM.eig(submatrix.numCols(), true);
+                EigenDecomposition_F64<DMatrixRMaj> eig = DecompositionFactory_DDRM.eig(submatrix.getNumCols(), true);
                 eig.decompose(submatrix.getDDRM());
 
                 // Get eigenvector corresponding to largest eigenvalue
@@ -670,17 +759,19 @@ public class TrekSeparationClusters {
             return eigenvectors;
         }
 
-//        private static SimpleMatrix extractSubmatrix(SimpleMatrix S, List<Integer> indices) {
-//            int n = indices.size();
-//            SimpleMatrix sub = new SimpleMatrix(n, n);
-//            for (int i = 0; i < n; i++) {
-//                for (int j = 0; j < n; j++) {
-//                    sub.set(i, j, S.get(indices.get(i), indices.get(j)));
-//                }
-//            }
-//            return sub;
-//        }
-
+        /**
+         * Computes the latent-latent correlation matrix for a given similarity matrix, clusters, and corresponding
+         * eigenvectors. The method calculates pairwise correlations between latent variables associated with different
+         * clusters.
+         *
+         * @param S            The similarity matrix, assumed to be square and symmetric.
+         * @param clusters     A list of clusters, where each cluster is represented as a list of indices indicating the
+         *                     rows and columns of the similarity matrix that belong to the cluster.
+         * @param eigenvectors A list of eigenvector matrices, where each matrix corresponds to the eigenvectors
+         *                     calculated for each cluster.
+         * @return A symmetric matrix representing the pairwise correlations between latents associated with the
+         * specified clusters.
+         */
         public static SimpleMatrix latentLatentCorrelationMatrix(
                 SimpleMatrix S,
                 List<List<Integer>> clusters,
@@ -728,28 +819,6 @@ public class TrekSeparationClusters {
         private static SimpleMatrix extractSubmatrix(SimpleMatrix S, List<Integer> indices) {
             return extractCrossBlock(S, indices, indices);
         }
-
-        private static SimpleMatrix extractColumns(SimpleMatrix data, List<Integer> colIndices) {
-            int numRows = data.getNumRows();
-            int numCols = colIndices.size();
-            SimpleMatrix result = new SimpleMatrix(numRows, numCols);
-
-            for (int j = 0; j < colIndices.size(); j++) {
-                int col = colIndices.get(j);
-                for (int i = 0; i < numRows; i++) {
-                    result.set(i, j, data.get(i, col));
-                }
-            }
-
-            return result;
-        }
-
-        private static int[] toIntArray(List<Integer> list) {
-            return list.stream().mapToInt(i -> i).toArray();
-        }
     }
 }
-
-
-
 

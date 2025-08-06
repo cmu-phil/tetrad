@@ -9,19 +9,14 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Mimbuild;
-import edu.cmu.tetrad.search.MimbuildPca;
-import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.TetradLogger;
-import org.ejml.data.SingularMatrixException;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Find One Factor Clusters.
@@ -65,12 +60,6 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
             System.out.println("alpha = " + parameters.getDouble(Params.FOFC_ALPHA));
             System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
         }
-
-        double alpha = parameters.getDouble(Params.FOFC_ALPHA);
-        boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
-        int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
-        boolean includeStructure = parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL);
-
 
         String clusterSizes = parameters.getString(Params.CLUSTER_SIZES);
         String[] tokens = clusterSizes.split(",");
@@ -124,117 +113,27 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
             specs[i] = _specs.get(i);
         }
 
-
-        edu.cmu.tetrad.search.TrekSeparationClusters search;
+        double alpha = parameters.getDouble(Params.FOFC_ALPHA);
+        boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
+        int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
         double penalty = parameters.getDouble(Params.PENALTY_DISCOUNT);
+        boolean verbose = parameters.getBoolean(Params.VERBOSE);
+        boolean includeStructureModel = parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL);
 
-        if (dataModel instanceof CovarianceMatrix) {
-            if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, specs, penalty);
-            } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((CovarianceMatrix) dataModel, alpha, penalty, specs,
-                        ess);
-            }
-        } else {
-            if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, specs, alpha, penalty);
-            } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters((DataSet) dataModel, alpha, penalty, specs, ess);
-            }
-        }
+        CovarianceMatrix covarianceMatrix = dataModel instanceof DataSet
+                ? new CovarianceMatrix((DataSet) dataModel) : (CovarianceMatrix) dataModel;
+        List<Node> variables = dataModel.getVariables();
 
+        edu.cmu.tetrad.search.TrekSeparationClusters search
+                = new edu.cmu.tetrad.search.TrekSeparationClusters(variables, covarianceMatrix,
+                ess == -1 ? covarianceMatrix.getSampleSize() : ess);
+        search.setIncludeStructureModel(includeStructureModel);
         search.setIncludeAllNodes(includeAllNodes);
-        search.setIncludeStructureModel(includeStructure);
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        Graph graph = search.search();
+        search.setAlpha(alpha);
+        search.setPenalty(penalty);
+        search.setVerbose(verbose);
 
-        if (true) {//!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
-            return graph;
-        } else {
-
-            Clusters clusters = ClusterUtils.mimClusters(graph);
-            Graph structureGraph;
-            Graph fullGraph;
-
-
-            Fofc.MimbuildType mimbuildType = switch (parameters.getInt(Params.MIMBUILD_TYPE)) {
-                case 1 -> Fofc.MimbuildType.PCA;
-                case 2 -> Fofc.MimbuildType.BOLLEN;
-                default -> Fofc.MimbuildType.PCA;
-            };
-
-            if (mimbuildType == Fofc.MimbuildType.PCA) {
-                MimbuildPca mimbuild = new MimbuildPca();
-                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-
-                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
-
-                List<String> latentNames = new ArrayList<>();
-
-                for (int i = 0; i < clusters.getNumClusters(); i++) {
-                    latentNames.add(clusters.getClusterName(i));
-                }
-
-                if (!(dataModel instanceof DataSet)) {
-                    throw new IllegalArgumentException("Mimbuild requires tabular data.");
-                }
-
-                try {
-                    structureGraph = mimbuild.search(partition, latentNames, (DataSet) dataModel);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                } catch (SingularMatrixException e) {
-                    throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
-                }
-
-                LayoutUtil.defaultLayout(structureGraph);
-                LayoutUtil.fruchtermanReingoldLayout(structureGraph);
-
-                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
-
-                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
-
-                fullGraph = mimbuild.getFullGraph(includeAllNodes ? ((DataSet) dataModel).getVariables() : new ArrayList<>());
-                LayoutUtil.defaultLayout(fullGraph);
-                LayoutUtil.fruchtermanReingoldLayout(fullGraph);
-            } else {
-                Mimbuild mimbuild = new Mimbuild();
-                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-
-                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataModel.getVariables());
-
-                List<String> latentNames = new ArrayList<>();
-
-                for (int i = 0; i < clusters.getNumClusters(); i++) {
-                    latentNames.add(clusters.getClusterName(i));
-                }
-
-                if (!(dataModel instanceof DataSet)) {
-                    throw new IllegalArgumentException("Mimbuild requires tabular data.");
-                }
-
-                try {
-                    structureGraph = mimbuild.search(partition, latentNames, new CovarianceMatrix((DataSet) dataModel));
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                } catch (SingularMatrixException e) {
-                    throw new RuntimeException("Singularity encountered; perhaps that was not a pure model", e);
-                }
-
-                LayoutUtil.defaultLayout(structureGraph);
-                LayoutUtil.fruchtermanReingoldLayout(structureGraph);
-
-                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
-
-                TetradLogger.getInstance().log("Latent covs = \n" + latentsCov);
-
-                fullGraph = mimbuild.getFullGraph(includeAllNodes ? ((DataSet) dataModel).getVariables() : new ArrayList<>());
-                LayoutUtil.defaultLayout(fullGraph);
-                LayoutUtil.fruchtermanReingoldLayout(fullGraph);
-            }
-
-            return fullGraph;
-        }
+        return search.search(specs);
     }
 
     /**
@@ -276,13 +175,14 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add(Params.CLUSTER_SIZES);
         parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
         parameters.add(Params.MIMBUILD_TYPE);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);
-        parameters.add(Params.CLUSTER_SIZES);
+//        parameters.add(Params.CLUSTER_SIZES);
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -307,29 +207,5 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
-
-    /**
-     * The MimbuildType enum represents the different types of model construction strategies available for specific use
-     * in algorithms within the Fofc class. It specifies selectable methods for building models based on input data.
-     * <p>
-     * The enum includes the following types: - PCA: Principal Component Analysis-based model building. - BOLLEN: Model
-     * building method inspired by Bollen's statistical techniques.
-     */
-    public enum MimbuildType {
-
-        /**
-         * Represents the Principal Component Analysis (PCA)-based model building strategy within the MimbuildType enum.
-         * PCA is a dimensionality reduction technique commonly used in statistical and machine learning algorithms to
-         * transform input data into a set of uncorrelated features, reducing complexity while preserving key
-         * information.
-         */
-        PCA,
-
-        /**
-         * Represents the model building method inspired by Bollen's statistical techniques within the MimbuildType
-         * enum. This method is often employed to develop models that utilize sophisticated statistical principles,
-         * aiming to analyze and interpret structural relationships between variables in complex datasets.
-         */
-        BOLLEN
-    }
 }
+
