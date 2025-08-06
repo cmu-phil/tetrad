@@ -32,7 +32,6 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.EigenDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
-import org.ejml.simple.SimpleSVD;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -43,18 +42,16 @@ public class TrekSeparationClusters2 {
     private final List<Node> nodes;
     private final List<Integer> variables;
     private final Map<Set<Integer>, Integer> rankCache = new HashMap<>();
-
+    private final int sampleSize;
     /**
      * The correlation matrix as a SimpleMatrix.
      */
     private SimpleMatrix S;
-    private final int sampleSize;
     private double alpha = 0.01;
     private boolean includeStructureModel = false;
     private double penalty = 2;
     private boolean includeAllNodes = false;
     private boolean verbose = false;
-    private boolean checkRank = true;
 
     public TrekSeparationClusters2(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
         this.nodes = new ArrayList<>(variables);
@@ -69,14 +66,31 @@ public class TrekSeparationClusters2 {
         this.S = this.S.plus(SimpleMatrix.identity(S.getNumRows()).scale(0.001));
     }
 
-    public Graph search(int size, int rank) {
-//        return searchDepthFirstClusters(size, rank);
-//
-        Set<Set<Integer>> mergedClusters = getRunSagWithOrder(variables, size, rank);
-//
-//        List<Set<Integer>> mergedClusters = runGAP(30, size, rank);
+    public static Set<Set<Integer>> selectBestDisjointClusters(List<Set<Integer>> allClusters) {
+        List<Set<Integer>> sorted = new ArrayList<>(new HashSet<>(allClusters));
 
-        List<Set<Integer>> clusters = new ArrayList<>(mergedClusters);
+        sorted.sort(Comparator.comparingInt(Set::size));
+        sorted = sorted.reversed();
+
+        List<Set<Integer>> result = new ArrayList<>();
+        Set<Integer> covered = new HashSet<>();
+
+        for (Set<Integer> cluster : sorted) {
+            if (Collections.disjoint(cluster, covered)) {
+                result.add(cluster);
+                covered.addAll(cluster);
+            }
+        }
+
+        return new HashSet<>(result);
+    }
+
+    public Graph search(int size, int rank) {
+//        Set<Set<Integer>> _clusters = getDepthFirstClusters(size, rank);
+        Set<Set<Integer>> _clusters = getRunSagWithOrder(variables, size, rank);
+//        Set<Set<Integer>> _clusters = getRandomSagClusters(30, size, rank);
+
+        List<Set<Integer>> clusters = new ArrayList<>(_clusters);
 
         log("clusters = " + toNamesClusters(new HashSet<>(clusters)));
 
@@ -131,14 +145,13 @@ public class TrekSeparationClusters2 {
             }
 
             Set<Integer> cluster = new HashSet<>(seed);
-            Set<Integer> previousUnion = new HashSet<>(cluster);
-
             boolean extended;
 
             do {
                 extended = false;
                 Iterator<Set<Integer>> it = P.iterator();
 
+                W:
                 while (it.hasNext()) {
                     Set<Integer> candidate = it.next();
                     if (!Collections.disjoint(used, candidate)) continue;
@@ -150,17 +163,9 @@ public class TrekSeparationClusters2 {
                     int rankOfUnion = lookupRank(union);
                     System.out.println("Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
-//                    if (rankOfUnion > rank) {
-//
-//                        // Stop growing, use previous union
-//                        System.out.println("Rank exceeded. Finalizing: " + toNamesCluster(previousUnion));
-//                        cluster = previousUnion;
-//                        break;
-//                    } else
                     if (rankOfUnion <= rank) {
 
                         // Accept this union, grow cluster
-                        previousUnion = new HashSet<>(union);
                         cluster = union;
                         it.remove();
                         extended = true;
@@ -170,28 +175,37 @@ public class TrekSeparationClusters2 {
             } while (extended);
 
             int finalRank = lookupRank(cluster);
-//            if (finalRank == rank) {
-                mergedClusters.removeIf(cluster::containsAll);  // Avoid nesting
-                System.out.println("Adding cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
-                mergedClusters.add(cluster);
-                used.addAll(cluster);
-//            } else {
-//                System.out.println("Skipping cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
-//            }
+            mergedClusters.removeIf(cluster::containsAll);  // Avoid nesting
+            System.out.println("Adding cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
+            mergedClusters.add(cluster);
+            used.addAll(cluster);
         }
 
         removeNested(mergedClusters);
         System.out.println("Merged clusters = " + toNamesClusters(mergedClusters));
-
-        List<Set<Integer>> clusters = new ArrayList<>();
-        for (Set<Integer> cluster : mergedClusters) {
-            clusters.add(new HashSet<>(cluster));
-        }
-
         return mergedClusters;
     }
 
-    public List<Set<Integer>> runGAP(int numTrials, int size, int rank) {
+    private boolean allSubsetsOK(int size, int rank, Set<Integer> union) {
+        List<Integer> _union = new ArrayList<>(union);
+        ChoiceGenerator gen2 = new ChoiceGenerator(_union.size(), size);
+        int[] choice2;
+
+        while ((choice2 = gen2.next()) != null) {
+            Set<Integer> _union2 = new HashSet<>();
+            for (Integer i : choice2) {
+                _union2.add(_union.get(i));
+            }
+
+            if (lookupRank(_union2) > rank) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public Set<Set<Integer>> getRandomSagClusters(int numTrials, int size, int rank) {
         List<Integer> allVars = variables; // e.g., 0..V-1
         List<Set<Integer>> allClusters = new ArrayList<>();
 
@@ -202,25 +216,6 @@ public class TrekSeparationClusters2 {
         }
 
         return selectBestDisjointClusters(allClusters);
-    }
-
-    public static List<Set<Integer>> selectBestDisjointClusters(List<Set<Integer>> allClusters) {
-        List<Set<Integer>> sorted = new  ArrayList<>(new HashSet<>(allClusters));
-
-        sorted.sort(Comparator.comparingInt(Set::size));
-        sorted = sorted.reversed();
-
-        List<Set<Integer>> result = new ArrayList<>();
-        Set<Integer> covered = new HashSet<>();
-
-        for (Set<Integer> cluster : sorted) {
-            if (Collections.disjoint(cluster, covered)) {
-                result.add(cluster);
-                covered.addAll(cluster);
-            }
-        }
-
-        return result;
     }
 
     private void removeNested(Set<Set<Integer>> mergedClusters) {
@@ -404,35 +399,94 @@ public class TrekSeparationClusters2 {
         }
     }
 
-    public void setCheckRank(boolean checkRank) {
-        this.checkRank = checkRank;
+    private Set<Set<Integer>> getDepthFirstClusters(int size, int rank) {
+        List<Integer> vars = new ArrayList<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            vars.add(i);
+        }
+
+        Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
+        removeNested(P);
+
+        // Step 2: Expand each seed cluster depth-first
+        Set<Set<Integer>> allExpandedClusters = new HashSet<>();
+        for (Set<Integer> seed : P) {
+            Set<Set<Integer>> leaves = new HashSet<>();
+            expandClusterDFS(seed, P, rank, new HashSet<>(), leaves, new HashSet<>());
+            allExpandedClusters.addAll(leaves);
+        }
+
+        // Step 3: Select disjoint clusters from largest to smallest
+        List<Set<Integer>> mergedClusters = new ArrayList<>(selectDisjointClusters(allExpandedClusters));
+        return new HashSet<>(mergedClusters);
+    }
+
+    private void expandClusterDFS(Set<Integer> cluster,
+                                  Set<Set<Integer>> P,
+                                  int rank,
+                                  Set<Set<Integer>> visited,
+                                  Set<Set<Integer>> leafClusters, Set<Integer> used) {
+        boolean extended = false;
+
+        System.out.println("P size = " + P.size());
+
+        for (Set<Integer> candidate : P) {
+            if (Collections.disjoint(cluster, candidate)) continue;
+
+            Set<Integer> union = new HashSet<>(cluster);
+            union.addAll(candidate);
+
+            if (union.equals(cluster)) continue;
+            if (visited.contains(union)) continue;
+
+            int unionRank = lookupRank(union);
+            if (unionRank != rank) continue;
+
+            visited.add(union);
+            Set<Integer> _used = new HashSet<>(used);
+            _used.addAll(union);
+
+            System.out.println("_used = " + _used + " rank = " + lookupRank(union));
+
+            expandClusterDFS(union, P, rank, visited, leafClusters, _used);
+            extended = true;
+        }
+
+        if (!extended) {
+            leafClusters.add(cluster);
+        }
+    }
+
+    private Set<Set<Integer>> selectDisjointClusters(Collection<Set<Integer>> clusters) {
+        List<Set<Integer>> sorted = new ArrayList<>(new HashSet<>(clusters));
+        sorted.sort((a, b) -> Integer.compare(b.size(), a.size()));
+
+        List<Set<Integer>> result = new ArrayList<>();
+        Set<Integer> used = new HashSet<>();
+
+        for (Set<Integer> cluster : sorted) {
+            if (Collections.disjoint(used, cluster)) {
+                result.add(cluster);
+                used.addAll(cluster);
+            }
+        }
+
+        return new HashSet<>(result);
+    }
+
+    private String toNamesClusters(Collection<Set<Integer>> clusters) {
+        return clusters.stream()
+                .map(this::toNamesCluster)
+                .collect(Collectors.joining(", ", "[", "]"));
+    }
+
+    private String toNamesCluster(Set<Integer> cluster) {
+        return cluster.stream()
+                .map(i -> nodes.get(i).getName())
+                .collect(Collectors.joining(" ", "{", "}"));
     }
 
     private static class LatentGraphBuilder {
-
-//        // Assume data is standardized
-//        public static SimpleMatrix[] extractLatentScores(SimpleMatrix data, List<List<Integer>> clusters) {
-//            SimpleMatrix[] latentScores = new SimpleMatrix[clusters.size()];
-//
-//            for (int i = 0; i < clusters.size(); i++) {
-//                List<Integer> cluster = clusters.get(i);
-//
-//                // Extract submatrix for this cluster
-//                SimpleMatrix subData = extractColumns(data, cluster);
-//
-//                // Get the first principal component
-//                SimpleSVD<SimpleMatrix> svd = subData.svd();
-//                SimpleMatrix u = svd.getU();
-//                SimpleMatrix s = svd.getW();
-//
-//                // Score = first column of U * first singular value
-//                SimpleMatrix scores = u.cols(0, 0).scale(s.get(0, 0));
-//                latentScores[i] = scores;
-//            }
-//
-//            return latentScores;
-//        }
-
         public static List<SimpleMatrix> extractFirstEigenvectors(SimpleMatrix S, List<List<Integer>> clusters) {
             List<SimpleMatrix> eigenvectors = new ArrayList<>();
 
@@ -509,120 +563,6 @@ public class TrekSeparationClusters2 {
         private static SimpleMatrix extractSubmatrix(SimpleMatrix S, List<Integer> indices) {
             return extractCrossBlock(S, indices, indices);
         }
-
-//        private static SimpleMatrix extractColumns(SimpleMatrix data, List<Integer> colIndices) {
-//            int numRows = data.getNumRows();
-//            int numCols = colIndices.size();
-//            SimpleMatrix result = new SimpleMatrix(numRows, numCols);
-//
-//            for (int j = 0; j < colIndices.size(); j++) {
-//                int col = colIndices.get(j);
-//                for (int i = 0; i < numRows; i++) {
-//                    result.set(i, j, data.get(i, col));
-//                }
-//            }
-//
-//            return result;
-//        }
-    }
-
-
-    public Graph searchDepthFirstClusters(int size, int rank) {
-        List<Integer> vars =  new ArrayList<>();
-        for (int i = 0; i < nodes.size(); i++) {
-            vars.add(i);
-        }
-
-        Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
-        removeNested(P);
-
-        // Step 2: Expand each seed cluster depth-first
-        Set<Set<Integer>> allExpandedClusters = new HashSet<>();
-        for (Set<Integer> seed : P) {
-            Set<Set<Integer>> leaves = new HashSet<>();
-            expandClusterDFS(seed, P, rank, new HashSet<>(), leaves, new HashSet<>());
-            allExpandedClusters.addAll(leaves);
-        }
-
-        // Step 3: Select disjoint clusters from largest to smallest
-        List<Set<Integer>> mergedClusters = selectDisjointClusters(allExpandedClusters);
-
-        // Step 4: Build graph
-        List<Node> latents = defineLatents(mergedClusters);
-        Graph graph = convertSearchGraphClusters(mergedClusters, latents, isIncludeAllNodes());
-
-        if (includeStructureModel) {
-            addStructureEdges(mergedClusters, latents, graph);
-        }
-
-        System.out.println("Merged clusters = " + toNamesClusters(mergedClusters));
-        log("clusters = " + toNamesClusters(mergedClusters));
-        return graph;
-    }
-
-    private void expandClusterDFS(Set<Integer> cluster,
-                                  Set<Set<Integer>> P,
-                                  int rank,
-                                  Set<Set<Integer>> visited,
-                                  Set<Set<Integer>> leafClusters, Set<Integer> used) {
-        boolean extended = false;
-
-        System.out.println("P size = " + P.size());
-
-        for (Set<Integer> candidate : P) {
-            if (Collections.disjoint(cluster, candidate)) continue;
-
-            Set<Integer> union = new HashSet<>(cluster);
-            union.addAll(candidate);
-
-            if (union.equals(cluster)) continue;
-            if (visited.contains(union)) continue;
-
-            int unionRank = lookupRank(union);
-            if (unionRank != rank) continue;
-
-            visited.add(union);
-            Set<Integer> _used = new HashSet<>(used);
-            _used.addAll(union);
-
-            System.out.println("_used = " + _used + " rank = " + lookupRank(union));
-
-            expandClusterDFS(union, P, rank, visited, leafClusters, _used);
-            extended = true;
-        }
-
-        if (!extended) {
-            leafClusters.add(cluster);
-        }
-    }
-
-    private List<Set<Integer>> selectDisjointClusters(Collection<Set<Integer>> clusters) {
-        List<Set<Integer>> sorted = new  ArrayList<>(new HashSet<>(clusters));
-        sorted.sort((a, b) -> Integer.compare(b.size(), a.size()));
-
-        List<Set<Integer>> result = new ArrayList<>();
-        Set<Integer> used = new HashSet<>();
-
-        for (Set<Integer> cluster : sorted) {
-            if (Collections.disjoint(used, cluster)) {
-                result.add(cluster);
-                used.addAll(cluster);
-            }
-        }
-
-        return result;
-    }
-
-    private String toNamesClusters(Collection<Set<Integer>> clusters) {
-        return clusters.stream()
-                .map(this::toNamesCluster)
-                .collect(Collectors.joining(", ", "[", "]"));
-    }
-
-    private String toNamesCluster(Set<Integer> cluster) {
-        return cluster.stream()
-                .map(i -> nodes.get(i).getName())
-                .collect(Collectors.joining(" ", "{", "}"));
     }
 }
 

@@ -99,13 +99,6 @@ public class RankTests {
             SimpleSVD<SimpleMatrix> svd = M.svd();
             double[] singularValues = svd.getW().diag().getDDRM().getData();
 
-            Arrays.sort(singularValues);
-            for (int i = 0; i < singularValues.length / 2; i++) {
-                double tmp = singularValues[i];
-                singularValues[i] = singularValues[singularValues.length - i - 1];
-                singularValues[singularValues.length - i - 1] = tmp;
-            }
-
             // Test statistic
             double stat = 0.0;
             for (int i = rank; i < Math.min(p, q); i++) {
@@ -254,17 +247,11 @@ public class RankTests {
             SimpleSVD<SimpleMatrix> svd = M.svd();
             double[] singularValues = svd.getW().diag().getDDRM().getData();
 
-            Arrays.sort(singularValues);
-            for (int i = 0; i < singularValues.length / 2; i++) {
-                double tmp = singularValues[i];
-                singularValues[i] = singularValues[singularValues.length - i - 1];
-                singularValues[singularValues.length - i - 1] = tmp;
-            }
-
             // Test statistic
             double stat = 0.0;
             for (int i = rank; i < Math.min(p, q); i++) {
                 double s = singularValues[i];
+                s = Math.max(0.0, Math.min(s, 1.0 - 1e-12));  // Avoid log(0)
                 stat += Math.log(1 - s * s);
             }
             double scale = -(n - (p + q + 3) / 2.);

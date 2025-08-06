@@ -1,8 +1,10 @@
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -16,55 +18,71 @@ import java.util.Arrays;
 public class TestRankTests {
 
     public static void main(String[] args) {
-        double alpha = 0.01;
+        double alpha = 0.05;
         double regParam = 0.01;
+        double essMult = 1;
+        int size = 3;
+        int rank = 2;
 
-        test(4, 1, true, alpha, regParam);
-        test(4, 1, false, alpha, regParam);
+        test(size, rank, true, alpha, regParam, essMult);
+        test(size, rank, false, alpha, regParam, essMult);
     }
 
-    private static void test(int size, int rank, boolean coherent, double alpha, double regParam) {
+    private static void test(int size, int rank, boolean coherent, double alpha, double regParam, double essMult) {
         try {
             DataSet data = SimpleDataLoader.loadContinuousData(
                     new File("/Users/josephramsey/IdeaProjects/BryanStuff/lv_work/check_ranks.csv"),
                     "//", '"', "*", true, Delimiter.COMMA, false);
-            SimpleMatrix S = new CovarianceMatrix(data).getMatrix().getDataCopy();
+            SimpleMatrix S = new CorrelationMatrix(data).getMatrix().getDataCopy();
             int dim = S.getNumRows();
             int origSize = dim / 2;
-            S = S.plus(SimpleMatrix.identity(dim).scale(regParam));
 
             int[] dims = new int[size];
             Arrays.fill(dims, dim);
 
-            CombinationGenerator gen = new CombinationGenerator(dims);
+//            CombinationGenerator gen = new CombinationGenerator(dims);
+            ChoiceGenerator gen = new ChoiceGenerator(dim, size);
             int[] indexx;
 
             C:
             while ((indexx = gen.next()) != null) {
-                boolean hasDuplicates = false;
-                for (int i = 0; i < indexx.length; i++) {
-                    for (int j = i + 1; j < indexx.length; j++) {
-                        if (indexx[i] == indexx[j]) {
-                            hasDuplicates = true;
-                            break;
-                        }
+//                System.out.println("   " + Arrays.toString(indexx));
+
+//                boolean hasDuplicates = false;
+//                for (int i = 0; i < indexx.length; i++) {
+//                    for (int j = i + 1; j < indexx.length; j++) {
+//                        if (indexx[i] == indexx[j]) {
+//                            hasDuplicates = true;
+//                            break;
+//                        }
+//                    }
+//                    if (hasDuplicates) break;
+//                }
+//                if (hasDuplicates) continue;
+
+
+                boolean hasSmaller = false;
+                boolean hasLarger = false;
+
+                for (int idx : indexx) {
+                    if (idx < origSize) {
+                        hasSmaller = true;
+                    } else {
+                        hasLarger = true;
                     }
-                    if (hasDuplicates) break;
                 }
-                if (hasDuplicates) continue;
 
-
-                if ((coherent != (indexx[0] < origSize) || (coherent != (indexx[1] < origSize)))) {
+                if (coherent && !((hasSmaller && !hasLarger) || (!hasSmaller && hasLarger))) {
                     continue;
                 }
 
-                for (int q = 2; q < indexx.length; q++) {
-                    if (indexx[q] >= origSize) {
-                        continue C;
-                    }
+                if (!coherent && !(hasSmaller && hasLarger)) {
+                    continue;
                 }
 
                 ArrayList<Integer> indices = new ArrayList<>();
+
+//                System.out.println(Arrays.toString(indexx));
 
                 Q:
                 for (int q = 0; q < dim; q++) {
@@ -76,11 +94,14 @@ public class TestRankTests {
 
                     indices.add(q);
                 }
+
                 int[] indexy = indices.stream().mapToInt(Integer::intValue).toArray();
 
-                double p = RankTests.getRccaPValueRankLE(S, indexx, indexy, data.getNumRows(), rank, regParam);
-                int estRank = RankTests.estimateRccaRank(S, indexx, indexy, data.getNumRows(), alpha, regParam);
+                int ess = (int) (data.getNumRows() * essMult);
+                double p = RankTests.getRccaPValueRankLE(S, indexx, indexy, ess, rank, regParam);
+                int estRank = RankTests.estimateRccaRank(S, indexx, indexy, ess, alpha, regParam);
 
+                // Print out the discrepancies
                 if ((coherent && p < alpha) || (!coherent && p > alpha)) {
                     System.out.println((coherent ? "coher" : "incoh") + " size = " + size + " rank = " + rank + ": " + Arrays.toString(indexx)
                                        + " p = " + p + (p > alpha ? " p > alpha" : " p < alpha") + " est_rank = " + estRank);
