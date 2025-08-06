@@ -9,21 +9,6 @@
  * License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later
  * version.
  */
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-/// ////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
@@ -43,13 +28,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * The TrekSeparationClusters2 class implements methods for detecting and analyzing clusters of variables
- * using trek separation tests. This class is designed to identify latent structure in a given covariance
- * matrix with capabilities for clustering, ranking, and graph construction.
- *
- * It uses various parameters such as rank, penalties, and testing settings to guide the process and adjust
- * the behavior of the clustering algorithm. The main functionalities include searching for latent clusters,
- * generating random clusters, identifying disjoint clusters, and constructing resulting graphical models.
+ * The TrekSeparationClusters2 class implements methods for detecting and analyzing clusters of variables using trek
+ * separation tests. This class is designed to identify latent structure in a given covariance matrix with capabilities
+ * for clustering, ranking, and graph construction.
+ * <p>
+ * It uses various parameters such as rank, penalties, and testing settings to guide the process and adjust the behavior
+ * of the clustering algorithm. The main functionalities include searching for latent clusters, generating random
+ * clusters, identifying disjoint clusters, and constructing resulting graphical models.
  */
 public class TrekSeparationClusters2 {
     /**
@@ -94,11 +79,11 @@ public class TrekSeparationClusters2 {
     private boolean verbose = false;
 
     /**
-     * Constructs a TrekSeparationClusters2 object, initializes the node and variable lists,
-     * and adjusts the covariance matrix with a small scaling factor to ensure numerical stability.
+     * Constructs a TrekSeparationClusters2 object, initializes the node and variable lists, and adjusts the covariance
+     * matrix with a small scaling factor to ensure numerical stability.
      *
-     * @param variables The list of Node objects representing the variables to be analyzed.
-     * @param cov The covariance matrix of the observed variables.
+     * @param variables  The list of Node objects representing the variables to be analyzed.
+     * @param cov        The covariance matrix of the observed variables.
      * @param sampleSize The number of samples in the dataset.
      */
     public TrekSeparationClusters2(List<Node> variables, CovarianceMatrix cov, int sampleSize) {
@@ -115,12 +100,12 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Selects the best disjoint clusters from a list of clusters, ensuring that the selected clusters do not overlap.
-     * A cluster is selected only if it is disjoint from all previously selected clusters.
-     * Larger clusters are prioritized during selection.
+     * Selects the best disjoint clusters from a list of clusters, ensuring that the selected clusters do not overlap. A
+     * cluster is selected only if it is disjoint from all previously selected clusters. Larger clusters are prioritized
+     * during selection.
      *
-     * @param allClusters The list of sets, where each set represents a cluster of integers to be considered.
-     *                    Clusters may overlap, and the input is expected to contain all possible clusters.
+     * @param allClusters The list of sets, where each set represents a cluster of integers to be considered. Clusters
+     *                    may overlap, and the input is expected to contain all possible clusters.
      * @return A set of sets representing the best disjoint clusters, such that no two selected clusters overlap.
      */
     private static Set<Set<Integer>> selectBestDisjointClusters(List<Set<Integer>> allClusters) {
@@ -167,9 +152,9 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Performs a sequential cluster search within the given variables, using the specified size and rank criteria.
-     * The method iteratively finds clusters that meet the rank condition, merges overlapping or related clusters,
-     * and ensures that no nested clusters exist in the final result.
+     * Performs a sequential cluster search within the given variables, using the specified size and rank criteria. The
+     * method iteratively finds clusters that meet the rank condition, merges overlapping or related clusters, and
+     * ensures that no nested clusters exist in the final result.
      *
      * @param vars A list of integers representing the variables to analyze.
      * @param size The size of the initial clusters to consider during the search.
@@ -235,11 +220,11 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Checks whether all subsets of a given size, formed from a union set, satisfy a specific rank constraint.
-     * Subsets are generated iteratively, and for each subset, the rank is checked against the specified value.
+     * Checks whether all subsets of a given size, formed from a union set, satisfy a specific rank constraint. Subsets
+     * are generated iteratively, and for each subset, the rank is checked against the specified value.
      *
-     * @param size The size of the subsets to generate from the union set.
-     * @param rank The rank constraint that subsets must satisfy.
+     * @param size  The size of the subsets to generate from the union set.
+     * @param rank  The rank constraint that subsets must satisfy.
      * @param union The set of integers from which subsets will be generated.
      * @return True if all subsets of the specified size satisfy the rank constraint; false otherwise.
      */
@@ -263,13 +248,13 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Removes nested clusters from a set of merged clusters. A cluster is considered nested
-     * if it is a subset of another cluster within the set. The method iteratively checks and
-     * removes such nested clusters until no changes occur.
+     * Removes nested clusters from a set of merged clusters. A cluster is considered nested if it is a subset of
+     * another cluster within the set. The method iteratively checks and removes such nested clusters until no changes
+     * occur.
      *
-     * @param mergedClusters A set of sets, where each inner set represents a cluster of integers.
-     *                       The input is expected to potentially contain nested clusters, which
-     *                       will be removed to leave only non-nested clusters.
+     * @param mergedClusters A set of sets, where each inner set represents a cluster of integers. The input is expected
+     *                       to potentially contain nested clusters, which will be removed to leave only non-nested
+     *                       clusters.
      */
     private void removeNested(Set<Set<Integer>> mergedClusters) {
         boolean _changed;
@@ -282,15 +267,13 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Adds structure edges to the given graph based on provided clusters and latent nodes.
-     * The method processes clusters, derives a structure graph using a permutation search,
-     * and adds the resulting edges to the specified graph.
+     * Adds structure edges to the given graph based on provided clusters and latent nodes. The method processes
+     * clusters, derives a structure graph using a permutation search, and adds the resulting edges to the specified
+     * graph.
      *
-     * @param clusters The list of sets where each set represents a cluster of integers
-     *                 that denote related elements.
-     * @param latents The list of latent nodes to be used for building the latent structure
-     *                and covariance matrix.
-     * @param graph The graph to which the derived structure edges will be added.
+     * @param clusters The list of sets where each set represents a cluster of integers that denote related elements.
+     * @param latents  The list of latent nodes to be used for building the latent structure and covariance matrix.
+     * @param graph    The graph to which the derived structure edges will be added.
      */
     private void addStructureEdges(List<Set<Integer>> clusters, List<Node> latents, Graph graph) {
         try {
@@ -314,14 +297,14 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Finds all clusters of a specified size from the given list of variables,
-     * where each cluster satisfies the given rank constraint.
+     * Finds all clusters of a specified size from the given list of variables, where each cluster satisfies the given
+     * rank constraint.
      *
      * @param vars A list of integers representing the variables to analyze.
      * @param size The size of clusters to generate from the variables.
      * @param rank The rank constraint that each cluster must satisfy.
-     * @return A set of sets, where each inner set represents a cluster of
-     *         integers that meets the specified rank constraint.
+     * @return A set of sets, where each inner set represents a cluster of integers that meets the specified rank
+     * constraint.
      */
     private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
         Set<Set<Integer>> clusters = new HashSet<>();
@@ -344,9 +327,9 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Retrieves the rank of a specified cluster. The method first checks if the rank for the given
-     * cluster is already computed and stored in a cache. If not, it computes the rank using the
-     * defined rank computation method and updates the cache.
+     * Retrieves the rank of a specified cluster. The method first checks if the rank for the given cluster is already
+     * computed and stored in a cache. If not, it computes the rank using the defined rank computation method and
+     * updates the cache.
      *
      * @param cluster A set of integers representing the cluster for which the rank is to be determined.
      * @return An integer representing the calculated or cached rank of the given cluster.
@@ -360,13 +343,13 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Converts a collection of integer cluster indices to their corresponding names
-     * based on the node mappings and returns them as a string in a formatted name cluster.
+     * Converts a collection of integer cluster indices to their corresponding names based on the node mappings and
+     * returns them as a string in a formatted name cluster.
      *
-     * @param cluster A collection of integer indices representing the cluster elements.
-     *                Each index corresponds to a specific node in the nodes mapping.
-     * @return A {@code StringBuilder} containing the formatted names cluster as a string.
-     *         The names are enclosed in square brackets and separated by commas.
+     * @param cluster A collection of integer indices representing the cluster elements. Each index corresponds to a
+     *                specific node in the nodes mapping.
+     * @return A {@code StringBuilder} containing the formatted names cluster as a string. The names are enclosed in
+     * square brackets and separated by commas.
      */
     private @NotNull StringBuilder toNamesCluster(Collection<Integer> cluster) {
         StringBuilder _sb = new StringBuilder();
@@ -385,14 +368,14 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Converts a set of clusters, where each cluster is represented as a set of integer indices,
-     * to a formatted string representation using their corresponding names. This method combines
-     * the names of all clusters into a single string, with individual clusters separated by a semicolon.
+     * Converts a set of clusters, where each cluster is represented as a set of integer indices, to a formatted string
+     * representation using their corresponding names. This method combines the names of all clusters into a single
+     * string, with individual clusters separated by a semicolon.
      *
-     * @param clusters A set of sets where each inner set represents a cluster of integers.
-     *                 Each integer corresponds to a specific node in the nodes mapping.
-     * @return A non-null string containing the formatted cluster names. Each cluster is enclosed
-     *         in square brackets, its elements are separated by commas, and clusters are separated by semicolons.
+     * @param clusters A set of sets where each inner set represents a cluster of integers. Each integer corresponds to
+     *                 a specific node in the nodes mapping.
+     * @return A non-null string containing the formatted cluster names. Each cluster is enclosed in square brackets,
+     * its elements are separated by commas, and clusters are separated by semicolons.
      */
     private @NotNull String toNamesClusters(Set<Set<Integer>> clusters) {
         StringBuilder sb = new StringBuilder();
@@ -411,13 +394,13 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Computes the rank of the specified cluster using Canonical Correlation Analysis (CCA).
-     * This method evaluates the association between the supplied cluster and the complement
-     * of the cluster within the given set of variables. The computed rank is determined
-     * based on the input covariance matrix, sample size, and alpha level for significance testing.
+     * Computes the rank of the specified cluster using Canonical Correlation Analysis (CCA). This method evaluates the
+     * association between the supplied cluster and the complement of the cluster within the given set of variables. The
+     * computed rank is determined based on the input covariance matrix, sample size, and alpha level for significance
+     * testing.
      *
-     * @param cluster A set of integers representing the cluster for which the rank is to be calculated.
-     *                Each integer corresponds to a variable index in the analysis.
+     * @param cluster A set of integers representing the cluster for which the rank is to be calculated. Each integer
+     *                corresponds to a variable index in the analysis.
      * @return An integer representing the estimated rank of the provided cluster.
      */
     private int rank(Set<Integer> cluster) {
@@ -465,11 +448,11 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Defines and creates a list of latent nodes based on the given clusters.
-     * Each latent node is assigned a unique identifier and marked as a latent node type.
+     * Defines and creates a list of latent nodes based on the given clusters. Each latent node is assigned a unique
+     * identifier and marked as a latent node type.
      *
-     * @param clusters A list of sets, where each set represents a cluster of integers.
-     *                 The size of the list determines the number of latent nodes to be created.
+     * @param clusters A list of sets, where each set represents a cluster of integers. The size of the list determines
+     *                 the number of latent nodes to be created.
      * @return A list of Node objects, each representing a latent variable corresponding to a cluster.
      */
     private List<Node> defineLatents(List<Set<Integer>> clusters) {
@@ -485,12 +468,11 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Sets the alpha value, which may be used as a significance level or parameter threshold
-     * in the underlying analysis or computation within the class.
+     * Sets the alpha value, which may be used as a significance level or parameter threshold in the underlying analysis
+     * or computation within the class.
      *
-     * @param alpha The alpha value to be set. It should be provided as a double,
-     *              and typically represents a probability level or tuning parameter
-     *              depending on the context of its use.
+     * @param alpha The alpha value to be set. It should be provided as a double, and typically represents a probability
+     *              level or tuning parameter depending on the context of its use.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -499,8 +481,9 @@ public class TrekSeparationClusters2 {
     /**
      * Sets whether to include structure models in the analysis or computation.
      *
-     * @param includeStructureModel A boolean value indicating whether structure models should be included.
-     *                              If true, structure models will be considered in the process; if false, they will be excluded.
+     * @param includeStructureModel A boolean value indicating whether structure models should be included. If true,
+     *                              structure models will be considered in the process; if false, they will be
+     *                              excluded.
      */
     public void setIncludeStructureModel(boolean includeStructureModel) {
         this.includeStructureModel = includeStructureModel;
@@ -518,8 +501,8 @@ public class TrekSeparationClusters2 {
     /**
      * Sets whether all nodes should be included or not.
      *
-     * @param includeAllNodes a boolean value where true indicates that all nodes
-     *                        should be included, and false indicates otherwise.
+     * @param includeAllNodes a boolean value where true indicates that all nodes should be included, and false
+     *                        indicates otherwise.
      */
     public void setIncludeAllNodes(boolean includeAllNodes) {
         this.includeAllNodes = includeAllNodes;
@@ -528,8 +511,8 @@ public class TrekSeparationClusters2 {
     /**
      * Sets the verbosity mode for the current operation or process.
      *
-     * @param verbose a boolean value where true enables verbose mode, providing
-     *                detailed log or output information, and false disables it.
+     * @param verbose a boolean value where true enables verbose mode, providing detailed log or output information, and
+     *                false disables it.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -576,16 +559,17 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Expands a given cluster using a depth-first search (DFS) approach by finding and merging overlapping sets
-     * from the provided set of candidate clusters, based on specific criteria such as rank and disjoint conditions.
-     * Updates the visited clusters during the traversal and collects leaf clusters when no further expansion is possible.
+     * Expands a given cluster using a depth-first search (DFS) approach by finding and merging overlapping sets from
+     * the provided set of candidate clusters, based on specific criteria such as rank and disjoint conditions. Updates
+     * the visited clusters during the traversal and collects leaf clusters when no further expansion is possible.
      *
-     * @param cluster The current cluster being expanded.
-     * @param P The set of candidate clusters to explore for potential expansions.
-     * @param rank The rank of the current cluster, used as a filtering condition for union operations.
-     * @param visited The set of clusters that have already been visited during the expansion process to avoid duplicates.
+     * @param cluster      The current cluster being expanded.
+     * @param P            The set of candidate clusters to explore for potential expansions.
+     * @param rank         The rank of the current cluster, used as a filtering condition for union operations.
+     * @param visited      The set of clusters that have already been visited during the expansion process to avoid
+     *                     duplicates.
      * @param leafClusters The collection where identified leaf clusters (that cannot be further expanded) are stored.
-     * @param used The set of elements that are already part of the current expansion process.
+     * @param used         The set of elements that are already part of the current expansion process.
      */
     private void expandClusterDFS(Set<Integer> cluster,
                                   Set<Set<Integer>> P,
@@ -624,9 +608,9 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Selects a subset of disjoint clusters from the given collection of clusters.
-     * A cluster is selected if it does not share any elements with clusters that have already been selected.
-     * Clusters are prioritized by size, with larger clusters being considered first.
+     * Selects a subset of disjoint clusters from the given collection of clusters. A cluster is selected if it does not
+     * share any elements with clusters that have already been selected. Clusters are prioritized by size, with larger
+     * clusters being considered first.
      *
      * @param clusters the collection of clusters to process, where each cluster is represented as a set of integers
      * @return a set of disjoint clusters selected from the input collection
@@ -649,12 +633,12 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * Converts a collection of integer-based clusters into a single formatted string representation.
-     * Each cluster is transformed into a string representation of names and concatenated into a single output string.
+     * Converts a collection of integer-based clusters into a single formatted string representation. Each cluster is
+     * transformed into a string representation of names and concatenated into a single output string.
      *
      * @param clusters a collection of sets, where each set represents a cluster containing integers
-     * @return a formatted string representation of the clusters, with each cluster represented as a string,
-     *         combined together and delimited by commas, enclosed in square brackets
+     * @return a formatted string representation of the clusters, with each cluster represented as a string, combined
+     * together and delimited by commas, enclosed in square brackets
      */
     private String toNamesClusters(Collection<Set<Integer>> clusters) {
         return clusters.stream()
@@ -675,9 +659,8 @@ public class TrekSeparationClusters2 {
     }
 
     /**
-     * The LatentGraphBuilder class provides methods for processing and analyzing
-     * latent structures in matrices using eigenvector-based techniques. These
-     * methods are particularly useful for extracting important patterns and
+     * The LatentGraphBuilder class provides methods for processing and analyzing latent structures in matrices using
+     * eigenvector-based techniques. These methods are particularly useful for extracting important patterns and
      * relationships within data, such as through clustering and correlation matrix computation.
      */
     private static class LatentGraphBuilder {
@@ -711,17 +694,17 @@ public class TrekSeparationClusters2 {
         }
 
         /**
-         * Computes the latent-latent correlation matrix for a given similarity matrix, clusters,
-         * and corresponding eigenvectors. The method calculates pairwise correlations between
-         * latent variables associated with different clusters.
+         * Computes the latent-latent correlation matrix for a given similarity matrix, clusters, and corresponding
+         * eigenvectors. The method calculates pairwise correlations between latent variables associated with different
+         * clusters.
          *
-         * @param S The similarity matrix, assumed to be square and symmetric.
-         * @param clusters A list of clusters, where each cluster is represented as a list of indices
-         *                 indicating the rows and columns of the similarity matrix that belong to the cluster.
-         * @param eigenvectors A list of eigenvector matrices, where each matrix corresponds to the
-         *                     eigenvectors calculated for each cluster.
-         * @return A symmetric matrix representing the pairwise correlations between latents
-         *         associated with the specified clusters.
+         * @param S            The similarity matrix, assumed to be square and symmetric.
+         * @param clusters     A list of clusters, where each cluster is represented as a list of indices indicating the
+         *                     rows and columns of the similarity matrix that belong to the cluster.
+         * @param eigenvectors A list of eigenvector matrices, where each matrix corresponds to the eigenvectors
+         *                     calculated for each cluster.
+         * @return A symmetric matrix representing the pairwise correlations between latents associated with the
+         * specified clusters.
          */
         public static SimpleMatrix latentLatentCorrelationMatrix(
                 SimpleMatrix S,
