@@ -99,6 +99,82 @@ public class TrekSeparationClusters2 {
         this.S = this.S.plus(SimpleMatrix.identity(S.getNumRows()).scale(0.001));
     }
 
+
+    /**
+     * Searches for latent clusters using specified size and rank parameters.
+     *
+     * @param size Size of initial clusters to consider
+     * @param rank Target rank for trek separation tests
+     * @return Graph containing identified latent structure
+     */
+    public Graph search(int size, int rank) {
+        Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
+
+        List<Set<Integer>> clusters = new ArrayList<>(_clusters);
+
+        log("clusters = " + toNamesClusters(new HashSet<>(clusters)));
+
+        List<Node> latents = defineLatents(clusters);
+        Graph graph = convertSearchGraphClusters(clusters, latents, includeAllNodes);
+
+        if (includeStructureModel) {
+            addStructureEdges(clusters, latents, graph);
+        }
+
+        return graph;
+    }
+
+    /**
+     * Sets the alpha value, which may be used as a significance level or parameter threshold in the underlying analysis
+     * or computation within the class.
+     *
+     * @param alpha The alpha value to be set. It should be provided as a double, and typically represents a probability
+     *              level or tuning parameter depending on the context of its use.
+     */
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    /**
+     * Sets whether to include structure models in the analysis or computation.
+     *
+     * @param includeStructureModel A boolean value indicating whether structure models should be included. If true,
+     *                              structure models will be considered in the process; if false, they will be
+     *                              excluded.
+     */
+    public void setIncludeStructureModel(boolean includeStructureModel) {
+        this.includeStructureModel = includeStructureModel;
+    }
+
+    /**
+     * Sets the penalty value.
+     *
+     * @param penalty the penalty to be set, must be a positive double value
+     */
+    public void setPenalty(double penalty) {
+        this.penalty = penalty;
+    }
+
+    /**
+     * Sets whether all nodes should be included or not.
+     *
+     * @param includeAllNodes a boolean value where true indicates that all nodes should be included, and false
+     *                        indicates otherwise.
+     */
+    public void setIncludeAllNodes(boolean includeAllNodes) {
+        this.includeAllNodes = includeAllNodes;
+    }
+
+    /**
+     * Sets the verbosity mode for the current operation or process.
+     *
+     * @param verbose a boolean value where true enables verbose mode, providing detailed log or output information, and
+     *                false disables it.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
     /**
      * Selects the best disjoint clusters from a list of clusters, ensuring that the selected clusters do not overlap. A
      * cluster is selected only if it is disjoint from all previously selected clusters. Larger clusters are prioritized
@@ -125,30 +201,6 @@ public class TrekSeparationClusters2 {
         }
 
         return new HashSet<>(result);
-    }
-
-    /**
-     * Searches for latent clusters using specified size and rank parameters.
-     *
-     * @param size Size of initial clusters to consider
-     * @param rank Target rank for trek separation tests
-     * @return Graph containing identified latent structure
-     */
-    public Graph search(int size, int rank) {
-        Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
-
-        List<Set<Integer>> clusters = new ArrayList<>(_clusters);
-
-        log("clusters = " + toNamesClusters(new HashSet<>(clusters)));
-
-        List<Node> latents = defineLatents(clusters);
-        Graph graph = convertSearchGraphClusters(clusters, latents, includeAllNodes);
-
-        if (includeStructureModel) {
-            addStructureEdges(clusters, latents, graph);
-        }
-
-        return graph;
     }
 
     /**
@@ -465,57 +517,6 @@ public class TrekSeparationClusters2 {
         }
 
         return latents;
-    }
-
-    /**
-     * Sets the alpha value, which may be used as a significance level or parameter threshold in the underlying analysis
-     * or computation within the class.
-     *
-     * @param alpha The alpha value to be set. It should be provided as a double, and typically represents a probability
-     *              level or tuning parameter depending on the context of its use.
-     */
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    /**
-     * Sets whether to include structure models in the analysis or computation.
-     *
-     * @param includeStructureModel A boolean value indicating whether structure models should be included. If true,
-     *                              structure models will be considered in the process; if false, they will be
-     *                              excluded.
-     */
-    public void setIncludeStructureModel(boolean includeStructureModel) {
-        this.includeStructureModel = includeStructureModel;
-    }
-
-    /**
-     * Sets the penalty value.
-     *
-     * @param penalty the penalty to be set, must be a positive double value
-     */
-    public void setPenalty(double penalty) {
-        this.penalty = penalty;
-    }
-
-    /**
-     * Sets whether all nodes should be included or not.
-     *
-     * @param includeAllNodes a boolean value where true indicates that all nodes should be included, and false
-     *                        indicates otherwise.
-     */
-    public void setIncludeAllNodes(boolean includeAllNodes) {
-        this.includeAllNodes = includeAllNodes;
-    }
-
-    /**
-     * Sets the verbosity mode for the current operation or process.
-     *
-     * @param verbose a boolean value where true enables verbose mode, providing detailed log or output information, and
-     *                false disables it.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     /**
