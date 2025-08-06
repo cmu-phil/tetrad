@@ -339,6 +339,25 @@ public class TrekSeparationClusters {
         choices.parallelStream().forEach(choice -> {
             int[] yIndices = new int[choice.length];
 
+            boolean skip = false;
+            for (int k = 0; k < i; k++) {
+                for (Set<Integer> prevCluster : clusterList.get(k)) {
+                    boolean allContained = true;
+                    for (int c : choice) {
+                        if (!prevCluster.contains(variables.get(c))) {
+                            allContained = false;
+                            break;
+                        }
+                    }
+                    if (allContained) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) break;
+            }
+            if (skip) return;
+
             for (int q = 0; q < choice.length; q++) {
                 yIndices[q] = variables.get(choice[q]);
             }
@@ -365,14 +384,6 @@ public class TrekSeparationClusters {
             ySet.add(y);
         }
 
-//        for (int j = 0; j < avoidToIndex; j++) {
-//            for (Set<Integer> set : clusterList.get(j)) {
-//                if (set.containsAll(ySet)) {
-//                    return -1;
-//                }
-//            }
-//        }
-
         int[] other = new int[variables.size() - cluster.length];
 
         int index = 0;
@@ -392,78 +403,6 @@ public class TrekSeparationClusters {
 
         return RankTests.estimateRccaRank(S, other, cluster, sampleSize, alpha, 0.01);
     }
-
-    /**
-     * Merges the given clusters.
-     *
-     * @param clusters The lists of integers representing the clusters.
-     * @param rank
-     * @return The merged clusters.
-     */
-//    private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters, Set<Set<Integer>> baseClusters,
-//                                                       int size, int rank) {
-//        boolean merged;
-//        System.out.println("Base clusters: " + toNamesClusters(baseClusters, dataNodes));
-//
-//        do {
-//            merged = false;
-//            Set<Set<Integer>> newClusters = new HashSet<>();
-//
-//            for (Set<Integer> cluster1 : clusters) {
-//                Set<Integer> mergedCluster = new HashSet<>(cluster1);
-//                boolean passing = true;
-//
-//                C:
-//                for (Set<Integer> cluster2 : clusters) {
-//                    if (cluster1 == cluster2) continue;
-//                    Set<Integer> intersection = new HashSet<>(cluster1);
-//                    intersection.retainAll(cluster2);
-//
-//                    if (!intersection.isEmpty() && !new HashSet<>(mergedCluster).containsAll(cluster2)) {
-//                        mergedCluster.addAll(cluster2);
-//
-//                        List<Integer> _merged = new  ArrayList<>(mergedCluster);
-//
-//                        ChoiceGenerator generator = new ChoiceGenerator(_merged.size(), size);
-//                        int[] choice;
-//
-//                        while ((choice = generator.next()) != null) {
-//                            Set<Integer> _cluster = new HashSet<>();
-//
-//                            for (int i : choice) {
-//                                _cluster.add(_merged.get(i));
-//                            }
-//
-//                            if (baseClusters.contains(_cluster)) {
-////                                passing++;
-//                            } else {
-//                                passing = false;
-//                                continue C;
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                if (mergedCluster.size() >= size) {
-//                    newClusters.add(mergedCluster);
-//                }
-//
-//                if (!passing) {
-//                    continue;
-//                }
-//
-//                merged = true;
-//            }
-//
-//            if (newClusters.isEmpty()) {
-//                continue;
-//            }
-//
-//            clusters = newClusters;
-//        } while (merged);
-//
-//        return clusters;
-//    }
 
     private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters,
                                                        Set<Set<Integer>> baseClusters,

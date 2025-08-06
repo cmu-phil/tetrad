@@ -133,7 +133,7 @@ public class TrekSeparationClusters2 extends AbstractBootstrapAlgorithm implemen
         search.setPenalty(penalty);
         search.setVerbose(verbose);
 
-        return search.search(specs[0][0], specs[0][1]);
+        return search.search(specs);
     }
 
     /**

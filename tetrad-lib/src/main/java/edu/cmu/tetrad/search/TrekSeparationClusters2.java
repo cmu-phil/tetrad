@@ -14,8 +14,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.ejml.data.DMatrixRMaj;
@@ -25,6 +27,7 @@ import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -103,12 +106,11 @@ public class TrekSeparationClusters2 {
     /**
      * Searches for latent clusters using specified size and rank parameters.
      *
-     * @param size Size of initial clusters to consider
-     * @param rank Target rank for trek separation tests
+     * @param clusterSpecs int[i][0] is the ith size, int[i][1] is th ith rank.
      * @return Graph containing identified latent structure
      */
-    public Graph search(int size, int rank) {
-        Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
+    public Graph search(int[][] clusterSpecs) {
+        Set<Set<Integer>> _clusters = estimateClusters(clusterSpecs);
 
         List<Set<Integer>> clusters = new ArrayList<>(_clusters);
 
@@ -123,6 +125,112 @@ public class TrekSeparationClusters2 {
 
         return graph;
     }
+
+    private Set<Set<Integer>> estimateClusters(int[][] clusterSpecs) {
+        List<Integer> variables = allVariables();
+        if (new HashSet<>(variables).size() != variables.size()) {
+            throw new IllegalArgumentException("Variables must be unique.");
+        }
+
+        List<Set<Set<Integer>>> clusterList = new ArrayList<>();
+        Set<Set<Integer>> allClusters = new HashSet<>();
+
+        for (int i = 0; i < clusterSpecs.length; i++) {
+            log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
+            int size = clusterSpecs[i][0];
+            int rank = clusterSpecs[i][1];
+            Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
+
+            Set<Set<Integer>> baseClusters = new HashSet<>(_clusters);
+
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters));
+            clusterList.add(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
+                toNamesClusters(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
+
+            for (int j = 0; j < i; j++) {
+                if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
+                    clusterList.get(j).addAll(clusterList.get(i));
+                    clusterList.set(j, mergeOverlappingClusters(clusterList.get(j), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
+                    log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNamesClusters(clusterList.get(j)));
+                    clusterList.get(i).clear();
+                }
+            }
+
+            allClusters.clear();
+
+            for (Set<Set<Integer>> cluster2 : clusterList) {
+                allClusters.addAll(cluster2);
+            }
+        }
+
+        log("final clusters = " + toNamesClusters(allClusters));
+
+        return allClusters;
+    }
+
+    private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters,
+                                                       Set<Set<Integer>> baseClusters,
+                                                       int size, int rank) {
+        System.out.println("Base clusters: " + toNamesClusters(baseClusters));
+        boolean merged;
+
+        do {
+            merged = false;
+            Set<Set<Integer>> newClusters = new HashSet<>();
+
+            for (Set<Integer> cluster1 : clusters) {
+                Set<Integer> mergedCluster = new HashSet<>(cluster1);
+                boolean localMerged = false;
+
+                C:
+                for (Set<Integer> cluster2 : clusters) {
+                    if (cluster1 == cluster2) continue;
+
+                    Set<Integer> intersection = new HashSet<>(cluster1);
+                    intersection.retainAll(cluster2);
+
+                    if (!intersection.isEmpty() && !mergedCluster.containsAll(cluster2)) {
+                        mergedCluster.addAll(cluster2);
+
+                        if (lookupRank(mergedCluster) > rank) {
+                            continue ;
+                        }
+
+                        localMerged = true;
+                    }
+                }
+
+                if (mergedCluster.size() >= size) {
+                    newClusters.add(mergedCluster);
+                }
+                if (localMerged) {
+                    merged = true;
+                }
+            }
+
+            if (!newClusters.equals(clusters)) {
+                clusters = newClusters;
+            } else {
+                merged = false;
+            }
+        } while (merged);
+
+        return clusters;
+    }
+
+
+    /**
+     * Retrieves a list of all variables.
+     *
+     * @return A list of integers representing all variables.
+     */
+    private List<Integer> allVariables() {
+        List<Integer> _variables = new ArrayList<>();
+        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
+        return _variables;
+    }
+
 
     /**
      * Sets the alpha value, which may be used as a significance level or parameter threshold in the underlying analysis
@@ -173,34 +281,6 @@ public class TrekSeparationClusters2 {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Selects the best disjoint clusters from a list of clusters, ensuring that the selected clusters do not overlap. A
-     * cluster is selected only if it is disjoint from all previously selected clusters. Larger clusters are prioritized
-     * during selection.
-     *
-     * @param allClusters The list of sets, where each set represents a cluster of integers to be considered. Clusters
-     *                    may overlap, and the input is expected to contain all possible clusters.
-     * @return A set of sets representing the best disjoint clusters, such that no two selected clusters overlap.
-     */
-    private static Set<Set<Integer>> selectBestDisjointClusters(List<Set<Integer>> allClusters) {
-        List<Set<Integer>> sorted = new ArrayList<>(new HashSet<>(allClusters));
-
-        sorted.sort(Comparator.comparingInt(Set::size));
-        sorted = sorted.reversed();
-
-        List<Set<Integer>> result = new ArrayList<>();
-        Set<Integer> covered = new HashSet<>();
-
-        for (Set<Integer> cluster : sorted) {
-            if (Collections.disjoint(cluster, covered)) {
-                result.add(cluster);
-                covered.addAll(cluster);
-            }
-        }
-
-        return new HashSet<>(result);
     }
 
     /**
@@ -269,34 +349,6 @@ public class TrekSeparationClusters2 {
         removeNested(mergedClusters);
         System.out.println("Merged clusters = " + toNamesClusters(mergedClusters));
         return mergedClusters;
-    }
-
-    /**
-     * Checks whether all subsets of a given size, formed from a union set, satisfy a specific rank constraint. Subsets
-     * are generated iteratively, and for each subset, the rank is checked against the specified value.
-     *
-     * @param size  The size of the subsets to generate from the union set.
-     * @param rank  The rank constraint that subsets must satisfy.
-     * @param union The set of integers from which subsets will be generated.
-     * @return True if all subsets of the specified size satisfy the rank constraint; false otherwise.
-     */
-    private boolean allSubsetsSatisfyRankConstraint(int size, int rank, Set<Integer> union) {
-        List<Integer> _union = new ArrayList<>(union);
-        ChoiceGenerator gen2 = new ChoiceGenerator(_union.size(), size);
-        int[] choice2;
-
-        while ((choice2 = gen2.next()) != null) {
-            Set<Integer> _union2 = new HashSet<>();
-            for (Integer i : choice2) {
-                _union2.add(_union.get(i));
-            }
-
-            if (lookupRank(_union2) > rank) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
