@@ -261,7 +261,10 @@ public class SemSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        parameters.addAll(SemIm.getParameterNames());
+        if (this.im == null) {
+            parameters.addAll(SemIm.getParameterNames());
+        }
+
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);
