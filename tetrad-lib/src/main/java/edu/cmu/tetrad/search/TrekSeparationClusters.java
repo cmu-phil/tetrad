@@ -405,7 +405,7 @@ public class TrekSeparationClusters {
 
             List<SimpleMatrix> eigenvectors = LatentGraphBuilder.extractFirstEigenvectors(S, _clusters);
             SimpleMatrix latentsCov = LatentGraphBuilder.latentLatentCorrelationMatrix(S, _clusters, eigenvectors);
-            CovarianceMatrix cov = new CovarianceMatrix(latents, TrekSeparationClusters3.toDoubleArray(latentsCov), sampleSize);
+            CovarianceMatrix cov = new CovarianceMatrix(latents, TrekSeparationClusters2.toDoubleArray(latentsCov), sampleSize);
             SemBicScore score = new SemBicScore(cov, penalty);
             Graph structureGraph = new PermutationSearch(new Boss(score)).search();
 

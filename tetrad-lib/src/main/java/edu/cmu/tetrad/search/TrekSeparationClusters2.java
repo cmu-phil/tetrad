@@ -65,7 +65,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @version $Id: $Id
  * @see Ftfc
  */
-public class TrekSeparationClusters3 {
+public class TrekSeparationClusters2 {
     /**
      * The covariance matrix.
      */
@@ -117,7 +117,7 @@ public class TrekSeparationClusters3 {
      * @param alpha   The alpha significance cutoff.
      * @param penalty
      */
-    public TrekSeparationClusters3(DataSet dataSet, int[][] clusterSpecs, double alpha, double penalty) {
+    public TrekSeparationClusters2(DataSet dataSet, int[][] clusterSpecs, double alpha, double penalty) {
         this(new CorrelationMatrix(dataSet), alpha, clusterSpecs, penalty);
     }
 
@@ -129,7 +129,7 @@ public class TrekSeparationClusters3 {
      * @param penalty
      * @param ess     The expected sample size.
      */
-    public TrekSeparationClusters3(DataSet dataSet, double alpha, double penalty, int[][] clusterSpecs, int ess) {
+    public TrekSeparationClusters2(DataSet dataSet, double alpha, double penalty, int[][] clusterSpecs, int ess) {
         this(new CorrelationMatrix(dataSet), alpha, penalty, clusterSpecs, ess);
     }
 
@@ -140,7 +140,7 @@ public class TrekSeparationClusters3 {
      * @param alpha   The alpha level.
      * @param penalty
      */
-    public TrekSeparationClusters3(CovarianceMatrix cov, double alpha, int[][] clusterSpecs, double penalty) {
+    public TrekSeparationClusters2(CovarianceMatrix cov, double alpha, int[][] clusterSpecs, double penalty) {
         this(new CorrelationMatrix(cov), alpha, penalty, clusterSpecs, cov.getSampleSize());
     }
 
@@ -152,7 +152,7 @@ public class TrekSeparationClusters3 {
      * @param penalty
      * @param ess     The expected sample size for the analysis.
      */
-    public TrekSeparationClusters3(CovarianceMatrix cov, double alpha, double penalty, int[][] clusterSpecs, int ess) {
+    public TrekSeparationClusters2(CovarianceMatrix cov, double alpha, double penalty, int[][] clusterSpecs, int ess) {
         this.variables = cov.getVariables();
         this.alpha = alpha;
         this.sampleSize = ess;

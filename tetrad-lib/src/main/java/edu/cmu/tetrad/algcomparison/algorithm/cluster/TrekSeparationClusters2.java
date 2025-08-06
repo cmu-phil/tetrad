@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.TakesCovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
@@ -35,7 +34,7 @@ import java.util.List;
 //        algoType = AlgType.search_for_structure_over_latents
 //)
 @Bootstrapping
-public class TrekSeparationClusters3 extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
+public class TrekSeparationClusters2 extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge, ClusterAlgorithm,
         TakesCovarianceMatrix {
 
     @Serial
@@ -48,7 +47,7 @@ public class TrekSeparationClusters3 extends AbstractBootstrapAlgorithm implemen
     /**
      * <p>Constructor for Fofc.</p>
      */
-    public TrekSeparationClusters3() {
+    public TrekSeparationClusters2() {
     }
 
     /**
@@ -125,21 +124,21 @@ public class TrekSeparationClusters3 extends AbstractBootstrapAlgorithm implemen
         }
 
 
-        edu.cmu.tetrad.search.TrekSeparationClusters3 search;
+        edu.cmu.tetrad.search.TrekSeparationClusters2 search;
         double penalty = parameters.getDouble(Params.PENALTY_DISCOUNT);
 
         if (dataModel instanceof CovarianceMatrix) {
             if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters3((CovarianceMatrix) dataModel, alpha, specs, penalty);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters2((CovarianceMatrix) dataModel, alpha, specs, penalty);
             } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters3((CovarianceMatrix) dataModel, alpha, penalty, specs,
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters2((CovarianceMatrix) dataModel, alpha, penalty, specs,
                         ess);
             }
         } else {
             if (ess == -1) {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters3((DataSet) dataModel, specs, alpha, penalty);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters2((DataSet) dataModel, specs, alpha, penalty);
             } else {
-                search = new edu.cmu.tetrad.search.TrekSeparationClusters3((DataSet) dataModel, alpha, penalty, specs, ess);
+                search = new edu.cmu.tetrad.search.TrekSeparationClusters2((DataSet) dataModel, alpha, penalty, specs, ess);
             }
         }
 
