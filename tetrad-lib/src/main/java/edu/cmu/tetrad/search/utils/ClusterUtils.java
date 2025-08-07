@@ -43,7 +43,7 @@ public class ClusterUtils {
     /**
      * The prefix for latent variables.
      */
-    public static final String LATENT_PREFIX = "_L";
+    public static final String LATENT_PREFIX = "L";
 
 
     /**

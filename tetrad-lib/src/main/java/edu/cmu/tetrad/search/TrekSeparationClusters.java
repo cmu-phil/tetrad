@@ -776,7 +776,9 @@ public class TrekSeparationClusters {
         List<Node> latents = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
-            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
+            int rank = lookupRank(clusters.get(i));
+
+            Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1) + "(" + rank + ")");
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
         }
