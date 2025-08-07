@@ -99,6 +99,12 @@ public class TrekSeparationClusters {
         this.S = this.S.plus(SimpleMatrix.identity(S.getNumRows()).scale(0.001));
     }
 
+    /**
+     * Converts a SimpleMatrix object into a two-dimensional array of doubles.
+     *
+     * @param matrix the SimpleMatrix object to be converted
+     * @return a two-dimensional array of doubles representing the content of the input matrix
+     */
     public static double[][] toDoubleArray(SimpleMatrix matrix) {
         int numRows = matrix.getNumRows();
         int numCols = matrix.getNumCols();
@@ -124,8 +130,6 @@ public class TrekSeparationClusters {
 
         List<Set<Integer>> clusters = new ArrayList<>(clusterToRank.keySet());
 
-        log("clusters = " + toNamesClusters(new HashSet<>(clusters)));
-
         List<Node> latents = defineLatents(clusters, clusterToRank);
         Graph graph = convertSearchGraphClusters(clusters, latents, includeAllNodes);
 
@@ -142,7 +146,7 @@ public class TrekSeparationClusters {
      *
      * @param clusterSpecs a 2D array where each row defines cluster specifications. The first element in each row
      *                     specifies the size of the cluster, and the second element specifies the rank.
-     * @return a set of sets, where each inner set represents a unique cluster identified and merged according to the
+     * @return a map of sets, where each inner set represents a unique cluster identified and merged according to the
      * given specifications.
      * @throws IllegalArgumentException if the variables used for clustering are not unique.
      */
@@ -191,11 +195,11 @@ public class TrekSeparationClusters {
                     }
                 }
             }
+
+            log("Clusters = " + toNamesClusters(new HashSet<>(clusterToRanks.keySet())));
         } else {
             throw new IllegalArgumentException("Mode must be METALOOP or SIZE_RANK");
         }
-
-        log("final clusters = " + toNamesClusters(allClusters));
 
         return clusterToRanks;
     }
@@ -213,7 +217,7 @@ public class TrekSeparationClusters {
     private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters,
                                                        Set<Set<Integer>> baseClusters,
                                                        int size, int rank) {
-        System.out.println("Base clusters: " + toNamesClusters(baseClusters));
+        log("Base clusters: " + toNamesClusters(baseClusters));
         boolean merged;
 
         do {
@@ -224,7 +228,6 @@ public class TrekSeparationClusters {
                 Set<Integer> mergedCluster = new HashSet<>(cluster1);
                 boolean localMerged = false;
 
-                C:
                 for (Set<Integer> cluster2 : clusters) {
                     if (cluster1 == cluster2) continue;
 
@@ -334,7 +337,7 @@ public class TrekSeparationClusters {
      */
     private @NotNull Map<Set<Integer>, Integer> getRunSequentialClusterSearch(List<Integer> vars, int size, int rank) {
         Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
-        System.out.println("P1 = " + toNamesClusters(P));
+        log("P1 = " + toNamesClusters(P));
         Set<Set<Integer>> P1 = new HashSet<>(P);
 
         Set<Set<Integer>> newClusters = new HashSet<>();
@@ -354,8 +357,8 @@ public class TrekSeparationClusters {
             Set<Integer> _complement = new HashSet<>(variables);
             _complement.removeAll(seed);
 
-            System.out.println("Picking seed: " + toNamesCluster(seed) + " against "
-                               + toNamesCluster(_complement) + " rank = " + lookupRank(seed));
+            log("Picking seed: " + toNamesCluster(seed) + " against "
+                + toNamesCluster(_complement) + " rank = " + lookupRank(seed));
 
             boolean extended;
 
@@ -383,8 +386,8 @@ public class TrekSeparationClusters {
                     }
 
                     int rankOfUnion = lookupRank(union);
-                    System.out.println("Candidate = " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " against "
-                                       + toNamesCluster(complement) + " rank = " + rankOfUnion);
+                    log("Candidate = " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " against "
+                        + toNamesCluster(complement) + " rank = " + rankOfUnion);
 
                     if (rankOfUnion == rank) {
 
@@ -400,7 +403,7 @@ public class TrekSeparationClusters {
             int finalRank = lookupRank(cluster);
             if (finalRank == rank) {
                 newClusters.removeIf(cluster::containsAll);  // Avoid nesting
-                System.out.println("Adding cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
+                log("Adding cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
                 newClusters.add(cluster);
                 used.addAll(cluster);
             }
@@ -429,7 +432,7 @@ public class TrekSeparationClusters {
         }
 
         removeNested(newClusters);
-        System.out.println("Merged clusters = " + toNamesClusters(newClusters));
+        log("Merged clusters = " + toNamesClusters(newClusters));
         return clusterToRank;
     }
 
@@ -440,11 +443,11 @@ public class TrekSeparationClusters {
         for (int size = 2; size < 5; size++) {
             int rank = size - 1;
 
-            System.out.println("EXAMINING SIZE " + size + " RANK = " + rank);
+            log("EXAMINING SIZE " + size + " RANK = " + rank);
 
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
-            System.out.println("Base clusters for size " + size + " rank " + rank + ": " +
-                               (P.isEmpty() ? "NONE" : toNamesClusters(P)));
+            log("Base clusters for size " + size + " rank " + rank + ": " +
+                (P.isEmpty() ? "NONE" : toNamesClusters(P)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
             Set<Set<Integer>> newClusters = new HashSet<>();
@@ -463,8 +466,8 @@ public class TrekSeparationClusters {
                 Set<Integer> _complement = new HashSet<>(remainingVars);
                 _complement.removeAll(seed);
 
-                System.out.println("Picking seed from the list: " + toNamesCluster(seed) + " against "
-                                   + toNamesCluster(_complement) + " rank = " + lookupRank(seed));
+                log("Picking seed from the list: " + toNamesCluster(seed) + " against "
+                    + toNamesCluster(_complement) + " rank = " + lookupRank(seed));
 
                 boolean extended;
 
@@ -492,8 +495,8 @@ public class TrekSeparationClusters {
                         }
 
                         int rankOfUnion = lookupRank(union);
-                        System.out.println("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " against "
-                                           + toNamesCluster(complement) + " rank = " + rankOfUnion);
+                        log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " against "
+                            + toNamesCluster(complement) + " rank = " + rankOfUnion);
 
                         if (rankOfUnion == rank) {
 
@@ -509,18 +512,18 @@ public class TrekSeparationClusters {
                 int finalRank = lookupRank(cluster);
                 if (finalRank == rank) {
                     newClusters.removeIf(cluster::containsAll);  // Avoid nesting
-                    System.out.println("Adding cluster to new clusters: " + toNamesCluster(cluster) + " rank = " + finalRank);
+                    log("Adding cluster to new clusters: " + toNamesCluster(cluster) + " rank = " + finalRank);
                     newClusters.add(cluster);
                     used.addAll(cluster);
                 }
             }
 
-            System.out.println("New clusters for rank " + rank + " size = " + size + ": " + toNamesClusters(newClusters));
+            log("New clusters for rank " + rank + " size = " + size + ": " + toNamesClusters(newClusters));
 
             Set<Set<Integer>> P2 = new HashSet<>(P);
 
-            System.out.println("Now we will try to augment each cluster by one new variable by looking at cluster overlaps again.");
-            System.out.println("We will repeat this for ranks rank - 1 down to rank 1.");
+            log("Now we will try to augment each cluster by one new variable by looking at cluster overlaps again.");
+            log("We will repeat this for ranks rank - 1 down to rank 1.");
 
             boolean didAugment = false;
 
@@ -541,7 +544,7 @@ public class TrekSeparationClusters {
                             newClusters.remove(C1);
                             newClusters.add(C2);
                             used.addAll(C2);
-                            System.out.println("Augmenting cluster " + toNamesCluster(C1) + " to cluster " + toNamesCluster(C2) + " (rank " + reducedRank + ".");
+                            log("Augmenting cluster " + toNamesCluster(C1) + " to cluster " + toNamesCluster(C2) + " (rank " + reducedRank + ").");
                             didAugment = true;
                         }
                     }
@@ -549,20 +552,20 @@ public class TrekSeparationClusters {
             }
 
             if (!didAugment) {
-                System.out.println("No augmentations were needed.");
+                log("No augmentations were needed.");
             }
 
-            System.out.println("New clusters after the augmentation step = " +
-                               (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
+            log("New clusters after the augmentation step = " +
+                (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
 
             for (Set<Integer> cluster : newClusters) {
                 clusterToRank.put(cluster, rank);
             }
 
-            System.out.println("Now we will add all of the new clusters to the set of all discovered clusters.");
-            System.out.println("All clusters at this point: " + toNamesClusters(newClusters));
+            log("Now we will add all of the new clusters to the set of all discovered clusters.");
+            log("All clusters at this point: " + toNamesClusters(newClusters));
 
-            System.out.println("Now we will remove clustered variables from further consideration.");
+            log("Now we will remove clustered variables from further consideration.");
 
             for (Set<Integer> _C : newClusters) {
                 used.addAll(_C);
@@ -570,7 +573,7 @@ public class TrekSeparationClusters {
             }
         }
 
-        System.out.println("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
+        log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
         return clusterToRank;
     }
 
@@ -800,123 +803,6 @@ public class TrekSeparationClusters {
         if (verbose) {
             TetradLogger.getInstance().log(s);
         }
-    }
-
-    /**
-     * Identifies clusters of nodes using a depth-first search expansion strategy.
-     *
-     * @param size the number of nodes in the input graph.
-     * @param rank the rank used to determine the clustering threshold.
-     * @return a set of depth-first expanded clusters, where each cluster is represented as a set of integers.
-     */
-    private Set<Set<Integer>> getDepthFirstClusters(int size, int rank) {
-        List<Integer> vars = new ArrayList<>();
-        for (int i = 0; i < nodes.size(); i++) {
-            vars.add(i);
-        }
-
-        Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
-        removeNested(P);
-
-        // Step 2: Expand each seed cluster depth-first
-        Set<Set<Integer>> allExpandedClusters = new HashSet<>();
-        for (Set<Integer> seed : P) {
-            Set<Set<Integer>> leaves = new HashSet<>();
-            expandClusterDFS(seed, P, rank, new HashSet<>(), leaves, new HashSet<>());
-            allExpandedClusters.addAll(leaves);
-        }
-
-        // Step 3: Select disjoint clusters from largest to smallest
-        List<Set<Integer>> mergedClusters = new ArrayList<>(selectDisjointClusters(allExpandedClusters));
-        return new HashSet<>(mergedClusters);
-    }
-
-    /**
-     * Expands a given cluster using a depth-first search (DFS) approach by finding and merging overlapping sets from
-     * the provided set of candidate clusters, based on specific criteria such as rank and disjoint conditions. Updates
-     * the visited clusters during the traversal and collects leaf clusters when no further expansion is possible.
-     *
-     * @param cluster      The current cluster being expanded.
-     * @param P            The set of candidate clusters to explore for potential expansions.
-     * @param rank         The rank of the current cluster, used as a filtering condition for union operations.
-     * @param visited      The set of clusters that have already been visited during the expansion process to avoid
-     *                     duplicates.
-     * @param leafClusters The collection where identified leaf clusters (that cannot be further expanded) are stored.
-     * @param used         The set of elements that are already part of the current expansion process.
-     */
-    private void expandClusterDFS(Set<Integer> cluster,
-                                  Set<Set<Integer>> P,
-                                  int rank,
-                                  Set<Set<Integer>> visited,
-                                  Set<Set<Integer>> leafClusters, Set<Integer> used) {
-        boolean extended = false;
-
-        System.out.println("P size = " + P.size());
-
-        for (Set<Integer> candidate : P) {
-            if (Collections.disjoint(cluster, candidate)) continue;
-
-            Set<Integer> union = new HashSet<>(cluster);
-            union.addAll(candidate);
-
-            if (union.equals(cluster)) continue;
-            if (visited.contains(union)) continue;
-
-            int unionRank = lookupRank(union);
-            if (unionRank != rank) continue;
-
-            visited.add(union);
-            Set<Integer> _used = new HashSet<>(used);
-            _used.addAll(union);
-
-            System.out.println("_used = " + _used + " rank = " + lookupRank(union));
-
-            expandClusterDFS(union, P, rank, visited, leafClusters, _used);
-            extended = true;
-        }
-
-        if (!extended) {
-            leafClusters.add(cluster);
-        }
-    }
-
-    /**
-     * Selects a subset of disjoint clusters from the given collection of clusters. A cluster is selected if it does not
-     * share any elements with clusters that have already been selected. Clusters are prioritized by size, with larger
-     * clusters being considered first.
-     *
-     * @param clusters the collection of clusters to process, where each cluster is represented as a set of integers
-     * @return a set of disjoint clusters selected from the input collection
-     */
-    private Set<Set<Integer>> selectDisjointClusters(Collection<Set<Integer>> clusters) {
-        List<Set<Integer>> sorted = new ArrayList<>(new HashSet<>(clusters));
-        sorted.sort((a, b) -> Integer.compare(b.size(), a.size()));
-
-        List<Set<Integer>> result = new ArrayList<>();
-        Set<Integer> used = new HashSet<>();
-
-        for (Set<Integer> cluster : sorted) {
-            if (Collections.disjoint(used, cluster)) {
-                result.add(cluster);
-                used.addAll(cluster);
-            }
-        }
-
-        return new HashSet<>(result);
-    }
-
-    /**
-     * Converts a collection of integer-based clusters into a single formatted string representation. Each cluster is
-     * transformed into a string representation of names and concatenated into a single output string.
-     *
-     * @param clusters a collection of sets, where each set represents a cluster containing integers
-     * @return a formatted string representation of the clusters, with each cluster represented as a string, combined
-     * together and delimited by commas, enclosed in square brackets
-     */
-    private String toNamesClusters(Collection<Set<Integer>> clusters) {
-        return clusters.stream()
-                .map(this::toNamesCluster)
-                .collect(Collectors.joining(", ", "[", "]"));
     }
 
     /**
