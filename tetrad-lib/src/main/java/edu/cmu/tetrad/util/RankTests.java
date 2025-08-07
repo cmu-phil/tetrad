@@ -319,11 +319,12 @@ public class RankTests {
         int p = xIndices.length;
         int q = yIndices.length;
         int minpq = Math.min(p, q);
+        System.out.println("minpq = " + minpq);
 
         for (int r = 0; r < minpq; r++) {
             double pVal = getRccaPValueRankLE(S, xIndices, yIndices, n, r, regParam);
 
-            if (pVal > alpha || Double.isNaN(pVal)) {
+            if (pVal > alpha) {
                 return r; // First non-rejected rank
             }
         }

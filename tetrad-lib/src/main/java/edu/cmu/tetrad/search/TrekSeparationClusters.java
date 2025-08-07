@@ -312,6 +312,7 @@ public class TrekSeparationClusters {
      */
     private @NotNull Set<Set<Integer>> getRunSequentialClusterSearch(List<Integer> vars, int size, int rank) {
         Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
+        System.out.println("P = " + toNamesClusters(P));
 
         removeNested(P);
 
@@ -327,13 +328,19 @@ public class TrekSeparationClusters {
             }
 
             Set<Integer> cluster = new HashSet<>(seed);
+
+            Set<Integer> _complement = new HashSet<>(variables);
+            _complement.removeAll(seed);
+
+            System.out.println("Picking seed: " + toNamesCluster(seed) + " against "
+                               + toNamesCluster(_complement) + " rank = " + lookupRank(seed));
+
             boolean extended;
 
             do {
                 extended = false;
                 Iterator<Set<Integer>> it = P.iterator();
 
-                W:
                 while (it.hasNext()) {
                     Set<Integer> candidate = it.next();
                     if (!Collections.disjoint(used, candidate)) continue;
@@ -342,10 +349,22 @@ public class TrekSeparationClusters {
                     Set<Integer> union = new HashSet<>(cluster);
                     union.addAll(candidate);
 
-                    int rankOfUnion = lookupRank(union);
-                    System.out.println("Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
+                    if (union.size() != cluster.size() + 1) continue;
 
-                    if (rankOfUnion <= rank) {
+                    Set<Integer> complement = new HashSet<>(variables);
+                    complement.removeAll(union);
+
+                    int minpq = Math.min(union.size(), complement.size());
+
+                    if (minpq != union.size()) {
+                        continue;
+                    }
+
+                    int rankOfUnion = lookupRank(union);
+                    System.out.println("Candidate = " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " against "
+                                       + toNamesCluster(complement) + " rank = " + rankOfUnion);
+
+                    if (rankOfUnion == rank) {
 
                         // Accept this union, grow cluster
                         cluster = union;
@@ -357,10 +376,12 @@ public class TrekSeparationClusters {
             } while (extended);
 
             int finalRank = lookupRank(cluster);
-            mergedClusters.removeIf(cluster::containsAll);  // Avoid nesting
-            System.out.println("Adding cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
-            mergedClusters.add(cluster);
-            used.addAll(cluster);
+            if (finalRank == rank) {
+                mergedClusters.removeIf(cluster::containsAll);  // Avoid nesting
+                System.out.println("Adding cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
+                mergedClusters.add(cluster);
+                used.addAll(cluster);
+            }
         }
 
         removeNested(mergedClusters);
@@ -405,7 +426,7 @@ public class TrekSeparationClusters {
 
             List<SimpleMatrix> eigenvectors = LatentGraphBuilder.extractFirstEigenvectors(S, _clusters);
             SimpleMatrix latentsCov = LatentGraphBuilder.latentLatentCorrelationMatrix(S, _clusters, eigenvectors);
-            CovarianceMatrix cov = new CovarianceMatrix(latents, TrekSeparationClusters2.toDoubleArray(latentsCov), sampleSize);
+            CovarianceMatrix cov = new CovarianceMatrix(latents, toDoubleArray(latentsCov), sampleSize);
             SemBicScore score = new SemBicScore(cov, penalty);
             Graph structureGraph = new PermutationSearch(new Boss(score)).search();
 
@@ -540,7 +561,7 @@ public class TrekSeparationClusters {
             yIndices[i] = ySet.get(i);
         }
 
-        return RankTests.estimateCcaRank(S, xIndices, yIndices, sampleSize, alpha);
+        return RankTests.estimateRccaRank(S, xIndices, yIndices, sampleSize, alpha, 0.01);
     }
 
     /**
@@ -820,5 +841,20 @@ public class TrekSeparationClusters {
             return extractCrossBlock(S, indices, indices);
         }
     }
+
+    public static double[][] toDoubleArray(SimpleMatrix matrix) {
+        int numRows = matrix.getNumRows();
+        int numCols = matrix.getNumCols();
+        double[][] result = new double[numRows][numCols];
+
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                result[i][j] = matrix.get(i, j);
+            }
+        }
+
+        return result;
+    }
+
 }
 
