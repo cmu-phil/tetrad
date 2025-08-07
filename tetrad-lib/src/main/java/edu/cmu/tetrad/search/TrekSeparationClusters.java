@@ -120,13 +120,13 @@ public class TrekSeparationClusters {
      * @return Graph containing identified latent structure
      */
     public Graph search(int[][] clusterSpecs, Mode mode) {
-        Set<Set<Integer>> _clusters = estimateClusters(clusterSpecs, mode);
+        Map<Set<Integer>, Integer> clusterToRank = estimateClusters(clusterSpecs, mode);
 
-        List<Set<Integer>> clusters = new ArrayList<>(_clusters);
+        List<Set<Integer>> clusters = new ArrayList<>(clusterToRank.keySet());
 
         log("clusters = " + toNamesClusters(new HashSet<>(clusters)));
 
-        List<Node> latents = defineLatents(clusters);
+        List<Node> latents = defineLatents(clusters, clusterToRank);
         Graph graph = convertSearchGraphClusters(clusters, latents, includeAllNodes);
 
         if (includeStructureModel) {
@@ -135,8 +135,6 @@ public class TrekSeparationClusters {
 
         return graph;
     }
-
-    public enum Mode{METALOOP, SIZE_RANK}
 
     /**
      * Estimates clusters based on the provided specifications, processes overlapping clusters, and returns a set of
@@ -148,7 +146,7 @@ public class TrekSeparationClusters {
      * given specifications.
      * @throws IllegalArgumentException if the variables used for clustering are not unique.
      */
-    private Set<Set<Integer>> estimateClusters(int[][] clusterSpecs,  Mode mode) {
+    private Map<Set<Integer>, Integer> estimateClusters(int[][] clusterSpecs, Mode mode) {
         List<Integer> variables = allVariables();
         if (new HashSet<>(variables).size() != variables.size()) {
             throw new IllegalArgumentException("Variables must be unique.");
@@ -156,22 +154,23 @@ public class TrekSeparationClusters {
 
         List<Set<Set<Integer>>> clusterList = new ArrayList<>();
         Set<Set<Integer>> allClusters = new HashSet<>();
+        Map<Set<Integer>, Integer> clusterToRanks = new HashMap<>();
 
         if (mode == Mode.METALOOP) {
-            allClusters = clusterSearchMetaLoop();
+            clusterToRanks = clusterSearchMetaLoop();
         } else if (mode == Mode.SIZE_RANK) {
 
             for (int i = 0; i < clusterSpecs.length; i++) {
                 log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
                 int size = clusterSpecs[i][0];
                 int rank = clusterSpecs[i][1];
-                Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
-                Set<Set<Integer>> baseClusters = new HashSet<>(_clusters);
+                Map<Set<Integer>, Integer> _clusters = getRunSequentialClusterSearch(variables, size, rank);
+                Set<Set<Integer>> baseClusters = new HashSet<>(_clusters.keySet());
 
-                log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters));
-                clusterList.add(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
+                log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters.keySet()));
+                clusterList.add(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
                 log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
-                    toNamesClusters(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
+                    toNamesClusters(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
 
                 for (int j = 0; j < i; j++) {
                     if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
@@ -186,6 +185,10 @@ public class TrekSeparationClusters {
 
                 for (Set<Set<Integer>> cluster2 : clusterList) {
                     allClusters.addAll(cluster2);
+
+                    for (Set<Integer> cluster3 : cluster2) {
+                        clusterToRanks.put(cluster3, rank);
+                    }
                 }
             }
         } else {
@@ -194,7 +197,7 @@ public class TrekSeparationClusters {
 
         log("final clusters = " + toNamesClusters(allClusters));
 
-        return allClusters;
+        return clusterToRanks;
     }
 
     /**
@@ -329,15 +332,14 @@ public class TrekSeparationClusters {
      * @param rank The target rank used to determine cluster validity and merging criteria.
      * @return A set of sets where each inner set represents a cluster of integers identified during the search.
      */
-    private @NotNull Set<Set<Integer>> getRunSequentialClusterSearch(List<Integer> vars, int size, int rank) {
+    private @NotNull Map<Set<Integer>, Integer> getRunSequentialClusterSearch(List<Integer> vars, int size, int rank) {
         Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
         System.out.println("P1 = " + toNamesClusters(P));
         Set<Set<Integer>> P1 = new HashSet<>(P);
 
-        removeNested(P1);
-
-        Set<Set<Integer>> mergedClusters = new HashSet<>();
+        Set<Set<Integer>> newClusters = new HashSet<>();
         Set<Integer> used = new HashSet<>();
+        Map<Set<Integer>, Integer> clusterToRank = new HashMap<>();
 
         while (!P1.isEmpty()) {
             Set<Integer> seed = P1.iterator().next();
@@ -397,16 +399,16 @@ public class TrekSeparationClusters {
 
             int finalRank = lookupRank(cluster);
             if (finalRank == rank) {
-                mergedClusters.removeIf(cluster::containsAll);  // Avoid nesting
+                newClusters.removeIf(cluster::containsAll);  // Avoid nesting
                 System.out.println("Adding cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
-                mergedClusters.add(cluster);
+                newClusters.add(cluster);
                 used.addAll(cluster);
             }
         }
 
         Set<Set<Integer>> P2 = new HashSet<>(P);
 
-        for (Set<Integer> C1 : new HashSet<>(mergedClusters)) {
+        for (Set<Integer> C1 : new HashSet<>(newClusters)) {
             int _size = C1.size();
 
             // Look for a cluster in P2 that extends C1 to a cluster C2 of size _size + 1 where the
@@ -416,21 +418,24 @@ public class TrekSeparationClusters {
                 C2.addAll(_C);
 
                 if (C2.size() == _size + 1 && lookupRank(C2) == 1) {
-                    mergedClusters.remove(C1);
-                    mergedClusters.add(C2);
+                    newClusters.remove(C1);
+                    newClusters.add(C2);
                 }
             }
         }
 
-        removeNested(mergedClusters);
-        System.out.println("Merged clusters = " + toNamesClusters(mergedClusters));
-        return mergedClusters;
+        for (Set<Integer> C1 : newClusters) {
+            clusterToRank.put(C1, rank);
+        }
+
+        removeNested(newClusters);
+        System.out.println("Merged clusters = " + toNamesClusters(newClusters));
+        return clusterToRank;
     }
 
-    private @NotNull Set<Set<Integer>> clusterSearchMetaLoop() {
+    private @NotNull Map<Set<Integer>, Integer> clusterSearchMetaLoop() {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
-
-        Set<Set<Integer>> clusters = new HashSet<>();
+        Map<Set<Integer>, Integer> clusterToRank = new HashMap<>();
 
         for (int size = 2; size < 5; size++) {
             int rank = size - 1;
@@ -439,7 +444,7 @@ public class TrekSeparationClusters {
 
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
             System.out.println("Base clusters for size " + size + " rank " + rank + ": " +
-                              (P.isEmpty() ? "NONE" :  toNamesClusters(P)));
+                               (P.isEmpty() ? "NONE" : toNamesClusters(P)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
             Set<Set<Integer>> newClusters = new HashSet<>();
@@ -550,7 +555,9 @@ public class TrekSeparationClusters {
             System.out.println("New clusters after the augmentation step = " +
                                (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
 
-            clusters.addAll(newClusters);
+            for (Set<Integer> cluster : newClusters) {
+                clusterToRank.put(cluster, rank);
+            }
 
             System.out.println("Now we will add all of the new clusters to the set of all discovered clusters.");
             System.out.println("All clusters at this point: " + toNamesClusters(newClusters));
@@ -563,9 +570,8 @@ public class TrekSeparationClusters {
             }
         }
 
-        removeNested(clusters);
-        System.out.println("Final clusters = " + toNamesClusters(clusters));
-        return clusters;
+        System.out.println("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
+        return clusterToRank;
     }
 
     /**
@@ -772,12 +778,11 @@ public class TrekSeparationClusters {
      *                 the number of latent nodes to be created.
      * @return A list of Node objects, each representing a latent variable corresponding to a cluster.
      */
-    private List<Node> defineLatents(List<Set<Integer>> clusters) {
+    private List<Node> defineLatents(List<Set<Integer>> clusters, Map<Set<Integer>, Integer> ranks) {
         List<Node> latents = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
-            int rank = lookupRank(clusters.get(i));
-
+            int rank = ranks.get(clusters.get(i));
             Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1) + "(" + rank + ")");
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
@@ -925,6 +930,8 @@ public class TrekSeparationClusters {
                 .map(i -> nodes.get(i).getName())
                 .collect(Collectors.joining(" ", "{", "}"));
     }
+
+    public enum Mode {METALOOP, SIZE_RANK}
 
     /**
      * The LatentGraphBuilder class provides methods for processing and analyzing latent structures in matrices using
