@@ -61,57 +61,11 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
             System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
         }
 
-        String clusterSizes = parameters.getString(Params.CLUSTER_SIZES);
-        String[] tokens = clusterSizes.split(",");
-        List<int[]> _specs = new ArrayList<>();
+        int size = parameters.getInt(Params.TSC_CLUSTER_SIZE);
+        int rank = parameters.getInt(Params.TSC_CLUSTER_RANK);
+        int mode =  parameters.getInt(Params.TSC_MODE);
 
-        for (String token : tokens) {
-            if (token.trim().isEmpty()) {
-                continue;
-            }
-
-            String[] token2 = token.trim().split(":");
-            int[] spec = new int[2];
-
-            if (token2.length == 1) {
-                if (token2[0].trim().isEmpty()) {
-                    continue;
-                }
-                try {
-                    int i = Integer.parseInt(token2[0].trim());
-                    spec = new int[]{i, i - 1};
-                } catch (NumberFormatException e) {
-                    throw new RuntimeException("Could not parse '" + token2[0] + "'", e);
-                }
-            } else if (token2.length == 2) {
-                if (token2[0].trim().isEmpty() || token2[1].trim().isEmpty()) {
-                    continue;
-                }
-                try {
-                    spec[0] = Integer.parseInt(token2[0].trim());
-                } catch (NumberFormatException e) {
-                    throw new RuntimeException("Could not parse '" + token2[0] + "'", e);
-                }
-                try {
-                    spec[1] = Integer.parseInt(token2[1].trim());
-                } catch (NumberFormatException e) {
-                    throw new RuntimeException("Could not parse '" + token2[1] + "'", e);
-                }
-            } else {
-                throw new RuntimeException("Could not parse '" + token + "'");
-            }
-
-            _specs.add(spec);
-        }
-
-//        if (_specs.isEmpty()) {
-//            _specs.add(new int[]{2, 1});
-//        }
-
-        int[][] specs = new int[_specs.size()][];
-        for (int i = 0; i < _specs.size(); i++) {
-            specs[i] = _specs.get(i);
-        }
+        int[][] specs = new int[][]{{size, rank}};
 
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);
@@ -133,7 +87,17 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         search.setPenalty(penalty);
         search.setVerbose(verbose);
 
-        return search.search(specs);
+        edu.cmu.tetrad.search.TrekSeparationClusters.Mode _mode;
+
+        if (mode == 1) {
+            _mode = edu.cmu.tetrad.search.TrekSeparationClusters.Mode.METALOOP;
+        } else if (mode == 2) {
+            _mode = edu.cmu.tetrad.search.TrekSeparationClusters.Mode.SIZE_RANK;
+        } else {
+            throw new IllegalArgumentException("Invalid mode, should be 1 or 2: " + mode);
+        }
+
+        return search.search(specs, _mode);
     }
 
     /**
@@ -175,7 +139,10 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.CLUSTER_SIZES);
+//        parameters.add(Params.CLUSTER_SIZES);
+        parameters.add(Params.TSC_MODE);
+        parameters.add(Params.TSC_CLUSTER_SIZE);
+        parameters.add(Params.TSC_CLUSTER_RANK);
         parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);

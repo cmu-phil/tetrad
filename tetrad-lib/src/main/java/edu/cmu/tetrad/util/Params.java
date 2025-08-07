@@ -1047,6 +1047,18 @@ public final class Params {
      * Constant <code>CLUSTER_SIZES="clusterSizes"</code>
      */
     public static final String CLUSTER_SIZES = "clusterSizes";
+    /**
+     * Constant <code>TSC_MODE="tscMode"</code>
+     */
+    public static final String TSC_MODE = "tscMode";
+    /**
+     * Constant <code>TSC_CLUSTER_SIZE="tscClusterSize"</code>
+     */
+    public static final String TSC_CLUSTER_SIZE = "tscClusterSize";
+    /**
+     * Constant <code>TSC_CLUSTER_RANK="tscClusterRank"</code>
+     */
+    public static final String TSC_CLUSTER_RANK = "tscClusterRank";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
