@@ -518,7 +518,8 @@ public class TrekSeparationClusters {
                 }
             }
 
-            log("New clusters for rank " + rank + " size = " + size + ": " + toNamesClusters(newClusters));
+            log("New clusters for rank " + rank + " size = " + size + ": "
+                + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
 
             Set<Set<Integer>> P2 = new HashSet<>(P);
 
@@ -563,7 +564,8 @@ public class TrekSeparationClusters {
             }
 
             log("Now we will add all of the new clusters to the set of all discovered clusters.");
-            log("All clusters at this point: " + toNamesClusters(newClusters));
+            log("All clusters at this point: "
+                + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
 
             log("Now we will remove clustered variables from further consideration.");
 
