@@ -104,9 +104,9 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
             _specs.add(spec);
         }
 
-        if (_specs.isEmpty()) {
-            _specs.add(new int[]{2, 1});
-        }
+//        if (_specs.isEmpty()) {
+//            _specs.add(new int[]{2, 1});
+//        }
 
         int[][] specs = new int[_specs.size()][];
         for (int i = 0; i < _specs.size(); i++) {

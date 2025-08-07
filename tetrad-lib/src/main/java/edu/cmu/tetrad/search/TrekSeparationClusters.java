@@ -99,6 +99,19 @@ public class TrekSeparationClusters {
         this.S = this.S.plus(SimpleMatrix.identity(S.getNumRows()).scale(0.001));
     }
 
+    public static double[][] toDoubleArray(SimpleMatrix matrix) {
+        int numRows = matrix.getNumRows();
+        int numCols = matrix.getNumCols();
+        double[][] result = new double[numRows][numCols];
+
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                result[i][j] = matrix.get(i, j);
+            }
+        }
+
+        return result;
+    }
 
     /**
      * Searches for latent clusters using specified size and rank parameters.
@@ -142,33 +155,36 @@ public class TrekSeparationClusters {
         List<Set<Set<Integer>>> clusterList = new ArrayList<>();
         Set<Set<Integer>> allClusters = new HashSet<>();
 
-        for (int i = 0; i < clusterSpecs.length; i++) {
-            log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
-            int size = clusterSpecs[i][0];
-            int rank = clusterSpecs[i][1];
-//            Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
-            Set<Set<Integer>> _clusters = clusterSearchMetaLoop();
+        if (clusterSpecs.length == 0) {
+            allClusters = clusterSearchMetaLoop();
+        } else {
 
-            Set<Set<Integer>> baseClusters = new HashSet<>(_clusters);
+            for (int i = 0; i < clusterSpecs.length; i++) {
+                log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
+                int size = clusterSpecs[i][0];
+                int rank = clusterSpecs[i][1];
+                Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
+                Set<Set<Integer>> baseClusters = new HashSet<>(_clusters);
 
-            log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters));
-            clusterList.add(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
-            log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
-                toNamesClusters(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
+                log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters));
+                clusterList.add(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
+                log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
+                    toNamesClusters(mergeOverlappingClusters(_clusters, baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
 
-            for (int j = 0; j < i; j++) {
-                if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
-                    clusterList.get(j).addAll(clusterList.get(i));
-                    clusterList.set(j, mergeOverlappingClusters(clusterList.get(j), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
-                    log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNamesClusters(clusterList.get(j)));
-                    clusterList.get(i).clear();
+                for (int j = 0; j < i; j++) {
+                    if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
+                        clusterList.get(j).addAll(clusterList.get(i));
+                        clusterList.set(j, mergeOverlappingClusters(clusterList.get(j), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
+                        log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNamesClusters(clusterList.get(j)));
+                        clusterList.get(i).clear();
+                    }
                 }
-            }
 
-            allClusters.clear();
+                allClusters.clear();
 
-            for (Set<Set<Integer>> cluster2 : clusterList) {
-                allClusters.addAll(cluster2);
+                for (Set<Set<Integer>> cluster2 : clusterList) {
+                    allClusters.addAll(cluster2);
+                }
             }
         }
 
@@ -237,7 +253,6 @@ public class TrekSeparationClusters {
         return clusters;
     }
 
-
     /**
      * Retrieves a list of all variables.
      *
@@ -248,7 +263,6 @@ public class TrekSeparationClusters {
         for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
         return _variables;
     }
-
 
     /**
      * Sets the alpha value, which may be used as a significance level or parameter threshold in the underlying analysis
@@ -314,7 +328,7 @@ public class TrekSeparationClusters {
     private @NotNull Set<Set<Integer>> getRunSequentialClusterSearch(List<Integer> vars, int size, int rank) {
         Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
         System.out.println("P1 = " + toNamesClusters(P));
-        Set<Set<Integer>> P1 = new  HashSet<>(P);
+        Set<Set<Integer>> P1 = new HashSet<>(P);
 
         removeNested(P1);
 
@@ -386,7 +400,7 @@ public class TrekSeparationClusters {
             }
         }
 
-        Set<Set<Integer>> P2 = new   HashSet<>(P);
+        Set<Set<Integer>> P2 = new HashSet<>(P);
 
         for (Set<Integer> C1 : new HashSet<>(mergedClusters)) {
             int _size = C1.size();
@@ -421,7 +435,7 @@ public class TrekSeparationClusters {
 
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
             System.out.println("P1 = " + toNamesClusters(P));
-            Set<Set<Integer>> P1 = new  HashSet<>(P);
+            Set<Set<Integer>> P1 = new HashSet<>(P);
 
             Set<Set<Integer>> newClusters = new HashSet<>();
             Set<Integer> used = new HashSet<>();
@@ -493,7 +507,7 @@ public class TrekSeparationClusters {
 
             System.out.println("New clusters 1 = " + toNamesClusters(newClusters));
 
-            Set<Set<Integer>> P2 = new   HashSet<>(P);
+            Set<Set<Integer>> P2 = new HashSet<>(P);
 
             for (int reducedRank = rank - 1; reducedRank >= 1; reducedRank--) {
                 for (Set<Integer> C1 : new HashSet<>(newClusters)) {
@@ -982,20 +996,6 @@ public class TrekSeparationClusters {
         private static SimpleMatrix extractSubmatrix(SimpleMatrix S, List<Integer> indices) {
             return extractCrossBlock(S, indices, indices);
         }
-    }
-
-    public static double[][] toDoubleArray(SimpleMatrix matrix) {
-        int numRows = matrix.getNumRows();
-        int numCols = matrix.getNumCols();
-        double[][] result = new double[numRows][numCols];
-
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                result[i][j] = matrix.get(i, j);
-            }
-        }
-
-        return result;
     }
 
 }
