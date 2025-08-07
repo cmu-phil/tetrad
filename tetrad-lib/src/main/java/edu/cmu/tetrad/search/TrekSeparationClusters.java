@@ -146,7 +146,8 @@ public class TrekSeparationClusters {
             log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
             int size = clusterSpecs[i][0];
             int rank = clusterSpecs[i][1];
-            Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
+//            Set<Set<Integer>> _clusters = getRunSequentialClusterSearch(variables, size, rank);
+            Set<Set<Integer>> _clusters = clusterSearchMetaLoop();
 
             Set<Set<Integer>> baseClusters = new HashSet<>(_clusters);
 
@@ -312,16 +313,17 @@ public class TrekSeparationClusters {
      */
     private @NotNull Set<Set<Integer>> getRunSequentialClusterSearch(List<Integer> vars, int size, int rank) {
         Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
-        System.out.println("P = " + toNamesClusters(P));
+        System.out.println("P1 = " + toNamesClusters(P));
+        Set<Set<Integer>> P1 = new  HashSet<>(P);
 
-        removeNested(P);
+        removeNested(P1);
 
         Set<Set<Integer>> mergedClusters = new HashSet<>();
         Set<Integer> used = new HashSet<>();
 
-        while (!P.isEmpty()) {
-            Set<Integer> seed = P.iterator().next();
-            P.remove(seed);
+        while (!P1.isEmpty()) {
+            Set<Integer> seed = P1.iterator().next();
+            P1.remove(seed);
 
             if (!Collections.disjoint(used, seed)) {
                 continue;
@@ -339,7 +341,7 @@ public class TrekSeparationClusters {
 
             do {
                 extended = false;
-                Iterator<Set<Integer>> it = P.iterator();
+                Iterator<Set<Integer>> it = P1.iterator();
 
                 while (it.hasNext()) {
                     Set<Integer> candidate = it.next();
@@ -384,9 +386,149 @@ public class TrekSeparationClusters {
             }
         }
 
+        Set<Set<Integer>> P2 = new   HashSet<>(P);
+
+        for (Set<Integer> C1 : new HashSet<>(mergedClusters)) {
+            int _size = C1.size();
+
+            // Look for a cluster in P2 that extends C1 to a cluster C2 of size _size + 1 where the
+            // rank of C2 is 1.
+            for (Set<Integer> _C : P2) {
+                Set<Integer> C2 = new HashSet<>(C1);
+                C2.addAll(_C);
+
+                if (C2.size() == _size + 1 && lookupRank(C2) == 1) {
+                    mergedClusters.remove(C1);
+                    mergedClusters.add(C2);
+                }
+            }
+        }
+
         removeNested(mergedClusters);
         System.out.println("Merged clusters = " + toNamesClusters(mergedClusters));
         return mergedClusters;
+    }
+
+    private @NotNull Set<Set<Integer>> clusterSearchMetaLoop() {
+        List<Integer> remainingVars = new ArrayList<>(allVariables());
+
+        Set<Set<Integer>> clusters = new HashSet<>();
+
+        for (int size = 2; size < 5; size++) {
+            int rank = size - 1;
+
+            System.out.println("Size " + size + " rank = " + rank);
+
+            Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
+            System.out.println("P1 = " + toNamesClusters(P));
+            Set<Set<Integer>> P1 = new  HashSet<>(P);
+
+            Set<Set<Integer>> newClusters = new HashSet<>();
+            Set<Integer> used = new HashSet<>();
+
+            while (!P1.isEmpty()) {
+                Set<Integer> seed = P1.iterator().next();
+                P1.remove(seed);
+
+                if (!Collections.disjoint(used, seed)) {
+                    continue;
+                }
+
+                Set<Integer> cluster = new HashSet<>(seed);
+
+                Set<Integer> _complement = new HashSet<>(remainingVars);
+                _complement.removeAll(seed);
+
+                System.out.println("Picking seed: " + toNamesCluster(seed) + " against "
+                                   + toNamesCluster(_complement) + " rank = " + lookupRank(seed));
+
+                boolean extended;
+
+                do {
+                    extended = false;
+                    Iterator<Set<Integer>> it = P1.iterator();
+
+                    while (it.hasNext()) {
+                        Set<Integer> candidate = it.next();
+                        if (!Collections.disjoint(used, candidate)) continue;
+                        if (Collections.disjoint(candidate, cluster)) continue;
+
+                        Set<Integer> union = new HashSet<>(cluster);
+                        union.addAll(candidate);
+
+                        if (union.size() != cluster.size() + 1) continue;
+
+                        Set<Integer> complement = new HashSet<>(variables);
+                        complement.removeAll(union);
+
+                        int minpq = Math.min(union.size(), complement.size());
+
+                        if (minpq != union.size()) {
+                            continue;
+                        }
+
+                        int rankOfUnion = lookupRank(union);
+                        System.out.println("Candidate = " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " against "
+                                           + toNamesCluster(complement) + " rank = " + rankOfUnion);
+
+                        if (rankOfUnion == rank) {
+
+                            // Accept this union, grow cluster
+                            cluster = union;
+                            it.remove();
+                            extended = true;
+                            break;
+                        }
+                    }
+                } while (extended);
+
+                int finalRank = lookupRank(cluster);
+                if (finalRank == rank) {
+                    newClusters.removeIf(cluster::containsAll);  // Avoid nesting
+                    System.out.println("Adding cluster: " + toNamesCluster(cluster) + " rank = " + finalRank);
+                    newClusters.add(cluster);
+                    used.addAll(cluster);
+                }
+            }
+
+            System.out.println("New clusters 1 = " + toNamesClusters(newClusters));
+
+            Set<Set<Integer>> P2 = new   HashSet<>(P);
+
+            for (int reducedRank = rank - 1; reducedRank >= 1; reducedRank--) {
+                for (Set<Integer> C1 : new HashSet<>(newClusters)) {
+                    int _size = C1.size();
+
+                    // Look for a cluster in P2 that extends C1 to a cluster C2 of size _size + 1 where the
+                    // rank of C2 is 1.
+                    for (Set<Integer> _C : P2) {
+                        Set<Integer> C2 = new HashSet<>(C1);
+                        C2.addAll(_C);
+
+                        if (C2.size() == _size + 1 && lookupRank(C2) == reducedRank) {
+                            newClusters.remove(C1);
+                            newClusters.add(C2);
+                            used.addAll(C2);
+                        }
+                    }
+                }
+            }
+
+            System.out.println("New clusters 2 = " + toNamesClusters(newClusters));
+
+            clusters.addAll(newClusters);
+
+            System.out.println("Updated clusters = " + toNamesClusters(newClusters));
+
+            for (Set<Integer> _C : newClusters) {
+                used.addAll(_C);
+                remainingVars.removeAll(_C);
+            }
+        }
+
+        removeNested(clusters);
+        System.out.println("Clusters = " + toNamesClusters(clusters));
+        return clusters;
     }
 
     /**
