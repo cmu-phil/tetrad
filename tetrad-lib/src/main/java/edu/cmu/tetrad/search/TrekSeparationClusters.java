@@ -476,7 +476,7 @@ public class TrekSeparationClusters {
 
                 do {
                     extended = false;
-                    Iterator<Set<Integer>> it = P1.iterator();
+                    Iterator<Set<Integer>> it = new HashSet<>(P1).iterator();
 
                     while (it.hasNext()) {
                         Set<Integer> candidate = it.next();
@@ -486,7 +486,7 @@ public class TrekSeparationClusters {
                         Set<Integer> union = new HashSet<>(cluster);
                         union.addAll(candidate);
 
-                        if (union.size() != cluster.size() + 1) continue;
+                        if (union.size() <= cluster.size()) continue;
 
                         Set<Integer> complement = new HashSet<>(variables);
                         complement.removeAll(union);
@@ -527,33 +527,32 @@ public class TrekSeparationClusters {
             Set<Set<Integer>> P2 = new HashSet<>(P);
 
             log("Now we will try to augment each cluster by one new variable by looking at cluster overlaps again.");
-            log("We will look for rank 'rank'.");
+            log("We will repeat this for ranks rank - 1 down to rank 1.");
 
             boolean didAugment = false;
 
-            for (Set<Integer> C1 : new HashSet<>(newClusters)) {
-                int _size = C1.size();
+            for (int _reducedRank = rank - 1; _reducedRank >= 1; _reducedRank--) {
 
-                RANK:
-                for (int _rank = 1; _rank <= rank; _rank++) {
+                for (Set<Integer> C1 : new HashSet<>(newClusters)) {
+                    int _size = C1.size();
+
                     // Look for a cluster in P2 that extends C1 to a cluster C2 of size _size + 1 where the
                     // rank of C2 is 1.
                     for (Set<Integer> _C : P2) {
-                        if (reducedRank.containsKey(_C)) {
-                            break;
-                        }
-
                         Set<Integer> C2 = new HashSet<>(C1);
                         C2.addAll(_C);
 
-                        if (!used.containsAll(C2) && C2.size() > _size && lookupRank(C2) < rank) {
+//                        if (reducedRank.containsKey(C1)) continue;
+//                        if (reducedRank.containsKey(C2)) continue;
+
+                        if (C2.size() == _size + 1 && lookupRank(C2) == _reducedRank) {
                             if (newClusters.contains(C2)) continue;
                             newClusters.remove(C1);
                             newClusters.add(C2);
+//                            reducedRank.remove(C1);
+                            reducedRank.put(C2, _reducedRank);
                             used.addAll(C2);
-                            reducedRank.put(C2, lookupRank(C2));
-                            log("Augmenting cluster " + toNamesCluster(C1) + " to cluster " + toNamesCluster(C2)
-                                + " (rank " + lookupRank(C2) + ").");
+                            log("Augmenting cluster " + toNamesCluster(C1) + " to cluster " + toNamesCluster(C2) + " (rank " + _reducedRank + ").");
                             didAugment = true;
                         }
                     }
@@ -806,7 +805,7 @@ public class TrekSeparationClusters {
         for (int i = 0; i < clusters.size(); i++) {
             int rank = ranks.get(clusters.get(i));
             Integer reduced = reducedRank.get(clusters.get(i));
-            String rankSpec = rank + (reduced == null ? "" : ";" +  reduced);
+            String rankSpec = rank + (reduced == null ? "" : ";" + reduced);
             Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1) + "(" + rankSpec + ")");
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
