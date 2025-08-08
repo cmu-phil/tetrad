@@ -53,7 +53,6 @@ public class TrekSeparationClusters {
      * Sample size for statistical tests
      */
     private final int sampleSize;
-    private final CovarianceMatrix covMatrix;
     /**
      * The covariance/correlation matrix
      */
@@ -96,7 +95,7 @@ public class TrekSeparationClusters {
             this.variables.add(i);
         }
 
-        this.covMatrix = cov;
+//        this.covMatrix = cov;
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
         this.S = this.S.plus(SimpleMatrix.identity(S.getNumRows()).scale(0.001));
     }
@@ -141,31 +140,6 @@ public class TrekSeparationClusters {
 
         return graph;
     }
-
-//    public Graph search(int[][] clusterSpecs, Mode mode) {
-//        try {
-//            SemBicScore score = new SemBicScore(covMatrix, penalty);
-//            PermutationSearch permutationSearch = new PermutationSearch(new Boss(score));
-//            Graph dag = permutationSearch.search(false);
-//            if (false) {//DagResidualExplains.isExplainedByDag(dag, covMatrix, 1e-10)) {
-//                return dag;
-//            } else {
-//                Map<Set<Integer>, Integer> clusterToRank  = estimateClusters(clusterSpecs, mode);
-//                List<Set<Integer>> clusters = new ArrayList<>(clusterToRank.keySet());
-//
-//                List<Node> latents = defineLatents(clusters, clusterToRank);
-//                Graph graph = convertSearchGraphClusters(clusters, latents, includeAllNodes);
-//
-//                if (includeStructureModel) {
-//                    addStructureEdges(clusters, latents, graph);
-//                }
-//
-//                return graph;
-//            }
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
 
     /**
      * Estimates clusters based on the provided specifications, processes overlapping clusters, and returns a set of
@@ -355,7 +329,7 @@ public class TrekSeparationClusters {
      * @param vars A list of integers representing the variables to analyze.
      * @param size The size of the initial clusters to consider during the search.
      * @param rank The target rank used to determine cluster validity and merging criteria.
-     * @return A set of sets where each inner set represents a cluster of integers identified during the search.
+     * @return A map from sets to their ranks.
      */
     private @NotNull Map<Set<Integer>, Integer> getRunSequentialClusterSearch(List<Integer> vars, int size, int rank) {
         Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
@@ -462,8 +436,8 @@ public class TrekSeparationClusters {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         Map<Set<Integer>, Integer> clusterToRank = new HashMap<>();
 
-        for (int size = 2; size < 5; size++) {
-            int rank = size - 1;
+        for (int rank = 1; rank < 4; rank++) {
+            int size = rank + 1;
 
             log("EXAMINING SIZE " + size + " RANK = " + rank);
 
@@ -550,7 +524,7 @@ public class TrekSeparationClusters {
 
             boolean didAugment = false;
 
-            for (int reducedRank = rank - 1; reducedRank >= 1; reducedRank--) {
+            for (int reducedRank = rank; reducedRank >= 1; reducedRank--) {
 
                 for (Set<Integer> C1 : new HashSet<>(newClusters)) {
                     int _size = C1.size();

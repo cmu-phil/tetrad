@@ -147,7 +147,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
-        parameters.add(Params.MIMBUILD_TYPE);
+//        parameters.add(Params.MIMBUILD_TYPE);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);
 //        parameters.add(Params.CLUSTER_SIZES);
         parameters.add(Params.VERBOSE);
