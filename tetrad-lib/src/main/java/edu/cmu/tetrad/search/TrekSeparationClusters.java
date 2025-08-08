@@ -541,7 +541,6 @@ public class TrekSeparationClusters {
 
                         if (C2.size() == _size + 1 && lookupRank(C2) == reducedRank) {
                             if (newClusters.contains(C2)) continue;
-
                             newClusters.remove(C1);
                             newClusters.add(C2);
                             used.addAll(C2);
@@ -559,7 +558,7 @@ public class TrekSeparationClusters {
             log("New clusters after the augmentation step = " +
                 (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
 
-            for (Set<Integer> cluster : newClusters) {
+            for (Set<Integer> cluster : new ArrayList<>(newClusters)) {
                 clusterToRank.put(cluster, rank);
             }
 

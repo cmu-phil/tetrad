@@ -5,8 +5,6 @@ import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
-import java.util.Arrays;
-
 public class RankTests {
 
     /**
@@ -21,72 +19,15 @@ public class RankTests {
      * @param rank     The hypothesized maximum rank under the null hypothesis.
      * @return p-value from the chi-squared test.
      */
-//    public static double getCcaPValueRankLE(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int r) {
-//        if (xIndices.length == 0 || yIndices.length == 0) {
-//            throw new IllegalArgumentException("xIndices and yIndices must not be empty.");
-//        }
-//
-//        int p = xIndices.length;
-//        int q = yIndices.length;
-//        int minpq = Math.min(p, q);
-//
-//        if (r < 0 || r > minpq) {
-//            throw new IllegalArgumentException("r must be in [0, min(p, n)]: min = " + minpq + " r = " + r);
-//        }
-//
-//        if (n < p + q) {
-//            throw new IllegalArgumentException("Sample size too small for a meaningful test.");
-//        }
-//
-//        // Step 1: Extract submatrices
-//        SimpleMatrix XX = extractSubMatrix(S, xIndices, xIndices);
-//        SimpleMatrix YY = extractSubMatrix(S, yIndices, yIndices);
-//        SimpleMatrix XY = extractSubMatrix(S, xIndices, yIndices);
-//
-//        // Step 2: Cholesky inverses
-////        SimpleMatrix XXinvSqrt = chol(XX).invert();
-////        SimpleMatrix YYinvSqrt = chol(YY).invert();
-//
-//        SimpleMatrix XXinvSqrt = inverseSqrt(XX);// chol(XX).invert();
-//        SimpleMatrix YYinvSqrt = inverseSqrt(YY);// chol(YY).invert();
-//
-//        SimpleMatrix product = XXinvSqrt.mult(XY).mult(YYinvSqrt);
-//
-//        // Step 3: SVD
-//        SimpleSVD<SimpleMatrix> svd = product.svd();
-//
-//        // Step 4: Compute test statistic from canonical correlations j = r + 1 to minpq
-//        double stat = 0.0;
-//        for (int j = r + 1; j <= minpq; j++) {
-//            double val = svd.getSingleValue(j - 1);
-//            double adjusted = 1.0 - val * val;
-//            stat += Math.log(adjusted);
-//        }
-//
-//        // Step 5: Scale
-//        double scale = -(n - (p + q + 3) / 2.);
-//        stat *= scale;
-//
-//        // Step 6: Degrees of freedom = (p - r) * (n - r)
-//        double df = (p - r) * (q - r);
-//
-//        ChiSquaredDistribution chi2 = null;
-//        try {
-//            chi2 = new ChiSquaredDistribution(df);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//        return 1.0 - chi2.cumulativeProbability(stat);
-//    }
     public static double getCcaPValueRankLE(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int rank) {
         try {
             int p = xIndices.length;
             int q = yIndices.length;
 
             // Step 1: Extract submatrices
-            SimpleMatrix Cxx = extractSubMatrix(S, xIndices, xIndices);
-            SimpleMatrix Cyy = extractSubMatrix(S, yIndices, yIndices);
-            SimpleMatrix Cxy = extractSubMatrix(S, xIndices, yIndices);
+            SimpleMatrix Cxx = StatUtils.extractSubMatrix(S, xIndices, xIndices);
+            SimpleMatrix Cyy = StatUtils.extractSubMatrix(S, yIndices, yIndices);
+            SimpleMatrix Cxy = StatUtils.extractSubMatrix(S, xIndices, yIndices);
 
             // Inverse square roots of Cxx and Cyy using eigen-decomposition
             SimpleMatrix Cxx_inv_sqrt = invSqrtSymmetric(Cxx);
@@ -232,9 +173,9 @@ public class RankTests {
             int q = yIndices.length;
 
             // Step 1: Extract submatrices
-            SimpleMatrix Cxx = extractSubMatrix(S, xIndices, xIndices).plus(SimpleMatrix.identity(p).scale(regParam));
-            SimpleMatrix Cyy = extractSubMatrix(S, yIndices, yIndices).plus(SimpleMatrix.identity(q).scale(regParam));
-            SimpleMatrix Cxy = extractSubMatrix(S, xIndices, yIndices);
+            SimpleMatrix Cxx = StatUtils.extractSubMatrix(S, xIndices, xIndices).plus(SimpleMatrix.identity(p).scale(regParam));
+            SimpleMatrix Cyy = StatUtils.extractSubMatrix(S, yIndices, yIndices).plus(SimpleMatrix.identity(q).scale(regParam));
+            SimpleMatrix Cxy = StatUtils.extractSubMatrix(S, xIndices, yIndices);
 
             // Inverse square roots of Cxx and Cyy using eigen-decomposition
             SimpleMatrix Cxx_inv_sqrt = invSqrtSymmetric(Cxx);
@@ -266,25 +207,6 @@ public class RankTests {
         } catch (Exception e) {
             return 0.0;
         }
-    }
-
-    /**
-     * Extracts a submatrix from the specified matrix by selecting the rows and columns indicated by the provided
-     * indices. The resulting submatrix is composed of values at the intersection of the specified rows and columns.
-     *
-     * @param matrix the input matrix as a SimpleMatrix object from which the submatrix will be extracted
-     * @param rows   an array of integers representing the row indices to include in the submatrix
-     * @param cols   an array of integers representing the column indices to include in the submatrix
-     * @return a SimpleMatrix object representing the extracted submatrix
-     */
-    public static SimpleMatrix extractSubMatrix(SimpleMatrix matrix, int[] rows, int[] cols) {
-        SimpleMatrix subMatrix = new SimpleMatrix(rows.length, cols.length);
-        for (int i = 0; i < rows.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                subMatrix.set(i, j, matrix.get(rows[i], cols[j]));
-            }
-        }
-        return subMatrix;
     }
 
     /**
