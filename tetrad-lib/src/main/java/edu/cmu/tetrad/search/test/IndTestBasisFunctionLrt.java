@@ -124,7 +124,7 @@ public class IndTestBasisFunctionLrt implements IndependenceTest, RawMarginalInd
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
 
-        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
+        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getSimpleMatrix());
     }
 
     /**

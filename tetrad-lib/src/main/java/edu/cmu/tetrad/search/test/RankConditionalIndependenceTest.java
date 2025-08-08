@@ -22,7 +22,7 @@ public class RankConditionalIndependenceTest implements IndependenceTest {
     public RankConditionalIndependenceTest(ICovarianceMatrix covMatrix, double threshold) {
         this.covMatrix = covMatrix;
         this.variables = covMatrix.getVariables();
-        this.S = covMatrix.getMatrix().getDataCopy();
+        this.S = covMatrix.getMatrix().getSimpleMatrix();
         this.threshold = threshold;
     }
 

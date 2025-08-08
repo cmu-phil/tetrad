@@ -123,7 +123,7 @@ public class Dagma {
      */
     public Dagma(DataSet dataset) {
         this.variables = dataset.getVariables();
-        this.cov = dataset.getCorrelationMatrix().getDataCopy();
+        this.cov = dataset.getCorrelationMatrix().getSimpleMatrix();
         this.d = cov.getNumRows();
         this.I = SimpleMatrix.identity(this.d);
 

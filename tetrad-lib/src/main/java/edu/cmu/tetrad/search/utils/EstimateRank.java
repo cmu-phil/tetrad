@@ -75,7 +75,7 @@ public class EstimateRank {
 
         // TODO check the parens at the end of this.
         Matrix S = covA.inverse().times(covAB).times(covB.inverse().times(covBA));
-        SimpleEVD<SimpleMatrix> eig = S.getDataCopy().eig();
+        SimpleEVD<SimpleMatrix> eig = S.getSimpleMatrix().eig();
 
         double[] rtCors = new double[eig.getNumberOfEigenvalues()];
         for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {

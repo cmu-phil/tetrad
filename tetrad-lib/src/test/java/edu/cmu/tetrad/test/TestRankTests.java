@@ -1,11 +1,9 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import org.ejml.simple.SimpleMatrix;
@@ -33,7 +31,7 @@ public class TestRankTests {
             DataSet data = SimpleDataLoader.loadContinuousData(
                     new File("/Users/josephramsey/IdeaProjects/BryanStuff/lv_work/check_ranks.csv"),
                     "//", '"', "*", true, Delimiter.COMMA, false);
-            SimpleMatrix S = new CorrelationMatrix(data).getMatrix().getDataCopy();
+            SimpleMatrix S = new CorrelationMatrix(data).getMatrix().getSimpleMatrix();
             int dim = S.getNumRows();
             int origSize = dim / 2;
 

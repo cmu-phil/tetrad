@@ -72,11 +72,11 @@ public class Bpc extends AbstractBootstrapAlgorithm implements Algorithm, HasKno
 
         int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
         NtadTest test = switch (testType) {
-            case 1 -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
-            case 2 -> new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
-            case 3 -> new Wishart(dataSet.getDoubleData().getDataCopy(), false);
-            case 4 -> new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
-            default -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
+            case 1 -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+            case 2 -> new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false);
+            case 3 -> new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false);
+            case 4 -> new Ark(dataSet.getDoubleData().getSimpleMatrix(), 1.0);
+            default -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
         };
 
         edu.cmu.tetrad.search.Bpc search = new edu.cmu.tetrad.search.Bpc(

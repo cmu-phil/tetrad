@@ -832,7 +832,7 @@ public class Matrix implements TetradSerializable {
      *
      * @return A new SimpleMatrix instance that is a copy of the internal data.
      */
-    public SimpleMatrix getDataCopy() {
+    public SimpleMatrix getSimpleMatrix() {
         return getData().copy();
     }
 

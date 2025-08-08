@@ -7,7 +7,6 @@ import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.util.RankTests;
-import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -90,11 +89,11 @@ public class Gin {
      *         and latent variables, derived from the input dataset.
      */
     public Graph search(DataSet data) {
-        SimpleMatrix cov = new SimpleMatrix(data.getCovarianceMatrix().getDataCopy());
-        SimpleMatrix rawData = new SimpleMatrix(data.getDoubleData().getDataCopy());
+        SimpleMatrix cov = new SimpleMatrix(data.getCovarianceMatrix().getSimpleMatrix());
+        SimpleMatrix rawData = new SimpleMatrix(data.getDoubleData().getSimpleMatrix());
 
         this.corr = new CorrelationMatrix(data);
-        this.S = corr.getMatrix().getDataCopy();
+        this.S = corr.getMatrix().getSimpleMatrix();
         this.dataSet = data;
         this.variables = data.getVariables();
 
@@ -352,7 +351,7 @@ public class Gin {
     }
 
     private List<List<Integer>> findCausalClusters(DataSet data, SimpleMatrix cov, SimpleMatrix rawData) {
-        Fofc fofc = new Fofc(data, new Cca(data.getDoubleData().getDataCopy(), false), alpha);
+        Fofc fofc = new Fofc(data, new Cca(data.getDoubleData().getSimpleMatrix(), false), alpha);
         Graph fofcGraph = fofc.search();
         List<Node> vars = data.getVariables();
 

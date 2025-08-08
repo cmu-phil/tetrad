@@ -118,7 +118,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
                 dataSet, 1, 1, -1);
         this.embedding = embeddedData.embedding();
         this.sampleSize = dataSet.getNumRows();
-        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getDataCopy());
+        this.covarianceMatrix = DataUtils.cov(embeddedData.embeddedData().getDoubleData().getSimpleMatrix());
         this.setLambda(lambda);
     }
 

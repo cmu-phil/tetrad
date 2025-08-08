@@ -200,7 +200,7 @@ public class IcaLingD {
      * @return True iff the model is stable.
      */
     public static boolean isStable(Matrix bHat) {
-        SimpleEVD<SimpleMatrix> eig = bHat.getDataCopy().eig();
+        SimpleEVD<SimpleMatrix> eig = bHat.getSimpleMatrix().eig();
 
         for (int i = 0; i < eig.getNumberOfEigenvalues(); i++) {
             double realEigenvalue = eig.getEigenvalue(i).getReal();

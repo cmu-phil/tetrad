@@ -385,7 +385,7 @@ public class FastIca {
         // Whiten.
         Matrix cov = this.X.times(this.X.transpose()).scale(1.0 / n);
 
-        SimpleSVD<SimpleMatrix> s = cov.getDataCopy().svd();
+        SimpleSVD<SimpleMatrix> s = cov.getSimpleMatrix().svd();
 
         Matrix D = new Matrix(s.getW());
         Matrix U = new Matrix(s.getU());
@@ -603,7 +603,7 @@ public class FastIca {
         int p = X.getNumColumns();
         Matrix W = wInit;
 
-        SimpleSVD<SimpleMatrix> sW = W.getDataCopy().svd();
+        SimpleSVD<SimpleMatrix> sW = W.getSimpleMatrix().svd();
 
         Matrix D = new Matrix(sW.getW());
         for (int i = 0; i < D.getNumRows(); i++) D.set(i, i, 1.0 / D.get(i, i));
@@ -652,7 +652,7 @@ public class FastIca {
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SimpleSVD<SimpleMatrix> sW1 = (W1.getDataCopy()).svd();
+            SimpleSVD<SimpleMatrix> sW1 = (W1.getSimpleMatrix()).svd();
             Matrix U = new Matrix(sW1.getU());
             Matrix sD = new Matrix(sW1.getW());
             for (int i = 0; i < sD.getNumRows(); i++)

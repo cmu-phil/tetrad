@@ -53,6 +53,7 @@ public class TrekSeparationClusters {
      * Sample size for statistical tests
      */
     private final int sampleSize;
+    private final CovarianceMatrix covMatrix;
     /**
      * The covariance/correlation matrix
      */
@@ -95,7 +96,8 @@ public class TrekSeparationClusters {
             this.variables.add(i);
         }
 
-        this.S = new CovarianceMatrix(cov).getMatrix().getDataCopy();
+        this.covMatrix = cov;
+        this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
         this.S = this.S.plus(SimpleMatrix.identity(S.getNumRows()).scale(0.001));
     }
 
@@ -140,6 +142,31 @@ public class TrekSeparationClusters {
         return graph;
     }
 
+//    public Graph search(int[][] clusterSpecs, Mode mode) {
+//        try {
+//            SemBicScore score = new SemBicScore(covMatrix, penalty);
+//            PermutationSearch permutationSearch = new PermutationSearch(new Boss(score));
+//            Graph dag = permutationSearch.search(false);
+//            if (false) {//DagResidualExplains.isExplainedByDag(dag, covMatrix, 1e-10)) {
+//                return dag;
+//            } else {
+//                Map<Set<Integer>, Integer> clusterToRank  = estimateClusters(clusterSpecs, mode);
+//                List<Set<Integer>> clusters = new ArrayList<>(clusterToRank.keySet());
+//
+//                List<Node> latents = defineLatents(clusters, clusterToRank);
+//                Graph graph = convertSearchGraphClusters(clusters, latents, includeAllNodes);
+//
+//                if (includeStructureModel) {
+//                    addStructureEdges(clusters, latents, graph);
+//                }
+//
+//                return graph;
+//            }
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
     /**
      * Estimates clusters based on the provided specifications, processes overlapping clusters, and returns a set of
      * merged unique clusters.
@@ -157,7 +184,6 @@ public class TrekSeparationClusters {
         }
 
         List<Set<Set<Integer>>> clusterList = new ArrayList<>();
-        Set<Set<Integer>> allClusters = new HashSet<>();
         Map<Set<Integer>, Integer> clusterToRanks = new HashMap<>();
 
         if (mode == Mode.METALOOP) {
@@ -185,11 +211,7 @@ public class TrekSeparationClusters {
                     }
                 }
 
-                allClusters.clear();
-
                 for (Set<Set<Integer>> cluster2 : clusterList) {
-                    allClusters.addAll(cluster2);
-
                     for (Set<Integer> cluster3 : cluster2) {
                         clusterToRanks.put(cluster3, rank);
                     }

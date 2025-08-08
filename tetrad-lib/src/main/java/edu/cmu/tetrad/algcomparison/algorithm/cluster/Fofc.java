@@ -14,7 +14,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.MimbuildPca;
 import edu.cmu.tetrad.search.ntad_test.*;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -75,11 +74,11 @@ public class Fofc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
 
         int testType = parameters.getInt(Params.TETRAD_TEST_FOFC);
         NtadTest test = switch (testType) {
-            case 1 -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
-            case 2 -> new BollenTing(dataSet.getDoubleData().getDataCopy(), false);
-            case 3 -> new Wishart(dataSet.getDoubleData().getDataCopy(), false);
-            case 4 -> new Ark(dataSet.getDoubleData().getDataCopy(), 1.0);
-            default -> new Cca(dataSet.getDoubleData().getDataCopy(), false);
+            case 1 -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
+            case 2 -> new BollenTing(dataSet.getDoubleData().getSimpleMatrix(), false);
+            case 3 -> new Wishart(dataSet.getDoubleData().getSimpleMatrix(), false);
+            case 4 -> new Ark(dataSet.getDoubleData().getSimpleMatrix(), 1.0);
+            default -> new Cca(dataSet.getDoubleData().getSimpleMatrix(), false);
         };
 
         boolean includeAllNodes = parameters.getBoolean(Params.INCLUDE_ALL_NODES);

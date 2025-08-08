@@ -13,7 +13,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.ntad_test.BollenTing;
 import edu.cmu.tetrad.search.ntad_test.Cca;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -66,7 +65,7 @@ public class Ftfc extends AbstractBootstrapAlgorithm implements Algorithm, HasKn
         assert dataSet instanceof DataSet;
         edu.cmu.tetrad.search.Ftfc search
                 = new edu.cmu.tetrad.search.Ftfc((DataSet) dataSet,
-                new Cca(((DataSet) dataSet).getDoubleData().getDataCopy(), false),
+                new Cca(((DataSet) dataSet).getDoubleData().getSimpleMatrix(), false),
                 alpha);
         search.setIncludeAllNodes(parameters.getBoolean(Params.INCLUDE_ALL_NODES));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
