@@ -26,6 +26,7 @@ import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +50,7 @@ public class TrekSeparationClusters {
     /**
      * Cache of previously computed ranks
      */
-    private final Map<Set<Integer>, Integer> rankCache = new HashMap<>();
+    private final Map<Set<Integer>, Integer> rankCache = new ConcurrentHashMap<>();
     /**
      * Sample size for statistical tests
      */
@@ -96,7 +97,6 @@ public class TrekSeparationClusters {
             this.variables.add(i);
         }
 
-//        this.covMatrix = cov;
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
         this.S = this.S.plus(SimpleMatrix.identity(S.getNumRows()).scale(0.001));
     }
@@ -647,23 +647,31 @@ public class TrekSeparationClusters {
      * constraint.
      */
     private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
-        Set<Set<Integer>> clusters = new HashSet<>();
+        List<int[]> choices = new ArrayList<>();
 
         ChoiceGenerator generator = new ChoiceGenerator(vars.size(), size);
         int[] choice;
 
         while ((choice = generator.next()) != null) {
-            Set<Integer> cluster = new HashSet<>();
-            for (int i : choice) {
-                cluster.add(vars.get(i));
-            }
-
-            if (lookupRank(cluster) == rank) {
-                clusters.add(cluster);
-            }
+            choices.add(choice.clone());
         }
 
-        return clusters;
+        return choices.parallelStream()
+                .map(_choice -> {
+                    Set<Integer> cluster = new HashSet<>();
+                    for (int i : _choice) {
+                        cluster.add(vars.get(i));
+                    }
+
+                    int _rank = lookupRank(cluster);
+                    if (_rank == rank) {
+                        return cluster;
+                    } else {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(ConcurrentHashMap::newKeySet));
     }
 
     /**
