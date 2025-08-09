@@ -3,7 +3,6 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.TrekSeparationClusters;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -37,30 +36,10 @@ public class TestRankTests {
             int dim = S.getNumRows();
             int origSize = dim / 2;
 
-            int[] dims = new int[size];
-            Arrays.fill(dims, dim);
-
-//            CombinationGenerator gen = new CombinationGenerator(dims);
             ChoiceGenerator gen = new ChoiceGenerator(dim, size);
             int[] indexx;
 
-            C:
             while ((indexx = gen.next()) != null) {
-//                System.out.println("   " + Arrays.toString(indexx));
-
-//                boolean hasDuplicates = false;
-//                for (int i = 0; i < indexx.length; i++) {
-//                    for (int j = i + 1; j < indexx.length; j++) {
-//                        if (indexx[i] == indexx[j]) {
-//                            hasDuplicates = true;
-//                            break;
-//                        }
-//                    }
-//                    if (hasDuplicates) break;
-//                }
-//                if (hasDuplicates) continue;
-
-
                 boolean hasSmaller = false;
                 boolean hasLarger = false;
 
@@ -112,21 +91,6 @@ public class TestRankTests {
         }
     }
 
-    @Test
-    public void test1() {
-        int n = 3;
-        int k = 2;
-
-        long[][] C = precomputeBinom(n, k); // size: (n+1) x (k+1)
-        long total = C[n][k];
-
-        System.out.println("n = " + n + ", k = " + k + ", total combinations = " + total);
-        for (long m = 0; m < total; m++) {
-            int[] comb = combinadicDecodeColex(m, n, k, C);
-            System.out.println(m + ": " + Arrays.toString(comb));
-        }
-    }
-
     // Pascal triangle up to n choose k (inclusive on n)
     static long[][] precomputeBinom(int n, int k) {
         long[][] C = new long[n + 1][k + 1];
@@ -149,14 +113,8 @@ public class TestRankTests {
     }
 
     /**
-     * Unrank colex: return the m-th k-combination of {0..n-1} in colex order.
-     * Correct logic:
-     *   r = m
-     *   for i = k..1:
-     *     pick largest x in [0, bound-1] with C(x, i) <= r
-     *     set a[i-1] = x
-     *     r -= C(x, i)
-     *     bound = x
+     * Unrank colex: return the m-th k-combination of {0..n-1} in colex order. Correct logic: r = m for i = k..1: pick
+     * largest x in [0, bound-1] with C(x, i) <= r set a[i-1] = x r -= C(x, i) bound = x
      */
     static int[] combinadicDecodeColex(long m, int n, int k, long[][] C) {
         int[] comb = new int[k];
@@ -168,13 +126,32 @@ public class TestRankTests {
             while (lo <= hi) {
                 int mid = (lo + hi) >>> 1;
                 long c = choose(C, mid, i);
-                if (c <= r) { v = mid; lo = mid + 1; }
-                else { hi = mid - 1; }
+                if (c <= r) {
+                    v = mid;
+                    lo = mid + 1;
+                } else {
+                    hi = mid - 1;
+                }
             }
             comb[i - 1] = v;           // element value (0-based)
             r -= choose(C, v, i);      // <-- correct decrement
             bound = v;                  // next elements must be smaller
         }
         return comb; // ascending: comb[0] < comb[1] < ... < comb[k-1]
+    }
+
+    @Test
+    public void test1() {
+        int n = 3;
+        int k = 2;
+
+        long[][] C = precomputeBinom(n, k); // size: (n+1) x (k+1)
+        long total = C[n][k];
+
+        System.out.println("n = " + n + ", k = " + k + ", total combinations = " + total);
+        for (long m = 0; m < total; m++) {
+            int[] comb = combinadicDecodeColex(m, n, k, C);
+            System.out.println(m + ": " + Arrays.toString(comb));
+        }
     }
 }
