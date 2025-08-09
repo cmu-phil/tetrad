@@ -25,6 +25,8 @@ public class RankTests {
                     return size() > RCCA_CACHE_MAX;
                 }
             };
+    // ---- Eigen whitening path (from previous message), packaged to return svals
+    private static final double EIG_FLOOR = 1e-12;
 
     /**
      * Computes the p-value for Canonical Correlation Analysis (CCA) based on the hypothesis H0: canonical correlation
@@ -79,116 +81,18 @@ public class RankTests {
         }
     }
 
-//    public static SimpleMatrix inverseSqrt(SimpleMatrix A) {
-//        if (!A.isIdentical(A.transpose(), 1e-10)) {
-//            throw new IllegalArgumentException("Matrix must be symmetric");
-//        }
-//
-//        SimpleEVD<SimpleMatrix> eig = A.eig();
-//
-//        SimpleMatrix Q = new SimpleMatrix(A.getNumRows(), A.getNumCols());
-//        SimpleMatrix L_invSqrt = new SimpleMatrix(A.getNumRows(), A.getNumCols());
-//
-//        for (int i = 0; i < A.getNumRows(); i++) {
-//            double eigenvalue = eig.getEigenvalue(i).getReal();
-//            if (eigenvalue <= 0) {
-//                throw new RuntimeException("Matrix not positive definite");
-//            }
-//
-//            SimpleMatrix eigenvector = eig.getEigenVector(i);
-//            Q.setColumn(i, 0, eigenvector.getDDRM().getData());
-//            L_invSqrt.set(i, i, 1.0 / Math.sqrt(eigenvalue));
-//        }
-//
-//        return Q.mult(L_invSqrt).mult(Q.transpose());
-//    }
-
-//    /**
-//     * Tests whether the canonical correlation rank is exactly r, at level alpha. That is: • if r == 0: returns true
-//     * only if p-value_rankLE(0) > alpha; • else if r == min(xVars, yVars): (only the upper bound test doesn’t exist in
-//     * this case), return ( p-value_rankLE(r–1) <= alpha ). • else: require p-value_rankLE(r) > alpha  AND
-//     * p-value_rankLE(r–1) <= alpha
-//     *
-//     * @param S        Correlation matrix of all variables.
-//     * @param xIndices indices belonging to one side
-//     * @param yIndices indices for the other side
-//     * @param n        sample size
-//     * @param r        hypothesized rank
-//     * @param alpha    significance level (e.g. 0.05)
-//     * @return true iff rank = r at given alpha
-//     */
-//    public static boolean isCcaRankEqualTo(
-//            SimpleMatrix S,
-//            int[] xIndices,
-//            int[] yIndices,
-//            int n,
-//            int r,
-//            double alpha) {
-//        if (r < 0) throw new IllegalArgumentException("Rank must be non-negative.");
-//        final int maxRank = Math.min(xIndices.length, yIndices.length);
-//        if (r > maxRank) {
-//            throw new IllegalArgumentException("Rank r=" + r +
-//                                               " exceeds maximum possible (" + maxRank + ")");
-//        }
-//
-//        if (r == 0) {
-//            double pVal0 = getCcaPValueRankLE(S, xIndices, yIndices, n, 0);
-//            return pVal0 > alpha;
-//        }
-//
-//        double pValRm1 = getCcaPValueRankLE(S, xIndices, yIndices, n, r - 1);
-//
-//        if (r == maxRank) {
-//            // No rank > r, so simply require rejection of ≤ r–1
-//            return pValRm1 <= alpha;
-//        } else {
-//            double pValR = getCcaPValueRankLE(S, xIndices, yIndices, n, r);
-//            return (pValR > alpha) && (pValRm1 <= alpha);
-//        }
-//    }
-
-// ----------------- helpers (version-agnostic) -----------------
-
-//    /**
-//     * Estimates the canonical correlation rank of the cross-correlation matrix using sequential likelihood ratio
-//     * tests.
-//     *
-//     * @param S        The correlation matrix.
-//     * @param xIndices Indices of the first variable set.
-//     * @param yIndices Indices of the second variable set.
-//     * @param n        Sample size.
-//     * @param alpha    Significance level (e.g., 0.05).
-//     * @return The estimated rank (0 ≤ rank ≤ min(p, q)).
-//     */
-//    public static int estimateCcaRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, double alpha) {
-//        int p = xIndices.length;
-//        int q = yIndices.length;
-//        int minpq = Math.min(p, q);
-//
-//        // Rank 0 always gives NaN though... but the inequality will fail then. jdramsey 2025-8-1
-//        for (int r = 0; r < minpq; r++) {
-//            double pVal = getCcaPValueRankLE(S, xIndices, yIndices, n, r);
-//
-//            if (pVal > alpha) {
-//                return r; // First non-rejected rank
-//            }
-//        }
-//
-//        return minpq; // All tests rejected, full rank assumed
-//    }
-
     /**
      * Computes RCCA p-value from a covariance matrix.
      *
-     * @param S    The (p+q) x (p+q) covariance matrix.
+     * @param S        The (p+q) x (p+q) covariance matrix.
      * @param xIndices Number of variables in group A.
      * @param yIndices Number of variables in group B.
-     * @param n    Sample size.
-     * @param rank Hypothesized rank (test is for rank > r).
-     * @param regParam  Regularization parameter (λ > 0).
+     * @param n        Sample size.
+     * @param rank     Hypothesized rank (test is for rank > r).
+     * @param regParam Regularization parameter (λ > 0).
      * @return The p-value.
      */
-    public static double getRccaPValueRankLE1(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int rank, double regParam) {
+    public static double getRccaPValueRankLEOrig(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int rank, double regParam) {
         try {
             int p = xIndices.length;
             int q = yIndices.length;
@@ -230,70 +134,7 @@ public class RankTests {
         }
     }
 
-    public static double getRccaPValueRankLE2(SimpleMatrix S,
-                                             int[] xIdx, int[] yIdx,
-                                             int n, int rank, double reg) {
-        try {
-            final int p = xIdx.length, q = yIdx.length;
-            final int rmin = Math.min(p, q);
-
-            // --- Extract submatrices into DMatrixRMaj
-            DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
-            DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
-            DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
-
-            // --- Add ridge (λI)
-            addRidgeInPlace(Cxx, reg);
-            addRidgeInPlace(Cyy, reg);
-
-            // --- Cholesky: Cxx = Lx Lx^T (lower), Cyy = Ly Ly^T (lower)
-            CholeskyDecomposition_F64<DMatrixRMaj> cholX = DecompositionFactory_DDRM.chol(p, true);
-            CholeskyDecomposition_F64<DMatrixRMaj> cholY = DecompositionFactory_DDRM.chol(q, true);
-            if (!cholX.decompose(Cxx) || !cholY.decompose(Cyy)) return 0.0;
-
-            DMatrixRMaj Lx = cholX.getT(null); // lower triangular
-            DMatrixRMaj Ly = cholY.getT(null); // lower triangular
-
-            // --- T = Lx^{-1} * Cxy * Ly^{-T}
-            // Solve Lx * X = Cxy  => X (forward-substitution)
-            DMatrixRMaj X = Cxy.copy();
-            forwardSolveLowerInPlace(Lx, X); // X <- Lx^{-1} * Cxy
-
-            // Solve Ly^T * Z^T = X^T  => Z = X * Ly^{-T}
-            // Do it without forming Ly^T explicitly:
-            DMatrixRMaj Xt = new DMatrixRMaj(X.numCols, X.numRows);
-            CommonOps_DDRM.transpose(X, Xt);
-            // Xt <- (Ly^T)^{-1} * Xt   i.e., solve (Ly^T) * Y = Xt for Y, in-place into Xt
-            backwardSolveUpperFromLowerTransposeInPlace(Ly, Xt);
-            DMatrixRMaj T = new DMatrixRMaj(X.numRows, X.numCols);
-            CommonOps_DDRM.transpose(Xt, T);
-
-            // --- SVD of T: values only
-            SingularValueDecomposition_F64<DMatrixRMaj> svd =
-                    DecompositionFactory_DDRM.svd(T.numRows, T.numCols, false, false, true);
-            if (!svd.decompose(T)) return 0.0;
-            double[] svals = svd.getSingularValues(); // descending
-
-            // --- Test statistic
-            double stat = 0.0;
-            for (int i = rank; i < rmin; i++) {
-                double s = Math.max(0.0, Math.min(svals[i], 1.0 - 1e-12));
-                stat += Math.log(1.0 - s * s);
-            }
-            double scale = -(n - (p + q + 3) / 2.0);
-            stat *= scale;
-
-            int df = (p - rank) * (q - rank);
-            if (df <= 0) return 1.0;
-
-            ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-            return 1.0 - chi2.cumulativeProbability(stat);
-        } catch (Exception e) {
-            return 0.0;
-        }
-    }
-
-    public static double getRccaPValueRankLE3(SimpleMatrix S,
+    public static double getRccaPValueRankLE(SimpleMatrix S,
                                              int[] xIdx, int[] yIdx,
                                              int n, int rank, double reg) {
         try {
@@ -331,61 +172,6 @@ public class RankTests {
 
             return 1.0 - new org.apache.commons.math3.distribution.ChiSquaredDistribution(df)
                     .cumulativeProbability(stat);
-        } catch (Exception e) {
-            return 0.0;
-        }
-    }
-
-    // --- Public: RCCA p-value using eigen-whitening --------------------------------
-    public static double getRccaPValueRankLE4(SimpleMatrix S,
-                                                   int[] xIdx, int[] yIdx,
-                                                   int nEff, int rank, double ridge) {
-        try {
-            final int p = xIdx.length, q = yIdx.length, m = Math.min(p, q);
-            if (rank < 0 || rank >= m) return 1.0;
-
-            // Extract blocks
-            DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
-            DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
-            DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
-
-            // Ridge on diagonals
-            addRidgeInPlace(Cxx, ridge);
-            addRidgeInPlace(Cyy, ridge);
-
-            // Eigendecompose symmetric SPD blocks: Cxx = Qx Λx Qx^T,  Cyy = Qy Λy Qy^T
-            EigenSym ESx = eigSym(Cxx);
-            EigenSym ESy = eigSym(Cyy);
-
-            // T = Λx^{-1/2} * (Qx^T Cxy Qy) * Λy^{-1/2}
-            DMatrixRMaj temp = new DMatrixRMaj(ESx.Q.numCols, Cxy.numCols); // Qx^T*Cxy
-            CommonOps_DDRM.multTransA(ESx.Q, Cxy, temp);
-            DMatrixRMaj T = new DMatrixRMaj(temp.numRows, ESy.Q.numCols);   // (Qx^T*Cxy)*Qy
-            CommonOps_DDRM.mult(temp, ESy.Q, T);
-
-            // scale rows by 1/sqrt(λx_i)
-            scaleRowsInvSqrtInPlace(T, ESx.lambda);
-            // scale cols by 1/sqrt(λy_j)
-            scaleColsInvSqrtInPlace(T, ESy.lambda);
-
-            // SVD values only
-            SingularValueDecomposition_F64<DMatrixRMaj> svd =
-                    DecompositionFactory_DDRM.svd(T.numRows, T.numCols, false, false, true);
-            if (!svd.decompose(T)) return 0.0;
-            double[] svals = svd.getSingularValues(); // descending
-
-            // Wilks/Bartlett test for rank ≤ r
-            double sumLogs = 0.0;
-            for (int i = rank; i < m; i++) {
-                double s = Math.max(0.0, Math.min(svals[i], 1.0 - 1e-12));
-                sumLogs += Math.log(1.0 - s * s);
-            }
-            double scale = -(nEff - (p + q + 3) / 2.0);
-            double stat = scale * sumLogs;
-            int df = (p - rank) * (q - rank);
-            if (df <= 0) return 1.0;
-
-            return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
         } catch (Exception e) {
             return 0.0;
         }
@@ -442,8 +228,6 @@ public class RankTests {
         return new SvdResult(s);
     }
 
-
-
     private static double cholDiagCondition(DMatrixRMaj L) {
         double dmin = Double.POSITIVE_INFINITY, dmax = 0.0;
         int n = L.numRows;
@@ -459,20 +243,14 @@ public class RankTests {
 
     private static boolean isFiniteMatrix(DMatrixRMaj A) {
         double[] a = A.data;
-        for (int i = 0; i < a.length; i++) {
-            double v = a[i];
+        for (double v : a) {
             if (!Double.isFinite(v)) return false;
         }
         return true;
     }
 
-    // ---- Eigen whitening path (from previous message), packaged to return svals
-    private static final double EIG_FLOOR = 1e-12;
-
     private static SvdResult computeSvalsEigenWhiten(SimpleMatrix S,
                                                      int[] xIdx, int[] yIdx, double reg) {
-        final int p = xIdx.length, q = yIdx.length;
-
         DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
         DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
         DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
@@ -496,12 +274,6 @@ public class RankTests {
         if (!svd.decompose(T)) return null;
 
         return new SvdResult(svd.getSingularValues());
-    }
-
-    private static final class EigenSym {
-        final DMatrixRMaj Q;     // orthonormal eigenvectors (columns)
-        final double[] lambda;   // eigenvalues (sorted descending, floored)
-        EigenSym(DMatrixRMaj Q, double[] lambda) { this.Q = Q; this.lambda = lambda; }
     }
 
     private static EigenSym eigSym(DMatrixRMaj A) {
@@ -565,59 +337,7 @@ public class RankTests {
         }
     }
 
-//    private static DMatrixRMaj extract(SimpleMatrix S, int[] rows, int[] cols) {
-//        DMatrixRMaj out = new DMatrixRMaj(rows.length, cols.length);
-//        var src = S.getDDRM();
-//        for (int i = 0; i < rows.length; i++) {
-//            int ri = rows[i];
-//            for (int j = 0; j < cols.length; j++) {
-//                out.set(i, j, src.get(ri, cols[j]));
-//            }
-//        }
-//        return out;
-//    }
-//
-//    private static void addRidgeInPlace(DMatrixRMaj A, double lam) {
-//        int n = Math.min(A.numRows, A.numCols);
-//        for (int i = 0; i < n; i++) A.set(i, i, A.get(i, i) + lam);
-//    }
-
     // ====== Cache bits =========================================================
-
-    private static SvdResult computeSvalsCholeskyWhiten(SimpleMatrix S,
-                                                        int[] xIdx, int[] yIdx, double reg) {
-        final int p = xIdx.length, q = yIdx.length;
-
-        DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
-        DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
-        DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
-
-        addRidgeInPlace(Cxx, reg);
-        addRidgeInPlace(Cyy, reg);
-
-        var cholX = DecompositionFactory_DDRM.chol(p, true);
-        var cholY = DecompositionFactory_DDRM.chol(q, true);
-        if (!cholX.decompose(Cxx) || !cholY.decompose(Cyy)) return null;
-
-        DMatrixRMaj Lx = cholX.getT(null);
-        DMatrixRMaj Ly = cholY.getT(null);
-
-        // X = Lx^{-1} * Cxy
-        DMatrixRMaj X = Cxy.copy();
-        forwardSolveLowerInPlace(Lx, X);
-
-        // T = X * Ly^{-T}
-        DMatrixRMaj Xt = new DMatrixRMaj(X.numCols, X.numRows);
-        CommonOps_DDRM.transpose(X, Xt);
-        backwardSolveUpperFromLowerTransposeInPlace(Ly, Xt);
-        DMatrixRMaj T = new DMatrixRMaj(X.numRows, X.numCols);
-        CommonOps_DDRM.transpose(Xt, T);
-
-        var svd = DecompositionFactory_DDRM.svd(T.numRows, T.numCols, false, false, true);
-        if (!svd.decompose(T)) return null;
-
-        return new SvdResult(svd.getSingularValues());
-    }
 
     // Thread-safe cache access
     private static RccaEntry cacheGet(RccaKey k) {
@@ -721,7 +441,7 @@ public class RankTests {
         int minpq = Math.min(p, q);
 
         for (int r = 0; r < minpq; r++) {
-            double pVal = getRccaPValueRankLE3(S, xIndices, yIndices, n, r, regParam);
+            double pVal = getRccaPValueRankLE(S, xIndices, yIndices, n, r, regParam);
 
             if (pVal > alpha) {
                 return r; // First non-rejected rank
@@ -729,6 +449,16 @@ public class RankTests {
         }
 
         return minpq; // All tests rejected, full rank assumed
+    }
+
+    private static final class EigenSym {
+        final DMatrixRMaj Q;     // orthonormal eigenvectors (columns)
+        final double[] lambda;   // eigenvalues (sorted descending, floored)
+
+        EigenSym(DMatrixRMaj Q, double[] lambda) {
+            this.Q = Q;
+            this.lambda = lambda;
+        }
     }
 
     private static final class SvdResult {
@@ -776,26 +506,4 @@ public class RankTests {
             this.suffixLogs = suffixLogs;
         }
     }
-
-//    public static int estimateRccaRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, double alpha, double regParam) {
-//        int p = xIndices.length;
-//        int q = yIndices.length;
-//        int minpq = Math.min(p, q);
-//
-//        int lastAcceptedRank = -1;
-//
-//        for (int r = 0; r < minpq; r++) {
-//            double pVal = getRccaPValueRankLE(S, xIndices, yIndices, n, r, regParam);
-//
-//            if (pVal > alpha) {
-//                lastAcceptedRank = r;
-//            }
-//        }
-//
-//        if (lastAcceptedRank >= 0) {
-//            return lastAcceptedRank;
-//        } else {
-//            return minpq; // All tests rejected
-//        }
-//    }
 }
