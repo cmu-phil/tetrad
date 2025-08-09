@@ -121,6 +121,57 @@ public class TrekSeparationClusters {
         return result;
     }
 
+    // Pascal triangle up to n choose k (inclusive on n)
+    static long[][] precomputeBinom(int n, int k) {
+        long[][] C = new long[n + 1][k + 1];
+        for (int i = 0; i <= n; i++) {
+            C[i][0] = 1;
+            int maxj = Math.min(i, k);
+            for (int j = 1; j <= maxj; j++) {
+                long v = C[i - 1][j - 1] + C[i - 1][j];
+                if (v < 0 || v < C[i - 1][j - 1]) v = Long.MAX_VALUE; // clamp on overflow
+                C[i][j] = v;
+            }
+        }
+        return C;
+    }
+
+    // choose(x, j) with the convention C(x, j) = 0 when x < j
+    static long choose(long[][] C, int x, int j) {
+        if (x < j || j < 0) return 0L;
+        return C[x][j];
+    }
+
+    /**
+     * Unrank colex: return the m-th k-combination of {0..n-1} in colex order.
+     * Correct logic:
+     *   r = m
+     *   for i = k..1:
+     *     pick largest x in [0, bound-1] with C(x, i) <= r
+     *     set a[i-1] = x
+     *     r -= C(x, i)
+     *     bound = x
+     */
+    static int[] combinadicDecodeColex(long m, int n, int k, long[][] C) {
+        int[] comb = new int[k];
+        long r = m;
+        int bound = n; // elements must be < bound; shrinks each step
+
+        for (int i = k; i >= 1; i--) {
+            int lo = 0, hi = bound - 1, v = 0;
+            while (lo <= hi) {
+                int mid = (lo + hi) >>> 1;
+                long c = choose(C, mid, i);
+                if (c <= r) { v = mid; lo = mid + 1; }
+                else { hi = mid - 1; }
+            }
+            comb[i - 1] = v;           // element value (0-based)
+            r -= choose(C, v, i);      // <-- correct decrement
+            bound = v;                  // next elements must be smaller
+        }
+        return comb; // ascending: comb[0] < comb[1] < ... < comb[k-1]
+    }
+
     /**
      * Searches for latent clusters using specified size and rank parameters.
      *
@@ -339,6 +390,7 @@ public class TrekSeparationClusters {
      */
     private @NotNull Map<Set<Integer>, Integer> getRunSequentialClusterSearch(List<Integer> vars, int size, int rank) {
         Set<Set<Integer>> P = findClustersAtRank(vars, size, rank);
+
         log("P1 = " + toNamesClusters(P));
         Set<Set<Integer>> P1 = new HashSet<>(P);
 
@@ -359,8 +411,9 @@ public class TrekSeparationClusters {
             Set<Integer> _complement = new HashSet<>(variables);
             _complement.removeAll(seed);
 
-            log("Picking seed: " + toNamesCluster(seed) + " against "
-                + toNamesCluster(_complement) + " rank = " + lookupRank(seed));
+            log("Picking seed: " + toNamesCluster(seed)
+//                + " against " + toNamesCluster(_complement)
+                + " rank = " + lookupRank(seed));
 
             boolean extended;
 
@@ -388,8 +441,9 @@ public class TrekSeparationClusters {
                     }
 
                     int rankOfUnion = lookupRank(union);
-                    log("Candidate = " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " against "
-                        + toNamesCluster(complement) + " rank = " + rankOfUnion);
+                    log("Candidate = " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union)
+//                        + " against " + toNamesCluster(complement)
+                        + " rank = " + rankOfUnion);
 
                     if (rankOfUnion == rank) {
 
@@ -449,6 +503,16 @@ public class TrekSeparationClusters {
             log("EXAMINING SIZE " + size + " RANK = " + rank);
 
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
+
+//            Set<Set<Integer>> P0 = findClustersAtRank0(remainingVars, size, rank);
+
+//            if (!P.equals(_P)) {
+//                System.out.println("P = " + P);
+//                System.out.println("_P = " + _P);
+//
+//                throw new IllegalStateException("Methods not equal.");
+//            }
+
             log("Base clusters for size " + size + " rank " + rank + ": " +
                 (P.isEmpty() ? "NONE" : toNamesClusters(P)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
@@ -469,8 +533,9 @@ public class TrekSeparationClusters {
                 Set<Integer> _complement = new HashSet<>(remainingVars);
                 _complement.removeAll(seed);
 
-                log("Picking seed from the list: " + toNamesCluster(seed) + " against "
-                    + toNamesCluster(_complement) + " rank = " + lookupRank(seed));
+                log("Picking seed from the list: " + toNamesCluster(seed)
+//                    + " against " + toNamesCluster(_complement)
+                    + " rank = " + lookupRank(seed));
 
                 boolean extended;
 
@@ -498,8 +563,9 @@ public class TrekSeparationClusters {
                         }
 
                         int rankOfUnion = lookupRank(union);
-                        log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " against "
-                            + toNamesCluster(complement) + " rank = " + rankOfUnion);
+                        log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union)
+//                            + " against " + toNamesCluster(complement)
+                            + " rank = " + rankOfUnion);
 
                         if (rankOfUnion == rank) {
 
@@ -542,14 +608,10 @@ public class TrekSeparationClusters {
                         Set<Integer> C2 = new HashSet<>(C1);
                         C2.addAll(_C);
 
-//                        if (reducedRank.containsKey(C1)) continue;
-//                        if (reducedRank.containsKey(C2)) continue;
-
                         if (C2.size() == _size + 1 && lookupRank(C2) == _reducedRank) {
                             if (newClusters.contains(C2)) continue;
                             newClusters.remove(C1);
                             newClusters.add(C2);
-//                            reducedRank.remove(C1);
                             reducedRank.put(C2, _reducedRank);
                             used.addAll(C2);
                             log("Augmenting cluster " + toNamesCluster(C1) + " to cluster " + toNamesCluster(C2) + " (rank " + _reducedRank + ").");
@@ -645,32 +707,68 @@ public class TrekSeparationClusters {
      * @return A set of sets, where each inner set represents a cluster of integers that meets the specified rank
      * constraint.
      */
+//    public Set<Set<Integer>> findClustersAtRank0(List<Integer> vars, int size, int rank) {
+//        List<int[]> choices = new ArrayList<>();
+//
+//        ChoiceGenerator generator = new ChoiceGenerator(vars.size(), size);
+//        int[] choice;
+//
+//        while ((choice = generator.next()) != null) {
+//            choices.add(choice.clone());
+//        }
+//
+//        return choices.parallelStream()
+//                .map(_choice -> {
+//                    Set<Integer> cluster = new HashSet<>();
+//                    for (int i : _choice) {
+//                        cluster.add(vars.get(i));
+//                    }
+//
+//                    int _rank = lookupRank(cluster);
+//                    if (_rank == rank) {
+//                        return cluster;
+//                    } else {
+//                        return null;
+//                    }
+//                })
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toCollection(ConcurrentHashMap::newKeySet));
+//    }
+
     private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
-        List<int[]> choices = new ArrayList<>();
+        final int n = vars.size();
+        final int k = size;
 
-        ChoiceGenerator generator = new ChoiceGenerator(vars.size(), size);
-        int[] choice;
+        // Precompute binomials once per call (cheap), or cache by n,k if you call a lot.
+        final long[][] C = precomputeBinom(n, k);
+        final long total = C[n][k];  // number of combinations
 
-        while ((choice = generator.next()) != null) {
-            choices.add(choice.clone());
+        // Safety for absurd totals
+        if (total < 0 || total > (1L << 40)) {
+            throw new IllegalStateException("Combination count too large: " + total);
         }
 
-        return choices.parallelStream()
-                .map(_choice -> {
-                    Set<Integer> cluster = new HashSet<>();
-                    for (int i : _choice) {
-                        cluster.add(vars.get(i));
-                    }
-
-                    int _rank = lookupRank(cluster);
-                    if (_rank == rank) {
-                        return cluster;
-                    } else {
-                        return null;
-                    }
+        // Parallel over indices 0..total-1; decode on the fly
+        return java.util.stream.LongStream.range(0, total).parallel()
+                .mapToObj(m -> {
+                    int[] idxs = combinadicDecodeColex(m, n, k, C);
+                    Set<Integer> cluster = lookupCluster(vars, k, idxs);
+                    int r = lookupRank(cluster);
+                    return (r == rank) ? cluster : null;
                 })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(ConcurrentHashMap::newKeySet));
+                // Concurrent set to collect in parallel
+                .collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
+    }
+
+    private static @NotNull Set<Integer> lookupCluster(List<Integer> vars, int k, int[] idxs) {
+        // Build the cluster lazily only once
+        // (If you can change lookupRank to take int[] or BitSet, do that for speed.)
+        Set<Integer> cluster = new HashSet<>(k * 2);
+        for (int i = 0; i < k; i++) {
+            cluster.add(vars.get(idxs[i]));
+        }
+        return cluster;
     }
 
     /**
