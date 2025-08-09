@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -145,33 +146,33 @@ public class TrekSeparationClusters {
         return C[x][j];
     }
 
-    /**
-     * Unrank colex: return the m-th k-combination of {0..n-1} in colex order. Correct logic: r = m for i = k..1: pick
-     * largest x in [0, bound-1] with C(x, i) <= r set a[i-1] = x r -= C(x, i) bound = x
-     */
-    static int[] combinadicDecodeColex(long m, int n, int k, long[][] C) {
-        int[] comb = new int[k];
-        long r = m;
-        int bound = n; // elements must be < bound; shrinks each step
-
-        for (int i = k; i >= 1; i--) {
-            int lo = 0, hi = bound - 1, v = 0;
-            while (lo <= hi) {
-                int mid = (lo + hi) >>> 1;
-                long c = choose(C, mid, i);
-                if (c <= r) {
-                    v = mid;
-                    lo = mid + 1;
-                } else {
-                    hi = mid - 1;
-                }
-            }
-            comb[i - 1] = v;           // element value (0-based)
-            r -= choose(C, v, i);      // <-- correct decrement
-            bound = v;                  // next elements must be smaller
-        }
-        return comb; // ascending: comb[0] < comb[1] < ... < comb[k-1]
-    }
+//    /**
+//     * Unrank colex: return the m-th k-combination of {0..n-1} in colex order. Correct logic: r = m for i = k..1: pick
+//     * largest x in [0, bound-1] with C(x, i) <= r set a[i-1] = x r -= C(x, i) bound = x
+//     */
+//    static int[] combinadicDecodeColex(long m, int n, int k, long[][] C) {
+//        int[] comb = new int[k];
+//        long r = m;
+//        int bound = n; // elements must be < bound; shrinks each step
+//
+//        for (int i = k; i >= 1; i--) {
+//            int lo = 0, hi = bound - 1, v = 0;
+//            while (lo <= hi) {
+//                int mid = (lo + hi) >>> 1;
+//                long c = choose(C, mid, i);
+//                if (c <= r) {
+//                    v = mid;
+//                    lo = mid + 1;
+//                } else {
+//                    hi = mid - 1;
+//                }
+//            }
+//            comb[i - 1] = v;           // element value (0-based)
+//            r -= choose(C, v, i);      // <-- correct decrement
+//            bound = v;                  // next elements must be smaller
+//        }
+//        return comb; // ascending: comb[0] < comb[1] < ... < comb[k-1]
+//    }
 
     private static long[][] binom(int n, int k) {
         long key = (((long) n) << 32) ^ k;
@@ -220,13 +221,13 @@ public class TrekSeparationClusters {
         return out; // ascending
     }
 
-    private static @NotNull Set<Integer> lookupCluster(List<Integer> vars, int[] idxs) {
-        Set<Integer> cluster = new HashSet<>(idxs.length);
-        for (int idx : idxs) {
-            cluster.add(vars.get(idx));
-        }
-        return cluster;
-    }
+//    private static @NotNull Set<Integer> lookupCluster(List<Integer> vars, int[] idxs) {
+//        Set<Integer> cluster = new HashSet<>(idxs.length);
+//        for (int idx : idxs) {
+//            cluster.add(vars.get(idx));
+//        }
+//        return cluster;
+//    }
 
 // ---- Bridge overload (keeps your current lookupRank working today) ---------
 
@@ -246,8 +247,18 @@ public class TrekSeparationClusters {
         final ThreadLocal<int[]> tlIdxs = ThreadLocal.withInitial(() -> new int[k]);
         final ThreadLocal<int[]> tlIds = ThreadLocal.withInitial(() -> new int[k]);
 
+        AtomicInteger count = new AtomicInteger();
+
         return java.util.stream.LongStream.range(0, total).parallel()
                 .mapToObj(m -> {
+                    if (Thread.currentThread().isInterrupted()) return null;
+
+                    int _count = count.getAndIncrement();
+
+                    if (_count % 1000 == 0) {
+                        log("Count = " + count.get() + " of total = " + total);
+                    }
+
                     // decode indices of the combination into tlIdxs
                     int[] idxs = tlIdxs.get();
                     combinadicDecodeColex(m, n, k, C, idxs);
@@ -517,8 +528,8 @@ public class TrekSeparationClusters {
 
             Set<Integer> cluster = new HashSet<>(seed);
 
-            Set<Integer> _complement = new HashSet<>(variables);
-            _complement.removeAll(seed);
+//            Set<Integer> _complement = new HashSet<>(variables);
+//            _complement.removeAll(seed);
 
             log("Picking seed: " + toNamesCluster(seed)
 //                + " against " + toNamesCluster(_complement)
@@ -612,16 +623,6 @@ public class TrekSeparationClusters {
             log("EXAMINING SIZE " + size + " RANK = " + rank);
 
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
-
-//            Set<Set<Integer>> P0 = findClustersAtRank0(remainingVars, size, rank);
-
-//            if (!P.equals(_P)) {
-//                System.out.println("P = " + P);
-//                System.out.println("_P = " + _P);
-//
-//                throw new IllegalStateException("Methods not equal.");
-//            }
-
             log("Base clusters for size " + size + " rank " + rank + ": " +
                 (P.isEmpty() ? "NONE" : toNamesClusters(P)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
@@ -639,8 +640,8 @@ public class TrekSeparationClusters {
 
                 Set<Integer> cluster = new HashSet<>(seed);
 
-                Set<Integer> _complement = new HashSet<>(remainingVars);
-                _complement.removeAll(seed);
+//                Set<Integer> _complement = new HashSet<>(remainingVars);
+//                _complement.removeAll(seed);
 
                 log("Picking seed from the list: " + toNamesCluster(seed)
 //                    + " against " + toNamesCluster(_complement)
@@ -656,6 +657,7 @@ public class TrekSeparationClusters {
                         Set<Integer> candidate = it.next();
                         if (!Collections.disjoint(used, candidate)) continue;
                         if (Collections.disjoint(candidate, cluster)) continue;
+                        if (cluster.containsAll(candidate)) continue;
 
                         Set<Integer> union = new HashSet<>(cluster);
                         union.addAll(candidate);
@@ -806,16 +808,16 @@ public class TrekSeparationClusters {
         }
     }
 
-    /**
-     * Finds all clusters of a specified size from the given list of variables, where each cluster satisfies the given
-     * rank constraint.
-     *
-     * @param vars A list of integers representing the variables to analyze.
-     * @param size The size of clusters to generate from the variables.
-     * @param rank The rank constraint that each cluster must satisfy.
-     * @return A set of sets, where each inner set represents a cluster of integers that meets the specified rank
-     * constraint.
-     */
+//    /**
+//     * Finds all clusters of a specified size from the given list of variables, where each cluster satisfies the given
+//     * rank constraint.
+//     *
+//     * @param vars A list of integers representing the variables to analyze.
+//     * @param size The size of clusters to generate from the variables.
+//     * @param rank The rank constraint that each cluster must satisfy.
+//     * @return A set of sets, where each inner set represents a cluster of integers that meets the specified rank
+//     * constraint.
+//     */
 //    public Set<Set<Integer>> findClustersAtRank0(List<Integer> vars, int size, int rank) {
 //        List<int[]> choices = new ArrayList<>();
 //
