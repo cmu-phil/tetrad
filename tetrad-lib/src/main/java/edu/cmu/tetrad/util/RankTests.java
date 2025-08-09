@@ -4,6 +4,9 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
+import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
+import org.ejml.interfaces.decomposition.EigenDecomposition_F64;
+import org.ejml.interfaces.decomposition.SingularValueDecomposition_F64;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
@@ -178,118 +181,119 @@ public class RankTests {
      * Computes RCCA p-value from a covariance matrix.
      *
      * @param S    The (p+q) x (p+q) covariance matrix.
-     * @param xIdx Number of variables in group A.
-     * @param yIdx Number of variables in group B.
+     * @param xIndices Number of variables in group A.
+     * @param yIndices Number of variables in group B.
      * @param n    Sample size.
      * @param rank Hypothesized rank (test is for rank > r).
-     * @param reg  Regularization parameter (λ > 0).
+     * @param regParam  Regularization parameter (λ > 0).
      * @return The p-value.
      */
-//    public static double getRccaPValueRankLE(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int rank, double regParam) {
-//        try {
-//            int p = xIndices.length;
-//            int q = yIndices.length;
-//
-//            // Step 1: Extract submatrices
-//            SimpleMatrix Cxx = StatUtils.extractSubMatrix(S, xIndices, xIndices).plus(SimpleMatrix.identity(p).scale(regParam));
-//            SimpleMatrix Cyy = StatUtils.extractSubMatrix(S, yIndices, yIndices).plus(SimpleMatrix.identity(q).scale(regParam));
-//            SimpleMatrix Cxy = StatUtils.extractSubMatrix(S, xIndices, yIndices);
-//
-//            // Inverse square roots of Cxx and Cyy using eigen-decomposition
-//            SimpleMatrix Cxx_inv_sqrt = invSqrtSymmetric(Cxx);
-//            SimpleMatrix Cyy_inv_sqrt = invSqrtSymmetric(Cyy);
-//
-//            // Construct matrix M = Cxx^{-1/2} * Cxy * Cyy^{-1/2}
-//            SimpleMatrix M = Cxx_inv_sqrt.mult(Cxy).mult(Cyy_inv_sqrt);
-//
-//            // Perform SVD on M
-//            SimpleSVD<SimpleMatrix> svd = M.svd();
-//            double[] singularValues = svd.getW().diag().getDDRM().getData();
-//
-//            // Test statistic
-//            double stat = 0.0;
-//            for (int i = rank; i < Math.min(p, q); i++) {
-//                double s = singularValues[i];
-//                s = Math.max(0.0, Math.min(s, 1.0 - 1e-12));  // Avoid log(0)
-//                stat += Math.log(1 - s * s);
-//            }
-//            double scale = -(n - (p + q + 3) / 2.);
-//            stat *= scale;
-//
-//            // Degrees of freedom
-//            int df = (p - rank) * (q - rank);
-//
-//            // Compute p-value
-//            ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-//            return 1.0 - chi2.cumulativeProbability(stat);
-//        } catch (Exception e) {
-//            return 0.0;
-//        }
-//    }
+    public static double getRccaPValueRankLE1(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int rank, double regParam) {
+        try {
+            int p = xIndices.length;
+            int q = yIndices.length;
 
-//    public static double getRccaPValueRankLE(SimpleMatrix S,
-//                                             int[] xIdx, int[] yIdx,
-//                                             int n, int rank, double reg) {
-//        try {
-//            final int p = xIdx.length, q = yIdx.length;
-//            final int rmin = Math.min(p, q);
-//
-//            // --- Extract submatrices into DMatrixRMaj
-//            DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
-//            DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
-//            DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
-//
-//            // --- Add ridge (λI)
-//            addRidgeInPlace(Cxx, reg);
-//            addRidgeInPlace(Cyy, reg);
-//
-//            // --- Cholesky: Cxx = Lx Lx^T (lower), Cyy = Ly Ly^T (lower)
-//            CholeskyDecomposition_F64<DMatrixRMaj> cholX = DecompositionFactory_DDRM.chol(p, true);
-//            CholeskyDecomposition_F64<DMatrixRMaj> cholY = DecompositionFactory_DDRM.chol(q, true);
-//            if (!cholX.decompose(Cxx) || !cholY.decompose(Cyy)) return 0.0;
-//
-//            DMatrixRMaj Lx = cholX.getT(null); // lower triangular
-//            DMatrixRMaj Ly = cholY.getT(null); // lower triangular
-//
-//            // --- T = Lx^{-1} * Cxy * Ly^{-T}
-//            // Solve Lx * X = Cxy  => X (forward-substitution)
-//            DMatrixRMaj X = Cxy.copy();
-//            forwardSolveLowerInPlace(Lx, X); // X <- Lx^{-1} * Cxy
-//
-//            // Solve Ly^T * Z^T = X^T  => Z = X * Ly^{-T}
-//            // Do it without forming Ly^T explicitly:
-//            DMatrixRMaj Xt = new DMatrixRMaj(X.numCols, X.numRows);
-//            CommonOps_DDRM.transpose(X, Xt);
-//            // Xt <- (Ly^T)^{-1} * Xt   i.e., solve (Ly^T) * Y = Xt for Y, in-place into Xt
-//            backwardSolveUpperFromLowerTransposeInPlace(Ly, Xt);
-//            DMatrixRMaj T = new DMatrixRMaj(X.numRows, X.numCols);
-//            CommonOps_DDRM.transpose(Xt, T);
-//
-//            // --- SVD of T: values only
-//            SingularValueDecomposition_F64<DMatrixRMaj> svd =
-//                    DecompositionFactory_DDRM.svd(T.numRows, T.numCols, false, false, true);
-//            if (!svd.decompose(T)) return 0.0;
-//            double[] svals = svd.getSingularValues(); // descending
-//
-//            // --- Test statistic
-//            double stat = 0.0;
-//            for (int i = rank; i < rmin; i++) {
-//                double s = Math.max(0.0, Math.min(svals[i], 1.0 - 1e-12));
-//                stat += Math.log(1.0 - s * s);
-//            }
-//            double scale = -(n - (p + q + 3) / 2.0);
-//            stat *= scale;
-//
-//            int df = (p - rank) * (q - rank);
-//            if (df <= 0) return 1.0;
-//
-//            ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-//            return 1.0 - chi2.cumulativeProbability(stat);
-//        } catch (Exception e) {
-//            return 0.0;
-//        }
-//    }
-    public static double getRccaPValueRankLE(SimpleMatrix S,
+            // Step 1: Extract submatrices
+            SimpleMatrix Cxx = StatUtils.extractSubMatrix(S, xIndices, xIndices).plus(SimpleMatrix.identity(p).scale(regParam));
+            SimpleMatrix Cyy = StatUtils.extractSubMatrix(S, yIndices, yIndices).plus(SimpleMatrix.identity(q).scale(regParam));
+            SimpleMatrix Cxy = StatUtils.extractSubMatrix(S, xIndices, yIndices);
+
+            // Inverse square roots of Cxx and Cyy using eigen-decomposition
+            SimpleMatrix Cxx_inv_sqrt = invSqrtSymmetric(Cxx);
+            SimpleMatrix Cyy_inv_sqrt = invSqrtSymmetric(Cyy);
+
+            // Construct matrix M = Cxx^{-1/2} * Cxy * Cyy^{-1/2}
+            SimpleMatrix M = Cxx_inv_sqrt.mult(Cxy).mult(Cyy_inv_sqrt);
+
+            // Perform SVD on M
+            SimpleSVD<SimpleMatrix> svd = M.svd();
+            double[] singularValues = svd.getW().diag().getDDRM().getData();
+
+            // Test statistic
+            double stat = 0.0;
+            for (int i = rank; i < Math.min(p, q); i++) {
+                double s = singularValues[i];
+                s = Math.max(0.0, Math.min(s, 1.0 - 1e-12));  // Avoid log(0)
+                stat += Math.log(1 - s * s);
+            }
+            double scale = -(n - (p + q + 3) / 2.);
+            stat *= scale;
+
+            // Degrees of freedom
+            int df = (p - rank) * (q - rank);
+
+            // Compute p-value
+            ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
+            return 1.0 - chi2.cumulativeProbability(stat);
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    public static double getRccaPValueRankLE2(SimpleMatrix S,
+                                             int[] xIdx, int[] yIdx,
+                                             int n, int rank, double reg) {
+        try {
+            final int p = xIdx.length, q = yIdx.length;
+            final int rmin = Math.min(p, q);
+
+            // --- Extract submatrices into DMatrixRMaj
+            DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
+            DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
+            DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
+
+            // --- Add ridge (λI)
+            addRidgeInPlace(Cxx, reg);
+            addRidgeInPlace(Cyy, reg);
+
+            // --- Cholesky: Cxx = Lx Lx^T (lower), Cyy = Ly Ly^T (lower)
+            CholeskyDecomposition_F64<DMatrixRMaj> cholX = DecompositionFactory_DDRM.chol(p, true);
+            CholeskyDecomposition_F64<DMatrixRMaj> cholY = DecompositionFactory_DDRM.chol(q, true);
+            if (!cholX.decompose(Cxx) || !cholY.decompose(Cyy)) return 0.0;
+
+            DMatrixRMaj Lx = cholX.getT(null); // lower triangular
+            DMatrixRMaj Ly = cholY.getT(null); // lower triangular
+
+            // --- T = Lx^{-1} * Cxy * Ly^{-T}
+            // Solve Lx * X = Cxy  => X (forward-substitution)
+            DMatrixRMaj X = Cxy.copy();
+            forwardSolveLowerInPlace(Lx, X); // X <- Lx^{-1} * Cxy
+
+            // Solve Ly^T * Z^T = X^T  => Z = X * Ly^{-T}
+            // Do it without forming Ly^T explicitly:
+            DMatrixRMaj Xt = new DMatrixRMaj(X.numCols, X.numRows);
+            CommonOps_DDRM.transpose(X, Xt);
+            // Xt <- (Ly^T)^{-1} * Xt   i.e., solve (Ly^T) * Y = Xt for Y, in-place into Xt
+            backwardSolveUpperFromLowerTransposeInPlace(Ly, Xt);
+            DMatrixRMaj T = new DMatrixRMaj(X.numRows, X.numCols);
+            CommonOps_DDRM.transpose(Xt, T);
+
+            // --- SVD of T: values only
+            SingularValueDecomposition_F64<DMatrixRMaj> svd =
+                    DecompositionFactory_DDRM.svd(T.numRows, T.numCols, false, false, true);
+            if (!svd.decompose(T)) return 0.0;
+            double[] svals = svd.getSingularValues(); // descending
+
+            // --- Test statistic
+            double stat = 0.0;
+            for (int i = rank; i < rmin; i++) {
+                double s = Math.max(0.0, Math.min(svals[i], 1.0 - 1e-12));
+                stat += Math.log(1.0 - s * s);
+            }
+            double scale = -(n - (p + q + 3) / 2.0);
+            stat *= scale;
+
+            int df = (p - rank) * (q - rank);
+            if (df <= 0) return 1.0;
+
+            ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
+            return 1.0 - chi2.cumulativeProbability(stat);
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    public static double getRccaPValueRankLE3(SimpleMatrix S,
                                              int[] xIdx, int[] yIdx,
                                              int n, int rank, double reg) {
         try {
@@ -303,7 +307,7 @@ public class RankTests {
             if (entry == null) {
                 // MISS: compute svals via your fast Cholesky+solves pipeline
                 // (same as the last working version you committed)
-                SvdResult sv = computeSvalsCholeskyWhiten(S, xIdx, yIdx, reg); // below
+                SvdResult sv = computeSvalsHybrid(S, xIdx, yIdx, reg); // below
                 if (sv == null) return 0.0;
 
                 double[] svals = sv.svals;
@@ -331,6 +335,252 @@ public class RankTests {
             return 0.0;
         }
     }
+
+    // --- Public: RCCA p-value using eigen-whitening --------------------------------
+    public static double getRccaPValueRankLE4(SimpleMatrix S,
+                                                   int[] xIdx, int[] yIdx,
+                                                   int nEff, int rank, double ridge) {
+        try {
+            final int p = xIdx.length, q = yIdx.length, m = Math.min(p, q);
+            if (rank < 0 || rank >= m) return 1.0;
+
+            // Extract blocks
+            DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
+            DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
+            DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
+
+            // Ridge on diagonals
+            addRidgeInPlace(Cxx, ridge);
+            addRidgeInPlace(Cyy, ridge);
+
+            // Eigendecompose symmetric SPD blocks: Cxx = Qx Λx Qx^T,  Cyy = Qy Λy Qy^T
+            EigenSym ESx = eigSym(Cxx);
+            EigenSym ESy = eigSym(Cyy);
+
+            // T = Λx^{-1/2} * (Qx^T Cxy Qy) * Λy^{-1/2}
+            DMatrixRMaj temp = new DMatrixRMaj(ESx.Q.numCols, Cxy.numCols); // Qx^T*Cxy
+            CommonOps_DDRM.multTransA(ESx.Q, Cxy, temp);
+            DMatrixRMaj T = new DMatrixRMaj(temp.numRows, ESy.Q.numCols);   // (Qx^T*Cxy)*Qy
+            CommonOps_DDRM.mult(temp, ESy.Q, T);
+
+            // scale rows by 1/sqrt(λx_i)
+            scaleRowsInvSqrtInPlace(T, ESx.lambda);
+            // scale cols by 1/sqrt(λy_j)
+            scaleColsInvSqrtInPlace(T, ESy.lambda);
+
+            // SVD values only
+            SingularValueDecomposition_F64<DMatrixRMaj> svd =
+                    DecompositionFactory_DDRM.svd(T.numRows, T.numCols, false, false, true);
+            if (!svd.decompose(T)) return 0.0;
+            double[] svals = svd.getSingularValues(); // descending
+
+            // Wilks/Bartlett test for rank ≤ r
+            double sumLogs = 0.0;
+            for (int i = rank; i < m; i++) {
+                double s = Math.max(0.0, Math.min(svals[i], 1.0 - 1e-12));
+                sumLogs += Math.log(1.0 - s * s);
+            }
+            double scale = -(nEff - (p + q + 3) / 2.0);
+            double stat = scale * sumLogs;
+            int df = (p - rank) * (q - rank);
+            if (df <= 0) return 1.0;
+
+            return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    // ---- Public: compute singular values via hybrid whitening (Cholesky -> Eigen fallback)
+    static SvdResult computeSvalsHybrid(SimpleMatrix S,
+                                        int[] xIdx, int[] yIdx, double reg) {
+        SvdResult sv = computeSvalsCholeskyWhiten_withGuard(S, xIdx, yIdx, reg);
+        if (sv != null) return sv;
+        return computeSvalsEigenWhiten(S, xIdx, yIdx, reg);
+    }
+
+    // ---- Cholesky whitening with stability guard; return null to trigger fallback
+    private static SvdResult computeSvalsCholeskyWhiten_withGuard(SimpleMatrix S,
+                                                                  int[] xIdx, int[] yIdx, double reg) {
+        final int p = xIdx.length, q = yIdx.length;
+
+        DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
+        DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
+        DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
+        addRidgeInPlace(Cxx, reg);
+        addRidgeInPlace(Cyy, reg);
+
+        CholeskyDecomposition_F64<DMatrixRMaj> cholX = DecompositionFactory_DDRM.chol(p, true);
+        CholeskyDecomposition_F64<DMatrixRMaj> cholY = DecompositionFactory_DDRM.chol(q, true);
+        if (!cholX.decompose(Cxx) || !cholY.decompose(Cyy)) return null; // fail → fallback
+
+        DMatrixRMaj Lx = cholX.getT(null);
+        DMatrixRMaj Ly = cholY.getT(null);
+
+        // Condition guard
+        final double COND_THRESH = 1e10;
+        if (cholDiagCondition(Lx) > COND_THRESH || cholDiagCondition(Ly) > COND_THRESH) return null;
+
+        // Whitening: T = Lx^{-1} * Cxy * Ly^{-T}
+        DMatrixRMaj X = Cxy.copy();
+        forwardSolveLowerInPlace(Lx, X);
+        DMatrixRMaj Xt = new DMatrixRMaj(X.numCols, X.numRows);
+        CommonOps_DDRM.transpose(X, Xt);
+        backwardSolveUpperFromLowerTransposeInPlace(Ly, Xt);
+        DMatrixRMaj T = new DMatrixRMaj(X.numRows, X.numCols);
+        CommonOps_DDRM.transpose(Xt, T);
+
+        if (!isFiniteMatrix(T)) return null;
+
+        SingularValueDecomposition_F64<DMatrixRMaj> svd =
+                DecompositionFactory_DDRM.svd(T.numRows, T.numCols, false, false, true);
+        if (!svd.decompose(T)) return null;
+
+        double[] s = svd.getSingularValues();
+        for (double v : s) if (v > 1.0 + 1e-6 || !Double.isFinite(v)) return null;
+
+        return new SvdResult(s);
+    }
+
+
+
+    private static double cholDiagCondition(DMatrixRMaj L) {
+        double dmin = Double.POSITIVE_INFINITY, dmax = 0.0;
+        int n = L.numRows;
+        for (int i = 0; i < n; i++) {
+            double d = L.get(i, i);
+            if (d <= 0 || !Double.isFinite(d)) return Double.POSITIVE_INFINITY;
+            if (d < dmin) dmin = d;
+            if (d > dmax) dmax = d;
+        }
+        double r = dmax / dmin;
+        return r * r;
+    }
+
+    private static boolean isFiniteMatrix(DMatrixRMaj A) {
+        double[] a = A.data;
+        for (int i = 0; i < a.length; i++) {
+            double v = a[i];
+            if (!Double.isFinite(v)) return false;
+        }
+        return true;
+    }
+
+    // ---- Eigen whitening path (from previous message), packaged to return svals
+    private static final double EIG_FLOOR = 1e-12;
+
+    private static SvdResult computeSvalsEigenWhiten(SimpleMatrix S,
+                                                     int[] xIdx, int[] yIdx, double reg) {
+        final int p = xIdx.length, q = yIdx.length;
+
+        DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
+        DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
+        DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
+        addRidgeInPlace(Cxx, reg);
+        addRidgeInPlace(Cyy, reg);
+
+        EigenSym ESx = eigSym(Cxx);
+        EigenSym ESy = eigSym(Cyy);
+
+        // T = Λx^{-1/2} * (Qx^T Cxy Qy) * Λy^{-1/2}
+        DMatrixRMaj temp = new DMatrixRMaj(ESx.Q.numCols, Cxy.numCols);
+        CommonOps_DDRM.multTransA(ESx.Q, Cxy, temp);
+        DMatrixRMaj T = new DMatrixRMaj(temp.numRows, ESy.Q.numCols);
+        CommonOps_DDRM.mult(temp, ESy.Q, T);
+
+        scaleRowsInvSqrtInPlace(T, ESx.lambda);
+        scaleColsInvSqrtInPlace(T, ESy.lambda);
+
+        SingularValueDecomposition_F64<DMatrixRMaj> svd =
+                DecompositionFactory_DDRM.svd(T.numRows, T.numCols, false, false, true);
+        if (!svd.decompose(T)) return null;
+
+        return new SvdResult(svd.getSingularValues());
+    }
+
+    private static final class EigenSym {
+        final DMatrixRMaj Q;     // orthonormal eigenvectors (columns)
+        final double[] lambda;   // eigenvalues (sorted descending, floored)
+        EigenSym(DMatrixRMaj Q, double[] lambda) { this.Q = Q; this.lambda = lambda; }
+    }
+
+    private static EigenSym eigSym(DMatrixRMaj A) {
+        final int n = A.numRows;
+        EigenDecomposition_F64<DMatrixRMaj> eig = DecompositionFactory_DDRM.eig(n, true);
+        if (!eig.decompose(A)) throw new RuntimeException("Eigen decomposition failed");
+        // collect pairs
+        double[] vals = new double[n];
+        DMatrixRMaj Q = new DMatrixRMaj(n, n);
+        int k = 0;
+        for (int i = 0; i < n; i++) {
+            double real = eig.getEigenvalue(i).getReal();
+            // (symmetric SPD => imag=0; guard just in case)
+            vals[k] = real;
+            DMatrixRMaj v = eig.getEigenVector(i);
+            // normalize column and copy into Q
+            if (v == null) throw new RuntimeException("Null eigenvector (unexpected for symmetric)");
+            // copy v into column k of Q
+            for (int r = 0; r < n; r++) Q.set(r, k, v.get(r, 0));
+            k++;
+        }
+        // sort by eigenvalue descending and permute columns of Q
+        int[] order = argsortDesc(vals);
+        double[] sorted = new double[n];
+        DMatrixRMaj Qsorted = new DMatrixRMaj(n, n);
+        for (int j = 0; j < n; j++) {
+            int idx = order[j];
+            sorted[j] = Math.max(vals[idx], EIG_FLOOR); // floor small/negatives
+            for (int r = 0; r < n; r++) Qsorted.set(r, j, Q.get(r, idx));
+        }
+        return new EigenSym(Qsorted, sorted);
+    }
+
+    private static int[] argsortDesc(double[] a) {
+        Integer[] idx = new Integer[a.length];
+        for (int i = 0; i < a.length; i++) idx[i] = i;
+        java.util.Arrays.sort(idx, (i, j) -> Double.compare(a[j], a[i]));
+        int[] out = new int[a.length];
+        for (int i = 0; i < a.length; i++) out[i] = idx[i];
+        return out;
+    }
+
+    private static void scaleRowsInvSqrtInPlace(DMatrixRMaj A, double[] eig) {
+        int n = A.numRows, m = A.numCols;
+        for (int i = 0; i < n; i++) {
+            double s = 1.0 / Math.sqrt(eig[i]);
+            int rowStart = i * m;
+            for (int j = 0; j < m; j++) {
+                A.data[rowStart + j] *= s;
+            }
+        }
+    }
+
+    private static void scaleColsInvSqrtInPlace(DMatrixRMaj A, double[] eig) {
+        int n = A.numRows, m = A.numCols;
+        for (int j = 0; j < m; j++) {
+            double s = 1.0 / Math.sqrt(eig[j]);
+            for (int i = 0; i < n; i++) {
+                A.set(i, j, A.get(i, j) * s);
+            }
+        }
+    }
+
+//    private static DMatrixRMaj extract(SimpleMatrix S, int[] rows, int[] cols) {
+//        DMatrixRMaj out = new DMatrixRMaj(rows.length, cols.length);
+//        var src = S.getDDRM();
+//        for (int i = 0; i < rows.length; i++) {
+//            int ri = rows[i];
+//            for (int j = 0; j < cols.length; j++) {
+//                out.set(i, j, src.get(ri, cols[j]));
+//            }
+//        }
+//        return out;
+//    }
+//
+//    private static void addRidgeInPlace(DMatrixRMaj A, double lam) {
+//        int n = Math.min(A.numRows, A.numCols);
+//        for (int i = 0; i < n; i++) A.set(i, i, A.get(i, i) + lam);
+//    }
 
     // ====== Cache bits =========================================================
 
@@ -471,7 +721,7 @@ public class RankTests {
         int minpq = Math.min(p, q);
 
         for (int r = 0; r < minpq; r++) {
-            double pVal = getRccaPValueRankLE(S, xIndices, yIndices, n, r, regParam);
+            double pVal = getRccaPValueRankLE3(S, xIndices, yIndices, n, r, regParam);
 
             if (pVal > alpha) {
                 return r; // First non-rejected rank

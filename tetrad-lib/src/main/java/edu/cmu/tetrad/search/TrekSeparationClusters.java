@@ -616,11 +616,10 @@ public class TrekSeparationClusters {
         Map<Set<Integer>, Integer> clusterToRank = new HashMap<>();
         Map<Set<Integer>, Integer> reducedRank = new HashMap<>();
 
-        for (int rank = 1; rank < 6; rank++) {
+        for (int rank = 1; rank <= 3; rank++) {
             int size = rank + 1;
 
-            log("EXAMINING SIZE " + size + " RANK = " + rank);
-
+            log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
             log("Base clusters for size " + size + " rank " + rank + ": " +
                 (P.isEmpty() ? "NONE" : toNamesClusters(P)));
@@ -694,6 +693,7 @@ public class TrekSeparationClusters {
                     log("Adding cluster to new clusters: " + toNamesCluster(cluster) + " rank = " + finalRank);
                     newClusters.add(cluster);
                     used.addAll(cluster);
+                    remainingVars.removeAll(cluster);
                 }
             }
 
@@ -718,11 +718,13 @@ public class TrekSeparationClusters {
                         Set<Integer> C2 = new HashSet<>(C1);
                         C2.addAll(_C);
 
-                        if (C2.size() == _size + 1 && lookupRank(C2) == _reducedRank) {
+                        int newRank = lookupRank(C2);
+
+                        if (C2.size() == _size + 1 && newRank < rank && newRank >= 1) {
                             if (newClusters.contains(C2)) continue;
                             newClusters.remove(C1);
                             newClusters.add(C2);
-                            reducedRank.put(C2, _reducedRank);
+                            reducedRank.put(C2, newRank);
                             used.addAll(C2);
                             log("Augmenting cluster " + toNamesCluster(C1) + " to cluster " + toNamesCluster(C2) + " (rank " + _reducedRank + ").");
                             didAugment = true;
@@ -750,8 +752,9 @@ public class TrekSeparationClusters {
 
             for (Set<Integer> _C : newClusters) {
                 used.addAll(_C);
-                remainingVars.removeAll(_C);
             }
+
+            remainingVars.removeAll(used);
         }
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
@@ -962,7 +965,7 @@ public class TrekSeparationClusters {
             yIndices[i] = ySet.get(i);
         }
 
-        return RankTests.estimateRccaRank(S, xIndices, yIndices, sampleSize, alpha, 0.001);
+        return RankTests.estimateRccaRank(S, xIndices, yIndices, sampleSize, alpha, 0.01);
     }
 
     /**
