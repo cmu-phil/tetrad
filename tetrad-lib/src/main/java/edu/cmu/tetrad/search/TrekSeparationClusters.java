@@ -752,7 +752,7 @@ public class TrekSeparationClusters {
         return java.util.stream.LongStream.range(0, total).parallel()
                 .mapToObj(m -> {
                     int[] idxs = combinadicDecodeColex(m, n, k, C);
-                    Set<Integer> cluster = lookupCluster(vars, k, idxs);
+                    Set<Integer> cluster = lookupCluster(vars, idxs);
                     int r = lookupRank(cluster);
                     return (r == rank) ? cluster : null;
                 })
@@ -761,11 +761,11 @@ public class TrekSeparationClusters {
                 .collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
     }
 
-    private static @NotNull Set<Integer> lookupCluster(List<Integer> vars, int k, int[] idxs) {
+    private static @NotNull Set<Integer> lookupCluster(List<Integer> vars, int[] idxs) {
         // Build the cluster lazily only once
         // (If you can change lookupRank to take int[] or BitSet, do that for speed.)
-        Set<Integer> cluster = new HashSet<>(k * 2);
-        for (int i = 0; i < k; i++) {
+        Set<Integer> cluster = new HashSet<>(idxs.length * 2);
+        for (int i = 0; i < idxs.length; i++) {
             cluster.add(vars.get(idxs[i]));
         }
         return cluster;
