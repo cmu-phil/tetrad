@@ -100,9 +100,8 @@ public class TrekSeparationClusters {
         }
 
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
-        this.S = this.S.plus(SimpleMatrix.identity(S.getNumRows()).scale(0.001));
 
-        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism","<cores>");
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "<cores>");
     }
 
     /**
@@ -963,7 +962,7 @@ public class TrekSeparationClusters {
             yIndices[i] = ySet.get(i);
         }
 
-        return RankTests.estimateRccaRank(S, xIndices, yIndices, sampleSize, alpha, 0.01);
+        return RankTests.estimateRccaRank(S, xIndices, yIndices, sampleSize, alpha, 0.001);
     }
 
     /**
