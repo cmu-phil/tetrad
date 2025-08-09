@@ -15,7 +15,6 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.Pair;
@@ -39,6 +38,8 @@ import java.util.stream.Collectors;
  * clusters, identifying disjoint clusters, and constructing resulting graphical models.
  */
 public class TrekSeparationClusters {
+    // ---- Binomial cache (reuse across calls) -----------------------------------
+    private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
     /**
      * List of observed variables/nodes
      */
@@ -143,14 +144,8 @@ public class TrekSeparationClusters {
     }
 
     /**
-     * Unrank colex: return the m-th k-combination of {0..n-1} in colex order.
-     * Correct logic:
-     *   r = m
-     *   for i = k..1:
-     *     pick largest x in [0, bound-1] with C(x, i) <= r
-     *     set a[i-1] = x
-     *     r -= C(x, i)
-     *     bound = x
+     * Unrank colex: return the m-th k-combination of {0..n-1} in colex order. Correct logic: r = m for i = k..1: pick
+     * largest x in [0, bound-1] with C(x, i) <= r set a[i-1] = x r -= C(x, i) bound = x
      */
     static int[] combinadicDecodeColex(long m, int n, int k, long[][] C) {
         int[] comb = new int[k];
@@ -162,14 +157,126 @@ public class TrekSeparationClusters {
             while (lo <= hi) {
                 int mid = (lo + hi) >>> 1;
                 long c = choose(C, mid, i);
-                if (c <= r) { v = mid; lo = mid + 1; }
-                else { hi = mid - 1; }
+                if (c <= r) {
+                    v = mid;
+                    lo = mid + 1;
+                } else {
+                    hi = mid - 1;
+                }
             }
             comb[i - 1] = v;           // element value (0-based)
             r -= choose(C, v, i);      // <-- correct decrement
             bound = v;                  // next elements must be smaller
         }
         return comb; // ascending: comb[0] < comb[1] < ... < comb[k-1]
+    }
+
+    private static long[][] binom(int n, int k) {
+        long key = (((long) n) << 32) ^ k;
+        return BINOM_CACHE.computeIfAbsent(key, binom -> precomputeBinom(n, k));
+    }
+
+//    private static long[][] precomputeBinom(int n, int k) {
+//        long[][] C = new long[n + 1][k + 1];
+//        for (int i = 0; i <= n; i++) {
+//            C[i][0] = 1;
+//            int maxj = Math.min(i, k);
+//            for (int j = 1; j <= maxj; j++) {
+//                long v = C[i - 1][j - 1] + C[i - 1][j];
+//                if (v < 0 || v < C[i - 1][j - 1]) v = Long.MAX_VALUE; // clamp on overflow
+//                C[i][j] = v;
+//            }
+//        }
+//        return C;
+//    }
+//
+//    private static long choose(long[][] C, int x, int j) {
+//        if (x < j || j < 0) return 0L;
+//        return C[x][j];
+//    }
+
+    // ---- Colex unranking: m -> k-combination of {0..n-1} -----------------------
+    private static int[] combinadicDecodeColex(long m, int n, int k, long[][] C, int[] out) {
+        long r = m;
+        int bound = n;
+        for (int i = k; i >= 1; i--) {
+            int lo = 0, hi = bound - 1, v = 0;
+            while (lo <= hi) {
+                int mid = (lo + hi) >>> 1;
+                long c = choose(C, mid, i);
+                if (c <= r) {
+                    v = mid;
+                    lo = mid + 1;
+                } else {
+                    hi = mid - 1;
+                }
+            }
+            out[i - 1] = v;
+            r -= choose(C, v, i);
+            bound = v;
+        }
+        return out; // ascending
+    }
+
+    private static @NotNull Set<Integer> lookupCluster(List<Integer> vars, int[] idxs) {
+        Set<Integer> cluster = new HashSet<>(idxs.length);
+        for (int idx : idxs) {
+            cluster.add(vars.get(idx));
+        }
+        return cluster;
+    }
+
+// ---- Bridge overload (keeps your current lookupRank working today) ---------
+
+    // ---- New fast variant of your method ---------------------------------------
+    private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
+        final int n = vars.size();
+        final int k = size;
+
+        // Map List<Integer> -> primitive array for O(1) int access
+        final int[] varIds = new int[n];
+        for (int i = 0; i < n; i++) varIds[i] = vars.get(i);
+
+        final long[][] C = binom(n, k);
+        final long total = C[n][k];
+
+        // Thread-local buffers to avoid per-combination allocations
+        final ThreadLocal<int[]> tlIdxs = ThreadLocal.withInitial(() -> new int[k]);
+        final ThreadLocal<int[]> tlIds = ThreadLocal.withInitial(() -> new int[k]);
+
+        return java.util.stream.LongStream.range(0, total).parallel()
+                .mapToObj(m -> {
+                    // decode indices of the combination into tlIdxs
+                    int[] idxs = tlIdxs.get();
+                    combinadicDecodeColex(m, n, k, C, idxs);
+
+                    // map to variable IDs into tlIds
+                    int[] ids = tlIds.get();
+                    for (int i = 0; i < k; i++) ids[i] = varIds[idxs[i]];
+
+                    // fast path rank check (no Set boxing)
+                    int r = lookupRankFast(ids);   // <-- implement/bridge below
+                    if (r != rank) return null;
+
+                    // only now build the Set<Integer> to return
+                    Set<Integer> cluster = new java.util.HashSet<>(k * 2);
+                    for (int i = 0; i < k; i++) cluster.add(ids[i]);
+                    return cluster;
+                })
+                .filter(Objects::nonNull)
+                .collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
+    }
+
+    /**
+     * Fast overload: takes primitive IDs. For now this just wraps the old method. Replace the body with a true
+     * primitive-based implementation when ready.
+     */
+    private int lookupRankFast(int[] ids) {
+        // Temporary bridge: minimal allocation, one small set per match check.
+        // (If you can, reimplement lookupRank to consume int[] directly.)
+        Set<Integer> s = new java.util.HashSet<>(ids.length * 2);
+        for (int x : ids) s.add(x);
+        return lookupRank(s);
     }
 
     /**
@@ -734,42 +841,30 @@ public class TrekSeparationClusters {
 //                .filter(Objects::nonNull)
 //                .collect(Collectors.toCollection(ConcurrentHashMap::newKeySet));
 //    }
-
-    private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
-        final int n = vars.size();
-        final int k = size;
-
-        // Precompute binomials once per call (cheap), or cache by n,k if you call a lot.
-        final long[][] C = precomputeBinom(n, k);
-        final long total = C[n][k];  // number of combinations
-
-        // Safety for absurd totals
-        if (total < 0 || total > (1L << 40)) {
-            throw new IllegalStateException("Combination count too large: " + total);
-        }
-
-        // Parallel over indices 0..total-1; decode on the fly
-        return java.util.stream.LongStream.range(0, total).parallel()
-                .mapToObj(m -> {
-                    int[] idxs = combinadicDecodeColex(m, n, k, C);
-                    Set<Integer> cluster = lookupCluster(vars, idxs);
-                    int r = lookupRank(cluster);
-                    return (r == rank) ? cluster : null;
-                })
-                .filter(Objects::nonNull)
-                // Concurrent set to collect in parallel
-                .collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
-    }
-
-    private static @NotNull Set<Integer> lookupCluster(List<Integer> vars, int[] idxs) {
-        // Build the cluster lazily only once
-        // (If you can change lookupRank to take int[] or BitSet, do that for speed.)
-        Set<Integer> cluster = new HashSet<>(idxs.length * 2);
-        for (int i = 0; i < idxs.length; i++) {
-            cluster.add(vars.get(idxs[i]));
-        }
-        return cluster;
-    }
+//    private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
+//        final int n = vars.size();
+//        final int k = size;
+//
+//        // Precompute binomials once per call (cheap), or cache by n,k if you call a lot.
+//        final long[][] C = precomputeBinom(n, k);
+//        final long total = C[n][k];  // number of combinations
+//
+//        // Safety for absurd totals
+//        if (total < 0 || total > (1L << 40)) {
+//            throw new IllegalStateException("Combination count too large: " + total);
+//        }
+//
+//        // Parallel over indices 0..total-1; decode on the fly
+//        return java.util.stream.LongStream.range(0, total).parallel()
+//                .mapToObj(m -> {
+//                    int[] idxs = combinadicDecodeColex(m, n, k, C);
+//                    Set<Integer> cluster = lookupCluster(vars, idxs);
+//                    int r = lookupRank(cluster);
+//                    return (r == rank) ? cluster : null;
+//                })
+//                .filter(Objects::nonNull)
+//                .collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
+//    }
 
     /**
      * Retrieves the rank of a specified cluster. The method first checks if the rank for the given cluster is already
