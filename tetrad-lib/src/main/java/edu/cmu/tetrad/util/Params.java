@@ -900,6 +900,14 @@ public final class Params {
      */
     public static final String SINGULARITY_LAMBDA = "singularityLambda";
     /**
+     * Constant <code>REGULARIZATION_LAMBDA="regularizationLambda"</code>
+     */
+    public static final String REGULARIZATION_LAMBDA = "regularizationLambda";
+    /**
+     * Constant <code>CONDITIONING_THRESHOLD="conditioningThreshold"</code>
+     */
+    public static final String CONDITIONING_THRESHOLD = "conditioningThreshold";
+    /**
      * Constant <code>COMPARE_GRAPH_ALGCOMP="compareGraphAlgcomp"</code>
      */
     public static final String COMPARE_GRAPH_ALGCOMP = "compareGraphAlgcomp";

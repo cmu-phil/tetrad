@@ -75,7 +75,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         boolean includeStructureModel = parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL);
 
         CovarianceMatrix covarianceMatrix = dataModel instanceof DataSet
-                ? new CovarianceMatrix((DataSet) dataModel) : (CovarianceMatrix) dataModel;
+                ? new CorrelationMatrix((DataSet) dataModel) : (CovarianceMatrix) dataModel;
         List<Node> variables = dataModel.getVariables();
 
         edu.cmu.tetrad.search.TrekSeparationClusters search
@@ -83,6 +83,8 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
                 ess == -1 ? covarianceMatrix.getSampleSize() : ess);
         search.setIncludeStructureModel(includeStructureModel);
         search.setIncludeAllNodes(includeAllNodes);
+        search.setRegLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+        search.setCondThreshold(parameters.getDouble(Params.CONDITIONING_THRESHOLD));
         search.setAlpha(alpha);
         search.setPenalty(penalty);
         search.setVerbose(verbose);
@@ -145,6 +147,8 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         parameters.add(Params.TSC_CLUSTER_RANK);
         parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.REGULARIZATION_LAMBDA);
+        parameters.add(Params.CONDITIONING_THRESHOLD);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
 //        parameters.add(Params.MIMBUILD_TYPE);

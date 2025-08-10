@@ -136,19 +136,19 @@ public class RankTests {
 
     public static double getRccaPValueRankLE(SimpleMatrix S,
                                              int[] xIdx, int[] yIdx,
-                                             int n, int rank, double reg) {
+                                             int n, int rank, double regLambda, double condThreshold) {
         try {
             final int p = xIdx.length, q = yIdx.length, rmin = Math.min(p, q);
             if (rank < 0 || rank >= rmin) return 1.0;
 
             // 1) cache lookup
-            RccaKey key = new RccaKey(xIdx, yIdx, reg);
+            RccaKey key = new RccaKey(xIdx, yIdx, regLambda);
             RccaEntry entry = cacheGet(key);
 
             if (entry == null) {
                 // MISS: compute svals via your fast Cholesky+solves pipeline
                 // (same as the last working version you committed)
-                SvdResult sv = computeSvalsHybrid(S, xIdx, yIdx, reg); // below
+                SvdResult sv = computeSvalsHybrid(S, xIdx, yIdx, regLambda, condThreshold); // below
                 if (sv == null) return 0.0;
 
                 double[] svals = sv.svals;
@@ -179,22 +179,41 @@ public class RankTests {
 
     // ---- Public: compute singular values via hybrid whitening (Cholesky -> Eigen fallback)
     static SvdResult computeSvalsHybrid(SimpleMatrix S,
-                                        int[] xIdx, int[] yIdx, double reg) {
-//        SvdResult sv = computeSvalsCholeskyWhiten_withGuard(S, xIdx, yIdx, reg);
-//        if (sv != null) return sv;
+                                        int[] xIdx, int[] yIdx, double reg, double condThreshold) {
+        SvdResult sv = computeSvalsCholeskyWhiten_withGuard(S, xIdx, yIdx, reg, condThreshold);
+        if (sv != null) return sv;
         return computeSvalsEigenWhiten(S, xIdx, yIdx, reg);
     }
 
-    // ---- Cholesky whitening with stability guard; return null to trigger fallback
+    /**
+     * Cholesky whitening with stability guard; return null to trigger fallback.
+     *
+     * @param S             Covariance matrix.
+     * @param xIdx          The indices of the one cluster.
+     * @param yIdx          The indices of the other cluster.
+     * @param regLambda     The regularization lambda. This will be added as a ridge to correlation matrices.
+     * @param condThreshold A trigger on matrix conditioning to return null, to trigger fallback to using eigenvalue
+     *                      whitening.
+     */
     private static SvdResult computeSvalsCholeskyWhiten_withGuard(SimpleMatrix S,
-                                                                  int[] xIdx, int[] yIdx, double reg) {
+                                                                  int[] xIdx, int[] yIdx,
+                                                                  double regLambda,
+                                                                  double condThreshold) {
+        if (regLambda < 0) {
+            throw new IllegalArgumentException("regLambda must be >= 0");
+        }
+
+        if (condThreshold <= 0) {
+            return null;
+        }
+
         final int p = xIdx.length, q = yIdx.length;
 
         DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
         DMatrixRMaj Cyy = extract(S, yIdx, yIdx);
         DMatrixRMaj Cxy = extract(S, xIdx, yIdx);
-        addRidgeInPlace(Cxx, reg);
-        addRidgeInPlace(Cyy, reg);
+        addRidgeInPlace(Cxx, regLambda);
+        addRidgeInPlace(Cyy, regLambda);
 
         CholeskyDecomposition_F64<DMatrixRMaj> cholX = DecompositionFactory_DDRM.chol(p, true);
         CholeskyDecomposition_F64<DMatrixRMaj> cholY = DecompositionFactory_DDRM.chol(q, true);
@@ -204,8 +223,7 @@ public class RankTests {
         DMatrixRMaj Ly = cholY.getT(null);
 
         // Condition guard
-        final double COND_THRESH = 1e-6;
-        if (cholDiagCondition(Lx) > COND_THRESH || cholDiagCondition(Ly) > COND_THRESH) return null;
+        if (cholDiagCondition(Lx) > condThreshold || cholDiagCondition(Ly) > condThreshold) return null;
 
         // Whitening: T = Lx^{-1} * Cxy * Ly^{-T}
         DMatrixRMaj X = Cxy.copy();
@@ -427,7 +445,8 @@ public class RankTests {
         return V.mult(D_inv_sqrt).mult(V.transpose());
     }
 
-    public static int estimateRccaRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, double alpha, double regParam) {
+    public static int estimateRccaRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, double alpha,
+                                       double regLambda, double condThreshold) {
         for (int i = 0; i < yIndices.length; i++) {
             for (int j = i + 1; j < yIndices.length; j++) {
                 if (yIndices[i] == yIndices[j]) {
@@ -441,7 +460,7 @@ public class RankTests {
         int minpq = Math.min(p, q);
 
         for (int r = 0; r < minpq; r++) {
-            double pVal = getRccaPValueRankLE(S, xIndices, yIndices, n, r, regParam);
+            double pVal = getRccaPValueRankLE(S, xIndices, yIndices, n, r, regLambda, condThreshold);
 
             if (pVal > alpha) {
                 return r; // First non-rejected rank
@@ -473,13 +492,13 @@ public class RankTests {
         final int[] x, y;
         final long regBits; // quantized reg to avoid fp equality headaches
 
-        RccaKey(int[] xIdx, int[] yIdx, double reg) {
+        RccaKey(int[] xIdx, int[] yIdx, double regLambda) {
             this.x = xIdx.clone();
             Arrays.sort(this.x);
             this.y = yIdx.clone();
             Arrays.sort(this.y);
-            // quantize reg to ~1e-12 resolution
-            this.regBits = Double.doubleToLongBits(Math.rint(reg * 1e12) / 1e12);
+            // quantize regLambda to ~1e-12 resolution
+            this.regBits = Double.doubleToLongBits(Math.rint(regLambda * 1e12) / 1e12);
         }
 
         @Override

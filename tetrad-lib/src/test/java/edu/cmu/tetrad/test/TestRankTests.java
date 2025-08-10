@@ -77,8 +77,8 @@ public class TestRankTests {
                 int[] indexy = indices.stream().mapToInt(Integer::intValue).toArray();
 
                 int ess = (int) (data.getNumRows() * essMult);
-                double p = RankTests.getRccaPValueRankLE(S, indexx, indexy, ess, rank, regParam);
-                int estRank = RankTests.estimateRccaRank(S, indexx, indexy, ess, alpha, regParam);
+                double p = RankTests.getRccaPValueRankLE(S, indexx, indexy, ess, rank, regParam, 1e-10);
+                int estRank = RankTests.estimateRccaRank(S, indexx, indexy, ess, alpha, regParam, 1e-10);
 
                 // Print out the discrepancies
                 if ((coherent && p < alpha) || (!coherent && p > alpha)) {

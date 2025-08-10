@@ -78,6 +78,17 @@ public class TrekSeparationClusters {
      */
     private boolean includeAllNodes = false;
     /**
+     * Regularization constant added as a ridge to correlation/covariance matrices. This is added when calculating rank,
+     * separately to the cov/corr matrix for each cluster being compared.
+     */
+    private double regLambda = 0.001;
+    /**
+     * A matrix conditioning threshold. This is used in the rank calculations to decide between using Cholesky whitening
+     * or eigenvalue whitening. If matrix conditioning values are greater than this threshold, eigenvalue whitening us
+     * used, which is more accurate but slower. Default 1e-10.
+     */
+    private double condThreshold = 1e-10;
+    /**
      * Whether to output verbose logging
      */
     private boolean verbose = false;
@@ -965,7 +976,7 @@ public class TrekSeparationClusters {
             yIndices[i] = ySet.get(i);
         }
 
-        return RankTests.estimateRccaRank(S, xIndices, yIndices, sampleSize, alpha, 0.01);
+        return RankTests.estimateRccaRank(S, xIndices, yIndices, sampleSize, alpha, regLambda, condThreshold);
     }
 
     /**
@@ -1034,6 +1045,31 @@ public class TrekSeparationClusters {
         return cluster.stream()
                 .map(i -> nodes.get(i).getName())
                 .collect(Collectors.joining(" ", "{", "}"));
+    }
+
+    /**
+     * Regularization constant added as a ridge to correlation/covariance matrices. This is added when calculating rank,
+     * separately to the cov/corr matrix for each cluster being compared.
+     *
+     * @param regLambda This regularization lambda value, by default 0.001. Must be >= 0. If 0, then no regularization
+     *                  is done.
+     */
+    public void setRegLambda(double regLambda) {
+        if (regLambda < 0) {
+            throw new IllegalArgumentException("Regularization constant is negative: " + regLambda);
+        }
+        this.regLambda = regLambda;
+    }
+
+    /**
+     * A matrix conditioning threshold. This is used in the rank calculations to decide between using Cholesky whitening
+     * or eigenvalue whitening. If matrix conditioning values are greater than this threshold, eigenvalue whitening us
+     * used, which is more accurate but slower. Default 1e-10.
+     *
+     * @param condThreshold This conditinoinig threshold, by default 1e-10.
+     */
+    public void setCondThreshold(double condThreshold) {
+        this.condThreshold = condThreshold;
     }
 
     public enum Mode {METALOOP, SIZE_RANK}

@@ -6758,6 +6758,59 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         </ul>
 
         <h3 class="parameter_description"
+            id="regularizationLambda">regularizationLambda</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="regularizationLambda_short_desc">
+                    Small number >= 0 Add lambda to the the diagonal of
+                    correlation/covariance matrices. Default 0.001.
+        </span></li>
+            <li>Long Description: <span
+                    id="regularizationLambda_long_desc">
+                    Small number >= 0 Add lambda to the the diagonal of
+                    correlation/covariance matricers. Default 0.001.
+         </span></li>
+            <li>Default Value: <span
+                    id="regularizationLambda_default_value">0.001</span></li>
+            <li>Lower Bound: <span
+                    id="regularizationLambda_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="regularizationLambda_upper_bound">Infinity</span></li>
+            <li>Value
+                Type: <span
+                        id="regularizationLambda_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="conditioningThreshold">conditioningThreshold</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="conditioningThreshold_short_desc">
+                    Matrix conditioning values above which Eigenvalue whitening is used.
+                    Default 1e-10.
+        </span></li>
+            <li>Long Description: <span
+                    id="conditioningThreshold_long_desc">
+                    Matrix conditioning values above which Eigenvalue whitening is used.
+                    For smaller tresholds, the faster Cholesky whitening is used.
+                    Default 1e-10.
+         </span></li>
+            <li>Default Value: <span
+                    id="conditioningThreshold_default_value">1e-10</span></li>
+            <li>Lower Bound: <span
+                    id="conditioningThreshold_lower_bound">0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="conditioningThreshold_upper_bound">Infinity</span></li>
+            <li>Value
+                Type: <span
+                        id="conditioningThreshold_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="sepsetFinderMethod">sepsetFinderMethod</h3>
         <ul
                 class="parameter_description_list">
