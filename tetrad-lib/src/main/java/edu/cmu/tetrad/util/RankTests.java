@@ -498,7 +498,7 @@ public class RankTests {
             this.y = yIdx.clone();
             Arrays.sort(this.y);
             // quantize regLambda to ~1e-12 resolution
-            this.regBits = Double.doubleToLongBits(Math.rint(regLambda * 1e12) / 1e12);
+            this.regBits = Double.doubleToLongBits(Math.rint(regLambda * 1e20) / 1e20);
         }
 
         @Override

@@ -75,7 +75,7 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
         boolean includeStructureModel = parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL);
 
         CovarianceMatrix covarianceMatrix = dataModel instanceof DataSet
-                ? new CorrelationMatrix((DataSet) dataModel) : (CovarianceMatrix) dataModel;
+                ? new CorrelationMatrix((DataSet) dataModel) : new CorrelationMatrix((CovarianceMatrix) dataModel);
         List<Node> variables = dataModel.getVariables();
 
         edu.cmu.tetrad.search.TrekSeparationClusters search
