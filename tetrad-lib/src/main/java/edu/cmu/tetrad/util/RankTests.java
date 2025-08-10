@@ -180,8 +180,8 @@ public class RankTests {
     // ---- Public: compute singular values via hybrid whitening (Cholesky -> Eigen fallback)
     static SvdResult computeSvalsHybrid(SimpleMatrix S,
                                         int[] xIdx, int[] yIdx, double reg) {
-        SvdResult sv = computeSvalsCholeskyWhiten_withGuard(S, xIdx, yIdx, reg);
-        if (sv != null) return sv;
+//        SvdResult sv = computeSvalsCholeskyWhiten_withGuard(S, xIdx, yIdx, reg);
+//        if (sv != null) return sv;
         return computeSvalsEigenWhiten(S, xIdx, yIdx, reg);
     }
 
@@ -204,7 +204,7 @@ public class RankTests {
         DMatrixRMaj Ly = cholY.getT(null);
 
         // Condition guard
-        final double COND_THRESH = 1e10;
+        final double COND_THRESH = 1e-6;
         if (cholDiagCondition(Lx) > COND_THRESH || cholDiagCondition(Ly) > COND_THRESH) return null;
 
         // Whitening: T = Lx^{-1} * Cxy * Ly^{-T}
