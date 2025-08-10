@@ -56,11 +56,6 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
      */
     @Override
     public Graph runSearch(DataModel dataModel, Parameters parameters) {
-        if (parameters.getBoolean(Params.VERBOSE)) {
-            System.out.println("alpha = " + parameters.getDouble(Params.FOFC_ALPHA));
-            System.out.println("verbose = " + parameters.getBoolean(Params.VERBOSE));
-        }
-
         int size = parameters.getInt(Params.TSC_CLUSTER_SIZE);
         int rank = parameters.getInt(Params.TSC_CLUSTER_RANK);
         int mode =  parameters.getInt(Params.TSC_MODE);
