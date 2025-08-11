@@ -445,7 +445,7 @@ public class RankTests {
         return V.mult(D_inv_sqrt).mult(V.transpose());
     }
 
-    public static int estimateRccaRank(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, double alpha,
+    public static int estimateRccaRank0(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, double alpha,
                                        double regLambda, double condThreshold) {
         for (int i = 0; i < yIndices.length; i++) {
             for (int j = i + 1; j < yIndices.length; j++) {
@@ -469,6 +469,88 @@ public class RankTests {
 
         return minpq; // All tests rejected, full rank assumed
     }
+
+    public static int estimateRccaRank(SimpleMatrix Scond,
+                                           int[] xIdxLocal, int[] yIdxLocal,
+                                           int n, double alpha,
+                                           double regLambda, double condThreshold) {
+        // 1) Fast r=0 test via Wilks (all canonical cors = 0)
+        if (acceptRankZeroByWilks(Scond, xIdxLocal, yIdxLocal, n, alpha)) {
+            return 0;
+        }
+        // 2) Fall back to your existing RCCA for r >= 1
+        return RankTests.estimateRccaRank0(Scond, xIdxLocal, yIdxLocal, n, alpha, regLambda, condThreshold);
+    }
+
+    private static boolean acceptRankZeroByWilks(SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, double alpha) {
+        SimpleMatrix Sxx = block(Scond, xLoc, xLoc);
+        SimpleMatrix Syy = block(Scond, yLoc, yLoc);
+        SimpleMatrix Sxy = block(Scond, xLoc, yLoc);
+
+        SimpleMatrix Wxx = invSqrtPSD(Sxx);
+        SimpleMatrix Wyy = invSqrtPSD(Syy);
+        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
+
+        double[] s = M.svd().getSingularValues();
+        int p = Sxx.getNumRows(), q = Syy.getNumRows();
+        int r = Math.min(p, q);
+
+        double lambda = 1.0;
+        for (int i = 0; i < Math.min(r, s.length); i++) {
+            double rho = Math.max(0.0, Math.min(1.0, s[i]));
+            lambda *= (1.0 - rho * rho);
+        }
+        double c = (n - 1) - 0.5 * (p + q + 1);
+        if (c < 1) c = 1;
+        double stat = -c * Math.log(Math.max(lambda, 1e-16));
+        int df = p * q;
+
+        // Use Commons Math in your code:
+         double pval = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
+//        double pval = chiSqUpperTail(stat, df); // placeholder
+
+        return pval > alpha; // accept H0: rank == 0
+    }
+
+    // Extract block S[rows, cols]
+    private static SimpleMatrix block(SimpleMatrix S, int[] rows, int[] cols) {
+        SimpleMatrix out = new SimpleMatrix(rows.length, cols.length);
+        for (int i = 0; i < rows.length; i++) {
+            int ri = rows[i];
+            for (int j = 0; j < cols.length; j++) {
+                out.set(i, j, S.get(ri, cols[j]));
+            }
+        }
+        return out;
+    }
+
+    private static final double RIDGE = 1e-10;
+    private static final double MIN_EIG = 1e-12;
+
+    // Symmetric PSD inverse square root with eigen floor + ridge
+    private static SimpleMatrix invSqrtPSD(SimpleMatrix A) {
+        SimpleMatrix Asym = A.plus(A.transpose()).divide(2.0); // symmetrize
+        // small ridge to avoid negative/zero eigs
+        int n = Asym.getNumRows();
+        SimpleMatrix Areg = Asym.copy();
+        for (int i=0;i<n;i++) {
+            Areg.set(i, i, Areg.get(i, i) + RIDGE);
+        }
+        SimpleEVD<SimpleMatrix> evd = Areg.eig();
+        SimpleMatrix V = new SimpleMatrix(n, n);
+        SimpleMatrix DinvSqrt = new SimpleMatrix(n, n);
+        for (int i=0;i<n;i++) {
+            double eig = Math.max(evd.getEigenvalue(i).getReal(), MIN_EIG);
+            double invs = 1.0 / Math.sqrt(eig);
+            DinvSqrt.set(i, i, invs);
+            // eigenvectors are columns of V
+            SimpleMatrix vi = evd.getEigenVector(i);
+            for (int r=0;r<n;r++) V.set(r, i, vi.get(r, 0));
+        }
+        // V * D^{-1/2} * V^T
+        return V.mult(DinvSqrt).mult(V.transpose());
+    }
+
 
     private static final class EigenSym {
         final DMatrixRMaj Q;     // orthonormal eigenvectors (columns)
