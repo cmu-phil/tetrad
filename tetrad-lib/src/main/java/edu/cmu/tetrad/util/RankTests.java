@@ -474,43 +474,83 @@ public class RankTests {
                                            int[] xIdxLocal, int[] yIdxLocal,
                                            int n, double alpha,
                                            double regLambda, double condThreshold) {
-        // 1) Fast r=0 test via Wilks (all canonical cors = 0)
-        if (acceptRankZeroByWilks(Scond, xIdxLocal, yIdxLocal, n, alpha)) {
-            return 0;
+        for (int r = 0; r < yIdxLocal.length; r++) {
+            if (acceptRankLeByWilks(Scond, xIdxLocal, yIdxLocal, n, r, alpha)) {
+                return r;
+            }
         }
-        // 2) Fall back to your existing RCCA for r >= 1
-        return RankTests.estimateRccaRank0(Scond, xIdxLocal, yIdxLocal, n, alpha, regLambda, condThreshold);
+
+        return Math.min(xIdxLocal.length, yIdxLocal.length);
     }
 
-    private static boolean acceptRankZeroByWilks(SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, double alpha) {
+    private static boolean acceptRankLeByWilks(
+            SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, int r, double alpha) {
+
+        // Blocks
         SimpleMatrix Sxx = block(Scond, xLoc, xLoc);
         SimpleMatrix Syy = block(Scond, yLoc, yLoc);
         SimpleMatrix Sxy = block(Scond, xLoc, yLoc);
 
+        int p = Sxx.getNumRows(), q = Syy.getNumRows();
+        int minpq = Math.min(p, q);
+        if (r < 0 || r >= minpq) return false; // invalid r
+
+        // Whitening with PSD inverse sqrt (ridge inside)
         SimpleMatrix Wxx = invSqrtPSD(Sxx);
         SimpleMatrix Wyy = invSqrtPSD(Syy);
-        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
 
-        double[] s = M.svd().getSingularValues();
-        int p = Sxx.getNumRows(), q = Syy.getNumRows();
-        int r = Math.min(p, q);
+        // Canonical correlations are singular values of Wxx * Sxy * Wyy
+        double[] s = Wxx.mult(Sxy).mult(Wyy).svd().getSingularValues();
 
-        double lambda = 1.0;
-        for (int i = 0; i < Math.min(r, s.length); i++) {
+        // Defensive clamp + ensure we only use the first minpq values
+        int k = Math.min(minpq, s.length);
+        double sumLog = 0.0; // log Λ = Σ log(1 - ρ_i^2) over i = r..k-1
+        for (int i = r; i < k; i++) {
             double rho = Math.max(0.0, Math.min(1.0, s[i]));
-            lambda *= (1.0 - rho * rho);
+            double oneMinus = Math.max(1e-16, 1.0 - rho * rho);
+            sumLog += Math.log(oneMinus);
         }
+
+        // Bartlett’s approx: -c * log Λ  ~  χ²_df
         double c = (n - 1) - 0.5 * (p + q + 1);
-        if (c < 1) c = 1;
-        double stat = -c * Math.log(Math.max(lambda, 1e-16));
-        int df = p * q;
+        if (c < 1) c = 1; // pragmatic floor; alternatively, treat as inconclusive
+        double stat = -c * sumLog;
+        int df = (p - r) * (q - r);
 
-        // Use Commons Math in your code:
-         double pval = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
-//        double pval = chiSqUpperTail(stat, df); // placeholder
+        double pval = 1.0 - new org.apache.commons.math3.distribution.ChiSquaredDistribution(df)
+                .cumulativeProbability(stat);
 
-        return pval > alpha; // accept H0: rank == 0
+        // Accept H0: rank ≤ r  iff pval > alpha.
+        return pval > alpha;
     }
+
+//    private static boolean acceptRankLeByWilks(SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, int r, double alpha) {
+//        SimpleMatrix Sxx = block(Scond, xLoc, xLoc);
+//        SimpleMatrix Syy = block(Scond, yLoc, yLoc);
+//        SimpleMatrix Sxy = block(Scond, xLoc, yLoc);
+//
+//        SimpleMatrix Wxx = invSqrtPSD(Sxx);
+//        SimpleMatrix Wyy = invSqrtPSD(Syy);
+//        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
+//
+//        double[] s = M.svd().getSingularValues();
+//        int p = Sxx.getNumRows(), q = Syy.getNumRows();
+//        int minpq = Math.min(p, q);
+//
+//        double lambda = 1.0;
+//        for (int i = r; i < Math.min(minpq, s.length); i++) {
+//            double rho = Math.max(0.0, Math.min(1.0, s[i]));
+//            lambda *= (1.0 - rho * rho);
+//        }
+//        double c = (n - 1) - 0.5 * (p + q + 1);
+//        if (c < 1) c = 1;
+//        double stat = -c * Math.log(Math.max(lambda, 1e-16));
+//        int df = (p - r) * (q - r);
+//
+//        // Use Commons Math in your code:
+//         double pval = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
+//        return pval > alpha;
+//    }
 
     // Extract block S[rows, cols]
     private static SimpleMatrix block(SimpleMatrix S, int[] rows, int[] cols) {

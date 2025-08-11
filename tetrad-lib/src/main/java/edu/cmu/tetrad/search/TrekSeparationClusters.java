@@ -11,12 +11,14 @@
  */
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.Pair;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
@@ -28,6 +30,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 /**
  * The TrekSeparationClusters2 class implements methods for detecting and analyzing clusters of variables using trek
@@ -57,6 +62,7 @@ public class TrekSeparationClusters {
      * Sample size for statistical tests
      */
     private final int sampleSize;
+    private final SimpleMatrix corr;
     /**
      * The covariance/correlation matrix
      */
@@ -111,6 +117,7 @@ public class TrekSeparationClusters {
         }
 
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
+        this.corr = new CorrelationMatrix(cov).getMatrix().getSimpleMatrix();
 
         System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "<cores>");
     }
@@ -643,6 +650,10 @@ public class TrekSeparationClusters {
                 Set<Integer> seed = P1.iterator().next();
                 P1.remove(seed);
 
+                if (!clusterDependent(seed)) {
+                    continue;
+                }
+
                 if (!Collections.disjoint(used, seed)) {
                     continue;
                 }
@@ -688,6 +699,9 @@ public class TrekSeparationClusters {
                             + " rank = " + rankOfUnion);
 
                         if (rankOfUnion == rank) {
+                            if (!clusterDependent(union)) {
+                                continue;
+                            }
 
                             // Accept this union, grow cluster
                             cluster = union;
@@ -1072,6 +1086,25 @@ public class TrekSeparationClusters {
         this.condThreshold = condThreshold;
     }
 
+    private boolean clusterDependent(Set<Integer> cluster) {
+        List<Integer> _cluster = new ArrayList<>(cluster);
+
+        for (int i = 0; i < _cluster.size(); i++) {
+            for (int j = i + 1; j < _cluster.size(); j++) {
+                double r = corr.get(_cluster.get(i), _cluster.get(j));
+                double fz = abs(Math.log(1 + r) - Math.log(1 - r)) * sqrt((sampleSize - 3));
+
+                double p = 2 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(fz)));
+
+                if (p > alpha) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     public enum Mode {METALOOP, SIZE_RANK}
 
     /**
@@ -1145,7 +1178,7 @@ public class TrekSeparationClusters {
                     double denomLeft = vi.transpose().mult(Sii).mult(vi).get(0);
                     double denomRight = vj.transpose().mult(Sjj).mult(vj).get(0);
 
-                    double corr = numerator / Math.sqrt(denomLeft * denomRight);
+                    double corr = numerator / sqrt(denomLeft * denomRight);
                     R.set(i, j, corr);
                     R.set(j, i, corr); // symmetric
                 }
