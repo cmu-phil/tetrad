@@ -222,18 +222,6 @@ public class TrekSeparationClusters {
                     // only now build the Set<Integer> to return
                     Set<Integer> cluster = new HashSet<>(k * 2);
                     for (int i = 0; i < k; i++) cluster.add(ids[i]);
-
-//                    {
-//                        List<Integer> complement = allVariables();
-//                        complement.removeAll(cluster);
-//                        int[] _cluster = cluster.stream().mapToInt(Integer::intValue).toArray();
-//                        int[] _complement = complement.stream().mapToInt(Integer::intValue).toArray();
-//
-//                        if (!survivesSepsetExplainAway(S, _cluster, _complement, sampleSize, alpha, nodes, sepsets, depth == -1 ? 100 : depth)) {
-//                            return null;
-//                        }
-//                    }
-
                     return cluster;
                 })
                 .filter(Objects::nonNull)
@@ -271,42 +259,6 @@ public class TrekSeparationClusters {
         if (includeStructureModel) {
             addStructureEdges(clusters, latents, graph);
         }
-
-//        for (Edge edge : cpdag.getEdges()) {
-//            graph.addEdge(edge);
-//        }
-
-//        for (Set<Integer> cluster : clusters) {
-//            int[] C = cluster.stream().mapToInt(Integer::intValue).toArray();
-//
-//            int rhat = residualRankByCluster.get(cluster); // <- from DHC; or however you stored it
-//            // Prune within-cluster observed edges (removes in-place; returns list for logging)
-//            List<int[]> removedWithin = pruneWithinClusterEdgesByLatent(
-//                    S, C, rhat, graph, nodes, sampleSize, alpha);
-//
-//            // (optional) log
-//            // removedWithin.forEach(e -> System.out.println("Removed within: " + nodes.get(e[0]) + "—" + nodes.get(e[1])));
-//        }
-//
-//        // Build D = V \ C for each cluster (observed-only)
-//        Set<Integer> allObserved = new HashSet<>(allVariables()); // ensure latents are excluded
-//
-//        for (Set<Integer> cluster : clusters) {
-//            int[] C = cluster.stream().mapToInt(Integer::intValue).toArray();
-//
-//            List<Integer> comp = new ArrayList<>(allObserved);
-//            comp.removeAll(cluster);
-//            int[] D = comp.stream().mapToInt(Integer::intValue).toArray();
-//
-//            int rhat = residualRankByCluster.get(cluster);
-//            List<int[]> removedCross = pruneCrossBoundaryEdgesByLatent(
-//                    S, C, D, rhat, graph, nodes, sampleSize, alpha);
-//
-//            // (optional) log
-//            // removedCross.forEach(e -> System.out.println("Removed cross: " + nodes.get(e[0]) + "—" + nodes.get(e[1])));
-//        }
-
-//        new MeekRules().orientImplied(graph);
 
         return graph;
     }
