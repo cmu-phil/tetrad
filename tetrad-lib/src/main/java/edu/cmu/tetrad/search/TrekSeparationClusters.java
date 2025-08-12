@@ -678,18 +678,6 @@ public class TrekSeparationClusters {
                         if (C2.size() == _size + 1 && newRank < rank && newRank >= 1) {
                             if (newClusters.contains(C2)) continue;
 
-//                            {
-//                                List<Integer> complement = allVariables();
-//                                complement.removeAll(C2);
-//
-//                                int[] _cluster = C2.stream().mapToInt(Integer::intValue).toArray();
-//                                int[] _complement = complement.stream().mapToInt(Integer::intValue).toArray();
-//
-//                                if (!survivesSepsetExplainAway(S, _cluster, _complement, sampleSize, alpha, nodes, sepsets, depth == -1 ? 100 : depth, cpdag, 5)) {
-//                                    continue;
-//                                }
-//                            }
-
                             newClusters.remove(C1);
                             newClusters.add(C2);
                             reducedRank.put(C2, newRank);
@@ -728,19 +716,6 @@ public class TrekSeparationClusters {
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             List<Integer> complement = allVariables();
             complement.removeAll(cluster);
-//            int[] _cluster = cluster.stream().mapToInt(Integer::intValue).toArray();
-//            int[] _complement = complement.stream().mapToInt(Integer::intValue).toArray();
-//
-//            int _depth = depth == -1 ? 100 : depth;
-////            if (!survivesSepsetExplainAway(S, _cluster, _complement, sampleSize, alpha, nodes, sepsets, 2, cpdag, 10)) {
-////                clusterToRank.remove(cluster);
-////                reducedRank.remove(cluster);
-////            }
-
-//            if (!rejectBySmallRemoval(S, cluster, variables, sampleSize, alpha)) {
-//                clusterToRank.remove(cluster);
-//                reducedRank.remove(cluster);
-//            }
 
             if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
                 clusterToRank.remove(cluster);
