@@ -15,8 +15,9 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.RankConditionalIndependenceTest;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.Pair;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
@@ -61,16 +62,10 @@ public class TrekSeparationClusters {
      * Sample size for statistical tests
      */
     private final int sampleSize;
-    private final Graph cpdag;
     /**
      * The covariance/correlation matrix
      */
     private final SimpleMatrix S;
-    Map<Set<Integer>, Integer> residualRankByCluster = new HashMap<>();
-    /**
-     * The sepsets from the rank PC search.
-     */
-    private SepsetMap sepsets;
     private int depth = -1;
     /**
      * Alpha level for rank tests
@@ -108,22 +103,6 @@ public class TrekSeparationClusters {
         }
 
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
-
-        try {
-            RankConditionalIndependenceTest test = new RankConditionalIndependenceTest(cov, alpha);
-            Pc pc = new Pc(test);
-            pc.setDepth(depth);
-            pc.setStable(false);
-            pc.setUseMaxPOrientation(false);
-            pc.setDepth(depth);
-            cpdag = pc.search();
-            sepsets = pc.getSepsets();
-
-//            SemBicScore score = new SemBicScore(cov, 2);
-//            cpdag = new PermutationSearch(new Boss(score)).search();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
 
         System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "<cores>");
     }
@@ -194,389 +173,6 @@ public class TrekSeparationClusters {
             r -= choose(C, v, i);
             bound = v;
         }
-    }
-
-    // --- Helper: max |corr(i, j)| over j in J ---
-    private static double maxAbsCorrToSet(SimpleMatrix S, int i, int[] J) {
-        double max = 0.0;
-        double sii = S.get(i, i);
-        for (int j : J) {
-            double s = Math.abs(S.get(i, j) / Math.sqrt(Math.max(1e-16, sii * S.get(j, j))));
-            if (s > max) max = s;
-        }
-        return max;
-    }
-
-    /**
-     * Prune observed-observed edges INSIDE a latent cluster C that are explained by the latent(s).
-     *
-     * @param S     covariance over all variables
-     * @param C     indices (int[]) for the cluster
-     * @param rhat  residual rank (latent dimensionality estimate), usually 1
-     * @param graph CPDAG/skeleton over observed nodes (edges will be removed here)
-     * @param nodes node list aligned with S indices
-     * @param n     sample size
-     * @param alpha test size for rank-0 Wilks test
-     * @return list of removed edges (as pairs of node indices)
-     */
-    public static List<int[]> pruneWithinClusterEdgesByLatent(
-            SimpleMatrix S, int[] C, int rhat, Graph graph, List<Node> nodes,
-            int n, double alpha) {
-
-        final double EPS_RHO2 = 0.05; // effect-size gate; set <=0 to disable
-        List<int[]> removed = new ArrayList<>();
-        if (C.length < 2) return removed;
-
-        for (int i = 0; i < C.length; i++) {
-            int xi = C[i];
-            Node X = nodes.get(xi);
-            Set<Node> adjX = new HashSet<>(graph.getAdjacentNodes(X));
-
-            for (int j = i + 1; j < C.length; j++) {
-                int yi = C[j];
-                Node Y = nodes.get(yi);
-                if (!adjX.contains(Y)) continue; // no edge present
-
-                // Candidate pool Z = C \ {X,Y}
-                int[] pool = Arrays.stream(C).filter(v -> v != xi && v != yi).toArray();
-                if (pool.length == 0) continue;
-
-                // Required size target; adapt to what we have
-                int mTarget = Math.max(1, rhat);           // A: relaxed
-                int mAvail = Math.min(pool.length, mTarget);
-
-                boolean delete = false;
-
-                // 1) Singletons
-                for (int z : pool) {
-                    int rank = RankTests.estimateRccaRankConditioned(S,
-                            new int[]{xi}, new int[]{yi}, new int[]{z}, n, alpha);
-                    if (rank == 0 || passesEffectGate(S, xi, yi, new int[]{z}, n, EPS_RHO2)) {
-                        delete = true;
-                        break;
-                    }
-                }
-                if (delete) {
-                    graph.removeEdge(X, Y);
-                    removed.add(new int[]{xi, yi});
-                    continue;
-                }
-
-                // 2) Pairs (if we wanted m >= 2 and have at least 2 in pool)
-                if (mAvail >= 2 && pool.length >= 2) {
-                    // C: exhaustive over pairs (small pools), not greedy
-                    for (int p = 0; p < pool.length && !delete; p++) {
-                        for (int q = p + 1; q < pool.length && !delete; q++) {
-                            int[] Z = new int[]{pool[p], pool[q]};
-                            int rank = RankTests.estimateRccaRankConditioned(S,
-                                    new int[]{xi}, new int[]{yi}, Z, n, alpha);
-                            if (rank == 0 || passesEffectGate(S, xi, yi, Z, n, EPS_RHO2)) {
-                                delete = true;
-                            }
-                        }
-                    }
-                    if (delete) {
-                        graph.removeEdge(X, Y);
-                        removed.add(new int[]{xi, yi});
-                    }
-                }
-            }
-        }
-        return removed;
-    }
-
-    // Effect-size gate: require max residual canonical correlation^2 <= eps
-    private static boolean passesEffectGate(SimpleMatrix S, int a, int b, int[] Z, int n, double epsRho2) {
-        if (epsRho2 <= 0) return false;
-        // You need a variant that returns canonical correlations after conditioning.
-        // Quick hack: treat Wilks’ lambda with tiny stat as "small effect". If you can, expose the largest rho^2.
-        double rho2 = RankTests.maxCanonicalCorrSqConditioned(S, new int[]{a}, new int[]{b}, Z, n);
-        return rho2 <= epsRho2;
-    }
-
-    /**
-     * Prune observed-observed edges BETWEEN cluster C and complement D that are explained by the latent(s).
-     *
-     * @param S     covariance over all variables
-     * @param C     indices (int[]) for the cluster
-     * @param D     indices (int[]) for V \ C
-     * @param rhat  residual rank (latent dimensionality estimate), usually 1
-     * @param graph CPDAG/skeleton over observed nodes (edges will be removed here)
-     * @param nodes node list aligned with S indices
-     * @param n     sample size
-     * @param alpha test size for rank-0 Wilks test
-     * @return list of removed edges (as pairs of node indices)
-     */
-    public static List<int[]> pruneCrossBoundaryEdgesByLatent(
-            SimpleMatrix S, int[] C, int[] D, int rhat, Graph graph, List<Node> nodes,
-            int n, double alpha) {
-
-        int m = Math.max(2, rhat); // size of Z from C\{X}
-        List<int[]> removed = new ArrayList<>();
-        if (C.length < 2) return removed;
-
-        // Precompute adjacency sets for quick edge checks
-        Map<Node, Set<Node>> adj = new HashMap<>();
-        for (Node u : nodes) adj.put(u, new HashSet<>(graph.getAdjacentNodes(u)));
-
-        for (int xi : C) {
-            Node X = nodes.get(xi);
-            // candidate pool Z ⊆ C \ {X}
-            int[] pool = Arrays.stream(C).filter(v -> v != xi).toArray();
-            if (pool.length < m) continue;
-
-            for (int wi : D) {
-                Node W = nodes.get(wi);
-                if (!adj.get(X).contains(W)) continue; // no edge
-
-                // Greedy Z from C\{X}, size up to m, to reduce rank({X},{W} | Z)
-                int[] Zgreedy = greedyZForPair(S, xi, wi, pool, m, n, alpha);
-
-                int rank = RankTests.estimateRccaRankConditioned(S,
-                        new int[]{xi}, new int[]{wi}, Zgreedy, n, alpha);
-
-                if (rank == 0) {
-                    graph.removeEdge(X, W);
-                    removed.add(new int[]{xi, wi});
-                }
-            }
-        }
-        return removed;
-    }
-
-    private static int[] greedyZForPair(SimpleMatrix S, int a, int b, int[] pool, int m, int n, double alpha) {
-        // Order pool deterministically: by degree proxy (max|corr| to {a,b}) then index
-        int[] ordered = Arrays.stream(pool).boxed()
-                .sorted((i, j) -> {
-                    double si = maxAbsCorrToSet(S, i, new int[]{a, b});
-                    double sj = maxAbsCorrToSet(S, j, new int[]{a, b});
-                    int cmp = Double.compare(sj, si); // desc
-                    if (cmp != 0) return cmp;
-                    return Integer.compare(i, j);
-                }).mapToInt(x -> x).toArray();
-
-        List<Integer> Z = new ArrayList<>();
-        int bestRank = RankTests.estimateRccaRankConditioned(S, new int[]{a}, new int[]{b}, new int[]{}, n, alpha);
-
-        while (Z.size() < m && bestRank > 0) {
-            int pick = -1, pickRank = bestRank;
-            for (int z : ordered) {
-                if (Z.contains(z)) continue;
-                int[] trial = new int[Z.size() + 1];
-                for (int i = 0; i < Z.size(); i++) trial[i] = Z.get(i);
-                trial[trial.length - 1] = z;
-                int rZ = RankTests.estimateRccaRankConditioned(S, new int[]{a}, new int[]{b}, trial, n, alpha);
-                if (rZ < pickRank || (rZ == pickRank && (pick == -1 || z < pick))) {
-                    pickRank = rZ;
-                    pick = z;
-                    if (pickRank == 0) break; // early win
-                }
-            }
-            if (pick < 0) break; // no improvement
-            Z.add(pick);
-            bestRank = pickRank;
-        }
-        return Z.stream().mapToInt(Integer::intValue).toArray();
-    }
-
-    /**
-     * Checks if a TSC cluster C survives explain-away conditioning using PC sepsets.
-     *
-     * @param S       full covariance matrix over all vars
-     * @param C       indices (int[]) for cluster variables
-     * @param D       indices (int[]) for complement variables (V \ C)
-     * @param n       sample size
-     * @param alpha   significance level for rank test
-     * @param nodes   list of Node objects in consistent index order
-     * @param sepsets PC sepset map: (Node, Node) -> List<Node>
-     * @param kmax    maximum size of sepset to try
-     * @param cpdag
-     * @return true if no PC sepset kills the rank, false otherwise
-     */
-    public boolean survivesSepsetExplainAway(SimpleMatrix S,
-                                             int[] C,
-                                             int[] D,
-                                             int n,
-                                             double alpha,
-                                             List<Node> nodes,
-                                             SepsetMap sepsets,
-                                             int kmax, Graph cpdag, int dummy) {
-
-        // Baseline rank
-        int rBase = estimateRccaRank(S, C, D, n, alpha);
-        residualRankByCluster.put(getIntSet(C), rBase);
-        if (rBase == 0) return false; // already dead
-
-        // Try each PC sepset crossing the C / D boundary
-        for (int uPrime : C) {
-            Node uNode = nodes.get(uPrime);
-
-            for (int vPrime : D) {
-                Node vNode = nodes.get(vPrime);
-
-                Set<Node> sep = sepsets.get(uNode, vNode);
-                if (sep == null) continue; // adjacent: no separating set
-
-                // Convert sepset Nodes to integer indices
-                int[] Z = sep.stream()
-                        .mapToInt(nodes::indexOf)
-                        .toArray();
-
-                if (Z.length > kmax) continue; // skip if too big
-
-//                int rCond = RccaSetUtils.rankSetVsSet(S, C, D, Z, n, alpha);
-                int rCond = RankTests.estimateRccaRankConditioned(S, C, D, Z, n, alpha);
-
-                if (rCond < rBase) {
-                    rBase = rCond;
-                    residualRankByCluster.put(getIntSet(C), rBase);
-                }
-
-                if (rCond == 0) {
-                    // Found a small observed set that kills the rank: reject cluster
-                    return false;
-                }
-            }
-        }
-
-        // Survived all explain-away attempts
-        return true;
-    }
-
-    public boolean survivesSepsetExplainAway2(SimpleMatrix S,
-                                              int[] C,
-                                              int[] D,
-                                              int n,
-                                              double alpha,
-                                              List<Node> nodes,
-                                              SepsetMap sepsets,
-                                              int kmax,
-                                              Graph cpdag,
-                                              int poolCapOutside) {
-
-        // ---- Baseline rank ----
-        int rBase = RccaSetUtils.rankSetVsSet(S, C, D, /*Z=*/new int[0], n, alpha);
-        residualRankByCluster.put(getIntSet(C), rBase);
-        if (rBase == 0) return false;
-
-        // ---- Build OUTSIDE-C pool: neighbors from CPDAG + union of sepsets across the boundary ----
-        int[] poolOutside = buildOutsidePool(C, D, nodes, cpdag, sepsets, S, poolCapOutside);
-
-        if (poolOutside.length == 0) {
-            // Nothing to condition on outside C; fall back to your current behavior
-            return true;
-        }
-
-        // ---- Step 2: singletons from outside pool ----
-        int bestZ = -1;
-        int rBest = rBase;
-        List<Integer> improvers = new ArrayList<>();
-
-        for (int z : poolOutside) {
-            int rZ = RccaSetUtils.rankSetVsSet(S, C, D, new int[]{z}, n, alpha);
-            if (rZ < rBase) improvers.add(z);
-            if (rZ < rBest || (rZ == rBest && (bestZ < 0 || z < bestZ))) {
-                rBest = rZ;
-                bestZ = z;
-            }
-            if (rZ == 0) {
-                residualRankByCluster.put(getIntSet(C), 0);
-                return false;
-            }
-        }
-
-        residualRankByCluster.put(getIntSet(C), rBest);
-        if (kmax <= 1 || rBest == 0) return (rBest > 0);
-
-        // ---- Step 3: greedy add up to kmax from the *outside* improvers ----
-        int[] searchPool = (improvers.isEmpty() ? poolOutside : improvers.stream().mapToInt(Integer::intValue).toArray());
-
-        List<Integer> Z = new ArrayList<>();
-        if (bestZ >= 0) Z.add(bestZ);
-        int rRes = rBest;
-
-        while (Z.size() < kmax && rRes > 0) {
-            int pick = -1, best = rRes;
-            for (int z : searchPool) {
-                if (Z.contains(z)) continue;
-                int[] Zplus = new int[Z.size() + 1];
-                for (int i = 0; i < Z.size(); i++) Zplus[i] = Z.get(i);
-                Zplus[Zplus.length - 1] = z;
-
-                int rZ = RccaSetUtils.rankSetVsSet(S, C, D, Zplus, n, alpha);
-                if (rZ < best || (rZ == best && (pick < 0 || z < pick))) {
-                    best = rZ;
-                    pick = z;
-                }
-                if (rZ == 0) {
-                    residualRankByCluster.put(getIntSet(C), 0);
-                    return false;
-                }
-            }
-            if (pick < 0) break;
-            Z.add(pick);
-            rRes = best;
-            residualRankByCluster.put(getIntSet(C), rRes);
-        }
-
-        // Survived all explain-away attempts with outside candidates
-        return (rRes > 0);
-    }
-
-    private int[] buildOutsidePool(int[] C,
-                                   int[] D,
-                                   List<Node> nodes,
-                                   Graph cpdag,
-                                   SepsetMap sepsets,
-                                   SimpleMatrix S,
-                                   int cap) {
-
-        Set<Integer> inC = Arrays.stream(C).boxed().collect(Collectors.toSet());
-        Set<Integer> inD = Arrays.stream(D).boxed().collect(Collectors.toSet());
-        Set<Integer> pool = new LinkedHashSet<>();
-
-        // (a) CPDAG neighbors of C that lie in D (outside)
-        for (int u : C) {
-            Node uNode = nodes.get(u);
-            for (Node nb : cpdag.getAdjacentNodes(uNode)) {
-                int z = nodes.indexOf(nb);
-                if (!inC.contains(z)) pool.add(z);  // outside C (mostly in D)
-            }
-        }
-
-        // (b) Union of sepsets across the C–D boundary
-        for (int u : C) {
-            Node uNode = nodes.get(u);
-            for (int v : D) {
-                Node vNode = nodes.get(v);
-                Set<Node> sep = sepsets.get(uNode, vNode);
-                if (sep == null) continue;
-                for (Node zNode : sep) {
-                    int z = nodes.indexOf(zNode);
-                    if (!inC.contains(z)) pool.add(z); // keep outside C
-                }
-            }
-        }
-
-        if (pool.isEmpty()) return new int[0];
-
-        // Rank candidates by max |corr| to C∪D (desc), then by index (asc)
-        int[] side = new int[C.length + D.length];
-        System.arraycopy(C, 0, side, 0, C.length);
-        System.arraycopy(D, 0, side, C.length, D.length);
-
-        List<Integer> ranked = pool.stream()
-                .sorted((i, j) -> {
-                    double si = maxAbsCorrToSet(S, i, side);
-                    double sj = maxAbsCorrToSet(S, j, side);
-                    int cmp = Double.compare(sj, si); // desc
-                    if (cmp != 0) return cmp;
-                    return Integer.compare(i, j);
-                })
-                .limit(Math.max(0, cap))
-                .collect(Collectors.toList());
-
-        return ranked.stream().mapToInt(Integer::intValue).toArray();
     }
 
     // ---- New fast variant of your method ---------------------------------------
@@ -749,14 +345,14 @@ public class TrekSeparationClusters {
                 Set<Set<Integer>> baseClusters = new HashSet<>(_clusters.keySet());
 
                 log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters.keySet()));
-                clusterList.add(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1], variables));
+                clusterList.add(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
                 log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
-                    toNamesClusters(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1], variables)));
+                    toNamesClusters(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
 
                 for (int j = 0; j < i; j++) {
                     if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
                         clusterList.get(j).addAll(clusterList.get(i));
-                        clusterList.set(j, mergeOverlappingClusters(clusterList.get(j), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1], variables));
+                        clusterList.set(j, mergeOverlappingClusters(clusterList.get(j), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
                         log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNamesClusters(clusterList.get(j)));
                         clusterList.get(i).clear();
                     }
@@ -785,12 +381,11 @@ public class TrekSeparationClusters {
      * @param baseClusters the base set of clusters for reference during the merging process
      * @param size         the minimum acceptable size for a cluster to qualify for merging
      * @param rank         the upper limit for the rank of any resulting merged cluster
-     * @param remaining    The set of unused variables.
      * @return a set of merged clusters, with any overlapping clusters combined
      */
     private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters,
                                                        Set<Set<Integer>> baseClusters,
-                                                       int size, int rank, List<Integer> remaining) {
+                                                       int size, int rank) {
         log("Base clusters: " + toNamesClusters(baseClusters));
         boolean merged;
 
@@ -1004,12 +599,6 @@ public class TrekSeparationClusters {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         Map<Set<Integer>, Integer> clusterToRank = new HashMap<>();
         Map<Set<Integer>, Integer> reducedRank = new HashMap<>();
-
-        for (Node node : cpdag.getNodes()) {
-            if (cpdag.getAdjacentNodes(node).isEmpty()) {
-                remainingVars.remove((Integer) nodes.indexOf(node));
-            }
-        }
 
         for (int rank = 0; rank <= 3; rank++) {
             int size = rank + 1;
@@ -1268,108 +857,6 @@ public class TrekSeparationClusters {
         return false;
     }
 
-    private boolean subsetRank0b(SimpleMatrix S, Set<Integer> cluster, int sampleSize, double alpha) {
-        List<Integer> C = new ArrayList<>(cluster);
-
-        List<Integer> Dlist = allVariables(); // observed-only
-        Dlist.removeAll(cluster);
-        if (Dlist.isEmpty() || C.size() < 2) return false;
-
-        int[] D = Dlist.stream().mapToInt(Integer::intValue).toArray();
-
-        // remove-one: test all size n-1 subsets (i.e., drop each c once)
-        for (int drop = 0; drop < C.size(); drop++) {
-            List<Integer> Cminus = new ArrayList<>(C);
-            int removed = Cminus.remove(drop); // value removed (by position)
-            int[] X = Cminus.stream().mapToInt(Integer::intValue).toArray();
-
-            int r = RccaSetUtils.rankSetVsSet(S, X, D, new int[0], sampleSize, alpha);
-            // optional effect-size gate:
-            // double rho2 = maxCanonicalCorrSqConditioned(S, X, D, new int[0]);
-
-            if (r == 0) {
-                System.out.println("subsetRank0: dropping " + removed + " zeros the rank");
-                return true; // i.e., reject cluster as hallucinated
-            }
-        }
-        return false; // no single removal killed the channel
-    }
-
-    boolean subsetRank0c(SimpleMatrix S, Set<Integer> Cset, int n, double alpha) {
-        List<Integer> C = new ArrayList<>(Cset);
-        List<Integer> Dlist = allVariables();  // observed-only
-        Dlist.removeAll(Cset);
-        if (Dlist.isEmpty()) return false;
-        int[] D = Dlist.stream().mapToInt(Integer::intValue).toArray();
-
-        for (int ci : C) {
-            int[] Xi = new int[]{ci};
-            int r = RccaSetUtils.rankSetVsSet(S, Xi, D, new int[0], n, alpha);
-            if (r == 0) {
-                // optional: System.out.println("singleton kills: " + name(ci));
-                return true; // reject latent for C
-            }
-        }
-        return false; // pass stage 1
-    }
-
-    /**
-     * Returns true if the cluster should be rejected based on the
-     * "small-removal zero-rank" rule.
-     *
-     * @param S           Covariance/correlation matrix
-     * @param cluster     Set of indices for cluster C
-     * @param allVars     List of all variable indices [0..p-1]
-     * @param sampleSize  n
-     * @param alpha       Significance level for rank test
-     * @return            true if cluster should be rejected
-     */
-    private boolean rejectBySmallRemoval(SimpleMatrix S,
-                                         Set<Integer> cluster,
-                                         List<Integer> allVars,
-                                         int sampleSize,
-                                         double alpha) {
-        List<Integer> C = new ArrayList<>(cluster);
-
-        // D = V \ C
-        List<Integer> D = new ArrayList<>(allVars);
-        D.removeAll(cluster);
-
-        // Compute full cross-cut rank rhat = rank(C,D)
-        int[] Carr = C.stream().mapToInt(Integer::intValue).toArray();
-        int[] Darr = D.stream().mapToInt(Integer::intValue).toArray();
-        int[] clusterArray1 = C.stream().mapToInt(Integer::intValue).toArray();
-        int[] complementArray1 = D.stream().mapToInt(Integer::intValue).toArray();
-
-        int rhat = RankTests.estimateRccaRank(S, clusterArray1, complementArray1, sampleSize, alpha);
-
-        if (rhat == 0) return true; // Already degenerate
-
-        // Max size of removal set to check
-        int maxRemoval = Math.min(rhat, C.size() - 1);
-
-        // Check all removal sets up to size maxRemoval
-        for (int size = 1; size <= maxRemoval; size++) {
-            SublistGenerator gen = new SublistGenerator(C.size(), C.size() - size);
-            int[] choice;
-            while ((choice = gen.next()) != null) {
-                // choice indexes variables to KEEP in C'
-                List<Integer> Cprime = new ArrayList<>();
-                for (int idx : choice) {
-                    Cprime.add(C.get(idx));
-                }
-                int[] clusterArray = Cprime.stream().mapToInt(Integer::intValue).toArray();
-                int[] complementArray = D.stream().mapToInt(Integer::intValue).toArray();
-
-                int rank = RankTests.estimateRccaRank(S, clusterArray, complementArray, sampleSize, alpha);
-                if (rank == 0) {
-                    return true; // Found small removal set that kills the rank
-                }
-            }
-        }
-        return false; // Survived all small removals
-    }
-
     /**
      * Removes nested clusters from a set of merged clusters. A cluster is considered nested if it is a subset of
      * another cluster within the set. The method iteratively checks and removes such nested clusters until no changes
@@ -1589,147 +1076,6 @@ public class TrekSeparationClusters {
         return cluster.stream()
                 .map(i -> nodes.get(i).getName())
                 .collect(Collectors.joining(" ", "{", "}"));
-    }
-
-    // --- Keep-final hook (unchanged signature) ---
-    boolean keepFinalCluster(SimpleMatrix S, int[] C, int[] VminusC,
-                             Graph skeleton, int n, double alpha) {
-        // Deterministic, capped, in-cluster candidates (degree ↓, then corr ↓, then index ↑)
-        List<Integer> inClusterCand = clusterCandidatesOrderedByDegreeStable(C, VminusC, skeleton, S, /*cap=*/5);
-        int rDiag = diagnoseChannel(S, C, VminusC, n, alpha, /*kmax=*/2, inClusterCand);
-        return rDiag > 0;
-    }
-
-    // --- Deterministic in-cluster ordering with tie-breaks ---
-    private List<Integer> clusterCandidatesOrderedByDegreeStable(
-            int[] C, int[] D, Graph skeleton, SimpleMatrix S, int cap) {
-
-        // Precompute degree and a tie-break score (max |corr| to D)
-        class Entry {
-            final int v;
-            final int degree;
-            final double corrScore; // max |corr(v, d)| over d in D
-
-            Entry(int v, int degree, double corrScore) {
-                this.v = v;
-                this.degree = degree;
-                this.corrScore = corrScore;
-            }
-        }
-
-        List<Entry> entries = new ArrayList<>(C.length);
-        for (int v : C) {
-            int deg = skeleton.getAdjacentNodes(nodes.get(v)).size();
-            double score = maxAbsCorrToSet(S, v, D);
-            entries.add(new Entry(v, deg, score));
-        }
-
-        // Sort: degree desc, then corrScore desc, then index asc (deterministic)
-        entries.sort((a, b) -> {
-            int cmp = Integer.compare(b.degree, a.degree);
-            if (cmp != 0) return cmp;
-            cmp = Double.compare(b.corrScore, a.corrScore);
-            if (cmp != 0) return cmp;
-            return Integer.compare(a.v, b.v);
-        });
-
-        // Cap
-        int k = Math.min(cap, entries.size());
-        List<Integer> ordered = new ArrayList<>(k);
-        for (int i = 0; i < k; i++) ordered.add(entries.get(i).v);
-        return ordered;
-    }
-
-    private int diagnoseChannel(SimpleMatrix S, int[] C, int[] D, int n, double alpha,
-                                int kmax, Collection<Integer> inClusterCandidates) {
-
-        int r = estimateRccaRank(S, C, D, n, alpha);
-
-        residualRankByCluster.put(getIntSet(C), r);
-
-        if (r == 0) return 0;
-
-        // --- Step 2: singleton conditioning over in-cluster candidates ---
-        int rBest = r;
-        int bestZ = -1;
-
-        // Track which candidates improved the rank at least once
-        List<Integer> improvers = new ArrayList<>();
-
-        for (int z : inClusterCandidates) {
-            int rZ = RankTests.estimateRccaRankConditioned(S, C, D, new int[]{z}, n, alpha);
-            if (rZ == 0) return 0; // early exit: single variable explains away the link
-            if (rZ < r) improvers.add(z);                 // qualifies for Step 3
-            if (rZ < rBest || (rZ == rBest && z < bestZ)) // deterministic tie-break by index
-            {
-                rBest = rZ;
-                bestZ = z;
-            }
-        }
-
-        // If nobody helped and we’re not allowed to add more, return current best
-        if (kmax <= 1) return rBest;
-
-        // --- Step 3: greedy add up to kmax, but ONLY from the improvers set ---
-        if (improvers.isEmpty()) return rBest; // nothing to add
-
-        List<Integer> Z = new ArrayList<>();
-        if (bestZ >= 0 && improvers.contains(bestZ)) Z.add(bestZ);
-        int rRes = rBest;
-
-        while (Z.size() < kmax && rRes > 0) {
-            int pick = -1, best = rRes;
-            for (int z : improvers)
-                if (!Z.contains(z)) {
-                    int[] added = new int[Z.size() + 1];
-                    for (int i = 0; i < Z.size(); i++) added[i] = Z.get(i);
-                    added[added.length - 1] = z;
-
-                    int rZ = RankTests.estimateRccaRankConditioned(S, C, D, added, n, alpha);
-
-                    // Strict improvement; tie-break deterministically by smaller index
-                    if (rZ < best || (rZ == best && pick >= 0 && z < pick)) {
-                        best = rZ;
-                        pick = z;
-                    }
-                }
-            if (pick < 0) break; // no improvement
-            Z.add(pick);
-            rRes = best;
-        }
-
-        residualRankByCluster.put(getIntSet(C), rRes);
-
-        return rRes;
-    }
-
-    private Set<Integer> getIntSet(int[] c) {
-        Set<Integer> set = new HashSet<>();
-        for (int j : c) set.add(j);
-        return set;
-    }
-
-    private boolean allSubTwoClustersExist(Set<Integer> cluster) {
-        System.out.println("Checking 2-clusters: " + toNamesCluster(cluster));
-
-        List<Integer> _cluster = new ArrayList<>(cluster);
-
-        for (int i = 0; i < _cluster.size(); i++) {
-            for (int j = i + 1; j < _cluster.size(); j++) {
-                int x = _cluster.get(i);
-                int y = _cluster.get(j);
-
-                Set<Integer> sub = new HashSet<>();
-                sub.add(x);
-                sub.add(y);
-
-                if (lookupRank(sub, variables) != 1) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     public void setDepth(int depth) {
