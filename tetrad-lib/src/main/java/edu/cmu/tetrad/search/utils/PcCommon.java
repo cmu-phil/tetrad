@@ -129,6 +129,7 @@ public final class PcCommon implements IGraphSearch {
      * will not be run if the elapsed time exceeds this in millisecond, and an exception will be thrown.
      */
     private long timeout;
+    private Fas fas;
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -288,7 +289,7 @@ public final class PcCommon implements IGraphSearch {
             throw new IllegalArgumentException("All of the given nodes must " + "be in the domain of the independence test provided.");
         }
 
-        Fas fas = new Fas(getIndependenceTest());
+        this.fas = new Fas(getIndependenceTest());
 
         fas.setStable(this.fasType == FasType.STABLE);
 
@@ -304,7 +305,7 @@ public final class PcCommon implements IGraphSearch {
             throw new RuntimeException(e.getMessage());
         }
 
-        SepsetMap sepsets = fas.getSepsets();
+        SepsetMap sepsets = this.fas.getSepsets();
 
         if (this.graph.paths().existsDirectedCycle())
             throw new IllegalArgumentException("Graph is cyclic after sepsets!");
@@ -591,7 +592,7 @@ public final class PcCommon implements IGraphSearch {
      * @return The set of separation sets between node i and node k
      * @throws InterruptedException if any
      */
-    private Set<Set<Node>> getSepsets(Node i, Node k, Graph g) throws InterruptedException {
+    public Set<Set<Node>> getSepsets(Node i, Node k, Graph g) throws InterruptedException {
         List<Node> adji = new ArrayList<>(g.getAdjacentNodes(i));
         List<Node> adjk = new ArrayList<>(g.getAdjacentNodes(k));
         Set<Set<Node>> sepsets = new HashSet<>();
@@ -742,6 +743,10 @@ public final class PcCommon implements IGraphSearch {
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
+    }
+
+    public Fas getFas() {
+        return this.fas;
     }
 
     /**

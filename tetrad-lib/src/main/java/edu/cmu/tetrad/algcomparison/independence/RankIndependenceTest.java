@@ -50,9 +50,9 @@ public class RankIndependenceTest implements IndependenceWrapper {
         RankConditionalIndependenceTest test;
 
         if (dataModel instanceof ICovarianceMatrix) {
-            test = new RankConditionalIndependenceTest((ICovarianceMatrix) dataModel, alpha, 0.001, 1e-10);
+            test = new RankConditionalIndependenceTest((ICovarianceMatrix) dataModel, alpha);
         } else if (dataModel instanceof DataSet) {
-            test = new RankConditionalIndependenceTest(new CovarianceMatrix((DataSet) dataModel), alpha, 0.001, 1e-10);
+            test = new RankConditionalIndependenceTest(new CovarianceMatrix((DataSet) dataModel), alpha);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }

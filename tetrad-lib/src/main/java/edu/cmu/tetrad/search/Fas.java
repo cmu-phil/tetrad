@@ -257,7 +257,7 @@ public class Fas {
                     }
                     if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
                         modify.removeEdge(x, y);
-                        sepset.set(x, y, S);
+                        this.sepset.set(x, y, S);
 
                         if (verbose) {
                             TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));

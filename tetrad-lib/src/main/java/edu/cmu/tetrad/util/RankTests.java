@@ -11,9 +11,9 @@ import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+
+import static org.apache.commons.lang3.ArrayUtils.remove;
 
 public class RankTests {
 
@@ -27,6 +27,8 @@ public class RankTests {
             };
     // ---- Eigen whitening path (from previous message), packaged to return svals
     private static final double EIG_FLOOR = 1e-12;
+    private static final double RIDGE = 1e-10;
+    private static final double MIN_EIG = 1e-12;
 
     /**
      * Computes the p-value for Canonical Correlation Analysis (CCA) based on the hypothesis H0: canonical correlation
@@ -334,6 +336,8 @@ public class RankTests {
         return out;
     }
 
+    // ====== Cache bits =========================================================
+
     private static void scaleRowsInvSqrtInPlace(DMatrixRMaj A, double[] eig) {
         int n = A.numRows, m = A.numCols;
         for (int i = 0; i < n; i++) {
@@ -354,8 +358,6 @@ public class RankTests {
             }
         }
     }
-
-    // ====== Cache bits =========================================================
 
     // Thread-safe cache access
     private static RccaEntry cacheGet(RccaKey k) {
@@ -446,7 +448,7 @@ public class RankTests {
     }
 
     public static int estimateRccaRank0(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, double alpha,
-                                       double regLambda, double condThreshold) {
+                                        double regLambda, double condThreshold) {
         for (int i = 0; i < yIndices.length; i++) {
             for (int j = i + 1; j < yIndices.length; j++) {
                 if (yIndices[i] == yIndices[j]) {
@@ -468,60 +470,6 @@ public class RankTests {
         }
 
         return minpq; // All tests rejected, full rank assumed
-    }
-
-    public static int estimateRccaRank(SimpleMatrix Scond,
-                                           int[] xIdxLocal, int[] yIdxLocal,
-                                           int n, double alpha,
-                                           double regLambda, double condThreshold) {
-        for (int r = 0; r < yIdxLocal.length; r++) {
-            if (acceptRankLeByWilks(Scond, xIdxLocal, yIdxLocal, n, r, alpha)) {
-                return r;
-            }
-        }
-
-        return Math.min(xIdxLocal.length, yIdxLocal.length);
-    }
-
-    private static boolean acceptRankLeByWilks(
-            SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, int r, double alpha) {
-
-        // Blocks
-        SimpleMatrix Sxx = block(Scond, xLoc, xLoc);
-        SimpleMatrix Syy = block(Scond, yLoc, yLoc);
-        SimpleMatrix Sxy = block(Scond, xLoc, yLoc);
-
-        int p = Sxx.getNumRows(), q = Syy.getNumRows();
-        int minpq = Math.min(p, q);
-        if (r < 0 || r >= minpq) return false; // invalid r
-
-        // Whitening with PSD inverse sqrt (ridge inside)
-        SimpleMatrix Wxx = invSqrtPSD(Sxx);
-        SimpleMatrix Wyy = invSqrtPSD(Syy);
-
-        // Canonical correlations are singular values of Wxx * Sxy * Wyy
-        double[] s = Wxx.mult(Sxy).mult(Wyy).svd().getSingularValues();
-
-        // Defensive clamp + ensure we only use the first minpq values
-        int k = Math.min(minpq, s.length);
-        double sumLog = 0.0; // log Λ = Σ log(1 - ρ_i^2) over i = r..k-1
-        for (int i = r; i < k; i++) {
-            double rho = Math.max(0.0, Math.min(1.0, s[i]));
-            double oneMinus = Math.max(1e-16, 1.0 - rho * rho);
-            sumLog += Math.log(oneMinus);
-        }
-
-        // Bartlett’s approx: -c * log Λ  ~  χ²_df
-        double c = (n - 1) - 0.5 * (p + q + 1);
-        if (c < 1) c = 1; // pragmatic floor; alternatively, treat as inconclusive
-        double stat = -c * sumLog;
-        int df = (p - r) * (q - r);
-
-        double pval = 1.0 - new org.apache.commons.math3.distribution.ChiSquaredDistribution(df)
-                .cumulativeProbability(stat);
-
-        // Accept H0: rank ≤ r  iff pval > alpha.
-        return pval > alpha;
     }
 
 //    private static boolean acceptRankLeByWilks(SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, int r, double alpha) {
@@ -552,6 +500,66 @@ public class RankTests {
 //        return pval > alpha;
 //    }
 
+    public static int estimateRccaRank(SimpleMatrix Scond,
+                                       int[] xIdxLocal, int[] yIdxLocal,
+                                       int n, double alpha) {
+        for (int r = 0; r < yIdxLocal.length; r++) {
+            if (acceptRankLeByWilks(Scond, xIdxLocal, yIdxLocal, n, r, alpha)) {
+                return r;
+            }
+        }
+
+        return Math.min(xIdxLocal.length, yIdxLocal.length);
+    }
+
+    private static boolean acceptRankLeByWilks(
+            SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, int r, double alpha) {
+
+        // Blocks
+        SimpleMatrix Sxx = block(Scond, xLoc, xLoc);
+        SimpleMatrix Syy = block(Scond, yLoc, yLoc);
+        SimpleMatrix Sxy = block(Scond, xLoc, yLoc);
+
+        int p = Sxx.getNumRows(), q = Syy.getNumRows();
+        int minpq = Math.min(p, q);
+        if (r < 0 || r >= minpq) return false; // invalid r
+
+        // Whitening with PSD inverse sqrt (ridge inside)
+        SimpleMatrix Wxx = invSqrtPSD(Sxx);
+        SimpleMatrix Wyy = invSqrtPSD(Syy);
+
+        // Canonical correlations are singular values of Wxx * Sxy * Wyy
+        SimpleSVD<SimpleMatrix> svd = Wxx.mult(Sxy).mult(Wyy).svd();
+
+        double[] s = new double[minpq];
+        for (int i = 0; i < minpq; i++) {
+            s[i] = svd.getSingleValue(i);
+        }
+
+//        double[] s = svd.getSingularValues();
+
+        // Defensive clamp + ensure we only use the first minpq values
+        int k = Math.min(minpq, s.length);
+        double sumLog = 0.0; // log Λ = Σ log(1 - ρ_i^2) over i = r..k-1
+        for (int i = r; i < k; i++) {
+            double rho = Math.max(0.0, Math.min(1.0, s[i]));
+            double oneMinus = Math.max(1e-16, 1.0 - rho * rho);
+            sumLog += Math.log(oneMinus);
+        }
+
+        // Bartlett’s approx: -c * log Λ  ~  χ²_df
+        double c = (n - 1) - 0.5 * (p + q + 1);
+        if (c < 1) c = 1; // pragmatic floor; alternatively, treat as inconclusive
+        double stat = -c * sumLog;
+        int df = (p - r) * (q - r);
+
+        double pval = 1.0 - new org.apache.commons.math3.distribution.ChiSquaredDistribution(df)
+                .cumulativeProbability(stat);
+
+        // Accept H0: rank ≤ r  iff pval > alpha.
+        return pval > alpha;
+    }
+
     // Extract block S[rows, cols]
     private static SimpleMatrix block(SimpleMatrix S, int[] rows, int[] cols) {
         SimpleMatrix out = new SimpleMatrix(rows.length, cols.length);
@@ -564,33 +572,208 @@ public class RankTests {
         return out;
     }
 
-    private static final double RIDGE = 1e-10;
-    private static final double MIN_EIG = 1e-12;
-
     // Symmetric PSD inverse square root with eigen floor + ridge
     private static SimpleMatrix invSqrtPSD(SimpleMatrix A) {
         SimpleMatrix Asym = A.plus(A.transpose()).divide(2.0); // symmetrize
         // small ridge to avoid negative/zero eigs
         int n = Asym.getNumRows();
         SimpleMatrix Areg = Asym.copy();
-        for (int i=0;i<n;i++) {
+        for (int i = 0; i < n; i++) {
             Areg.set(i, i, Areg.get(i, i) + RIDGE);
         }
         SimpleEVD<SimpleMatrix> evd = Areg.eig();
         SimpleMatrix V = new SimpleMatrix(n, n);
         SimpleMatrix DinvSqrt = new SimpleMatrix(n, n);
-        for (int i=0;i<n;i++) {
+        for (int i = 0; i < n; i++) {
             double eig = Math.max(evd.getEigenvalue(i).getReal(), MIN_EIG);
             double invs = 1.0 / Math.sqrt(eig);
             DinvSqrt.set(i, i, invs);
             // eigenvectors are columns of V
             SimpleMatrix vi = evd.getEigenVector(i);
-            for (int r=0;r<n;r++) V.set(r, i, vi.get(r, 0));
+            for (int r = 0; r < n; r++) {
+                assert vi != null;
+                V.set(r, i, vi.get(r, 0));
+            }
         }
         // V * D^{-1/2} * V^T
         return V.mult(DinvSqrt).mult(V.transpose());
     }
 
+    // Build an Scond over [X | Y] that is *conditioned on* Z, then call your estimator.
+    public static int estimateRccaRankConditioned(
+            SimpleMatrix S, int[] C, int[] VminusC, int[] Z,
+            int n, double alpha) {
+
+        int[] X = diff(C, Z);
+        int[] Y = diff(VminusC, Z);
+        if (X.length == 0 || Y.length == 0) return 0;           // nothing left to test
+        if (Z.length == 0) return estimateRccaRank(S, X, Y, n, alpha);
+
+        // Extract blocks
+        SimpleMatrix Sxx = block(S, X, X);
+        SimpleMatrix Syy = block(S, Y, Y);
+        SimpleMatrix Sxy = block(S, X, Y);
+        SimpleMatrix Sxz = block(S, X, Z);
+        SimpleMatrix Syz = block(S, Y, Z);
+        SimpleMatrix Szz = block(S, Z, Z);
+
+        // Invert Szz robustly (use your ridge/floor)
+        SimpleMatrix SzzInv = invPsdWithRidge(Szz, /*ridge*/1e-8);
+
+        // Schur complements (condition on Z)
+        SimpleMatrix Sxx_c = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
+        SimpleMatrix Syy_c = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
+        SimpleMatrix Sxy_c = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
+
+        // Reassemble an (|X|+|Y|)×(|X|+|Y|) covariance that is conditioned on Z:
+        int p = X.length, q = Y.length;
+        SimpleMatrix Scond = new SimpleMatrix(p + q, p + q);
+        Scond.insertIntoThis(0, 0, Sxx_c);
+        Scond.insertIntoThis(0, p, Sxy_c);
+        Scond.insertIntoThis(p, 0, Sxy_c.transpose());
+        Scond.insertIntoThis(p, p, Syy_c);
+
+        // Now reuse your existing estimator on [X | Y] with Scond
+        int[] xLoc = range(0, p);
+        int[] yLoc = range(p, p + q);
+        return estimateRccaRank(Scond, xLoc, yLoc, n, alpha);
+    }
+
+    // Helpers you likely already have; sketched for completeness.
+    static int[] range(int a, int b) {
+        int[] result = new int[b - a];
+        for (int i = 0; i < b - a; i++) {
+            result[i] = a + i;
+        }
+        return result;
+    }
+
+    static SimpleMatrix invPsdWithRidge(SimpleMatrix Szz, double ridge) {
+        SimpleMatrix A = Szz.copy();
+        for (int i = 0; i < A.getNumRows(); i++) A.set(i, i, A.get(i, i) + ridge);
+        return A.pseudoInverse();
+    }
+
+    public static int[] diff(int[] A, int[] B) {
+        Set<Integer> setB = new HashSet<>();
+        for (int b : B) setB.add(b);
+        List<Integer> result = new ArrayList<>();
+        for (int a : A) {
+            if (!setB.contains(a)) {
+                result.add(a);
+            }
+        }
+        return result.stream().mapToInt(x -> x).toArray();
+    }
+
+    public static int diagnoseChannel(SimpleMatrix S, int[] C, int[] VminusC, int n, double alpha,
+                        int kmax, int[] candidatePool) {
+        int r = estimateRccaRank(S, C, VminusC, n, alpha /*reg*/ /*condThr*/);
+        if (r == 0) return 0;
+
+        // Step 1: remove-one on each side
+        for (int z : C) {
+            int[] Cminus = remove(C, z);
+            int rank = estimateRccaRank(S, Cminus, VminusC, n, alpha);
+            if (rank == 0) return 0; // observed bottleneck
+        }
+        for (int z : VminusC) {
+            int[] Dminus = remove(VminusC, z);
+            int rank = estimateRccaRank(S, C, Dminus, n, alpha);
+            if (rank == 0) return 0;
+        }
+
+        // Step 2: singleton conditioning
+        int rRes = r;
+        int bestZ = -1;
+        for (int z : candidatePool) {
+            int rZ = estimateRccaRankConditioned(S, C, VminusC, /*Z=*/new int[]{z}, n, alpha);
+            if (rZ < rRes) {
+                rRes = rZ;
+                bestZ = z;
+            }
+            if (rZ == 0) return 0;
+        }
+
+        // Step 3: greedy up to kmax
+        List<Integer> Z = new ArrayList<>();
+        if (bestZ >= 0) {
+            Z.add(bestZ);
+            rRes = estimateRccaRankConditioned(S, C, VminusC, toArray(Z), n, alpha);
+        }
+        while (Z.size() < kmax && rRes > 0) {
+            int pick = -1, best = rRes;
+            for (int z : candidatePool)
+                if (!Z.contains(z)) {
+                    int rZ = estimateRccaRankConditioned(S, C, VminusC, union(Z, z), n, alpha);
+                    if (rZ < best) {
+                        best = rZ;
+                        pick = z;
+                    }
+                }
+            if (pick < 0) break;
+            Z.add(pick);
+            rRes = best;
+        }
+        return rRes; // 0 ⇒ observed explanation; >0 ⇒ likely latent
+    }
+
+    public int[] union(int[] A, int b) {
+        Set<Integer> _A = new HashSet<>();
+        Set<Integer> _B = new HashSet<>();
+        for (int j : A) _A.add(j);
+        _B.add(b);
+        Set<Integer> union = new HashSet<>();
+        union.addAll(_A);
+        union.addAll(_B);
+        return union.stream().mapToInt(x -> x).toArray();
+    }
+
+    public static int[] union(int[] A, int[] B) {
+        Set<Integer> _A = new HashSet<>();
+        Set<Integer> _B = new HashSet<>();
+        for (int j : A) _A.add(j);
+        for (int j : B) _B.add(j);
+        Set<Integer> union = new HashSet<>();
+        union.addAll(_A);
+        union.addAll(_B);
+        return union.stream().mapToInt(x -> x).toArray();
+    }
+
+    public static int[] union(List<Integer> A, int b) {
+        Set<Integer> _A = new HashSet<>(A);
+        Set<Integer> union = new HashSet<>(_A);
+        union.add(b);
+        return union.stream().mapToInt(x -> x).toArray();
+    }
+
+
+    private static int[] remove(int[] C, int z) {
+        boolean contains = false;
+        for (int c : C) {
+            if (c == z) {
+                contains = true;
+                break;
+            }
+        }
+        
+        if (contains) {
+            int[] result = new int[C.length - 1];
+            int j = 0;
+            for (int c : C) {
+                if (c != z) {
+                    result[j++] = c;
+                }
+            }
+            return result;
+        } else {
+            return C.clone();
+        }
+    }
+
+    public static int[] toArray(List<Integer> Z) {
+        return Z.stream().mapToInt(x -> x).toArray();
+    }
 
     private static final class EigenSym {
         final DMatrixRMaj Q;     // orthonormal eigenvectors (columns)
@@ -647,4 +830,70 @@ public class RankTests {
             this.suffixLogs = suffixLogs;
         }
     }
+
+    /**
+     * Largest canonical correlation squared between X and Y after conditioning on Z.
+     * Uses the same Schur-complement conditioning as estimateRccaRankConditioned,
+     * then computes the top singular value of Wxx * Sxy_c * Wyy, squared.
+     *
+     * @param S   full covariance over all observed variables
+     * @param X   indices for the first set (int[])
+     * @param Y   indices for the second set (int[])
+     * @param Z   conditioning set (int[]), can be empty
+     * @param n   sample size (not used here; included for API symmetry)
+     * @return    max canonical correlation squared in [0, 1]
+     */
+    public static double maxCanonicalCorrSqConditioned(
+            SimpleMatrix S, int[] X, int[] Y, int[] Z, int n) {
+
+        // Remove Z from X and Y (don’t double-count conditioned variables)
+        int[] X0 = diff(X, Z);
+        int[] Y0 = diff(Y, Z);
+        if (X0.length == 0 || Y0.length == 0) return 0.0;
+
+        // Blocks
+        SimpleMatrix Sxx = block(S, X0, X0);
+        SimpleMatrix Syy = block(S, Y0, Y0);
+        SimpleMatrix Sxy = block(S, X0, Y0);
+
+        if (Z != null && Z.length > 0) {
+            // Condition on Z via Schur complement
+            SimpleMatrix Sxz = block(S, X0, Z);
+            SimpleMatrix Syz = block(S, Y0, Z);
+            SimpleMatrix Szz = block(S, Z,  Z);
+
+            // Robust inverse of Szz (small ridge inside)
+            SimpleMatrix SzzInv = invPsdWithRidge(Szz, 1e-8);
+
+            Sxx = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
+            Syy = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
+            Sxy = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
+        }
+
+        // Whiten with PSD inverse square roots (your invSqrtPSD already symmetrizes + ridges)
+        SimpleMatrix Wxx = invSqrtPSD(Sxx);
+        SimpleMatrix Wyy = invSqrtPSD(Syy);
+
+        // Canonical correlations are singular values of M
+        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
+
+        // Largest singular value (EJML returns descending order)
+        double[] sv = M.svd().getSingularValues();
+        if (sv == null || sv.length == 0) return 0.0;
+
+        double rho = sv[0];
+        // Clamp to [0,1] for numerical safety and square
+        rho = Math.max(0.0, Math.min(1.0, rho));
+        return rho * rho;
+    }
+//
+//    /** Robust inverse for symmetric PSD with a small ridge (used for Szz). */
+//    private static SimpleMatrix invPsdWithRidge(SimpleMatrix A, double ridge) {
+//        SimpleMatrix B = A.plus(A.transpose()).divide(2.0);
+//        for (int i = 0; i < B.numRows(); i++) {
+//            B.set(i, i, B.get(i, i) + ridge);
+//        }
+//        // Pseudoinverse is fine for near-singular cases
+//        return B.pseudoInverse();
+//    }
 }

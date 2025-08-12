@@ -78,10 +78,8 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
                 ess == -1 ? covarianceMatrix.getSampleSize() : ess);
         search.setIncludeStructureModel(includeStructureModel);
         search.setIncludeAllNodes(includeAllNodes);
-        search.setRegLambda(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
-        search.setCondThreshold(parameters.getDouble(Params.CONDITIONING_THRESHOLD));
         search.setAlpha(alpha);
-        search.setPenalty(penalty);
+        search.setDepth(parameters.getInt(Params.DEPTH));
         search.setVerbose(verbose);
 
         edu.cmu.tetrad.search.TrekSeparationClusters.Mode _mode;
@@ -137,13 +135,14 @@ public class TrekSeparationClusters extends AbstractBootstrapAlgorithm implement
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 //        parameters.add(Params.CLUSTER_SIZES);
+        parameters.add(Params.DEPTH);
         parameters.add(Params.TSC_MODE);
         parameters.add(Params.TSC_CLUSTER_SIZE);
         parameters.add(Params.TSC_CLUSTER_RANK);
         parameters.add(Params.FOFC_ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.REGULARIZATION_LAMBDA);
-        parameters.add(Params.CONDITIONING_THRESHOLD);
+//        parameters.add(Params.REGULARIZATION_LAMBDA);
+//        parameters.add(Params.CONDITIONING_THRESHOLD);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.INCLUDE_ALL_NODES);
 //        parameters.add(Params.MIMBUILD_TYPE);

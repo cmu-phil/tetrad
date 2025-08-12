@@ -75,10 +75,10 @@ public class Pc implements IGraphSearch {
      * The knowledge specification.
      */
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The sepset map from the most recent search.
-     */
-    private SepsetMap sepsets;
+//    /**
+//     * The sepset map from the most recent search.
+//     */
+//    private SepsetMap sepsets;
     /**
      * The depth of the search.
      */
@@ -140,6 +140,7 @@ public class Pc implements IGraphSearch {
      * behavior of the search process. A value of `5` is set as the default maximum length.
      */
     private int maxPOrientationHeuristicMaxLength = 5;
+    private Fas fas;
 
     /**
      * Constructs a new PC search using the given independence test as oracle.
@@ -171,48 +172,58 @@ public class Pc implements IGraphSearch {
         return search(new HashSet<>(this.independenceTest.getVariables()));
     }
 
+//    /**
+//     * Runs PC starting with a complete graph over the given list of nodes, using the given independence test and
+//     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information is
+//     * consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
+//     * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
+//     * or due to statistical errors in conditional independence judgments.
+//     * <p>
+//     * All the given nodes must be in the domain of the given conditional independence test.
+//     *
+//     * @param nodes The sublist of nodes to search over.
+//     * @return The search graph.
+//     * @throws InterruptedException if any
+//     * @see #search()
+//     */
+//    public Graph search(Set<Node> nodes) throws InterruptedException {
+//        nodes = new HashSet<>(nodes);
+//
+//        getIndependenceTest().setVerbose(verbose);
+//
+//        Fas fas = new Fas(getIndependenceTest());
+//        fas.setVerbose(this.verbose);
+//
+//        // These only work if you use Fas itself, not other implementations of IFas. This is needed is yo use,
+//        // e.g., Kci as a test, which can take a long time. In the interface you can stop the algorithm yourself,
+//        // but if you need to run PC/KCI e.g., in a loop, you need a timeout. jdramsey 2025-2-23
+//        long startTime = System.currentTimeMillis();
+//        setStartTime(startTime);
+//        return search(fas, nodes);
+//    }
+
+//    /**
+//     * Runs the search using a particular implementation of the fast adjacency search (FAS), over the given sublist of
+//     * nodes.
+//     *
+//     * @param nodes The sublist of nodes.
+//     * @return The result graph
+//     * @throws InterruptedException if any
+//     * @see #search()
+//     * @see IFas
+//     */
+
     /**
-     * Runs PC starting with a complete graph over the given list of nodes, using the given independence test and
-     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information is
-     * consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
-     * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
-     * or due to statistical errors in conditional independence judgments.
-     * <p>
-     * All the given nodes must be in the domain of the given conditional independence test.
+     * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given
+     * independence test and knowledge and returns the resultant graph. The returned graph will be a CPDAG if the
+     * independence information is consistent with the hypothesis that there are no latent common causes. It may,
+     * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
+     * of latent common causes, or due to statistical errors in conditional independence judgments.
      *
-     * @param nodes The sublist of nodes to search over.
-     * @return The search graph.
      * @throws InterruptedException if any
-     * @see #search()
+     * @see Fci
      */
     public Graph search(Set<Node> nodes) throws InterruptedException {
-        nodes = new HashSet<>(nodes);
-
-        getIndependenceTest().setVerbose(verbose);
-
-        Fas fas = new Fas(getIndependenceTest());
-        fas.setVerbose(this.verbose);
-
-        // These only work if you use Fas itself, not other implementations of IFas. This is needed is yo use,
-        // e.g., Kci as a test, which can take a long time. In the interface you can stop the algorithm yourself,
-        // but if you need to run PC/KCI e.g., in a loop, you need a timeout. jdramsey 2025-2-23
-        long startTime = System.currentTimeMillis();
-        setStartTime(startTime);
-        return search(fas, nodes);
-    }
-
-    /**
-     * Runs the search using a particular implementation of the fast adjacency search (FAS), over the given sublist of
-     * nodes.
-     *
-     * @param fas   The fast adjacency search to use.
-     * @param nodes The sublist of nodes.
-     * @return The result graph
-     * @throws InterruptedException if any
-     * @see #search()
-     * @see IFas
-     */
-    public Graph search(Fas fas, Set<Node> nodes) throws InterruptedException {
         if (verbose) {
             this.logger.log("Starting PC algorithm");
             this.logger.log("Independence test = " + getIndependenceTest() + ".");
@@ -235,8 +246,20 @@ public class Pc implements IGraphSearch {
         search.setStartTime(this.getStartTime());
         search.setTimeout(this.getTimeout());
 
+        if (stable) {
+            search.setFasType(PcCommon.FasType.STABLE);
+        } else {
+            search.setFasType(PcCommon.FasType.REGULAR);
+        }
+
+        if (useMaxPOrientation) {
+            search.setColliderDiscovery(PcCommon.ColliderDiscovery.MAX_P);
+        } else {
+            search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
+        }
+
         this.graph = search.search();
-        this.sepsets = fas.getSepsets();
+        this.fas = search.getFas();
 
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
@@ -329,7 +352,7 @@ public class Pc implements IGraphSearch {
      * @return This map.
      */
     public SepsetMap getSepsets() {
-        return this.sepsets;
+        return this.fas.getSepsets();
     }
 
     /**
