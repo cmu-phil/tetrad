@@ -6,7 +6,7 @@
  * Copyright (C) 1998-2022 by Peter Spirtes, Richard Scheines, Joseph Ramsey, and Clark Glymour.
  * <p>
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later
+ * License as published by the Free Software Foundation; either version 2 of the License or (at your option) any later
  * version.
  */
 package edu.cmu.tetrad.search;
@@ -72,11 +72,11 @@ public class TrekSeparationClusters {
      */
     private double alpha = 0.01;
     /**
-     * Whether to include structure model between latents
+     * Whether to include a structure model between latents
      */
     private boolean includeStructureModel = false;
     /**
-     * Whether to include all nodes in output graph
+     * Whether to include all nodes in the output graph
      */
     private boolean includeAllNodes = false;
     /**
@@ -127,7 +127,7 @@ public class TrekSeparationClusters {
         return result;
     }
 
-    // Pascal triangle up to n choose k (inclusive on n)
+    // Pascal triangle, up to n choose k (inclusive on n)
     static long[][] precomputeBinom(int n, int k) {
         long[][] C = new long[n + 1][k + 1];
         for (int i = 0; i <= n; i++) {
@@ -403,8 +403,7 @@ public class TrekSeparationClusters {
      * Sets the alpha value, which may be used as a significance level or parameter threshold in the underlying analysis
      * or computation within the class.
      *
-     * @param alpha The alpha value to be set. It should be provided as a double, and typically represents a probability
-     *              level or tuning parameter depending on the context of its use.
+     * @param alpha The alpha value to be set.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -865,8 +864,8 @@ public class TrekSeparationClusters {
      * updates the cache.
      *
      * @param cluster A set of integers representing the cluster for which the rank is to be determined.
-     * @param vars    A reference list of variables to check the size of cluster against. It should be the case that |C|
-     *                < |V \ C|.
+     * @param vars    A reference list of variables to check the size of the cluster against. It should be the case that
+     *                |C| < |V \ C|.
      * @return An integer representing the calculated or cached rank of the given cluster.
      * @throws IllegalArgumentException if |C| >= |V \ C}.
      */
