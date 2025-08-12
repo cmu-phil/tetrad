@@ -379,14 +379,6 @@ public class TrekSeparationClusters {
         return Z.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    private static int getRank(SimpleMatrix S, int sampleSize, double alpha, List<Integer> __cluster, List<Integer> _complement) {
-        int[] clusterArray = __cluster.stream().mapToInt(Integer::intValue).toArray();
-        int[] complementArray = _complement.stream().mapToInt(Integer::intValue).toArray();
-
-        int rank = estimateRccaRank(S, clusterArray, complementArray, sampleSize, alpha);
-        return rank;
-    }
-
     /**
      * Checks if a TSC cluster C survives explain-away conditioning using PC sepsets.
      *
@@ -1210,7 +1202,7 @@ public class TrekSeparationClusters {
 //                reducedRank.remove(cluster);
 //            }
 
-            if (subsetRank0(S, cluster, sampleSize, alpha)) {
+            if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
                 clusterToRank.remove(cluster);
                 reducedRank.remove(cluster);
             }
@@ -1220,15 +1212,11 @@ public class TrekSeparationClusters {
         return new Pair<>(clusterToRank, reducedRank);
     }
 
-    private boolean subsetRank0(SimpleMatrix S, Set<Integer> cluster, int sampleSize, double alpha) {
+    private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int sampleSize, double alpha) {
         List<Integer> C = new ArrayList<>(cluster);
 
         List<Integer> D = allVariables();
         D.removeAll(cluster);
-
-        int baseRank = getMyRank(S, sampleSize, alpha, C, D);
-
-        System.out.println("Base rank: " + baseRank);
 
         SublistGenerator gen = new SublistGenerator(C.size(), C.size() - 1);
         int[] choice;
@@ -1241,7 +1229,10 @@ public class TrekSeparationClusters {
                 _C.add(C.get(i));
             }
 
-            int rank = getMyRank(S, sampleSize, alpha, _C, D);
+            int[] clusterArray = _C.stream().mapToInt(Integer::intValue).toArray();
+            int[] complementArray = D.stream().mapToInt(Integer::intValue).toArray();
+
+            int rank = RankTests.estimateRccaRank(S, clusterArray, complementArray, sampleSize, alpha);
 
             if (rank == 0) {
                 return true;
@@ -1268,8 +1259,6 @@ public class TrekSeparationClusters {
             int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
             double r = RankTests.estimateRccaRankConditioned(S, clusterArray, complementArray, zArray, sampleSize, alpha);
-
-            System.out.println("Rank conditioning on " + toNamesCluster(Z) + ": " + r);
 
             if (r == 0) {
                 return true;
@@ -1349,7 +1338,10 @@ public class TrekSeparationClusters {
         // Compute full cross-cut rank rhat = rank(C,D)
         int[] Carr = C.stream().mapToInt(Integer::intValue).toArray();
         int[] Darr = D.stream().mapToInt(Integer::intValue).toArray();
-        int rhat = getMyRank(S, sampleSize, alpha, C, D);
+        int[] clusterArray1 = C.stream().mapToInt(Integer::intValue).toArray();
+        int[] complementArray1 = D.stream().mapToInt(Integer::intValue).toArray();
+
+        int rhat = RankTests.estimateRccaRank(S, clusterArray1, complementArray1, sampleSize, alpha);
 
         if (rhat == 0) return true; // Already degenerate
 
@@ -1366,25 +1358,16 @@ public class TrekSeparationClusters {
                 for (int idx : choice) {
                     Cprime.add(C.get(idx));
                 }
-                int rank = getMyRank(S, sampleSize, alpha, Cprime, D);
+                int[] clusterArray = Cprime.stream().mapToInt(Integer::intValue).toArray();
+                int[] complementArray = D.stream().mapToInt(Integer::intValue).toArray();
+
+                int rank = RankTests.estimateRccaRank(S, clusterArray, complementArray, sampleSize, alpha);
                 if (rank == 0) {
                     return true; // Found small removal set that kills the rank
                 }
             }
         }
         return false; // Survived all small removals
-    }
-
-    private int getMyRank(SimpleMatrix S, int sampleSize, double alpha, List<Integer> __cluster, List<Integer> other) {
-//        List<Integer> _complement = allVariables();
-//        _complement.removeAll(__cluster);
-
-        int rank = getRank(S, sampleSize, alpha, __cluster, other);
-
-        System.out.println("Rank of " + toNamesCluster(__cluster) + " against "
-                           + toNamesCluster(other) + " is " + rank);
-
-        return rank;
     }
 
     /**
