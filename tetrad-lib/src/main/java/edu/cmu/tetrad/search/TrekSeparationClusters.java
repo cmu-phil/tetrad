@@ -35,16 +35,21 @@ import static edu.cmu.tetrad.util.RankTests.estimateRccaRank;
 import static java.lang.Math.sqrt;
 
 /**
- * The TrekSeparationClusters2 class implements methods for detecting and analyzing clusters of variables using trek
- * separation tests. This class is designed to identify latent structure in a given covariance matrix with capabilities
- * for clustering, ranking, and graph construction.
+ * The {@code TrekSeparationClusters} class is designed to analyze and identify clusters in data based on trek
+ * separation principles. It offers robust functionalities for working with graph structures, covariance matrices, and
+ * clustering methodologies. The class utilizes concepts like rank evaluation, structure models, and canonical
+ * correlation analysis (CCA) to identify latent variables and interrelationships in data.
  * <p>
- * It uses various parameters such as rank, penalties, and testing settings to guide the process and adjust the behavior
- * of the clustering algorithm. The main functionalities include searching for latent clusters, generating random
- * clusters, identifying disjoint clusters, and constructing resulting graphical models.
+ * This class provides capabilities for: - Precomputation of binomial coefficients for efficiency. - Conversion
+ * utilities for matrix representations. - Handling and merging of overlapping clusters. - Performing sequential
+ * clustering with rank and size constraints. - Integration of latent structure edges into a graph.
+ * <p>
+ * The class is designed to address complex analytical tasks related to clusters and latent variable modeling.
  */
 public class TrekSeparationClusters {
-    // ---- Binomial cache (reuse across calls) -----------------------------------
+    /**
+     * ---- Binomial cache (reuse across calls) -----------------------------------
+     */
     private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
     /**
      * List of observed variables/nodes
@@ -66,6 +71,10 @@ public class TrekSeparationClusters {
      * The covariance/correlation matrix
      */
     private final SimpleMatrix S;
+    /**
+     * Represents the depth value, which is initialized to -1 (unlimited). This variable can be used to indicate a
+     * hierarchical level, a measurement, or to track recursion depth where applicable.
+     */
     private int depth = -1;
     /**
      * Alpha level for rank tests
@@ -83,8 +92,6 @@ public class TrekSeparationClusters {
      * Whether to output verbose logging
      */
     private boolean verbose = false;
-
-
     /**
      * Constructs a TrekSeparationClusters2 object, initializes the node and variable lists, and adjusts the covariance
      * matrix with a small scaling factor to ensure numerical stability.
@@ -288,41 +295,53 @@ public class TrekSeparationClusters {
             clusterToRanks = ret.getFirst();
             reducedRanks = ret.getSecond();
         } else if (mode == Mode.SIZE_RANK) {
-
-            for (int i = 0; i < clusterSpecs.length; i++) {
-                log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
-                int size = clusterSpecs[i][0];
-                int rank = clusterSpecs[i][1];
-                Map<Set<Integer>, Integer> _clusters = getRunSequentialClusterSearch(variables, size, rank);
-                Set<Set<Integer>> baseClusters = new HashSet<>(_clusters.keySet());
-
-                log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters.keySet()));
-                clusterList.add(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
-                log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
-                    toNamesClusters(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
-
-                for (int j = 0; j < i; j++) {
-                    if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
-                        clusterList.get(j).addAll(clusterList.get(i));
-                        clusterList.set(j, mergeOverlappingClusters(clusterList.get(j), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
-                        log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNamesClusters(clusterList.get(j)));
-                        clusterList.get(i).clear();
-                    }
-                }
-
-                for (Set<Set<Integer>> cluster2 : clusterList) {
-                    for (Set<Integer> cluster3 : cluster2) {
-                        clusterToRanks.put(cluster3, rank);
-                    }
-                }
-            }
-
+            particularSizeAndRank(clusterSpecs, variables, clusterList, clusterToRanks);
             log("Clusters = " + toNamesClusters(new HashSet<>(clusterToRanks.keySet())));
         } else {
             throw new IllegalArgumentException("Mode must be METALOOP or SIZE_RANK");
         }
 
         return new Pair<>(clusterToRanks, reducedRanks);
+    }
+
+    /**
+     * Processes cluster specifications to determine clusters of a specified size and rank. This method updates the
+     * provided list of clusters and maps each cluster to its associated rank.
+     *
+     * @param clusterSpecs   a 2D array where each row specifies the size and rank of the clusters to be processed.
+     * @param variables      a list of variables used to form the clusters.
+     * @param clusterList    a list to store the resulting sets of clusters, where each set contains clusters of a
+     *                       specific size and rank.
+     * @param clusterToRanks a map that associates each cluster with its corresponding rank.
+     */
+    private void particularSizeAndRank(int[][] clusterSpecs, List<Integer> variables, List<Set<Set<Integer>>> clusterList, Map<Set<Integer>, Integer> clusterToRanks) {
+        for (int i = 0; i < clusterSpecs.length; i++) {
+            log("cluster spec: " + Arrays.toString(clusterSpecs[i]));
+            int size = clusterSpecs[i][0];
+            int rank = clusterSpecs[i][1];
+            Map<Set<Integer>, Integer> _clusters = getRunSequentialClusterSearch(variables, size, rank);
+            Set<Set<Integer>> baseClusters = new HashSet<>(_clusters.keySet());
+
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters.keySet()));
+            clusterList.add(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
+                toNamesClusters(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
+
+            for (int j = 0; j < i; j++) {
+                if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
+                    clusterList.get(j).addAll(clusterList.get(i));
+                    clusterList.set(j, mergeOverlappingClusters(clusterList.get(j), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
+                    log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerging rank " + clusterSpecs[j][1] + ": " + toNamesClusters(clusterList.get(j)));
+                    clusterList.get(i).clear();
+                }
+            }
+
+            for (Set<Set<Integer>> cluster2 : clusterList) {
+                for (Set<Integer> cluster3 : cluster2) {
+                    clusterToRanks.put(cluster3, rank);
+                }
+            }
+        }
     }
 
     /**
@@ -546,12 +565,21 @@ public class TrekSeparationClusters {
         return clusterToRank;
     }
 
+    /**
+     * This method performs a hierarchical clustering process to identify clusters of variables and associate ranks to
+     * them. The method iteratively explores clusters of different sizes and ranks, attempting to augment clusters by
+     * including overlapping elements or by performing subset evaluations. It maintains two maps: one for the final
+     * clusters with their associated ranks and another for reduced-rank clusters obtained through augmentations.
+     *
+     * @return A pair where the first element is a map of clusters (sets of integers) to their respective ranks, and the
+     * second element is a map of clusters to their reduced ranks after augmentations.
+     */
     private @NotNull Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> clusterSearchMetaLoop() {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
         Map<Set<Integer>, Integer> clusterToRank = new HashMap<>();
         Map<Set<Integer>, Integer> reducedRank = new HashMap<>();
 
-        for (int rank = 0; rank <= 3; rank++) {
+        for (int rank = 0; rank <= 5; rank++) {
             int size = rank + 1;
 
             if (size >= remainingVars.size() - size) {
@@ -603,15 +631,6 @@ public class TrekSeparationClusters {
 
                         Set<Integer> complement = new HashSet<>(variables);
                         complement.removeAll(union);
-
-//                        {
-//                            int[] _cluster = cluster.stream().mapToInt(Integer::intValue).toArray();
-//                            int[] _complement = complement.stream().mapToInt(Integer::intValue).toArray();
-//
-//                            if (!survivesSepsetExplainAway(S, _cluster, _complement, sampleSize, alpha, nodes, sepsets, depth == -1 ? 100 : depth, cpdag, 5)) {
-//                                continue;
-//                            }
-//                        }
 
                         int minpq = Math.min(union.size(), complement.size());
 
@@ -713,53 +732,78 @@ public class TrekSeparationClusters {
             remainingVars.removeAll(used);
         }
 
+        log("Penultimate clusters = " + toNamesClusters(clusterToRank.keySet()));
+        log("Now we will consider whether any of the penultimate clusters should be discarded (as from a non-latent DAG, e.g.).");
+
+        boolean penultimateRemoved = false;
+
         for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
             List<Integer> complement = allVariables();
             complement.removeAll(cluster);
 
             if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
+                log("Cluster " + toNamesCluster(cluster) + " failed the subset test; removing.");
                 clusterToRank.remove(cluster);
                 reducedRank.remove(cluster);
+                penultimateRemoved = true;
             }
+        }
+
+        if (!penultimateRemoved) {
+            log("No penultimate clusters were removed.");
         }
 
         log("Final clusters = " + toNamesClusters(clusterToRank.keySet()));
         return new Pair<>(clusterToRank, reducedRank);
     }
 
+    /**
+     * Evaluates whether a given cluster fails the subset test based on rank conditions derived from the matrix S.
+     *
+     * @param S          the matrix containing the input data for rank testing.
+     * @param cluster    the set of integers representing the cluster to be tested.
+     * @param sampleSize the sample size to be used in the rank estimation tests.
+     * @param alpha      the significance level used in the rank tests.
+     * @return true if the cluster fails the subset test according to the rank conditions, false otherwise.
+     */
     private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int sampleSize, double alpha) {
         List<Integer> C = new ArrayList<>(cluster);
 
         List<Integer> D = allVariables();
         D.removeAll(cluster);
 
-        SublistGenerator gen = new SublistGenerator(C.size(), C.size() - 1);
+        int _depth = depth == -1 ? C.size() : depth;
+
+        SublistGenerator gen = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            if (choice.length < C.size() - 2) continue;
+            if (choice.length == 0) continue;
 
-            List<Integer> _C = new ArrayList<>();
+            List<Integer> W = new ArrayList<>();
             for (int i : choice) {
-                _C.add(C.get(i));
+                W.add(C.get(i));
             }
 
-            int[] clusterArray = _C.stream().mapToInt(Integer::intValue).toArray();
-            int[] complementArray = D.stream().mapToInt(Integer::intValue).toArray();
+            List<Integer> _C = new ArrayList<>(C);
+            _C.removeAll(W);
 
-            int rank = RankTests.estimateRccaRank(S, clusterArray, complementArray, sampleSize, alpha);
+            int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
+            int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
+
+            int rank = RankTests.estimateRccaRank(S, _cArray, dArray, sampleSize, alpha);
 
             if (rank == 0) {
+                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank 0.");
                 return true;
             }
         }
 
-        SublistGenerator gen2 = new SublistGenerator(C.size(), 2);
+        SublistGenerator gen2 = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
         int[] choice2;
 
         while ((choice2 = gen2.next()) != null) {
-            if (choice2.length < 1) continue;
-            if (choice2.length == C.size()) continue;
+            if (choice2.length == 0) continue;
 
             List<Integer> Z = new ArrayList<>();
             for (int i : choice2) {
@@ -769,13 +813,15 @@ public class TrekSeparationClusters {
             List<Integer> _C = new ArrayList<>(C);
             _C.removeAll(Z);
 
-            int[] clusterArray = _C.stream().mapToInt(Integer::intValue).toArray();
-            int[] complementArray = D.stream().mapToInt(Integer::intValue).toArray();
+            int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
+            int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
             int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
-            double r = RankTests.estimateRccaRankConditioned(S, clusterArray, complementArray, zArray, sampleSize, alpha);
+            double r = RankTests.estimateRccaRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
 
             if (r == 0) {
+                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C)
+                    + " has rank 0 conditional on " + toNamesCluster(Z) + ".");
                 return true;
             }
         }
@@ -1004,11 +1050,38 @@ public class TrekSeparationClusters {
                 .collect(Collectors.joining(" ", "{", "}"));
     }
 
+    /**
+     * Sets the depth value for this object.
+     *
+     * @param depth the depth value to be set, represented as an integer
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
-    public enum Mode {METALOOP, SIZE_RANK}
+    /**
+     * The Mode enum represents different operational modes.
+     * It defines constants that can be used to specify particular behaviors or configurations.
+     *
+     * Enum Constants:
+     * METALOOP - Represents a specific mode for looping operations or settings.
+     * SIZE_RANK - Represents a mode related to size or ranking configurations.
+     */
+    public enum Mode {
+        /**
+         * Represents a specific operational mode used for looping operations or settings.
+         * This constant is part of the Mode enum and is utilized to define behavior or configuration
+         * associated with looping functionality within the application.
+         */
+        METALOOP,
+
+        /**
+         * Represents a specific operational mode associated with size or ranking configurations.
+         * This constant is part of the Mode enum and is utilized to define behavior
+         * or configurations related to size or ranking within the application.
+         */
+        SIZE_RANK}
+
 
     // ===== Greedy builder for Z (size ≤ m) that minimizes rank({a},{b} | Z) =====
 
@@ -1092,7 +1165,9 @@ public class TrekSeparationClusters {
             return R;
         }
 
-        // Helper: Extract a submatrix of S with rows in A and cols in B
+        /**
+         * Helper: Extract a submatrix of S with rows in A and cols in B
+         */
         private static SimpleMatrix extractCrossBlock(SimpleMatrix S, List<Integer> rows, List<Integer> cols) {
             SimpleMatrix result = new SimpleMatrix(rows.size(), cols.size());
             for (int i = 0; i < rows.size(); i++) {
@@ -1103,7 +1178,9 @@ public class TrekSeparationClusters {
             return result;
         }
 
-        // Helper: Extract submatrix of S using indices
+        /**
+         * Helper: Extract submatrix of S using indices
+         */
         private static SimpleMatrix extractSubmatrix(SimpleMatrix S, List<Integer> indices) {
             return extractCrossBlock(S, indices, indices);
         }
