@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.Mixed;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;

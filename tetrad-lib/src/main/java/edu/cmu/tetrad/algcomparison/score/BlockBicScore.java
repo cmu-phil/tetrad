@@ -21,11 +21,11 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -66,7 +66,7 @@ public class BlockBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BlockBicScore score = new edu.cmu.tetrad.search.score.BlockBicScore(
+        BlocksBicScore score = new BlocksBicScore(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT)
         );
