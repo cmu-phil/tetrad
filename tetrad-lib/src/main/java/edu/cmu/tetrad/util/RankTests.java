@@ -13,8 +13,6 @@ import org.ejml.simple.SimpleSVD;
 
 import java.util.*;
 
-import static org.apache.commons.lang3.ArrayUtils.remove;
-
 public class RankTests {
 
     private static final int RCCA_CACHE_MAX = 10_000; // tune if needed
@@ -25,7 +23,7 @@ public class RankTests {
                     return size() > RCCA_CACHE_MAX;
                 }
             };
-    // ---- Eigen whitening path (from previous message), packaged to return svals
+    // ---- Eigen whitening path (from a previous message), packaged to return svals
     private static final double EIG_FLOOR = 1e-12;
     private static final double RIDGE = 1e-10;
     private static final double MIN_EIG = 1e-12;
@@ -67,59 +65,6 @@ public class RankTests {
             double stat = 0.0;
             for (int i = rank; i < Math.min(p, q); i++) {
                 double s = singularValues[i];
-                stat += Math.log(1 - s * s);
-            }
-            double scale = -(n - (p + q + 3) / 2.);
-            stat *= scale;
-
-            // Degrees of freedom
-            int df = (p - rank) * (q - rank);
-
-            // Compute p-value
-            ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-            return 1.0 - chi2.cumulativeProbability(stat);
-        } catch (Exception e) {
-            return 0.0;
-        }
-    }
-
-    /**
-     * Computes RCCA p-value from a covariance matrix.
-     *
-     * @param S        The (p+q) x (p+q) covariance matrix.
-     * @param xIndices Number of variables in group A.
-     * @param yIndices Number of variables in group B.
-     * @param n        Sample size.
-     * @param rank     Hypothesized rank (test is for rank > r).
-     * @param regParam Regularization parameter (λ > 0).
-     * @return The p-value.
-     */
-    public static double getRccaPValueRankLEOrig(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, int rank, double regParam) {
-        try {
-            int p = xIndices.length;
-            int q = yIndices.length;
-
-            // Step 1: Extract submatrices
-            SimpleMatrix Cxx = StatUtils.extractSubMatrix(S, xIndices, xIndices).plus(SimpleMatrix.identity(p).scale(regParam));
-            SimpleMatrix Cyy = StatUtils.extractSubMatrix(S, yIndices, yIndices).plus(SimpleMatrix.identity(q).scale(regParam));
-            SimpleMatrix Cxy = StatUtils.extractSubMatrix(S, xIndices, yIndices);
-
-            // Inverse square roots of Cxx and Cyy using eigen-decomposition
-            SimpleMatrix Cxx_inv_sqrt = invSqrtSymmetric(Cxx);
-            SimpleMatrix Cyy_inv_sqrt = invSqrtSymmetric(Cyy);
-
-            // Construct matrix M = Cxx^{-1/2} * Cxy * Cyy^{-1/2}
-            SimpleMatrix M = Cxx_inv_sqrt.mult(Cxy).mult(Cyy_inv_sqrt);
-
-            // Perform SVD on M
-            SimpleSVD<SimpleMatrix> svd = M.svd();
-            double[] singularValues = svd.getW().diag().getDDRM().getData();
-
-            // Test statistic
-            double stat = 0.0;
-            for (int i = rank; i < Math.min(p, q); i++) {
-                double s = singularValues[i];
-                s = Math.max(0.0, Math.min(s, 1.0 - 1e-12));  // Avoid log(0)
                 stat += Math.log(1 - s * s);
             }
             double scale = -(n - (p + q + 3) / 2.);
@@ -447,59 +392,6 @@ public class RankTests {
         return V.mult(D_inv_sqrt).mult(V.transpose());
     }
 
-    public static int estimateRccaRank0(SimpleMatrix S, int[] xIndices, int[] yIndices, int n, double alpha,
-                                        double regLambda, double condThreshold) {
-        for (int i = 0; i < yIndices.length; i++) {
-            for (int j = i + 1; j < yIndices.length; j++) {
-                if (yIndices[i] == yIndices[j]) {
-                    throw new IllegalArgumentException("Duplicate values found in yIndices array");
-                }
-            }
-        }
-
-        int p = xIndices.length;
-        int q = yIndices.length;
-        int minpq = Math.min(p, q);
-
-        for (int r = 0; r < minpq; r++) {
-            double pVal = getRccaPValueRankLE(S, xIndices, yIndices, n, r, regLambda, condThreshold);
-
-            if (pVal > alpha) {
-                return r; // First non-rejected rank
-            }
-        }
-
-        return minpq; // All tests rejected, full rank assumed
-    }
-
-//    private static boolean acceptRankLeByWilks(SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, int r, double alpha) {
-//        SimpleMatrix Sxx = block(Scond, xLoc, xLoc);
-//        SimpleMatrix Syy = block(Scond, yLoc, yLoc);
-//        SimpleMatrix Sxy = block(Scond, xLoc, yLoc);
-//
-//        SimpleMatrix Wxx = invSqrtPSD(Sxx);
-//        SimpleMatrix Wyy = invSqrtPSD(Syy);
-//        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
-//
-//        double[] s = M.svd().getSingularValues();
-//        int p = Sxx.getNumRows(), q = Syy.getNumRows();
-//        int minpq = Math.min(p, q);
-//
-//        double lambda = 1.0;
-//        for (int i = r; i < Math.min(minpq, s.length); i++) {
-//            double rho = Math.max(0.0, Math.min(1.0, s[i]));
-//            lambda *= (1.0 - rho * rho);
-//        }
-//        double c = (n - 1) - 0.5 * (p + q + 1);
-//        if (c < 1) c = 1;
-//        double stat = -c * Math.log(Math.max(lambda, 1e-16));
-//        int df = (p - r) * (q - r);
-//
-//        // Use Commons Math in your code:
-//         double pval = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
-//        return pval > alpha;
-//    }
-
     public static int estimateRccaRank(SimpleMatrix Scond,
                                        int[] xIdxLocal, int[] yIdxLocal,
                                        int n, double alpha) {
@@ -599,7 +491,7 @@ public class RankTests {
         return V.mult(DinvSqrt).mult(V.transpose());
     }
 
-    // Build an Scond over [X | Y] that is *conditioned on* Z, then call your estimator.
+    // Build a Scond over [X | Y] that is *conditioned on* Z, then call your estimator.
     public static int estimateRccaRankConditioned(
             SimpleMatrix S, int[] C, int[] VminusC, int[] Z,
             int n, double alpha) {
@@ -625,7 +517,7 @@ public class RankTests {
         SimpleMatrix Syy_c = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
         SimpleMatrix Sxy_c = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
 
-        // Reassemble an (|X|+|Y|)×(|X|+|Y|) covariance that is conditioned on Z:
+        // Reassemble a (|X|+|Y|)×(|X|+|Y|) covariance conditioned on Z:
         int p = X.length, q = Y.length;
         SimpleMatrix Scond = new SimpleMatrix(p + q, p + q);
         Scond.insertIntoThis(0, 0, Sxx_c);
@@ -666,69 +558,6 @@ public class RankTests {
         return result.stream().mapToInt(x -> x).toArray();
     }
 
-    public static int diagnoseChannel(SimpleMatrix S, int[] C, int[] VminusC, int n, double alpha,
-                        int kmax, int[] candidatePool) {
-        int r = estimateRccaRank(S, C, VminusC, n, alpha /*reg*/ /*condThr*/);
-        if (r == 0) return 0;
-
-        // Step 1: remove-one on each side
-        for (int z : C) {
-            int[] Cminus = remove(C, z);
-            int rank = estimateRccaRank(S, Cminus, VminusC, n, alpha);
-            if (rank == 0) return 0; // observed bottleneck
-        }
-        for (int z : VminusC) {
-            int[] Dminus = remove(VminusC, z);
-            int rank = estimateRccaRank(S, C, Dminus, n, alpha);
-            if (rank == 0) return 0;
-        }
-
-        // Step 2: singleton conditioning
-        int rRes = r;
-        int bestZ = -1;
-        for (int z : candidatePool) {
-            int rZ = estimateRccaRankConditioned(S, C, VminusC, /*Z=*/new int[]{z}, n, alpha);
-            if (rZ < rRes) {
-                rRes = rZ;
-                bestZ = z;
-            }
-            if (rZ == 0) return 0;
-        }
-
-        // Step 3: greedy up to kmax
-        List<Integer> Z = new ArrayList<>();
-        if (bestZ >= 0) {
-            Z.add(bestZ);
-            rRes = estimateRccaRankConditioned(S, C, VminusC, toArray(Z), n, alpha);
-        }
-        while (Z.size() < kmax && rRes > 0) {
-            int pick = -1, best = rRes;
-            for (int z : candidatePool)
-                if (!Z.contains(z)) {
-                    int rZ = estimateRccaRankConditioned(S, C, VminusC, union(Z, z), n, alpha);
-                    if (rZ < best) {
-                        best = rZ;
-                        pick = z;
-                    }
-                }
-            if (pick < 0) break;
-            Z.add(pick);
-            rRes = best;
-        }
-        return rRes; // 0 ⇒ observed explanation; >0 ⇒ likely latent
-    }
-
-    public int[] union(int[] A, int b) {
-        Set<Integer> _A = new HashSet<>();
-        Set<Integer> _B = new HashSet<>();
-        for (int j : A) _A.add(j);
-        _B.add(b);
-        Set<Integer> union = new HashSet<>();
-        union.addAll(_A);
-        union.addAll(_B);
-        return union.stream().mapToInt(x -> x).toArray();
-    }
-
     public static int[] union(int[] A, int[] B) {
         Set<Integer> _A = new HashSet<>();
         Set<Integer> _B = new HashSet<>();
@@ -747,32 +576,19 @@ public class RankTests {
         return union.stream().mapToInt(x -> x).toArray();
     }
 
-
-    private static int[] remove(int[] C, int z) {
-        boolean contains = false;
-        for (int c : C) {
-            if (c == z) {
-                contains = true;
-                break;
-            }
-        }
-        
-        if (contains) {
-            int[] result = new int[C.length - 1];
-            int j = 0;
-            for (int c : C) {
-                if (c != z) {
-                    result[j++] = c;
-                }
-            }
-            return result;
-        } else {
-            return C.clone();
-        }
-    }
-
     public static int[] toArray(List<Integer> Z) {
         return Z.stream().mapToInt(x -> x).toArray();
+    }
+
+    public int[] union(int[] A, int b) {
+        Set<Integer> _A = new HashSet<>();
+        Set<Integer> _B = new HashSet<>();
+        for (int j : A) _A.add(j);
+        _B.add(b);
+        Set<Integer> union = new HashSet<>();
+        union.addAll(_A);
+        union.addAll(_B);
+        return union.stream().mapToInt(x -> x).toArray();
     }
 
     private static final class EigenSym {
@@ -829,62 +645,6 @@ public class RankTests {
             this.svals = svals;
             this.suffixLogs = suffixLogs;
         }
-    }
-
-    /**
-     * Largest canonical correlation squared between X and Y after conditioning on Z.
-     * Uses the same Schur-complement conditioning as estimateRccaRankConditioned,
-     * then computes the top singular value of Wxx * Sxy_c * Wyy, squared.
-     *
-     * @param S   full covariance over all observed variables
-     * @param X   indices for the first set (int[])
-     * @param Y   indices for the second set (int[])
-     * @param Z   conditioning set (int[]), can be empty
-     * @param n   sample size (not used here; included for API symmetry)
-     * @return    max canonical correlation squared in [0, 1]
-     */
-    public static double maxCanonicalCorrSqConditioned(
-            SimpleMatrix S, int[] X, int[] Y, int[] Z, int n) {
-
-        // Remove Z from X and Y (don’t double-count conditioned variables)
-        int[] X0 = diff(X, Z);
-        int[] Y0 = diff(Y, Z);
-        if (X0.length == 0 || Y0.length == 0) return 0.0;
-
-        // Blocks
-        SimpleMatrix Sxx = block(S, X0, X0);
-        SimpleMatrix Syy = block(S, Y0, Y0);
-        SimpleMatrix Sxy = block(S, X0, Y0);
-
-        if (Z != null && Z.length > 0) {
-            // Condition on Z via Schur complement
-            SimpleMatrix Sxz = block(S, X0, Z);
-            SimpleMatrix Syz = block(S, Y0, Z);
-            SimpleMatrix Szz = block(S, Z,  Z);
-
-            // Robust inverse of Szz (small ridge inside)
-            SimpleMatrix SzzInv = invPsdWithRidge(Szz, 1e-8);
-
-            Sxx = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
-            Syy = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
-            Sxy = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
-        }
-
-        // Whiten with PSD inverse square roots (your invSqrtPSD already symmetrizes + ridges)
-        SimpleMatrix Wxx = invSqrtPSD(Sxx);
-        SimpleMatrix Wyy = invSqrtPSD(Syy);
-
-        // Canonical correlations are singular values of M
-        SimpleMatrix M = Wxx.mult(Sxy).mult(Wyy);
-
-        // Largest singular value (EJML returns descending order)
-        double[] sv = M.svd().getSingularValues();
-        if (sv == null || sv.length == 0) return 0.0;
-
-        double rho = sv[0];
-        // Clamp to [0,1] for numerical safety and square
-        rho = Math.max(0.0, Math.min(1.0, rho));
-        return rho * rho;
     }
 //
 //    /** Robust inverse for symmetric PSD with a small ridge (used for Szz). */
