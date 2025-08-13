@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.IndTestBasisFunctionRank;
+import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -21,13 +21,13 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "BF-Rank-Test (Basis Function Rank Test)",
-        command = "bf-rank-test",
-        dataType = DataType.Mixed
-)
-@Mixed
-public class BasisFunctionRankTest implements IndependenceWrapper {
+//@TestOfIndependence(
+//        name = "Block-Ind-Test (Block Independence Test)",
+//        command = "block-ind-test",
+//        dataType = DataType.Mixed
+//)
+//@Mixed
+public class BlockIndependenceTest implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -35,7 +35,7 @@ public class BasisFunctionRankTest implements IndependenceWrapper {
     /**
      * Initializes a new instance of the DegenerateGaussianLrt class.
      */
-    public BasisFunctionRankTest() {
+    public BlockIndependenceTest() {
     }
 
     /**
@@ -43,7 +43,7 @@ public class BasisFunctionRankTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestBasisFunctionRank test = new IndTestBasisFunctionRank(SimpleDataLoader.getMixedDataSet(dataSet),
+        IndTestBlocks test = new IndTestBlocks(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getDouble(Params.SINGULARITY_LAMBDA));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
@@ -55,7 +55,7 @@ public class BasisFunctionRankTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function Rank Test";
+        return "Block Independence Test";
     }
 
     /**

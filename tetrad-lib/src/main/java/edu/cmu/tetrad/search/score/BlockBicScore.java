@@ -21,7 +21,7 @@ import java.util.*;
  *
  * For scalar Y (q=1) and r in {0,1}, this collapses to SEM-BIC.
  */
-public class BasisFunctionRankBicScore implements Score {
+public class BlockBicScore implements Score {
     // --- Data / bookkeeping ---
     private final DataSet dataSet;
     private final List<Node> variables;
@@ -59,7 +59,7 @@ public class BasisFunctionRankBicScore implements Score {
                 }
             };
 
-    public BasisFunctionRankBicScore(DataSet dataSet, int truncationLimit) {
+    public BlockBicScore(DataSet dataSet, int truncationLimit) {
         this.dataSet = Objects.requireNonNull(dataSet);
 
         // index original variables

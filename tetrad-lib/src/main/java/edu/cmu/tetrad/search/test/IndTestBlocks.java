@@ -15,7 +15,7 @@ import java.util.*;
  * Basis-function Conditional Independence test using a Rank/CCA statistic (Bartlett–Wilks).
  * Delegates the statistic to RankTests and adds lightweight caching.
  */
-public class IndTestBasisFunctionRank implements IndependenceTest, RawMarginalIndependenceTest {
+public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceTest {
 
     private final DataSet dataSet;
     private final List<Node> variables;
@@ -56,7 +56,7 @@ public class IndTestBasisFunctionRank implements IndependenceTest, RawMarginalIn
                 }
             };
 
-    public IndTestBasisFunctionRank(DataSet dataSet, int truncationLimit, double lambda) {
+    public IndTestBlocks(DataSet dataSet, int truncationLimit, double lambda) {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -139,7 +139,7 @@ public class IndTestBasisFunctionRank implements IndependenceTest, RawMarginalIn
         List<Node> nodes = Arrays.asList(_x, _y);
         DataSet ds = new BoxDataSet(new DoubleDataBox(combined), nodes);
 
-        IndTestBasisFunctionRank test = new IndTestBasisFunctionRank(ds, truncationLimit, lambda);
+        IndTestBlocks test = new IndTestBlocks(ds, truncationLimit, lambda);
         test.setAlpha(alpha);
         test.setDoOneEquationOnly(doOneEquationOnly);
         return test.getPValue(_x, _y, Collections.emptySet());

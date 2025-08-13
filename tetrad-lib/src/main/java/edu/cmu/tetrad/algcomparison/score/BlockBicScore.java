@@ -34,16 +34,16 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for Basis Function BIC Score (Basis-BIC) version.
- *
- * @author josephramsey
- * @author bryanandrews
- * @version $Id: $Id
- */
-@edu.cmu.tetrad.annotation.Score(name = "BF-RANK-BIC (Basis Function Rank BIC Score)", command = "bf-rank-bic", dataType = DataType.Mixed)
-@Mixed
-public class BasisFunctionRankBicScore implements ScoreWrapper {
+///**
+// * Wrapper for Basis Function BIC Score (Basis-BIC) version.
+// *
+// * @author josephramsey
+// * @author bryanandrews
+// * @version $Id: $Id
+// */
+//@edu.cmu.tetrad.annotation.Score(name = "Block BIC Score (Block BIC Score)", command = "block-bic", dataType = DataType.Mixed)
+//@Mixed
+public class BlockBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -56,7 +56,7 @@ public class BasisFunctionRankBicScore implements ScoreWrapper {
     /**
      * Initializes a new instance of the BasisFunctionBicScore class.
      */
-    public BasisFunctionRankBicScore() {
+    public BlockBicScore() {
 
     }
 
@@ -66,7 +66,7 @@ public class BasisFunctionRankBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BasisFunctionRankBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionRankBicScore(
+        edu.cmu.tetrad.search.score.BlockBicScore score = new edu.cmu.tetrad.search.score.BlockBicScore(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT)
         );
