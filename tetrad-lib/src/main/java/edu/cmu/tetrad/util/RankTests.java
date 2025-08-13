@@ -13,9 +13,35 @@ import org.ejml.simple.SimpleSVD;
 
 import java.util.*;
 
+/**
+ * The RankTests class provides a suite of methods and utilities for performing rank estimation and hypothesis testing
+ * in Canonical Correlation Analysis (CCA) and Regularized Canonical Correlation Analysis (RCCA). This includes
+ * computation of p-values, matrix operations, singular value decomposition, and rank estimation with various methods
+ * and regularization approaches.
+ * <p>
+ * The class also incorporates caching mechanisms for efficiency and includes mathematical utilities that are
+ * foundational to the CCA and RCCA computations.
+ */
 public class RankTests {
-
+    /**
+     * The maximum number of entries allowed in the RCCA cache. This is used to control memory usage and performance for
+     * caching results during Canonical Correlation Analysis (CCA) computations.
+     */
     private static final int RCCA_CACHE_MAX = 10_000; // tune if needed
+    /**
+     * A static, thread-safe cache used to store and manage entries of Canonical Correlation Analysis (CCA) results,
+     * mapped by uniquely identified keys. The cache is implemented as a linked hash map with a size-sensitive eviction
+     * policy, where the least recently accessed entry is removed when the cache size exceeds the predefined maximum
+     * limit.
+     * <p>
+     * Key characteristics: - Uses {@link RccaKey} objects as keys, which uniquely identify CCA computation
+     * configurations. - Stores {@link RccaEntry} objects as values, which contain computed results for corresponding
+     * keys. - Maintains an access-order to enable efficient eviction of the least recently used entries. - The maximum
+     * size of the cache is determined by the {@code RCCA_CACHE_MAX} constant.
+     * <p>
+     * Eviction behavior: When a new entry is added such that the size of the cache exceeds {@code RCCA_CACHE_MAX}, the
+     * eldest entry in the cache is removed automatically to maintain the maximum size constraint.
+     */
     private static final Map<RccaKey, RccaEntry> RCCA_CACHE =
             new LinkedHashMap<>(1024, 0.75f, true) {
                 @Override
@@ -23,9 +49,20 @@ public class RankTests {
                     return size() > RCCA_CACHE_MAX;
                 }
             };
-    // ---- Eigen whitening path (from a previous message), packaged to return svals
+    /**
+     * ---- Eigen whitening path (from a previous message), packaged to return svals
+     */
     private static final double EIG_FLOOR = 1e-12;
+    /**
+     * A small constant value added as a ridge term during regularization to improve numerical stability. This helps
+     * prevent issues such as singular matrices or poor conditioning in mathematical computations.
+     */
     private static final double RIDGE = 1e-10;
+    /**
+     * A constant representing the minimum allowable eigenvalue threshold for numerical computations. It is used to
+     * prevent operations like matrix inversion or decomposition on matrices with eigenvalues smaller than this
+     * threshold, which could lead to numerical instability or inaccuracies.
+     */
     private static final double MIN_EIG = 1e-12;
 
     /**
@@ -81,6 +118,21 @@ public class RankTests {
         }
     }
 
+    /**
+     * Computes the p-value for regularized Canonical Correlation Analysis (RCCA) rank test based on the null hypothesis
+     * H0: canonical correlation rank ≤ r versus the alternative hypothesis H1: rank > r. The method applies a
+     * chi-squared test using log-likelihood ratios for the remaining canonical correlations.
+     *
+     * @param S             The input covariance matrix as a SimpleMatrix.
+     * @param xIdx          Indices representing the first group of variables.
+     * @param yIdx          Indices representing the second group of variables.
+     * @param n             The sample size.
+     * @param rank          The hypothesized maximum rank under the null hypothesis.
+     * @param regLambda     Regularization parameter (ridge) applied to the covariance matrix.
+     * @param condThreshold Threshold for matrix conditioning to determine numerical stability.
+     * @return The p-value associated with the chi-squared test. Returns 1.0 when rank is not valid or the degrees of
+     * freedom are non-positive, and 0.0 in case of an exception or invalid computation.
+     */
     public static double getRccaPValueRankLE(SimpleMatrix S,
                                              int[] xIdx, int[] yIdx,
                                              int n, int rank, double regLambda, double condThreshold) {
@@ -124,9 +176,11 @@ public class RankTests {
         }
     }
 
-    // ---- Public: compute singular values via hybrid whitening (Cholesky -> Eigen fallback)
-    static SvdResult computeSvalsHybrid(SimpleMatrix S,
-                                        int[] xIdx, int[] yIdx, double reg, double condThreshold) {
+    /**
+     * ---- Public: compute singular values via hybrid whitening (Cholesky -> Eigen fallback)
+     */
+    private static SvdResult computeSvalsHybrid(SimpleMatrix S,
+                                                int[] xIdx, int[] yIdx, double reg, double condThreshold) {
         SvdResult sv = computeSvalsCholeskyWhiten_withGuard(S, xIdx, yIdx, reg, condThreshold);
         if (sv != null) return sv;
         return computeSvalsEigenWhiten(S, xIdx, yIdx, reg);
@@ -193,6 +247,17 @@ public class RankTests {
         return new SvdResult(s);
     }
 
+    /**
+     * Computes the squared condition number of the diagonal of a Cholesky factor matrix. This method evaluates the
+     * ratio of the maximum to the minimum diagonal elements of a lower triangular Cholesky factor matrix and returns
+     * its square as the condition number. If any diagonal element is non-positive or non-finite, it returns positive
+     * infinity.
+     *
+     * @param L The lower triangular Cholesky factor matrix represented as a DMatrixRMaj. The matrix's diagonal must
+     *          contain positive and finite entries.
+     * @return The squared condition number defined as (max diagonal / min diagonal)^2, or Double.POSITIVE_INFINITY if
+     * the input is invalid.
+     */
     private static double cholDiagCondition(DMatrixRMaj L) {
         double dmin = Double.POSITIVE_INFINITY, dmax = 0.0;
         int n = L.numRows;
@@ -214,6 +279,17 @@ public class RankTests {
         return true;
     }
 
+    /**
+     * Computes the singular values using eigenvalue-based whitening for the given sub-matrices of a covariance matrix.
+     * This method extracts sub-matrices corresponding to the given indices, applies regularization, performs eigenvalue
+     * decomposition, and calculates a transformation matrix for singular value decomposition.
+     *
+     * @param S    The input covariance matrix as a SimpleMatrix.
+     * @param xIdx Indices representing the first group of variables.
+     * @param yIdx Indices representing the second group of variables.
+     * @param reg  Regularization parameter (ridge) to ensure numerical stability.
+     * @return An SvdResult object containing the singular values, or null if decomposition fails.
+     */
     private static SvdResult computeSvalsEigenWhiten(SimpleMatrix S,
                                                      int[] xIdx, int[] yIdx, double reg) {
         DMatrixRMaj Cxx = extract(S, xIdx, xIdx);
@@ -241,6 +317,17 @@ public class RankTests {
         return new SvdResult(svd.getSingularValues());
     }
 
+    /**
+     * Performs symmetric eigenvalue decomposition on the input matrix and returns an {@code EigenSym} object
+     * encapsulating the eigenvalues and eigenvectors. Assumes the input matrix is symmetric. If decomposition fails or
+     * an unexpected condition is encountered, a runtime exception is thrown.
+     *
+     * @param A the input symmetric square matrix to decompose. Must not be null and should have valid dimensions.
+     * @return an {@code EigenSym} object containing eigenvalues (sorted in descending order) and corresponding
+     * eigenvectors.
+     * @throws RuntimeException if the eigen decomposition fails or unexpected conditions such as null eigenvectors
+     *                          occur.
+     */
     private static EigenSym eigSym(DMatrixRMaj A) {
         final int n = A.numRows;
         EigenDecomposition_F64<DMatrixRMaj> eig = DecompositionFactory_DDRM.eig(n, true);
@@ -272,6 +359,14 @@ public class RankTests {
         return new EigenSym(Qsorted, sorted);
     }
 
+    /**
+     * Returns the indices that would sort the input array in descending order. The sorting is performed indirectly,
+     * without modifying the input array itself.
+     *
+     * @param a the input array of doubles to be sorted.
+     * @return an array of integers representing the indices of the elements in the input array, ordered such that the
+     * values at those indices are sorted in descending order.
+     */
     private static int[] argsortDesc(double[] a) {
         Integer[] idx = new Integer[a.length];
         for (int i = 0; i < a.length; i++) idx[i] = i;
@@ -281,8 +376,9 @@ public class RankTests {
         return out;
     }
 
-    // ====== Cache bits =========================================================
-
+    /**
+     * ====== Cache bits =========================================================
+     */
     private static void scaleRowsInvSqrtInPlace(DMatrixRMaj A, double[] eig) {
         int n = A.numRows, m = A.numCols;
         for (int i = 0; i < n; i++) {
@@ -294,6 +390,14 @@ public class RankTests {
         }
     }
 
+    /**
+     * Scales the columns of the matrix in place using the inverse square root of the provided eigenvalues. Each column
+     * of the matrix is multiplied by the inverse square root of the corresponding eigenvalue.
+     *
+     * @param A   The matrix whose columns will be scaled. The modifications are performed in place.
+     * @param eig An array of eigenvalues used for scaling. Must be non-null and of length equal to the number of
+     *            columns in the matrix.
+     */
     private static void scaleColsInvSqrtInPlace(DMatrixRMaj A, double[] eig) {
         int n = A.numRows, m = A.numCols;
         for (int j = 0; j < m; j++) {
@@ -304,19 +408,35 @@ public class RankTests {
         }
     }
 
-    // Thread-safe cache access
+    /**
+     * Thread-safe cache access
+     */
     private static RccaEntry cacheGet(RccaKey k) {
         synchronized (RCCA_CACHE) {
             return RCCA_CACHE.get(k);
         }
     }
 
+    /**
+     * Adds a key-value pair to the RCCA_CACHE in a thread-safe manner.
+     *
+     * @param k the key to be added to the cache
+     * @param v the value associated with the key to be added to the cache
+     */
     private static void cachePut(RccaKey k, RccaEntry v) {
         synchronized (RCCA_CACHE) {
             RCCA_CACHE.put(k, v);
         }
     }
 
+    /**
+     * Extracts a submatrix from the specified rows and columns of the input matrix.
+     *
+     * @param S    the input matrix from which the submatrix will be extracted
+     * @param rows an array of row indices specifying which rows to include in the submatrix
+     * @param cols an array of column indices specifying which columns to include in the submatrix
+     * @return a new {@code DMatrixRMaj} containing the elements specified by the rows and columns
+     */
     private static DMatrixRMaj extract(SimpleMatrix S, int[] rows, int[] cols) {
         DMatrixRMaj out = new DMatrixRMaj(rows.length, cols.length);
         var src = S.getDDRM();
@@ -329,6 +449,13 @@ public class RankTests {
         return out;
     }
 
+    /**
+     * Adds a ridge (scalar value) to the diagonal elements of the given matrix in-place. This operation modifies the
+     * input matrix by adding the specified value to its diagonal entries.
+     *
+     * @param A   The matrix to be modified in-place. It must not be null.
+     * @param lam The scalar value to add to the diagonal elements of the matrix.
+     */
     private static void addRidgeInPlace(DMatrixRMaj A, double lam) {
         int n = Math.min(A.numRows, A.numCols);
         for (int i = 0; i < n; i++) {
@@ -392,6 +519,18 @@ public class RankTests {
         return V.mult(D_inv_sqrt).mult(V.transpose());
     }
 
+    /**
+     * Estimates the regularized canonical correlation analysis (rCCA) rank by sequentially testing the rank using
+     * Wilks' Lambda statistic.
+     *
+     * @param Scond     A matrix representing the conditioned covariance or correlation structure of the input data.
+     * @param xIdxLocal An array of indices corresponding to the local x-variables involved in the calculation.
+     * @param yIdxLocal An array of indices corresponding to the local y-variables involved in the calculation.
+     * @param n         The total number of observations in the dataset.
+     * @param alpha     The significance level for the rank testing, typically between 0 and 1.
+     * @return The estimated rank for the rCCA, which is the number of canonical correlations deemed statistically
+     * significant, constrained by the dimensions of the input data.
+     */
     public static int estimateRccaRank(SimpleMatrix Scond,
                                        int[] xIdxLocal, int[] yIdxLocal,
                                        int n, double alpha) {
@@ -404,6 +543,18 @@ public class RankTests {
         return Math.min(xIdxLocal.length, yIdxLocal.length);
     }
 
+    /**
+     * Determines whether the rank is less than or equal to a specified value r using a Wilks' lambda test. This method
+     * performs hypothesis testing on the rank condition of a block matrix.
+     *
+     * @param Scond The conditioned covariance matrix or a similar input matrix.
+     * @param xLoc  An array of integers representing the indices of the x-block variables.
+     * @param yLoc  An array of integers representing the indices of the y-block variables.
+     * @param n     The number of observations or sample size.
+     * @param r     The rank condition to test (non-negative integer).
+     * @param alpha The significance level for the statistical test, between 0 and 1.
+     * @return true if the hypothesis that the rank is less than or equal to r is accepted, false otherwise.
+     */
     private static boolean acceptRankLeByWilks(
             SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, int r, double alpha) {
 
@@ -452,7 +603,9 @@ public class RankTests {
         return pval > alpha;
     }
 
-    // Extract block S[rows, cols]
+    /**
+     * Extract block S[rows, cols]
+     */
     private static SimpleMatrix block(SimpleMatrix S, int[] rows, int[] cols) {
         SimpleMatrix out = new SimpleMatrix(rows.length, cols.length);
         for (int i = 0; i < rows.length; i++) {
@@ -464,7 +617,9 @@ public class RankTests {
         return out;
     }
 
-    // Symmetric PSD inverse square root with eigen floor + ridge
+    /**
+     * Symmetric PSD inverse square root with eigen floor + ridge
+     */
     private static SimpleMatrix invSqrtPSD(SimpleMatrix A) {
         SimpleMatrix Asym = A.plus(A.transpose()).divide(2.0); // symmetrize
         // small ridge to avoid negative/zero eigs
@@ -491,7 +646,9 @@ public class RankTests {
         return V.mult(DinvSqrt).mult(V.transpose());
     }
 
-    // Build a Scond over [X | Y] that is *conditioned on* Z, then call your estimator.
+    /**
+     * Build a Scond over [X | Y] that is *conditioned on* Z, then call your estimator.
+     */
     public static int estimateRccaRankConditioned(
             SimpleMatrix S, int[] C, int[] VminusC, int[] Z,
             int n, double alpha) {
@@ -531,8 +688,10 @@ public class RankTests {
         return estimateRccaRank(Scond, xLoc, yLoc, n, alpha);
     }
 
-    // Helpers you likely already have; sketched for completeness.
-    static int[] range(int a, int b) {
+    /**
+     * Helpers you likely already have; sketched for completeness.
+     */
+    private static int[] range(int a, int b) {
         int[] result = new int[b - a];
         for (int i = 0; i < b - a; i++) {
             result[i] = a + i;
@@ -540,12 +699,29 @@ public class RankTests {
         return result;
     }
 
-    static SimpleMatrix invPsdWithRidge(SimpleMatrix Szz, double ridge) {
+    /**
+     * Computes the pseudo-inverse of a positive semi-definite matrix with an added ridge value on its diagonal for
+     * regularization. This is useful for stabilizing the inversion of matrices that are ill-conditioned or nearly
+     * singular.
+     *
+     * @param Szz   the positive semi-definite matrix to be inverted
+     * @param ridge the ridge value to be added to the diagonal of the matrix
+     * @return the pseudo-inverse of the regularized matrix
+     */
+    private static SimpleMatrix invPsdWithRidge(SimpleMatrix Szz, double ridge) {
         SimpleMatrix A = Szz.copy();
         for (int i = 0; i < A.getNumRows(); i++) A.set(i, i, A.get(i, i) + ridge);
         return A.pseudoInverse();
     }
 
+    /**
+     * Computes the difference between two arrays, returning an array of elements that are present in the first array
+     * but not in the second.
+     *
+     * @param A the first array of integers
+     * @param B the second array of integers
+     * @return an array of integers containing elements from the first array that are not present in the second array
+     */
     public static int[] diff(int[] A, int[] B) {
         Set<Integer> setB = new HashSet<>();
         for (int b : B) setB.add(b);
@@ -558,6 +734,13 @@ public class RankTests {
         return result.stream().mapToInt(x -> x).toArray();
     }
 
+    /**
+     * Computes the union of two integer arrays and returns the result as an array.
+     *
+     * @param A the first array of integers
+     * @param B the second array of integers
+     * @return an array containing the union of the elements from both input arrays
+     */
     public static int[] union(int[] A, int[] B) {
         Set<Integer> _A = new HashSet<>();
         Set<Integer> _B = new HashSet<>();
@@ -569,6 +752,14 @@ public class RankTests {
         return union.stream().mapToInt(x -> x).toArray();
     }
 
+    /**
+     * Computes the union of a list of integers and a single integer. The union operation adds the integer to the set of
+     * elements in the list, ensuring no duplicates.
+     *
+     * @param A the list of integers to be included in the union
+     * @param b the integer to be added to the union
+     * @return an array representing the union of the input list and the single integer
+     */
     public static int[] union(List<Integer> A, int b) {
         Set<Integer> _A = new HashSet<>(A);
         Set<Integer> union = new HashSet<>(_A);
@@ -576,10 +767,25 @@ public class RankTests {
         return union.stream().mapToInt(x -> x).toArray();
     }
 
+    /**
+     * Converts a List of Integer objects into an array of primitive int values.
+     *
+     * @param Z the List of Integer objects to be converted into an int array
+     * @return an array of int containing the values from the input List in the same order
+     */
     public static int[] toArray(List<Integer> Z) {
         return Z.stream().mapToInt(x -> x).toArray();
     }
 
+    /**
+     * Computes the union of the elements from the given array and a single integer value. The union is returned as an
+     * array of unique integers.
+     *
+     * @param A an array of integers whose elements will contribute to the union set
+     * @param b a single integer that will also be included in the union set
+     * @return an array of integers containing the union of the input array and the single integer, with all duplicate
+     * elements removed
+     */
     public int[] union(int[] A, int b) {
         Set<Integer> _A = new HashSet<>();
         Set<Integer> _B = new HashSet<>();
@@ -591,6 +797,13 @@ public class RankTests {
         return union.stream().mapToInt(x -> x).toArray();
     }
 
+    /**
+     * A private static final class representing the result of eigenvalue decomposition of a symmetric matrix. This
+     * includes an orthonormal matrix of eigenvectors and a sorted array of eigenvalues.
+     * <p>
+     * The eigenvalues are floored and sorted in descending order. The orthonormal matrix (Q) contains the corresponding
+     * eigenvectors as its columns.
+     */
     private static final class EigenSym {
         final DMatrixRMaj Q;     // orthonormal eigenvectors (columns)
         final double[] lambda;   // eigenvalues (sorted descending, floored)
@@ -601,6 +814,10 @@ public class RankTests {
         }
     }
 
+    /**
+     * A private static final class representing the result of a Singular Value Decomposition (SVD). This class
+     * encapsulates the singular values obtained from the decomposition.
+     */
     private static final class SvdResult {
         final double[] svals;
 
@@ -609,6 +826,14 @@ public class RankTests {
         }
     }
 
+    /**
+     * A helper class used to encapsulate and uniquely identify specific configurations defined by two integer arrays
+     * and a regularization factor. This class is immutable and provides methods for equality checks and hash code
+     * generation.
+     * <p>
+     * The class is used for handling configurations where two sets of indices and a quantized regularization value are
+     * required to determine equality and uniqueness.
+     */
     private static final class RccaKey {
         final int[] x, y;
         final long regBits; // quantized reg to avoid fp equality headaches
@@ -637,6 +862,16 @@ public class RankTests {
         }
     }
 
+    /**
+     * Represents an entry in the RCCA (Regularized Canonical Correlation Analysis) data structure. The entry contains
+     * singular values in descending order and precomputed logarithmic suffix sums.
+     * <p>
+     * This class is private and static, designed to be utilized internally within its enclosing class.
+     * <p>
+     * Attributes: - svals: An array of singular values sorted in descending order. - suffixLogs: An array where each
+     * element at index `i` represents the sum of logarithms of (1 - squared singular value) from index `i` to the end
+     * of the `svals` array.
+     */
     private static final class RccaEntry {
         final double[] svals;       // descending
         final double[] suffixLogs;  // suffixLogs[i] = sum_{j=i}^{end} log(1 - s_j^2)
@@ -646,14 +881,4 @@ public class RankTests {
             this.suffixLogs = suffixLogs;
         }
     }
-//
-//    /** Robust inverse for symmetric PSD with a small ridge (used for Szz). */
-//    private static SimpleMatrix invPsdWithRidge(SimpleMatrix A, double ridge) {
-//        SimpleMatrix B = A.plus(A.transpose()).divide(2.0);
-//        for (int i = 0; i < B.numRows(); i++) {
-//            B.set(i, i, B.get(i, i) + ridge);
-//        }
-//        // Pseudoinverse is fine for near-singular cases
-//        return B.pseudoInverse();
-//    }
 }
