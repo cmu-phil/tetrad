@@ -634,19 +634,19 @@ public class TrekSeparationClusters {
 
                         int minpq = Math.min(union.size(), complement.size());
 
-                        if (minpq != union.size()) {
-                            continue;
-                        }
+//                        if (minpq != union.size()) {
+//                            continue;
+//                        }
 
-                        if (union.size() >= variables.size() - union.size()) {
-                            continue;
-                        }
+//                        if (union.size() >= variables.size() - union.size()) {
+//                            continue;
+//                        }
 
                         int rankOfUnion = lookupRank(union, variables);
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union)
                             + " rank = " + rankOfUnion);
 
-                        if (rankOfUnion == rank) {
+                        if (rankOfUnion <= rank) {
 
                             // Accept this union, grow cluster
                             cluster = union;
@@ -732,6 +732,16 @@ public class TrekSeparationClusters {
             remainingVars.removeAll(used);
         }
 
+        log("Removing clusters of size 1, as these shouldn't be assigned latents.");
+
+        for (Set<Integer> cluster : new HashSet<>(clusterToRank.keySet())) {
+            if (cluster.size() == 1) {
+                clusterToRank.remove(cluster);
+                reducedRank.remove(cluster);
+                log("Removing cluster " + toNamesCluster(cluster));
+            }
+        }
+
         log("Penultimate clusters = " + toNamesClusters(clusterToRank.keySet()));
         log("Now we will consider whether any of the penultimate clusters should be discarded (as from a non-latent DAG, e.g.).");
 
@@ -742,7 +752,7 @@ public class TrekSeparationClusters {
             complement.removeAll(cluster);
 
             if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
-                log("Cluster " + toNamesCluster(cluster) + " failed the subset test; removing.");
+//                log("Cluster " + toNamesCluster(cluster) + " failed the subset test; removing.");
                 clusterToRank.remove(cluster);
                 reducedRank.remove(cluster);
                 penultimateRemoved = true;
@@ -777,6 +787,28 @@ public class TrekSeparationClusters {
         int _depth = depth == -1 ? C.size() : depth;
         double epsRho2 = adaptiveEpsRho2(sampleSize, C.size(), D.size());
 
+        SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
+        int[] choice0;
+
+        while ((choice0 = gen0.next()) != null) {
+            if (choice0.length == 0) continue;
+
+            List<Integer> C0 = new  ArrayList<>();
+            for (int i : choice0) {C0.add(C.get(i));}
+            List<Integer> D0 = new  ArrayList<>(C);
+            D0.removeAll(C0);
+
+            int[] c0Array = C0.stream().mapToInt(Integer::intValue).toArray();
+            int[] d0Array = D0.stream().mapToInt(Integer::intValue).toArray();
+
+            int rank = RankTests.estimateRccaRank(S, c0Array, d0Array, sampleSize, alpha);
+
+            if (rank == 0) {
+                log("Subset " + toNamesCluster(C0) + " compared to rest of cluster " + toNamesCluster(C0) + " has rank 0; removing cluster.");
+                return true;
+            }
+        }
+
         SublistGenerator gen = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
         int[] choice;
 
@@ -797,7 +829,7 @@ public class TrekSeparationClusters {
             int rank = RankTests.estimateRccaRank(S, _cArray, dArray, sampleSize, alpha);
 
             if (rank == 0) {
-                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank 0.");
+                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank 0; removing cluster.");
                 return true;
             }
 
@@ -833,7 +865,7 @@ public class TrekSeparationClusters {
 
             if (rZ == 0) {
                 log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C)
-                    + " has rank 0 conditional on " + toNamesCluster(Z) + ".");
+                    + " has rank 0 conditional on " + toNamesCluster(Z) + "; removing cluster.");
                 return true;
             }
 
@@ -913,9 +945,9 @@ public class TrekSeparationClusters {
      * @throws IllegalArgumentException if |C| >= |V \ C}.
      */
     private int lookupRank(Set<Integer> cluster, List<Integer> vars) {
-        if (cluster.size() >= vars.size() - cluster.size()) {
-            throw new IllegalArgumentException("Cluster is too large.");
-        }
+//        if (cluster.size() >= vars.size() - cluster.size()) {
+//            throw new IllegalArgumentException("Cluster is too large.");
+//        }
 
         if (!rankCache.containsKey(cluster)) {
             rankCache.put(cluster, rank(cluster));

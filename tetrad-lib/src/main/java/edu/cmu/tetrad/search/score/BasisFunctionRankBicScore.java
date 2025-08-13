@@ -4,31 +4,60 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
-import org.ejml.simple.SimpleEVD;
+import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
-import org.ejml.simple.SimpleSVD;
 
 import java.util.*;
 
 /**
- * BasisFunctionRankBic: BIC-style local score after Legendre embedding, using reduced-rank (canonical correlation) fit
- * between the target block and the concatenated parent blocks.
- * <p>
- * For scalar targets with 1 basis column and r in {0,1}, this collapses to SEM-BIC.
+ * BasisFunctionRankBic: BIC-style local score after Legendre embedding, using
+ * cached RCCA singular values from RankTests. We scan ranks r = 0..m and pick
+ * the best fit − penalty, where:
+ *
+ *   fit(r) = -n * sum_{i=0}^{r-1} log(1 - rho_i^2)
+ *   pen(r) = c * [ r * (p + q - r) ] * log(n)
+ *
+ * with p = |X_block|, q = |Y_block|, m = min(p, q).
+ *
+ * For scalar Y (q=1) and r in {0,1}, this collapses to SEM-BIC.
  */
 public class BasisFunctionRankBicScore implements Score {
-    // Data / bookkeeping
+    // --- Data / bookkeeping ---
     private final DataSet dataSet;
     private final List<Node> variables;
     private final Map<Node, Integer> nodeIndex;
-    private final Map<Integer, List<Integer>> embedding; // map original-col -> embedded column indices
     private final SimpleMatrix Sphi;                      // covariance of embedded data
     private final int n;                                  // sample size
 
-    // Knobs
-    private double penaltyDiscount = 1.0;                 // c
-    private double ridge = 1e-8;                          // whitening ridge
-    private boolean doOneEquationOnly = false;            // use only first basis column of Y
+    // Precomputed embedded column arrays (avoid per-call boxing/copies)
+    private final int[][] blockAllCols;   // per original var -> all embedded cols
+    private final int[][] blockFirstOnly; // per original var -> first embedded col (len 1) or empty
+
+    // --- Knobs ---
+    private double penaltyDiscount = 1.0;   // c
+    private double ridge = 1e-8;            // regLambda passed to RankTests
+    private boolean doOneEquationOnly = false; // use only first basis column of Y
+    private double condThreshold = 1e10;    // conditioning guard inside RankTests hybrid path
+
+    // --- Caches ---
+    private static final int SCORE_CACHE_MAX = 100_000;
+    private static final int XBLOCK_CACHE_MAX = 50_000;
+
+    /** LRU cache for full local scores per (y, parents, knobs). */
+    private final Map<FamilyKey, Double> scoreCache =
+            new LinkedHashMap<>(2048, 0.75f, true) {
+                @Override protected boolean removeEldestEntry(Map.Entry<FamilyKey, Double> e) {
+                    return size() > SCORE_CACHE_MAX;
+                }
+            };
+
+    /** LRU cache for concatenated X-block embedded columns per parent set. */
+    private final Map<ParentsKey, int[]> xblockCache =
+            new LinkedHashMap<>(2048, 0.75f, true) {
+                @Override protected boolean removeEldestEntry(Map.Entry<ParentsKey, int[]> e) {
+                    return size() > XBLOCK_CACHE_MAX;
+                }
+            };
 
     public BasisFunctionRankBicScore(DataSet dataSet, int truncationLimit) {
         this.dataSet = Objects.requireNonNull(dataSet);
@@ -40,53 +69,31 @@ public class BasisFunctionRankBicScore implements Score {
 
         this.n = dataSet.getNumRows();
 
-        // Legendre embedding (same settings you used elsewhere)
+        // Legendre embedding (basisType=1, basisScale=1 as before)
         Embedding.EmbeddedData ed = Embedding.getEmbeddedData(dataSet, truncationLimit, /*basisType*/1, /*basisScale*/1);
-        this.embedding = ed.embedding();
 
         // covariance in embedded space
         this.Sphi = DataUtils.cov(ed.embeddedData().getDoubleData().getSimpleMatrix());
+
+        // Precompute embedded column arrays for each original variable
+        int V = variables.size();
+        this.blockAllCols   = new int[V][];
+        this.blockFirstOnly = new int[V][];
+        for (int v = 0; v < V; v++) {
+            List<Integer> cols = ed.embedding().get(v);
+            if (cols == null || cols.isEmpty()) {
+                this.blockAllCols[v]   = new int[0];
+                this.blockFirstOnly[v] = new int[0];
+            } else {
+                int[] all = new int[cols.size()];
+                for (int k = 0; k < cols.size(); k++) all[k] = cols.get(k);
+                this.blockAllCols[v] = all;
+                this.blockFirstOnly[v] = new int[] { all[0] };
+            }
+        }
     }
 
     // --- Public API (mirrors SemBIC-style usage) ---
-
-    /**
-     * Extract block S[rows, cols].
-     */
-    private static SimpleMatrix block(SimpleMatrix S, int[] rows, int[] cols) {
-        SimpleMatrix out = new SimpleMatrix(rows.length, cols.length);
-        for (int i = 0; i < rows.length; i++) {
-            int ri = rows[i];
-            for (int j = 0; j < cols.length; j++) out.set(i, j, S.get(ri, cols[j]));
-        }
-        return out;
-    }
-
-    /**
-     * Symmetric PSD inverse square root with ridge.
-     */
-    private static SimpleMatrix invSqrtPSD(SimpleMatrix A, double ridge) {
-        SimpleMatrix As = A.plus(A.transpose()).scale(0.5);
-        for (int i = 0; i < As.numRows(); i++) As.set(i, i, As.get(i, i) + ridge);
-        SimpleEVD<SimpleMatrix> evd = As.eig();
-        int d = As.numRows();
-        SimpleMatrix V = new SimpleMatrix(d, d), Dinvh = new SimpleMatrix(d, d);
-        for (int i = 0; i < d; i++) {
-            double eig = Math.max(1e-12, evd.getEigenvalue(i).getReal());
-            Dinvh.set(i, i, 1.0 / Math.sqrt(eig));
-            var vi = evd.getEigenVector(i);
-            if (vi == null) throw new IllegalStateException("Null eigenvector");
-            for (int r = 0; r < d; r++) V.set(r, i, vi.get(r, 0));
-        }
-        return V.mult(Dinvh).mult(V.transpose());
-    }
-
-    private static double clamp01(double x) {
-        if (!Double.isFinite(x)) return 0.0;
-        if (x < 0) return 0.0;
-        if (x > 1) return 1.0;
-        return x;
-    }
 
     public double localScore(int i, int... parents) {
         Node y = variables.get(i);
@@ -96,51 +103,74 @@ public class BasisFunctionRankBicScore implements Score {
     }
 
     /**
-     * Local BF-RankBIC score for Y given parents.
+     * Local BF-RankBIC score for Y given parents, reusing RCCA results from RankTests.
+     * Adds caching at the family level and for the concatenated parent X-block.
      */
     public double localScore(Node y, List<Node> parents) {
         int yi = idx(y);
-        int[] Yblock = blockFor(yi, /*oneEq*/ doOneEquationOnly);
-        if (parents.isEmpty()) return 0.0; // null model baseline (constants cancel in deltas)
+        if (parents.isEmpty()) return 0.0; // null baseline
 
-        int[] Xblock = concatBlocks(parents);
+        // Build sorted parent original indices for stable keys
+        int[] parentIdx = new int[parents.size()];
+        for (int t = 0; t < parents.size(); t++) parentIdx[t] = idx(parents.get(t));
+        Arrays.sort(parentIdx);
 
-        // Syy, Sxx, Syx in embedded space (no extra Z; parents define the conditioning set)
-        SimpleMatrix Syy = block(Sphi, Yblock, Yblock);
-        SimpleMatrix Sxx = block(Sphi, Xblock, Xblock);
-        SimpleMatrix Syx = block(Sphi, Yblock, Xblock);
+        FamilyKey fkey = new FamilyKey(yi, parentIdx, doOneEquationOnly, ridge, condThreshold, penaltyDiscount);
+        Double cached = scoreCache.get(fkey);
+        if (cached != null) return cached;
 
-        // Whiten & SVD to get canonical correlations
-        SimpleMatrix Wyy = invSqrtPSD(Syy, ridge);
-        SimpleMatrix Wxx = invSqrtPSD(Sxx, ridge);
-        SimpleMatrix M = Wyy.mult(Syx).mult(Wxx);
-        SimpleSVD<SimpleMatrix> svd = M.svd();
+        int[] Yblock = blockFor(yi, /*firstOnly*/ doOneEquationOnly);
 
-        int q = Syy.numRows(), p = Sxx.numRows(), m = Math.min(p, q);
-        double[] rho = new double[m];
-        for (int i = 0; i < m; i++) rho[i] = clamp01(svd.getSingleValue(i));
-
-        // prefix of fit term: -n * sum log(1 - rho^2)
-        double[] prefix = new double[m + 1];
-        for (int i = 0; i < m; i++) {
-            double oneMinus = Math.max(1e-16, 1.0 - rho[i] * rho[i]);
-            prefix[i + 1] = prefix[i] - n * Math.log(oneMinus);
+        // Xblock: try cache first
+        ParentsKey pkey = new ParentsKey(parentIdx);
+        int[] Xblock = xblockCache.get(pkey);
+        if (Xblock == null) {
+            Xblock = concatBlocksFromSortedParentIdx(parentIdx);
+            xblockCache.put(pkey, Xblock);
         }
 
-        // scan rank r
-        double best = 0.0;
-        for (int r = 0; r <= m; r++) {
-            int k = r * (p + q - r);                 // reduced-rank params
-            double fit = prefix[r];
+        // Fetch RCCA results (cached inside RankTests) for (X, Y) in embedded space.
+        RankTests.RccaEntry ent = RankTests.getRccaEntry(Sphi, Xblock, Yblock, /*regLambda*/ ridge, condThreshold);
+        if (ent == null) {
+            // Whitening failed or numerics too nasty; return aggressive penalty to avoid picking this family.
+            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
+            return Double.NEGATIVE_INFINITY;
+        }
+
+        int p = Xblock.length, q = Yblock.length, m = Math.min(p, q);
+
+        // Fit(r) = -n * sum_{i=0}^{r-1} log(1 - s_i^2)
+        // Using suffix logs stored as sum_{i=r}^{m-1} log(1 - s_i^2):
+        // sum_{i=0}^{r-1} = suffix[0] - suffix[r]
+        double best = Double.NEGATIVE_INFINITY;
+        double suffix0 = ent.suffixLogs[0];
+
+        // Slight heuristic: check r=m first; if it's competitive, early exit can help in practice.
+        int rBest = 0;
+        {
+            double sumLogsTopR = suffix0 - ent.suffixLogs[m];
+            double fit = -n * sumLogsTopR;
+            int k = m * (p + q - m);
             double pen = penaltyDiscount * k * Math.log(n);
-            double score = fit - pen;
-            if (r == 0 || score > best) best = score;
+            best = fit - pen;
+            rBest = m;
         }
+
+        for (int r = 0; r < m; r++) {
+            double sumLogsTopR = suffix0 - ent.suffixLogs[r];
+            double fit = -n * sumLogsTopR;
+            int k = r * (p + q - r);
+            double pen = penaltyDiscount * k * Math.log(n);
+            double sc = fit - pen;
+            if (sc > best) { best = sc; rBest = r; }
+        }
+
+        scoreCache.put(fkey, best);
         return best;
     }
 
     /**
-     * Optional: delta score helper (add/remove a single parent).
+     * Convenience delta score helper (add/remove a single parent).
      */
     public double localScoreDelta(Node y, List<Node> oldParents, Node changedParent, boolean adding) {
         List<Node> newParents = new ArrayList<>(oldParents);
@@ -152,14 +182,21 @@ public class BasisFunctionRankBicScore implements Score {
     // --- Settings ---
     public void setPenaltyDiscount(double c) {
         this.penaltyDiscount = c;
+        scoreCache.clear(); // penalty affects scores
     }
-
     public void setRidge(double ridge) {
         this.ridge = ridge;
+        scoreCache.clear(); // ridge affects rhos
+        // RankTests has its own LRU keyed by regLambda; no need to clear it here.
     }
-
     public void setDoOneEquationOnly(boolean v) {
         this.doOneEquationOnly = v;
+        scoreCache.clear(); // Y-block changes
+    }
+    /** Condition-number guard used by RankTests’ path; raise to be more permissive. */
+    public void setCondThreshold(double v) {
+        this.condThreshold = v;
+        scoreCache.clear(); // may change acceptance/fallback
     }
 
     // --- Internals ---
@@ -169,29 +206,38 @@ public class BasisFunctionRankBicScore implements Score {
         return i;
     }
 
-    /**
-     * Embedded columns for an original variable.
-     */
+    /** Embedded columns for an original variable (precomputed). */
     private int[] blockFor(int originalCol, boolean firstOnly) {
-        List<Integer> cols = new ArrayList<>(embedding.get(originalCol));
-        if (firstOnly && !cols.isEmpty()) cols = cols.subList(0, 1);
-        return cols.stream().mapToInt(Integer::intValue).toArray();
+        return firstOnly ? blockFirstOnly[originalCol] : blockAllCols[originalCol];
     }
 
-    /**
-     * Concatenate embedded columns for all parents.
-     */
-    private int[] concatBlocks(List<Node> parents) {
-        List<Integer> all = new ArrayList<>();
-        for (Node p : parents) {
-            for (int c : blockFor(idx(p), /*firstOnly*/ false)) all.add(c);
+    /** Concatenate embedded columns for all parents (parents given as sorted original indices). */
+    private int[] concatBlocksFromSortedParentIdx(int[] sortedParents) {
+        int total = 0;
+        for (int p : sortedParents) total += blockAllCols[p].length;
+        int[] out = new int[total];
+        int k = 0;
+        for (int p : sortedParents) {
+            int[] cols = blockAllCols[p];
+            System.arraycopy(cols, 0, out, k, cols.length);
+            k += cols.length;
         }
-        return all.stream().mapToInt(Integer::intValue).toArray();
+        return out;
     }
 
+    /** Concatenate embedded columns for all parents (original Node list) — kept for completeness, unused now. */
+    @SuppressWarnings("unused")
+    private int[] concatBlocks(List<Node> parents) {
+        int[] parentIdx = new int[parents.size()];
+        for (int t = 0; t < parents.size(); t++) parentIdx[t] = idx(parents.get(t));
+        Arrays.sort(parentIdx);
+        return concatBlocksFromSortedParentIdx(parentIdx);
+    }
+
+    // --- Score interface ---
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+        return localScore(variables.get(y), appendNodes(z, x)) - localScore(variables.get(y), z);
     }
 
     @Override
@@ -202,5 +248,95 @@ public class BasisFunctionRankBicScore implements Score {
     @Override
     public int getSampleSize() {
         return dataSet.getNumRows();
+    }
+
+    // --- Helpers ---
+    private List<Node> appendNodes(int[] parents, int x) {
+        List<Node> list = new ArrayList<>(parents.length + 1);
+        for (int p : parents) list.add(variables.get(p));
+        list.add(variables.get(x));
+        return list;
+    }
+
+    private double localScore(Node y, int[] parents) {
+        List<Node> ps = new ArrayList<>(parents.length);
+        for (int p : parents) ps.add(variables.get(p));
+        return localScore(y, ps);
+    }
+
+    private double localScore(Node y, int[] zParents, int x) {
+        List<Node> ps = new ArrayList<>(zParents.length + 1);
+        for (int p : zParents) ps.add(variables.get(p));
+        ps.add(variables.get(x));
+        return localScore(y, ps);
+    }
+
+    // ----- Key types for caches -----
+
+    /** Key for the per-family score cache. Includes knobs that affect the score. */
+    private static final class FamilyKey {
+        final int y;
+        final int[] parents; // sorted original indices
+        final boolean oneEq;
+        final long ridgeBits;
+        final long condBits;
+        final long penBits;
+        private final int hash;
+
+        FamilyKey(int y, int[] parents, boolean oneEq, double ridge, double cond, double pen) {
+            this.y = y;
+            this.parents = parents.clone();
+            this.oneEq = oneEq;
+            this.ridgeBits = quantize(ridge);
+            this.condBits  = quantize(cond);
+            this.penBits   = quantize(pen);
+            this.hash = computeHash();
+        }
+
+        private static long quantize(double x) {
+            // quantize to ~1e-12 relative resolution to keep keys stable
+            return Double.doubleToLongBits(Math.rint(x * 1e12) / 1e12);
+        }
+
+        private int computeHash() {
+            int h = 1;
+            h = 31 * h + y;
+            h = 31 * h + Arrays.hashCode(parents);
+            h = 31 * h + (oneEq ? 1 : 0);
+            h = 31 * h + Long.hashCode(ridgeBits);
+            h = 31 * h + Long.hashCode(condBits);
+            h = 31 * h + Long.hashCode(penBits);
+            return h;
+        }
+
+        @Override public boolean equals(Object o) {
+            if (!(o instanceof FamilyKey fk)) return false;
+            return y == fk.y
+                   && oneEq == fk.oneEq
+                   && ridgeBits == fk.ridgeBits
+                   && condBits == fk.condBits
+                   && penBits == fk.penBits
+                   && Arrays.equals(parents, fk.parents);
+        }
+
+        @Override public int hashCode() { return hash; }
+    }
+
+    /** Key for the per-parent-set X-block cache (depends only on parent original indices). */
+    private static final class ParentsKey {
+        final int[] parents; // sorted original indices
+        private final int hash;
+
+        ParentsKey(int[] parents) {
+            this.parents = parents.clone();
+            this.hash = Arrays.hashCode(this.parents);
+        }
+
+        @Override public boolean equals(Object o) {
+            if (!(o instanceof ParentsKey pk)) return false;
+            return Arrays.equals(parents, pk.parents);
+        }
+
+        @Override public int hashCode() { return hash; }
     }
 }

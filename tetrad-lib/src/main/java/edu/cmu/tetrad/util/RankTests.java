@@ -872,9 +872,9 @@ public class RankTests {
      * element at index `i` represents the sum of logarithms of (1 - squared singular value) from index `i` to the end
      * of the `svals` array.
      */
-    private static final class RccaEntry {
-        final double[] svals;       // descending
-        final double[] suffixLogs;  // suffixLogs[i] = sum_{j=i}^{end} log(1 - s_j^2)
+    public static final class RccaEntry {
+        public final double[] svals;       // descending
+        public final double[] suffixLogs;  // suffixLogs[i] = sum_{j=i}^{end} log(1 - s_j^2)
 
         RccaEntry(double[] svals, double[] suffixLogs) {
             this.svals = svals;
@@ -896,7 +896,7 @@ public class RankTests {
         SimpleMatrix Syy = block(S, Y0, Y0);
         SimpleMatrix Sxy = block(S, X0, Y0);
 
-        if (Z != null && Z.length > 0) {
+        if (Z.length > 0) {
             SimpleMatrix Sxz = block(S, X0, Z);
             SimpleMatrix Syz = block(S, Y0, Z);
             SimpleMatrix Szz = block(S, Z,  Z);
@@ -923,7 +923,6 @@ public class RankTests {
         for (int i = 0; i < minpq; i++) {
             sv[i] = svd.getSingleValue(i);
         }
-//        double[] sv = svd.getSingularValues();
 
         if (sv.length == 0) return 0.0;
         double rho = Math.max(0.0, Math.min(1.0, sv[0]));
@@ -947,7 +946,7 @@ public class RankTests {
         SimpleMatrix Syy = block(S, Y0, Y0);
         SimpleMatrix Sxy = block(S, X0, Y0);
 
-        if (Z != null && Z.length > 0) {
+        if (Z.length > 0) {
             SimpleMatrix Sxz = block(S, X0, Z);
             SimpleMatrix Syz = block(S, Y0, Z);
             SimpleMatrix Szz = block(S, Z,  Z);
@@ -962,7 +961,7 @@ public class RankTests {
         SimpleMatrix Wyy = invSqrtPSD(Syy);
         SimpleMatrix M   = Wxx.mult(Sxy).mult(Wyy);
         var svd = M.svd();
-        int m = Math.min(M.numRows(), M.numCols());
+        int m = Math.min(M.getNumRows(), M.getNumCols());
         double logLambda = 0.0;
         for (int i = 0; i < m; i++) {
             double rho = Math.max(0.0, Math.min(1.0, svd.getSingleValue(i)));
@@ -970,7 +969,7 @@ public class RankTests {
         }
 
         // Bartlett approx (use your standard scaling)
-        int p = Sxx.numRows(), q = Syy.numRows();
+        int p = Sxx.getNumRows(), q = Syy.getNumRows();
         double kappa = (n - 1) - 0.5 * (p + q + 1);
         if (!Double.isFinite(kappa) || kappa < 1.0) kappa = Math.max(1.0, n - 1);
         double stat = -kappa * logLambda;
@@ -987,6 +986,32 @@ public class RankTests {
         for (int r = 0; r < m; r++) {
             if (acceptRankLeByWilks(S, xIdx, yIdx, n, r, alpha)) last = r; else break;
         }
-        return (last < 0) ? 0 : last;
+        return Math.max(last, 0);
+    }
+
+    // --- PUBLIC: fetch RCCA svals (and suffix logs) using the existing cache + hybrid pipeline.
+    public static RccaEntry getRccaEntry(SimpleMatrix S,
+                                         int[] xIdx, int[] yIdx,
+                                         double regLambda, double condThreshold) {
+        RccaKey key = new RccaKey(xIdx, yIdx, regLambda);
+        RccaEntry entry = cacheGet(key);
+        if (entry != null) return entry;
+
+        // compute via your existing hybrid path
+        SvdResult sv = computeSvalsEigenWhiten(S, xIdx, yIdx, regLambda);
+        if (sv == null) return null;
+
+        // build suffix logs once (sum_{j=i}^{end} log(1 - s_j^2))
+        int m = Math.min(xIdx.length, yIdx.length);
+        double[] svals = Arrays.copyOf(sv.svals, m);
+        double[] suffix = new double[m + 1];
+        for (int i = m - 1; i >= 0; i--) {
+            double s = Math.max(0.0, Math.min(svals[i], 1.0 - 1e-12));
+            suffix[i] = suffix[i + 1] + Math.log(1.0 - s * s);
+        }
+
+        entry = new RccaEntry(svals, suffix);
+        cachePut(key, entry);
+        return entry;
     }
 }

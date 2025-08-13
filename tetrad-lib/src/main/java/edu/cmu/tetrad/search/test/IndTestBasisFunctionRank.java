@@ -6,9 +6,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -19,11 +18,8 @@ import java.util.*;
  *
  * H0: rank( X ⟂̸ Y | Z ) ≤ 0  (i.e., canonical correlations are all zero after conditioning)
  *
- * Implementation notes:
- * - Conditionalization via Schur complements on the embedded covariance (partial covariances).
- * - Whitening with eigendecomposition of S_xx.z and S_yy.z (ridge-stabilized).
- * - Bartlett’s approximation: T = -kappa * log Λ,  df = p*q  (for r=0)
- *   where Λ = ∏_{i=1..m} (1 - ρ_i^2), m = min(p, q).
+ * Implementation notes (unchanged externally):
+ * - Conditionalization and whitening are now delegated to RankTests where possible.
  */
 public class IndTestBasisFunctionRank implements IndependenceTest, RawMarginalIndependenceTest {
 
@@ -35,7 +31,7 @@ public class IndTestBasisFunctionRank implements IndependenceTest, RawMarginalIn
     private final int sampleSize;
 
     private final Map<Integer, List<Integer>> embedding;
-    private final double lambda;            // ridge/singularity guard for inverses
+    private final double lambda;            // kept for API compatibility; RankTests handles its own ridge internally
     private final int truncationLimit;
 
     private double alpha = 0.01;
@@ -124,8 +120,8 @@ public class IndTestBasisFunctionRank implements IndependenceTest, RawMarginalIn
                                     Map<Node, Integer> nodeHash,
                                     Map<Integer, List<Integer>> embedding,
                                     boolean doOneEquationOnly,
-                                    double lambda,
-                                    SimpleMatrix S, // embedded covariance
+                                    double lambda,               // kept for signature symmetry
+                                    SimpleMatrix S,              // embedded covariance
                                     int n) {
 
         // 1) Indices in the embedded space
@@ -153,114 +149,12 @@ public class IndTestBasisFunctionRank implements IndependenceTest, RawMarginalIn
         // Guard
         if (xi.length == 0 || yi.length == 0) return 1.0;
 
-        // 2) Partial covariance blocks given Z via Schur complements
-        Blocks blocks = partialBlocks(S, xi, yi, zi, lambda);
+        // 2) Delegate to RankTests’ partial-CCA p-value (Wilks/Bartlett, r=0)
+        //    This encapsulates conditioning on Z (Schur complements), whitening, SVD, and chi-square approx.
+        double pValue = RankTests.pValueIndepConditioned(S, xi, yi, zi, n);
 
-        // If conditioning annihilates variance numerically, treat as independent
-        if (isDegenerate(blocks.Sxx_z) || isDegenerate(blocks.Syy_z)) return 1.0;
-
-        // 3) Whiten & SVD for canonical correlations
-        SimpleMatrix Sxx_invhalf = invSqrtPSD(blocks.Sxx_z, lambda);
-        SimpleMatrix Syy_invhalf = invSqrtPSD(blocks.Syy_z, lambda);
-
-        SimpleMatrix M = Sxx_invhalf.mult(blocks.Sxy_z).mult(Syy_invhalf);
-        // singular values are canonical correlations
-        org.ejml.simple.SimpleSVD<SimpleMatrix> svd = M.svd();
-        double[] s = svd.getSingularValues();
-
-        int p = blocks.Sxx_z.numRows();
-        int q = blocks.Syy_z.numRows();
-        int m = Math.min(p, q);
-        if (m == 0) return 1.0;
-
-        // 4) Wilks’ Lambda for rank ≤ 0 (independence): Λ = ∏ (1 - ρ_i^2)
-        double lambdaWilks = 1.0;
-        for (int i = 0; i < Math.min(m, s.length); i++) {
-            double term = Math.max(1e-15, 1.0 - s[i]*s[i]);
-            lambdaWilks *= term;
-        }
-
-        // 5) Bartlett approx: T = -kappa * log Λ, df = p*q
-        double kappa = n - 1 - 0.5 * (p + q + 1);
-        if (kappa < 1.0) kappa = Math.max(1.0, n - 1); // small-sample guard
-
-        double T = -kappa * Math.log(Math.max(lambdaWilks, 1e-15));
-        int df = p * q;
-        if (df == 0) return 1.0;
-
-        ChiSquaredDistribution chi2 = new ChiSquaredDistribution(df);
-        double pValue = 1.0 - chi2.cumulativeProbability(T);
-
-        return clip01(pValue);
-    }
-
-    // === Helpers ===
-
-    private static class Blocks {
-        final SimpleMatrix Sxx_z, Syy_z, Sxy_z;
-        Blocks(SimpleMatrix Sxx_z, SimpleMatrix Syy_z, SimpleMatrix Sxy_z) {
-            this.Sxx_z = Sxx_z; this.Syy_z = Syy_z; this.Sxy_z = Sxy_z;
-        }
-    }
-
-    /**
-     * Compute partial covariance blocks given Z:
-     * Sxx.z = Sxx - Sxz Szz^{-1} Szx, etc.
-     * Uses ridge lambda inside the inverse via Matrix.chooseInverse(lambda).
-     */
-    private static Blocks partialBlocks(SimpleMatrix S, int[] xi, int[] yi, int[] zi, double lambda) {
-        SimpleMatrix Sxx = StatUtils.extractSubMatrix(S, xi, xi);
-        SimpleMatrix Syy = StatUtils.extractSubMatrix(S, yi, yi);
-        SimpleMatrix Sxy = StatUtils.extractSubMatrix(S, xi, yi);
-
-        if (zi.length == 0) {
-            return new Blocks(Sxx, Syy, Sxy);
-        }
-
-        SimpleMatrix Sxz = StatUtils.extractSubMatrix(S, xi, zi);
-        SimpleMatrix Syz = StatUtils.extractSubMatrix(S, yi, zi);
-        SimpleMatrix Szz = StatUtils.extractSubMatrix(S, zi, zi);
-
-        SimpleMatrix Szz_inv = new Matrix(Szz).chooseInverse(lambda).getData();
-
-        SimpleMatrix Sxx_z = Sxx.minus(Sxz.mult(Szz_inv).mult(Sxz.transpose()));
-        SimpleMatrix Syy_z = Syy.minus(Syz.mult(Szz_inv).mult(Syz.transpose()));
-        SimpleMatrix Sxy_z = Sxy.minus(Sxz.mult(Szz_inv).mult(Syz.transpose()));
-
-        return new Blocks(Sxx_z, Syy_z, Sxy_z);
-    }
-
-    /** Eigen-based inverse square root for symmetric PSD, ridge-stabilized. */
-    private static SimpleMatrix invSqrtPSD(SimpleMatrix A, double ridge) {
-        SimpleMatrix Ar = A.plus(SimpleMatrix.identity(A.numRows()).scale(Math.max(0.0, ridge)));
-        org.ejml.simple.SimpleEVD<SimpleMatrix> evd = Ar.eig();
-        int n = A.numRows();
-        SimpleMatrix V = new SimpleMatrix(n, n);
-        SimpleMatrix Dinvh = new SimpleMatrix(n, n);
-
-        for (int i = 0; i < n; i++) {
-            double val = Math.max(1e-12, evd.getEigenvalue(i).getReal());
-            // eigenvector as column i
-            SimpleMatrix vi = evd.getEigenVector(i);
-            if (vi == null) {
-                // fallback: identity if EVD fails (should be rare)
-                return SimpleMatrix.identity(n);
-            }
-            V.insertIntoThis(0, i, vi);
-            Dinvh.set(i, i, 1.0 / Math.sqrt(val));
-        }
-        // V * D^{-1/2} * V^T
-        return V.mult(Dinvh).mult(V.transpose());
-    }
-
-    private static boolean isDegenerate(SimpleMatrix A) {
-        // very small trace or NaN/Inf guard
-        double tr = A.trace();
-        return !(Double.isFinite(tr)) || tr < 1e-10;
-    }
-
-    private static double clip01(double p) {
-        if (Double.isNaN(p)) return 1.0;
-        return Math.max(0.0, Math.min(1.0, p));
+        // Clip for safety (same behavior as original)
+        if (Double.isNaN(pValue)) return 1.0;
+        return Math.max(0.0, Math.min(1.0, pValue));
     }
 }
