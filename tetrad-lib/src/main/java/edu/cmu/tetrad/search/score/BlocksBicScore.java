@@ -16,7 +16,10 @@ import java.util.*;
  *
  * where p = |X_block|, q = |Y_block|, and r in {0..min(p,q)}.
  *
- * CONTRACT: 'blocks.get(v)' lists the embedded column indices (in THIS dataset) that represent original variable v.
+ * CONTRACT:
+ * - 'blocks' maps each BLOCK index b (0..B-1) to the list of embedded column indices in THIS dataset for that block.
+ * - 'blockVariables' is exactly the list of Nodes to score over, one per block, same order (size B).
+ * - getVariables() returns exactly 'blockVariables'.
  */
 public class BlocksBicScore implements Score {
     // --- Caches ---
@@ -25,13 +28,13 @@ public class BlocksBicScore implements Score {
 
     // --- Data / bookkeeping ---
     private final DataSet dataSet;
-    private final List<Node> variables;
-    private final Map<Node, Integer> nodeIndex;
-    private final SimpleMatrix Sphi;      // covariance of embedded data
-    private final int n;                  // sample size
+    private final List<Node> variables;          // block-level variables, size == blocks.size()
+    private final Map<Node, Integer> nodeIndex;  // block node -> block index
+    private final SimpleMatrix Sphi;             // covariance of embedded data
+    private final int n;                         // sample size
 
     // Precomputed embedded column arrays (avoid per-call boxing/copies)
-    private final int[][] blockAllCols;   // per original var -> all embedded cols
+    private final int[][] blockAllCols;          // per block -> all embedded cols
 
     /**
      * LRU cache for full local scores per (y, parents, knobs).
@@ -61,33 +64,53 @@ public class BlocksBicScore implements Score {
     private double ridge = 1e-8;            // regLambda passed to RankTests
     private double condThreshold = 1e10;    // conditioning guard inside RankTests hybrid path
 
-    public BlocksBicScore(DataSet dataSet, List<List<Integer>> blocks) {
+    /**
+     * @param dataSet        dataset whose columns the 'blocks' indices refer to
+     * @param blocks         for each block b (0..B-1), the list of embedded column indices composing that block
+     * @param blockVariables the exact variables to expose to the scorer; size must equal blocks.size()
+     */
+    public BlocksBicScore(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
         this.dataSet = Objects.requireNonNull(dataSet, "dataSet == null");
+        Objects.requireNonNull(blocks, "blocks == null");
+        Objects.requireNonNull(blockVariables, "blockVariables == null");
+        int B = blocks.size();
+        if (blockVariables.size() != B) {
+            throw new IllegalArgumentException("blockVariables.size() (" + blockVariables.size() +
+                                               ") != blocks.size() (" + B + ")");
+        }
 
-        // index original variables
-        this.variables = new ArrayList<>(dataSet.getVariables());
+        // block-level variables & index
+        this.variables = new ArrayList<>(blockVariables);
         this.nodeIndex = new HashMap<>();
-        for (int j = 0; j < variables.size(); j++) nodeIndex.put(variables.get(j), j);
+        for (int j = 0; j < variables.size(); j++) {
+            Node v = variables.get(j);
+            if (v == null) throw new IllegalArgumentException("blockVariables[" + j + "] is null");
+            if (nodeIndex.put(v, j) != null) {
+                throw new IllegalArgumentException("Duplicate Node in blockVariables: " + v.getName());
+            }
+        }
 
         this.n = dataSet.getNumRows();
-
-        // covariance in embedded space
         this.Sphi = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix());
 
-        // Precompute embedded column arrays for each original variable
-        int V = variables.size();
-        if (blocks == null || blocks.size() != V) {
-            throw new IllegalArgumentException("blocks.size() must equal number of variables");
-        }
-        this.blockAllCols = new int[V][];
-        for (int v = 0; v < V; v++) {
-            List<Integer> cols = blocks.get(v);
+        // Precompute embedded column arrays for each block
+        int D = dataSet.getNumColumns();
+        this.blockAllCols = new int[B][];
+        for (int b = 0; b < B; b++) {
+            List<Integer> cols = blocks.get(b);
             if (cols == null || cols.isEmpty()) {
-                this.blockAllCols[v] = new int[0];
+                this.blockAllCols[b] = new int[0];
             } else {
                 int[] all = new int[cols.size()];
-                for (int k = 0; k < cols.size(); k++) all[k] = cols.get(k);
-                this.blockAllCols[v] = all;
+                for (int k = 0; k < cols.size(); k++) {
+                    int col = cols.get(k);
+                    if (col < 0 || col >= D) {
+                        throw new IllegalArgumentException(
+                                "Block " + b + " references column " + col + " outside dataset width " + D);
+                    }
+                    all[k] = col;
+                }
+                this.blockAllCols[b] = all;
             }
         }
     }
@@ -226,16 +249,12 @@ public class BlocksBicScore implements Score {
         return i;
     }
 
-    /**
-     * Embedded columns for an original variable (precomputed).
-     */
-    private int[] blockFor(int originalCol) {
-        return blockAllCols[originalCol];
+    /** Embedded columns for a block (precomputed). */
+    private int[] blockFor(int blockIndex) {
+        return blockAllCols[blockIndex];
     }
 
-    /**
-     * Concatenate embedded columns for all parents (parents given as sorted original indices).
-     */
+    /** Concatenate embedded columns for all parents (parents given as sorted block indices). */
     private int[] concatBlocksFromSortedParentIdx(int[] sortedParents) {
         int total = 0;
         for (int p : sortedParents) total += blockAllCols[p].length;
@@ -249,9 +268,7 @@ public class BlocksBicScore implements Score {
         return out;
     }
 
-    /**
-     * Concatenate embedded columns for all parents (original Node list) — kept for completeness, unused now.
-     */
+    /** Concatenate embedded columns for all parents (block Node list) — unused helper. */
     @SuppressWarnings("unused")
     private int[] concatBlocks(List<Node> parents) {
         int[] parentIdx = new int[parents.size()];
@@ -299,12 +316,10 @@ public class BlocksBicScore implements Score {
 
     // ----- Key types for caches -----
 
-    /**
-     * Key for the per-family score cache. Includes knobs that affect the score.
-     */
+    /** Key for the per-family score cache. Includes knobs that affect the score. */
     private static final class FamilyKey {
         final int y;
-        final int[] parents; // sorted original indices
+        final int[] parents; // sorted block indices
         final long ridgeBits;
         final long condBits;
         final long penBits;
@@ -350,11 +365,9 @@ public class BlocksBicScore implements Score {
         }
     }
 
-    /**
-     * Key for the per-parent-set X-block cache (depends only on parent original indices).
-     */
+    /** Key for the per-parent-set X-block cache (depends only on parent block indices). */
     private static final class ParentsKey {
-        final int[] parents; // sorted original indices
+        final int[] parents; // sorted block indices
         private final int hash;
 
         ParentsKey(int[] parents) {

@@ -41,9 +41,9 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BF-BIC (Basis Function BIC Score)", command = "bf-bic-score", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BF-Blocks-BIC", command = "bf-blocks-bic-score", dataType = DataType.Mixed)
 @Mixed
-public class BasisFunctionBicScore implements ScoreWrapper {
+public class BasisFunctionBlocksBicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -56,7 +56,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     /**
      * Initializes a new instance of the BasisFunctionBicScore class.
      */
-    public BasisFunctionBicScore() {
+    public BasisFunctionBlocksBicScore() {
 
     }
 
@@ -66,13 +66,10 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
+        edu.cmu.tetrad.search.score.BasisFunctionBlocksBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBlocksBicScore(
                 SimpleDataLoader.getMixedDataSet(dataSet),
-                parameters.getInt(Params.TRUNCATION_LIMIT),
-                parameters.getDouble(Params.SINGULARITY_LAMBDA)
-        );
+                parameters.getInt(Params.TRUNCATION_LIMIT));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        score.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
         return score;
     }
 
@@ -81,7 +78,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "Basis Function BIC Score (BF-BIC)";
+        return "BF Blocks BIC";
     }
 
     /**
@@ -100,8 +97,6 @@ public class BasisFunctionBicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.SINGULARITY_LAMBDA);
-        parameters.add(Params.DO_ONE_EQUATION_ONLY);
         return parameters;
     }
 

@@ -1,10 +1,12 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.Mixed;
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.IndTestBlocks;
+import edu.cmu.tetrad.search.test.IndTestBasisFunctionBlocks;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -19,13 +21,13 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-//@TestOfIndependence(
-//        name = "Block-Ind-Test (Block Independence Test)",
-//        command = "block-ind-test",
-//        dataType = DataType.Mixed
-//)
-//@Mixed
-public class BlockIndependenceTest implements IndependenceWrapper {
+@TestOfIndependence(
+        name = "BF-Blocks-Test",
+        command = "bf-blocks-test",
+        dataType = DataType.Mixed
+)
+@Mixed
+public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -33,7 +35,7 @@ public class BlockIndependenceTest implements IndependenceWrapper {
     /**
      * Initializes a new instance of the DegenerateGaussianLrt class.
      */
-    public BlockIndependenceTest() {
+    public BasisFunctionBlocksIndTest() {
     }
 
     /**
@@ -41,10 +43,9 @@ public class BlockIndependenceTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestBlocks test = new IndTestBlocks(SimpleDataLoader.getMixedDataSet(dataSet),
-                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getDouble(Params.SINGULARITY_LAMBDA));
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(SimpleDataLoader.getMixedDataSet(dataSet),
+                parameters.getInt(Params.TRUNCATION_LIMIT));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
-        test.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
         return test;
     }
 
@@ -53,7 +54,7 @@ public class BlockIndependenceTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "Block Independence Test";
+        return "BF Blocks Test";
     }
 
     /**
@@ -72,8 +73,6 @@ public class BlockIndependenceTest implements IndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.TRUNCATION_LIMIT);
-        parameters.add(Params.SINGULARITY_LAMBDA);
-        parameters.add(Params.DO_ONE_EQUATION_ONLY);
         return parameters;
     }
 }

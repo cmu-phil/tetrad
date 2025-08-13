@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -14,8 +16,11 @@ import java.util.*;
  * Block-level Conditional Independence test using a Rank/CCA statistic (Bartlett–Wilks).
  * Delegates the statistic to RankTests and adds lightweight LRU caching.
  *
- * CONTRACT: 'blocks' maps each original variable index v (0..V-1) to the list of column indices
- * in the CURRENT dataSet that belong to v's block. Empty or null lists are allowed.
+ * CONTRACT:
+ * - 'blocks' maps each BLOCK index b (0..B-1) to the list of column indices in the CURRENT dataSet
+ *   that belong to that block. Empty or null lists are allowed.
+ * - 'blockVariables' is the list of Nodes you want to SEARCH OVER (size B). The k-th node corresponds to block k.
+ * - getVariables() returns exactly 'blockVariables'.
  */
 public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceTest {
 
@@ -24,36 +29,26 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
     private static final int ZBLOCK_CACHE_MAX = 100_000;
 
     private final DataSet dataSet;
-    private final List<Node> variables;
-    private final Map<Node, Integer> nodeHash;
-    private final SimpleMatrix covarianceMatrix; // covariance over dataset columns
+    private final List<Node> variables;            // block-level variables, size == blocks.size()
+    private final Map<Node, Integer> nodeHash;     // block node -> block index
+    private final SimpleMatrix covarianceMatrix;   // covariance over dataset columns
     private final int sampleSize;
 
-    /**
-     * For each variable v, the embedded/expanded column indices that compose its block.
-     * allCols[v] may be empty (blockless).
-     */
-    private final int[][] allCols;
+    /** For each block b, the embedded/expanded column indices that compose it. */
+    private final int[][] allCols;                 // size = blocks.size()
 
-    /**
-     * P-value cache keyed by (min(x,y), max(x,y), sorted Z vars).
-     * Note: not thread-safe; wrap externally if you parallelize CI calls.
-     */
+    /** P-value cache keyed by (min(x,y), max(x,y), sorted Z vars). */
     private final Map<PKey, Double> pvalCache =
             new LinkedHashMap<>(4096, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<PKey, Double> e) {
+                @Override protected boolean removeEldestEntry(Map.Entry<PKey, Double> e) {
                     return size() > PV_CACHE_MAX;
                 }
             };
 
-    /**
-     * Cache for concatenated embedded columns of Z.
-     */
+    /** Cache for concatenated embedded columns of Z. */
     private final Map<ZKey, int[]> zblockCache =
             new LinkedHashMap<>(2048, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<ZKey, int[]> e) {
+                @Override protected boolean removeEldestEntry(Map.Entry<ZKey, int[]> e) {
                     return size() > ZBLOCK_CACHE_MAX;
                 }
             };
@@ -62,37 +57,56 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
     private boolean verbose = false;
 
     /**
-     * @param dataSet dataset whose columns the 'blocks' indices refer to
-     * @param blocks  for each variable v (by index), the list of column indices composing v's block
+     * @param dataSet         dataset whose columns the 'blocks' indices refer to
+     * @param blocks          for each block b (by index 0..B-1), the list of column indices composing that block
+     * @param blockVariables  the exact variables to expose to the search; blockVariables.size() must equal blocks.size()
      */
-    public IndTestBlocks(DataSet dataSet, List<List<Integer>> blocks) {
+    public IndTestBlocks(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
         if (dataSet == null) throw new IllegalArgumentException("dataSet == null");
         if (blocks == null) throw new IllegalArgumentException("blocks == null");
+        if (blockVariables == null) throw new IllegalArgumentException("blockVariables == null");
 
-        this.dataSet = dataSet;
-        this.variables = dataSet.getVariables();
-        if (blocks.size() != variables.size()) {
-            throw new IllegalArgumentException("blocks.size() must equal number of variables");
+        final int B = blocks.size();
+        if (blockVariables.size() != B) {
+            throw new IllegalArgumentException(
+                    "blockVariables.size() (" + blockVariables.size() + ") != blocks.size() (" + B + ")");
         }
 
+        this.dataSet = dataSet;
+        this.variables = new ArrayList<>(blockVariables); // preserve caller order
+
+        // Map block-node -> block index
         Map<Node, Integer> nodesHash = new HashMap<>();
-        for (int j = 0; j < this.variables.size(); j++) nodesHash.put(this.variables.get(j), j);
+        for (int j = 0; j < this.variables.size(); j++) {
+            Node v = this.variables.get(j);
+            if (v == null) throw new IllegalArgumentException("blockVariables[" + j + "] is null");
+            if (nodesHash.put(v, j) != null) {
+                throw new IllegalArgumentException("Duplicate Node in blockVariables: " + v.getName());
+            }
+        }
         this.nodeHash = nodesHash;
 
         this.sampleSize = dataSet.getNumRows();
         this.covarianceMatrix = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix());
 
-        // Precompute block columns
-        int V = variables.size();
-        this.allCols = new int[V][];
-        for (int v = 0; v < V; v++) {
-            List<Integer> cols = blocks.get(v);
+        // Precompute block columns; size to number of blocks (B)
+        final int D = dataSet.getNumColumns();
+        this.allCols = new int[B][];
+        for (int b = 0; b < B; b++) {
+            List<Integer> cols = blocks.get(b);
             if (cols == null || cols.isEmpty()) {
-                allCols[v] = new int[0];
+                allCols[b] = new int[0];
             } else {
                 int[] a = new int[cols.size()];
-                for (int k = 0; k < cols.size(); k++) a[k] = cols.get(k);
-                allCols[v] = a;
+                for (int k = 0; k < cols.size(); k++) {
+                    int col = cols.get(k);
+                    if (col < 0 || col >= D) {
+                        throw new IllegalArgumentException(
+                                "Block " + b + " references column " + col + " outside dataset width " + D);
+                    }
+                    a[k] = col;
+                }
+                allCols[b] = a;
             }
         }
     }
@@ -108,7 +122,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
 
     @Override
     public List<Node> getVariables() {
-        return new ArrayList<>(variables);
+        return new ArrayList<>(variables); // block-nodes as provided by caller
     }
 
     @Override
@@ -135,8 +149,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
     }
 
     /**
-     * Not supported for block-based tests (arrays are not tied to 'blocks').
-     * Use checkIndependence(Node, Node, Set) on the dataset with configured blocks.
+     * Not supported for block-based tests. Use checkIndependence(Node, Node, Set) on the dataset with configured blocks.
      */
     @Override
     public double computePValue(double[] x, double[] y) {
@@ -148,14 +161,14 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
     // === Core RCCA/Bartlett test ===
 
     private double getPValue(Node x, Node y, Set<Node> z) {
-        // Map nodes to indices
+        // Map block-nodes to block indices
         Integer xiVar = nodeHash.get(x);
         Integer yiVar = nodeHash.get(y);
         if (xiVar == null || yiVar == null) {
             throw new IllegalArgumentException("Unknown node(s): " + x + ", " + y);
         }
 
-        // Build sorted Z var indices
+        // Build sorted Z block indices
         int[] zVars = new int[z.size()];
         int t = 0;
         for (Node zn : z) {
@@ -173,7 +186,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
         Double cached = pvalCache.get(key);
         if (cached != null) return cached;
 
-        // Embedded indices (use original order for the actual test—stat is symmetric)
+        // Embedded indices for these blocks
         int[] xCols = allCols[xiVar];
         int[] yCols = allCols[yiVar];
 
