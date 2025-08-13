@@ -881,4 +881,112 @@ public class RankTests {
             this.suffixLogs = suffixLogs;
         }
     }
+
+    /** Largest canonical correlation squared between X and Y after conditioning on Z. */
+    public static double maxCanonicalCorrSqConditioned(
+            SimpleMatrix S, int[] X, int[] Y, int[] Z) {
+
+        // Remove any overlap with Z (same convention as estimateRccaRankConditioned)
+        int[] X0 = diff(X, Z);
+        int[] Y0 = diff(Y, Z);
+        if (X0.length == 0 || Y0.length == 0) return 0.0;
+
+        // Blocks
+        SimpleMatrix Sxx = block(S, X0, X0);
+        SimpleMatrix Syy = block(S, Y0, Y0);
+        SimpleMatrix Sxy = block(S, X0, Y0);
+
+        if (Z != null && Z.length > 0) {
+            SimpleMatrix Sxz = block(S, X0, Z);
+            SimpleMatrix Syz = block(S, Y0, Z);
+            SimpleMatrix Szz = block(S, Z,  Z);
+
+            // robust inverse of Szz (same ridge you use elsewhere)
+            SimpleMatrix SzzInv = invPsdWithRidge(Szz, 1e-8);
+
+            // Schur complements
+            Sxx = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
+            Syy = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
+            Sxy = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
+        }
+
+        // Whitening with your PSD inverse sqrt
+        SimpleMatrix Wxx = invSqrtPSD(Sxx);
+        SimpleMatrix Wyy = invSqrtPSD(Syy);
+
+        // Top canonical correlation (singular value of Wxx * Sxy * Wyy)
+        SimpleMatrix mult = Wxx.mult(Sxy).mult(Wyy);
+
+        SimpleSVD<SimpleMatrix> svd = mult.svd();
+        int minpq = Math.min(mult.getNumRows(), mult.getNumCols());
+        double[] sv = new double[minpq];
+        for (int i = 0; i < minpq; i++) {
+            sv[i] = svd.getSingleValue(i);
+        }
+//        double[] sv = svd.getSingularValues();
+
+        if (sv.length == 0) return 0.0;
+        double rho = Math.max(0.0, Math.min(1.0, sv[0]));
+        return rho * rho;
+    }
+
+    /** Largest canonical correlation squared (unconditioned). */
+    public static double maxCanonicalCorrSq(SimpleMatrix S, int[] X, int[] Y) {
+        return maxCanonicalCorrSqConditioned(S, X, Y, new int[0]);
+    }
+
+    /** p-value for H0: rank(X ⟂ Y | Z) ≤ 0 using Wilks/Bartlett on partial CCA. */
+    public static double pValueIndepConditioned(SimpleMatrix S, int[] X, int[] Y, int[] Z, int n) {
+        // Remove overlap with Z (same convention as your estimator)
+        int[] X0 = diff(X, Z);
+        int[] Y0 = diff(Y, Z);
+        if (X0.length == 0 || Y0.length == 0) return 1.0;
+
+        // Blocks + Schur complement (partial covariances)
+        SimpleMatrix Sxx = block(S, X0, X0);
+        SimpleMatrix Syy = block(S, Y0, Y0);
+        SimpleMatrix Sxy = block(S, X0, Y0);
+
+        if (Z != null && Z.length > 0) {
+            SimpleMatrix Sxz = block(S, X0, Z);
+            SimpleMatrix Syz = block(S, Y0, Z);
+            SimpleMatrix Szz = block(S, Z,  Z);
+            SimpleMatrix SzzInv = invPsdWithRidge(Szz, 1e-8);
+            Sxx = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
+            Syy = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
+            Sxy = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
+        }
+
+        // Whitening and SVD
+        SimpleMatrix Wxx = invSqrtPSD(Sxx);
+        SimpleMatrix Wyy = invSqrtPSD(Syy);
+        SimpleMatrix M   = Wxx.mult(Sxy).mult(Wyy);
+        var svd = M.svd();
+        int m = Math.min(M.numRows(), M.numCols());
+        double logLambda = 0.0;
+        for (int i = 0; i < m; i++) {
+            double rho = Math.max(0.0, Math.min(1.0, svd.getSingleValue(i)));
+            logLambda += Math.log(Math.max(1e-16, 1.0 - rho*rho));
+        }
+
+        // Bartlett approx (use your standard scaling)
+        int p = Sxx.numRows(), q = Syy.numRows();
+        double kappa = (n - 1) - 0.5 * (p + q + 1);
+        if (!Double.isFinite(kappa) || kappa < 1.0) kappa = Math.max(1.0, n - 1);
+        double stat = -kappa * logLambda;
+        int df = p * q;
+        if (df <= 0) return 1.0;
+
+        return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
+    }
+
+    /** Returns the largest r (≤ min(p,q)) such that H0: rank ≤ r is NOT rejected at alpha. */
+    public static int estimateRankLastNonRejected(SimpleMatrix S, int[] xIdx, int[] yIdx, int n, double alpha) {
+        int p = xIdx.length, q = yIdx.length, m = Math.min(p, q);
+        int last = -1;
+        for (int r = 0; r < m; r++) {
+            if (acceptRankLeByWilks(S, xIdx, yIdx, n, r, alpha)) last = r; else break;
+        }
+        return (last < 0) ? 0 : last;
+    }
 }

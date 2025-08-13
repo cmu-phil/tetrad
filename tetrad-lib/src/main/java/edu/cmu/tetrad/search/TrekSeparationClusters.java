@@ -579,7 +579,7 @@ public class TrekSeparationClusters {
         Map<Set<Integer>, Integer> clusterToRank = new HashMap<>();
         Map<Set<Integer>, Integer> reducedRank = new HashMap<>();
 
-        for (int rank = 0; rank <= 5; rank++) {
+        for (int rank = 0; rank <= 4; rank++) {
             int size = rank + 1;
 
             if (size >= remainingVars.size() - size) {
@@ -757,6 +757,8 @@ public class TrekSeparationClusters {
         return new Pair<>(clusterToRank, reducedRank);
     }
 
+    private static final double EPS_RHO2 = .001; // can tune
+
     /**
      * Evaluates whether a given cluster fails the subset test based on rank conditions derived from the matrix S.
      *
@@ -773,6 +775,7 @@ public class TrekSeparationClusters {
         D.removeAll(cluster);
 
         int _depth = depth == -1 ? C.size() : depth;
+        double epsRho2 = adaptiveEpsRho2(sampleSize, C.size(), D.size());
 
         SublistGenerator gen = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
         int[] choice;
@@ -797,6 +800,15 @@ public class TrekSeparationClusters {
                 log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank 0.");
                 return true;
             }
+
+//            boolean tinyEffect = RankTests.maxCanonicalCorrSq(
+//                    S, _cArray, dArray) <= epsRho2;
+//
+//            if (tinyEffect) {
+//                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C)
+//                    + " has tiny effect" + (" (ρ²≤" + epsRho2 + ")") + ".");
+//                return true;
+//            }
         }
 
         SublistGenerator gen2 = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
@@ -817,13 +829,23 @@ public class TrekSeparationClusters {
             int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
             int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
-            double r = RankTests.estimateRccaRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
+            double rZ = RankTests.estimateRccaRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
 
-            if (r == 0) {
+            if (rZ == 0) {
                 log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C)
                     + " has rank 0 conditional on " + toNamesCluster(Z) + ".");
                 return true;
             }
+
+//            boolean tinyEffectZ = RankTests.maxCanonicalCorrSqConditioned(
+//                    S, _cArray, dArray, zArray) <= epsRho2;
+//
+//            if (tinyEffectZ) {
+//                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C)
+//                    + " has rank tiny effect conditional on " + toNamesCluster(Z)
+//                    + (" (ρ²≤" + epsRho2 + ")") + ".");
+//                return true;
+//            }
         }
 
         return false;
@@ -1184,6 +1206,32 @@ public class TrekSeparationClusters {
         private static SimpleMatrix extractSubmatrix(SimpleMatrix S, List<Integer> indices) {
             return extractCrossBlock(S, indices, indices);
         }
+    }
+
+    /** Adaptive ε for the tiny-effect gate on ρ_max^2.
+     *  Heuristic: ε = clamp( c * sqrt((|C| + |D|) / max(50, n)), [ε_min, ε_max] ).
+     *  - Grows when n is small or D is large (more mercy).
+     *  - Shrinks when n is large (stricter).
+     */
+    public static double adaptiveEpsRho2(int n, int cSize, int dSize) {
+        return adaptiveEpsRho2(n, cSize, dSize, /*c=*/1.0, /*epsMin=*/0.02, /*epsMax=*/0.08);
+    }
+
+    /** Fully parameterized version. */
+    public static double adaptiveEpsRho2(int n, int cSize, int dSize,
+                                         double c, double epsMin, double epsMax) {
+        if (n <= 0) n = 50;                  // guard
+        if (c <= 0) c = 1.0;
+        if (epsMin > epsMax) { double t = epsMin; epsMin = epsMax; epsMax = t; }
+
+        double denom = Math.max(50.0, (double) n);
+        double base  = Math.sqrt(((double)cSize + (double)dSize) / denom);
+        double eps   = c * base;
+
+        // clamp
+        if (eps < epsMin) eps = epsMin;
+        if (eps > epsMax) eps = epsMax;
+        return eps;
     }
 }
 
