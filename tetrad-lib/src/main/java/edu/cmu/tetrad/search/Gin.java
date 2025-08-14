@@ -250,7 +250,7 @@ public class Gin {
                     }
                 }
 
-                double p = RankTests.getCcaPValueRankLE(S, xIndices, yIndices, dataSet.getNumRows(), 1);
+                double p = RankTests.rankLeByWilks(S, xIndices, yIndices, dataSet.getNumRows(), 1);
 
                 System.out.println("p = " + p);
 

@@ -163,7 +163,7 @@ public class BlocksBicScore implements Score {
         }
 
         // RCCA entry (cached inside RankTests)
-        RankTests.RccaEntry ent = RankTests.getRccaEntry(Sphi, Xblock, Yblock, /*regLambda*/ ridge, condThreshold);
+        RankTests.RccaEntry ent = RankTests.getRccaEntry(Sphi, Xblock, Yblock, /*regLambda*/ ridge);
         if (ent == null) {
             scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
             return Double.NEGATIVE_INFINITY;
