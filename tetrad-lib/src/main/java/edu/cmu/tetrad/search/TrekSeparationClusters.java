@@ -799,7 +799,7 @@ public class TrekSeparationClusters {
         int _depth = depth == -1 ? C.size() : depth;
         double epsRho2 = adaptiveEpsRho2(sampleSize, C.size(), D.size());
 
-        SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
+        SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() / 2);
         int[] choice0;
 
         while ((choice0 = gen0.next()) != null) {
