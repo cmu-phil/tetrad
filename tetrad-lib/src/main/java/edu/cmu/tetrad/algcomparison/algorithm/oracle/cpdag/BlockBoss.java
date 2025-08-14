@@ -28,7 +28,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BLOCK-BOSS",
+        name = "Block-BOSS",
         command = "block-boss",
         algoType = AlgType.forbid_latent_common_causes
 )
@@ -82,7 +82,7 @@ public class BlockBoss extends AbstractBootstrapAlgorithm implements Algorithm, 
      */
     @Override
     public String getDescription() {
-        return "BLOCK-BOSS";
+        return "Block-BOSS";
     }
 
     /**
