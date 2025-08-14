@@ -53,9 +53,9 @@ public class BlocksBoss extends AbstractBootstrapAlgorithm implements Algorithm,
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         double alpha = parameters.getDouble(Params.FOFC_ALPHA);
+        double ridge = parameters.getDouble(Params.REGULARIZATION_LAMBDA);
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
-        boolean includeStructureModel = parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL);
 
         edu.cmu.tetrad.search.BlocksBoss search = new edu.cmu.tetrad.search.BlocksBoss((DataSet) dataModel, ess);
         search.setAlpha(alpha);
@@ -63,6 +63,7 @@ public class BlocksBoss extends AbstractBootstrapAlgorithm implements Algorithm,
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setEffectiveSampleSize(ess);
         search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setRidge(ridge);
         search.setVerbose(verbose);
         return search.search();
     }
@@ -103,6 +104,7 @@ public class BlocksBoss extends AbstractBootstrapAlgorithm implements Algorithm,
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.NUM_STARTS);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);
+        parameters.add(Params.REGULARIZATION_LAMBDA);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

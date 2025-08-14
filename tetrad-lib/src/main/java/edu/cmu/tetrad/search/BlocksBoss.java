@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -53,6 +52,12 @@ public class BlocksBoss implements IGraphSearch {
      * Whether to give verbose output.
      */
     private boolean verbose = false;
+    /**
+     * A small non-negative value used as a ridge regularization parameter. It is added to the diagonal of correlation
+     * matrices to address issues such as singularity or near-singularity. This helps ensure numerical stability during
+     * computations. A typical default value is used, but it can be adjusted depending on the application needs.
+     */
+    private double ridge = 1e-8;
 
     /**
      * Constructor,
@@ -116,7 +121,7 @@ public class BlocksBoss implements IGraphSearch {
         BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
         score.setPenaltyDiscount(penaltyDiscount);
         // optional knobs
-         score.setRidge(1e-8);
+        score.setRidge(ridge);
         // score.setCondThreshold(...);
 
         Boss suborderSearch = new Boss(score);
@@ -182,8 +187,8 @@ public class BlocksBoss implements IGraphSearch {
      * Sets the effective sample size to be used for statistical computations or analysis.
      *
      * @param effectiveSampleSize The effective sample size to set. This should be a non-negative integer representing
-     *                            the number of samples effectively contributing to the analysis. A value of -1
-     *                            is used to indicate that the sample size of the data is to be used.
+     *                            the number of samples effectively contributing to the analysis. A value of -1 is used
+     *                            to indicate that the sample size of the data is to be used.
      */
     public void setEffectiveSampleSize(int effectiveSampleSize) {
         if (effectiveSampleSize < -1 || effectiveSampleSize == 0) {
@@ -214,5 +219,18 @@ public class BlocksBoss implements IGraphSearch {
             throw new IllegalArgumentException("numStarts must be > 0");
         }
         this.numStarts = numStarts;
+    }
+
+    /**
+     * Sets the value to use for the ridge. This should be a small non-negative number and is added to the diagonal of
+     * correlation matrices to avoid problems with singularity. A value of 0 means no ridge.
+     *
+     * @param ridge This small non-negative value.
+     */
+    public void setRidge(double ridge) {
+        if (ridge < 0.0) {
+            throw new IllegalArgumentException("ridge must be >= 0");
+        }
+        this.ridge = ridge;
     }
 }
