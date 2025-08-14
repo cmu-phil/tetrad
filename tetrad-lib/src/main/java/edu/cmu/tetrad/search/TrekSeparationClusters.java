@@ -92,7 +92,13 @@ public class TrekSeparationClusters {
      * Whether to output verbose logging
      */
     private boolean verbose = false;
+    /**
+     * The most recent clusters found.
+     */
     private List<List<Integer>> clusters = new ArrayList<>();
+    /**
+     * The latent names for the most recent clusters found.
+     */
     private List<String> latentNames = new ArrayList<>();
 
     /**
@@ -764,7 +770,6 @@ public class TrekSeparationClusters {
             complement.removeAll(cluster);
 
             if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
-//                log("Cluster " + toNamesCluster(cluster) + " failed the subset test; removing.");
                 clusterToRank.remove(cluster);
                 reducedRank.remove(cluster);
                 penultimateRemoved = true;

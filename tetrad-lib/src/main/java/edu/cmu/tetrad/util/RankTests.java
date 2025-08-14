@@ -10,6 +10,7 @@ import org.ejml.interfaces.decomposition.SingularValueDecomposition_F64;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 import org.ejml.simple.SimpleSVD;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -535,7 +536,7 @@ public class RankTests {
                                        int[] xIdxLocal, int[] yIdxLocal,
                                        int n, double alpha) {
         for (int r = 0; r < yIdxLocal.length; r++) {
-            if (acceptRankLeByWilks(Scond, xIdxLocal, yIdxLocal, n, r, alpha)) {
+            if (rankLeByWilks(Scond, xIdxLocal, yIdxLocal, n, r) > alpha) {
                 return r;
             }
         }
@@ -552,12 +553,9 @@ public class RankTests {
      * @param yLoc  An array of integers representing the indices of the y-block variables.
      * @param n     The number of observations or sample size.
      * @param r     The rank condition to test (non-negative integer).
-     * @param alpha The significance level for the statistical test, between 0 and 1.
-     * @return true if the hypothesis that the rank is less than or equal to r is accepted, false otherwise.
+     * @return the p-value if the hypothesis that the rank is less than or equal to r is accepted.
      */
-    private static boolean acceptRankLeByWilks(
-            SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, int r, double alpha) {
-
+    public static double rankLeByWilks(SimpleMatrix Scond, int[] xLoc, int[] yLoc, int n, int r) {
         // Blocks
         SimpleMatrix Sxx = block(Scond, xLoc, xLoc);
         SimpleMatrix Syy = block(Scond, yLoc, yLoc);
@@ -565,7 +563,9 @@ public class RankTests {
 
         int p = Sxx.getNumRows(), q = Syy.getNumRows();
         int minpq = Math.min(p, q);
-        if (r < 0 || r >= minpq) return false; // invalid r
+        if (r < 0 || r >= minpq) {
+            throw new IllegalArgumentException("Rank r should be im 0 <= r <= minpq.");
+        };
 
         // Whitening with PSD inverse sqrt (ridge inside)
         SimpleMatrix Wxx = invSqrtPSD(Sxx);
@@ -596,11 +596,8 @@ public class RankTests {
         double stat = -c * sumLog;
         int df = (p - r) * (q - r);
 
-        double pval = 1.0 - new org.apache.commons.math3.distribution.ChiSquaredDistribution(df)
+        return 1.0 - new ChiSquaredDistribution(df)
                 .cumulativeProbability(stat);
-
-        // Accept H0: rank ≤ r  iff pval > alpha.
-        return pval > alpha;
     }
 
     /**
@@ -984,7 +981,7 @@ public class RankTests {
         int p = xIdx.length, q = yIdx.length, m = Math.min(p, q);
         int last = -1;
         for (int r = 0; r < m; r++) {
-            if (acceptRankLeByWilks(S, xIdx, yIdx, n, r, alpha)) last = r; else break;
+            if (rankLeByWilks(S, xIdx, yIdx, n, r) > alpha) last = r; else break;
         }
         return Math.max(last, 0);
     }
