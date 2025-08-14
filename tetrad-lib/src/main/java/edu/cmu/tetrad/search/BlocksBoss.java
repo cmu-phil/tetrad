@@ -116,7 +116,7 @@ public class BlocksBoss implements IGraphSearch {
         BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
         score.setPenaltyDiscount(penaltyDiscount);
         // optional knobs
-         score.setRidge(1e-6);
+         score.setRidge(1e-8);
         // score.setCondThreshold(...);
 
         Boss suborderSearch = new Boss(score);
