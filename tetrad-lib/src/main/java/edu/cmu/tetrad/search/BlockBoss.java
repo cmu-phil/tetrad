@@ -22,7 +22,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public class BlocksBoss implements IGraphSearch {
+public class BlockBoss implements IGraphSearch {
     /**
      * Represents the dataset to be utilized by the BlocksBoss algorithm. This dataset contains the data necessary for
      * conducting the search and performing associated computations within the algorithm.
@@ -66,7 +66,7 @@ public class BlocksBoss implements IGraphSearch {
      *                            clustered by TSC.
      * @param effectiveSampleSize The effective sample size to use.
      */
-    public BlocksBoss(DataSet dataSet, int effectiveSampleSize) {
+    public BlockBoss(DataSet dataSet, int effectiveSampleSize) {
         this.dataSet = dataSet;
         this.effectiveSampleSize = effectiveSampleSize;
     }

@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
-import static edu.cmu.tetrad.util.RankTests.estimateRccaRank;
+import static edu.cmu.tetrad.util.RankTests.estimateWilksRank;
 import static java.lang.Math.sqrt;
 
 /**
@@ -51,6 +51,7 @@ public class TrekSeparationClusters {
      * ---- Binomial cache (reuse across calls) -----------------------------------
      */
     private static final java.util.concurrent.ConcurrentHashMap<Long, long[][]> BINOM_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final double EPS_RHO2 = .001; // can tune
     /**
      * List of observed variables/nodes
      */
@@ -100,6 +101,8 @@ public class TrekSeparationClusters {
      * The latent names for the most recent clusters found.
      */
     private List<String> latentNames = new ArrayList<>();
+    private Map<Set<Integer>, Integer> clusterToRank;
+    private Map<Set<Integer>, Integer> reducedRank;
 
     /**
      * Constructs a TrekSeparationClusters2 object, initializes the node and variable lists, and adjusts the covariance
@@ -191,6 +194,36 @@ public class TrekSeparationClusters {
         }
     }
 
+    /**
+     * Adaptive ε for the tiny-effect gate on ρ_max^2. Heuristic: ε = clamp( c * sqrt((|C| + |D|) / max(50, n)), [ε_min,
+     * ε_max] ). - Grows when n is small or D is large (more mercy). - Shrinks when n is large (stricter).
+     */
+    public static double adaptiveEpsRho2(int n, int cSize, int dSize) {
+        return adaptiveEpsRho2(n, cSize, dSize, /*c=*/1.0, /*epsMin=*/0.02, /*epsMax=*/0.08);
+    }
+
+    /**
+     * Fully parameterized version.
+     */
+    public static double adaptiveEpsRho2(int n, int cSize, int dSize, double c, double epsMin, double epsMax) {
+        if (n <= 0) n = 50;                  // guard
+        if (c <= 0) c = 1.0;
+        if (epsMin > epsMax) {
+            double t = epsMin;
+            epsMin = epsMax;
+            epsMax = t;
+        }
+
+        double denom = Math.max(50.0, (double) n);
+        double base = Math.sqrt(((double) cSize + (double) dSize) / denom);
+        double eps = c * base;
+
+        // clamp
+        if (eps < epsMin) eps = epsMin;
+        if (eps > epsMax) eps = epsMax;
+        return eps;
+    }
+
     // ---- New fast variant of your method ---------------------------------------
     private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
         if (rank + 1 >= variables.size() - (rank + 1)) {
@@ -213,35 +246,32 @@ public class TrekSeparationClusters {
 
         AtomicInteger count = new AtomicInteger();
 
-        return LongStream.range(0, total).parallel()
-                .mapToObj(m -> {
-                    if (Thread.currentThread().isInterrupted()) return null;
+        return LongStream.range(0, total).parallel().mapToObj(m -> {
+            if (Thread.currentThread().isInterrupted()) return null;
 
-                    int _count = count.getAndIncrement();
+            int _count = count.getAndIncrement();
 
-                    if (_count % 1000 == 0) {
-                        log("Count = " + count.get() + " of total = " + total);
-                    }
+            if (_count % 1000 == 0) {
+                log("Count = " + count.get() + " of total = " + total);
+            }
 
-                    // decode indices of the combination into tlIdxs
-                    int[] idxs = tlIdxs.get();
-                    combinadicDecodeColex(m, n, k, C, idxs);
+            // decode indices of the combination into tlIdxs
+            int[] idxs = tlIdxs.get();
+            combinadicDecodeColex(m, n, k, C, idxs);
 
-                    // map to variable IDs into tlIds
-                    int[] ids = tlIds.get();
-                    for (int i = 0; i < k; i++) ids[i] = varIds[idxs[i]];
+            // map to variable IDs into tlIds
+            int[] ids = tlIds.get();
+            for (int i = 0; i < k; i++) ids[i] = varIds[idxs[i]];
 
-                    // fast path rank check (no Set boxing)
-                    int r = lookupRankFast(ids, vars);   // <-- implement/bridge below
-                    if (r != rank) return null;
+            // fast path rank check (no Set boxing)
+            int r = lookupRankFast(ids, vars);   // <-- implement/bridge below
+            if (r != rank) return null;
 
-                    // only now build the Set<Integer> to return
-                    Set<Integer> cluster = new HashSet<>(k * 2);
-                    for (int i = 0; i < k; i++) cluster.add(ids[i]);
-                    return cluster;
-                })
-                .filter(Objects::nonNull)
-                .collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
+            // only now build the Set<Integer> to return
+            Set<Integer> cluster = new HashSet<>(k * 2);
+            for (int i = 0; i < k; i++) cluster.add(ids[i]);
+            return cluster;
+        }).filter(Objects::nonNull).collect(java.util.stream.Collectors.toCollection(java.util.concurrent.ConcurrentHashMap::newKeySet));
     }
 
     /**
@@ -264,8 +294,8 @@ public class TrekSeparationClusters {
      */
     public Graph search(int[][] clusterSpecs, Mode mode) {
         Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> ret = estimateClusters(clusterSpecs, mode);
-        Map<Set<Integer>, Integer> clusterToRank = ret.getFirst();
-        Map<Set<Integer>, Integer> reducedRank = ret.getSecond();
+        clusterToRank = ret.getFirst();
+        reducedRank = ret.getSecond();
 
         List<Set<Integer>> clusters = new ArrayList<>(clusterToRank.keySet());
 
@@ -277,7 +307,9 @@ public class TrekSeparationClusters {
         }
 
         this.latentNames = new ArrayList<>();
-        for (Node latent : latents) {latentNames.add(latent.getName());}
+        for (Node latent : latents) {
+            latentNames.add(latent.getName());
+        }
 
         return graph;
     }
@@ -342,8 +374,7 @@ public class TrekSeparationClusters {
 
             log("For " + Arrays.toString(clusterSpecs[i]) + "\nFound clusters: " + toNamesClusters(_clusters.keySet()));
             clusterList.add(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1]));
-            log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " +
-                toNamesClusters(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
+            log("For " + Arrays.toString(clusterSpecs[i]) + "\nMerged clusters: " + toNamesClusters(mergeOverlappingClusters(_clusters.keySet(), baseClusters, clusterSpecs[i][0], clusterSpecs[i][1])));
 
             for (int j = 0; j < i; j++) {
                 if (clusterSpecs[j][1] == clusterSpecs[i][1]) {
@@ -372,9 +403,7 @@ public class TrekSeparationClusters {
      * @param rank         the upper limit for the rank of any resulting merged cluster
      * @return a set of merged clusters, with any overlapping clusters combined
      */
-    private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters,
-                                                       Set<Set<Integer>> baseClusters,
-                                                       int size, int rank) {
+    private Set<Set<Integer>> mergeOverlappingClusters(Set<Set<Integer>> clusters, Set<Set<Integer>> baseClusters, int size, int rank) {
         log("Base clusters: " + toNamesClusters(baseClusters));
         boolean merged;
 
@@ -533,8 +562,7 @@ public class TrekSeparationClusters {
                     }
 
                     int rankOfUnion = lookupRank(union, vars);
-                    log("Candidate = " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union)
-                        + " rank = " + rankOfUnion);
+                    log("Candidate = " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                     if (rankOfUnion == rank) {
 
@@ -594,8 +622,8 @@ public class TrekSeparationClusters {
      */
     private @NotNull Pair<Map<Set<Integer>, Integer>, Map<Set<Integer>, Integer>> clusterSearchMetaLoop() {
         List<Integer> remainingVars = new ArrayList<>(allVariables());
-        Map<Set<Integer>, Integer> clusterToRank = new HashMap<>();
-        Map<Set<Integer>, Integer> reducedRank = new HashMap<>();
+        clusterToRank = new HashMap<>();
+        reducedRank = new HashMap<>();
 
         for (int rank = 0; rank <= 4; rank++) {
             int size = rank + 1;
@@ -606,8 +634,7 @@ public class TrekSeparationClusters {
 
             log("EXAMINING SIZE " + size + " RANK = " + rank + " REMAINING VARS = " + remainingVars.size());
             Set<Set<Integer>> P = findClustersAtRank(remainingVars, size, rank);
-            log("Base clusters for size " + size + " rank " + rank + ": " +
-                (P.isEmpty() ? "NONE" : toNamesClusters(P)));
+            log("Base clusters for size " + size + " rank " + rank + ": " + (P.isEmpty() ? "NONE" : toNamesClusters(P)));
             Set<Set<Integer>> P1 = new HashSet<>(P);
 
             Set<Set<Integer>> newClusters = new HashSet<>();
@@ -627,8 +654,7 @@ public class TrekSeparationClusters {
                     continue;
                 }
 
-                log("Picking seed from the list: " + toNamesCluster(seed)
-                    + " rank = " + lookupRank(seed, variables));
+                log("Picking seed from the list: " + toNamesCluster(seed) + " rank = " + lookupRank(seed, variables));
 
                 boolean extended;
 
@@ -661,8 +687,7 @@ public class TrekSeparationClusters {
 //                        }
 
                         int rankOfUnion = lookupRank(union, variables);
-                        log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union)
-                            + " rank = " + rankOfUnion);
+                        log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
                         if (rankOfUnion <= rank) {
 
@@ -685,8 +710,7 @@ public class TrekSeparationClusters {
                 }
             }
 
-            log("New clusters for rank " + rank + " size = " + size + ": "
-                + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
+            log("New clusters for rank " + rank + " size = " + size + ": " + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
 
             Set<Set<Integer>> P2 = new HashSet<>(P);
 
@@ -730,16 +754,14 @@ public class TrekSeparationClusters {
                 log("No augmentations were needed.");
             }
 
-            log("New clusters after the augmentation step = " +
-                (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
+            log("New clusters after the augmentation step = " + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
 
             for (Set<Integer> cluster : new ArrayList<>(newClusters)) {
                 clusterToRank.put(cluster, rank);
             }
 
             log("Now we will add all of the new clusters to the set of all discovered clusters.");
-            log("All clusters at this point: "
-                + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
+            log("All clusters at this point: " + (newClusters.isEmpty() ? "NONE" : toNamesClusters(newClusters)));
 
             log("Now we will remove clustered variables from further consideration.");
 
@@ -784,8 +806,6 @@ public class TrekSeparationClusters {
         return new Pair<>(clusterToRank, reducedRank);
     }
 
-    private static final double EPS_RHO2 = .001; // can tune
-
     /**
      * Evaluates whether a given cluster fails the subset test based on rank conditions derived from the matrix S.
      *
@@ -804,97 +824,117 @@ public class TrekSeparationClusters {
         int _depth = depth == -1 ? C.size() : depth;
         double epsRho2 = adaptiveEpsRho2(sampleSize, C.size(), D.size());
 
-        SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() / 2);
-        int[] choice0;
+        if (false) { // Rule 1
+            SublistGenerator gen0 = new SublistGenerator(C.size(), C.size());
+            int[] choice0;
+            boolean allDeficient = true;
 
-        while ((choice0 = gen0.next()) != null) {
-            if (choice0.length == 0) continue;
+            while ((choice0 = gen0.next()) != null) {
+                List<Integer> C0 = new ArrayList<>();
+                for (int i : choice0) {
+                    C0.add(C.get(i));
+                }
 
-            List<Integer> C0 = new  ArrayList<>();
-            for (int i : choice0) {C0.add(C.get(i));}
-            List<Integer> D0 = new  ArrayList<>(C);
-            D0.removeAll(C0);
+                if (C0.size() < 2) {
+                    continue;
+                }
 
-            int[] c0Array = C0.stream().mapToInt(Integer::intValue).toArray();
-            int[] d0Array = D0.stream().mapToInt(Integer::intValue).toArray();
+                List<Integer> D0 = new ArrayList<>(C);
+                D0.removeAll(C0);
 
-            int rank = RankTests.estimateRccaRank(S, c0Array, d0Array, sampleSize, alpha);
+                if (D0.size() < 2) {
+                    continue;
+                }
 
-            if (rank == 0) {
-                log("Subset " + toNamesCluster(C0) + " compared to rest of cluster " + toNamesCluster(C0) + " has rank 0; removing cluster.");
+                int[] c0Array = C0.stream().mapToInt(Integer::intValue).toArray();
+                int[] d0Array = D0.stream().mapToInt(Integer::intValue).toArray();
+
+                int minpq = Math.min(c0Array.length, d0Array.length);
+
+                int r = minpq - 1;
+
+                if (r < 0) {
+                    continue;
+                }
+
+                double p = RankTests.rankLeByWilks(S, c0Array, d0Array, sampleSize, r);
+
+                if (!(p > alpha)) {
+                    log("Not deficient! Subset " + toNamesCluster(C0) + " compared to " + toNamesCluster(D0) + " has rank > " + r + ".");
+                    allDeficient = false;
+                    break;
+                }
+            }
+
+            if (!allDeficient) {
+                log("Some non-deficient subclusters found; removing cluster " + toNamesCluster(cluster) + ".");
                 return true;
             }
         }
 
-        SublistGenerator gen = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
-        int[] choice;
+        if (true) { // Rule 2
+            SublistGenerator gen = new SublistGenerator(C.size(), C.size());// {//Math.min(C.size() - 1, _depth));
+            int[] choice;
 
-        while ((choice = gen.next()) != null) {
-            if (choice.length == 0) continue;
+            Integer r = reducedRank.get(cluster);
+            if (r == null) r = clusterToRank.get(cluster);
 
-            List<Integer> W = new ArrayList<>();
-            for (int i : choice) {
-                W.add(C.get(i));
+            log("\nExpecting all subsets to have rank r = " + r);
+
+            while ((choice = gen.next()) != null) {
+                if (choice.length < 1) continue;
+                if (choice.length == C.size()) continue;
+
+                List<Integer> _C = new ArrayList<>();
+                for (int i : choice) {
+                    _C.add(C.get(i));
+                }
+
+                int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
+                int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
+
+                int rank = RankTests.estimateWilksRank(S, _cArray, dArray, sampleSize, alpha);
+
+                if (rank < r) {
+                    log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank == " + rank + "; removing elements.");
+                    return true;
+                }
             }
-
-            List<Integer> _C = new ArrayList<>(C);
-            _C.removeAll(W);
-
-            int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
-            int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
-
-            int rank = RankTests.estimateRccaRank(S, _cArray, dArray, sampleSize, alpha);
-
-            if (rank == 0) {
-                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank 0; removing cluster.");
-                return true;
-            }
-
-//            boolean tinyEffect = RankTests.maxCanonicalCorrSq(
-//                    S, _cArray, dArray) <= epsRho2;
-//
-//            if (tinyEffect) {
-//                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C)
-//                    + " has tiny effect" + (" (ρ²≤" + epsRho2 + ")") + ".");
-//                return true;
-//            }
         }
 
-        SublistGenerator gen2 = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
-        int[] choice2;
+        if (false) { // Rule 3
+            SublistGenerator gen2 = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
+            int[] choice2;
 
-        while ((choice2 = gen2.next()) != null) {
-            if (choice2.length == 0) continue;
+            while ((choice2 = gen2.next()) != null) {
+                if (choice2.length == 0) continue;
 
-            List<Integer> Z = new ArrayList<>();
-            for (int i : choice2) {
-                Z.add(C.get(i));
-            }
+                List<Integer> Z = new ArrayList<>();
+                for (int i : choice2) {
+                    Z.add(C.get(i));
+                }
 
-            List<Integer> _C = new ArrayList<>(C);
-            _C.removeAll(Z);
+                List<Integer> _C = new ArrayList<>(C);
+                _C.removeAll(Z);
 
-            int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
-            int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
-            int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
+                int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
+                int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
+                int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
-            double rZ = RankTests.estimateRccaRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
+                double rZ = RankTests.estimateRccaRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
 
-            if (rZ == 0) {
-                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C)
-                    + " has rank 0 conditional on " + toNamesCluster(Z) + "; removing cluster.");
-                return true;
-            }
+                if (rZ == 0) {
+                    log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank 0 conditional on " + toNamesCluster(Z) + "; removing cluster.");
+                    return true;
+                }
 
-//            boolean tinyEffectZ = RankTests.maxCanonicalCorrSqConditioned(
-//                    S, _cArray, dArray, zArray) <= epsRho2;
+//                boolean tinyEffectZ = RankTests.maxCanonicalCorrSqConditioned(S, _cArray, dArray, zArray) <= epsRho2;
 //
-//            if (tinyEffectZ) {
-//                log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C)
-//                    + " has rank tiny effect conditional on " + toNamesCluster(Z)
-//                    + (" (ρ²≤" + epsRho2 + ")") + ".");
-//                return true;
-//            }
+//                if (tinyEffectZ) {
+//                    log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank tiny effect conditional on " + toNamesCluster(Z) + (" (ρ²≤" + epsRho2 + ")") + ".");
+//                    return true;
+//                }
+            }
         }
 
         return false;
@@ -912,10 +952,7 @@ public class TrekSeparationClusters {
     private void removeNested(Set<Set<Integer>> mergedClusters) {
         boolean _changed;
         do {
-            _changed = mergedClusters.removeIf(
-                    sub -> mergedClusters.stream()
-                            .anyMatch(cluster -> !cluster.equals(sub) && cluster.containsAll(sub))
-            );
+            _changed = mergedClusters.removeIf(sub -> mergedClusters.stream().anyMatch(cluster -> !cluster.equals(sub) && cluster.containsAll(sub)));
         } while (_changed);
     }
 
@@ -1050,7 +1087,7 @@ public class TrekSeparationClusters {
             yIndices[i] = ySet.get(i);
         }
 
-        return estimateRccaRank(S, xIndices, yIndices, sampleSize, alpha);
+        return estimateWilksRank(S, xIndices, yIndices, sampleSize, alpha);
     }
 
     /**
@@ -1082,8 +1119,7 @@ public class TrekSeparationClusters {
      *                 the number of latent nodes to be created.
      * @return A list of Node objects, each representing a latent variable corresponding to a cluster.
      */
-    private List<Node> defineLatents(List<Set<Integer>> clusters, Map<Set<Integer>, Integer> ranks,
-                                     Map<Set<Integer>, Integer> reducedRank) {
+    private List<Node> defineLatents(List<Set<Integer>> clusters, Map<Set<Integer>, Integer> ranks, Map<Set<Integer>, Integer> reducedRank) {
         List<Node> latents = new ArrayList<>();
 
         for (int i = 0; i < clusters.size(); i++) {
@@ -1116,9 +1152,7 @@ public class TrekSeparationClusters {
      * @return a string with the cluster names enclosed in curly braces and separated by spaces
      */
     private String toNamesCluster(Set<Integer> cluster) {
-        return cluster.stream()
-                .map(i -> nodes.get(i).getName())
-                .collect(Collectors.joining(" ", "{", "}"));
+        return cluster.stream().map(i -> nodes.get(i).getName()).collect(Collectors.joining(" ", "{", "}"));
     }
 
     /**
@@ -1134,35 +1168,35 @@ public class TrekSeparationClusters {
         return new ArrayList<>(this.clusters);
     }
 
+
+    // ===== Greedy builder for Z (size ≤ m) that minimizes rank({a},{b} | Z) =====
+
     public List<String> getLatentNames() {
         return new ArrayList<>(this.latentNames);
     }
 
     /**
-     * The Mode enum represents different operational modes.
-     * It defines constants that can be used to specify particular behaviors or configurations.
-     *
-     * Enum Constants:
-     * METALOOP - Represents a specific mode for looping operations or settings.
-     * SIZE_RANK - Represents a mode related to size or ranking configurations.
+     * The Mode enum represents different operational modes. It defines constants that can be used to specify particular
+     * behaviors or configurations.
+     * <p>
+     * Enum Constants: METALOOP - Represents a specific mode for looping operations or settings. SIZE_RANK - Represents
+     * a mode related to size or ranking configurations.
      */
     public enum Mode {
         /**
-         * Represents a specific operational mode used for looping operations or settings.
-         * This constant is part of the Mode enum and is utilized to define behavior or configuration
-         * associated with looping functionality within the application.
+         * Represents a specific operational mode used for looping operations or settings. This constant is part of the
+         * Mode enum and is utilized to define behavior or configuration associated with looping functionality within
+         * the application.
          */
         METALOOP,
 
         /**
-         * Represents a specific operational mode associated with size or ranking configurations.
-         * This constant is part of the Mode enum and is utilized to define behavior
-         * or configurations related to size or ranking within the application.
+         * Represents a specific operational mode associated with size or ranking configurations. This constant is part
+         * of the Mode enum and is utilized to define behavior or configurations related to size or ranking within the
+         * application.
          */
-        SIZE_RANK}
-
-
-    // ===== Greedy builder for Z (size ≤ m) that minimizes rank({a},{b} | Z) =====
+        SIZE_RANK
+    }
 
     /**
      * The LatentGraphBuilder class provides methods for processing and analyzing latent structures in matrices using
@@ -1212,10 +1246,7 @@ public class TrekSeparationClusters {
          * @return A symmetric matrix representing the pairwise correlations between latents associated with the
          * specified clusters.
          */
-        public static SimpleMatrix latentLatentCorrelationMatrix(
-                SimpleMatrix S,
-                List<List<Integer>> clusters,
-                List<SimpleMatrix> eigenvectors) {
+        public static SimpleMatrix latentLatentCorrelationMatrix(SimpleMatrix S, List<List<Integer>> clusters, List<SimpleMatrix> eigenvectors) {
 
             int K = clusters.size();
             SimpleMatrix R = new SimpleMatrix(K, K);
@@ -1263,32 +1294,6 @@ public class TrekSeparationClusters {
         private static SimpleMatrix extractSubmatrix(SimpleMatrix S, List<Integer> indices) {
             return extractCrossBlock(S, indices, indices);
         }
-    }
-
-    /** Adaptive ε for the tiny-effect gate on ρ_max^2.
-     *  Heuristic: ε = clamp( c * sqrt((|C| + |D|) / max(50, n)), [ε_min, ε_max] ).
-     *  - Grows when n is small or D is large (more mercy).
-     *  - Shrinks when n is large (stricter).
-     */
-    public static double adaptiveEpsRho2(int n, int cSize, int dSize) {
-        return adaptiveEpsRho2(n, cSize, dSize, /*c=*/1.0, /*epsMin=*/0.02, /*epsMax=*/0.08);
-    }
-
-    /** Fully parameterized version. */
-    public static double adaptiveEpsRho2(int n, int cSize, int dSize,
-                                         double c, double epsMin, double epsMax) {
-        if (n <= 0) n = 50;                  // guard
-        if (c <= 0) c = 1.0;
-        if (epsMin > epsMax) { double t = epsMin; epsMin = epsMax; epsMax = t; }
-
-        double denom = Math.max(50.0, (double) n);
-        double base  = Math.sqrt(((double)cSize + (double)dSize) / denom);
-        double eps   = c * base;
-
-        // clamp
-        if (eps < epsMin) eps = epsMin;
-        if (eps > epsMax) eps = epsMax;
-        return eps;
     }
 }
 

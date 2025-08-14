@@ -112,7 +112,7 @@ public class RankConditionalIndependenceTest implements IndependenceTest {
         int[] xLoc = range(0, xIdxOrig.length);
         int[] yLoc = range(xIdxOrig.length, xIdxOrig.length + yIdxOrig.length);
 
-        int estRank = RankTests.estimateRccaRank(Scond, xLoc, yLoc, n, alpha);
+        int estRank = RankTests.estimateWilksRank(Scond, xLoc, yLoc, n, alpha);
 
         boolean independent = estRank == 0;
 

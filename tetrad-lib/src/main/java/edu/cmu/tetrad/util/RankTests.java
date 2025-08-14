@@ -530,9 +530,9 @@ public class RankTests {
      * @return The estimated rank for the rCCA, which is the number of canonical correlations deemed statistically
      * significant, constrained by the dimensions of the input data.
      */
-    public static int estimateRccaRank(SimpleMatrix Scond,
-                                       int[] xIdxLocal, int[] yIdxLocal,
-                                       int n, double alpha) {
+    public static int estimateWilksRank(SimpleMatrix Scond,
+                                        int[] xIdxLocal, int[] yIdxLocal,
+                                        int n, double alpha) {
         int minpq = Math.min(xIdxLocal.length, yIdxLocal.length);
 
         for (int r = 0; r < yIdxLocal.length; r++) {
@@ -656,7 +656,7 @@ public class RankTests {
         int[] X = diff(C, Z);
         int[] Y = diff(VminusC, Z);
         if (X.length == 0 || Y.length == 0) return 0;           // nothing left to test
-        if (Z.length == 0) return estimateRccaRank(S, X, Y, n, alpha);
+        if (Z.length == 0) return estimateWilksRank(S, X, Y, n, alpha);
 
         // Extract blocks
         SimpleMatrix Sxx = block(S, X, X);
@@ -685,7 +685,7 @@ public class RankTests {
         // Now reuse your existing estimator on [X | Y] with Scond
         int[] xLoc = range(0, p);
         int[] yLoc = range(p, p + q);
-        return estimateRccaRank(Scond, xLoc, yLoc, n, alpha);
+        return estimateWilksRank(Scond, xLoc, yLoc, n, alpha);
     }
 
     /**
@@ -777,61 +777,61 @@ public class RankTests {
         return Z.stream().mapToInt(x -> x).toArray();
     }
 
-//    /**
-//     * Largest canonical correlation squared between X and Y after conditioning on Z.
-//     */
-//    public static double maxCanonicalCorrSqConditioned(
-//            SimpleMatrix S, int[] X, int[] Y, int[] Z) {
-//
-//        // Remove any overlap with Z (same convention as estimateRccaRankConditioned)
-//        int[] X0 = diff(X, Z);
-//        int[] Y0 = diff(Y, Z);
-//        if (X0.length == 0 || Y0.length == 0) return 0.0;
-//
-//        // Blocks
-//        SimpleMatrix Sxx = block(S, X0, X0);
-//        SimpleMatrix Syy = block(S, Y0, Y0);
-//        SimpleMatrix Sxy = block(S, X0, Y0);
-//
-//        if (Z.length > 0) {
-//            SimpleMatrix Sxz = block(S, X0, Z);
-//            SimpleMatrix Syz = block(S, Y0, Z);
-//            SimpleMatrix Szz = block(S, Z, Z);
-//
-//            // robust inverse of Szz (same ridge you use elsewhere)
-//            SimpleMatrix SzzInv = invPsdWithRidge(Szz, 1e-8);
-//
-//            // Schur complements
-//            Sxx = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
-//            Syy = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
-//            Sxy = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
-//        }
-//
-//        // Whitening with your PSD inverse sqrt
-//        SimpleMatrix Wxx = invSqrtPSD(Sxx);
-//        SimpleMatrix Wyy = invSqrtPSD(Syy);
-//
-//        // Top canonical correlation (singular value of Wxx * Sxy * Wyy)
-//        SimpleMatrix mult = Wxx.mult(Sxy).mult(Wyy);
-//
-//        SimpleSVD<SimpleMatrix> svd = mult.svd();
-//        int minpq = Math.min(mult.getNumRows(), mult.getNumCols());
-//        double[] sv = new double[minpq];
-//        for (int i = 0; i < minpq; i++) {
-//            sv[i] = svd.getSingleValue(i);
-//        }
-//
-//        if (sv.length == 0) return 0.0;
-//        double rho = Math.max(0.0, Math.min(1.0, sv[0]));
-//        return rho * rho;
-//    }
+    /**
+     * Largest canonical correlation squared between X and Y after conditioning on Z.
+     */
+    public static double maxCanonicalCorrSqConditioned(
+            SimpleMatrix S, int[] X, int[] Y, int[] Z) {
 
-//    /**
-//     * Largest canonical correlation squared (unconditioned).
-//     */
-//    public static double maxCanonicalCorrSq(SimpleMatrix S, int[] X, int[] Y) {
-//        return maxCanonicalCorrSqConditioned(S, X, Y, new int[0]);
-//    }
+        // Remove any overlap with Z (same convention as estimateRccaRankConditioned)
+        int[] X0 = diff(X, Z);
+        int[] Y0 = diff(Y, Z);
+        if (X0.length == 0 || Y0.length == 0) return 0.0;
+
+        // Blocks
+        SimpleMatrix Sxx = block(S, X0, X0);
+        SimpleMatrix Syy = block(S, Y0, Y0);
+        SimpleMatrix Sxy = block(S, X0, Y0);
+
+        if (Z.length > 0) {
+            SimpleMatrix Sxz = block(S, X0, Z);
+            SimpleMatrix Syz = block(S, Y0, Z);
+            SimpleMatrix Szz = block(S, Z, Z);
+
+            // robust inverse of Szz (same ridge you use elsewhere)
+            SimpleMatrix SzzInv = invPsdWithRidge(Szz, 1e-8);
+
+            // Schur complements
+            Sxx = Sxx.minus(Sxz.mult(SzzInv).mult(Sxz.transpose()));
+            Syy = Syy.minus(Syz.mult(SzzInv).mult(Syz.transpose()));
+            Sxy = Sxy.minus(Sxz.mult(SzzInv).mult(Syz.transpose()));
+        }
+
+        // Whitening with your PSD inverse sqrt
+        SimpleMatrix Wxx = invSqrtPSD(Sxx);
+        SimpleMatrix Wyy = invSqrtPSD(Syy);
+
+        // Top canonical correlation (singular value of Wxx * Sxy * Wyy)
+        SimpleMatrix mult = Wxx.mult(Sxy).mult(Wyy);
+
+        SimpleSVD<SimpleMatrix> svd = mult.svd();
+        int minpq = Math.min(mult.getNumRows(), mult.getNumCols());
+        double[] sv = new double[minpq];
+        for (int i = 0; i < minpq; i++) {
+            sv[i] = svd.getSingleValue(i);
+        }
+
+        if (sv.length == 0) return 0.0;
+        double rho = Math.max(0.0, Math.min(1.0, sv[0]));
+        return rho * rho;
+    }
+
+    /**
+     * Largest canonical correlation squared (unconditioned).
+     */
+    public static double maxCanonicalCorrSq(SimpleMatrix S, int[] X, int[] Y) {
+        return maxCanonicalCorrSqConditioned(S, X, Y, new int[0]);
+    }
 
     /**
      * p-value for H0: rank(X ⟂ Y | Z) ≤ 0 using Wilks/Bartlett on partial CCA.

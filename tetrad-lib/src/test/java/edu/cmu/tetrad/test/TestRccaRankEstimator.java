@@ -18,7 +18,7 @@ public class TestRccaRankEstimator {
                      int n, double alpha, double regLambda, double condThreshold);
     }
 
-    private static final RankEstimator ESTIMATOR = (scond, xIdxLocal, yIdxLocal, n, alpha, regLambda, condThreshold) -> RankTests.estimateRccaRank(scond, xIdxLocal, yIdxLocal, n, alpha);
+    private static final RankEstimator ESTIMATOR = (scond, xIdxLocal, yIdxLocal, n, alpha, regLambda, condThreshold) -> RankTests.estimateWilksRank(scond, xIdxLocal, yIdxLocal, n, alpha);
 
     // ==== Utilities ====
 

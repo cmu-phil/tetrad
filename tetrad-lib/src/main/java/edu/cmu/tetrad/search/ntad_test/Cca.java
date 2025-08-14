@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search.ntad_test;
 
 import edu.cmu.tetrad.util.RankTests;
-import edu.cmu.tetrad.util.StatUtils;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
@@ -56,7 +55,7 @@ public class Cca extends NtadTest {
         int[] b = ntad[1];
         int n = resample ? (int) (frac * this.n) : this.n;
 
-        System.out.println("Rank for (" + Arrays.toString(a) + ", " + Arrays.toString(b) + ", " + n + ") = " + RankTests.estimateRccaRank(S, a, b, n, 0.01));
+        System.out.println("Rank for (" + Arrays.toString(a) + ", " + Arrays.toString(b) + ", " + n + ") = " + RankTests.estimateWilksRank(S, a, b, n, 0.01));
 
         // Use the getCcaPValueRankD method for rank r = 1 (or make r configurable if needed)
         int r = Math.min(a.length, b.length) - 1;

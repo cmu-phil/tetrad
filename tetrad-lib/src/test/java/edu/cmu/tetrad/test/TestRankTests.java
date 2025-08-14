@@ -78,7 +78,7 @@ public class TestRankTests {
 
                 int ess = (int) (data.getNumRows() * essMult);
                 double p = RankTests.rankLeByWilks(S, indexx, indexy, ess, rank);
-                int estRank = RankTests.estimateRccaRank(S, indexx, indexy, ess, alpha);
+                int estRank = RankTests.estimateWilksRank(S, indexx, indexy, ess, alpha);
 
                 // Print out the discrepancies
                 if ((coherent && p < alpha) || (!coherent && p > alpha)) {
