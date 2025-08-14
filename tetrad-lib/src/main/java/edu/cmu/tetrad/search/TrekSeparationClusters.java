@@ -791,6 +791,15 @@ public class TrekSeparationClusters {
             List<Integer> complement = allVariables();
             complement.removeAll(cluster);
 
+//            Set<Integer> trimmed = trim(cluster);
+//
+//            if (!trimmed.equals(cluster)) {
+//                clusterToRank.remove(cluster);
+//                reducedRank.remove(cluster);
+//                clusterToRank.put(trimmed, r);
+//                reducedRank.put(cluster, r);
+//            }
+
             if (failsSubsetTest(S, cluster, sampleSize, alpha)) {
                 clusterToRank.remove(cluster);
                 reducedRank.remove(cluster);
@@ -824,10 +833,9 @@ public class TrekSeparationClusters {
         int _depth = depth == -1 ? C.size() : depth;
         double epsRho2 = adaptiveEpsRho2(sampleSize, C.size(), D.size());
 
-        if (false) { // Rule 1
+        if (true) { // Rule 1
             SublistGenerator gen0 = new SublistGenerator(C.size(), C.size());
             int[] choice0;
-            boolean allDeficient = true;
 
             while ((choice0 = gen0.next()) != null) {
                 List<Integer> C0 = new ArrayList<>();
@@ -859,31 +867,22 @@ public class TrekSeparationClusters {
 
                 double p = RankTests.rankLeByWilks(S, c0Array, d0Array, sampleSize, r);
 
-                if (!(p > alpha)) {
-                    log("Not deficient! Subset " + toNamesCluster(C0) + " compared to " + toNamesCluster(D0) + " has rank > " + r + ".");
-                    allDeficient = false;
-                    break;
+                if (p < alpha) {
+                    log("Not deficient! rank(" + toNamesCluster(C0) + ", " + toNamesCluster(D0) + ") has rank > " + r + ".");
+                    return true;
                 }
-            }
-
-            if (!allDeficient) {
-                log("Some non-deficient subclusters found; removing cluster " + toNamesCluster(cluster) + ".");
-                return true;
             }
         }
 
         if (true) { // Rule 2
-            SublistGenerator gen = new SublistGenerator(C.size(), C.size());// {//Math.min(C.size() - 1, _depth));
+            SublistGenerator gen = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
             int[] choice;
 
             Integer r = reducedRank.get(cluster);
             if (r == null) r = clusterToRank.get(cluster);
 
-            log("\nExpecting all subsets to have rank r = " + r);
-
             while ((choice = gen.next()) != null) {
                 if (choice.length < 1) continue;
-                if (choice.length == C.size()) continue;
 
                 List<Integer> _C = new ArrayList<>();
                 for (int i : choice) {
@@ -895,14 +894,20 @@ public class TrekSeparationClusters {
 
                 int rank = RankTests.estimateWilksRank(S, _cArray, dArray, sampleSize, alpha);
 
-                if (rank < r) {
-                    log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank == " + rank + "; removing elements.");
+                log("** Checking rank(_C = " + toNamesCluster(_C) + ", D) = " + rank + ".");
+
+                if (rank == 0) {
+                    log("rank(" + toNamesCluster(_C) + ", D) = " + rank + "; removing cluster "
+                        + toNamesCluster(cluster) + ".");
                     return true;
                 }
             }
         }
 
-        if (false) { // Rule 3
+        if (true) { // Rule 3
+            Integer r = reducedRank.get(cluster);
+            if (r == null) r = clusterToRank.get(cluster);
+
             SublistGenerator gen2 = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
             int[] choice2;
 
@@ -923,21 +928,55 @@ public class TrekSeparationClusters {
 
                 double rZ = RankTests.estimateRccaRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
 
+                log("** Checking rank(_C = " + toNamesCluster(_C) + ", D | Z) = " + toNamesCluster(Z) + " = " + rZ + ".");
+
                 if (rZ == 0) {
-                    log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank 0 conditional on " + toNamesCluster(Z) + "; removing cluster.");
+                    log("rank(_C = " + toNamesCluster(_C) + ", D | Z = " + toNamesCluster(Z) + ") = " + rZ + "; removing cluster " + toNamesCluster(cluster) + ".");
                     return true;
                 }
-
-//                boolean tinyEffectZ = RankTests.maxCanonicalCorrSqConditioned(S, _cArray, dArray, zArray) <= epsRho2;
-//
-//                if (tinyEffectZ) {
-//                    log("Subset " + toNamesCluster(_C) + " of cluster " + toNamesCluster(C) + " has rank tiny effect conditional on " + toNamesCluster(Z) + (" (ρ²≤" + epsRho2 + ")") + ".");
-//                    return true;
-//                }
             }
         }
 
         return false;
+    }
+
+    private Set<Integer> trim(Set<Integer> cluster) {
+        Set<Integer> _cluster = new HashSet<>(cluster);
+        List<Integer> D = allVariables();
+        D.removeAll(cluster);
+
+        int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
+
+        Integer r = reducedRank.get(cluster);
+        if (r == null) r = clusterToRank.get(cluster);
+
+        List<Integer> C = new ArrayList<>(cluster);
+
+        SublistGenerator gen = new SublistGenerator(C.size(), C.size());
+        int[] choice;
+
+        log("Expecting all subsets to have rank r = " + r);
+
+        while ((choice = gen.next()) != null) {
+            if (choice.length < 2) continue;
+            if (choice.length == C.size()) continue;
+
+            List<Integer> _C = new ArrayList<>();
+            for (int i : choice) {
+                _C.add(C.get(i));
+            }
+
+            int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
+            int rank = RankTests.estimateWilksRank(S, _cArray, dArray, sampleSize, alpha);
+
+            if (rank == r) {
+                cluster = new HashSet<>(_C);
+            } else {
+                return new HashSet<>(cluster);
+            }
+        }
+
+        return _cluster;
     }
 
     /**
