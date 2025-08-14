@@ -158,7 +158,7 @@ public class BlocksBicScore implements Score {
             xblockCache.put(pkey, Xblock);
         }
         if (Xblock.length == 0) {
-            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
+            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);  // FIX: was +INF
             return Double.NEGATIVE_INFINITY;
         }
 
@@ -197,8 +197,8 @@ public class BlocksBicScore implements Score {
             }
         }
 
-        // Scan r = 0..m-1
-        for (int r = 0; r < m; r++) {
+        // Scan r = 1..m-1  (FIX: skip r=0 to avoid tie-with-null adding edges)
+        for (int r = 1; r < m; r++) {
             double sumLogsTopR = suffix0 - suffix[r];
             double fit = -n * sumLogsTopR;
             int k = r * (p + q - r);
@@ -207,6 +207,9 @@ public class BlocksBicScore implements Score {
             if (Double.isNaN(sc) || Double.isInfinite(sc)) continue;
             if (sc > best) best = sc;
         }
+
+        // Optional nudge to avoid null-equivalent ties being selected upstream
+        if (best <= 0.0) best = -1e-12;
 
         scoreCache.put(fkey, best);
         return best;

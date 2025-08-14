@@ -92,6 +92,9 @@ public class TrekSeparationClusters {
      * Whether to output verbose logging
      */
     private boolean verbose = false;
+    private List<List<Integer>> clusters = new ArrayList<>();
+    private List<String> latentNames = new ArrayList<>();
+
     /**
      * Constructs a TrekSeparationClusters2 object, initializes the node and variable lists, and adjusts the covariance
      * matrix with a small scaling factor to ensure numerical stability.
@@ -267,6 +270,9 @@ public class TrekSeparationClusters {
             addStructureEdges(clusters, latents, graph);
         }
 
+        this.latentNames = new ArrayList<>();
+        for (Node latent : latents) {latentNames.add(latent.getName());}
+
         return graph;
     }
 
@@ -299,6 +305,12 @@ public class TrekSeparationClusters {
             log("Clusters = " + toNamesClusters(new HashSet<>(clusterToRanks.keySet())));
         } else {
             throw new IllegalArgumentException("Mode must be METALOOP or SIZE_RANK");
+        }
+
+        this.clusters = new ArrayList<>();
+
+        for (Set<Integer> cluster : clusterToRanks.keySet()) {
+            this.clusters.add(new ArrayList<>(cluster));
         }
 
         return new Pair<>(clusterToRanks, reducedRanks);
@@ -1111,6 +1123,14 @@ public class TrekSeparationClusters {
      */
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    public List<List<Integer>> getClusters() {
+        return new ArrayList<>(this.clusters);
+    }
+
+    public List<String> getLatentNames() {
+        return new ArrayList<>(this.latentNames);
     }
 
     /**
