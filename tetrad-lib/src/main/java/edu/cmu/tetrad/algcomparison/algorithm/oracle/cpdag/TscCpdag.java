@@ -80,7 +80,7 @@ public class TscCpdag extends AbstractBootstrapAlgorithm implements Algorithm, H
      */
     @Override
     public String getDescription() {
-        return "Block-CPDAG";
+        return "TSC-CPDAG";
     }
 
     /**

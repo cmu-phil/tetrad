@@ -825,13 +825,11 @@ public class TrekSeparationClusters {
      * @return true if the cluster fails the subset test according to the rank conditions, false otherwise.
      */
     private boolean failsSubsetTest(SimpleMatrix S, Set<Integer> cluster, int sampleSize, double alpha) {
+
         List<Integer> C = new ArrayList<>(cluster);
 
         List<Integer> D = allVariables();
         D.removeAll(cluster);
-
-        int _depth = depth == -1 ? C.size() : depth;
-        double epsRho2 = adaptiveEpsRho2(sampleSize, C.size(), D.size());
 
         if (true) { // Rule 1
             SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() / 2);
@@ -859,32 +857,27 @@ public class TrekSeparationClusters {
 
                 int minpq = Math.min(c1Array.length, c2Array.length);
 
-                int r = clusterToRank.get(cluster);
-                r = Math.min(minpq, r);
+                int l = clusterToRank.get(cluster);
+                l = Math.min(minpq, l);
 
-                if (r < 0) {
+                if (l < 0) {
                     continue;
                 }
 
                 int rank = RankTests.estimateWilksRank(S, c1Array, c2Array, sampleSize, alpha);
 
-                if (rank < r) {
-                    log("Deficient! rank(" + toNamesCluster(C1) + ", " + toNamesCluster(C2) + ") has rank " + rank + " < " + r + ".");
+                if (rank < l) {
+                    log("Deficient! rank(" + toNamesCluster(C1) + ", " + toNamesCluster(C2) + ") has rank " + rank + " < " + l + ".");
                     return true;
                 }
             }
         }
 
-        Integer r = reducedRank.get(cluster);
-        if (r == null) r = clusterToRank.get(cluster);
-
-        r = clusterToRank.get(cluster);
-
         if (true) { // Rule 2
-            SublistGenerator gen = new SublistGenerator(C.size(), C.size() - 1);// Math.min(C.size() - 1, r));
+            SublistGenerator gen0 = new SublistGenerator(C.size(), C.size() - 1);
             int[] choice;
 
-            while ((choice = gen.next()) != null) {
+            while ((choice = gen0.next()) != null) {
                 if (choice.length < 1) continue;
 
                 List<Integer> _C = new ArrayList<>();
@@ -895,17 +888,27 @@ public class TrekSeparationClusters {
                 int[] _cArray = _C.stream().mapToInt(Integer::intValue).toArray();
                 int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
 
+                int minpq = Math.min(_cArray.length, dArray.length);
+
+                Integer l = reducedRank.get(cluster);
+                if (l == null) {
+                    l = clusterToRank.get(cluster);
+                }
+                l = Math.min(minpq, l);
+
                 int rank = RankTests.estimateWilksRank(S, _cArray, dArray, sampleSize, alpha);
 
-                if (rank == 0) {
-                    log("rank(" + toNamesCluster(_C) + ", D) = " + rank + "; removing cluster "
-                        + toNamesCluster(cluster) + ".");
+                if (rank < l) {
+                    log("rank(" + toNamesCluster(_C) + " D) = " + rank + " < r = " + l
+                        + "; removing cluster " + toNamesCluster(cluster));
                     return true;
                 }
             }
         }
 
         if (true) { // Rule 3
+            int r = clusterToRank.get(cluster);
+
             SublistGenerator gen2 = new SublistGenerator(C.size(), Math.min(C.size() - 1, r));
             int[] choice2;
 
