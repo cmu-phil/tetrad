@@ -143,7 +143,7 @@ public class PCLiteRank0 {
 
         int[] X = new int[]{iu};
         int[] Y = new int[]{iv};
-        boolean indep = (RankTests.estimateRccaRankConditioned(S, X, Y, Z, n, alpha) == 0);
+        boolean indep = (RankTests.estimateWilksRankConditioned(S, X, Y, Z, n, alpha) == 0);
 
         cache.put(key, indep);
         return indep;

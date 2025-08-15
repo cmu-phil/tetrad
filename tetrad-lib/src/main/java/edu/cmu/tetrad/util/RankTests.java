@@ -649,7 +649,7 @@ public class RankTests {
     /**
      * Build a Scond over [X | Y] that is *conditioned on* Z, then call your estimator.
      */
-    public static int estimateRccaRankConditioned(
+    public static int estimateWilksRankConditioned(
             SimpleMatrix S, int[] C, int[] VminusC, int[] Z,
             int n, double alpha) {
 

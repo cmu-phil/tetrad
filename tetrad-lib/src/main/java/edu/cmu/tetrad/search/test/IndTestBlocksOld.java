@@ -11,36 +11,57 @@ import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Thread-safe, cached block-level CI test that delegates to RankTests' RCCA/Wilks pipeline.
- * Uses a lock-protected LRU cache (accessOrder=true) to avoid LinkedHashMap concurrency pitfalls.
+ * Block-level Conditional Independence test using a Rank/CCA statistic (Bartlett–Wilks).
+ * Delegates the statistic to RankTests and adds lightweight LRU caching.
+ *
+ * CONTRACT:
+ * - 'blocks' maps each BLOCK index b (0..B-1) to the list of column indices in the CURRENT dataSet
+ *   that belong to that block. Empty or null lists are allowed.
+ * - 'blockVariables' is the list of Nodes you want to SEARCH OVER (size B). The k-th node corresponds to block k.
+ * - getVariables() returns exactly 'blockVariables'.
  */
-public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceTest {
+public class IndTestBlocksOld implements IndependenceTest, RawMarginalIndependenceTest {
 
-    // ---- Cache sizes (tune to taste) ----
-    private static final int PV_CACHE_MAX     = 400_000;  // (x,y,Z) -> p
-    private static final int ZBLOCK_CACHE_MAX = 150_000;  // Z -> concatenated embedded cols
+    // ---- Caches ----
+    private static final int PV_CACHE_MAX = 200_000;
+    private static final int ZBLOCK_CACHE_MAX = 100_000;
 
     private final DataSet dataSet;
     private final List<Node> variables;            // block-level variables, size == blocks.size()
     private final Map<Node, Integer> nodeHash;     // block node -> block index
-    private final SimpleMatrix S;                  // correlation/covariance over dataset columns
-    private final int n;                           // sample size
+    private final SimpleMatrix covarianceMatrix;   // covariance over dataset columns
+    private final int sampleSize;
 
     /** For each block b, the embedded/expanded column indices that compose it. */
     private final int[][] allCols;                 // size = blocks.size()
 
-    /** Thread-safe LRU caches */
-    private final LruMap<PKey, Double> pvalCache = new LruMap<>(PV_CACHE_MAX);
-    private final LruMap<ZKey, int[]>  zblockCache = new LruMap<>(ZBLOCK_CACHE_MAX);
+    /** P-value cache keyed by (min(x,y), max(x,y), sorted Z vars). */
+    private final Map<PKey, Double> pvalCache =
+            new LinkedHashMap<>(4096, 0.75f, true) {
+                @Override protected boolean removeEldestEntry(Map.Entry<PKey, Double> e) {
+                    return size() > PV_CACHE_MAX;
+                }
+            };
 
-    // knobs
+    /** Cache for concatenated embedded columns of Z. */
+    private final Map<ZKey, int[]> zblockCache =
+            new LinkedHashMap<>(2048, 0.75f, true) {
+                @Override protected boolean removeEldestEntry(Map.Entry<ZKey, int[]> e) {
+                    return size() > ZBLOCK_CACHE_MAX;
+                }
+            };
+
     private double alpha = 0.01;
     private boolean verbose = false;
 
-    public IndTestBlocks(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
+    /**
+     * @param dataSet         dataset whose columns the 'blocks' indices refer to
+     * @param blocks          for each block b (by index 0..B-1), the list of column indices composing that block
+     * @param blockVariables  the exact variables to expose to the search; blockVariables.size() must equal blocks.size()
+     */
+    public IndTestBlocksOld(DataSet dataSet, List<List<Integer>> blocks, List<Node> blockVariables) {
         if (dataSet == null) throw new IllegalArgumentException("dataSet == null");
         if (blocks == null) throw new IllegalArgumentException("blocks == null");
         if (blockVariables == null) throw new IllegalArgumentException("blockVariables == null");
@@ -52,7 +73,9 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
         }
 
         this.dataSet = dataSet;
-        this.variables = new ArrayList<>(blockVariables);
+        this.variables = new ArrayList<>(blockVariables); // preserve caller order
+
+        // Map block-node -> block index
         Map<Node, Integer> nodesHash = new HashMap<>();
         for (int j = 0; j < this.variables.size(); j++) {
             Node v = this.variables.get(j);
@@ -63,11 +86,10 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
         }
         this.nodeHash = nodesHash;
 
-        this.n = dataSet.getNumRows();
-        this.S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
-        // this.S = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix()); // optional
+        this.sampleSize = dataSet.getNumRows();
+        this.covarianceMatrix = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
 
-        // Precompute block columns
+        // Precompute block columns; size to number of blocks (B)
         final int D = dataSet.getNumColumns();
         this.allCols = new int[B][];
         for (int b = 0; b < B; b++) {
@@ -100,7 +122,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
 
     @Override
     public List<Node> getVariables() {
-        return new ArrayList<>(variables);
+        return new ArrayList<>(variables); // block-nodes as provided by caller
     }
 
     @Override
@@ -132,13 +154,14 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
     @Override
     public double computePValue(double[] x, double[] y) {
         throw new UnsupportedOperationException(
-                "IndTestBlocksCachedTS does not support computePValue(double[],double[]). " +
+                "IndTestBlocks does not support computePValue(double[],double[]). " +
                 "Use checkIndependence(Node,Node,Set) with the dataset and configured blocks.");
     }
 
-    // === Core: delegate to RankTests with thread-safe caching ===
+    // === Core RCCA/Bartlett test ===
 
     private double getPValue(Node x, Node y, Set<Node> z) {
+        // Map block-nodes to block indices
         Integer xiVar = nodeHash.get(x);
         Integer yiVar = nodeHash.get(y);
         if (xiVar == null || yiVar == null) {
@@ -169,7 +192,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
 
         if (xCols.length == 0 || yCols.length == 0) {
             if (verbose) {
-                System.out.printf("IndTestBlocksCachedTS: empty block for %s or %s%n", x.getName(), y.getName());
+                System.out.printf("IndTestBlocks: empty block for %s or %s%n", x.getName(), y.getName());
             }
             pvalCache.put(key, 1.0);
             return 1.0;
@@ -191,62 +214,13 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
             zblockCache.put(zkey, zCols);
         }
 
-        // Delegate: RankTests does the robust RCCA/Wilks computation (with its own caches)
-        double pValue = RankTests.pValueIndepConditioned(S, xCols, yCols, zCols, n);
-
-        // Clamp bad numerics, cache, return
+        // Delegate statistic to RankTests (partial CCA with Wilks/Bartlett, testing r=0)
+        double pValue = RankTests.pValueIndepConditioned(covarianceMatrix, xCols, yCols, zCols, sampleSize);
         if (Double.isNaN(pValue) || Double.isInfinite(pValue)) pValue = 1.0;
         pValue = Math.max(0.0, Math.min(1.0, pValue));
 
         pvalCache.put(key, pValue);
         return pValue;
-    }
-
-    // === Small, thread-safe LRU (access-order) ===
-    private static final class LruMap<K, V> {
-        private final ReentrantLock lock = new ReentrantLock();
-        private final int maxSize;
-        private final LinkedHashMap<K, V> map;
-
-        LruMap(int maxSize) {
-            this.maxSize = Math.max(16, maxSize);
-            this.map = new LinkedHashMap<>(1024, 0.75f, true);
-        }
-
-        V get(K k) {
-            lock.lock();
-            try {
-                return map.get(k);
-            } finally {
-                lock.unlock();
-            }
-        }
-
-        void put(K k, V v) {
-            lock.lock();
-            try {
-                map.put(k, v);
-                // manual eviction (no removeEldestEntry races)
-                while (map.size() > maxSize) {
-                    Iterator<Map.Entry<K, V>> it = map.entrySet().iterator();
-                    if (it.hasNext()) {
-                        it.next();
-                        it.remove();
-                    } else break;
-                }
-            } finally {
-                lock.unlock();
-            }
-        }
-
-        void clear() {
-            lock.lock();
-            try {
-                map.clear();
-            } finally {
-                lock.unlock();
-            }
-        }
     }
 
     // === Cache keys ===

@@ -59,17 +59,16 @@ public class TscCpdag implements IGraphSearch {
      * computations. A typical default value is used, but it can be adjusted depending on the application needs.
      */
     private double ridge = 1e-8;
+    private double ebicGamma = 0;
 
     /**
      * Constructor,
      *
      * @param dataSet             The dataset. This should include at least all of the variables that are to be
      *                            clustered by TSC.
-     * @param effectiveSampleSize The effective sample size to use.
      */
-    public TscCpdag(DataSet dataSet, int effectiveSampleSize) {
+    public TscCpdag(DataSet dataSet) {
         this.dataSet = dataSet;
-        this.effectiveSampleSize = effectiveSampleSize;
     }
 
     /**
@@ -122,12 +121,12 @@ public class TscCpdag implements IGraphSearch {
 
         Graph cpdag;
 
-        if (true) {
+        if (false) {
             // Score & search (be sure this is the fixed BlocksBicScore)
             BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
             score.setPenaltyDiscount(penaltyDiscount);
             score.setRidge(ridge);
-            score.setEbicGamma(0.8);
+            score.setEbicGamma(ebicGamma);
 
             Boss suborderSearch = new Boss(score);
             suborderSearch.setVerbose(verbose);
@@ -138,9 +137,11 @@ public class TscCpdag implements IGraphSearch {
         } else {
 
             IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
-            test.setAlpha(alpha);
+//            test.setAlpha(1e-10);
 
             Pc pc = new Pc(test);
+            pc.setDepth(depth);
+//            pc.setStable(false);
             cpdag = pc.search();
         }
 
@@ -245,5 +246,9 @@ public class TscCpdag implements IGraphSearch {
             throw new IllegalArgumentException("ridge must be >= 0");
         }
         this.ridge = ridge;
+    }
+
+    public void setEbicGamma(double ebicGamma) {
+        this.ebicGamma = ebicGamma;
     }
 }

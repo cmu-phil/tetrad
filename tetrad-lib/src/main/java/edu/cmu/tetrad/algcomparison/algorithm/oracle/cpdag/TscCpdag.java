@@ -52,18 +52,16 @@ public class TscCpdag extends AbstractBootstrapAlgorithm implements Algorithm, H
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
-        double alpha = parameters.getDouble(Params.FOFC_ALPHA);
-        double ridge = parameters.getDouble(Params.REGULARIZATION_LAMBDA);
-        int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
-        edu.cmu.tetrad.search.TscCpdag search = new edu.cmu.tetrad.search.TscCpdag((DataSet) dataModel, ess);
-        search.setAlpha(alpha);
+        edu.cmu.tetrad.search.TscCpdag search = new edu.cmu.tetrad.search.TscCpdag((DataSet) dataModel);
+        search.setAlpha(parameters.getDouble(Params.FOFC_ALPHA));
         search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setEffectiveSampleSize(ess);
+        search.setEffectiveSampleSize(parameters.getInt(Params.EXPECTED_SAMPLE_SIZE));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setRidge(ridge);
+        search.setRidge(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+        search.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
         search.setVerbose(verbose);
         return search.search();
     }
@@ -101,6 +99,7 @@ public class TscCpdag extends AbstractBootstrapAlgorithm implements Algorithm, H
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.FOFC_ALPHA);
+        parameters.add(Params.EBIC_GAMMA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.NUM_STARTS);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);

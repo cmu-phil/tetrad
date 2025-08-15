@@ -838,26 +838,26 @@ public class TrekSeparationClusters {
             int[] choice0;
 
             while ((choice0 = gen0.next()) != null) {
-                List<Integer> C0 = new ArrayList<>();
+                List<Integer> C1 = new ArrayList<>();
                 for (int i : choice0) {
-                    C0.add(C.get(i));
+                    C1.add(C.get(i));
                 }
 
-                if (C0.size() < 1) {
+                if (C1.isEmpty()) {
                     continue;
                 }
 
-                List<Integer> D0 = new ArrayList<>(C);
-                D0.removeAll(C0);
+                List<Integer> C2 = new ArrayList<>(C);
+                C2.removeAll(C1);
 
-                if (D0.size() < 1) {
+                if (C2.isEmpty()) {
                     continue;
                 }
 
-                int[] c0Array = C0.stream().mapToInt(Integer::intValue).toArray();
-                int[] d0Array = D0.stream().mapToInt(Integer::intValue).toArray();
+                int[] c1Array = C1.stream().mapToInt(Integer::intValue).toArray();
+                int[] c2Array = C2.stream().mapToInt(Integer::intValue).toArray();
 
-                int minpq = Math.min(c0Array.length, d0Array.length);
+                int minpq = Math.min(c1Array.length, c2Array.length);
 
                 int r = clusterToRank.get(cluster);
                 r = Math.min(minpq, r);
@@ -866,12 +866,10 @@ public class TrekSeparationClusters {
                     continue;
                 }
 
-//                double p = RankTests.rankLeByWilks(S, c0Array, d0Array, sampleSize, r);
-
-                int rank = RankTests.estimateWilksRank(S, c0Array, d0Array, sampleSize, alpha);
+                int rank = RankTests.estimateWilksRank(S, c1Array, c2Array, sampleSize, alpha);
 
                 if (rank < r) {
-                    log("Deficient! rank(" + toNamesCluster(C0) + ", " + toNamesCluster(D0) + ") has rank " + rank + " < " + r + ".");
+                    log("Deficient! rank(" + toNamesCluster(C1) + ", " + toNamesCluster(C2) + ") has rank " + rank + " < " + r + ".");
                     return true;
                 }
             }
@@ -883,7 +881,7 @@ public class TrekSeparationClusters {
         r = clusterToRank.get(cluster);
 
         if (true) { // Rule 2
-            SublistGenerator gen = new SublistGenerator(C.size(), Math.min(C.size() - 1, _depth));
+            SublistGenerator gen = new SublistGenerator(C.size(), C.size() - 1);// Math.min(C.size() - 1, r));
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -899,8 +897,6 @@ public class TrekSeparationClusters {
 
                 int rank = RankTests.estimateWilksRank(S, _cArray, dArray, sampleSize, alpha);
 
-//                log("** Checking rank(_C = " + toNamesCluster(_C) + ", D) = " + rank + ".");
-
                 if (rank == 0) {
                     log("rank(" + toNamesCluster(_C) + ", D) = " + rank + "; removing cluster "
                         + toNamesCluster(cluster) + ".");
@@ -914,7 +910,7 @@ public class TrekSeparationClusters {
             int[] choice2;
 
             while ((choice2 = gen2.next()) != null) {
-                if (choice2.length == 0) continue;
+                if (choice2.length < r) continue;
 
                 List<Integer> Z = new ArrayList<>();
                 for (int i : choice2) {
@@ -928,9 +924,7 @@ public class TrekSeparationClusters {
                 int[] dArray = D.stream().mapToInt(Integer::intValue).toArray();
                 int[] zArray = Z.stream().mapToInt(Integer::intValue).toArray();
 
-                int rZ = RankTests.estimateRccaRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
-
-//                log("** Checking rank(_C = " + toNamesCluster(_C) + ", D | Z) = " + toNamesCluster(Z) + " = " + rZ + ".");
+                int rZ = RankTests.estimateWilksRankConditioned(S, _cArray, dArray, zArray, sampleSize, alpha);
 
                 if (rZ == 0) {
                     log("rank(_C = " + toNamesCluster(_C) + ", D | Z = " + toNamesCluster(Z) + ") = " + rZ + "; removing cluster " + toNamesCluster(cluster) + ".");
