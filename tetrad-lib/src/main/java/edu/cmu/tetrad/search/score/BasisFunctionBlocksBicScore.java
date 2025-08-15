@@ -91,10 +91,6 @@ public class BasisFunctionBlocksBicScore implements Score {
         delegate.setRidge(ridge);
     }
 
-    public void setCondThreshold(double v) {
-        delegate.setCondThreshold(v);
-    }
-
     // ---- Optional helpers if you want direct localScore access (not required by Score) ----
     public double localScore(Node y, List<Node> parents) {
         return delegate.localScore(y, parents);

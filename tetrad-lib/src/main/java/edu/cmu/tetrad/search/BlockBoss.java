@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
+import edu.cmu.tetrad.search.test.IndTestBlocks;
 
 import java.util.*;
 
@@ -120,9 +121,7 @@ public class BlockBoss implements IGraphSearch {
         // Score & search (be sure this is the fixed BlocksBicScore)
         BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
         score.setPenaltyDiscount(penaltyDiscount);
-        // optional knobs
         score.setRidge(ridge);
-        // score.setCondThreshold(...);
 
         Boss suborderSearch = new Boss(score);
         suborderSearch.setVerbose(verbose);
@@ -130,6 +129,12 @@ public class BlockBoss implements IGraphSearch {
 
         PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
         Graph cpdag = permutationSearch.search();
+
+//        IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
+//        test.setAlpha(alpha);
+//
+//        Pc pc  = new Pc(test);
+//        Graph cpdag = pc.search();
 
         // Add latent→member edges for true clusters
         for (int i = 0; i < blocks.size(); i++) {

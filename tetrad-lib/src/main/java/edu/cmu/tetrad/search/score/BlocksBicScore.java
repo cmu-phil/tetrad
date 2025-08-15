@@ -10,16 +10,14 @@ import java.util.*;
 
 /**
  * BlocksBicScore: BIC-style local score over block representations using cached RCCA singular values from RankTests.
- *
- * fit(r) = -n * sum_{i=0}^{r-1} log(1 - rho_i^2)
- * pen(r) = c * [ r * (p + q - r) ] * log(n)
- *
+ * <p>
+ * fit(r) = -n * sum_{i=0}^{r-1} log(1 - rho_i^2) pen(r) = c * [ r * (p + q - r) ] * log(n)
+ * <p>
  * where p = |X_block|, q = |Y_block|, and r in {0..min(p,q)}.
- *
- * CONTRACT:
- * - 'blocks' maps each BLOCK index b (0..B-1) to the list of embedded column indices in THIS dataset for that block.
- * - 'blockVariables' is exactly the list of Nodes to score over, one per block, same order (size B).
- * - getVariables() returns exactly 'blockVariables'.
+ * <p>
+ * CONTRACT: - 'blocks' maps each BLOCK index b (0..B-1) to the list of embedded column indices in THIS dataset for that
+ * block. - 'blockVariables' is exactly the list of Nodes to score over, one per block, same order (size B). -
+ * getVariables() returns exactly 'blockVariables'.
  */
 public class BlocksBicScore implements Score {
     // --- Caches ---
@@ -37,8 +35,8 @@ public class BlocksBicScore implements Score {
     private final int[][] blockAllCols;          // per block -> all embedded cols
 
     /**
-     * LRU cache for full local scores per (y, parents, knobs).
-     * Not thread-safe; wrap externally if running multi-threaded.
+     * LRU cache for full local scores per (y, parents, knobs). Not thread-safe; wrap externally if running
+     * multi-threaded.
      */
     private final Map<FamilyKey, Double> scoreCache =
             new LinkedHashMap<>(2048, 0.75f, true) {
@@ -62,7 +60,6 @@ public class BlocksBicScore implements Score {
     // --- Knobs ---
     private double penaltyDiscount = 1.0;   // c
     private double ridge = 1e-8;            // regLambda passed to RankTests
-    private double condThreshold = 1e10;    // conditioning guard inside RankTests hybrid path
 
     /**
      * @param dataSet        dataset whose columns the 'blocks' indices refer to
@@ -125,8 +122,8 @@ public class BlocksBicScore implements Score {
     }
 
     /**
-     * Local block Rank-BIC score for Y given parents, reusing RCCA results from RankTests.
-     * Adds caching at the family level and for the concatenated parent X-block.
+     * Local block Rank-BIC score for Y given parents, reusing RCCA results from RankTests. Adds caching at the family
+     * level and for the concatenated parent X-block.
      */
     public double localScore(Node y, List<Node> parents) {
         int yi = idx(y);
@@ -139,7 +136,7 @@ public class BlocksBicScore implements Score {
         for (int t = 0; t < parents.size(); t++) parentIdx[t] = idx(parents.get(t));
         Arrays.sort(parentIdx);
 
-        FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, condThreshold, penaltyDiscount);
+        FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, penaltyDiscount);
         Double cached = scoreCache.get(fkey);
         if (cached != null) return cached;
 
@@ -170,10 +167,10 @@ public class BlocksBicScore implements Score {
         }
 
         int p = Xblock.length, q = Yblock.length, m = Math.min(p, q);
-        if (m <= 0) {
-            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
-            return Double.NEGATIVE_INFINITY;
-        }
+//        if (m <= 0) {
+//            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
+//            return Double.NEGATIVE_INFINITY;
+//        }
 
         double[] suffix = ent.suffixLogs;
         if (suffix == null || suffix.length < m + 1) {
@@ -237,14 +234,6 @@ public class BlocksBicScore implements Score {
         // RankTests has its own LRU keyed by regLambda.
     }
 
-    /**
-     * Condition-number guard used by RankTests’ path; raise to be more permissive.
-     */
-    public void setCondThreshold(double v) {
-        this.condThreshold = v;
-        scoreCache.clear(); // may change acceptance/fallback
-    }
-
     // --- Internals ---
     private int idx(Node v) {
         Integer i = nodeIndex.get(v);
@@ -252,12 +241,16 @@ public class BlocksBicScore implements Score {
         return i;
     }
 
-    /** Embedded columns for a block (precomputed). */
+    /**
+     * Embedded columns for a block (precomputed).
+     */
     private int[] blockFor(int blockIndex) {
         return blockAllCols[blockIndex];
     }
 
-    /** Concatenate embedded columns for all parents (parents given as sorted block indices). */
+    /**
+     * Concatenate embedded columns for all parents (parents given as sorted block indices).
+     */
     private int[] concatBlocksFromSortedParentIdx(int[] sortedParents) {
         int total = 0;
         for (int p : sortedParents) total += blockAllCols[p].length;
@@ -271,7 +264,9 @@ public class BlocksBicScore implements Score {
         return out;
     }
 
-    /** Concatenate embedded columns for all parents (block Node list) — unused helper. */
+    /**
+     * Concatenate embedded columns for all parents (block Node list) — unused helper.
+     */
     @SuppressWarnings("unused")
     private int[] concatBlocks(List<Node> parents) {
         int[] parentIdx = new int[parents.size()];
@@ -310,29 +305,22 @@ public class BlocksBicScore implements Score {
         return localScore(y, ps);
     }
 
-    private double localScore(Node y, int[] zParents, int x) {
-        List<Node> ps = new ArrayList<>(zParents.length + 1);
-        for (int p : zParents) ps.add(variables.get(p));
-        ps.add(variables.get(x));
-        return localScore(y, ps);
-    }
-
     // ----- Key types for caches -----
 
-    /** Key for the per-family score cache. Includes knobs that affect the score. */
+    /**
+     * Key for the per-family score cache. Includes knobs that affect the score.
+     */
     private static final class FamilyKey {
         final int y;
         final int[] parents; // sorted block indices
         final long ridgeBits;
-        final long condBits;
         final long penBits;
         private final int hash;
 
-        FamilyKey(int y, int[] parents, double ridge, double cond, double pen) {
+        FamilyKey(int y, int[] parents, double ridge, double pen) {
             this.y = y;
             this.parents = parents.clone();
             this.ridgeBits = quantize(ridge);
-            this.condBits = quantize(cond);
             this.penBits = quantize(pen);
             this.hash = computeHash();
         }
@@ -347,7 +335,6 @@ public class BlocksBicScore implements Score {
             h = 31 * h + y;
             h = 31 * h + Arrays.hashCode(parents);
             h = 31 * h + Long.hashCode(ridgeBits);
-            h = 31 * h + Long.hashCode(condBits);
             h = 31 * h + Long.hashCode(penBits);
             return h;
         }
@@ -357,7 +344,6 @@ public class BlocksBicScore implements Score {
             if (!(o instanceof FamilyKey fk)) return false;
             return y == fk.y
                    && ridgeBits == fk.ridgeBits
-                   && condBits == fk.condBits
                    && penBits == fk.penBits
                    && Arrays.equals(parents, fk.parents);
         }
@@ -368,7 +354,9 @@ public class BlocksBicScore implements Score {
         }
     }
 
-    /** Key for the per-parent-set X-block cache (depends only on parent block indices). */
+    /**
+     * Key for the per-parent-set X-block cache (depends only on parent block indices).
+     */
     private static final class ParentsKey {
         final int[] parents; // sorted block indices
         private final int hash;
