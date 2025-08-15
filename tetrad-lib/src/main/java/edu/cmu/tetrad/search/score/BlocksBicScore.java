@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.RankTests;
 import org.ejml.simple.SimpleMatrix;
@@ -10,14 +10,17 @@ import java.util.*;
 
 /**
  * BlocksBicScore: BIC-style local score over block representations using cached RCCA singular values from RankTests.
- * <p>
- * fit(r) = -n * sum_{i=0}^{r-1} log(1 - rho_i^2) pen(r) = c * [ r * (p + q - r) ] * log(n)
- * <p>
- * where p = |X_block|, q = |Y_block|, and r in {0..min(p,q)}.
- * <p>
- * CONTRACT: - 'blocks' maps each BLOCK index b (0..B-1) to the list of embedded column indices in THIS dataset for that
- * block. - 'blockVariables' is exactly the list of Nodes to score over, one per block, same order (size B). -
- * getVariables() returns exactly 'blockVariables'.
+ *
+ * fit(r) = -nEff * sum_{i=0}^{r-1} log(1 - rho_i^2)
+ * pen(r) = c * [ r * (p + q - r) ] * log(n) + 2 * gamma * [ r * (p + q - r) ] * log(P_pool)
+ *
+ * where p = |X_block|, q = |Y_block|, r in {0..min(p,q,n-1)}, and
+ * nEff = n - 1 - (p + q + 1)/2 (floored at 1). P_pool excludes Y's own block.
+ *
+ * CONTRACT:
+ *  - 'blocks' maps each block index b (0..B-1) to the list of embedded column indices in THIS dataset for that block.
+ *  - 'blockVariables' is exactly the list of Nodes to score over, one per block, same order (size B).
+ *  - getVariables() returns exactly 'blockVariables'.
  */
 public class BlocksBicScore implements Score {
     // --- Caches ---
@@ -28,15 +31,15 @@ public class BlocksBicScore implements Score {
     private final DataSet dataSet;
     private final List<Node> variables;          // block-level variables, size == blocks.size()
     private final Map<Node, Integer> nodeIndex;  // block node -> block index
-    private final SimpleMatrix Sphi;             // covariance of embedded data
+    private final SimpleMatrix Sphi;             // covariance (or correlation) of embedded data
     private final int n;                         // sample size
 
     // Precomputed embedded column arrays (avoid per-call boxing/copies)
     private final int[][] blockAllCols;          // per block -> all embedded cols
+    private final int totalEmbeddedCols;         // sum of all embedded widths across blocks
 
     /**
-     * LRU cache for full local scores per (y, parents, knobs). Not thread-safe; wrap externally if running
-     * multi-threaded.
+     * LRU cache for full local scores per (y, parents, knobs). Not thread-safe; wrap externally if running multi-threaded.
      */
     private final Map<FamilyKey, Double> scoreCache =
             new LinkedHashMap<>(2048, 0.75f, true) {
@@ -60,6 +63,7 @@ public class BlocksBicScore implements Score {
     // --- Knobs ---
     private double penaltyDiscount = 1.0;   // c
     private double ridge = 1e-8;            // regLambda passed to RankTests
+    private double ebicGamma = 0.0;         // gamma for EBIC-style extra penalty (0 disables)
 
     /**
      * @param dataSet        dataset whose columns the 'blocks' indices refer to
@@ -88,11 +92,13 @@ public class BlocksBicScore implements Score {
         }
 
         this.n = dataSet.getNumRows();
-        this.Sphi = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix());
+        this.Sphi = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
+        // this.Sphi = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix()); // alternative
 
         // Precompute embedded column arrays for each block
         int D = dataSet.getNumColumns();
         this.blockAllCols = new int[B][];
+        int totalCols = 0;
         for (int b = 0; b < B; b++) {
             List<Integer> cols = blocks.get(b);
             if (cols == null || cols.isEmpty()) {
@@ -109,7 +115,9 @@ public class BlocksBicScore implements Score {
                 }
                 this.blockAllCols[b] = all;
             }
+            totalCols += this.blockAllCols[b].length;
         }
+        this.totalEmbeddedCols = totalCols;
     }
 
     // --- Public API (mirrors SemBIC-style usage) ---
@@ -136,7 +144,7 @@ public class BlocksBicScore implements Score {
         for (int t = 0; t < parents.size(); t++) parentIdx[t] = idx(parents.get(t));
         Arrays.sort(parentIdx);
 
-        FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, penaltyDiscount);
+        FamilyKey fkey = new FamilyKey(yi, parentIdx, ridge, penaltyDiscount, ebicGamma);
         Double cached = scoreCache.get(fkey);
         if (cached != null) return cached;
 
@@ -155,7 +163,7 @@ public class BlocksBicScore implements Score {
             xblockCache.put(pkey, Xblock);
         }
         if (Xblock.length == 0) {
-            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);  // FIX: was +INF
+            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
             return Double.NEGATIVE_INFINITY;
         }
 
@@ -166,40 +174,60 @@ public class BlocksBicScore implements Score {
             return Double.NEGATIVE_INFINITY;
         }
 
-        int p = Xblock.length, q = Yblock.length, m = Math.min(p, q);
-//        if (m <= 0) {
-//            scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
-//            return Double.NEGATIVE_INFINITY;
-//        }
+        int p = Xblock.length, q = Yblock.length;
 
+        // Bartlett-style effective n for CCA LLR: nEff = n - 1 - (p + q + 1)/2, floored at 1
+        double nEff = n - 1.0 - 0.5 * (p + q + 1.0);
+        if (nEff < 1.0) nEff = 1.0;
+
+        // Pull suffix logs and clamp m by both n and suffix support
         double[] suffix = ent.suffixLogs;
-        if (suffix == null || suffix.length < m + 1) {
+        if (suffix == null) {
             scoreCache.put(fkey, Double.NEGATIVE_INFINITY);
             return Double.NEGATIVE_INFINITY;
+        }
+        int m = Math.min(Math.min(p, q), n - 1);
+        m = Math.min(m, suffix.length - 1); // need suffix[m]
+        if (m <= 0) {
+            scoreCache.put(fkey, -1e-12);
+            return -1e-12;
         }
 
         // Fit/penalty sweep over r
         double best = Double.NEGATIVE_INFINITY;
         double suffix0 = suffix[0];
 
-        // Heuristic: evaluate r = m once
+        // EBIC pool size: all potential predictors' embedded columns excluding Y's own block
+        int Ppool = Math.max(totalEmbeddedCols - Yblock.length, 2);
+
+        // Evaluate r = m
         {
             double sumLogsTopR = suffix0 - suffix[m];
-            double fit = -n * sumLogsTopR;
+            double fit = -nEff * sumLogsTopR;
             int k = m * (p + q - m);
+
             double pen = penaltyDiscount * k * Math.log(n);
+            if (ebicGamma > 0.0) {
+                pen += 2.0 * ebicGamma * k * Math.log(Ppool);
+            }
+
             double sc = fit - pen;
             if (!Double.isNaN(sc) && !Double.isInfinite(sc)) {
                 best = sc;
             }
         }
 
-        // Scan r = 1..m-1  (FIX: skip r=0 to avoid tie-with-null adding edges)
+        // Scan r = 1..m-1  (skip r = 0 to avoid null ties)
         for (int r = 1; r < m; r++) {
             double sumLogsTopR = suffix0 - suffix[r];
-            double fit = -n * sumLogsTopR;
+            double fit = -nEff * sumLogsTopR;
             int k = r * (p + q - r);
+
             double pen = penaltyDiscount * k * Math.log(n);
+            if (ebicGamma > 0.0) {
+                pen += 2.0 * ebicGamma * k * Math.log(Ppool);
+            }
+
             double sc = fit - pen;
             if (Double.isNaN(sc) || Double.isInfinite(sc)) continue;
             if (sc > best) best = sc;
@@ -232,6 +260,11 @@ public class BlocksBicScore implements Score {
         this.ridge = ridge;
         scoreCache.clear(); // ridge affects rhos
         // RankTests has its own LRU keyed by regLambda.
+    }
+
+    public void setEbicGamma(double gamma) {
+        this.ebicGamma = gamma;
+        scoreCache.clear(); // gamma affects scores
     }
 
     // --- Internals ---
@@ -315,13 +348,15 @@ public class BlocksBicScore implements Score {
         final int[] parents; // sorted block indices
         final long ridgeBits;
         final long penBits;
+        final long ebicBits;
         private final int hash;
 
-        FamilyKey(int y, int[] parents, double ridge, double pen) {
+        FamilyKey(int y, int[] parents, double ridge, double pen, double ebic) {
             this.y = y;
             this.parents = parents.clone();
             this.ridgeBits = quantize(ridge);
             this.penBits = quantize(pen);
+            this.ebicBits = quantize(ebic);
             this.hash = computeHash();
         }
 
@@ -336,6 +371,7 @@ public class BlocksBicScore implements Score {
             h = 31 * h + Arrays.hashCode(parents);
             h = 31 * h + Long.hashCode(ridgeBits);
             h = 31 * h + Long.hashCode(penBits);
+            h = 31 * h + Long.hashCode(ebicBits);
             return h;
         }
 
@@ -345,6 +381,7 @@ public class BlocksBicScore implements Score {
             return y == fk.y
                    && ridgeBits == fk.ridgeBits
                    && penBits == fk.penBits
+                   && ebicBits == fk.ebicBits
                    && Arrays.equals(parents, fk.parents);
         }
 

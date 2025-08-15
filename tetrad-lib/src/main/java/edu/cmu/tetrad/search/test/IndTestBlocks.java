@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -87,7 +88,7 @@ public class IndTestBlocks implements IndependenceTest, RawMarginalIndependenceT
         this.nodeHash = nodesHash;
 
         this.sampleSize = dataSet.getNumRows();
-        this.covarianceMatrix = DataUtils.cov(dataSet.getDoubleData().getSimpleMatrix());
+        this.covarianceMatrix = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
 
         // Precompute block columns; size to number of blocks (B)
         final int D = dataSet.getNumColumns();

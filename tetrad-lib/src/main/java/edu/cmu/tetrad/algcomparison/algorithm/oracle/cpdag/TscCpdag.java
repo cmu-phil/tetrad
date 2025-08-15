@@ -28,12 +28,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Block-BOSS",
-        command = "block-boss",
+        name = "TSC-CPDAG",
+        command = "tsc-cpdag",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class BlockBoss extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class TscCpdag extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -47,7 +47,7 @@ public class BlockBoss extends AbstractBootstrapAlgorithm implements Algorithm, 
     /**
      * <p>Constructor for Pc.</p>
      */
-    public BlockBoss() {
+    public TscCpdag() {
     }
 
     @Override
@@ -57,7 +57,7 @@ public class BlockBoss extends AbstractBootstrapAlgorithm implements Algorithm, 
         int ess = parameters.getInt(Params.EXPECTED_SAMPLE_SIZE);
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
-        edu.cmu.tetrad.search.BlockBoss search = new edu.cmu.tetrad.search.BlockBoss((DataSet) dataModel, ess);
+        edu.cmu.tetrad.search.TscCpdag search = new edu.cmu.tetrad.search.TscCpdag((DataSet) dataModel, ess);
         search.setAlpha(alpha);
         search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
@@ -82,7 +82,7 @@ public class BlockBoss extends AbstractBootstrapAlgorithm implements Algorithm, 
      */
     @Override
     public String getDescription() {
-        return "Block-BOSS";
+        return "Block-CPDAG";
     }
 
     /**

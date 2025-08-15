@@ -23,7 +23,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public class BlockBoss implements IGraphSearch {
+public class TscCpdag implements IGraphSearch {
     /**
      * Represents the dataset to be utilized by the BlocksBoss algorithm. This dataset contains the data necessary for
      * conducting the search and performing associated computations within the algorithm.
@@ -67,7 +67,7 @@ public class BlockBoss implements IGraphSearch {
      *                            clustered by TSC.
      * @param effectiveSampleSize The effective sample size to use.
      */
-    public BlockBoss(DataSet dataSet, int effectiveSampleSize) {
+    public TscCpdag(DataSet dataSet, int effectiveSampleSize) {
         this.dataSet = dataSet;
         this.effectiveSampleSize = effectiveSampleSize;
     }
@@ -118,23 +118,31 @@ public class BlockBoss implements IGraphSearch {
             metaVars.add(new ContinuousVariable(latentNames.get(i)));
         }
 
-        // Score & search (be sure this is the fixed BlocksBicScore)
-        BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
-        score.setPenaltyDiscount(penaltyDiscount);
-        score.setRidge(ridge);
 
-        Boss suborderSearch = new Boss(score);
-        suborderSearch.setVerbose(verbose);
-        suborderSearch.setNumStarts(numStarts);
 
-        PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
-        Graph cpdag = permutationSearch.search();
+        Graph cpdag;
 
-//        IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
-//        test.setAlpha(alpha);
-//
-//        Pc pc  = new Pc(test);
-//        Graph cpdag = pc.search();
+        if (true) {
+            // Score & search (be sure this is the fixed BlocksBicScore)
+            BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
+            score.setPenaltyDiscount(penaltyDiscount);
+            score.setRidge(ridge);
+            score.setEbicGamma(0.8);
+
+            Boss suborderSearch = new Boss(score);
+            suborderSearch.setVerbose(verbose);
+            suborderSearch.setNumStarts(numStarts);
+
+            PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
+            cpdag = permutationSearch.search();
+        } else {
+
+            IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
+            test.setAlpha(alpha);
+
+            Pc pc = new Pc(test);
+            cpdag = pc.search();
+        }
 
         // Add latent→member edges for true clusters
         for (int i = 0; i < blocks.size(); i++) {
