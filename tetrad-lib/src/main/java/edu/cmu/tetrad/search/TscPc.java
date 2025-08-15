@@ -23,7 +23,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public class TscCpdag implements IGraphSearch {
+public class TscPc implements IGraphSearch {
     /**
      * Represents the dataset to be utilized by the BlocksBoss algorithm. This dataset contains the data necessary for
      * conducting the search and performing associated computations within the algorithm.
@@ -60,6 +60,7 @@ public class TscCpdag implements IGraphSearch {
      */
     private double ridge = 1e-8;
     private double ebicGamma = 0;
+    private boolean useBoss = false;
 
     /**
      * Constructor,
@@ -67,7 +68,7 @@ public class TscCpdag implements IGraphSearch {
      * @param dataSet             The dataset. This should include at least all of the variables that are to be
      *                            clustered by TSC.
      */
-    public TscCpdag(DataSet dataSet) {
+    public TscPc(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
@@ -121,7 +122,7 @@ public class TscCpdag implements IGraphSearch {
 
         Graph cpdag;
 
-        if (false) {
+        if (useBoss) {
             // Score & search (be sure this is the fixed BlocksBicScore)
             BlocksBicScore score = new BlocksBicScore(dataSet, blocks, metaVars);
             score.setPenaltyDiscount(penaltyDiscount);
@@ -135,9 +136,8 @@ public class TscCpdag implements IGraphSearch {
             PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
             cpdag = permutationSearch.search();
         } else {
-
             IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
-//            test.setAlpha(1e-10);
+            test.setAlpha(alpha);
 
             Pc pc = new Pc(test);
             pc.setDepth(depth);
@@ -250,5 +250,9 @@ public class TscCpdag implements IGraphSearch {
 
     public void setEbicGamma(double ebicGamma) {
         this.ebicGamma = ebicGamma;
+    }
+
+    public void setUseBoss(boolean useBoss) {
+        this.useBoss = useBoss;
     }
 }

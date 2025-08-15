@@ -28,12 +28,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "TSC-CPDAG",
-        command = "tsc-cpdag",
+        name = "TSC-PC",
+        command = "tsc-pc",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class TscCpdag extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
+public class TscPc extends AbstractBootstrapAlgorithm implements Algorithm, HasKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 
     @Serial
@@ -47,14 +47,14 @@ public class TscCpdag extends AbstractBootstrapAlgorithm implements Algorithm, H
     /**
      * <p>Constructor for Pc.</p>
      */
-    public TscCpdag() {
+    public TscPc() {
     }
 
     @Override
     protected Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
 
-        edu.cmu.tetrad.search.TscCpdag search = new edu.cmu.tetrad.search.TscCpdag((DataSet) dataModel);
+        edu.cmu.tetrad.search.TscPc search = new edu.cmu.tetrad.search.TscPc((DataSet) dataModel);
         search.setAlpha(parameters.getDouble(Params.FOFC_ALPHA));
         search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
@@ -62,6 +62,7 @@ public class TscCpdag extends AbstractBootstrapAlgorithm implements Algorithm, H
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setRidge(parameters.getDouble(Params.REGULARIZATION_LAMBDA));
         search.setEbicGamma(parameters.getDouble(Params.EBIC_GAMMA));
+        search.setUseBoss(parameters.getBoolean(Params.TSC_PC_USE_BOSS));
         search.setVerbose(verbose);
         return search.search();
     }
@@ -80,7 +81,7 @@ public class TscCpdag extends AbstractBootstrapAlgorithm implements Algorithm, H
      */
     @Override
     public String getDescription() {
-        return "TSC-CPDAG";
+        return "TSC-PC";
     }
 
     /**
@@ -104,6 +105,7 @@ public class TscCpdag extends AbstractBootstrapAlgorithm implements Algorithm, H
         parameters.add(Params.NUM_STARTS);
         parameters.add(Params.EXPECTED_SAMPLE_SIZE);
         parameters.add(Params.REGULARIZATION_LAMBDA);
+        parameters.add(Params.TSC_PC_USE_BOSS);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

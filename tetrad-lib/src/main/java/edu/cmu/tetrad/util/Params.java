@@ -1067,6 +1067,10 @@ public final class Params {
      * Constant <code>TSC_CLUSTER_RANK="tscClusterRank"</code>
      */
     public static final String TSC_CLUSTER_RANK = "tscClusterRank";
+    /**
+     * Constant <code>TSC_PC_USE_BOSS="tscPcUseBoss"</code>
+     */
+    public static final String TSC_PC_USE_BOSS = "tscPcUseBoss";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
