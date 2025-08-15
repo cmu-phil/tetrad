@@ -628,6 +628,10 @@ public class TrekSeparationClusters {
         for (int rank = 0; rank <= 4; rank++) {
             int size = rank + 1;
 
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             if (size >= remainingVars.size() - size) {
                 continue;
             }
@@ -641,6 +645,10 @@ public class TrekSeparationClusters {
             Set<Integer> used = new HashSet<>();
 
             while (!P1.isEmpty()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Set<Integer> seed = P1.iterator().next();
                 P1.remove(seed);
 
@@ -663,6 +671,10 @@ public class TrekSeparationClusters {
                     Iterator<Set<Integer>> it = new HashSet<>(P1).iterator();
 
                     while (it.hasNext()) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         Set<Integer> candidate = it.next();
                         if (!Collections.disjoint(used, candidate)) continue;
                         if (Collections.disjoint(candidate, cluster)) continue;
@@ -720,13 +732,24 @@ public class TrekSeparationClusters {
             boolean didAugment = false;
 
             for (int _reducedRank = rank - 1; _reducedRank >= 1; _reducedRank--) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
 
                 for (Set<Integer> C1 : new HashSet<>(newClusters)) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
                     int _size = C1.size();
 
                     // Look for a cluster in P2 that extends C1 to a cluster C2 of size _size + 1 where the
                     // rank of C2 is 1.
                     for (Set<Integer> _C : P2) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
                         Set<Integer> C2 = new HashSet<>(C1);
                         C2.addAll(_C);
 
@@ -867,7 +890,8 @@ public class TrekSeparationClusters {
                 int rank = RankTests.estimateWilksRank(S, c1Array, c2Array, sampleSize, alpha);
 
                 if (rank < l) {
-                    log("Deficient! rank(" + toNamesCluster(C1) + ", " + toNamesCluster(C2) + ") has rank " + rank + " < " + l + ".");
+                    log("Deficient! rank(" + toNamesCluster(C1) + ", " + toNamesCluster(C2) + ") has rank "
+                        + rank + " < " + l + "; removing " + toNamesCluster(cluster));
                     return true;
                 }
             }
