@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.test.IndTestBlocks;
 import edu.cmu.tetrad.util.RankTests;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
@@ -22,6 +23,7 @@ import java.util.*;
  *  - Singleton policy: INCLUDE, EXCLUDE, ATTACH_TO_NEAREST, COLLECT_AS_NOISE_LATENT
  *  - attachTau threshold for ATTACH_TO_NEAREST
  *  - Optional noise latent name
+ *  - (NEW) Optional hierarchical latent edges among clusters via Wilks rank-drop
  *
  * Backward compatible: if you don't call the new setters, behavior
  * defaults to the original (INCLUDE, same alpha/depth for both stages).
@@ -32,7 +34,6 @@ public class TscPc implements IGraphSearch {
 
     // ---------- Existing fields ----------
     private final DataSet dataSet;
-    private int depth = 2;           // legacy single depth (used if pcDepth not set)
     private int effectiveSampleSize; // -1 => use from data
     private double penaltyDiscount = 2;
     private int numStarts = 1;
@@ -57,6 +58,12 @@ public class TscPc implements IGraphSearch {
     /** Name to use for the pooled "Noise" latent (COLLECT_AS_NOISE_LATENT). */
     private String noiseLatentName = "Noise";
 
+    // ---------- NEW: hierarchy controls ----------
+    /** If true, add latent->latent hierarchy edges using Wilks rank-drop. */
+    private boolean enableHierarchy = true;
+    /** Require at least this much drop to add La -> Lb: rank(Cb,D) - rank(Cb,D|Ca) >= minRankDrop. */
+    private int minRankDrop = 1;
+
     public TscPc(DataSet dataSet) {
         this.dataSet = dataSet;
     }
@@ -64,12 +71,16 @@ public class TscPc implements IGraphSearch {
     @Override
     public Graph search() throws InterruptedException {
         CorrelationMatrix corr = new CorrelationMatrix(dataSet);
+        SimpleMatrix S = corr.getMatrix().getSimpleMatrix();
+        int N = (effectiveSampleSize == -1 || effectiveSampleSize == 0)
+                ? corr.getSampleSize()
+                : effectiveSampleSize;
 
         // --- TSC clustering ---
         TrekSeparationClusters tsc = new TrekSeparationClusters(
                 corr.getVariables(),
                 corr,
-                effectiveSampleSize == -1 ? corr.getSampleSize() : effectiveSampleSize
+                N
         );
         tsc.setVerbose(verbose);
         tsc.setAlpha(alphaCluster);    // cluster alpha (stage-specific)
@@ -175,9 +186,6 @@ public class TscPc implements IGraphSearch {
 
         // --- Post-attach excluded singletons to their nearest latent (if requested) ---
         if (policy == SingletonPolicy.ATTACH_TO_NEAREST && !excludedSingletons.isEmpty()) {
-            // Build correlation matrix once for maxCanonicalCorrSq
-            var S = new CorrelationMatrix(dataSet).getMatrix().getSimpleMatrix();
-
             // Build list of latent blocks (indices in 'blocks' where size > 1)
             List<Integer> latentBlockIdx = new ArrayList<>();
             for (int i = 0; i < blocks.size(); i++) if (blocks.get(i).size() > 1) latentBlockIdx.add(i);
@@ -206,7 +214,117 @@ public class TscPc implements IGraphSearch {
             }
         }
 
+        // --- NEW: Add hierarchical latent edges among latent blocks --------------
+        if (enableHierarchy) {
+            addHierarchyEdges(cpdag, blocks, metaVars, S, N, alphaPc);
+        }
+
         return cpdag;
+    }
+
+    // ---------- NEW: Hierarchy helper -------------------------------------------
+
+    /**
+     * Add latent->latent edges when conditioning on parent indicators lowers the Wilks rank
+     * between child indicators and the rest of the observed variables by at least minRankDrop.
+     *
+     * For each ordered pair (La, Lb), let Ca, Cb be their indicator sets and D = V \ Cb.
+     * If rank(Cb, D | Ca) <= rank(Cb, D) - minRankDrop, add La -> Lb, avoiding directed cycles.
+     */
+    private void addHierarchyEdges(Graph g,
+                                   List<List<Integer>> blocks,
+                                   List<Node> metaVars,
+                                   SimpleMatrix S,
+                                   int sampleSize,
+                                   double alpha) {
+        // Consider only latent blocks (size > 1) as candidates
+        List<Integer> latentIdx = new ArrayList<>();
+        for (int i = 0; i < blocks.size(); i++) if (blocks.get(i).size() > 1) latentIdx.add(i);
+        final int m = latentIdx.size();
+        if (m <= 1) return;
+
+        // Universe of observed variable indices
+        int p = dataSet.getNumColumns();
+        int[] all = new int[p];
+        for (int j = 0; j < p; j++) all[j] = j;
+
+        // Candidate edges with rank drops
+        class Cand {
+            final int ia, ib; // indices in 'blocks' / 'metaVars'
+            final int r0, r1, drop;
+            Cand(int ia, int ib, int r0, int r1) { this.ia = ia; this.ib = ib; this.r0 = r0; this.r1 = r1; this.drop = r0 - r1; }
+        }
+        List<Cand> cands = new ArrayList<>();
+
+        for (int aPos = 0; aPos < m; aPos++) {
+            int ia = latentIdx.get(aPos);
+            int[] Ca = blocks.get(ia).stream().mapToInt(Integer::intValue).toArray();
+
+            for (int bPos = 0; bPos < m; bPos++) {
+                int ib = latentIdx.get(bPos);
+                if (ia == ib) continue;
+
+                int[] Cb = blocks.get(ib).stream().mapToInt(Integer::intValue).toArray();
+                if (Cb.length == 0) continue;
+
+                int[] D = minus(all, Cb);
+                if (D.length == 0) continue;
+
+                int r0 = RankTests.estimateWilksRank(S, Cb, D, sampleSize, alpha);
+                if (r0 <= 0) continue;
+
+                int r1 = RankTests.estimateWilksRankConditioned(S, Cb, D, Ca, sampleSize, alpha);
+
+                if (r0 - r1 >= minRankDrop) {
+                    cands.add(new Cand(ia, ib, r0, r1));
+                }
+            }
+        }
+
+        // Greedy: biggest rank drop first; tiebreak by names to be deterministic
+        cands.sort(Comparator.<Cand>comparingInt(c -> c.drop).reversed()
+                .thenComparing(c -> metaVars.get(c.ia).getName())
+                .thenComparing(c -> metaVars.get(c.ib).getName()));
+
+        for (Cand c : cands) {
+            Node from = metaVars.get(c.ia);
+            Node to   = metaVars.get(c.ib);
+            if (createsDirectedCycle(g, from, to)) continue;
+            if (!g.containsNode(from)) g.addNode(from);
+            if (!g.containsNode(to))   g.addNode(to);
+            if (!g.isAdjacentTo(from, to)) {
+                g.addDirectedEdge(from, to);
+                if (verbose) {
+                    System.out.printf("Hierarchy: %s -> %s (drop=%d; r0=%d, r1=%d)%n",
+                            from.getName(), to.getName(), (c.r0 - c.r1), c.r0, c.r1);
+                }
+            }
+        }
+    }
+
+    private static int[] minus(int[] universe, int[] remove) {
+        BitSet rm = new BitSet();
+        for (int v : remove) rm.set(v);
+        int cnt = 0;
+        for (int v : universe) if (!rm.get(v)) cnt++;
+        int[] out = new int[cnt];
+        int i = 0;
+        for (int v : universe) if (!rm.get(v)) out[i++] = v;
+        return out;
+    }
+
+    // Cycle check: adding from->to must not create a directed cycle
+    private boolean createsDirectedCycle(Graph g, Node from, Node to) {
+        Set<Node> seen = new HashSet<>();
+        return dfsChildrenReach(g, to, from, seen);
+    }
+    private boolean dfsChildrenReach(Graph g, Node cur, Node target, Set<Node> seen) {
+        if (cur.equals(target)) return true;
+        if (!seen.add(cur)) return false;
+        for (Node child : g.getChildren(cur)) {
+            if (dfsChildrenReach(g, child, target, seen)) return true;
+        }
+        return false;
     }
 
     // ---------- Helpers ----------
@@ -222,11 +340,6 @@ public class TscPc implements IGraphSearch {
     }
 
     // ---------- Setters (existing) ----------
-
-    public void setDepth(int depth) {
-        if (!(depth == -1 || depth >= 0)) throw new IllegalArgumentException("depth must be non-negative or -1");
-        this.depth = depth;
-    }
 
     public void setVerbose(boolean verbose) { this.verbose = verbose; }
 
@@ -266,7 +379,7 @@ public class TscPc implements IGraphSearch {
         this.alphaPc = alphaPc;
     }
 
-    /** Depth for PC over blocks. If unset, falls back to {@link #setDepth(int)} value. */
+    /** Depth for PC over blocks. */
     public void setPcDepth(int pcDepth) {
         if (!(pcDepth == -1 || pcDepth >= 0))
             throw new IllegalArgumentException("pcDepth must be non-negative or -1");
@@ -290,5 +403,18 @@ public class TscPc implements IGraphSearch {
         if (noiseLatentName == null || noiseLatentName.isEmpty())
             throw new IllegalArgumentException("noiseLatentName must be non-empty");
         this.noiseLatentName = noiseLatentName;
+    }
+
+    // ---------- Setters (new) ----------
+
+    /** Enable/disable adding hierarchical latent edges after PC/BOSS over blocks. */
+    public void setEnableHierarchy(boolean enableHierarchy) {
+        this.enableHierarchy = enableHierarchy;
+    }
+
+    /** Require at least this drop in Wilks rank to add La -> Lb (default 1). */
+    public void setMinRankDrop(int minRankDrop) {
+        if (minRankDrop < 1) throw new IllegalArgumentException("minRankDrop must be >= 1");
+        this.minRankDrop = minRankDrop;
     }
 }

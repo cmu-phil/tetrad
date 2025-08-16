@@ -59,6 +59,10 @@ public class TrekSeparationClusters {
     private Map<Set<Integer>, Integer> clusterToRank;
     private Map<Set<Integer>, Integer> reducedRank;
 
+    // ---- Hierarchy (new) --------------------------------------------------------
+    private boolean enableHierarchy = true;   // infer latent -> latent edges
+    private int minRankDrop = 1;              // require at least this drop in Wilks rank to add an edge
+
     // ---- Canonical key for caching ranks (immutable, sorted) -------------------
     private static final class Key {
         final int[] a;
@@ -91,6 +95,10 @@ public class TrekSeparationClusters {
 
         this.S = new CovarianceMatrix(cov).getMatrix().getSimpleMatrix();
     }
+
+    // Public knobs for hierarchy
+    public void setEnableHierarchy(boolean v) { this.enableHierarchy = v; }
+    public void setMinRankDrop(int k) { this.minRankDrop = Math.max(1, k); }
 
     // Pascal triangle, up to n choose k (inclusive on n)
     static long[][] precomputeBinom(int n, int k) {
@@ -140,7 +148,7 @@ public class TrekSeparationClusters {
         }
     }
 
-    // ---- New fast variant: enumerate k-combos of vars and test ranks -----------
+    // ---- Enumerate k-combos of vars and test ranks -----------------------------
     private Set<Set<Integer>> findClustersAtRank(List<Integer> vars, int size, int rank) {
         final int n = vars.size();
         final int k = size;
@@ -216,6 +224,11 @@ public class TrekSeparationClusters {
 
         List<Node> latents = defineLatents(clusterSets, clusterToRank, reducedRank);
         Graph graph = convertSearchGraphClusters(clusterSets, latents, includeAllNodes);
+
+        // ===== NEW: infer latent -> latent hierarchy edges (optional) ===========
+        if (enableHierarchy) {
+            addHierarchyEdges(graph, clusterSets, latents);
+        }
 
         this.latentNames = new ArrayList<>();
         for (Node latent : latents) {
@@ -314,13 +327,13 @@ public class TrekSeparationClusters {
 
                         // Only skip if union adds *no new elements* (i.e. union == cluster).
                         // Using "==" instead of "<=" avoids blocking valid growth steps.
+                        // With this choice, the only case we give up is forming a single cluster
+                        // that covers *all* observed variables, since then the complement is empty.
                         if (union.size() == cluster.size()) continue;
 
                         int rankOfUnion = lookupRank(union);
                         log("For this candidate: " + toNamesCluster(candidate) + ", Trying union: " + toNamesCluster(union) + " rank = " + rankOfUnion);
 
-                        // With this choice, the only case we give up is forming a single cluster
-                        // that covers *all* observed variables, since then the complement is empty.
                         if (rankOfUnion == rank) {
                             // Accept this union, grow cluster and consume candidate from P1
                             cluster = union;
@@ -540,7 +553,104 @@ public class TrekSeparationClusters {
         return false;
     }
 
-    // Cached rank lookup via canonical key
+    // ===== NEW: Hierarchy glue ==================================================
+    /**
+     * Add latent->latent edges when conditioning on parent indicators lowers the Wilks rank
+     * between child indicators and the rest of the observed variables by at least minRankDrop.
+     *
+     * For each ordered pair (La, Lb), let Ca, Cb be their indicator sets and D = V \ Cb.
+     * If rank(Cb, D | Ca) <= rank(Cb, D) - minRankDrop, add La -> Lb, avoiding directed cycles.
+     */
+    private void addHierarchyEdges(Graph g, List<Set<Integer>> clusters, List<Node> latents) {
+        final int m = clusters.size();
+        if (m <= 1) return;
+
+        // Precompute arrays for speed
+        final List<int[]> C = new ArrayList<>(m);
+        for (int i = 0; i < m; i++) {
+            int[] arr = clusters.get(i).stream().mapToInt(Integer::intValue).toArray();
+            C.add(arr);
+        }
+        final int[] all = allVariables().stream().mapToInt(Integer::intValue).toArray();
+
+        // Build candidate edges with drops
+        class Cand {
+            final int a, b, r0, r1, drop;
+            Cand(int a, int b, int r0, int r1) { this.a=a; this.b=b; this.r0=r0; this.r1=r1; this.drop=r0 - r1; }
+        }
+        List<Cand> cands = new ArrayList<>();
+
+        for (int a = 0; a < m; a++) {
+            for (int b = 0; b < m; b++) {
+                if (a == b) continue;
+
+                // D = V \ Cb
+                int[] Cb = C.get(b);
+                int[] D = minus(all, Cb);        // complement once per pair
+                if (D.length == 0 || Cb.length == 0) continue;
+
+                int r0 = RankTests.estimateWilksRank(S, Cb, D, sampleSize, alpha);
+                if (r0 <= 0) continue;
+
+                int[] Ca = C.get(a);
+                int r1 = RankTests.estimateWilksRankConditioned(S, Cb, D, Ca, sampleSize, alpha);
+
+                if (r0 - r1 >= minRankDrop) {
+                    cands.add(new Cand(a, b, r0, r1));
+                }
+            }
+        }
+
+        // Greedy add in order of largest drop first, avoid directed cycles
+        cands.sort(Comparator.<Cand>comparingInt(c -> c.drop).reversed()
+                .thenComparing((Cand c) -> latents.get(c.a).getName())
+                .thenComparing((Cand c) -> latents.get(c.b).getName()));
+
+        for (Cand c : cands) {
+            Node from = latents.get(c.a);
+            Node to   = latents.get(c.b);
+            if (createsDirectedCycle(g, from, to)) continue;
+            if (!g.containsNode(from)) g.addNode(from);
+            if (!g.containsNode(to))   g.addNode(to);
+            if (!g.isAdjacentTo(from, to)) {
+                g.addDirectedEdge(from, to);
+                log(String.format("Hierarchy: %s -> %s (drop %d: r0=%d, r1=%d)",
+                        from.getName(), to.getName(), c.drop, c.r0, c.r1));
+            }
+        }
+    }
+
+    // DFS over children to detect cycles if we add from -> to
+    private boolean createsDirectedCycle(Graph g, Node from, Node to) {
+        // If there's already a (directed) path from 'to' back to 'from', adding from->to would create a cycle.
+        Set<Node> seen = new HashSet<>();
+        return dfsChildrenReach(g, to, from, seen);
+    }
+    private boolean dfsChildrenReach(Graph g, Node cur, Node target, Set<Node> seen) {
+        if (cur.equals(target)) return true;
+        if (!seen.add(cur)) return false;
+        for (Node child : g.getChildren(cur)) {
+            if (dfsChildrenReach(g, child, target, seen)) return true;
+        }
+        return false;
+    }
+
+    private static int[] minus(int[] universe, int[] remove) {
+        // universe and remove are small; simple scan is fine
+        BitSet rm = new BitSet();
+        for (int v : remove) rm.set(v);
+        int cnt = 0;
+        for (int v : universe) if (!rm.get(v)) cnt++;
+        int[] out = new int[cnt];
+        int i = 0;
+        for (int v : universe) if (!rm.get(v)) out[i++] = v;
+        return out;
+    }
+    // ===== END hierarchy glue ===================================================
+
+    /**
+     * Cached rank lookup via canonical key
+     */
     private int lookupRank(Set<Integer> cluster) {
         Key k = new Key(cluster);
         Integer cached = rankCache.get(k);
