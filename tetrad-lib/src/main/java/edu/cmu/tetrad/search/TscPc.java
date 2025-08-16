@@ -7,34 +7,29 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
-import edu.cmu.tetrad.search.test.IndTestBlocks;
+import edu.cmu.tetrad.search.test.IndTestBlocksWilksRankCachedTS;
 
 import java.util.*;
 
 /**
- * The BlocksBoss class runs TSC to obtain causal clusters ane names for latents for those clusters and then runs BOSS
- * over these clusters and any unclustered variables (as singleton clusters) to produce a causal graph over the
- * clusters.
- * <p>
- * In the future, other algorithms than TSC may be used to obtain the causal clusters.
- * <p>
- * Notably, we tried PC here but for some cases it led to problematic exceptions or slow behavior, so we went with
- * BOSS.
+ * Runs TSC to find clusters and then uses these as blocks of variables, together possibly with unclustered variables
+ * considered as singleton blocks, to infer a graph over the blocks. The default is to use PC for the metagraph; BOSS is
+ * also offered as an options.
  *
  * @author josephramsey
  */
 public class TscPc implements IGraphSearch {
     /**
-     * Represents the dataset to be utilized by the BlocksBoss algorithm. This dataset contains the data necessary for
-     * conducting the search and performing associated computations within the algorithm.
+     * The raw unclustered dataset to use.
      */
     private final DataSet dataSet;
     /**
-     * A significance threshold for the rank test for finding clusters.
+     * A significance threshold for the rank test for finding clusters. This will be used both for clustering and for
+     * the PC search.
      */
     private double alpha = 0.01;
     /**
-     * A depth parameter for "weeding out" unwanted clusters from the graph.
+     * A depth of the PC search.
      */
     private int depth = 2;
     /**
@@ -42,11 +37,11 @@ public class TscPc implements IGraphSearch {
      */
     private int effectiveSampleSize;
     /**
-     * The penanalty discount to use for the BOSS step.
+     * The penalty discount to use for the BOSS option.
      */
     private double penaltyDiscount = 2;
     /**
-     * The number of random restarts to use for the BOSS step.
+     * The number of random restarts to use for the BOSS option.
      */
     private int numStarts = 1;
     /**
@@ -59,14 +54,19 @@ public class TscPc implements IGraphSearch {
      * computations. A typical default value is used, but it can be adjusted depending on the application needs.
      */
     private double ridge = 1e-8;
+    /**
+     * EBIC gamma for the BOSS option.
+     */
     private double ebicGamma = 0;
+    /**
+     * Whether to use the BOSS option instead of PC.
+     */
     private boolean useBoss = false;
 
     /**
      * Constructor,
      *
-     * @param dataSet             The dataset. This should include at least all of the variables that are to be
-     *                            clustered by TSC.
+     * @param dataSet The dataset. This should include at least all of the variables that are to be clustered by TSC.
      */
     public TscPc(DataSet dataSet) {
         this.dataSet = dataSet;
@@ -81,7 +81,6 @@ public class TscPc implements IGraphSearch {
      */
     @Override
     public Graph search() throws InterruptedException {
-        // (rename for clarity)
         CorrelationMatrix corr = new CorrelationMatrix(dataSet);
 
         TrekSeparationClusters tsc = new TrekSeparationClusters(
@@ -118,8 +117,6 @@ public class TscPc implements IGraphSearch {
             metaVars.add(new ContinuousVariable(latentNames.get(i)));
         }
 
-
-
         Graph cpdag;
 
         if (useBoss) {
@@ -136,12 +133,11 @@ public class TscPc implements IGraphSearch {
             PermutationSearch permutationSearch = new PermutationSearch(suborderSearch);
             cpdag = permutationSearch.search();
         } else {
-            IndTestBlocks test = new IndTestBlocks(dataSet, blocks, metaVars);
+            IndTestBlocksWilksRankCachedTS test = new IndTestBlocksWilksRankCachedTS(dataSet, blocks, metaVars);
             test.setAlpha(alpha);
 
             Pc pc = new Pc(test);
             pc.setDepth(depth);
-//            pc.setStable(false);
             cpdag = pc.search();
         }
 
@@ -248,10 +244,25 @@ public class TscPc implements IGraphSearch {
         this.ridge = ridge;
     }
 
+    /**
+     * Sets the gamma parameter for the EBIC (Extended Bayesian Information Criterion). The EBIC gamma parameter
+     * controls the penalty term for model complexity when performing model selection. This is used for the BOSS
+     * option.
+     *
+     * @param ebicGamma The EBIC gamma value to set. This should be a non-negative double, typically in the range [0,
+     *                  1], where 0 corresponds to the standard BIC and higher values increase the penalty for model
+     *                  complexity.
+     */
     public void setEbicGamma(double ebicGamma) {
         this.ebicGamma = ebicGamma;
     }
 
+    /**
+     * Configures whether to use the BOSS (Bayesian Optimization Structure Search) step in the algorithm.
+     *
+     * @param useBoss A boolean indicating whether the BOSS step should be used. If true, the BOSS step will be included
+     *                in the algorithm; if false, it will be skipped.
+     */
     public void setUseBoss(boolean useBoss) {
         this.useBoss = useBoss;
     }

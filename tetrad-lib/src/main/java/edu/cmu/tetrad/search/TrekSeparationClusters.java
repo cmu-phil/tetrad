@@ -625,7 +625,7 @@ public class TrekSeparationClusters {
         clusterToRank = new HashMap<>();
         reducedRank = new HashMap<>();
 
-        for (int rank = 0; rank <= 4; rank++) {
+        for (int rank = 0; rank <= 3; rank++) {
             int size = rank + 1;
 
             if (Thread.currentThread().isInterrupted()) {

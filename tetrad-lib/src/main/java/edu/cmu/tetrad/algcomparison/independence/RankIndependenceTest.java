@@ -3,13 +3,17 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestBlocks;
+import edu.cmu.tetrad.search.test.IndTestBlocksWilksRankCachedTS;
 import edu.cmu.tetrad.search.test.RankConditionalIndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,19 +49,20 @@ public class RankIndependenceTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
-        double alpha = parameters.getDouble(Params.ALPHA);
+        List<Node> nodes  = dataModel.getVariables();
+        List<Node> blockVars = new ArrayList<>();
+        List<List<Integer>> blocks = new ArrayList<>();
 
-        RankConditionalIndependenceTest test;
-
-        if (dataModel instanceof ICovarianceMatrix) {
-            test = new RankConditionalIndependenceTest((ICovarianceMatrix) dataModel, alpha);
-        } else if (dataModel instanceof DataSet) {
-            test = new RankConditionalIndependenceTest(new CovarianceMatrix((DataSet) dataModel), alpha);
-        } else {
-            throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
+        for (int i = 0; i < nodes.size(); i++) {
+            blockVars.add(nodes.get(i));
+            blocks.add(Collections.singletonList(i));
         }
 
-        return test;
+        // If you’re using the Wilks-rank test:
+        IndTestBlocksWilksRankCachedTS ind = new IndTestBlocksWilksRankCachedTS((DataSet) dataModel, blocks, blockVars);
+        ind.setAlpha(parameters.getDouble(Params.ALPHA));
+
+        return ind;
     }
 
     /**
